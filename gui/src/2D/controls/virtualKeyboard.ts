@@ -28,6 +28,12 @@ export class KeyPropertySet {
     background?: string;
 }
 
+type ConnectedInputText = {
+    input: InputText,
+    onFocusObserver: Nullable<Observer<InputText>>,
+    onBlurObserver: Nullable<Observer<InputText>>
+}
+
 /**
  * Class used to create virtual keyboard
  */
@@ -151,84 +157,123 @@ export class VirtualKeyboard extends StackPanel {
         }
     }
 
-    private _connectedInputText: Nullable<InputText>;
-    private _onFocusObserver: Nullable<Observer<InputText>>;
-    private _onBlurObserver: Nullable<Observer<InputText>>;
-    private _onKeyPressObserver: Nullable<Observer<string>>;
+    private _currentlyConnectedInputText: Nullable<InputText> = null;
+    private _connectedInputTexts: ConnectedInputText[] = [];
+    private _onKeyPressObserver: Nullable<Observer<string>> = null;
 
-    /** Gets the input text control attached with the keyboard */
+    /** Gets the input text control currently attached to the keyboard */
     public get connectedInputText(): Nullable<InputText> {
-        return this._connectedInputText;
+        return this._currentlyConnectedInputText;
     }
 
     /**
      * Connects the keyboard with an input text control
+     * 
      * @param input defines the target control
      */
     public connect(input: InputText): void {
-        this.isVisible = false;
-        this._connectedInputText = input;
+        // .find not available on IE
+        let filtered = this._connectedInputTexts.filter(a => a.input === input);
+        if (filtered.length === 1) {
+            return; // already connected
+        }
 
+        if (this._onKeyPressObserver === null) {
+            this._onKeyPressObserver = this.onKeyPressObservable.add((key) => {
+                if (!this._currentlyConnectedInputText) {
+                    return;
+                }
+                switch (key) {
+                    case "\u21E7":
+                        this.shiftState++;
+                        if (this.shiftState > 2) {
+                            this.shiftState = 0;
+                        }
+                        this.applyShiftState(this.shiftState);
+                        return;
+                    case "\u2190":
+                        this._currentlyConnectedInputText.processKey(8);
+                        return;
+                    case "\u21B5":
+                        this._currentlyConnectedInputText.processKey(13);
+                        return;
+                }
+                this._currentlyConnectedInputText.processKey(-1, (this.shiftState ? key.toUpperCase() : key));
+    
+                if (this.shiftState === 1) {
+                    this.shiftState = 0;
+                    this.applyShiftState(this.shiftState);
+                }
+            });
+        }
+
+        this.isVisible = false;
+        this._currentlyConnectedInputText = input;
+        
         // Events hooking
-        this._onFocusObserver = input.onFocusObservable.add(() => {
+        const onFocusObserver: Nullable<Observer<InputText>> = input.onFocusObservable.add(() => {
+            this._currentlyConnectedInputText = input;
             this.isVisible = true;
         });
 
-        this._onBlurObserver = input.onBlurObservable.add(() => {
+        const onBlurObserver: Nullable<Observer<InputText>> = input.onBlurObservable.add(() => {
+            this._currentlyConnectedInputText = null;
             this.isVisible = false;
         });
 
-        this._onKeyPressObserver = this.onKeyPressObservable.add((key) => {
-            if (!this._connectedInputText) {
-                return;
-            }
-            switch (key) {
-                case "\u21E7":
-                    this.shiftState++;
-                    if (this.shiftState > 2) {
-                        this.shiftState = 0;
-                    }
-                    this.applyShiftState(this.shiftState);
-                    return;
-                case "\u2190":
-                    this._connectedInputText.processKey(8);
-                    return;
-                case "\u21B5":
-                    this._connectedInputText.processKey(13);
-                    return;
-            }
-            this._connectedInputText.processKey(-1, (this.shiftState ? key.toUpperCase() : key));
-
-            if (this.shiftState === 1) {
-                this.shiftState = 0;
-                this.applyShiftState(this.shiftState);
-            }
-        });
+        this._connectedInputTexts.push({
+            input,
+            onBlurObserver,
+            onFocusObserver
+        })
     }
 
     /**
-     * Disconnects the keyboard from an input text control
+     * Disconnects the keyboard from connected InputText controls
+     * 
+     * @param input optionally defines a target control, otherwise all are disconnected
      */
-    public disconnect(): void {
-        if (!this._connectedInputText) {
-            return;
+    public disconnect(input?: InputText): void {
+        if (input) {
+            // .find not available on IE
+            let filtered = this._connectedInputTexts.filter(a => a.input === input);
+            if (filtered.length === 1) {
+                this._removeConnectedInputObservables(filtered[0]);
+                
+                this._connectedInputTexts = this._connectedInputTexts.filter(a => a.input !== input);
+                if (this._currentlyConnectedInputText === input) {
+                    this._currentlyConnectedInputText = null;
+                }
+            }
+        } else {
+            this._connectedInputTexts.forEach((connectedInputText: ConnectedInputText) => {
+                this._removeConnectedInputObservables(connectedInputText)
+            });
+            this._connectedInputTexts = []
         }
 
-        this._connectedInputText.onFocusObservable.remove(this._onFocusObserver);
-        this._connectedInputText.onBlurObservable.remove(this._onBlurObserver);
-        this.onKeyPressObservable.remove(this._onKeyPressObserver);
+        if (this._connectedInputTexts.length === 0) {
+            this._currentlyConnectedInputText = null;
+            this.onKeyPressObservable.remove(this._onKeyPressObserver);
+            this._onKeyPressObserver = null;
+        }
+    }
 
-        this._connectedInputText = null;
+    private _removeConnectedInputObservables(connectedInputText: ConnectedInputText) : void {
+        connectedInputText.input.onFocusObservable.remove(connectedInputText.onFocusObserver);
+        connectedInputText.input.onBlurObservable.remove(connectedInputText.onBlurObserver);
     }
 
     // Statics
 
     /**
      * Creates a new keyboard using a default layout
+     *
+     * @param name defines control name
      * @returns a new VirtualKeyboard
      */
-    public static CreateDefaultLayout(): VirtualKeyboard {
-        let returnValue = new VirtualKeyboard();
+    public static CreateDefaultLayout(name?: string): VirtualKeyboard {
+        let returnValue = new VirtualKeyboard(name);
 
         returnValue.addKeysRow(["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "\u2190"]);
         returnValue.addKeysRow(["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"]);
