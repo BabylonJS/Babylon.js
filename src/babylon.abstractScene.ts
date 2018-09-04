@@ -86,6 +86,11 @@
             }
         }
 
+       /**
+        * Gets the list of root nodes (ie. nodes with no parent)
+        */
+       public rootNodes = new Array<Node>();
+
         /** All of the cameras added to this scene
          * @see http://doc.babylonjs.com/babylon101/cameras
          */
