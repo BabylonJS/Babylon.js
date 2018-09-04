@@ -1011,8 +1011,6 @@
 
         private _pointerOverMesh: Nullable<AbstractMesh>;
 
-        private _debugLayer: DebugLayer;
-
         private _pickedDownMesh: Nullable<AbstractMesh>;
         private _pickedUpMesh: Nullable<AbstractMesh>;
         private _externalData: StringDictionary<Object>;
@@ -1240,17 +1238,6 @@
             this.getActiveSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
             this.getIntersectingSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
             this.getCollidingSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
-        }
-
-        /**
-         * Gets the debug layer (aka Inspector) associated with the scene
-         * @see http://doc.babylonjs.com/features/playground_debuglayer
-         */
-        public get debugLayer(): DebugLayer {
-            if (!this._debugLayer) {
-                this._debugLayer = new DebugLayer(this);
-            }
-            return this._debugLayer;
         }
 
         public set workerCollisions(enabled: boolean) {
@@ -4809,11 +4796,6 @@
             // Abort active requests
             for (let request of this._activeRequests) {
                 request.abort();
-            }
-
-            // Debug layer
-            if (this._debugLayer) {
-                this._debugLayer.hide();
             }
 
             // Events
