@@ -9,22 +9,6 @@
         dispose(): void;
     }
 
-    /**
-     * Interface used to let developers provide their own mesh selection mechanism
-     */
-    export interface IActiveMeshCandidateProvider {
-        /**
-         * Return the list of active meshes
-         * @param scene defines the current scene
-         * @returns the list of active meshes
-         */
-        getMeshes(scene: Scene): AbstractMesh[];
-        /** 
-         * Indicates if the meshes have been checked to make sure they are isEnabled()
-         */
-        readonly checksIsEnabled: boolean;
-    }
-
     /** @hidden */
     class ClickInfo {
         private _singleClick = false;
@@ -502,6 +486,11 @@
          */
         public onAfterRenderingGroupObservable = new Observable<RenderingGroupInfo>();
 
+        /**
+         * This Observable will when a mesh has been imported into the scene.
+         */
+        public onMeshImportedObservable = new Observable<AbstractMesh>();
+
         // Animations
         private _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<any>(256);
 
@@ -873,11 +862,6 @@
         * Gets or sets a boolean indicating if probes are enabled on this scene
         */
         public probesEnabled = true;
-        /**
-         * The list of reflection probes added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
-         */
-        public reflectionProbes = new Array<ReflectionProbe>();
 
         // Database
         /**
@@ -1025,8 +1009,6 @@
          */
         public requireLightSorting = false;
 
-        private _selectionOctree: Octree<AbstractMesh>;
-
         private _pointerOverMesh: Nullable<AbstractMesh>;
 
         private _debugLayer: DebugLayer;
@@ -1170,11 +1152,6 @@
         public _afterCameraDrawStage = Stage.Create<CameraStageAction>();
         /**
          * @hidden
-         * Defines the actions happening when Geometries are rebuilding.
-         */
-        public _rebuildGeometryStage = Stage.Create<SimpleStageAction>();
-        /**
-         * @hidden
          * Defines the actions happening when a pointer move event happens.
          */
         public _pointerMoveStage = Stage.Create<PointerMoveStageAction>();
@@ -1220,6 +1197,49 @@
             if (ImageProcessingConfiguration) {
                 this._imageProcessingConfiguration = new ImageProcessingConfiguration();
             }
+
+            this.setDefaultCandidateProviders();
+        }
+
+        private _defaultMeshCandidates: ISmartArrayLike<AbstractMesh> = {
+            data: [],
+            length: 0
+        }
+
+        /**
+         * @hidden
+         */
+        public _getDefaultMeshCandidates(): ISmartArrayLike<AbstractMesh> {
+            this._defaultMeshCandidates.data = this.meshes;
+            this._defaultMeshCandidates.length = this.meshes.length;
+            return this._defaultMeshCandidates;
+        }
+
+        private _defaultSubMeshCandidates: ISmartArrayLike<SubMesh> = {
+            data: [],
+            length: 0
+        }
+
+        /**
+         * @hidden
+         */
+        public _getDefaultSubMeshCandidates(mesh: AbstractMesh): ISmartArrayLike<SubMesh> {
+            this._defaultSubMeshCandidates.data = mesh.subMeshes;
+            this._defaultSubMeshCandidates.length = mesh.subMeshes.length;
+            return this._defaultSubMeshCandidates;
+        }
+
+        /**
+         * Sets the default candidate providers for the scene.
+         * This sets the getActiveMeshCandidates, getActiveSubMeshCandidates, getIntersectingSubMeshCandidates
+         * and getCollidingSubMeshCandidates to their default function
+         */
+        public setDefaultCandidateProviders(): void {
+            this.getActiveMeshCandidates = this._getDefaultMeshCandidates.bind(this);
+
+            this.getActiveSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
+            this.getIntersectingSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
+            this.getCollidingSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
         }
 
         /**
@@ -1256,14 +1276,6 @@
          */
         public get workerCollisions(): boolean {
             return this._workerCollisions;
-        }
-
-        /**
-         * Gets the octree used to boost mesh selection (picking)
-         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
-         */
-        public get selectionOctree(): Octree<AbstractMesh> {
-            return this._selectionOctree;
         }
 
         /**
@@ -1560,9 +1572,20 @@
                 return this;
             }
 
+            // Restore pointer
+            canvas.style.cursor = this.defaultCursor;
+
             var isMeshPicked = (pickResult && pickResult.hit && pickResult.pickedMesh) ? true : false;
             if (isMeshPicked) {
                 this.setPointerOverMesh(pickResult!.pickedMesh);
+
+                if (this._pointerOverMesh && this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
+                    if (this._pointerOverMesh.actionManager.hoverCursor) {
+                        canvas.style.cursor = this._pointerOverMesh.actionManager.hoverCursor;
+                    } else {
+                        canvas.style.cursor = this.hoverCursor;
+                    }
+                }
             } else {
                 this.setPointerOverMesh(null);
             }
@@ -2927,11 +2950,11 @@
         }
 
         /**
-           * Remove a mesh for the list of scene's meshes
-           * @param toRemove defines the mesh to remove
-           * @param recursive if all child meshes should also be removed from the scene
-           * @returns the index where the mesh was in the mesh list
-           */
+         * Remove a mesh for the list of scene's meshes
+         * @param toRemove defines the mesh to remove
+         * @param recursive if all child meshes should also be removed from the scene
+         * @returns the index where the mesh was in the mesh list
+         */
         public removeMesh(toRemove: AbstractMesh, recursive = false): number {
             var index = this.meshes.indexOf(toRemove);
             if (index !== -1) {
@@ -4001,21 +4024,25 @@
             return this._intermediateRendering
         }
 
-        private _activeMeshCandidateProvider: IActiveMeshCandidateProvider;
         /**
-         * Defines the current active mesh candidate provider
-         * @param provider defines the provider to use
+         * Lambda returning the list of potentially active meshes.
          */
-        public setActiveMeshCandidateProvider(provider: IActiveMeshCandidateProvider): void {
-            this._activeMeshCandidateProvider = provider;
-        }
+        public getActiveMeshCandidates: () => ISmartArrayLike<AbstractMesh>;
+
         /**
-         * Gets the current active mesh candidate provider
-         * @returns the current active mesh candidate provider
+         * Lambda returning the list of potentially active sub meshes.
          */
-        public getActiveMeshCandidateProvider(): IActiveMeshCandidateProvider {
-            return this._activeMeshCandidateProvider;
-        }
+        public getActiveSubMeshCandidates: (mesh: AbstractMesh) => ISmartArrayLike<SubMesh>;
+
+        /**
+         * Lambda returning the list of potentially intersecting sub meshes.
+         */
+        public getIntersectingSubMeshCandidates: (mesh: AbstractMesh, localRay: Ray) => ISmartArrayLike<SubMesh>;
+
+        /**
+         * Lambda returning the list of potentially colliding sub meshes.
+         */
+        public getCollidingSubMeshCandidates: (mesh: AbstractMesh, collider: Collider) => ISmartArrayLike<SubMesh>;
 
         private _activeMeshesFrozen = false;
 
@@ -4068,43 +4095,20 @@
                 step.action();
             }
 
-            // Meshes
-            var meshes: AbstractMesh[];
-            var len: number;
-            var checkIsEnabled = true;
-
             // Determine mesh candidates
-            if (this._activeMeshCandidateProvider !== undefined) {
-                // Use _activeMeshCandidateProvider
-                meshes = this._activeMeshCandidateProvider.getMeshes(this);
-                checkIsEnabled = this._activeMeshCandidateProvider.checksIsEnabled === false;
-                if (meshes !== undefined) {
-                    len = meshes.length;
-                } else {
-                    len = 0;
-                }
-            } else if (this._selectionOctree !== undefined) {
-                // Octree
-                var selection = this._selectionOctree.select(this._frustumPlanes);
-                meshes = selection.data;
-                len = selection.length;
-            } else {
-                // Full scene traversal
-                len = this.meshes.length;
-                meshes = this.meshes;
-            }
-
+            const meshes = this.getActiveMeshCandidates();
+            
             // Check each mesh
-            for (var meshIndex = 0, mesh, meshLOD; meshIndex < len; meshIndex++) {
-                mesh = meshes[meshIndex];
-
+            const len = meshes.length;
+            for (let i = 0; i < len; i++) {
+                const mesh = meshes.data[i];
                 if (mesh.isBlocked) {
                     continue;
                 }
 
                 this._totalVertices.addCount(mesh.getTotalVertices(), false);
 
-                if (!mesh.isReady() || (checkIsEnabled && !mesh.isEnabled())) {
+                if (!mesh.isReady() || !mesh.isEnabled()) {
                     continue;
                 }
 
@@ -4116,8 +4120,7 @@
                 }
 
                 // Switch to current LOD
-                meshLOD = mesh.getLOD(this.activeCamera);
-
+                const meshLOD = mesh.getLOD(this.activeCamera);
                 if (meshLOD === undefined || meshLOD === null) {
                     continue;
                 }
@@ -4179,23 +4182,10 @@
                 mesh !== undefined && mesh !== null
                 && mesh.subMeshes !== undefined && mesh.subMeshes !== null && mesh.subMeshes.length > 0
             ) {
-                // Submeshes Octrees
-                var len: number;
-                var subMeshes: SubMesh[];
-
-                if (mesh.useOctreeForRenderingSelection && mesh._submeshesOctree !== undefined && mesh._submeshesOctree !== null) {
-                    var intersections = mesh._submeshesOctree.select(this._frustumPlanes);
-
-                    len = intersections.length;
-                    subMeshes = intersections.data;
-                } else {
-                    subMeshes = mesh.subMeshes;
-                    len = subMeshes.length;
-                }
-
-                for (var subIndex = 0, subMesh; subIndex < len; subIndex++) {
-                    subMesh = subMeshes[subIndex];
-
+                const subMeshes = this.getActiveSubMeshCandidates(mesh);
+                const len = subMeshes.length;
+                for (let i = 0; i < len; i++) {
+                    const subMesh = subMeshes.data[i];
                     this._evaluateSubMesh(subMesh, mesh);
                 }
             }
@@ -4599,7 +4589,6 @@
                 if (data) {
                     data.dispose();
                 }
-                this._toBeDisposed[index] = null;
             }
 
             this._toBeDisposed.reset();
@@ -4787,7 +4776,6 @@
             this._beforeCameraUpdateStage.clear();
             this._beforeClearStage.clear();
             this._gatherRenderTargetsStage.clear();
-            this._rebuildGeometryStage.clear();
             this._pointerMoveStage.clear();
             this._pointerDownStage.clear();
             this._pointerUpStage.clear();
@@ -4851,6 +4839,7 @@
             this.onDataLoadedObservable.clear();
             this.onBeforeRenderingGroupObservable.clear();
             this.onAfterRenderingGroupObservable.clear();
+            this.onMeshImportedObservable.clear();
 
             this.detachControl();
 
@@ -5007,9 +4996,6 @@
             }
         }
 
-
-        // Octrees
-
         /**
          * Get the world extend vectors with an optional filter
          * 
@@ -5040,26 +5026,6 @@
                 min: min,
                 max: max
             };
-        }
-
-        /**
-         * Creates or updates the octree used to boost selection (picking)
-         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
-         * @param maxCapacity defines the maximum capacity per leaf
-         * @param maxDepth defines the maximum depth of the octree
-         * @returns an octree of AbstractMesh
-         */
-        public createOrUpdateSelectionOctree(maxCapacity = 64, maxDepth = 2): Octree<AbstractMesh> {
-            if (!this._selectionOctree) {
-                this._selectionOctree = new Octree<AbstractMesh>(Octree.CreationFuncForMeshes, maxCapacity, maxDepth);
-            }
-
-            var worldExtends = this.getWorldExtends();
-
-            // Update octree
-            this._selectionOctree.update(worldExtends.min, worldExtends.max, this.meshes);
-
-            return this._selectionOctree;
         }
 
         // Picking
@@ -5427,10 +5393,6 @@
             for (var system of this.particleSystems) {
                 system.rebuild();
             }
-
-            for (let step of this._rebuildGeometryStage) {
-                step.action();
-            }
         }
 
         /** @hidden */
@@ -5440,167 +5402,6 @@
             }
 
             this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
-        }
-
-        /**
-         * Creates a default light for the scene.
-         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-light
-         * @param replace has the default false, when true replaces the existing lights in the scene with a hemispheric light
-         */
-        public createDefaultLight(replace = false): void {
-            // Dispose existing light in replace mode.
-            if (replace) {
-                if (this.lights) {
-                    for (var i = 0; i < this.lights.length; i++) {
-                        this.lights[i].dispose();
-                    }
-                }
-            }
-
-            // Light
-            if (this.lights.length === 0) {
-                new HemisphericLight("default light", Vector3.Up(), this);
-            }
-        }
-
-        /**
-         * Creates a default camera for the scene.
-         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-camera
-         * @param createArcRotateCamera has the default false which creates a free camera, when true creates an arc rotate camera
-         * @param replace has default false, when true replaces the active camera in the scene
-         * @param attachCameraControls has default false, when true attaches camera controls to the canvas.
-         */
-        public createDefaultCamera(createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
-            // Dispose existing camera in replace mode.
-            if (replace) {
-                if (this.activeCamera) {
-                    this.activeCamera.dispose();
-                    this.activeCamera = null;
-                }
-            }
-
-            // Camera
-            if (!this.activeCamera) {
-                var worldExtends = this.getWorldExtends();
-                var worldSize = worldExtends.max.subtract(worldExtends.min);
-                var worldCenter = worldExtends.min.add(worldSize.scale(0.5));
-
-                var camera: TargetCamera;
-                var radius = worldSize.length() * 1.5;
-                // empty scene scenario!
-                if (!isFinite(radius)) {
-                    radius = 1;
-                    worldCenter.copyFromFloats(0, 0, 0);
-                }
-                if (createArcRotateCamera) {
-                    var arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI / 2), Math.PI / 2, radius, worldCenter, this);
-                    arcRotateCamera.lowerRadiusLimit = radius * 0.01;
-                    arcRotateCamera.wheelPrecision = 100 / radius;
-                    camera = arcRotateCamera;
-                }
-                else {
-                    var freeCamera = new FreeCamera("default camera", new Vector3(worldCenter.x, worldCenter.y, -radius), this);
-                    freeCamera.setTarget(worldCenter);
-                    camera = freeCamera;
-                }
-                camera.minZ = radius * 0.01;
-                camera.maxZ = radius * 1000;
-                camera.speed = radius * 0.2;
-                this.activeCamera = camera;
-
-                let canvas = this.getEngine().getRenderingCanvas();
-                if (attachCameraControls && canvas) {
-                    camera.attachControl(canvas);
-                }
-            }
-        }
-
-        /**
-         * Creates a default camera and a default light.
-         * @see http://doc.babylonjs.com/how_to/Fast_Build#create-default-camera-or-light
-         * @param createArcRotateCamera has the default false which creates a free camera, when true creates an arc rotate camera
-         * @param replace has the default false, when true replaces the active camera/light in the scene
-         * @param attachCameraControls has the default false, when true attaches camera controls to the canvas.
-         */
-        public createDefaultCameraOrLight(createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
-            this.createDefaultLight(replace);
-            this.createDefaultCamera(createArcRotateCamera, replace, attachCameraControls);
-        }
-
-        /**
-         * Creates a new sky box
-         * @see http://doc.babylonjs.com/how_to/Fast_Build#create-default-skybox
-         * @param environmentTexture defines the texture to use as environment texture
-         * @param pbr has default false which requires the StandardMaterial to be used, when true PBRMaterial must be used 
-         * @param scale defines the overall scale of the skybox
-         * @param blur is only available when pbr is true, default is 0, no blur, maximum value is 1
-         * @param setGlobalEnvTexture has default true indicating that scene.environmentTexture must match the current skybox texture
-         * @returns a new mesh holding the sky box
-         */
-        public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0, setGlobalEnvTexture = true): Nullable<Mesh> {
-
-            if (!environmentTexture) {
-                Tools.Warn("Can not create default skybox without environment texture.");
-                return null;
-            }
-
-            if (setGlobalEnvTexture) {
-                if (environmentTexture) {
-                    this.environmentTexture = environmentTexture;
-                }
-            }
-
-            // Skybox
-            var hdrSkybox = Mesh.CreateBox("hdrSkyBox", scale, this);
-            if (pbr) {
-                let hdrSkyboxMaterial = new PBRMaterial("skyBox", this);
-                hdrSkyboxMaterial.backFaceCulling = false;
-                hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
-                if (hdrSkyboxMaterial.reflectionTexture) {
-                    hdrSkyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
-                }
-                hdrSkyboxMaterial.microSurface = 1.0 - blur;
-                hdrSkyboxMaterial.disableLighting = true;
-                hdrSkyboxMaterial.twoSidedLighting = true;
-                hdrSkybox.infiniteDistance = true;
-                hdrSkybox.material = hdrSkyboxMaterial;
-            }
-            else {
-                let skyboxMaterial = new StandardMaterial("skyBox", this);
-                skyboxMaterial.backFaceCulling = false;
-                skyboxMaterial.reflectionTexture = environmentTexture.clone();
-                if (skyboxMaterial.reflectionTexture) {
-                    skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
-                }
-                skyboxMaterial.disableLighting = true;
-                hdrSkybox.infiniteDistance = true;
-                hdrSkybox.material = skyboxMaterial;
-            }
-
-            return hdrSkybox;
-        }
-
-        /**
-         * Creates a new environment
-         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-environment
-         * @param options defines the options you can use to configure the environment
-         * @returns the new EnvironmentHelper
-         */
-        public createDefaultEnvironment(options: Partial<IEnvironmentHelperOptions>): Nullable<EnvironmentHelper> {
-            if (EnvironmentHelper) {
-                return new EnvironmentHelper(options, this);
-            }
-            return null;
-        }
-
-        /**
-         * Creates a new VREXperienceHelper
-         * @see http://doc.babylonjs.com/how_to/webvr_helper
-         * @param webVROptions defines the options used to create the new VREXperienceHelper
-         * @returns a new VREXperienceHelper
-         */
-        public createDefaultVRExperience(webVROptions: VRExperienceHelperOptions = {}): VRExperienceHelper {
-            return new VRExperienceHelper(this, webVROptions);
         }
 
         // Tags
