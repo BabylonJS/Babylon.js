@@ -172,10 +172,9 @@ export class VirtualKeyboard extends StackPanel {
      * @param input defines the target control
      */
     public connect(input: InputText): void {
-        // .find not available on IE
-        let filtered = this._connectedInputTexts.filter(a => a.input === input);
-        if (filtered.length === 1) {
-            return; // already connected
+        const inputTextAlreadyConnected = this._connectedInputTexts.some(a => a.input === input);
+        if (inputTextAlreadyConnected) {
+            return;
         }
 
         if (this._onKeyPressObserver === null) {
@@ -262,6 +261,15 @@ export class VirtualKeyboard extends StackPanel {
     private _removeConnectedInputObservables(connectedInputText: ConnectedInputText) : void {
         connectedInputText.input.onFocusObservable.remove(connectedInputText.onFocusObserver);
         connectedInputText.input.onBlurObservable.remove(connectedInputText.onBlurObserver);
+    }
+
+    /**
+     * Release all resources
+     */
+    public dispose(): void {
+        super.dispose();
+
+        this.disconnect();
     }
 
     // Statics
