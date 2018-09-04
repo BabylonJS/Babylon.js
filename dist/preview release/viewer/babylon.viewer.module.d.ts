@@ -2236,7 +2236,27 @@ declare module 'babylonjs-viewer/configuration/interfaces/sceneOptimizerConfigur
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/skyboxConfiguration' {
-    
+    import { IImageProcessingConfiguration } from "babylonjs-viewer/configuration/interfaces/imageProcessingConfiguration";
+    export interface ISkyboxConfiguration {
+        cubeTexture?: {
+            noMipMap?: boolean;
+            gammaSpace?: boolean;
+            url?: string | Array<string>;
+        };
+        color?: {
+            r: number;
+            g: number;
+            b: number;
+        };
+        pbr?: boolean;
+        scale?: number;
+        blur?: number;
+        material?: {
+            imageProcessingConfiguration?: IImageProcessingConfiguration;
+            [propName: string]: any;
+        };
+        infiniteDistance?: boolean;
+    }
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/templateConfiguration' {
