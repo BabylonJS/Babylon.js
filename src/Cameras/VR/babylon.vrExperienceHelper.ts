@@ -1253,7 +1253,7 @@ module BABYLON {
                 // Listening to the proper controller values changes to confirm teleportation
                 if (Math.sqrt(stateObject.y * stateObject.y + stateObject.x * stateObject.x) < this._padSensibilityDown) {
                     if (this._teleportActive) {
-                        this._teleportCamera(this._haloCenter);
+                        this.teleportCamera(this._haloCenter);
                     }
 
                     gazer._teleportationRequestInitiated = false;
@@ -1328,7 +1328,7 @@ module BABYLON {
                     var ray = new Ray(position, this._workingVector);
                     var hit = this._scene.pickWithRay(ray, this._raySelectionPredicate);
                     if (hit && hit.pickedPoint && hit.pickedMesh && this._isTeleportationFloor(hit.pickedMesh) && hit.distance < 5) {
-                        this._teleportCamera(hit.pickedPoint);
+                        this.teleportCamera(hit.pickedPoint);
                     }
 
                     gazer._teleportationBackRequestInitiated = true;
@@ -1558,7 +1558,11 @@ module BABYLON {
         private _workingVector = Vector3.Zero();
         private _workingQuaternion = Quaternion.Identity();
         private _workingMatrix = Matrix.Identity();
-        private _teleportCamera(location: Vector3) {
+        /**
+         * Teleports the users feet to the desired location
+         * @param location The location where the user's feet should be placed
+         */
+        public teleportCamera(location: Vector3) {
             if (!(this.currentVRCamera instanceof FreeCamera)) {
                 return;
             }
