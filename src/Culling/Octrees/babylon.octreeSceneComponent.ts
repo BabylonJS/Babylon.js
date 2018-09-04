@@ -171,7 +171,7 @@
 
         /**
          * Return the list of active sub meshes
-         * @param scene defines the current scene
+         * @param mesh The mesh to get the candidates sub meshes from
          * @returns the list of active sub meshes
          */
         public getActiveSubMeshCandidates(mesh: AbstractMesh): ISmartArrayLike<SubMesh> {

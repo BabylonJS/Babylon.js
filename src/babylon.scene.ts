@@ -4035,31 +4035,22 @@
         }
 
         /**
-         * Return the list of potentially active meshes.
-         * @returns the list of active meshes candidates
+         * Lambda returning the list of potentially active meshes.
          */
         public getActiveMeshCandidates: () => ISmartArrayLike<AbstractMesh>;
 
         /**
-         * Return the list of potentially active sub meshes.
-         * @param mesh The mesh to get the candidates sub meshes from
-         * @returns the list of active sub meshes candidates
+         * Lambda returning the list of potentially active sub meshes.
          */
         public getActiveSubMeshCandidates: (mesh: AbstractMesh) => ISmartArrayLike<SubMesh>;
 
         /**
-         * Return the list of potentially intersecting sub meshes.
-         * @param mesh The mesh to get the candidates sub meshes from
-         * @param localRay defines the ray in local space
-         * @returns the list of intersecting sub meshes candidates
+         * Lambda returning the list of potentially intersecting sub meshes.
          */
         public getIntersectingSubMeshCandidates: (mesh: AbstractMesh, localRay: Ray) => ISmartArrayLike<SubMesh>;
 
         /**
-         * Return the list of potentially colliding sub meshes.
-         * @param mesh The mesh to get the candidates sub meshes from
-         * @param collider defines the collider to evaluate the collision against
-         * @returns the list of colliding sub meshes candidates
+         * Lambda returning the list of potentially colliding sub meshes.
          */
         public getCollidingSubMeshCandidates: (mesh: AbstractMesh, collider: Collider) => ISmartArrayLike<SubMesh>;
 
