@@ -125,7 +125,8 @@
             "occlusionQuery",
             "transformFeedback",
             "noise",
-            "videoRecorder"
+            "videoRecorder",
+            "sceneHelpers"
         ],
         "minimal": [
             "meshBuilder",
@@ -1368,6 +1369,20 @@
                 "backgroundVertexDeclaration",
                 "backgroundFragmentDeclaration",
                 "backgroundUboDeclaration"
+            ]
+        },
+        "sceneHelpers": {
+            "files": [
+                "../../src/Helpers/babylon.sceneHelpers.js"
+            ],
+            "dependUpon": [
+                "core",
+                "arcRotateCamera",
+                "freeCamera",
+                "hemisphericLight",
+                "pbrMaterial",
+                "environmentHelper",
+                "vr"
             ]
         },
         "environmentHelper": {
