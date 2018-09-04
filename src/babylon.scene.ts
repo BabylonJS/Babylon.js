@@ -18,11 +18,38 @@
          * @param scene defines the current scene
          * @returns the list of active meshes
          */
-        getMeshes(scene: Scene): AbstractMesh[];
+        getMeshes(scene: Scene): ISmartArrayLike<AbstractMesh>;
+
         /** 
          * Indicates if the meshes have been checked to make sure they are isEnabled()
          */
         readonly checksIsEnabled: boolean;
+    }
+
+    /**
+     * Interface used to let developers provide their own sub mesh selection mechanism
+     */
+    export interface ISubMeshCandidateProvider {
+        /**
+         * Return the list of active sub meshes
+         * @param mesh defines the mesh to find the submesh for
+         * @returns the list of active sub meshes
+         */
+        getActiveCanditates(mesh: AbstractMesh): ISmartArrayLike<SubMesh>;
+        /**
+         * Return the list of sub meshes intersecting with a given local ray
+         * @param mesh defines the mesh to find the submesh for
+         * @param localRay defines the ray in local space
+         * @returns the list of intersecting sub meshes
+         */
+        getIntersectingCandidates(mesh: AbstractMesh, localRay: Ray): ISmartArrayLike<SubMesh>;
+        /**
+         * Return the list of sub meshes colliding with a collider
+         * @param mesh defines the mesh to find the submesh for
+         * @param collider defines the collider to evaluate the collision against
+         * @returns the list of colliding sub meshes
+         */
+        getCollidingCandidates(mesh: AbstractMesh, collider: Collider): ISmartArrayLike<SubMesh>;
     }
 
     /** @hidden */
@@ -501,6 +528,11 @@
          * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
          */
         public onAfterRenderingGroupObservable = new Observable<RenderingGroupInfo>();
+
+        /**
+         * This Observable will when a mesh has been imported into the scene.
+         */
+        public onMeshImportedObservable = new Observable<AbstractMesh>();
 
         // Animations
         private _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<any>(256);
@@ -1025,8 +1057,6 @@
          */
         public requireLightSorting = false;
 
-        private _selectionOctree: Octree<AbstractMesh>;
-
         private _pointerOverMesh: Nullable<AbstractMesh>;
 
         private _debugLayer: DebugLayer;
@@ -1220,6 +1250,52 @@
             if (ImageProcessingConfiguration) {
                 this._imageProcessingConfiguration = new ImageProcessingConfiguration();
             }
+
+            this._setDefaultCandidateProviders();
+        }
+
+        private _defaultMeshCandidates: ISmartArrayLike<AbstractMesh> = {
+            data: [],
+            length: 0
+        }
+
+        /**
+         * @hidden
+         */
+        public _getDefaultMeshCandidates(): ISmartArrayLike<AbstractMesh> {
+            this._defaultMeshCandidates.data = this.meshes;
+            this._defaultMeshCandidates.length = this.meshes.length;
+            return this._defaultMeshCandidates;
+        }
+
+        private _defaultSubMeshCandidates: ISmartArrayLike<SubMesh> = {
+            data: [],
+            length: 0
+        }
+
+        /**
+         * @hidden
+         */
+        public _getDefaultSubMeshCandidates(mesh: AbstractMesh): ISmartArrayLike<SubMesh> {
+            this._defaultSubMeshCandidates.data = mesh.subMeshes;
+            this._defaultSubMeshCandidates.length = mesh.subMeshes.length;
+            return this._defaultSubMeshCandidates;
+        }
+
+        /**
+         * Sets the default candidate provider for the scene.
+         */
+        private _setDefaultCandidateProviders() {
+            this.setActiveMeshCandidateProvider({
+                getMeshes: this._getDefaultMeshCandidates.bind(this),
+                checksIsEnabled: true
+            });
+
+            this.setSubMeshCandidateProvider({
+                getActiveCanditates: this._getDefaultSubMeshCandidates.bind(this),
+                getIntersectingCandidates: this._getDefaultSubMeshCandidates.bind(this),
+                getCollidingCandidates: this._getDefaultSubMeshCandidates.bind(this),
+            });
         }
 
         /**
@@ -1256,14 +1332,6 @@
          */
         public get workerCollisions(): boolean {
             return this._workerCollisions;
-        }
-
-        /**
-         * Gets the octree used to boost mesh selection (picking)
-         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
-         */
-        public get selectionOctree(): Octree<AbstractMesh> {
-            return this._selectionOctree;
         }
 
         /**
@@ -2927,11 +2995,11 @@
         }
 
         /**
-           * Remove a mesh for the list of scene's meshes
-           * @param toRemove defines the mesh to remove
-           * @param recursive if all child meshes should also be removed from the scene
-           * @returns the index where the mesh was in the mesh list
-           */
+         * Remove a mesh for the list of scene's meshes
+         * @param toRemove defines the mesh to remove
+         * @param recursive if all child meshes should also be removed from the scene
+         * @returns the index where the mesh was in the mesh list
+         */
         public removeMesh(toRemove: AbstractMesh, recursive = false): number {
             var index = this.meshes.indexOf(toRemove);
             if (index !== -1) {
@@ -4002,19 +4070,42 @@
         }
 
         private _activeMeshCandidateProvider: IActiveMeshCandidateProvider;
+        private _activeMeshCandidateCheckIsReady: boolean = true;
+
         /**
          * Defines the current active mesh candidate provider
+         * Please note that in case of octree, the activeMeshCandidateProvider will be the octree one
          * @param provider defines the provider to use
          */
         public setActiveMeshCandidateProvider(provider: IActiveMeshCandidateProvider): void {
             this._activeMeshCandidateProvider = provider;
+            this._activeMeshCandidateCheckIsReady = provider.checksIsEnabled;
         }
         /**
          * Gets the current active mesh candidate provider
+         * Please note that in case of octree, the activeMeshCandidateProvider will be the octree one
          * @returns the current active mesh candidate provider
          */
         public getActiveMeshCandidateProvider(): IActiveMeshCandidateProvider {
             return this._activeMeshCandidateProvider;
+        }
+
+        private _subMeshCandidateProvider: ISubMeshCandidateProvider;
+        /**
+         * Defines the current sub mesh candidate provider
+         * Please note that in case of octree, the subMeshCandidateProvider will be the octree one
+         * @param provider defines the provider to use
+         */
+        public setSubMeshCandidateProvider(provider: ISubMeshCandidateProvider): void {
+            this._subMeshCandidateProvider = provider;
+        }
+        /**
+         * Gets the current sub mesh candidate provider
+         * Please note that in case of octree, the subMeshCandidateProvider will be the octree one
+         * @returns the current provider
+         */
+        public getSubMeshCandidateProvider(): ISubMeshCandidateProvider {
+            return this._subMeshCandidateProvider;
         }
 
         private _activeMeshesFrozen = false;
@@ -4068,43 +4159,20 @@
                 step.action();
             }
 
-            // Meshes
-            var meshes: AbstractMesh[];
-            var len: number;
-            var checkIsEnabled = true;
-
             // Determine mesh candidates
-            if (this._activeMeshCandidateProvider !== undefined) {
-                // Use _activeMeshCandidateProvider
-                meshes = this._activeMeshCandidateProvider.getMeshes(this);
-                checkIsEnabled = this._activeMeshCandidateProvider.checksIsEnabled === false;
-                if (meshes !== undefined) {
-                    len = meshes.length;
-                } else {
-                    len = 0;
-                }
-            } else if (this._selectionOctree !== undefined) {
-                // Octree
-                var selection = this._selectionOctree.select(this._frustumPlanes);
-                meshes = selection.data;
-                len = selection.length;
-            } else {
-                // Full scene traversal
-                len = this.meshes.length;
-                meshes = this.meshes;
-            }
-
+            const meshes = this._activeMeshCandidateProvider.getMeshes(this);
+            
             // Check each mesh
-            for (var meshIndex = 0, mesh, meshLOD; meshIndex < len; meshIndex++) {
-                mesh = meshes[meshIndex];
-
+            const len = meshes.length;
+            for (let i = 0; i < len; i++) {
+                const mesh = meshes.data[i];
                 if (mesh.isBlocked) {
                     continue;
                 }
 
                 this._totalVertices.addCount(mesh.getTotalVertices(), false);
 
-                if (!mesh.isReady() || (checkIsEnabled && !mesh.isEnabled())) {
+                if (!mesh.isReady() || (this._activeMeshCandidateCheckIsReady && !mesh.isEnabled())) {
                     continue;
                 }
 
@@ -4116,8 +4184,7 @@
                 }
 
                 // Switch to current LOD
-                meshLOD = mesh.getLOD(this.activeCamera);
-
+                const meshLOD = mesh.getLOD(this.activeCamera);
                 if (meshLOD === undefined || meshLOD === null) {
                     continue;
                 }
@@ -4179,23 +4246,10 @@
                 mesh !== undefined && mesh !== null
                 && mesh.subMeshes !== undefined && mesh.subMeshes !== null && mesh.subMeshes.length > 0
             ) {
-                // Submeshes Octrees
-                var len: number;
-                var subMeshes: SubMesh[];
-
-                if (mesh.useOctreeForRenderingSelection && mesh._submeshesOctree !== undefined && mesh._submeshesOctree !== null) {
-                    var intersections = mesh._submeshesOctree.select(this._frustumPlanes);
-
-                    len = intersections.length;
-                    subMeshes = intersections.data;
-                } else {
-                    subMeshes = mesh.subMeshes;
-                    len = subMeshes.length;
-                }
-
-                for (var subIndex = 0, subMesh; subIndex < len; subIndex++) {
-                    subMesh = subMeshes[subIndex];
-
+                const subMeshes = this._subMeshCandidateProvider.getActiveCanditates(mesh);
+                const len = subMeshes.length;
+                for (let i = 0; i < len; i++) {
+                    const subMesh = subMeshes.data[i];
                     this._evaluateSubMesh(subMesh, mesh);
                 }
             }
@@ -4599,7 +4653,6 @@
                 if (data) {
                     data.dispose();
                 }
-                this._toBeDisposed[index] = null;
             }
 
             this._toBeDisposed.reset();
@@ -4851,6 +4904,7 @@
             this.onDataLoadedObservable.clear();
             this.onBeforeRenderingGroupObservable.clear();
             this.onAfterRenderingGroupObservable.clear();
+            this.onMeshImportedObservable.clear();
 
             this.detachControl();
 
@@ -5007,9 +5061,6 @@
             }
         }
 
-
-        // Octrees
-
         /**
          * Get the world extend vectors with an optional filter
          * 
@@ -5040,26 +5091,6 @@
                 min: min,
                 max: max
             };
-        }
-
-        /**
-         * Creates or updates the octree used to boost selection (picking)
-         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
-         * @param maxCapacity defines the maximum capacity per leaf
-         * @param maxDepth defines the maximum depth of the octree
-         * @returns an octree of AbstractMesh
-         */
-        public createOrUpdateSelectionOctree(maxCapacity = 64, maxDepth = 2): Octree<AbstractMesh> {
-            if (!this._selectionOctree) {
-                this._selectionOctree = new Octree<AbstractMesh>(Octree.CreationFuncForMeshes, maxCapacity, maxDepth);
-            }
-
-            var worldExtends = this.getWorldExtends();
-
-            // Update octree
-            this._selectionOctree.update(worldExtends.min, worldExtends.max, this.meshes);
-
-            return this._selectionOctree;
         }
 
         // Picking

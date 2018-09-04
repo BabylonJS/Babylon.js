@@ -1204,7 +1204,8 @@
         "octrees": {
             "files": [
                 "../../src/Culling/Octrees/babylon.octree.js",
-                "../../src/Culling/Octrees/babylon.octreeBlock.js"
+                "../../src/Culling/Octrees/babylon.octreeBlock.js",
+                "../../src/Culling/Octrees/babylon.octreeSceneComponent.js"
             ],
             "dependUpon": [
                 "core"
