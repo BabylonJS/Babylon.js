@@ -56,7 +56,6 @@ module BABYLON {
          */
         public register(): void {
             this.scene._gatherRenderTargetsStage.registerStep(SceneComponentConstants.STEP_GATHERRENDERTARGETS_POSTPROCESSRENDERPIPELINEMANAGER, this, this._gatherRenderTargets);
-            this.scene._gatherRenderTargetsStage.registerStep(SceneComponentConstants.STEP_REBUILDGEOMETRY_POSTPROCESSRENDERPIPELINEMANAGER, this, this._rebuildGeometry);
         }
 
         /**
@@ -64,7 +63,9 @@ module BABYLON {
          * context lost for instance.
          */
         public rebuild(): void {
-            // Nothing to do for this component
+            if (this.scene._postProcessRenderPipelineManager) {
+                this.scene._postProcessRenderPipelineManager._rebuild();
+            }
         }
 
         /**
@@ -79,12 +80,6 @@ module BABYLON {
         private _gatherRenderTargets(renderTargets: SmartArrayNoDuplicate<RenderTargetTexture>): void {
             if (this.scene._postProcessRenderPipelineManager) {
                 this.scene._postProcessRenderPipelineManager.update();
-            }
-        }
-
-        private _rebuildGeometry(): void {
-            if (this.scene._postProcessRenderPipelineManager) {
-                this.scene._postProcessRenderPipelineManager._rebuild();
             }
         }
     }
