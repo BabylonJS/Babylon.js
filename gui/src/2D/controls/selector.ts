@@ -219,7 +219,7 @@ export class SliderGroup extends SelectorGroup{
      * @param min is the minimum value for the Slider
      * @param max is the maximum value for the Slider
      * @param value is the start value for the Slider between min and max
-     * @param onVal is the function used to format the value displayed, eg radians to degrees
+     * @param onValueChange is the function used to format the value displayed, eg radians to degrees
      */
     public addSlider(label: string, func = (v:number) => {}, unit: string = "Units", min: number = 0, max: number = 0, value: number = 0, onValueChange = (v:number)=>{return v | 0}): void {
         var button = new Slider();
