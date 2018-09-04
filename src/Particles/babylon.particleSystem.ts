@@ -886,9 +886,7 @@
             var particle: Particle;
             if (this._stockParticles.length !== 0) {
                 particle = <Particle>this._stockParticles.pop();
-                particle.age = 0;
-                particle._currentColorGradient = null;
-                particle.cellIndex = this.startSpriteCellID;
+                particle._reset();
             } else {
                 particle = new Particle(this);
             }

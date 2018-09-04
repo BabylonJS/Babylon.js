@@ -1297,11 +1297,7 @@
             // Update
             mesh.computeWorldMatrix(true);
 
-            // Octree
-            const sceneOctree = scene.selectionOctree;
-            if (sceneOctree !== undefined && sceneOctree !== null) {
-                sceneOctree.addMesh(<AbstractMesh>mesh);
-            }
+            scene.onMeshImportedObservable.notifyObservers(<AbstractMesh>mesh);
         }
 
         private static _CleanMatricesWeights(parsedGeometry: any, mesh: Mesh): void {

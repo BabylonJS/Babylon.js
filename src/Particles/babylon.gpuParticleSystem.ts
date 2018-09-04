@@ -516,7 +516,7 @@
             this._scene.particleSystems.push(this);
 
             this._updateEffectOptions = {
-                attributes: ["position", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle", "cellIndex"],
+                attributes: ["position", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle", "cellIndex", "cellStartOffset"],
                 uniformsNames: ["currentCount", "timeDelta", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "scaleRange","gravity", "emitPower",
                                 "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "coneAngle", "stopFactor", 
                                 "angleRange", "radiusRange", "cellInfos", "noiseStrength", "limitVelocityDamping"],
@@ -597,6 +597,10 @@
             if (this._isAnimationSheetEnabled) {
                 updateVertexBuffers["cellIndex"] = source.createVertexBuffer("cellIndex", offset, 1);
                 offset += 1;
+                if (this.spriteRandomStartCell) {
+                    updateVertexBuffers["cellStartOffset"] = source.createVertexBuffer("cellStartOffset", offset, 1);
+                    offset += 1;
+                }
             }            
            
             let vao = this._engine.recordVertexArrayObject(updateVertexBuffers, null, this._updateEffect);
@@ -636,6 +640,10 @@
             if (this._isAnimationSheetEnabled) {
                 renderVertexBuffers["cellIndex"] = source.createVertexBuffer("cellIndex", offset, 1, this._attributesStrideSize, true);
                 offset += 1;
+                if (this.spriteRandomStartCell) {
+                    renderVertexBuffers["cellStartOffset"] = source.createVertexBuffer("cellStartOffset", offset, 1, this._attributesStrideSize, true);
+                    offset += 1;
+                }
             }               
 
             renderVertexBuffers["offset"] = spriteSource.createVertexBuffer("offset", 0, 2);
@@ -669,6 +677,9 @@
 
             if (this._isAnimationSheetEnabled) {
                 this._attributesStrideSize += 1;
+                if (this.spriteRandomStartCell) {
+                    this._attributesStrideSize += 1;
+                }
             }            
 
             for (var particleIndex = 0; particleIndex < this._capacity; particleIndex++) {
@@ -721,6 +732,9 @@
 
                 if (this._isAnimationSheetEnabled) {
                     data.push(0.0); 
+                    if (this.spriteRandomStartCell) {
+                        data.push(0.0); 
+                    }
                 }                
             }
 
@@ -785,6 +799,9 @@
             
             if (this.isAnimationSheetEnabled) {
                 defines += "\n#define ANIMATESHEET";
+                if (this.spriteRandomStartCell) {
+                    defines += "\n#define ANIMATESHEETRANDOMSTART";
+                }
             }   
             
             if (this.noiseTexture) {
@@ -811,6 +828,9 @@
 
             if (this.isAnimationSheetEnabled) {
                 this._updateEffectOptions.transformFeedbackVaryings.push("outCellIndex");
+                if (this.spriteRandomStartCell) {
+                    this._updateEffectOptions.transformFeedbackVaryings.push("outCellStartOffset");
+                }
             }               
 
             this._updateEffectOptions.defines = defines;

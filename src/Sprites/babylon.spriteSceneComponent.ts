@@ -231,8 +231,6 @@
                     }
                 } else {
                     scene.setPointerOverSprite(null);
-                    // Restore pointer
-                    canvas.style.cursor = scene.defaultCursor;
                 }
             }
 
