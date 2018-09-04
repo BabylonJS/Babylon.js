@@ -291,7 +291,7 @@ export class SelectionPanel extends Rectangle {
 
 
     /**
-    * Creates a new SelectorGroup
+    * Creates a new SelectionPanel
     * @param name of SelectionPanel
     * @param groups is an array of SelectionGroups
     */
