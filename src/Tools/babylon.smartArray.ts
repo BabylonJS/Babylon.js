@@ -126,7 +126,7 @@
          * @returns true if found in the active data otherwise false
          */
         public contains(value: T): boolean {
-            return this.data.indexOf(value) !== -1;
+            return this.indexOf(value) !== -1;
         }
 
         // Statics

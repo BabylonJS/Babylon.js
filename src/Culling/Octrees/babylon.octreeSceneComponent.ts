@@ -104,7 +104,7 @@
      * Defines the octree scene component responsible to manage any octrees
      * in a given scene.
      */
-    export class OctreeSceneComponent implements ISceneComponent, IActiveMeshCandidateProvider {
+    export class OctreeSceneComponent {
         /**
          * The component name helpfull to identify the component in the list of scene components.
          */
@@ -127,7 +127,11 @@
         constructor(scene: Scene) {
             this.scene = scene;
 
-            this.scene.setActiveMeshCandidateProvider(this);
+            this.scene.getActiveMeshCandidates = this.getActiveMeshCandidates.bind(this);
+
+            this.scene.getActiveSubMeshCandidates = this.getActiveSubMeshCandidates.bind(this);
+            this.scene.getCollidingSubMeshCandidates = this.getCollidingSubMeshCandidates.bind(this);
+            this.scene.getIntersectingSubMeshCandidates = this.getIntersectingSubMeshCandidates.bind(this);
         }
 
         /**
@@ -155,12 +159,14 @@
 
         /**
          * Return the list of active meshes
-         * @param scene defines the current scene
          * @returns the list of active meshes
          */
-        public getMeshes(scene: Scene): ISmartArrayLike<AbstractMesh> {
-            var selection = scene._selectionOctree.select(scene.frustumPlanes);
-            return selection;
+        public getActiveMeshCandidates(): ISmartArrayLike<AbstractMesh> {
+            if (this.scene._selectionOctree) {
+                var selection = this.scene._selectionOctree.select(this.scene.frustumPlanes);
+                return selection;
+            }
+            return this.scene._getDefaultMeshCandidates();
         }
 
         /**
@@ -168,7 +174,7 @@
          * @param scene defines the current scene
          * @returns the list of active sub meshes
          */
-        public getSubMeshes(mesh: AbstractMesh): ISmartArrayLike<SubMesh> {
+        public getActiveSubMeshCandidates(mesh: AbstractMesh): ISmartArrayLike<SubMesh> {
             if (mesh._submeshesOctree && mesh.useOctreeForRenderingSelection) {
                 var intersections = mesh._submeshesOctree.select(this.scene.frustumPlanes);
                 return intersections;
@@ -183,7 +189,7 @@
          * @param localRay defines the ray in local space
          * @returns the list of intersecting sub meshes
          */
-        public getActiveCanditates(mesh: AbstractMesh, localRay: Ray): ISmartArrayLike<SubMesh> {
+        public getIntersectingSubMeshCandidates(mesh: AbstractMesh, localRay: Ray): ISmartArrayLike<SubMesh> {
             if (mesh._submeshesOctree && mesh.useOctreeForPicking) {
                 Ray.TransformToRef(localRay, mesh.getWorldMatrix(), this._tempRay);
                 var intersections = mesh._submeshesOctree.intersectsRay(this._tempRay);
@@ -199,7 +205,7 @@
          * @param collider defines the collider to evaluate the collision against
          * @returns the list of colliding sub meshes
          */
-        public getCollidingCandidates(mesh: AbstractMesh, collider: Collider): ISmartArrayLike<SubMesh> {
+        public getCollidingSubMeshCandidates(mesh: AbstractMesh, collider: Collider): ISmartArrayLike<SubMesh> {
             if (mesh._submeshesOctree && mesh.useOctreeForCollisions) {
                 var radius = collider._velocityWorldLength + Math.max(collider._radius.x, collider._radius.y, collider._radius.z);
                 var intersections = mesh._submeshesOctree.intersects(collider._basePointWorld, radius);

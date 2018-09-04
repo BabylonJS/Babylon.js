@@ -1336,7 +1336,7 @@
 
         /** @hidden */
         public _processCollisionsForSubMeshes(collider: Collider, transformMatrix: Matrix): AbstractMesh {
-            const subMeshes = this._scene.getSubMeshCandidateProvider().getCollidingCandidates(this, collider);
+            const subMeshes = this._scene.getCollidingSubMeshCandidates(this, collider);
             const len = subMeshes.length;
 
             for (var index = 0; index < len; index++) {
@@ -1390,7 +1390,7 @@
 
             var intersectInfo: Nullable<IntersectionInfo> = null;
 
-            var subMeshes = this._scene.getSubMeshCandidateProvider().getIntersectingCandidates(this, ray);
+            var subMeshes = this._scene.getIntersectingSubMeshCandidates(this, ray);
             var len: number = subMeshes.length;
             for (var index = 0; index < len; index++) {
                 var subMesh = subMeshes.data[index];

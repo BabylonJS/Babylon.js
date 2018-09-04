@@ -9,49 +9,6 @@
         dispose(): void;
     }
 
-    /**
-     * Interface used to let developers provide their own mesh selection mechanism
-     */
-    export interface IActiveMeshCandidateProvider {
-        /**
-         * Return the list of active meshes
-         * @param scene defines the current scene
-         * @returns the list of active meshes
-         */
-        getMeshes(scene: Scene): ISmartArrayLike<AbstractMesh>;
-
-        /** 
-         * Indicates if the meshes have been checked to make sure they are isEnabled()
-         */
-        readonly checksIsEnabled: boolean;
-    }
-
-    /**
-     * Interface used to let developers provide their own sub mesh selection mechanism
-     */
-    export interface ISubMeshCandidateProvider {
-        /**
-         * Return the list of active sub meshes
-         * @param mesh defines the mesh to find the submesh for
-         * @returns the list of active sub meshes
-         */
-        getActiveCanditates(mesh: AbstractMesh): ISmartArrayLike<SubMesh>;
-        /**
-         * Return the list of sub meshes intersecting with a given local ray
-         * @param mesh defines the mesh to find the submesh for
-         * @param localRay defines the ray in local space
-         * @returns the list of intersecting sub meshes
-         */
-        getIntersectingCandidates(mesh: AbstractMesh, localRay: Ray): ISmartArrayLike<SubMesh>;
-        /**
-         * Return the list of sub meshes colliding with a collider
-         * @param mesh defines the mesh to find the submesh for
-         * @param collider defines the collider to evaluate the collision against
-         * @returns the list of colliding sub meshes
-         */
-        getCollidingCandidates(mesh: AbstractMesh, collider: Collider): ISmartArrayLike<SubMesh>;
-    }
-
     /** @hidden */
     class ClickInfo {
         private _singleClick = false;
@@ -1251,7 +1208,7 @@
                 this._imageProcessingConfiguration = new ImageProcessingConfiguration();
             }
 
-            this._setDefaultCandidateProviders();
+            this.setDefaultCandidateProviders();
         }
 
         private _defaultMeshCandidates: ISmartArrayLike<AbstractMesh> = {
@@ -1283,19 +1240,16 @@
         }
 
         /**
-         * Sets the default candidate provider for the scene.
+         * Sets the default candidate providers for the scene.
+         * This sets the getActiveMeshCandidates, getActiveSubMeshCandidates, getIntersectingSubMeshCandidates
+         * and getCollidingSubMeshCandidates to their default function
          */
-        private _setDefaultCandidateProviders() {
-            this.setActiveMeshCandidateProvider({
-                getMeshes: this._getDefaultMeshCandidates.bind(this),
-                checksIsEnabled: true
-            });
+        public setDefaultCandidateProviders(): void {
+            this.getActiveMeshCandidates = this._getDefaultMeshCandidates.bind(this);
 
-            this.setSubMeshCandidateProvider({
-                getActiveCanditates: this._getDefaultSubMeshCandidates.bind(this),
-                getIntersectingCandidates: this._getDefaultSubMeshCandidates.bind(this),
-                getCollidingCandidates: this._getDefaultSubMeshCandidates.bind(this),
-            });
+            this.getActiveSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
+            this.getIntersectingSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
+            this.getCollidingSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
         }
 
         /**
@@ -1631,6 +1585,16 @@
             var isMeshPicked = (pickResult && pickResult.hit && pickResult.pickedMesh) ? true : false;
             if (isMeshPicked) {
                 this.setPointerOverMesh(pickResult!.pickedMesh);
+
+                if (this._pointerOverMesh && this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
+                    if (this._pointerOverMesh.actionManager.hoverCursor) {
+                        canvas.style.cursor = this._pointerOverMesh.actionManager.hoverCursor;
+                    } else {
+                        canvas.style.cursor = this.hoverCursor;
+                    }
+                } else {
+                    canvas.style.cursor = this.defaultCursor;
+                }
             } else {
                 this.setPointerOverMesh(null);
             }
@@ -4069,44 +4033,34 @@
             return this._intermediateRendering
         }
 
-        private _activeMeshCandidateProvider: IActiveMeshCandidateProvider;
-        private _activeMeshCandidateCheckIsReady: boolean = true;
+        /**
+         * Return the list of potentially active meshes.
+         * @returns the list of active meshes candidates
+         */
+        public getActiveMeshCandidates: () => ISmartArrayLike<AbstractMesh>;
 
         /**
-         * Defines the current active mesh candidate provider
-         * Please note that in case of octree, the activeMeshCandidateProvider will be the octree one
-         * @param provider defines the provider to use
+         * Return the list of potentially active sub meshes.
+         * @param mesh The mesh to get the candidates sub meshes from
+         * @returns the list of active sub meshes candidates
          */
-        public setActiveMeshCandidateProvider(provider: IActiveMeshCandidateProvider): void {
-            this._activeMeshCandidateProvider = provider;
-            this._activeMeshCandidateCheckIsReady = provider.checksIsEnabled;
-        }
-        /**
-         * Gets the current active mesh candidate provider
-         * Please note that in case of octree, the activeMeshCandidateProvider will be the octree one
-         * @returns the current active mesh candidate provider
-         */
-        public getActiveMeshCandidateProvider(): IActiveMeshCandidateProvider {
-            return this._activeMeshCandidateProvider;
-        }
+        public getActiveSubMeshCandidates: (mesh: AbstractMesh) => ISmartArrayLike<SubMesh>;
 
-        private _subMeshCandidateProvider: ISubMeshCandidateProvider;
         /**
-         * Defines the current sub mesh candidate provider
-         * Please note that in case of octree, the subMeshCandidateProvider will be the octree one
-         * @param provider defines the provider to use
+         * Return the list of potentially intersecting sub meshes.
+         * @param mesh The mesh to get the candidates sub meshes from
+         * @param localRay defines the ray in local space
+         * @returns the list of intersecting sub meshes candidates
          */
-        public setSubMeshCandidateProvider(provider: ISubMeshCandidateProvider): void {
-            this._subMeshCandidateProvider = provider;
-        }
+        public getIntersectingSubMeshCandidates: (mesh: AbstractMesh, localRay: Ray) => ISmartArrayLike<SubMesh>;
+
         /**
-         * Gets the current sub mesh candidate provider
-         * Please note that in case of octree, the subMeshCandidateProvider will be the octree one
-         * @returns the current provider
+         * Return the list of potentially colliding sub meshes.
+         * @param mesh The mesh to get the candidates sub meshes from
+         * @param collider defines the collider to evaluate the collision against
+         * @returns the list of colliding sub meshes candidates
          */
-        public getSubMeshCandidateProvider(): ISubMeshCandidateProvider {
-            return this._subMeshCandidateProvider;
-        }
+        public getCollidingSubMeshCandidates: (mesh: AbstractMesh, collider: Collider) => ISmartArrayLike<SubMesh>;
 
         private _activeMeshesFrozen = false;
 
@@ -4160,7 +4114,7 @@
             }
 
             // Determine mesh candidates
-            const meshes = this._activeMeshCandidateProvider.getMeshes(this);
+            const meshes = this.getActiveMeshCandidates();
             
             // Check each mesh
             const len = meshes.length;
@@ -4172,7 +4126,7 @@
 
                 this._totalVertices.addCount(mesh.getTotalVertices(), false);
 
-                if (!mesh.isReady() || (this._activeMeshCandidateCheckIsReady && !mesh.isEnabled())) {
+                if (!mesh.isReady() || !mesh.isEnabled()) {
                     continue;
                 }
 
@@ -4246,7 +4200,7 @@
                 mesh !== undefined && mesh !== null
                 && mesh.subMeshes !== undefined && mesh.subMeshes !== null && mesh.subMeshes.length > 0
             ) {
-                const subMeshes = this._subMeshCandidateProvider.getActiveCanditates(mesh);
+                const subMeshes = this.getActiveSubMeshCandidates(mesh);
                 const len = subMeshes.length;
                 for (let i = 0; i < len; i++) {
                     const subMesh = subMeshes.data[i];
