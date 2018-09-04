@@ -182,6 +182,9 @@ export class VirtualKeyboard extends StackPanel {
                 if (!this._currentlyConnectedInputText) {
                     return;
                 }
+
+                this._currentlyConnectedInputText._host.focusedControl = this._currentlyConnectedInputText;
+
                 switch (key) {
                     case "\u21E7":
                         this.shiftState++;
@@ -208,14 +211,17 @@ export class VirtualKeyboard extends StackPanel {
 
         this.isVisible = false;
         this._currentlyConnectedInputText = input;
+        input._connectedVirtualKeyboard = this;
         
         // Events hooking
         const onFocusObserver: Nullable<Observer<InputText>> = input.onFocusObservable.add(() => {
             this._currentlyConnectedInputText = input;
+            input._connectedVirtualKeyboard = this;
             this.isVisible = true;
         });
 
         const onBlurObserver: Nullable<Observer<InputText>> = input.onBlurObservable.add(() => {
+            input._connectedVirtualKeyboard = null;
             this._currentlyConnectedInputText = null;
             this.isVisible = false;
         });
@@ -259,6 +265,7 @@ export class VirtualKeyboard extends StackPanel {
     }
 
     private _removeConnectedInputObservables(connectedInputText: ConnectedInputText) : void {
+        connectedInputText.input._connectedVirtualKeyboard = null;
         connectedInputText.input.onFocusObservable.remove(connectedInputText.onFocusObserver);
         connectedInputText.input.onBlurObservable.remove(connectedInputText.onBlurObserver);
     }
