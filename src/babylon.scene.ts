@@ -1582,6 +1582,9 @@
                 return this;
             }
 
+            // Restore pointer
+            canvas.style.cursor = this.defaultCursor;
+
             var isMeshPicked = (pickResult && pickResult.hit && pickResult.pickedMesh) ? true : false;
             if (isMeshPicked) {
                 this.setPointerOverMesh(pickResult!.pickedMesh);
@@ -1592,8 +1595,6 @@
                     } else {
                         canvas.style.cursor = this.hoverCursor;
                     }
-                } else {
-                    canvas.style.cursor = this.defaultCursor;
                 }
             } else {
                 this.setPointerOverMesh(null);
