@@ -745,6 +745,23 @@ export class Control {
         this._markAsDirty();
     }
 
+    /**
+     * Determines if a container is an ascendant of the current control
+     * @param container defines the container to look for
+     * @returns true if the container is one of the ascendant of the control
+     */
+    public IsAscendant(container: Container): boolean {
+        if (!this.parent) {
+            return false;
+        }
+
+        if (this.parent === container) {
+            return true;
+        }
+
+        return this.parent.IsAscendant(container);
+    }
+
     /** 
      * Gets coordinates in local control space 
      * @param globalCoordinates defines the coordinates to transform

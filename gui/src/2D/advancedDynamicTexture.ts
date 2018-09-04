@@ -21,6 +21,13 @@ export interface IFocusableControl {
      * @param evt defines the current keyboard event
      */
     processKeyboard(evt: KeyboardEvent): void;
+
+    /**
+     * Function called to let the current focused control keeps the focus
+     * @param pointerId defines the unique id of the current pointer
+     * @returns a boolean indicating if the control wants to keep the focus
+     */
+    keepFocus(pointerId: number): boolean;
 }
 
 /**
@@ -658,7 +665,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 }
                 delete this._lastControlDown[pointerId];
 
-                this.focusedControl = null;
+                if (this.focusedControl) {
+                    if (!this.focusedControl.keepFocus(pointerId)) {
+                        this.focusedControl = null;
+                    }
+                }
             } else if (pi.type === PointerEventTypes.POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
                     this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);

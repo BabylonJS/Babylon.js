@@ -3,6 +3,7 @@ import { IFocusableControl } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Nullable, Observable, Vector2 } from "babylonjs";
 import { Measure } from "../measure";
+import { VirtualKeyboard } from "./virtualKeyboard";
 
 /**
  * Class used to create input text control
@@ -27,6 +28,9 @@ export class InputText extends Control implements IFocusableControl {
     private _deadKey = false;
     private _addKey = true;
     private _currentKey = "";
+
+    /** @hidden */
+    public _connectedVirtualKeyboard: Nullable<VirtualKeyboard>;
 
     /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
     public promptMessage = "Please enter text:";
@@ -270,6 +274,31 @@ export class InputText extends Control implements IFocusableControl {
 
     protected _getTypeName(): string {
         return "InputText";
+    }
+
+    /**
+     * Function called to let the current focused control keeps the focus
+     * @param pointerId defines the unique id of the current pointer generating the focus change
+     * @returns a boolean indicating if the control wants to keep the focus
+     */
+    public keepFocus(pointerId: number): boolean {
+        if (!this._connectedVirtualKeyboard) {
+            return false;
+        }
+
+        // Same host, no need to keep the focus
+        if (this._host === this._connectedVirtualKeyboard._host) {
+            return false;
+        }
+
+        // Different hosts
+        const otherHost = this._connectedVirtualKeyboard._host;
+
+        if (otherHost._lastControlOver[pointerId] && otherHost._lastControlOver[pointerId].IsAscendant(this._connectedVirtualKeyboard)) {
+            return true;
+        }
+
+        return false;
     }
 
     /** @hidden */
