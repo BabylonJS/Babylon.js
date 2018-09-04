@@ -27,7 +27,7 @@ export interface IFocusableControl {
      * @param pointerId defines the unique id of the current pointer
      * @returns a boolean indicating if the control wants to keep the focus
      */
-    keepFocus(pointerId: number): boolean;
+    wantTokeepFocus(pointerId: number): boolean;
 }
 
 /**
@@ -666,7 +666,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 delete this._lastControlDown[pointerId];
 
                 if (this.focusedControl) {
-                    if (!this.focusedControl.keepFocus(pointerId)) {
+                    if (!this.focusedControl.wantTokeepFocus(pointerId)) {
                         this.focusedControl = null;
                     }
                 }
