@@ -281,7 +281,7 @@ export class InputText extends Control implements IFocusableControl {
      * @param pointerId defines the unique id of the current pointer generating the focus change
      * @returns a boolean indicating if the control wants to keep the focus
      */
-    public keepFocus(pointerId: number): boolean {
+    public wantTokeepFocus(pointerId: number): boolean {
         if (!this._connectedVirtualKeyboard) {
             return false;
         }
