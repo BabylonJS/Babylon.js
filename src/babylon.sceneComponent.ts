@@ -18,6 +18,7 @@
         public static readonly NAME_OUTLINERENDERER = "Outline";
         public static readonly NAME_PROCEDURALTEXTURE = "ProceduralTexture";
         public static readonly NAME_SHADOWGENERATOR = "ShadowGenerator";
+        public static readonly NAME_OCTREE = "Octree";
 
         public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
 
