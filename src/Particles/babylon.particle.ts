@@ -5,6 +5,11 @@
      * This is mainly define by its coordinates, direction, velocity and age.
      */
     export class Particle {
+        private static _Count = 0;
+        /**
+         * Unique ID of the particle
+         */
+        public id:number;
         /**
          * The world position of the particle in the scene.
          */
@@ -60,11 +65,19 @@
          */
         public cellIndex: number = 0;  
 
+        /**
+         * The information required to support color remapping
+         */
+        public remapData: Vector4;
+
         /** @hidden */
         public _randomCellOffset?: number;
 
         /** @hidden */
         public _initialDirection: Nullable<Vector3>;
+
+        /** @hidden */
+        public _attachedSubEmitters: Nullable<Array<SubEmitter>> = null;
 
         /** @hidden */
         public _initialStartSpriteCellID: number;
@@ -111,6 +124,7 @@
         public _currentDrag1 = 0;
         /** @hidden */
         public _currentDrag2 = 0;  
+     
 
         /**
          * Creates a new instance Particle
@@ -121,6 +135,7 @@
              * The particle system the particle belongs to.
              */
             public particleSystem: ParticleSystem) {
+            this.id = Particle._Count++;
             if (!this.particleSystem.isAnimationSheetEnabled) {
                 return;
             }
@@ -191,6 +206,8 @@
             other.angularSpeed = this.angularSpeed;
             other.particleSystem = this.particleSystem;
             other.cellIndex = this.cellIndex;
+            other.id = this.id;
+            other._attachedSubEmitters = this._attachedSubEmitters;
             if (this._currentColorGradient) {
                 other._currentColorGradient = this._currentColorGradient;
                 other._currentColor1.copyFrom(this._currentColor1);
@@ -224,6 +241,9 @@
             if (this.particleSystem.isAnimationSheetEnabled) {
                 other._initialStartSpriteCellID = this._initialStartSpriteCellID;
                 other._initialEndSpriteCellID = this._initialEndSpriteCellID;
+            }
+            if (this.particleSystem.useRampGradients) {
+                other.remapData.copyFrom(this.remapData);
             }
         }
     }
