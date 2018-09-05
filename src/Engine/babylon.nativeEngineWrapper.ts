@@ -730,7 +730,11 @@
 
                     this._interop.loadTexture(webGLTexture, arrayBuffer, !noMipmap);
 
-                    this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
+                    if (invertY)
+                    {
+                        throw new Error("Support for textures with inverted Y coordinates not yet implemented.");
+                    }
+                    //this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
                     texture.baseWidth = this._interop.getTexureWidth(webGLTexture);
                     texture.baseHeight = this._interop.getTexureHeight(webGLTexture);
