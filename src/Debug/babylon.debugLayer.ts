@@ -4,6 +4,31 @@ module BABYLON {
     declare var INSPECTOR: any;
     // load the inspector using require, if not present in the global namespace.
 
+    export interface Scene {
+        /**
+         * @hidden
+         * Backing field
+         */
+        _debugLayer: DebugLayer;
+
+        /**
+         * Gets the debug layer (aka Inspector) associated with the scene
+         * @see http://doc.babylonjs.com/features/playground_debuglayer
+         */
+        debugLayer: DebugLayer;
+    }
+    
+    Object.defineProperty(Scene.prototype, "debugLayer", {
+        get: function (this: Scene) {
+            if (!this._debugLayer) {
+                this._debugLayer = new DebugLayer(this);
+            }
+            return this._debugLayer;
+        },
+        enumerable: true,
+        configurable: true
+    });
+
     export class DebugLayer {
         private _scene: Scene;
         public static InspectorURL = 'https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js';
@@ -16,6 +41,12 @@ module BABYLON {
 
         constructor(scene: Scene) {
             this._scene = scene;
+            this._scene.onDisposeObservable.add(() => {
+                // Debug layer
+                if (this._scene._debugLayer) {
+                    this._scene._debugLayer.hide();
+                }
+            })
         }
 
         /** Creates the inspector window. */

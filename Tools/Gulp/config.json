@@ -125,7 +125,8 @@
             "occlusionQuery",
             "transformFeedback",
             "noise",
-            "videoRecorder"
+            "videoRecorder",
+            "sceneHelpers"
         ],
         "minimal": [
             "meshBuilder",
@@ -1205,7 +1206,8 @@
         "octrees": {
             "files": [
                 "../../src/Culling/Octrees/babylon.octree.js",
-                "../../src/Culling/Octrees/babylon.octreeBlock.js"
+                "../../src/Culling/Octrees/babylon.octreeBlock.js",
+                "../../src/Culling/Octrees/babylon.octreeSceneComponent.js"
             ],
             "dependUpon": [
                 "core"
@@ -1368,6 +1370,20 @@
                 "backgroundVertexDeclaration",
                 "backgroundFragmentDeclaration",
                 "backgroundUboDeclaration"
+            ]
+        },
+        "sceneHelpers": {
+            "files": [
+                "../../src/Helpers/babylon.sceneHelpers.js"
+            ],
+            "dependUpon": [
+                "core",
+                "arcRotateCamera",
+                "freeCamera",
+                "hemisphericLight",
+                "pbrMaterial",
+                "environmentHelper",
+                "vr"
             ]
         },
         "environmentHelper": {
