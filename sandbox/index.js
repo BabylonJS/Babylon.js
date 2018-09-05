@@ -313,9 +313,9 @@ if (BABYLON.Engine.isSupported()) {
             else {
                 footer.style.display = "none";
                 errorZone.style.display = "none";
-                if (enableDebugLayer) {
+                if (debugLayerEnabled) {
                     currentScene.debugLayer.hide();
-                    enableDebugLayer = false;
+                    debugLayerEnabled = false;
                 }
             }
         }
