@@ -60,10 +60,7 @@ module BABYLON {
         /** @hidden */
         public _poseMatrix: Matrix;
         private _localWorld = Matrix.Zero();
-        /** @hidden */
-        public _worldMatrix = Matrix.Zero();
-        /** @hidden */
-        public _worldMatrixDeterminant = 0;
+
         private _absolutePosition = Vector3.Zero();
         private _pivotMatrix = Matrix.Identity();
         private _pivotMatrixInverse: Matrix;
@@ -173,30 +170,6 @@ module BABYLON {
                 this.getScene().useRightHandedSystem ? this._rightInverted : this._right,
                 this.getWorldMatrix()
             ));
-        }
-
-        /**
-         * Returns the latest update of the World matrix
-         * Returns a Matrix.  
-         */
-        public getWorldMatrix(): Matrix {
-            if (this._currentRenderId !== this.getScene().getRenderId()) {
-                this.computeWorldMatrix();
-            }
-            return this._worldMatrix;
-        }
-
-        /** @hidden */
-        public _getWorldMatrixDeterminant(): number {
-            return this._worldMatrixDeterminant;
-        }
-
-        /**
-         * Returns directly the latest state of the mesh World matrix. 
-         * A Matrix is returned.    
-         */
-        public get worldMatrixFromCache(): Matrix {
-            return this._worldMatrix;
         }
 
         /**

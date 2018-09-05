@@ -106,7 +106,11 @@
 
         /** @hidden */
         public _worldMatrixWasUpdated = false;
-        private _identityMatrix: Matrix;
+
+        /** @hidden */
+        public _worldMatrix = Matrix.Zero();
+        /** @hidden */
+        public _worldMatrixDeterminant = 0;        
 
         /**
          * Gets a boolean indicating if the node has been disposed
@@ -308,18 +312,31 @@
             return null;
         }
 
+
         /**
-         * Returns the world matrix of the node
-         * @returns a matrix containing the node's world matrix
+         * Returns the latest update of the World matrix
+         * Returns a Matrix.  
          */
         public getWorldMatrix(): Matrix {
-            return Matrix.Identity();
+            if (this._currentRenderId !== this.getScene().getRenderId()) {
+                this.computeWorldMatrix();
+            }
+            return this._worldMatrix;
         }
+
 
         /** @hidden */
         public _getWorldMatrixDeterminant(): number {
-            return 1;
+            return this._worldMatrixDeterminant;
         }
+
+        /**
+         * Returns directly the latest state of the mesh World matrix. 
+         * A Matrix is returned.    
+         */
+        public get worldMatrixFromCache(): Matrix {
+            return this._worldMatrix;
+        }        
 
         // override it in derived class if you add new variables to the cache
         // and call the parent class method
@@ -353,8 +370,8 @@
 
         /** @hidden */
         public _markSyncedWithParent() {
-            if (this.parent) {
-                this._parentRenderId = this.parent._childRenderId;
+            if (this._parentNode) {
+                this._parentRenderId = this._parentNode._childRenderId;
             }
         }
 
@@ -646,10 +663,10 @@
          * @returns the world matrix
          */
         public computeWorldMatrix(force?: boolean, useWasUpdatedFlag?: boolean): Matrix {
-            if (!this._identityMatrix) {
-                this._identityMatrix = Matrix.Identity();
+            if (!this._worldMatrix) {
+                this._worldMatrix = Matrix.Identity();
             }
-            return this._identityMatrix;
+            return this._worldMatrix;
         }
 
         /**
