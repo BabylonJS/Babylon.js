@@ -1,6 +1,6 @@
 /*BabylonJS GUI*/
 // Dependencies for this module:
-//   ../../../../Tools/Gulp/babylonjs
+//   ../../../../tools/Gulp/babylonjs
 declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
@@ -27,6 +27,12 @@ declare module BABYLON.GUI {
                 * @param evt defines the current keyboard event
                 */
             processKeyboard(evt: KeyboardEvent): void;
+            /**
+                * Function called to let the current focused control keeps the focus
+                * @param pointerId defines the unique id of the current pointer
+                * @returns a boolean indicating if the control wants to keep the focus
+                */
+            keepFocus(pointerId: number): boolean;
     }
     /**
         * Class used to create texture to support 2D GUI elements
@@ -1076,6 +1082,12 @@ declare module BABYLON.GUI {
             /** @hidden */
             _resetFontCache(): void;
             /**
+                * Determines if a container is an ascendant of the current control
+                * @param container defines the container to look for
+                * @returns true if the container is one of the ascendant of the control
+                */
+            IsAscendant(container: Container): boolean;
+            /**
                 * Gets coordinates in local control space
                 * @param globalCoordinates defines the coordinates to transform
                 * @returns the new coordinates in local space
@@ -1365,6 +1377,8 @@ declare module BABYLON.GUI {
         */
     export class InputText extends Control implements IFocusableControl {
             name?: string | undefined;
+            /** @hidden */
+            _connectedVirtualKeyboard: BABYLON.Nullable<VirtualKeyboard>;
             /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
             promptMessage: string;
             /** BABYLON.Observable raised when the text changes */
@@ -1416,6 +1430,12 @@ declare module BABYLON.GUI {
             /** @hidden */
             onFocus(): void;
             protected _getTypeName(): string;
+            /**
+                * Function called to let the current focused control keeps the focus
+                * @param pointerId defines the unique id of the current pointer
+                * @returns a boolean indicating if the control wants to keep the focus
+                */
+            keepFocus(pointerId: number): boolean;
             /** @hidden */
             processKey(keyCode: number, key?: string): void;
             /** @hidden */
@@ -1923,22 +1943,31 @@ declare module BABYLON.GUI {
                 * @param shiftState defines the new shift state
                 */
             applyShiftState(shiftState: number): void;
-            /** Gets the input text control attached with the keyboard */
+            /** Gets the input text control currently attached to the keyboard */
             readonly connectedInputText: BABYLON.Nullable<InputText>;
             /**
                 * Connects the keyboard with an input text control
+                *
                 * @param input defines the target control
                 */
             connect(input: InputText): void;
             /**
-                * Disconnects the keyboard from an input text control
+                * Disconnects the keyboard from connected InputText controls
+                *
+                * @param input optionally defines a target control, otherwise all are disconnected
                 */
-            disconnect(): void;
+            disconnect(input?: InputText): void;
+            /**
+                * Release all resources
+                */
+            dispose(): void;
             /**
                 * Creates a new keyboard using a default layout
+                *
+                * @param name defines control name
                 * @returns a new VirtualKeyboard
                 */
-            static CreateDefaultLayout(): VirtualKeyboard;
+            static CreateDefaultLayout(name?: string): VirtualKeyboard;
     }
 }
 declare module BABYLON.GUI {
