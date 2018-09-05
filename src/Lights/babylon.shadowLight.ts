@@ -206,7 +206,6 @@
          */
         public transformedDirection: Vector3;
 
-        private _worldMatrix: Matrix;
         private _needProjectionMatrixCompute: boolean = true;
 
         /**
@@ -337,6 +336,15 @@
             }
 
             Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
+
+            if (this.parent && this.parent.getWorldMatrix) {
+                this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
+
+                this._markSyncedWithParent();
+            }            
+
+            // Cache the determinant
+            this._worldMatrixDeterminant = this._worldMatrix.determinant();
 
             return this._worldMatrix;
         }

@@ -19,9 +19,7 @@
          * The light reflection direction, not the incoming direction.
          */
         @serializeAsVector3()
-        public direction: Vector3
-
-        private _worldMatrix: Matrix;
+        public direction: Vector3;
 
         /**
          * Creates a HemisphericLight object in the scene according to the passed direction (Vector3).  
