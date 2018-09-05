@@ -38,23 +38,23 @@ module BABYLON {
             /**
              * the particle system to be used by the sub emitter
              */
-            public particleSystem:ParticleSystem){
+            public particleSystem: ParticleSystem) {
         }
         /**
          * Clones the sub emitter
          * @returns the cloned sub emitter
          */
-        clone():SubEmitter{
+        clone(): SubEmitter {
             // Clone particle system
             var emitter = this.particleSystem.emitter;
-            if(!emitter){
+            if (!emitter) {
                 emitter = new Vector3();
-            }else if(emitter instanceof Vector3){
+            } else if (emitter instanceof Vector3) {
                 emitter = emitter.clone();
-            }else if(emitter instanceof AbstractMesh){
+            } else if (emitter instanceof AbstractMesh) {
                 emitter = new Mesh("", emitter._scene);
             }
-            var clone = new SubEmitter(this.particleSystem.clone("",emitter));
+            var clone = new SubEmitter(this.particleSystem.clone("", emitter));
 
             // Clone properties
             clone.type = this.type;

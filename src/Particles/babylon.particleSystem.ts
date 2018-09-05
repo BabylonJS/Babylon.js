@@ -899,6 +899,10 @@
                 this._vertexBufferSize += 3;
             }
 
+            if (this._useRampGradients) {
+                this._vertexBufferSize += 4;
+            }
+
             let engine = this._scene.getEngine();
             this._vertexData = new Float32Array(this._capacity * this._vertexBufferSize * (this._useInstancing ? 1 : 4));
             this._vertexBuffer = new Buffer(engine, this._vertexData, true, this._vertexBufferSize);
@@ -932,6 +936,12 @@
                 dataOffset += 3;
             }
 
+            if (this._useRampGradients) {
+                var rampDataBuffer = this._vertexBuffer.createVertexBuffer("remapData", dataOffset, 4, this._vertexBufferSize, this._useInstancing);
+                this._vertexBuffers["remapData"] = rampDataBuffer;
+                dataOffset += 4;
+            }
+
             var offsets: VertexBuffer;
             if (this._useInstancing) {
                 var spriteData = new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]);
@@ -943,11 +953,6 @@
             }
             this._vertexBuffers["offset"] = offsets;
 
-            if (this._useRampGradients) {
-                var rampDataBuffer = this._vertexBuffer.createVertexBuffer("rampData", dataOffset, 4, this._vertexBufferSize, this._useInstancing);
-                this._vertexBuffers["rampData"] = rampDataBuffer;
-                dataOffset += 4;
-            }
         }
 
         private _createIndexBuffer() {
@@ -1374,7 +1379,7 @@
                 // Inherited Velocity
                 particle.direction.addInPlace(this._inheritedVelocityOffset);
 
-                // Remap
+                // Ramp
                 if (this._useRampGradients) {
                     particle.remapData = new Vector4(0, 1, 0, 1);
                 }
@@ -1382,8 +1387,8 @@
         }
 
         /** @hidden */
-        public static _GetAttributeNamesOrOptions(isAnimationSheetEnabled = false, isBillboardBased = false): string[] {
-            var attributeNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "angle", "offset", "size", "remapData"];
+        public static _GetAttributeNamesOrOptions(isAnimationSheetEnabled = false, isBillboardBased = false, useRampGradients = false): string[] {
+            var attributeNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "angle", "offset", "size"]
 
             if (isAnimationSheetEnabled) {
                 attributeNamesOrOptions.push("cellIndex");
@@ -1391,6 +1396,10 @@
 
             if (!isBillboardBased) {
                 attributeNamesOrOptions.push("direction");
+            }
+
+            if (useRampGradients) {
+                attributeNamesOrOptions.push("remapData");
             }
 
             return attributeNamesOrOptions;
@@ -1464,7 +1473,7 @@
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
 
-                var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased);
+                var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased, this._useRampGradients);
                 var effectCreationOption = ParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled);
 
                 var samplers = ["diffuseSampler", "rampSampler"];
