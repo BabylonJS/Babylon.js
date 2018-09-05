@@ -175,7 +175,6 @@
 
                     if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
                         this._emitFromParticle(particle);
-                        this.recycleParticle(particle);
                         if(particle._attachedSubEmitters){
                             particle._attachedSubEmitters.forEach((subEmitter)=>{
                                 subEmitter.particleSystem.disposeOnStop = true;
@@ -183,6 +182,7 @@
                             });
                             particle._attachedSubEmitters = null;
                         }
+                        this.recycleParticle(particle);
                         index--;
                         continue;
                     }
@@ -923,12 +923,12 @@
          * Its lifetime will start back at 0.
          */
         public recycleParticle: (particle: Particle) => void = (particle) => {
-            // move particle from activeParticle list to stock particles
-            var index = this.particles.indexOf(particle);
-            if(index > -1){
-                this.particles.splice(index, 1);
+            // move particle from activeParticle list to stock particles            
+            var lastParticle = <Particle>this._particles.pop();
+            if (lastParticle !== particle) {
+                lastParticle.copyTo(particle);
             }
-            this._stockParticles.push(particle);
+            this._stockParticles.push(lastParticle);
         };
 
         private _stopSubEmitters(): void {
@@ -957,7 +957,7 @@
                 var subEmitters = this._subEmitters[Math.floor(Math.random() * this._subEmitters.length)];
                 particle._attachedSubEmitters = [];
                 subEmitters.forEach((subEmitter)=>{
-                    if(subEmitter.type == SubEmitterType.ATTACHED){
+                    if(subEmitter.type === SubEmitterType.ATTACHED){
                         var newEmitter = subEmitter.clone();
                         (<Array<SubEmitter>>particle._attachedSubEmitters).push(newEmitter);
                         newEmitter.particleSystem.start();
@@ -985,7 +985,7 @@
             var templateIndex = Math.floor(Math.random() * this._subEmitters.length);
             
             this._subEmitters[templateIndex].forEach((subEmitter)=>{
-                if(subEmitter.type == SubEmitterType.END){
+                if(subEmitter.type === SubEmitterType.END){
                     var subSystem = subEmitter.clone();
                     ParticleSystem._InheritParticleInfoToSubEmitter(subSystem, particle);
                     subSystem.particleSystem._rootParticleSystem = this;
@@ -1019,7 +1019,7 @@
                 }
 
                 particle = this._createParticle();
-
+                
                 this._particles.push(particle);
 
                 // Emitter

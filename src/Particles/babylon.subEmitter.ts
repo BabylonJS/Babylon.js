@@ -34,10 +34,11 @@ module BABYLON {
          * Creates a sub emitter
          * @param particleSystem the particle system to be used by the sub emitter
          */
-        constructor(public particleSystem:ParticleSystem){
+        constructor(/** the particle system to be used by the sub emitter */public particleSystem:ParticleSystem){
         }
         /**
          * Clones the sub emitter
+         * @returns the cloned sub emitter
          */
         clone():SubEmitter{
             // Clone particle system
