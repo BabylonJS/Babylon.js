@@ -1,5 +1,4 @@
 ﻿module BABYLON {
-
     /**
      * This represents a particle system in Babylon.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -27,6 +26,10 @@
          */
         public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
 
+        /**
+         * @hidden
+         */
+        public _inheritedVelocityOffset = new BABYLON.Vector3();
         /**
         * An event triggered when the system is disposed
         */
@@ -107,9 +110,17 @@
 
         // Sub-emitters
         /**
-         * this is the Sub-emitters templates that will be used to generate particle system when the particle dies, this property is used by the root particle system only.
+         * The Sub-emitters templates that will be used to generate the sub particle system to be associated with the system, this property is used by the root particle system only.
+         * When a particle is spawned, an array will be chosen at random and all the emitters in that array will be attached to the particle.  (Default: [])
          */
-        public subEmitters: ParticleSystem[];
+        public subEmitters: Array< ParticleSystem | SubEmitter | Array<SubEmitter> >;
+        // the subEmitters field above converted to a constant type
+        private _subEmitters: Array<Array<SubEmitter>>;
+        /**
+         * @hidden
+         * If the particle systems emitter should be disposed when the particle system is disposed
+         */
+        public _disposeEmitterOnDispose = false;
         /**
         * The current active Sub-systems, this property is used by the root particle system only.
         */
@@ -183,6 +194,13 @@
 
                     if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
                         this._emitFromParticle(particle);
+                        if(particle._attachedSubEmitters){
+                            particle._attachedSubEmitters.forEach((subEmitter)=>{
+                                subEmitter.particleSystem.disposeOnStop = true;
+                                subEmitter.particleSystem.stop();
+                            });
+                            particle._attachedSubEmitters = null;
+                        }
                         this.recycleParticle(particle);
                         index--;
                         continue;
@@ -312,10 +330,6 @@
                             });
                         }
 
-                        if (this._isAnimationSheetEnabled) {
-                            particle.updateCellIndex();
-                        }
-
                         // Remap data
                         if (this._useRampGradients) {
                             if (this._colorRemapGradients && this._colorRemapGradients.length > 0) {                  
@@ -337,12 +351,42 @@
                                     particle.remapData.w = max - min;
                                 });
                             }
+
+                        if (this._isAnimationSheetEnabled) {
+                            particle.updateCellIndex();
+                        }
+
+                        // Update the position of the attached sub-emitters to match their attached particle
+                        if(particle._attachedSubEmitters && particle._attachedSubEmitters.length > 0){
+                            particle._attachedSubEmitters.forEach((subEmitter)=>{
+                                ParticleSystem._InheritParticleInfoToSubEmitter(subEmitter, particle);
+                            });
                         }
                     }
                 }
             }
         }
 
+        private static _InheritParticleInfoToSubEmitter(subEmitter:SubEmitter, particle:Particle){
+            if ((<AbstractMesh>subEmitter.particleSystem.emitter).position) {
+                var emitterMesh = (<AbstractMesh>subEmitter.particleSystem.emitter);
+                emitterMesh.position.copyFrom(particle.position);
+                if(subEmitter.inheritDirection){
+                    emitterMesh.position.subtractToRef(particle.direction, BABYLON.Tmp.Vector3[0]);
+                    // Look at using Y as forward
+                    emitterMesh.lookAt(BABYLON.Tmp.Vector3[0], 0, Math.PI/2);
+                }
+            } else {
+                var emitterPosition = (<Vector3>subEmitter.particleSystem.emitter);
+                emitterPosition.copyFrom(particle.position);
+                if(subEmitter.inheritDirection){
+                    Tools.Warn("subEmitter.inheritDirection is not supported with non-mesh emitter type");
+                }
+            }
+            // Set inheritedVelocityOffset to be used when new particles are created
+            particle.direction.scaleToRef(subEmitter.inheritedVelocityAmount/2, Tmp.Vector3[0]);
+            subEmitter.particleSystem._inheritedVelocityOffset.copyFrom(Tmp.Vector3[0]);
+        }
 
         private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number, factor2?: number) {
             let newGradient = new FactorGradient();
@@ -959,11 +1003,24 @@
                 }, delay);
                 return;
             }
+            // Convert the subEmitters field to the constant type field _subEmitters
+            this._subEmitters = new Array<Array<SubEmitter>>();
+            if(this.subEmitters){
+                this.subEmitters.forEach((subEmitter)=>{
+                    if(subEmitter instanceof ParticleSystem){
+                        this._subEmitters.push([new SubEmitter(subEmitter)]);
+                    }else if(subEmitter instanceof SubEmitter){
+                        this._subEmitters.push([subEmitter]);
+                    }else if(subEmitter instanceof Array){
+                        this._subEmitters.push(subEmitter);
+                    }
+                });
+            }            
 
             this._started = true;
             this._stopped = false;
             this._actualFrame = 0;
-            if (this.subEmitters && this.subEmitters.length != 0) {
+            if (this._subEmitters && this._subEmitters.length != 0) {
                 this.activeSubSystems = new Array<ParticleSystem>();
             }
 
@@ -1062,6 +1119,7 @@
          * Its lifetime will start back at 0.
          */
         public recycleParticle: (particle: Particle) => void = (particle) => {
+            // move particle from activeParticle list to stock particles            
             var lastParticle = <Particle>this._particles.pop();
             if (lastParticle !== particle) {
                 lastParticle.copyTo(particle);
@@ -1087,6 +1145,19 @@
             } else {
                 particle = new Particle(this);
             }
+
+            // Attach emitters
+            if(this._subEmitters && this._subEmitters.length > 0){
+                var subEmitters = this._subEmitters[Math.floor(Math.random() * this._subEmitters.length)];
+                particle._attachedSubEmitters = [];
+                subEmitters.forEach((subEmitter)=>{
+                    if(subEmitter.type === SubEmitterType.ATTACHED){
+                        var newEmitter = subEmitter.clone();
+                        (<Array<SubEmitter>>particle._attachedSubEmitters).push(newEmitter);
+                        newEmitter.particleSystem.start();
+                    }
+                })                
+            }
             return particle;
         }
 
@@ -1102,16 +1173,20 @@
         }
 
         private _emitFromParticle: (particle: Particle) => void = (particle) => {
-            if (!this.subEmitters || this.subEmitters.length === 0) {
+            if (!this._subEmitters || this._subEmitters.length === 0) {
                 return;
             }
-
-            var templateIndex = Math.floor(Math.random() * this.subEmitters.length);
-
-            var subSystem = this.subEmitters[templateIndex].clone(this.name + "_sub", particle.position.clone());
-            subSystem._rootParticleSystem = this;
-            this.activeSubSystems.push(subSystem);
-            subSystem.start();
+            var templateIndex = Math.floor(Math.random() * this._subEmitters.length);
+            
+            this._subEmitters[templateIndex].forEach((subEmitter)=>{
+                if(subEmitter.type === SubEmitterType.END){
+                    var subSystem = subEmitter.clone();
+                    ParticleSystem._InheritParticleInfoToSubEmitter(subSystem, particle);
+                    subSystem.particleSystem._rootParticleSystem = this;
+                    this.activeSubSystems.push(subSystem.particleSystem);
+                    subSystem.particleSystem.start();
+                }
+            })
         }
 
         // End of sub system methods
@@ -1138,7 +1213,7 @@
                 }
 
                 particle = this._createParticle();
-
+                
                 this._particles.push(particle);
 
                 // Emitter
@@ -1295,6 +1370,9 @@
                     particle._initialEndSpriteCellID = this.endSpriteCellID;
                 }
 
+                // Inherited Velocity
+                particle.direction.addInPlace(this._inheritedVelocityOffset);
+                
                 // Remap
                 if (this._useRampGradients) {
                     particle.remapData = new Vector4(0, 1, 0, 1);
@@ -1655,6 +1733,10 @@
 
             this._removeFromRoot();
 
+            if(this._disposeEmitterOnDispose && !(<AbstractMesh>this.emitter).isDisposed){
+                (<AbstractMesh>this.emitter).dispose();
+            }
+
             // Remove from scene
             var index = this._scene.particleSystems.indexOf(this);
             if (index > -1) {
@@ -1695,6 +1777,53 @@
             result.emitter = newEmitter;
             if (this.particleTexture) {
                 result.particleTexture = new Texture(this.particleTexture.url, this._scene);
+            }
+
+            // Clone gradients
+            if(this._colorGradients){
+                this._colorGradients.forEach((v)=>{
+                    result.addColorGradient(v.gradient, v.color1, v.color2);
+                });
+            }
+            if(this._dragGradients){
+                this._dragGradients.forEach((v)=>{
+                    result.addDragGradient(v.gradient, v.factor1, v.factor2);
+                });
+            }
+            if(this._angularSpeedGradients){
+                this._angularSpeedGradients.forEach((v)=>{
+                    result.addAngularSpeedGradient(v.gradient, v.factor1, v.factor2);
+                });
+            }
+            if(this._emitRateGradients){
+                this._emitRateGradients.forEach((v)=>{
+                    result.addEmitRateGradient(v.gradient, v.factor1, v.factor2);
+                });
+            }
+            if(this._lifeTimeGradients){
+                this._lifeTimeGradients.forEach((v)=>{
+                    result.addLifeTimeGradient(v.gradient, v.factor1, v.factor2);
+                });
+            }
+            if(this._limitVelocityGradients){
+                this._limitVelocityGradients.forEach((v)=>{
+                    result.addLimitVelocityGradient(v.gradient, v.factor1, v.factor2);
+                });
+            }
+            if(this._sizeGradients){
+                this._sizeGradients.forEach((v)=>{
+                    result.addSizeGradient(v.gradient, v.factor1, v.factor2);
+                });
+            }
+            if(this._startSizeGradients){
+                this._startSizeGradients.forEach((v)=>{
+                    result.addStartSizeGradient(v.gradient, v.factor1, v.factor2);
+                });
+            }
+            if(this._velocityGradients){
+                this._velocityGradients.forEach((v)=>{
+                    result.addVelocityGradient(v.gradient, v.factor1, v.factor2);
+                });
             }
 
             if (!this.preventAutoStart) {
