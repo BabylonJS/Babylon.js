@@ -120,11 +120,18 @@
                 return;
             }
 
+            const previousParentNode = this._parentNode;
+
             // Remove self from list of children of parent
             if (this._parentNode && this._parentNode._children !== undefined && this._parentNode._children !== null) {
                 var index = this._parentNode._children.indexOf(this);
                 if (index !== -1) {
                     this._parentNode._children.splice(index, 1);
+                }
+
+                if (!parent) {
+                    // Need to add this node to the rootNodes
+                    this._scene.rootNodes.push(this);
                 }
             }
 
@@ -137,6 +144,15 @@
                     this._parentNode._children = new Array<Node>();
                 }
                 this._parentNode._children.push(this);
+
+                if (!previousParentNode) {
+                    // Need to remove from rootNodes
+                    const rootNodeIndex = this._scene.rootNodes.indexOf(this);
+
+                    if (rootNodeIndex > -1) {
+                        this._scene.rootNodes.splice(rootNodeIndex, 1);
+                    }
+                }
             }
         }
 
@@ -195,6 +211,8 @@
             this._scene = <Scene>(scene || Engine.LastCreatedScene);
             this.uniqueId = this._scene.getUniqueId();
             this._initCache();
+
+            this._scene.rootNodes.push(this);
         }
 
         /**
@@ -496,6 +514,10 @@
          * @returns an array of {BABYLON.Node}
          */
         public getChildren(predicate?: (node: Node) => boolean): Node[] {
+            if (!predicate) {
+                return this._children;
+            }
+
             return this.getDescendants(true, predicate);
         }
 
@@ -640,7 +662,15 @@
                 }
             }
 
-            this.parent = null;
+            if (!this.parent) {
+                const rootNodeIndex = this._scene.rootNodes.indexOf(this);
+
+                if (rootNodeIndex > -1) {
+                    this._scene.rootNodes.splice(rootNodeIndex, 1);
+                }
+            } else {
+                this.parent = null;
+            }
 
             // Callback
             this.onDisposeObservable.notifyObservers(this);

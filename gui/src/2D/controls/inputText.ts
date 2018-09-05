@@ -3,6 +3,7 @@ import { IFocusableControl } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Nullable, Observable, Vector2 } from "babylonjs";
 import { Measure } from "../measure";
+import { VirtualKeyboard } from "./virtualKeyboard";
 
 /**
  * Class used to create input text control
@@ -27,6 +28,9 @@ export class InputText extends Control implements IFocusableControl {
     private _deadKey = false;
     private _addKey = true;
     private _currentKey = "";
+
+    /** @hidden */
+    public _connectedVirtualKeyboard: Nullable<VirtualKeyboard>;
 
     /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
     public promptMessage = "Please enter text:";
@@ -270,6 +274,17 @@ export class InputText extends Control implements IFocusableControl {
 
     protected _getTypeName(): string {
         return "InputText";
+    }
+
+    /**
+     * Function called to get the list of controls that should not steal the focus from this control
+     * @returns an array of controls
+     */
+    public keepsFocusWith(): Nullable<Control[]> {
+        if (!this._connectedVirtualKeyboard) {
+            return null;
+        }
+        return [this._connectedVirtualKeyboard];
     }
 
     /** @hidden */

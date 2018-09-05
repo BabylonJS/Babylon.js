@@ -494,6 +494,11 @@
         public getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
 
         /**
+         * Gets a boolean indicating that current material needs to register RTT
+         */
+        public hasRenderTargetTextures = false;
+
+        /**
          * Specifies if the material should be serialized
          */
         public doNotSerialize = false;

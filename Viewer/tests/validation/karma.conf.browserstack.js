@@ -81,7 +81,7 @@ module.exports = function (config) {
                 real_mobile: 'true'
             }
         },
-        browsers: ['bs_chrome_android'],
+        browsers: ['bs_chrome_win'],
         reporters: ['dots', 'BrowserStack'],
         singleRun: true
     });

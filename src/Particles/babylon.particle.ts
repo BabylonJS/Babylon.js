@@ -66,6 +66,9 @@
         public cellIndex: number = 0;  
 
         /** @hidden */
+        public _randomCellOffset?: number;
+
+        /** @hidden */
         public _initialDirection: Nullable<Vector3>;
 
         /** @hidden */
@@ -123,7 +126,7 @@
          */
         constructor(
             /**
-             * particleSystem the particle system the particle belongs to.
+             * The particle system the particle belongs to.
              */
             public particleSystem: ParticleSystem) {
             this.id = Particle._Count++;
@@ -142,10 +145,32 @@
          * Defines how the sprite cell index is updated for the particle
          */
         public updateCellIndex(): void {
+            let offsetAge = this.age;
+
+            if (this.particleSystem.spriteRandomStartCell) {
+                if (this._randomCellOffset === undefined) {         
+                    this._randomCellOffset = Math.random() * this.lifeTime;
+                }
+                offsetAge += this._randomCellOffset;
+            }
+
             let dist = (this._initialEndSpriteCellID - this._initialStartSpriteCellID);
-            let ratio = Scalar.Clamp(((this.age * this.particleSystem.spriteCellChangeSpeed) % this.lifeTime) / this.lifeTime);
+            let ratio = Scalar.Clamp(((offsetAge * this.particleSystem.spriteCellChangeSpeed) % this.lifeTime) / this.lifeTime);
 
             this.cellIndex = this._initialStartSpriteCellID + (ratio * dist) | 0;
+        }
+
+        /** @hidden */
+        public _reset() {
+            this.age = 0;
+            this._currentColorGradient = null;
+            this._currentSizeGradient = null;
+            this._currentAngularSpeedGradient = null;
+            this._currentVelocityGradient = null;
+            this._currentLimitVelocityGradient = null;
+            this._currentDragGradient = null;
+            this.cellIndex = this.particleSystem.startSpriteCellID;
+            this._randomCellOffset = undefined;
         }
 
         /**
@@ -168,6 +193,7 @@
             other.colorStep.copyFrom(this.colorStep);
             other.lifeTime = this.lifeTime;
             other.age = this.age;
+            other._randomCellOffset = undefined;
             other.size = this.size;
             other.scale.copyFrom(this.scale);
             other.angle = this.angle;

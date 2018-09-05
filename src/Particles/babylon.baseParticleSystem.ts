@@ -208,6 +208,10 @@ module BABYLON {
          * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use
          */
         public spriteCellHeight = 0;
+        /**
+         * This allows the system to random pick the start cell ID between startSpriteCellID and endSpriteCellID
+         */
+        public spriteRandomStartCell = false;   
 
         /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
         public translationPivot = new Vector2(0, 0);        
