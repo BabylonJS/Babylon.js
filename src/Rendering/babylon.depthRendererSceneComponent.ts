@@ -101,7 +101,9 @@
         private _gatherRenderTargets(renderTargets: SmartArrayNoDuplicate<RenderTargetTexture>): void {
             if (this.scene._depthRenderer) {
                 for (var key in this.scene._depthRenderer) {
-                    renderTargets.push(this.scene._depthRenderer[key].getDepthMap());
+                    if (this.scene._depthRenderer[key].isEnabled) {
+                        renderTargets.push(this.scene._depthRenderer[key].getDepthMap());
+                    }
                 }
             }
         }
