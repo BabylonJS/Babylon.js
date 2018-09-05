@@ -71,11 +71,10 @@ declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
                 */
             processKeyboard(evt: KeyboardEvent): void;
             /**
-                * Function called to let the current focused control keeps the focus
-                * @param pointerId defines the unique id of the current pointer
-                * @returns a boolean indicating if the control wants to keep the focus
+                * Function called to get the list of controls that should not steal the focus from this control
+                * @returns an array of controls
                 */
-            keepFocus(pointerId: number): boolean;
+            keepsFocusWith(): Nullable<Control[]>;
     }
     /**
         * Class used to create texture to support 2D GUI elements
@@ -1189,7 +1188,7 @@ declare module 'babylonjs-gui/2D/controls/control' {
                 * @param container defines the container to look for
                 * @returns true if the container is one of the ascendant of the control
                 */
-            IsAscendant(container: Container): boolean;
+            isAscendant(container: Control): boolean;
             /**
                 * Gets coordinates in local control space
                 * @param globalCoordinates defines the coordinates to transform
@@ -1551,11 +1550,10 @@ declare module 'babylonjs-gui/2D/controls/inputText' {
             onFocus(): void;
             protected _getTypeName(): string;
             /**
-                * Function called to let the current focused control keeps the focus
-                * @param pointerId defines the unique id of the current pointer
-                * @returns a boolean indicating if the control wants to keep the focus
+                * Function called to get the list of controls that should not steal the focus from this control
+                * @returns an array of controls
                 */
-            keepFocus(pointerId: number): boolean;
+            keepsFocusWith(): Nullable<Control[]>;
             /** @hidden */
             processKey(keyCode: number, key?: string): void;
             /** @hidden */
@@ -2836,11 +2834,10 @@ declare module BABYLON.GUI {
                 */
             processKeyboard(evt: KeyboardEvent): void;
             /**
-                * Function called to let the current focused control keeps the focus
-                * @param pointerId defines the unique id of the current pointer
-                * @returns a boolean indicating if the control wants to keep the focus
+                * Function called to get the list of controls that should not steal the focus from this control
+                * @returns an array of controls
                 */
-            keepFocus(pointerId: number): boolean;
+            keepsFocusWith(): BABYLON.Nullable<Control[]>;
     }
     /**
         * Class used to create texture to support 2D GUI elements
@@ -3894,7 +3891,7 @@ declare module BABYLON.GUI {
                 * @param container defines the container to look for
                 * @returns true if the container is one of the ascendant of the control
                 */
-            IsAscendant(container: Container): boolean;
+            isAscendant(container: Control): boolean;
             /**
                 * Gets coordinates in local control space
                 * @param globalCoordinates defines the coordinates to transform
@@ -4239,11 +4236,10 @@ declare module BABYLON.GUI {
             onFocus(): void;
             protected _getTypeName(): string;
             /**
-                * Function called to let the current focused control keeps the focus
-                * @param pointerId defines the unique id of the current pointer
-                * @returns a boolean indicating if the control wants to keep the focus
+                * Function called to get the list of controls that should not steal the focus from this control
+                * @returns an array of controls
                 */
-            keepFocus(pointerId: number): boolean;
+            keepsFocusWith(): BABYLON.Nullable<Control[]>;
             /** @hidden */
             processKey(keyCode: number, key?: string): void;
             /** @hidden */
