@@ -584,6 +584,21 @@
         }
 
         /**
+         * Gets a boolean indicating that current material needs to register RTT
+         */        
+        public get hasRenderTargetTextures(): boolean {
+            if (this._diffuseTexture && this._diffuseTexture.isRenderTarget) {
+                return true;
+            }
+
+            if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
+                return true;
+            }
+
+            return false;
+        }
+
+        /**
          * The entire material has been created in order to prevent overdraw.
          * @returns false
          */
