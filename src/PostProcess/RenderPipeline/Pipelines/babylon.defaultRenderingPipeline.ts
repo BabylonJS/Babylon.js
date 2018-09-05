@@ -482,7 +482,8 @@
                 // Multi camera suport
                 if (this._cameras.length > 1) {
                     for (let camera of this._cameras) {
-                        this._scene.enableDepthRenderer(camera).getDepthMap();
+                        const depthRenderer = this._scene.enableDepthRenderer(camera);
+                        depthRenderer.useOnlyInActiveCamera = true;
                     }
 
                     this._depthOfFieldSceneObserver = this._scene.onAfterRenderTargetsRenderObservable.add((scene) => {
