@@ -315,7 +315,7 @@
 
         /**
          * Returns the latest update of the World matrix
-         * Returns a Matrix.  
+         * @returns a Matrix
          */
         public getWorldMatrix(): Matrix {
             if (this._currentRenderId !== this.getScene().getRenderId()) {
