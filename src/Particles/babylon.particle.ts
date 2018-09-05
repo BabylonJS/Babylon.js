@@ -60,6 +60,11 @@
          */
         public cellIndex: number = 0;  
 
+        /**
+         * The information required to support color remapping
+         */
+        public remapData: Vector4;
+
         /** @hidden */
         public _randomCellOffset?: number;
 
@@ -111,6 +116,7 @@
         public _currentDrag1 = 0;
         /** @hidden */
         public _currentDrag2 = 0;  
+     
 
         /**
          * Creates a new instance Particle
@@ -224,6 +230,9 @@
             if (this.particleSystem.isAnimationSheetEnabled) {
                 other._initialStartSpriteCellID = this._initialStartSpriteCellID;
                 other._initialEndSpriteCellID = this._initialEndSpriteCellID;
+            }
+            if (this.particleSystem.useRampGradients) {
+                other.remapData.copyFrom(this.remapData);
             }
         }
     }
