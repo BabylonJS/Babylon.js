@@ -3296,11 +3296,11 @@
                 return this;
             }
 
-            if (this.geometry._softwareSkinningRenderId == this.getScene().getRenderId()) {
+            if (this.geometry._softwareSkinningFrameId == this.getScene().getFrameId()) {
                 return this;
             }
 
-            this.geometry._softwareSkinningRenderId = this.getScene().getRenderId();
+            this.geometry._softwareSkinningFrameId = this.getScene().getFrameId();
 
             if (!this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
                 return this;
