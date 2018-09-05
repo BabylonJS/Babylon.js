@@ -60,6 +60,10 @@ declare module BABYLON {
          * @param rootUrl Defines the root url of the data
          */
         static Parse(jsonData: any, scene: Scene, container: AssetContainer, rootUrl: string): void;
+        /**
+         * Gets the list of root nodes (ie. nodes with no parent)
+         */
+        rootNodes: Node[];
         /** All of the cameras added to this scene
          * @see http://doc.babylonjs.com/babylon101/cameras
          */
@@ -613,21 +617,6 @@ declare module BABYLON {
         dispose(): void;
     }
     /**
-     * Interface used to let developers provide their own mesh selection mechanism
-     */
-    interface IActiveMeshCandidateProvider {
-        /**
-         * Return the list of active meshes
-         * @param scene defines the current scene
-         * @returns the list of active meshes
-         */
-        getMeshes(scene: Scene): AbstractMesh[];
-        /**
-         * Indicates if the meshes have been checked to make sure they are isEnabled()
-         */
-        readonly checksIsEnabled: boolean;
-    }
-    /**
      * This class is used by the onRenderingGroupObservable
      */
     class RenderingGroupInfo {
@@ -935,6 +924,10 @@ declare module BABYLON {
          * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
          */
         onAfterRenderingGroupObservable: Observable<RenderingGroupInfo>;
+        /**
+         * This Observable will when a mesh has been imported into the scene.
+         */
+        onMeshImportedObservable: Observable<AbstractMesh>;
         private _registeredForLateAnimationBindings;
         /**
          * Gets or sets a predicate used to select candidate meshes for a pointer down event
@@ -1167,11 +1160,6 @@ declare module BABYLON {
         */
         probesEnabled: boolean;
         /**
-         * The list of reflection probes added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
-         */
-        reflectionProbes: ReflectionProbe[];
-        /**
          * @hidden
          */
         database: Database;
@@ -1278,9 +1266,7 @@ declare module BABYLON {
          * This is useful if there are more lights that the maximum simulteanous authorized
          */
         requireLightSorting: boolean;
-        private _selectionOctree;
         private _pointerOverMesh;
-        private _debugLayer;
         private _pickedDownMesh;
         private _pickedUpMesh;
         private _externalData;
@@ -1390,11 +1376,6 @@ declare module BABYLON {
         _afterCameraDrawStage: Stage<CameraStageAction>;
         /**
          * @hidden
-         * Defines the actions happening when Geometries are rebuilding.
-         */
-        _rebuildGeometryStage: Stage<SimpleStageAction>;
-        /**
-         * @hidden
          * Defines the actions happening when a pointer move event happens.
          */
         _pointerMoveStage: Stage<PointerMoveStageAction>;
@@ -1413,21 +1394,27 @@ declare module BABYLON {
          * @param engine defines the engine to use to render this scene
          */
         constructor(engine: Engine);
+        private _defaultMeshCandidates;
         /**
-         * Gets the debug layer (aka Inspector) associated with the scene
-         * @see http://doc.babylonjs.com/features/playground_debuglayer
+         * @hidden
          */
-        readonly debugLayer: DebugLayer;
+        _getDefaultMeshCandidates(): ISmartArrayLike<AbstractMesh>;
+        private _defaultSubMeshCandidates;
+        /**
+         * @hidden
+         */
+        _getDefaultSubMeshCandidates(mesh: AbstractMesh): ISmartArrayLike<SubMesh>;
+        /**
+         * Sets the default candidate providers for the scene.
+         * This sets the getActiveMeshCandidates, getActiveSubMeshCandidates, getIntersectingSubMeshCandidates
+         * and getCollidingSubMeshCandidates to their default function
+         */
+        setDefaultCandidateProviders(): void;
         /**
         * Gets a boolean indicating if collisions are processed on a web worker
         * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#web-worker-based-collision-system-since-21
         */
         workerCollisions: boolean;
-        /**
-         * Gets the octree used to boost mesh selection (picking)
-         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
-         */
-        readonly selectionOctree: Octree<AbstractMesh>;
         /**
          * Gets the mesh that is currently under the pointer
          */
@@ -1790,11 +1777,11 @@ declare module BABYLON {
          */
         addMesh(newMesh: AbstractMesh, recursive?: boolean): void;
         /**
-           * Remove a mesh for the list of scene's meshes
-           * @param toRemove defines the mesh to remove
-           * @param recursive if all child meshes should also be removed from the scene
-           * @returns the index where the mesh was in the mesh list
-           */
+         * Remove a mesh for the list of scene's meshes
+         * @param toRemove defines the mesh to remove
+         * @param recursive if all child meshes should also be removed from the scene
+         * @returns the index where the mesh was in the mesh list
+         */
         removeMesh(toRemove: AbstractMesh, recursive?: boolean): number;
         /**
          * Add a transform node to the list of scene's transform nodes
@@ -2200,17 +2187,22 @@ declare module BABYLON {
         freeRenderingGroups(): void;
         /** @hidden */
         _isInIntermediateRendering(): boolean;
-        private _activeMeshCandidateProvider;
         /**
-         * Defines the current active mesh candidate provider
-         * @param provider defines the provider to use
+         * Lambda returning the list of potentially active meshes.
          */
-        setActiveMeshCandidateProvider(provider: IActiveMeshCandidateProvider): void;
+        getActiveMeshCandidates: () => ISmartArrayLike<AbstractMesh>;
         /**
-         * Gets the current active mesh candidate provider
-         * @returns the current active mesh candidate provider
+         * Lambda returning the list of potentially active sub meshes.
          */
-        getActiveMeshCandidateProvider(): IActiveMeshCandidateProvider;
+        getActiveSubMeshCandidates: (mesh: AbstractMesh) => ISmartArrayLike<SubMesh>;
+        /**
+         * Lambda returning the list of potentially intersecting sub meshes.
+         */
+        getIntersectingSubMeshCandidates: (mesh: AbstractMesh, localRay: Ray) => ISmartArrayLike<SubMesh>;
+        /**
+         * Lambda returning the list of potentially colliding sub meshes.
+         */
+        getCollidingSubMeshCandidates: (mesh: AbstractMesh, collider: Collider) => ISmartArrayLike<SubMesh>;
         private _activeMeshesFrozen;
         /**
          * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
@@ -2301,14 +2293,6 @@ declare module BABYLON {
             min: Vector3;
             max: Vector3;
         };
-        /**
-         * Creates or updates the octree used to boost selection (picking)
-         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
-         * @param maxCapacity defines the maximum capacity per leaf
-         * @param maxDepth defines the maximum depth of the octree
-         * @returns an octree of AbstractMesh
-         */
-        createOrUpdateSelectionOctree(maxCapacity?: number, maxDepth?: number): Octree<AbstractMesh>;
         /**
          * Creates a ray that can be used to pick in the scene
          * @param x defines the x coordinate of the origin (on-screen)
@@ -2423,53 +2407,6 @@ declare module BABYLON {
         _rebuildGeometries(): void;
         /** @hidden */
         _rebuildTextures(): void;
-        /**
-         * Creates a default light for the scene.
-         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-light
-         * @param replace has the default false, when true replaces the existing lights in the scene with a hemispheric light
-         */
-        createDefaultLight(replace?: boolean): void;
-        /**
-         * Creates a default camera for the scene.
-         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-camera
-         * @param createArcRotateCamera has the default false which creates a free camera, when true creates an arc rotate camera
-         * @param replace has default false, when true replaces the active camera in the scene
-         * @param attachCameraControls has default false, when true attaches camera controls to the canvas.
-         */
-        createDefaultCamera(createArcRotateCamera?: boolean, replace?: boolean, attachCameraControls?: boolean): void;
-        /**
-         * Creates a default camera and a default light.
-         * @see http://doc.babylonjs.com/how_to/Fast_Build#create-default-camera-or-light
-         * @param createArcRotateCamera has the default false which creates a free camera, when true creates an arc rotate camera
-         * @param replace has the default false, when true replaces the active camera/light in the scene
-         * @param attachCameraControls has the default false, when true attaches camera controls to the canvas.
-         */
-        createDefaultCameraOrLight(createArcRotateCamera?: boolean, replace?: boolean, attachCameraControls?: boolean): void;
-        /**
-         * Creates a new sky box
-         * @see http://doc.babylonjs.com/how_to/Fast_Build#create-default-skybox
-         * @param environmentTexture defines the texture to use as environment texture
-         * @param pbr has default false which requires the StandardMaterial to be used, when true PBRMaterial must be used
-         * @param scale defines the overall scale of the skybox
-         * @param blur is only available when pbr is true, default is 0, no blur, maximum value is 1
-         * @param setGlobalEnvTexture has default true indicating that scene.environmentTexture must match the current skybox texture
-         * @returns a new mesh holding the sky box
-         */
-        createDefaultSkybox(environmentTexture?: BaseTexture, pbr?: boolean, scale?: number, blur?: number, setGlobalEnvTexture?: boolean): Nullable<Mesh>;
-        /**
-         * Creates a new environment
-         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-environment
-         * @param options defines the options you can use to configure the environment
-         * @returns the new EnvironmentHelper
-         */
-        createDefaultEnvironment(options: Partial<IEnvironmentHelperOptions>): Nullable<EnvironmentHelper>;
-        /**
-         * Creates a new VREXperienceHelper
-         * @see http://doc.babylonjs.com/how_to/webvr_helper
-         * @param webVROptions defines the options used to create the new VREXperienceHelper
-         * @returns a new VREXperienceHelper
-         */
-        createDefaultVRExperience(webVROptions?: VRExperienceHelperOptions): VRExperienceHelper;
         private _getByTags;
         /**
          * Get a list of meshes by tags
@@ -2560,6 +2497,7 @@ declare module BABYLON {
         static readonly NAME_OUTLINERENDERER: string;
         static readonly NAME_PROCEDURALTEXTURE: string;
         static readonly NAME_SHADOWGENERATOR: string;
+        static readonly NAME_OCTREE: string;
         static readonly STEP_ISREADYFORMESH_EFFECTLAYER: number;
         static readonly STEP_BEFOREEVALUATEACTIVEMESH_BOUNDINGBOXRENDERER: number;
         static readonly STEP_EVALUATESUBMESH_BOUNDINGBOXRENDERER: number;
@@ -2582,7 +2520,6 @@ declare module BABYLON {
         static readonly STEP_GATHERRENDERTARGETS_GEOMETRYBUFFERRENDERER: number;
         static readonly STEP_GATHERRENDERTARGETS_DEPTHRENDERER: number;
         static readonly STEP_GATHERRENDERTARGETS_POSTPROCESSRENDERPIPELINEMANAGER: number;
-        static readonly STEP_REBUILDGEOMETRY_POSTPROCESSRENDERPIPELINEMANAGER: number;
         static readonly STEP_POINTERMOVE_SPRITE: number;
         static readonly STEP_POINTERDOWN_SPRITE: number;
         static readonly STEP_POINTERUP_SPRITE: number;
@@ -6929,6 +6866,18 @@ declare module BABYLON.Debug {
 }
 
 declare module BABYLON {
+    interface Scene {
+        /**
+         * @hidden
+         * Backing field
+         */
+        _debugLayer: DebugLayer;
+        /**
+         * Gets the debug layer (aka Inspector) associated with the scene
+         * @see http://doc.babylonjs.com/features/playground_debuglayer
+         */
+        debugLayer: DebugLayer;
+    }
     class DebugLayer {
         private _scene;
         static InspectorURL: string;
@@ -10781,6 +10730,58 @@ declare module BABYLON {
          * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
          */
         dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    interface Scene {
+        /**
+         * Creates a default light for the scene.
+         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-light
+         * @param replace has the default false, when true replaces the existing lights in the scene with a hemispheric light
+         */
+        createDefaultLight(replace?: boolean): void;
+        /**
+         * Creates a default camera for the scene.
+         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-camera
+         * @param createArcRotateCamera has the default false which creates a free camera, when true creates an arc rotate camera
+         * @param replace has default false, when true replaces the active camera in the scene
+         * @param attachCameraControls has default false, when true attaches camera controls to the canvas.
+         */
+        createDefaultCamera(createArcRotateCamera?: boolean, replace?: boolean, attachCameraControls?: boolean): void;
+        /**
+         * Creates a default camera and a default light.
+         * @see http://doc.babylonjs.com/how_to/Fast_Build#create-default-camera-or-light
+         * @param createArcRotateCamera has the default false which creates a free camera, when true creates an arc rotate camera
+         * @param replace has the default false, when true replaces the active camera/light in the scene
+         * @param attachCameraControls has the default false, when true attaches camera controls to the canvas.
+         */
+        createDefaultCameraOrLight(createArcRotateCamera?: boolean, replace?: boolean, attachCameraControls?: boolean): void;
+        /**
+         * Creates a new sky box
+         * @see http://doc.babylonjs.com/how_to/Fast_Build#create-default-skybox
+         * @param environmentTexture defines the texture to use as environment texture
+         * @param pbr has default false which requires the StandardMaterial to be used, when true PBRMaterial must be used
+         * @param scale defines the overall scale of the skybox
+         * @param blur is only available when pbr is true, default is 0, no blur, maximum value is 1
+         * @param setGlobalEnvTexture has default true indicating that scene.environmentTexture must match the current skybox texture
+         * @returns a new mesh holding the sky box
+         */
+        createDefaultSkybox(environmentTexture?: BaseTexture, pbr?: boolean, scale?: number, blur?: number, setGlobalEnvTexture?: boolean): Nullable<Mesh>;
+        /**
+         * Creates a new environment
+         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-environment
+         * @param options defines the options you can use to configure the environment
+         * @returns the new EnvironmentHelper
+         */
+        createDefaultEnvironment(options?: Partial<IEnvironmentHelperOptions>): Nullable<EnvironmentHelper>;
+        /**
+         * Creates a new VREXperienceHelper
+         * @see http://doc.babylonjs.com/how_to/webvr_helper
+         * @param webVROptions defines the options used to create the new VREXperienceHelper
+         * @returns a new VREXperienceHelper
+         */
+        createDefaultVRExperience(webVROptions?: VRExperienceHelperOptions): VRExperienceHelper;
     }
 }
 
@@ -19732,8 +19733,6 @@ declare module BABYLON {
          */
         subMeshes: SubMesh[];
         /** @hidden */
-        _submeshesOctree: Octree<SubMesh>;
-        /** @hidden */
         _intersectionsInProgress: AbstractMesh[];
         /** @hidden */
         _unIndexed: boolean;
@@ -20049,16 +20048,6 @@ declare module BABYLON {
          */
         moveWithCollisions(displacement: Vector3): AbstractMesh;
         private _onCollisionPositionChange;
-        /**
-        * This function will create an octree to help to select the right submeshes for rendering, picking and collision computations.
-        * Please note that you must have a decent number of submeshes to get performance improvements when using an octree
-        * @param maxCapacity defines the maximum size of each block (64 by default)
-        * @param maxDepth defines the maximum depth to use (no more than 2 levels by default)
-        * @returns the new octree
-        * @see https://www.babylonjs-playground.com/#NA4OQ#12
-        * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
-        */
-        createOrUpdateSubmeshesOctree(maxCapacity?: number, maxDepth?: number): Octree<SubMesh>;
         /** @hidden */
         _collideForSubMesh(subMesh: SubMesh, transformMatrix: Matrix, collider: Collider): AbstractMesh;
         /** @hidden */
@@ -24833,6 +24822,10 @@ declare module BABYLON {
          * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use
          */
         spriteCellHeight: number;
+        /**
+         * This allows the system to random pick the start cell ID between startSpriteCellID and endSpriteCellID
+         */
+        spriteRandomStartCell: boolean;
         /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
         translationPivot: Vector2;
         /** @hidden */
@@ -25502,6 +25495,10 @@ declare module BABYLON {
          * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use
          */
         spriteCellHeight: number;
+        /**
+         * This allows the system to random pick the start cell ID between startSpriteCellID and endSpriteCellID
+         */
+        spriteRandomStartCell: boolean;
         /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
         translationPivot: Vector2;
         /**
@@ -25814,7 +25811,7 @@ declare module BABYLON {
      */
     class Particle {
         /**
-         * particleSystem the particle system the particle belongs to.
+         * The particle system the particle belongs to.
          */
         particleSystem: ParticleSystem;
         /**
@@ -25862,6 +25859,8 @@ declare module BABYLON {
          */
         cellIndex: number;
         /** @hidden */
+        _randomCellOffset?: number;
+        /** @hidden */
         _initialDirection: Nullable<Vector3>;
         /** @hidden */
         _initialStartSpriteCellID: number;
@@ -25908,7 +25907,7 @@ declare module BABYLON {
          */
         constructor(
         /**
-         * particleSystem the particle system the particle belongs to.
+         * The particle system the particle belongs to.
          */
         particleSystem: ParticleSystem);
         private updateCellInfoFromSystem;
@@ -25916,6 +25915,8 @@ declare module BABYLON {
          * Defines how the sprite cell index is updated for the particle
          */
         updateCellIndex(): void;
+        /** @hidden */
+        _reset(): void;
         /**
          * Copy the properties of particle to another one.
          * @param other the particle to copy the information to.
@@ -27564,6 +27565,13 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface Scene {
+        /**
+         * The list of reflection probes added to the scene
+         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+         */
+        reflectionProbes: Array<ReflectionProbe>;
+    }
     /**
      * Class used to generate realtime reflection / refraction cube textures
      * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
@@ -31778,28 +31786,108 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class SmartArray<T> {
+    /**
+     * Defines an array and its length.
+     * It can be helpfull to group result from both Arrays and smart arrays in one structure.
+     */
+    interface ISmartArrayLike<T> {
+        /**
+         * The data of the array.
+         */
         data: Array<T>;
+        /**
+         * The active length of the array.
+         */
+        length: number;
+    }
+    /**
+     * Defines an GC Friendly array where the backfield array do not shrink to prevent over allocations.
+     */
+    class SmartArray<T> implements ISmartArrayLike<T> {
+        /**
+         * The full set of data from the array.
+         */
+        data: Array<T>;
+        /**
+         * The active length of the array.
+         */
         length: number;
         protected _id: number;
-        [index: number]: T;
+        /**
+         * Instantiates a Smart Array.
+         * @param capacity defines the default capacity of the array.
+         */
         constructor(capacity: number);
+        /**
+         * Pushes a value at the end of the active data.
+         * @param value defines the object to push in the array.
+         */
         push(value: T): void;
+        /**
+         * Iterates over the active data and apply the lambda to them.
+         * @param func defines the action to apply on each value.
+         */
         forEach(func: (content: T) => void): void;
+        /**
+         * Sorts the full sets of data.
+         * @param compareFn defines the comparison function to apply.
+         */
         sort(compareFn: (a: T, b: T) => number): void;
+        /**
+         * Resets the active data to an empty array.
+         */
         reset(): void;
+        /**
+         * Releases all the data from the array as well as the array.
+         */
         dispose(): void;
+        /**
+         * Concats the active data with a given array.
+         * @param array defines the data to concatenate with.
+         */
         concat(array: any): void;
+        /**
+         * Returns the position of a value in the active data.
+         * @param value defines the value to find the index for
+         * @returns the index if found in the active data otherwise -1
+         */
         indexOf(value: T): number;
+        /**
+         * Returns whether an element is part of the active data.
+         * @param value defines the value to look for
+         * @returns true if found in the active data otherwise false
+         */
         contains(value: T): boolean;
         private static _GlobalId;
     }
+    /**
+     * Defines an GC Friendly array where the backfield array do not shrink to prevent over allocations.
+     * The data in this array can only be present once
+     */
     class SmartArrayNoDuplicate<T> extends SmartArray<T> {
         private _duplicateId;
-        [index: number]: T;
+        /**
+         * Pushes a value at the end of the active data.
+         * THIS DOES NOT PREVENT DUPPLICATE DATA
+         * @param value defines the object to push in the array.
+         */
         push(value: T): void;
+        /**
+         * Pushes a value at the end of the active data.
+         * If the data is already present, it won t be added again
+         * @param value defines the object to push in the array.
+         * @returns true if added false if it was already present
+         */
         pushNoDuplicate(value: T): boolean;
+        /**
+         * Resets the active data to an empty array.
+         */
         reset(): void;
+        /**
+         * Concats the active data with a given array.
+         * This ensures no dupplicate will be present in the result.
+         * @param array defines the data to concatenate with.
+         */
         concatWithNoDuplicate(array: any): void;
     }
 }
@@ -33296,6 +33384,184 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
+     */
+    class AnaglyphArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new AnaglyphArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
+     */
+    class AnaglyphFreeCamera extends FreeCamera {
+        /**
+         * Creates a new AnaglyphFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
+     */
+    class AnaglyphGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new AnaglyphGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
+     */
+    class AnaglyphUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new AnaglyphUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphUniversalCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
+     */
+    class StereoscopicArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new StereoscopicArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
+     */
+    class StereoscopicFreeCamera extends FreeCamera {
+        /**
+         * Creates a new StereoscopicFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
+     */
+    class StereoscopicGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new StereoscopicGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
+     */
+    class StereoscopicUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new StereoscopicUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicUniversalCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
     class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
         gamepad: Nullable<Gamepad>;
@@ -33524,184 +33790,6 @@ declare module BABYLON {
         detachControl(element: Nullable<HTMLElement>): void;
         getClassName(): string;
         getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
-     */
-    class AnaglyphArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new AnaglyphArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
-     */
-    class AnaglyphFreeCamera extends FreeCamera {
-        /**
-         * Creates a new AnaglyphFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
-     */
-    class AnaglyphGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new AnaglyphGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
-     */
-    class AnaglyphUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new AnaglyphUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphUniversalCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
-     */
-    class StereoscopicArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new StereoscopicArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
-     */
-    class StereoscopicFreeCamera extends FreeCamera {
-        /**
-         * Creates a new StereoscopicFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
-     */
-    class StereoscopicGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new StereoscopicGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
-     */
-    class StereoscopicUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new StereoscopicUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicUniversalCamera
-         */
-        getClassName(): string;
     }
 }
 
@@ -34028,7 +34116,11 @@ declare module BABYLON {
         private _workingVector;
         private _workingQuaternion;
         private _workingMatrix;
-        private _teleportCamera;
+        /**
+         * Teleports the users feet to the desired location
+         * @param location The location where the user's feet should be placed
+         */
+        teleportCamera(location: Vector3): void;
         private _convertNormalToDirectionOfRay;
         private _castRayAndSelectObject;
         private _notifySelectedMeshUnselected;
@@ -34506,6 +34598,108 @@ declare module BABYLON {
         intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
         intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void;
         createInnerBlocks(): void;
+    }
+}
+
+declare module BABYLON {
+    interface Scene {
+        /**
+         * @hidden
+         * Backing Filed
+         */
+        _selectionOctree: Octree<AbstractMesh>;
+        /**
+         * Gets the octree used to boost mesh selection (picking)
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+         */
+        selectionOctree: Octree<AbstractMesh>;
+        /**
+         * Creates or updates the octree used to boost selection (picking)
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+         * @param maxCapacity defines the maximum capacity per leaf
+         * @param maxDepth defines the maximum depth of the octree
+         * @returns an octree of AbstractMesh
+         */
+        createOrUpdateSelectionOctree(maxCapacity?: number, maxDepth?: number): Octree<AbstractMesh>;
+    }
+    interface AbstractMesh {
+        /**
+         * @hidden
+         * Backing Field
+         */
+        _submeshesOctree: Octree<SubMesh>;
+        /**
+         * This function will create an octree to help to select the right submeshes for rendering, picking and collision computations.
+         * Please note that you must have a decent number of submeshes to get performance improvements when using an octree
+         * @param maxCapacity defines the maximum size of each block (64 by default)
+         * @param maxDepth defines the maximum depth to use (no more than 2 levels by default)
+         * @returns the new octree
+         * @see https://www.babylonjs-playground.com/#NA4OQ#12
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+         */
+        createOrUpdateSubmeshesOctree(maxCapacity?: number, maxDepth?: number): Octree<SubMesh>;
+    }
+    /**
+     * Defines the octree scene component responsible to manage any octrees
+     * in a given scene.
+     */
+    class OctreeSceneComponent {
+        /**
+         * The component name helpfull to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        /**
+         * Indicates if the meshes have been checked to make sure they are isEnabled()
+         */
+        readonly checksIsEnabled: boolean;
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
+        /**
+         * Return the list of active meshes
+         * @returns the list of active meshes
+         */
+        getActiveMeshCandidates(): ISmartArrayLike<AbstractMesh>;
+        /**
+         * Return the list of active sub meshes
+         * @param mesh The mesh to get the candidates sub meshes from
+         * @returns the list of active sub meshes
+         */
+        getActiveSubMeshCandidates(mesh: AbstractMesh): ISmartArrayLike<SubMesh>;
+        private _tempRay;
+        /**
+         * Return the list of sub meshes intersecting with a given local ray
+         * @param mesh defines the mesh to find the submesh for
+         * @param localRay defines the ray in local space
+         * @returns the list of intersecting sub meshes
+         */
+        getIntersectingSubMeshCandidates(mesh: AbstractMesh, localRay: Ray): ISmartArrayLike<SubMesh>;
+        /**
+         * Return the list of sub meshes colliding with a collider
+         * @param mesh defines the mesh to find the submesh for
+         * @param collider defines the collider to evaluate the collision against
+         * @returns the list of colliding sub meshes
+         */
+        getCollidingSubMeshCandidates(mesh: AbstractMesh, collider: Collider): ISmartArrayLike<SubMesh>;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Disposes the component and the associated ressources.
+         */
+        dispose(): void;
     }
 }
 
@@ -39457,7 +39651,6 @@ declare module BABYLON {
          */
         dispose(): void;
         private _gatherRenderTargets;
-        private _rebuildGeometry;
     }
 }
 
@@ -39633,18 +39826,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-}
-
-declare module BABYLON {
-}
-
-declare module BABYLON {
-}
-
-declare module BABYLON {
-}
-
-declare module BABYLON {
     class CustomProceduralTexture extends ProceduralTexture {
         private _animate;
         private _time;
@@ -39812,6 +39993,18 @@ declare module BABYLON {
         dispose(): void;
         private _beforeClear;
     }
+}
+
+declare module BABYLON {
+}
+
+declare module BABYLON {
+}
+
+declare module BABYLON {
+}
+
+declare module BABYLON {
 }
 
 declare module BABYLON {
@@ -40302,49 +40495,192 @@ declare module BABYLON {
         /**
         * Public members
         */
+        /**
+         * Post-process which contains the original scene color before the pipeline applies all the effects
+         */
         originalPostProcess: Nullable<PostProcess>;
+        /**
+         * Post-process used to down scale an image x4
+         */
         downSampleX4PostProcess: Nullable<PostProcess>;
+        /**
+         * Post-process used to calculate the illuminated surfaces controlled by a threshold
+         */
         brightPassPostProcess: Nullable<PostProcess>;
+        /**
+         * Post-process array storing all the horizontal blur post-processes used by the pipeline
+         */
         blurHPostProcesses: PostProcess[];
+        /**
+         * Post-process array storing all the vertical blur post-processes used by the pipeline
+         */
         blurVPostProcesses: PostProcess[];
+        /**
+         * Post-process used to add colors of 2 textures (typically brightness + real scene color)
+         */
         textureAdderPostProcess: Nullable<PostProcess>;
+        /**
+         * Post-process used to create volumetric lighting effect
+         */
         volumetricLightPostProcess: Nullable<PostProcess>;
+        /**
+         * Post-process used to smooth the previous volumetric light post-process on the X axis
+         */
         volumetricLightSmoothXPostProcess: Nullable<BlurPostProcess>;
+        /**
+         * Post-process used to smooth the previous volumetric light post-process on the Y axis
+         */
         volumetricLightSmoothYPostProcess: Nullable<BlurPostProcess>;
+        /**
+         * Post-process used to merge the volumetric light effect and the real scene color
+         */
         volumetricLightMergePostProces: Nullable<PostProcess>;
+        /**
+         * Post-process used to store the final volumetric light post-process (attach/detach for debug purpose)
+         */
         volumetricLightFinalPostProcess: Nullable<PostProcess>;
+        /**
+         * Base post-process used to calculate the average luminance of the final image for HDR
+         */
         luminancePostProcess: Nullable<PostProcess>;
+        /**
+         * Post-processes used to create down sample post-processes in order to get
+         * the average luminance of the final image for HDR
+         * Array of length "StandardRenderingPipeline.LuminanceSteps"
+         */
         luminanceDownSamplePostProcesses: PostProcess[];
+        /**
+         * Post-process used to create a HDR effect (light adaptation)
+         */
         hdrPostProcess: Nullable<PostProcess>;
+        /**
+         * Post-process used to store the final texture adder post-process (attach/detach for debug purpose)
+         */
         textureAdderFinalPostProcess: Nullable<PostProcess>;
+        /**
+         * Post-process used to store the final lens flare post-process (attach/detach for debug purpose)
+         */
         lensFlareFinalPostProcess: Nullable<PostProcess>;
+        /**
+         * Post-process used to merge the final HDR post-process and the real scene color
+         */
         hdrFinalPostProcess: Nullable<PostProcess>;
+        /**
+         * Post-process used to create a lens flare effect
+         */
         lensFlarePostProcess: Nullable<PostProcess>;
+        /**
+         * Post-process that merges the result of the lens flare post-process and the real scene color
+         */
         lensFlareComposePostProcess: Nullable<PostProcess>;
+        /**
+         * Post-process used to create a motion blur effect
+         */
         motionBlurPostProcess: Nullable<PostProcess>;
+        /**
+         * Post-process used to create a depth of field effect
+         */
         depthOfFieldPostProcess: Nullable<PostProcess>;
+        /**
+         * The Fast Approximate Anti-Aliasing post process which attemps to remove aliasing from an image.
+         */
+        fxaaPostProcess: Nullable<FxaaPostProcess>;
+        /**
+         * Represents the brightness threshold in order to configure the illuminated surfaces
+         */
         brightThreshold: number;
+        /**
+         * Configures the blur intensity used for surexposed surfaces are highlighted surfaces (light halo)
+         */
         blurWidth: number;
+        /**
+         * Sets if the blur for highlighted surfaces must be only horizontal
+         */
         horizontalBlur: boolean;
+        /**
+         * Sets the overall exposure used by the pipeline
+         */
         exposure: number;
+        /**
+         * Texture used typically to simulate "dirty" on camera lens
+         */
         lensTexture: Nullable<Texture>;
+        /**
+         * Represents the offset coefficient based on Rayleigh principle. Typically in interval [-0.2, 0.2]
+         */
         volumetricLightCoefficient: number;
+        /**
+         * The overall power of volumetric lights, typically in interval [0, 10] maximum
+         */
         volumetricLightPower: number;
+        /**
+         * Used the set the blur intensity to smooth the volumetric lights
+         */
         volumetricLightBlurScale: number;
+        /**
+         * Light (spot or directional) used to generate the volumetric lights rays
+         * The source light must have a shadow generate so the pipeline can get its
+         * depth map
+         */
         sourceLight: Nullable<SpotLight | DirectionalLight>;
+        /**
+         * For eye adaptation, represents the minimum luminance the eye can see
+         */
         hdrMinimumLuminance: number;
+        /**
+         * For eye adaptation, represents the decrease luminance speed
+         */
         hdrDecreaseRate: number;
+        /**
+         * For eye adaptation, represents the increase luminance speed
+         */
         hdrIncreaseRate: number;
+        /**
+         * Lens color texture used by the lens flare effect. Mandatory if lens flare effect enabled
+         */
         lensColorTexture: Nullable<Texture>;
+        /**
+         * The overall strengh for the lens flare effect
+         */
         lensFlareStrength: number;
+        /**
+         * Dispersion coefficient for lens flare ghosts
+         */
         lensFlareGhostDispersal: number;
+        /**
+         * Main lens flare halo width
+         */
         lensFlareHaloWidth: number;
+        /**
+         * Based on the lens distortion effect, defines how much the lens flare result
+         * is distorted
+         */
         lensFlareDistortionStrength: number;
+        /**
+         * Lens star texture must be used to simulate rays on the flares and is available
+         * in the documentation
+         */
         lensStarTexture: Nullable<Texture>;
+        /**
+         * As the "lensTexture" (can be the same texture or different), it is used to apply the lens
+         * flare effect by taking account of the dirt texture
+         */
         lensFlareDirtTexture: Nullable<Texture>;
+        /**
+         * Represents the focal length for the depth of field effect
+         */
         depthOfFieldDistance: number;
+        /**
+         * Represents the blur intensity for the blurred part of the depth of field effect
+         */
         depthOfFieldBlurWidth: number;
+        /**
+         * For motion blur, defines how much the image is blurred by the movement
+         */
         motionStrength: number;
+        /**
+         * List of animations for the pipeline (IAnimatable implementation)
+         */
         animations: Animation[];
         /**
         * Private members
@@ -40361,16 +40697,52 @@ declare module BABYLON {
         private _lensFlareEnabled;
         private _hdrEnabled;
         private _motionBlurEnabled;
+        private _fxaaEnabled;
         private _motionBlurSamples;
         private _volumetricLightStepsCount;
+        private _samples;
+        /**
+         * Specifies if the bloom pipeline is enabled
+         */
         BloomEnabled: boolean;
+        /**
+         * Specifies if the depth of field pipeline is enabed
+         */
         DepthOfFieldEnabled: boolean;
+        /**
+         * Specifies if the lens flare pipeline is enabed
+         */
         LensFlareEnabled: boolean;
+        /**
+         * Specifies if the HDR pipeline is enabled
+         */
         HDREnabled: boolean;
+        /**
+         * Specifies if the volumetric lights scattering effect is enabled
+         */
         VLSEnabled: boolean;
+        /**
+         * Specifies if the motion blur effect is enabled
+         */
         MotionBlurEnabled: boolean;
+        /**
+         * Specifies if anti-aliasing is enabled
+         */
+        fxaaEnabled: boolean;
+        /**
+         * Specifies the number of steps used to calculate the volumetric lights
+         * Typically in interval [50, 200]
+         */
         volumetricLightStepsCount: number;
+        /**
+         * Specifies the number of samples used for the motion blur effect
+         * Typically in interval [16, 64]
+         */
         motionBlurSamples: number;
+        /**
+         * Specifies MSAA sample count, setting this to 4 will provide 4x anti aliasing. (default: 1)
+         */
+        samples: number;
         /**
          * @constructor
          * @param {string} name - The rendering pipeline name
