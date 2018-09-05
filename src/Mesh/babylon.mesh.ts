@@ -831,7 +831,8 @@
 
             var data = this._getPositionData(applySkeleton);
             if (data) {
-                var extend = Tools.ExtractMinAndMax(data, 0, this.getTotalVertices());
+                const bias = this.geometry ? this.geometry.boundingBias : null;
+                var extend = Tools.ExtractMinAndMax(data, 0, this.getTotalVertices(), bias);
                 this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
             }
 
