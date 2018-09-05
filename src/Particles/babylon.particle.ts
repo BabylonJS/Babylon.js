@@ -5,6 +5,11 @@
      * This is mainly define by its coordinates, direction, velocity and age.
      */
     export class Particle {
+        private static _Count = 0;
+        /**
+         * Unique ID of the particle
+         */
+        public id:number;
         /**
          * The world position of the particle in the scene.
          */
@@ -64,6 +69,9 @@
         public _initialDirection: Nullable<Vector3>;
 
         /** @hidden */
+        public _attachedSubEmitters: Nullable<Array<SubEmitter>> = null;
+
+        /** @hidden */
         public _initialStartSpriteCellID: number;
         public _initialEndSpriteCellID: number;
 
@@ -118,6 +126,7 @@
              * particleSystem the particle system the particle belongs to.
              */
             public particleSystem: ParticleSystem) {
+            this.id = Particle._Count++;
             if (!this.particleSystem.isAnimationSheetEnabled) {
                 return;
             }
