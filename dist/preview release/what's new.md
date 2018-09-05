@@ -40,6 +40,8 @@
   - Added support for noise textures. [Doc](http://doc.babylonjs.com/babylon101/particles#noise-texture)
   - Added support for emit rate gradients. [Doc](http://doc.babylonjs.com/babylon101/particles#emit-rate-over-time)
   - Start size gradient support for particles. [Doc](http://doc.babylonjs.com/babylon101/particles#start-size-over-time) ([TrevorDev](https://github.com/TrevorDev))
+  - Attached sub emitters. [Doc](http://doc.babylonjs.com/how_to/sub_emitters) ([TrevorDev](https://github.com/TrevorDev))
+  - Cylinder particle emitter and constructor in baseParticle [Doc](https://doc.babylonjs.com/babylon101/particles#cylinder-emitter) ([TrevorDev](https://github.com/TrevorDev))
   - Added support for cylinder particle emitter. [Doc](https://doc.babylonjs.com/babylon101/particles#cylinder-emitter) ([TrevorDev](https://github.com/TrevorDev))
   - Added support for random start cell when using animated sprite sheets. [Doc](http://doc.babylonjs.com/how_to/animate)
 - Added SceneComponent to help decoupling Scene from its components. ([sebavan](http://www.github.com/sebavan))
