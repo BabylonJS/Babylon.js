@@ -10,6 +10,9 @@ attribute float cellIndex;
 attribute vec3 direction;
 #endif
 attribute vec2 offset;
+#ifdef RAMPGRADIENT
+attribute vec4 remapData;
+#endif
 
 // Uniforms
 uniform mat4 view;
@@ -23,6 +26,10 @@ uniform vec3 particlesInfos; // x (number of rows) y(number of columns) z(rowSiz
 // Output
 varying vec2 vUV;
 varying vec4 vColor;
+
+#ifdef RAMPGRADIENT
+varying vec4 remapRanges;
+#endif
 
 #if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4)
 uniform mat4 invView;
@@ -73,6 +80,10 @@ void main(void) {
 	rotatedCorner.z = 0.;
 
 	vec3 viewPos = (view * vec4(position, 1.0)).xyz + rotatedCorner; 
+#endif
+
+#ifdef RAMPGRADIENT
+	remapRanges = remapData;
 #endif
 
 	// Position

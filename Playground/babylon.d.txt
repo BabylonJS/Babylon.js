@@ -1214,6 +1214,7 @@ declare module BABYLON {
         /** @hidden */
 
         private _renderId;
+        private _frameId;
         private _executeWhenReadyTimeoutId;
         private _intermediateRendering;
         private _viewUpdateFlag;
@@ -1267,7 +1268,6 @@ protected readonly _isAlternateRenderingEnabled: boolean;
          */
         requireLightSorting: boolean;
         private _pointerOverMesh;
-        private _debugLayer;
         private _pickedDownMesh;
         private _pickedUpMesh;
         private _externalData;
@@ -1412,11 +1412,6 @@ protected readonly _isAlternateRenderingEnabled: boolean;
          */
         setDefaultCandidateProviders(): void;
         /**
-         * Gets the debug layer (aka Inspector) associated with the scene
-         * @see http://doc.babylonjs.com/features/playground_debuglayer
-         */
-        readonly debugLayer: DebugLayer;
-        /**
         * Gets a boolean indicating if collisions are processed on a web worker
         * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#web-worker-based-collision-system-since-21
         */
@@ -1538,10 +1533,15 @@ protected readonly _isAlternateRenderingEnabled: boolean;
          */
         getAnimationRatio(): number;
         /**
-         * Gets an unique Id for the current frame
+         * Gets an unique Id for the current render phase
          * @returns a number
          */
         getRenderId(): number;
+        /**
+         * Gets an unique Id for the current frame
+         * @returns a number
+         */
+        getFrameId(): number;
         /** Call this function if you want to manually increment the render Id*/
         incrementRenderId(): void;
         private _updatePointerPosition;
@@ -3396,331 +3396,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * Class used to work with sound analyzer using fast fourier transform (FFT)
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-     */
-    class Analyser {
-        /**
-         * Gets or sets the smoothing
-         * @ignorenaming
-         */
-        SMOOTHING: number;
-        /**
-         * Gets or sets the FFT table size
-         * @ignorenaming
-         */
-        FFT_SIZE: number;
-        /**
-         * Gets or sets the bar graph amplitude
-         * @ignorenaming
-         */
-        BARGRAPHAMPLITUDE: number;
-        /**
-         * Gets or sets the position of the debug canvas
-         * @ignorenaming
-         */
-        DEBUGCANVASPOS: {
-            x: number;
-            y: number;
-        };
-        /**
-         * Gets or sets the debug canvas size
-         * @ignorenaming
-         */
-        DEBUGCANVASSIZE: {
-            width: number;
-            height: number;
-        };
-        private _byteFreqs;
-        private _byteTime;
-        private _floatFreqs;
-        private _webAudioAnalyser;
-        private _debugCanvas;
-        private _debugCanvasContext;
-        private _scene;
-        private _registerFunc;
-        private _audioEngine;
-        /**
-         * Creates a new analyser
-         * @param scene defines hosting scene
-         */
-        constructor(scene: Scene);
-        /**
-         * Get the number of data values you will have to play with for the visualization
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/frequencyBinCount
-         * @returns a number
-         */
-        getFrequencyBinCount(): number;
-        /**
-         * Gets the current frequency data as a byte array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
-         * @returns a Uint8Array
-         */
-        getByteFrequencyData(): Uint8Array;
-        /**
-         * Gets the current waveform as a byte array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
-         * @returns a Uint8Array
-         */
-        getByteTimeDomainData(): Uint8Array;
-        /**
-         * Gets the current frequency data as a float array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
-         * @returns a Float32Array
-         */
-        getFloatFrequencyData(): Float32Array;
-        /**
-         * Renders the debug canvas
-         */
-        drawDebugCanvas(): void;
-        /**
-         * Stops rendering the debug canvas and removes it
-         */
-        stopDebugCanvas(): void;
-        /**
-         * Connects two audio nodes
-         * @param inputAudioNode defines first node to connect
-         * @param outputAudioNode defines second node to connect
-         */
-        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class AudioEngine {
-        private _audioContext;
-        private _audioContextInitialized;
-        canUseWebAudio: boolean;
-        masterGain: GainNode;
-        private _connectedAnalyser;
-        WarnedWebAudioUnsupported: boolean;
-        unlocked: boolean;
-        onAudioUnlocked: () => any;
-        isMP3supported: boolean;
-        isOGGsupported: boolean;
-        readonly audioContext: Nullable<AudioContext>;
-        constructor();
-        private _unlockiOSaudio;
-        private _initializeAudioContext;
-        dispose(): void;
-        getGlobalVolume(): number;
-        setGlobalVolume(newVolume: number): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    class Sound {
-        name: string;
-        autoplay: boolean;
-        loop: boolean;
-        useCustomAttenuation: boolean;
-        soundTrackId: number;
-        spatialSound: boolean;
-        refDistance: number;
-        rolloffFactor: number;
-        maxDistance: number;
-        distanceModel: string;
-        private _panningModel;
-        onended: () => any;
-        /**
-         * Observable event when the current playing sound finishes.
-         */
-        onEndedObservable: Observable<Sound>;
-        private _playbackRate;
-        private _streaming;
-        private _startTime;
-        private _startOffset;
-        private _position;
-        /** @hidden */
-
-        private _localDirection;
-        private _volume;
-        private _isReadyToPlay;
-        isPlaying: boolean;
-        isPaused: boolean;
-        private _isDirectional;
-        private _readyToPlayCallback;
-        private _audioBuffer;
-        private _soundSource;
-        private _streamingSource;
-        private _soundPanner;
-        private _soundGain;
-        private _inputAudioNode;
-        private _outputAudioNode;
-        private _coneInnerAngle;
-        private _coneOuterAngle;
-        private _coneOuterGain;
-        private _scene;
-        private _connectedMesh;
-        private _customAttenuationFunction;
-        private _registerFunc;
-        private _isOutputConnected;
-        private _htmlAudioElement;
-        private _urlType;
-        /**
-        * Create a sound and attach it to a scene
-        * @param name Name of your sound
-        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
-        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
-        */
-        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: any);
-        dispose(): void;
-        isReady(): boolean;
-        private _soundLoaded;
-        setAudioBuffer(audioBuffer: AudioBuffer): void;
-        updateOptions(options: any): void;
-        private _createSpatialParameters;
-        private _updateSpatialParameters;
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        private _switchPanningModel;
-        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
-        /**
-        * Transform this sound into a directional source
-        * @param coneInnerAngle Size of the inner cone in degree
-        * @param coneOuterAngle Size of the outer cone in degree
-        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
-        */
-        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
-        /**
-         * Gets or sets the inner angle for the directional cone.
-         */
-        /**
-        * Gets or sets the inner angle for the directional cone.
-        */
-        directionalConeInnerAngle: number;
-        /**
-         * Gets or sets the outer angle for the directional cone.
-         */
-        /**
-        * Gets or sets the outer angle for the directional cone.
-        */
-        directionalConeOuterAngle: number;
-        setPosition(newPosition: Vector3): void;
-        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
-        private _updateDirection;
-        updateDistanceFromListener(): void;
-        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
-        /**
-        * Play the sound
-        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
-        * @param offset (optional) Start the sound setting it at a specific time
-        */
-        play(time?: number, offset?: number): void;
-        private _onended;
-        /**
-        * Stop the sound
-        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
-        */
-        stop(time?: number): void;
-        pause(): void;
-        setVolume(newVolume: number, time?: number): void;
-        setPlaybackRate(newPlaybackRate: number): void;
-        getVolume(): number;
-        attachToMesh(meshToConnectTo: AbstractMesh): void;
-        detachFromMesh(): void;
-        private _onRegisterAfterWorldMatrixUpdate;
-        clone(): Nullable<Sound>;
-        getAudioBuffer(): AudioBuffer | null;
-        serialize(): any;
-        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
-    }
-}
-
-declare module BABYLON {
-    class SoundTrack {
-        private _outputAudioNode;
-        private _scene;
-        id: number;
-        soundCollection: Array<Sound>;
-        private _isMainTrack;
-        private _connectedAnalyser;
-        private _options;
-        private _isInitialized;
-        constructor(scene: Scene, options?: any);
-        private _initializeSoundTrackAudioGraph;
-        dispose(): void;
-        AddSound(sound: Sound): void;
-        RemoveSound(sound: Sound): void;
-        setVolume(newVolume: number): void;
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Wraps one or more Sound objects and selects one with random weight for playback.
-     */
-    class WeightedSound {
-        /** When true a Sound will be selected and played when the current playing Sound completes. */
-        loop: boolean;
-        private _coneInnerAngle;
-        private _coneOuterAngle;
-        private _volume;
-        /** A Sound is currently playing. */
-        isPlaying: boolean;
-        /** A Sound is currently paused. */
-        isPaused: boolean;
-        private _sounds;
-        private _weights;
-        private _currentIndex?;
-        /**
-         * Creates a new WeightedSound from the list of sounds given.
-         * @param loop When true a Sound will be selected and played when the current playing Sound completes.
-         * @param sounds Array of Sounds that will be selected from.
-         * @param weights Array of number values for selection weights; length must equal sounds, values will be normalized to 1
-         */
-        constructor(loop: boolean, sounds: Sound[], weights: number[]);
-        /**
-         * The size of cone in degrees for a directional sound in which there will be no attenuation.
-         */
-        /**
-        * The size of cone in degress for a directional sound in which there will be no attenuation.
-        */
-        directionalConeInnerAngle: number;
-        /**
-         * Size of cone in degrees for a directional sound outside of which there will be no sound.
-         * Listener angles between innerAngle and outerAngle will falloff linearly.
-         */
-        /**
-        * Size of cone in degrees for a directional sound outside of which there will be no sound.
-        * Listener angles between innerAngle and outerAngle will falloff linearly.
-        */
-        directionalConeOuterAngle: number;
-        /**
-         * Playback volume.
-         */
-        /**
-        * Playback volume.
-        */
-        volume: number;
-        private _onended;
-        /**
-         * Suspend playback
-         */
-        pause(): void;
-        /**
-         * Stop playback
-         */
-        stop(): void;
-        /**
-         * Start playback.
-         * @param startOffset Position the clip head at a specific time in seconds.
-         */
-        play(startOffset?: number): void;
-    }
-}
-
-declare module BABYLON {
-    /**
      * Class used to store an actual running animation
      */
     class Animatable {
@@ -4848,6 +4523,331 @@ declare module BABYLON {
          * @returns a boolean indicating if the animation is running
          */
         animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number): boolean;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class used to work with sound analyzer using fast fourier transform (FFT)
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
+    class Analyser {
+        /**
+         * Gets or sets the smoothing
+         * @ignorenaming
+         */
+        SMOOTHING: number;
+        /**
+         * Gets or sets the FFT table size
+         * @ignorenaming
+         */
+        FFT_SIZE: number;
+        /**
+         * Gets or sets the bar graph amplitude
+         * @ignorenaming
+         */
+        BARGRAPHAMPLITUDE: number;
+        /**
+         * Gets or sets the position of the debug canvas
+         * @ignorenaming
+         */
+        DEBUGCANVASPOS: {
+            x: number;
+            y: number;
+        };
+        /**
+         * Gets or sets the debug canvas size
+         * @ignorenaming
+         */
+        DEBUGCANVASSIZE: {
+            width: number;
+            height: number;
+        };
+        private _byteFreqs;
+        private _byteTime;
+        private _floatFreqs;
+        private _webAudioAnalyser;
+        private _debugCanvas;
+        private _debugCanvasContext;
+        private _scene;
+        private _registerFunc;
+        private _audioEngine;
+        /**
+         * Creates a new analyser
+         * @param scene defines hosting scene
+         */
+        constructor(scene: Scene);
+        /**
+         * Get the number of data values you will have to play with for the visualization
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/frequencyBinCount
+         * @returns a number
+         */
+        getFrequencyBinCount(): number;
+        /**
+         * Gets the current frequency data as a byte array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
+         * @returns a Uint8Array
+         */
+        getByteFrequencyData(): Uint8Array;
+        /**
+         * Gets the current waveform as a byte array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
+         * @returns a Uint8Array
+         */
+        getByteTimeDomainData(): Uint8Array;
+        /**
+         * Gets the current frequency data as a float array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
+         * @returns a Float32Array
+         */
+        getFloatFrequencyData(): Float32Array;
+        /**
+         * Renders the debug canvas
+         */
+        drawDebugCanvas(): void;
+        /**
+         * Stops rendering the debug canvas and removes it
+         */
+        stopDebugCanvas(): void;
+        /**
+         * Connects two audio nodes
+         * @param inputAudioNode defines first node to connect
+         * @param outputAudioNode defines second node to connect
+         */
+        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class AudioEngine {
+        private _audioContext;
+        private _audioContextInitialized;
+        canUseWebAudio: boolean;
+        masterGain: GainNode;
+        private _connectedAnalyser;
+        WarnedWebAudioUnsupported: boolean;
+        unlocked: boolean;
+        onAudioUnlocked: () => any;
+        isMP3supported: boolean;
+        isOGGsupported: boolean;
+        readonly audioContext: Nullable<AudioContext>;
+        constructor();
+        private _unlockiOSaudio;
+        private _initializeAudioContext;
+        dispose(): void;
+        getGlobalVolume(): number;
+        setGlobalVolume(newVolume: number): void;
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
+    class Sound {
+        name: string;
+        autoplay: boolean;
+        loop: boolean;
+        useCustomAttenuation: boolean;
+        soundTrackId: number;
+        spatialSound: boolean;
+        refDistance: number;
+        rolloffFactor: number;
+        maxDistance: number;
+        distanceModel: string;
+        private _panningModel;
+        onended: () => any;
+        /**
+         * Observable event when the current playing sound finishes.
+         */
+        onEndedObservable: Observable<Sound>;
+        private _playbackRate;
+        private _streaming;
+        private _startTime;
+        private _startOffset;
+        private _position;
+        /** @hidden */
+
+        private _localDirection;
+        private _volume;
+        private _isReadyToPlay;
+        isPlaying: boolean;
+        isPaused: boolean;
+        private _isDirectional;
+        private _readyToPlayCallback;
+        private _audioBuffer;
+        private _soundSource;
+        private _streamingSource;
+        private _soundPanner;
+        private _soundGain;
+        private _inputAudioNode;
+        private _outputAudioNode;
+        private _coneInnerAngle;
+        private _coneOuterAngle;
+        private _coneOuterGain;
+        private _scene;
+        private _connectedMesh;
+        private _customAttenuationFunction;
+        private _registerFunc;
+        private _isOutputConnected;
+        private _htmlAudioElement;
+        private _urlType;
+        /**
+        * Create a sound and attach it to a scene
+        * @param name Name of your sound
+        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
+        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
+        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
+        */
+        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: any);
+        dispose(): void;
+        isReady(): boolean;
+        private _soundLoaded;
+        setAudioBuffer(audioBuffer: AudioBuffer): void;
+        updateOptions(options: any): void;
+        private _createSpatialParameters;
+        private _updateSpatialParameters;
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        private _switchPanningModel;
+        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
+        /**
+        * Transform this sound into a directional source
+        * @param coneInnerAngle Size of the inner cone in degree
+        * @param coneOuterAngle Size of the outer cone in degree
+        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
+        */
+        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
+        /**
+         * Gets or sets the inner angle for the directional cone.
+         */
+        /**
+        * Gets or sets the inner angle for the directional cone.
+        */
+        directionalConeInnerAngle: number;
+        /**
+         * Gets or sets the outer angle for the directional cone.
+         */
+        /**
+        * Gets or sets the outer angle for the directional cone.
+        */
+        directionalConeOuterAngle: number;
+        setPosition(newPosition: Vector3): void;
+        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
+        private _updateDirection;
+        updateDistanceFromListener(): void;
+        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
+        /**
+        * Play the sound
+        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+        * @param offset (optional) Start the sound setting it at a specific time
+        */
+        play(time?: number, offset?: number): void;
+        private _onended;
+        /**
+        * Stop the sound
+        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
+        */
+        stop(time?: number): void;
+        pause(): void;
+        setVolume(newVolume: number, time?: number): void;
+        setPlaybackRate(newPlaybackRate: number): void;
+        getVolume(): number;
+        attachToMesh(meshToConnectTo: AbstractMesh): void;
+        detachFromMesh(): void;
+        private _onRegisterAfterWorldMatrixUpdate;
+        clone(): Nullable<Sound>;
+        getAudioBuffer(): AudioBuffer | null;
+        serialize(): any;
+        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
+    }
+}
+
+declare module BABYLON {
+    class SoundTrack {
+        private _outputAudioNode;
+        private _scene;
+        id: number;
+        soundCollection: Array<Sound>;
+        private _isMainTrack;
+        private _connectedAnalyser;
+        private _options;
+        private _isInitialized;
+        constructor(scene: Scene, options?: any);
+        private _initializeSoundTrackAudioGraph;
+        dispose(): void;
+        AddSound(sound: Sound): void;
+        RemoveSound(sound: Sound): void;
+        setVolume(newVolume: number): void;
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Wraps one or more Sound objects and selects one with random weight for playback.
+     */
+    class WeightedSound {
+        /** When true a Sound will be selected and played when the current playing Sound completes. */
+        loop: boolean;
+        private _coneInnerAngle;
+        private _coneOuterAngle;
+        private _volume;
+        /** A Sound is currently playing. */
+        isPlaying: boolean;
+        /** A Sound is currently paused. */
+        isPaused: boolean;
+        private _sounds;
+        private _weights;
+        private _currentIndex?;
+        /**
+         * Creates a new WeightedSound from the list of sounds given.
+         * @param loop When true a Sound will be selected and played when the current playing Sound completes.
+         * @param sounds Array of Sounds that will be selected from.
+         * @param weights Array of number values for selection weights; length must equal sounds, values will be normalized to 1
+         */
+        constructor(loop: boolean, sounds: Sound[], weights: number[]);
+        /**
+         * The size of cone in degrees for a directional sound in which there will be no attenuation.
+         */
+        /**
+        * The size of cone in degress for a directional sound in which there will be no attenuation.
+        */
+        directionalConeInnerAngle: number;
+        /**
+         * Size of cone in degrees for a directional sound outside of which there will be no sound.
+         * Listener angles between innerAngle and outerAngle will falloff linearly.
+         */
+        /**
+        * Size of cone in degrees for a directional sound outside of which there will be no sound.
+        * Listener angles between innerAngle and outerAngle will falloff linearly.
+        */
+        directionalConeOuterAngle: number;
+        /**
+         * Playback volume.
+         */
+        /**
+        * Playback volume.
+        */
+        volume: number;
+        private _onended;
+        /**
+         * Suspend playback
+         */
+        pause(): void;
+        /**
+         * Stop playback
+         */
+        stop(): void;
+        /**
+         * Start playback.
+         * @param startOffset Position the clip head at a specific time in seconds.
+         */
+        play(startOffset?: number): void;
     }
 }
 
@@ -7045,6 +7045,18 @@ declare module BABYLON.Debug {
 }
 
 declare module BABYLON {
+    interface Scene {
+        /**
+         * @hidden
+         * Backing field
+         */
+
+        /**
+         * Gets the debug layer (aka Inspector) associated with the scene
+         * @see http://doc.babylonjs.com/features/playground_debuglayer
+         */
+        debugLayer: DebugLayer;
+    }
     class DebugLayer {
         private _scene;
         static InspectorURL: string;
@@ -14627,6 +14639,10 @@ declare module BABYLON {
          */
         getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
         /**
+         * Gets a boolean indicating that current material needs to register RTT
+         */
+        hasRenderTargetTextures: boolean;
+        /**
          * Specifies if the material should be serialized
          */
         doNotSerialize: boolean;
@@ -15579,6 +15595,10 @@ declare module BABYLON {
         protected _globalAmbientColor: Color3;
         protected _useLogarithmicDepth: boolean;
         constructor(name: string, scene: Scene);
+        /**
+         * Gets a boolean indicating that current material needs to register RTT
+         */
+        readonly hasRenderTargetTextures: boolean;
         getClassName(): string;
         useLogarithmicDepth: boolean;
         needAlphaBlending(): boolean;
@@ -25486,6 +25506,9 @@ declare module BABYLON {
         protected _dragGradients: Nullable<Array<FactorGradient>>;
         protected _emitRateGradients: Nullable<Array<FactorGradient>>;
         protected _startSizeGradients: Nullable<Array<FactorGradient>>;
+        protected _rampGradients: Nullable<Array<ColorGradient>>;
+        protected _colorRemapGradients: Nullable<Array<FactorGradient>>;
+        protected _alphaRemapGradients: Nullable<Array<FactorGradient>>;
         /**
          * Gets the current list of drag gradients.
          * You must use addDragGradient and removeDragGradient to udpate this list
@@ -25512,6 +25535,18 @@ declare module BABYLON {
          * @returns the list of size gradients
          */
         getSizeGradients(): Nullable<Array<FactorGradient>>;
+        /**
+         * Gets the current list of color remap gradients.
+         * You must use addColorRemapGradient and removeColorRemapGradient to udpate this list
+         * @returns the list of color remap gradients
+         */
+        getColorRemapGradients(): Nullable<Array<FactorGradient>>;
+        /**
+         * Gets the current list of alpha remap gradients.
+         * You must use addAlphaRemapGradient and removeAlphaRemapGradient to udpate this list
+         * @returns the list of alpha remap gradients
+         */
+        getAlphaRemapGradients(): Nullable<Array<FactorGradient>>;
         /**
          * Gets the current list of life time gradients.
          * You must use addLifeTimeGradient and removeLifeTimeGradient to udpate this list
@@ -25621,6 +25656,8 @@ declare module BABYLON {
         protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void;
         /** @hidden */
         protected _reset(): void;
+        /** @hidden */
+        protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: RawTexture): BaseParticleSystem;
         /**
          * Instantiates a particle system.
          * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -25783,7 +25820,7 @@ declare module BABYLON {
          */
         getClassName(): string;
         private _colorGradientsTexture;
-        private _removeGradient;
+        protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: RawTexture): BaseParticleSystem;
         /**
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
@@ -25897,6 +25934,52 @@ declare module BABYLON {
          * @returns the current particle system
          */
         removeStartSizeGradient(gradient: number): IParticleSystem;
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param min defines the color remap minimal range
+         * @param max defines the color remap maximal range
+         * @returns the current particle system
+         */
+        addColorRemapGradient(gradient: number, min: number, max: number): IParticleSystem;
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeColorRemapGradient(gradient: number): IParticleSystem;
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param min defines the alpha remap minimal range
+         * @param max defines the alpha remap maximal range
+         * @returns the current particle system
+         */
+        addAlphaRemapGradient(gradient: number, min: number, max: number): IParticleSystem;
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeAlphaRemapGradient(gradient: number): IParticleSystem;
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param color defines the color to affect to the specified gradient
+         * @returns the current particle system
+         */
+        addRampGradient(gradient: number, color: Color4): IParticleSystem;
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeRampGradient(gradient: number): IParticleSystem;
+        /**
+         * Not supported by GPUParticleSystem
+         * @returns the list of ramp gradients
+         */
+        getRampGradients(): Nullable<Array<ColorGradient>>;
         /**
          * Instantiates a GPU particle system.
          * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -26367,6 +26450,53 @@ declare module BABYLON {
          */
         getStartSizeGradients(): Nullable<Array<FactorGradient>>;
         /**
+         * Gets the current list of color gradients.
+         * You must use addColorGradient and removeColorGradient to udpate this list
+         * @returns the list of color gradients
+         */
+        getColorGradients(): Nullable<Array<ColorGradient>>;
+        /**
+         * Adds a new ramp gradient used to remap particle colors
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param color defines the color to affect to the specified gradient
+         * @returns the current particle system
+         */
+        addRampGradient(gradient: number, color: Color4): IParticleSystem;
+        /**
+         * Gets the current list of ramp gradients.
+         * You must use addRampGradient and removeRampGradient to udpate this list
+         * @returns the list of ramp gradients
+         */
+        getRampGradients(): Nullable<Array<ColorGradient>>;
+        /**
+         * Adds a new color remap gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param min defines the color remap minimal range
+         * @param max defines the color remap maximal range
+         * @returns the current particle system
+         */
+        addColorRemapGradient(gradient: number, min: number, max: number): IParticleSystem;
+        /**
+         * Gets the current list of color remap gradients.
+         * You must use addColorRemapGradient and removeColorRemapGradient to udpate this list
+         * @returns the list of color remap gradients
+         */
+        getColorRemapGradients(): Nullable<Array<FactorGradient>>;
+        /**
+         * Adds a new alpha remap gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param min defines the alpha remap minimal range
+         * @param max defines the alpha remap maximal range
+         * @returns the current particle system
+         */
+        addAlphaRemapGradient(gradient: number, min: number, max: number): IParticleSystem;
+        /**
+         * Gets the current list of alpha remap gradients.
+         * You must use addAlphaRemapGradient and removeAlphaRemapGradient to udpate this list
+         * @returns the list of alpha remap gradients
+         */
+        getAlphaRemapGradients(): Nullable<Array<FactorGradient>>;
+        /**
          * Creates a Point Emitter for the particle system (emits directly from the emitter position)
          * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
          * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
@@ -26492,6 +26622,10 @@ declare module BABYLON {
          * Defines the cell index used by the particle to be rendered from a sprite.
          */
         cellIndex: number;
+        /**
+         * The information required to support color remapping
+         */
+        remapData: Vector4;
         /** @hidden */
 
         /** @hidden */
@@ -26665,6 +26799,13 @@ declare module BABYLON {
 
         /** @hidden */
 
+        private readonly _rawTextureWidth;
+        private _rampGradientsTexture;
+        private _useRampGradients;
+        /** Gets or sets a boolean indicating that ramp gradients must be used
+         * @see http://doc.babylonjs.com/babylon101/particles#ramp-gradients
+         */
+        useRampGradients: boolean;
         /**
          * this is the Sub-emitters templates that will be used to generate particle system when the particle dies, this property is used by the root particle system only.
          */
@@ -26724,6 +26865,34 @@ declare module BABYLON {
          * @returns the current particle system
          */
         removeSizeGradient(gradient: number): IParticleSystem;
+        /**
+         * Adds a new color remap gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param min defines the color remap minimal range
+         * @param max defines the color remap maximal range
+         * @returns the current particle system
+         */
+        addColorRemapGradient(gradient: number, min: number, max: number): IParticleSystem;
+        /**
+         * Remove a specific color remap gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeColorRemapGradient(gradient: number): IParticleSystem;
+        /**
+         * Adds a new alpha remap gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param min defines the alpha remap minimal range
+         * @param max defines the alpha remap maximal range
+         * @returns the current particle system
+         */
+        addAlphaRemapGradient(gradient: number, min: number, max: number): IParticleSystem;
+        /**
+         * Remove a specific alpha remap gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeAlphaRemapGradient(gradient: number): IParticleSystem;
         /**
          * Adds a new angular speed gradient
          * @param gradient defines the gradient to use (between 0 and 1)
@@ -26808,6 +26977,26 @@ declare module BABYLON {
          * @returns the current particle system
          */
         removeStartSizeGradient(gradient: number): IParticleSystem;
+        private _createRampGradientTexture;
+        /**
+         * Gets the current list of ramp gradients.
+         * You must use addRampGradient and removeRampGradient to udpate this list
+         * @returns the list of ramp gradients
+         */
+        getRampGradients(): Nullable<Array<ColorGradient>>;
+        /**
+         * Adds a new ramp gradient used to remap particle colors
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param color defines the color to affect to the specified gradient
+         * @returns the current particle system
+         */
+        addRampGradient(gradient: number, color: Color4): ParticleSystem;
+        /**
+         * Remove a specific ramp gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeRampGradient(gradient: number): ParticleSystem;
         /**
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
@@ -27553,73 +27742,6 @@ declare module BABYLON {
          * @param update the boolean update value actually passed to setParticles()
          */
         afterUpdateParticles(start?: number, stop?: number, update?: boolean): void;
-    }
-}
-
-declare module BABYLON {
-    interface Scene {
-        /**
-         * The list of reflection probes added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
-         */
-        reflectionProbes: Array<ReflectionProbe>;
-    }
-    /**
-     * Class used to generate realtime reflection / refraction cube textures
-     * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
-     */
-    class ReflectionProbe {
-        /** defines the name of the probe */
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        private _invertYAxis;
-        /** Gets or sets probe position (center of the cube map) */
-        position: Vector3;
-        /**
-         * Creates a new reflection probe
-         * @param name defines the name of the probe
-         * @param size defines the texture resolution (for each face)
-         * @param scene defines the hosting scene
-         * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
-         * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
-         */
-        constructor(
-        /** defines the name of the probe */
-        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean);
-        /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
-        samples: number;
-        /** Gets or sets the refresh rate to use (on every frame by default) */
-        refreshRate: number;
-        /**
-         * Gets the hosting scene
-         * @returns a Scene
-         */
-        getScene(): Scene;
-        /** Gets the internal CubeTexture used to render to */
-        readonly cubeTexture: RenderTargetTexture;
-        /** Gets the list of meshes to render */
-        readonly renderList: Nullable<AbstractMesh[]>;
-        /**
-         * Attach the probe to a specific mesh (Rendering will be done from attached mesh's position)
-         * @param mesh defines the mesh to attach to
-         */
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        /**
-         * Clean all associated resources
-         */
-        dispose(): void;
     }
 }
 
@@ -28862,6 +28984,73 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
+    }
+}
+
+declare module BABYLON {
+    interface Scene {
+        /**
+         * The list of reflection probes added to the scene
+         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+         */
+        reflectionProbes: Array<ReflectionProbe>;
+    }
+    /**
+     * Class used to generate realtime reflection / refraction cube textures
+     * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+     */
+    class ReflectionProbe {
+        /** defines the name of the probe */
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        private _invertYAxis;
+        /** Gets or sets probe position (center of the cube map) */
+        position: Vector3;
+        /**
+         * Creates a new reflection probe
+         * @param name defines the name of the probe
+         * @param size defines the texture resolution (for each face)
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
+         * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
+         */
+        constructor(
+        /** defines the name of the probe */
+        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean);
+        /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
+        samples: number;
+        /** Gets or sets the refresh rate to use (on every frame by default) */
+        refreshRate: number;
+        /**
+         * Gets the hosting scene
+         * @returns a Scene
+         */
+        getScene(): Scene;
+        /** Gets the internal CubeTexture used to render to */
+        readonly cubeTexture: RenderTargetTexture;
+        /** Gets the list of meshes to render */
+        readonly renderList: Nullable<AbstractMesh[]>;
+        /**
+         * Attach the probe to a specific mesh (Rendering will be done from attached mesh's position)
+         * @param mesh defines the mesh to attach to
+         */
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        /**
+         * Clean all associated resources
+         */
+        dispose(): void;
     }
 }
 
@@ -36105,6 +36294,10 @@ declare module BABYLON {
          */
         constructor(name: string, scene: Scene);
         /**
+         * Gets a boolean indicating that current material needs to register RTT
+         */
+        readonly hasRenderTargetTextures: boolean;
+        /**
          * The entire material has been created in order to prevent overdraw.
          * @returns false
          */
@@ -36511,6 +36704,10 @@ declare module BABYLON {
          * @param scene The scene the material will be use in.
          */
         constructor(name: string, scene: Scene);
+        /**
+         * Gets a boolean indicating that current material needs to register RTT
+         */
+        readonly hasRenderTargetTextures: boolean;
         /**
          * Gets the name of the material class.
          */
@@ -40803,6 +41000,11 @@ declare module BABYLON.GUI {
                 * @param evt defines the current keyboard event
                 */
             processKeyboard(evt: KeyboardEvent): void;
+            /**
+                * Function called to get the list of controls that should not steal the focus from this control
+                * @returns an array of controls
+                */
+            keepsFocusWith(): BABYLON.Nullable<Control[]>;
     }
     /**
         * Class used to create texture to support 2D GUI elements
@@ -41790,6 +41992,12 @@ declare module BABYLON.GUI {
             protected _getTypeName(): string;
             /** @hidden */
             /**
+                * Determines if a container is an ascendant of the current control
+                * @param container defines the container to look for
+                * @returns true if the container is one of the ascendant of the control
+                */
+            isAscendant(container: Control): boolean;
+            /**
                 * Gets coordinates in local control space
                 * @param globalCoordinates defines the coordinates to transform
                 * @returns the new coordinates in local space
@@ -42062,6 +42270,7 @@ declare module BABYLON.GUI {
         */
     export class InputText extends Control implements IFocusableControl {
             name?: string | undefined;
+            /** @hidden */
             /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
             promptMessage: string;
             /** BABYLON.Observable raised when the text changes */
@@ -42113,6 +42322,11 @@ declare module BABYLON.GUI {
             /** @hidden */
             onFocus(): void;
             protected _getTypeName(): string;
+            /**
+                * Function called to get the list of controls that should not steal the focus from this control
+                * @returns an array of controls
+                */
+            keepsFocusWith(): BABYLON.Nullable<Control[]>;
             /** @hidden */
             processKey(keyCode: number, key?: string): void;
             /** @hidden */
@@ -42596,22 +42810,31 @@ declare module BABYLON.GUI {
                 * @param shiftState defines the new shift state
                 */
             applyShiftState(shiftState: number): void;
-            /** Gets the input text control attached with the keyboard */
+            /** Gets the input text control currently attached to the keyboard */
             readonly connectedInputText: BABYLON.Nullable<InputText>;
             /**
                 * Connects the keyboard with an input text control
+                *
                 * @param input defines the target control
                 */
             connect(input: InputText): void;
             /**
-                * Disconnects the keyboard from an input text control
+                * Disconnects the keyboard from connected InputText controls
+                *
+                * @param input optionally defines a target control, otherwise all are disconnected
                 */
-            disconnect(): void;
+            disconnect(input?: InputText): void;
+            /**
+                * Release all resources
+                */
+            dispose(): void;
             /**
                 * Creates a new keyboard using a default layout
+                *
+                * @param name defines control name
                 * @returns a new VirtualKeyboard
                 */
-            static CreateDefaultLayout(): VirtualKeyboard;
+            static CreateDefaultLayout(name?: string): VirtualKeyboard;
     }
 }
 declare module BABYLON.GUI {
