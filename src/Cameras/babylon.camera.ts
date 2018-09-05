@@ -166,7 +166,6 @@
         private _computedViewMatrix = Matrix.Identity();
         public _projectionMatrix = new Matrix();
         private _doNotComputeProjectionMatrix = false;
-        private _worldMatrix = Matrix.Identity();
         public _postProcesses = new Array<Nullable<PostProcess>>();
         private _transformMatrix = Matrix.Zero();
 
