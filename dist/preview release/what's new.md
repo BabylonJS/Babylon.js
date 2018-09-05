@@ -206,6 +206,7 @@
 - Oimo.js now receives quaternion and not euler when a body is being constructed ([RaananW](https://github.com/RaananW))
 - Improving visual quality on SSAO2 shader ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fixed a bug where changing the sample count on `PostProcess` would not update the WebGL Texture ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fixed multi camera support in defaultRenderingPipeline depth of field ([sebavan](http://www.github.com/sebavan))
 
 ### Viewer
 
