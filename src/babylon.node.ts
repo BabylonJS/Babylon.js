@@ -104,6 +104,10 @@
         private _parentNode: Nullable<Node>;
         private _children: Node[];
 
+        /** @hidden */
+        public _worldMatrixWasUpdated = false;
+        private _identityMatrix: Matrix;
+
         /**
          * Gets a boolean indicating if the node has been disposed
          * @returns true if the node was disposed
@@ -356,37 +360,38 @@
 
         /** @hidden */
         public isSynchronizedWithParent(): boolean {
-            if (!this.parent) {
+            if (!this._parentNode) {
                 return true;
             }
 
-            if (this._parentRenderId !== this.parent._childRenderId) {
+            if (this._parentRenderId !== this._parentNode._childRenderId) {
                 return false;
             }
 
-            return this.parent.isSynchronized();
+            return this._parentNode.isSynchronized();
         }
 
         /** @hidden */
-        public isSynchronized(updateCache?: boolean): boolean {
+        public isSynchronized(useWasUpdatedFlag?: boolean): boolean {
             var check = this.hasNewParent();
 
-            check = check || !this.isSynchronizedWithParent();
+            if (!useWasUpdatedFlag) {
+                check = check || !this.isSynchronizedWithParent();
+            } else if (this._parentNode) {
+                check = this._parentNode._worldMatrixWasUpdated; 
+            }
 
             check = check || !this._isSynchronized();
-
-            if (updateCache)
-                this.updateCache(true);
 
             return !check;
         }
 
         /** @hidden */
         public hasNewParent(): boolean {
-            if (this._cache.parent === this.parent)
+            if (this._cache.parent === this._parentNode)
                 return false;
 
-            this._cache.parent = this.parent;
+            this._cache.parent = this._parentNode;
 
             return true;
         }
@@ -415,8 +420,8 @@
                 return false;
             }
 
-            if (this.parent !== undefined && this.parent !== null) {
-                return this.parent.isEnabled(checkAncestors);
+            if (this._parentNode !== undefined && this._parentNode !== null) {
+                return this._parentNode.isEnabled(checkAncestors);
             }
 
             return true;
@@ -637,10 +642,14 @@
         /**
          * Computes the world matrix of the node
          * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
+         * @param useWasUpdatedFlag defines a reserved property
          * @returns the world matrix
          */
-        public computeWorldMatrix(force?: boolean): Matrix {
-            return Matrix.Identity();
+        public computeWorldMatrix(force?: boolean, useWasUpdatedFlag?: boolean): Matrix {
+            if (!this._identityMatrix) {
+                this._identityMatrix = Matrix.Identity();
+            }
+            return this._identityMatrix;
         }
 
         /**
