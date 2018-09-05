@@ -736,6 +736,7 @@
             else {
                 this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube());
             }
+            this._shadowMap.renderOncePerFrameMax = true;
             this._shadowMap.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.anisotropicFilteringLevel = 1;

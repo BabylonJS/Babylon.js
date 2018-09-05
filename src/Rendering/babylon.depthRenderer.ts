@@ -12,6 +12,11 @@
         private _camera:Nullable<Camera>;
 
         /**
+         * Defines wheter the effect is rendering or not.
+         */
+        public isEnabled: boolean = true;
+
+        /**
          * Instantiates a depth renderer
          * @param scene The scene the renderer belongs to
          * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)

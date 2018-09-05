@@ -62,6 +62,18 @@
             }
         }
 
+        /**
+         * By default a render target might be rendered once per camera.
+         * In case nothing changed for the render target between multiple cameras in the scene,
+         * you can set the following flag to true to ensure it will be rendered only once per frame.
+         */
+        public renderOncePerFrameMax = false;
+
+        /**
+         * Stores the latest rendered frame id to prevent multiple rendering if not needed.
+         */
+        private _frameId = -1;
+
         public renderParticles = true;
         public renderSprites = false;
         public coordinatesMode = Texture.PROJECTION_MODE;
@@ -381,6 +393,15 @@
 
         /** @hidden */
         public _shouldRender(): boolean {
+            // Render only once a frame.
+            if (this.activeCamera || this.renderOncePerFrameMax) {
+                const currentFrameId = this.getScene()!.getFrameId();
+                if (currentFrameId === this._frameId) {
+                    return false;
+                }
+                this._frameId = currentFrameId;
+            }
+
             if (this._currentRefreshId === -1) { // At least render once
                 this._currentRefreshId = 1;
                 return true;
