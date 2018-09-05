@@ -1084,9 +1084,14 @@
         public _beforeClearStage = Stage.Create<SimpleStageAction>();
         /**
          * @hidden
-         * Defines the actions happening before camera updates.
+         * Defines the actions when collecting render targets for the frame.
          */
         public _gatherRenderTargetsStage = Stage.Create<RenderTargetsStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening for one camera in the frame.
+         */
+        public _gatherActiveCameraRenderTargetsStage = Stage.Create<RenderTargetsStageAction>();
         /**
          * @hidden
          * Defines the actions happening during the per mesh ready checks.
@@ -4248,6 +4253,11 @@
                 this._renderTargets.concatWithNoDuplicate(rigParent.customRenderTargets);
             }
 
+            // Collects render targets from external components.
+            for (let step of this._gatherActiveCameraRenderTargetsStage) {
+                step.action(this._renderTargets);
+            }
+
             if (this.renderTargetsEnabled) {
                 this._intermediateRendering = true;
 
@@ -4767,6 +4777,7 @@
             this._beforeCameraUpdateStage.clear();
             this._beforeClearStage.clear();
             this._gatherRenderTargetsStage.clear();
+            this._gatherActiveCameraRenderTargetsStage.clear();
             this._pointerMoveStage.clear();
             this._pointerDownStage.clear();
             this._pointerUpStage.clear();

@@ -9,10 +9,10 @@ attribute float cellIndex;
 #ifndef BILLBOARD	
 attribute vec3 direction;
 #endif
-attribute vec2 offset;
 #ifdef RAMPGRADIENT
 attribute vec4 remapData;
 #endif
+attribute vec2 offset;
 
 // Uniforms
 uniform mat4 view;
