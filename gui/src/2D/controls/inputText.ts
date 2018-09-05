@@ -294,7 +294,7 @@ export class InputText extends Control implements IFocusableControl {
         // Different hosts
         const otherHost = this._connectedVirtualKeyboard._host;
 
-        if (otherHost._lastControlOver[pointerId] && otherHost._lastControlOver[pointerId].IsAscendant(this._connectedVirtualKeyboard)) {
+        if (otherHost._lastControlOver[pointerId] && otherHost._lastControlOver[pointerId].isAscendant(this._connectedVirtualKeyboard)) {
             return true;
         }
 
