@@ -21,6 +21,12 @@ export interface IFocusableControl {
      * @param evt defines the current keyboard event
      */
     processKeyboard(evt: KeyboardEvent): void;
+
+    /**
+     * Function called to get the list of controls that should not steal the focus from this control
+     * @returns an array of controls
+     */
+    keepsFocusWith(): Nullable<Control[]>;
 }
 
 /**
@@ -658,7 +664,32 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 }
                 delete this._lastControlDown[pointerId];
 
-                this.focusedControl = null;
+                if (this.focusedControl) {
+                    const friendlyControls = this.focusedControl.keepsFocusWith();
+                    
+                    let canMoveFocus = true;
+
+                    if (friendlyControls) {
+                        for (var control of friendlyControls) {
+                            // Same host, no need to keep the focus
+                            if (this === control._host) {
+                                continue;
+                            }
+
+                            // Different hosts
+                            const otherHost = control._host;
+
+                            if (otherHost._lastControlOver[pointerId] && otherHost._lastControlOver[pointerId].isAscendant(control)) {
+                                canMoveFocus = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (canMoveFocus) {
+                        this.focusedControl = null;
+                    }
+                }
             } else if (pi.type === PointerEventTypes.POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
                     this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);

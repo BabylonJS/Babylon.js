@@ -27,6 +27,11 @@ declare module BABYLON.GUI {
                 * @param evt defines the current keyboard event
                 */
             processKeyboard(evt: KeyboardEvent): void;
+            /**
+                * Function called to get the list of controls that should not steal the focus from this control
+                * @returns an array of controls
+                */
+            keepsFocusWith(): BABYLON.Nullable<Control[]>;
     }
     /**
         * Class used to create texture to support 2D GUI elements
@@ -1076,6 +1081,12 @@ declare module BABYLON.GUI {
             /** @hidden */
             _resetFontCache(): void;
             /**
+                * Determines if a container is an ascendant of the current control
+                * @param container defines the container to look for
+                * @returns true if the container is one of the ascendant of the control
+                */
+            isAscendant(container: Control): boolean;
+            /**
                 * Gets coordinates in local control space
                 * @param globalCoordinates defines the coordinates to transform
                 * @returns the new coordinates in local space
@@ -1365,6 +1376,8 @@ declare module BABYLON.GUI {
         */
     export class InputText extends Control implements IFocusableControl {
             name?: string | undefined;
+            /** @hidden */
+            _connectedVirtualKeyboard: BABYLON.Nullable<VirtualKeyboard>;
             /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
             promptMessage: string;
             /** BABYLON.Observable raised when the text changes */
@@ -1416,6 +1429,11 @@ declare module BABYLON.GUI {
             /** @hidden */
             onFocus(): void;
             protected _getTypeName(): string;
+            /**
+                * Function called to get the list of controls that should not steal the focus from this control
+                * @returns an array of controls
+                */
+            keepsFocusWith(): BABYLON.Nullable<Control[]>;
             /** @hidden */
             processKey(keyCode: number, key?: string): void;
             /** @hidden */

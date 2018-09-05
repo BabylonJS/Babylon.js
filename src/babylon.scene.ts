@@ -904,13 +904,6 @@
             return this._mainSoundTrack;
         }
 
-        /**
-         * Gets or sets the VRExperienceHelper attached to the scene
-         * @see http://doc.babylonjs.com/how_to/webvr_helper
-         * @ignorenaming
-         */
-        public VRHelper: VRExperienceHelper;
-
         // Private
         private _engine: Engine;
 
@@ -941,6 +934,7 @@
         public _cachedVisibility: Nullable<number>;
 
         private _renderId = 0;
+        private _frameId = 0;
         private _executeWhenReadyTimeoutId = -1;
         private _intermediateRendering = false;
 
@@ -1488,11 +1482,19 @@
         }
 
         /** 
-         * Gets an unique Id for the current frame
+         * Gets an unique Id for the current render phase
          * @returns a number
          */
         public getRenderId(): number {
             return this._renderId;
+        }
+
+        /** 
+         * Gets an unique Id for the current frame
+         * @returns a number
+         */
+        public getFrameId(): number {
+            return this._frameId;
         }
 
         /** Call this function if you want to manually increment the render Id*/
@@ -3949,7 +3951,7 @@
                 const material = subMesh.getMaterial();
                 if (material !== null && material !== undefined) {
                     // Render targets
-                    if (material.getRenderTargetTextures !== undefined) {
+                    if (material.hasRenderTargetTextures && material.getRenderTargetTextures !== undefined) {
                         if (this._processedMaterials.indexOf(material) === -1) {
                             this._processedMaterials.push(material);
 
@@ -4151,7 +4153,7 @@
         }
 
         private _activeMesh(sourceMesh: AbstractMesh, mesh: AbstractMesh): void {
-            if (this.skeletonsEnabled && mesh.skeleton !== null && mesh.skeleton !== undefined) {
+            if (this._skeletonsEnabled && mesh.skeleton !== null && mesh.skeleton !== undefined) {
                 if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
                     mesh.skeleton.prepare();
                 }
@@ -4377,6 +4379,8 @@
             if (this.isDisposed) {
                 return;
             }
+
+            this._frameId++;
 
             // Register components that have been associated lately to the scene.
             this._registerTransientComponents();
@@ -4828,11 +4832,6 @@
             // Release sounds & sounds tracks
             if (AudioEngine) {
                 this.disposeSounds();
-            }
-
-            // VR Helper
-            if (this.VRHelper) {
-                this.VRHelper.dispose();
             }
 
             // Detach cameras
