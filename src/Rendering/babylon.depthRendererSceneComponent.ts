@@ -79,6 +79,7 @@
          */
         public register(): void {
             this.scene._gatherRenderTargetsStage.registerStep(SceneComponentConstants.STEP_GATHERRENDERTARGETS_DEPTHRENDERER, this, this._gatherRenderTargets);
+            this.scene._gatherActiveCameraRenderTargetsStage.registerStep(SceneComponentConstants.STEP_GATHERACTIVECAMERARENDERTARGETS_DEPTHRENDERER, this, this._gatherActiveCameraRenderTargets);
         }
 
         /**
@@ -101,7 +102,21 @@
         private _gatherRenderTargets(renderTargets: SmartArrayNoDuplicate<RenderTargetTexture>): void {
             if (this.scene._depthRenderer) {
                 for (var key in this.scene._depthRenderer) {
-                    renderTargets.push(this.scene._depthRenderer[key].getDepthMap());
+                    let depthRenderer = this.scene._depthRenderer[key];
+                    if (!depthRenderer.useOnlyInActiveCamera) {
+                        renderTargets.push(depthRenderer.getDepthMap());
+                    }
+                }
+            }
+        }
+
+        private _gatherActiveCameraRenderTargets(renderTargets: SmartArrayNoDuplicate<RenderTargetTexture>): void {
+            if (this.scene._depthRenderer) {
+                for (var key in this.scene._depthRenderer) {
+                    let depthRenderer = this.scene._depthRenderer[key];
+                    if (depthRenderer.useOnlyInActiveCamera && this.scene.activeCamera!.id === key) {
+                        renderTargets.push(depthRenderer.getDepthMap());
+                    }
                 }
             }
         }
