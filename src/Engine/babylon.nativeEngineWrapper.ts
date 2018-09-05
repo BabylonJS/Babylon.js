@@ -751,18 +751,17 @@
                     texture.onLoadedObservable.clear();
                 };
 
-                if (!fromData || isBase64) {
+                if (buffer instanceof ArrayBuffer) {
+                    onload(buffer);
+                } else if (buffer instanceof Blob) {
+                    throw new Error("Loading texture from Blob not yet implemented.");
+                } else if (!fromData) {
                     let onLoadFileError = (request?: XMLHttpRequest, exception?: any) => {
                         onInternalError("Failed to retrieve " + url + ".", exception);
                     }
                     Tools.LoadFile(url, onload, undefined, undefined, /*useArrayBuffer*/true, onLoadFileError);
-                } else if (buffer instanceof ArrayBuffer) {
-                    onload(buffer);
-                } else if (typeof buffer === "string" || buffer instanceof Blob) {
-                    throw new Error("Loading texture from string/Blob not yet implemented.");
-                    //Tools.LoadImage(buffer, onload, onInternalError, null);
                 } else {
-                    throw new Error("Unexpected texture source type.");
+                    onload(Tools.DecodeBase64(buffer as string));
                 }
             }
 
