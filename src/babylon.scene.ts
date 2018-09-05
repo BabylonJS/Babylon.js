@@ -4160,7 +4160,7 @@
         }
 
         private _activeMesh(sourceMesh: AbstractMesh, mesh: AbstractMesh): void {
-            if (this.skeletonsEnabled && mesh.skeleton !== null && mesh.skeleton !== undefined) {
+            if (this._skeletonsEnabled && mesh.skeleton !== null && mesh.skeleton !== undefined) {
                 if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
                     mesh.skeleton.prepare();
                 }
