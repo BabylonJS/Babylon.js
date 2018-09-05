@@ -904,13 +904,6 @@
             return this._mainSoundTrack;
         }
 
-        /**
-         * Gets or sets the VRExperienceHelper attached to the scene
-         * @see http://doc.babylonjs.com/how_to/webvr_helper
-         * @ignorenaming
-         */
-        public VRHelper: VRExperienceHelper;
-
         // Private
         private _engine: Engine;
 
@@ -4839,11 +4832,6 @@
             // Release sounds & sounds tracks
             if (AudioEngine) {
                 this.disposeSounds();
-            }
-
-            // VR Helper
-            if (this.VRHelper) {
-                this.VRHelper.dispose();
             }
 
             // Detach cameras
