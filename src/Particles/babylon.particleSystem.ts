@@ -87,7 +87,26 @@
         /** @hidden */
         public _currentStartSize2 = 0;   
 
-        // end of sheet animation
+        private readonly _rawTextureWidth = 256;
+        private _rampGradientsTexture: RawTexture;    
+        private _useRampGradients = false;    
+
+        /** Gets or sets a boolean indicating that ramp gradients must be used
+         * @see http://doc.babylonjs.com/babylon101/particles#ramp-gradients
+         */
+        public get useRampGradients(): boolean {
+            return this._useRampGradients;
+        }
+
+        public set useRampGradients(value: boolean) {
+            if (this._useRampGradients === value) {
+                return;
+            }
+
+            this._useRampGradients = value;
+
+            this._resetEffect();
+        }
 
         // Sub-emitters
         /**
@@ -311,6 +330,28 @@
                             });
                         }
 
+                        // Remap data
+                        if (this._useRampGradients) {
+                            if (this._colorRemapGradients && this._colorRemapGradients.length > 0) {                  
+                                Tools.GetCurrentGradient(ratio, this._colorRemapGradients, (currentGradient, nextGradient, scale) => {                                                                 
+                                    let min = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
+                                    let max = Scalar.Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
+
+                                    particle.remapData.x = min;
+                                    particle.remapData.y = max - min;
+                                });
+                            }
+
+                            if (this._alphaRemapGradients && this._alphaRemapGradients.length > 0) {                  
+                                Tools.GetCurrentGradient(ratio, this._alphaRemapGradients, (currentGradient, nextGradient, scale) => {
+                                    let min = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
+                                    let max = Scalar.Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
+
+                                    particle.remapData.z = min;
+                                    particle.remapData.w = max - min;
+                                });
+                            }
+
                         if (this._isAnimationSheetEnabled) {
                             particle.updateCellIndex();
                         }
@@ -434,7 +475,63 @@
             this._removeFactorGradient(this._sizeGradients, gradient);
 
             return this;
-        }        
+        }    
+        
+        /**
+         * Adds a new color remap gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param min defines the color remap minimal range        
+         * @param max defines the color remap maximal range        
+         * @returns the current particle system
+         */
+        public addColorRemapGradient(gradient: number, min: number, max: number): IParticleSystem {
+            if (!this._colorRemapGradients) {
+                this._colorRemapGradients = [];
+            }
+
+            this._addFactorGradient(this._colorRemapGradients, gradient, min, max);
+
+            return this;
+        }
+
+        /**
+         * Remove a specific color remap gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeColorRemapGradient(gradient: number): IParticleSystem {
+            this._removeFactorGradient(this._colorRemapGradients, gradient);
+
+            return this;
+        }  
+
+        /**
+         * Adds a new alpha remap gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param min defines the alpha remap minimal range        
+         * @param max defines the alpha remap maximal range        
+         * @returns the current particle system
+         */
+        public addAlphaRemapGradient(gradient: number, min: number, max: number): IParticleSystem {
+            if (!this._alphaRemapGradients) {
+                this._alphaRemapGradients = [];
+            }
+
+            this._addFactorGradient(this._alphaRemapGradients, gradient, min, max);
+
+            return this;
+        }
+
+        /**
+         * Remove a specific alpha remap gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeAlphaRemapGradient(gradient: number): IParticleSystem {
+            this._removeFactorGradient(this._alphaRemapGradients, gradient);
+
+            return this;
+        }          
 
         /**
          * Adds a new angular speed gradient
@@ -624,6 +721,92 @@
             return this;
         } 
 
+        private _createRampGradientTexture() {
+            if (!this._rampGradients || !this._rampGradients.length || this._rampGradientsTexture) {
+                return;
+            }
+
+            let data = new Uint8Array(this._rawTextureWidth * 4);
+            let tmpColor = Tmp.Color4[0];
+
+            for (var x = 0; x < this._rawTextureWidth; x++) {
+                var ratio = x / this._rawTextureWidth;
+
+                Tools.GetCurrentGradient(ratio, this._rampGradients, (currentGradient, nextGradient, scale) => {
+
+                    Color4.LerpToRef((<ColorGradient>currentGradient).color1, (<ColorGradient>nextGradient).color1, scale, tmpColor);
+                    data[x * 4] = tmpColor.r * 255;
+                    data[x * 4 + 1] = tmpColor.g * 255;
+                    data[x * 4 + 2] = tmpColor.b * 255;
+                    data[x * 4 + 3] = tmpColor.a * 255;
+                });
+
+            }
+
+            this._rampGradientsTexture = RawTexture.CreateRGBATexture(data, this._rawTextureWidth, 1, this._scene, false, false, Texture.NEAREST_SAMPLINGMODE);
+        }
+
+        /**
+         * Gets the current list of ramp gradients.
+         * You must use addRampGradient and removeRampGradient to udpate this list
+         * @returns the list of ramp gradients
+         */
+        public getRampGradients(): Nullable<Array<ColorGradient>> {
+            return this._rampGradients;
+        }        
+
+        /**
+         * Adds a new ramp gradient used to remap particle colors
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param color defines the color to affect to the specified gradient
+         * @returns the current particle system
+         */
+        public addRampGradient(gradient: number, color: Color4): ParticleSystem {
+            if (!this._rampGradients) {
+                this._rampGradients = [];
+            }
+
+            let rampGradient = new ColorGradient();
+            rampGradient.gradient = gradient;
+            rampGradient.color1 = color;
+            this._rampGradients.push(rampGradient);
+
+            this._rampGradients.sort((a, b) => {
+                if (a.gradient < b.gradient) {
+                    return -1;
+                } else if (a.gradient > b.gradient) {
+                    return 1;
+                }
+
+                return 0;
+            });
+
+            if (this._rampGradientsTexture) {
+                this._rampGradientsTexture.dispose();
+                (<any>this._rampGradientsTexture) = null;
+            }
+
+            this._createRampGradientTexture();            
+
+            return this;
+        }
+
+        /**
+         * Remove a specific ramp gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeRampGradient(gradient: number): ParticleSystem {
+            this._removeGradientAndTexture(gradient, this._rampGradients, this._rampGradientsTexture);
+            (<any>this._rampGradientsTexture) = null;
+
+            if (this._rampGradients && this._rampGradients.length > 0) {
+                this._createRampGradientTexture();   
+            }
+
+            return this;
+        }            
+
         /**
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
@@ -757,7 +940,13 @@
                 offsets = this._vertexBuffer.createVertexBuffer("offset", dataOffset, 2, this._vertexBufferSize, this._useInstancing);
                 dataOffset += 2;
             }
-            this._vertexBuffers["offset"] = offsets;              
+            this._vertexBuffers["offset"] = offsets;         
+            
+            if (this._useRampGradients) {
+                var rampDataBuffer = this._vertexBuffer.createVertexBuffer("rampData", dataOffset, 4, this._vertexBufferSize, this._useInstancing);
+                this._vertexBuffers["rampData"] = rampDataBuffer;
+                dataOffset += 4;
+            }
         }
 
         private _createIndexBuffer() {
@@ -913,6 +1102,13 @@
 
                 this._vertexData[offset++] = offsetX;
                 this._vertexData[offset++] = offsetY;   
+            }
+
+            if (this._useRampGradients) {
+                this._vertexData[offset++] = particle.remapData.x;
+                this._vertexData[offset++] = particle.remapData.y;
+                this._vertexData[offset++] = particle.remapData.z;
+                this._vertexData[offset++] = particle.remapData.w;                
             }
         }
 
@@ -1176,12 +1372,17 @@
 
                 // Inherited Velocity
                 particle.direction.addInPlace(this._inheritedVelocityOffset);
+                
+                // Remap
+                if (this._useRampGradients) {
+                    particle.remapData = new Vector4(0, 1, 0, 1);
+                }
             }
         }
 
         /** @hidden */
         public static _GetAttributeNamesOrOptions(isAnimationSheetEnabled = false, isBillboardBased = false): string[] {
-            var attributeNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "angle", "offset", "size"];
+            var attributeNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "angle", "offset", "size", "remapData"];
 
             if (isAnimationSheetEnabled) {
                 attributeNamesOrOptions.push("cellIndex");
@@ -1235,6 +1436,10 @@
                 defines.push("#define BLENDMULTIPLYMODE");
             }
 
+            if (this._useRampGradients) {
+                defines.push("#define RAMPGRADIENT");
+            }
+
             if (this._isBillboardBased) {
                 defines.push("#define BILLBOARD");
 
@@ -1261,7 +1466,7 @@
                 var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased);
                 var effectCreationOption = ParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled);
 
-                var samplers = ["diffuseSampler"];
+                var samplers = ["diffuseSampler", "rampSampler"];
 
                 if (ImageProcessingConfiguration) {
                     ImageProcessingConfiguration.PrepareUniforms(effectCreationOption, this._imageProcessingConfigurationDefines);
@@ -1272,7 +1477,7 @@
                     "particles",
                     attributesNamesOrOptions,
                     effectCreationOption,
-                    ["diffuseSampler"], join);
+                    samplers, join);
             }
 
             return this._effect;
@@ -1444,6 +1649,10 @@
             if (this._isBillboardBased) {
                 var camera = this._scene.activeCamera!;
                 effect.setVector3("eyePosition", camera.globalPosition);
+            }
+
+            if (this._rampGradientsTexture) {
+                effect.setTexture("rampSampler", this._rampGradientsTexture);
             }
 
             if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4) {
@@ -1720,6 +1929,55 @@
                     serializationObject.colorGradients.push(serializedGradient);
                 }
             }
+            
+            let rampGradients = particleSystem.getRampGradients();
+            if (rampGradients) {
+                serializationObject.rampGradients = [];
+                for (var rampGradient of rampGradients) {
+                    var serializedGradient: any = {
+                        gradient: rampGradient.gradient,
+                        color1: rampGradient.color1.asArray()
+                    };
+
+                    serializationObject.rampGradients.push(serializedGradient);
+                }
+            }
+
+            let colorRemapGradients = particleSystem.getColorRemapGradients();
+            if (colorRemapGradients) {
+                serializationObject.colorRemapGradients = [];
+                for (var colorRemapGradient of colorRemapGradients) {
+
+                    var serializedGradient: any = {
+                        gradient: colorRemapGradient.gradient,
+                        factor1: colorRemapGradient.factor1
+                    };
+
+                    if (colorRemapGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = colorRemapGradient.factor2;
+                    }
+
+                    serializationObject.colorRemapGradients.push(serializedGradient);
+                }
+            }        
+            
+            let alphaRemapGradients = particleSystem.getAlphaRemapGradients();
+            if (alphaRemapGradients) {
+                serializationObject.alphaRemapGradients = [];
+                for (var alphaRemapGradient of alphaRemapGradients) {
+
+                    var serializedGradient: any = {
+                        gradient: alphaRemapGradient.gradient,
+                        factor1: alphaRemapGradient.factor1
+                    };
+
+                    if (alphaRemapGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = alphaRemapGradient.factor2;
+                    }
+
+                    serializationObject.alphaRemapGradients.push(serializedGradient);
+                }
+            }             
 
             let sizeGradients = particleSystem.getSizeGradients();
             if (sizeGradients) {
@@ -1940,45 +2198,69 @@
                 }
             }
 
+            if (parsedParticleSystem.rampGradients) {
+                for (var rampGradient of parsedParticleSystem.rampGradients) {
+                    particleSystem.addRampGradient(rampGradient.gradient, Color4.FromArray(rampGradient.color1));
+                }
+            }
+
+            if (parsedParticleSystem.colorRemapGradients) {
+                for (var colorRemapGradient of parsedParticleSystem.colorRemapGradients) {
+                    particleSystem.addColorRemapGradient(colorRemapGradient.gradient, colorRemapGradient.factor1 !== undefined ? colorRemapGradient.factor1 : colorRemapGradient.factor, colorRemapGradient.factor2);
+                }
+            } 
+
+            if (parsedParticleSystem.alphaRemapGradients) {
+                for (var alphaRemapGradient of parsedParticleSystem.alphaRemapGradients) {
+                    particleSystem.addAlphaRemapGradient(alphaRemapGradient.gradient, alphaRemapGradient.factor1 !== undefined ? alphaRemapGradient.factor1 : alphaRemapGradient.factor, alphaRemapGradient.factor2);
+                }
+            } 
+
             if (parsedParticleSystem.sizeGradients) {
                 for (var sizeGradient of parsedParticleSystem.sizeGradients) {
-                    particleSystem.addSizeGradient(sizeGradient.gradient, sizeGradient.factor1 !== undefined ?  sizeGradient.factor1 : sizeGradient.factor, sizeGradient.factor2);
+                    particleSystem.addSizeGradient(sizeGradient.gradient, sizeGradient.factor1 !== undefined ? sizeGradient.factor1 : sizeGradient.factor, sizeGradient.factor2);
+                }
+            } 
+
+            if (parsedParticleSystem.sizeGradients) {
+                for (var sizeGradient of parsedParticleSystem.sizeGradients) {
+                    particleSystem.addSizeGradient(sizeGradient.gradient, sizeGradient.factor1 !== undefined ? sizeGradient.factor1 : sizeGradient.factor, sizeGradient.factor2);
                 }
             }       
 
             if (parsedParticleSystem.angularSpeedGradients) {
                 for (var angularSpeedGradient of parsedParticleSystem.angularSpeedGradients) {
-                    particleSystem.addAngularSpeedGradient(angularSpeedGradient.gradient, angularSpeedGradient.factor1 !== undefined ?  angularSpeedGradient.factor1 : angularSpeedGradient.factor, angularSpeedGradient.factor2);
+                    particleSystem.addAngularSpeedGradient(angularSpeedGradient.gradient, angularSpeedGradient.factor1 !== undefined ? angularSpeedGradient.factor1 : angularSpeedGradient.factor, angularSpeedGradient.factor2);
                 }
             }       
             
             if (parsedParticleSystem.velocityGradients) {
                 for (var velocityGradient of parsedParticleSystem.velocityGradients) {
-                    particleSystem.addVelocityGradient(velocityGradient.gradient, velocityGradient.factor1 !== undefined ?  velocityGradient.factor1 : velocityGradient.factor, velocityGradient.factor2);
+                    particleSystem.addVelocityGradient(velocityGradient.gradient, velocityGradient.factor1 !== undefined ? velocityGradient.factor1 : velocityGradient.factor, velocityGradient.factor2);
                 }
             }     
 
             if (parsedParticleSystem.dragGradients) {
                 for (var dragGradient of parsedParticleSystem.dragGradients) {
-                    particleSystem.addDragGradient(dragGradient.gradient, dragGradient.factor1 !== undefined ?  dragGradient.factor1 : dragGradient.factor, dragGradient.factor2);
+                    particleSystem.addDragGradient(dragGradient.gradient, dragGradient.factor1 !== undefined ? dragGradient.factor1 : dragGradient.factor, dragGradient.factor2);
                 }
             }        
             
             if (parsedParticleSystem.emitRateGradients) {
                 for (var emitRateGradient of parsedParticleSystem.emitRateGradients) {
-                    particleSystem.addEmitRateGradient(emitRateGradient.gradient, emitRateGradient.factor1 !== undefined ?  emitRateGradient.factor1 : emitRateGradient.factor, emitRateGradient.factor2);
+                    particleSystem.addEmitRateGradient(emitRateGradient.gradient, emitRateGradient.factor1 !== undefined ? emitRateGradient.factor1 : emitRateGradient.factor, emitRateGradient.factor2);
                 }
             } 
             
             if (parsedParticleSystem.startSizeGradients) {
                 for (var startSizeGradient of parsedParticleSystem.startSizeGradients) {
-                    particleSystem.addStartSizeGradient(startSizeGradient.gradient, startSizeGradient.factor1 !== undefined ?  startSizeGradient.factor1 : startSizeGradient.factor, startSizeGradient.factor2);
+                    particleSystem.addStartSizeGradient(startSizeGradient.gradient, startSizeGradient.factor1 !== undefined ? startSizeGradient.factor1 : startSizeGradient.factor, startSizeGradient.factor2);
                 }
             }
 
             if (parsedParticleSystem.limitVelocityGradients) {
                 for (var limitVelocityGradient of parsedParticleSystem.limitVelocityGradients) {
-                    particleSystem.addLimitVelocityGradient(limitVelocityGradient.gradient, limitVelocityGradient.factor1 !== undefined ?  limitVelocityGradient.factor1 : limitVelocityGradient.factor, limitVelocityGradient.factor2);
+                    particleSystem.addLimitVelocityGradient(limitVelocityGradient.gradient, limitVelocityGradient.factor1 !== undefined ? limitVelocityGradient.factor1 : limitVelocityGradient.factor, limitVelocityGradient.factor2);
                 }
                 particleSystem.limitVelocityDamping = parsedParticleSystem.limitVelocityDamping;
             }               

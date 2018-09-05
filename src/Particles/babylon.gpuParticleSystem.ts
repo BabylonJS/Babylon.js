@@ -157,29 +157,13 @@
         }            
                
         private _colorGradientsTexture: RawTexture;
-
-        private _removeGradient(gradient: number, gradients: Nullable<IValueGradient[]>, texture: RawTexture): GPUParticleSystem {
-            if (!gradients) {
-                return this;
-            }
-
-            let index = 0;
-            for (var valueGradient of gradients) {
-                if (valueGradient.gradient === gradient) {
-                    gradients.splice(index, 1);
-                    break;
-                }
-                index++;
-            }
-
-            if (texture) {
-                texture.dispose();
-            }            
-
+        
+        protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: RawTexture): BaseParticleSystem {
+            super._removeGradientAndTexture(gradient, gradients, texture);
             this._releaseBuffers();
 
             return this;
-        }    
+        }
         
         /**
          * Adds a new color gradient
@@ -224,7 +208,7 @@
          * @returns the current particle system
          */
         public removeColorGradient(gradient: number): GPUParticleSystem {
-            this._removeGradient(gradient, this._colorGradients, this._colorGradientsTexture);
+            this._removeGradientAndTexture(gradient, this._colorGradients, this._colorGradientsTexture);
             (<any>this._colorGradientsTexture) = null;
 
             return this;
@@ -284,7 +268,7 @@
          * @returns the current particle system
          */
         public removeSizeGradient(gradient: number): GPUParticleSystem {
-            this._removeGradient(gradient, this._sizeGradients, this._sizeGradientsTexture);
+            this._removeGradientAndTexture(gradient, this._sizeGradients, this._sizeGradientsTexture);
             (<any>this._sizeGradientsTexture) = null;
 
             return this;            
@@ -319,7 +303,7 @@
          * @returns the current particle system
          */
         public removeAngularSpeedGradient(gradient: number): GPUParticleSystem {
-            this._removeGradient(gradient, this._angularSpeedGradients, this._angularSpeedGradientsTexture);
+            this._removeGradientAndTexture(gradient, this._angularSpeedGradients, this._angularSpeedGradientsTexture);
             (<any>this._angularSpeedGradientsTexture) = null;
 
             return this;           
@@ -354,7 +338,7 @@
          * @returns the current particle system
          */
         public removeVelocityGradient(gradient: number): GPUParticleSystem {
-            this._removeGradient(gradient, this._velocityGradients, this._velocityGradientsTexture);
+            this._removeGradientAndTexture(gradient, this._velocityGradients, this._velocityGradientsTexture);
             (<any>this._velocityGradientsTexture) = null;
 
             return this;           
@@ -389,7 +373,7 @@
          * @returns the current particle system
          */
         public removeLimitVelocityGradient(gradient: number): GPUParticleSystem {
-            this._removeGradient(gradient, this._limitVelocityGradients, this._limitVelocityGradientsTexture);
+            this._removeGradientAndTexture(gradient, this._limitVelocityGradients, this._limitVelocityGradientsTexture);
             (<any>this._limitVelocityGradientsTexture) = null;
 
             return this;
@@ -424,7 +408,7 @@
          * @returns the current particle system
          */
         public removeDragGradient(gradient: number): GPUParticleSystem {
-            this._removeGradient(gradient, this._dragGradients, this._dragGradientsTexture);
+            this._removeGradientAndTexture(gradient, this._dragGradients, this._dragGradientsTexture);
             (<any>this._dragGradientsTexture) = null;
 
             return this;
@@ -473,6 +457,86 @@
             // Do nothing as start size is not supported by GPUParticleSystem
             return this;
         } 
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param min defines the color remap minimal range        
+         * @param max defines the color remap maximal range        
+         * @returns the current particle system
+         */
+        public addColorRemapGradient(gradient: number, min: number, max: number): IParticleSystem {
+            // Do nothing as start size is not supported by GPUParticleSystem
+
+            return this;
+        }
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeColorRemapGradient(gradient: number): IParticleSystem {
+            // Do nothing as start size is not supported by GPUParticleSystem
+
+            return this;
+        }  
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param min defines the alpha remap minimal range        
+         * @param max defines the alpha remap maximal range        
+         * @returns the current particle system
+         */
+        public addAlphaRemapGradient(gradient: number, min: number, max: number): IParticleSystem {
+            // Do nothing as start size is not supported by GPUParticleSystem
+
+            return this;
+        }
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeAlphaRemapGradient(gradient: number): IParticleSystem {
+            // Do nothing as start size is not supported by GPUParticleSystem
+
+            return this;
+        }   
+        
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param color defines the color to affect to the specified gradient
+         * @returns the current particle system
+         */
+        public addRampGradient(gradient: number, color: Color4): IParticleSystem {
+            //Not supported by GPUParticleSystem          
+
+            return this;
+        }
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeRampGradient(gradient: number): IParticleSystem {
+            //Not supported by GPUParticleSystem
+
+            return this;
+        }  
+        
+        /**
+         * Not supported by GPUParticleSystem
+         * @returns the list of ramp gradients
+         */
+        public getRampGradients(): Nullable<Array<ColorGradient>> {
+            return null;
+        }             
+        
 
         /**
          * Instantiates a GPU particle system.
