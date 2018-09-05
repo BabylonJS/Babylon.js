@@ -354,11 +354,6 @@ module BABYLON {
         public abstract transferToEffect(effect: Effect, lightIndex: string): Light;
 
         /**
-         * @hidden internal use only.
-         */
-        public abstract _getWorldMatrix(): Matrix;
-
-        /**
          * Returns the string "Light".
          * @returns the class name
          */
@@ -438,16 +433,16 @@ module BABYLON {
 
             return true;
         }
-
+ 
         /**
-         * Computes and Returns the light World matrix.
+         * Computes and returns the light World matrix
          * @returns the world matrix 
          */
         public getWorldMatrix(): Matrix {
             this._currentRenderId = this.getScene().getRenderId();
             this._childRenderId = this._currentRenderId;
 
-            var worldMatrix = this._getWorldMatrix();
+            var worldMatrix = this.computeWorldMatrix();
 
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._parentedWorldMatrix) {
