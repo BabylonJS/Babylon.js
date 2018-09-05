@@ -277,28 +277,14 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /**
-     * Function called to let the current focused control keeps the focus
-     * @param pointerId defines the unique id of the current pointer generating the focus change
-     * @returns a boolean indicating if the control wants to keep the focus
+     * Function called to get the list of controls that should not steal the focus from this control
+     * @returns an array of controls
      */
-    public wantTokeepFocus(pointerId: number): boolean {
+    public keepsFocusWith(): Nullable<Control[]> {
         if (!this._connectedVirtualKeyboard) {
-            return false;
+            return null;
         }
-
-        // Same host, no need to keep the focus
-        if (this._host === this._connectedVirtualKeyboard._host) {
-            return false;
-        }
-
-        // Different hosts
-        const otherHost = this._connectedVirtualKeyboard._host;
-
-        if (otherHost._lastControlOver[pointerId] && otherHost._lastControlOver[pointerId].isAscendant(this._connectedVirtualKeyboard)) {
-            return true;
-        }
-
-        return false;
+        return [this._connectedVirtualKeyboard];
     }
 
     /** @hidden */
