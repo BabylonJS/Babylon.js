@@ -174,6 +174,8 @@
             other.angularSpeed = this.angularSpeed;
             other.particleSystem = this.particleSystem;
             other.cellIndex = this.cellIndex;
+            other.id = this.id;
+            other._attachedSubEmitters = this._attachedSubEmitters;
             if (this._currentColorGradient) {
                 other._currentColorGradient = this._currentColorGradient;
                 other._currentColor1.copyFrom(this._currentColor1);
