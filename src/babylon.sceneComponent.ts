@@ -18,6 +18,7 @@
         public static readonly NAME_OUTLINERENDERER = "Outline";
         public static readonly NAME_PROCEDURALTEXTURE = "ProceduralTexture";
         public static readonly NAME_SHADOWGENERATOR = "ShadowGenerator";
+        public static readonly NAME_OCTREE = "Octree";
 
         public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
 
@@ -54,7 +55,7 @@
         public static readonly STEP_GATHERRENDERTARGETS_DEPTHRENDERER = 2;
         public static readonly STEP_GATHERRENDERTARGETS_POSTPROCESSRENDERPIPELINEMANAGER = 3;
 
-        public static readonly STEP_REBUILDGEOMETRY_POSTPROCESSRENDERPIPELINEMANAGER = 0;
+        public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_DEPTHRENDERER = 0;
 
         public static readonly STEP_POINTERMOVE_SPRITE = 0;
         public static readonly STEP_POINTERDOWN_SPRITE = 0;

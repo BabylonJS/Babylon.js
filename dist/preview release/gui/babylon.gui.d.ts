@@ -27,6 +27,11 @@ declare module BABYLON.GUI {
                 * @param evt defines the current keyboard event
                 */
             processKeyboard(evt: KeyboardEvent): void;
+            /**
+                * Function called to get the list of controls that should not steal the focus from this control
+                * @returns an array of controls
+                */
+            keepsFocusWith(): BABYLON.Nullable<Control[]>;
     }
     /**
         * Class used to create texture to support 2D GUI elements
@@ -1076,6 +1081,12 @@ declare module BABYLON.GUI {
             /** @hidden */
             _resetFontCache(): void;
             /**
+                * Determines if a container is an ascendant of the current control
+                * @param container defines the container to look for
+                * @returns true if the container is one of the ascendant of the control
+                */
+            isAscendant(container: Control): boolean;
+            /**
                 * Gets coordinates in local control space
                 * @param globalCoordinates defines the coordinates to transform
                 * @returns the new coordinates in local space
@@ -1365,6 +1376,8 @@ declare module BABYLON.GUI {
         */
     export class InputText extends Control implements IFocusableControl {
             name?: string | undefined;
+            /** @hidden */
+            _connectedVirtualKeyboard: BABYLON.Nullable<VirtualKeyboard>;
             /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
             promptMessage: string;
             /** BABYLON.Observable raised when the text changes */
@@ -1416,6 +1429,11 @@ declare module BABYLON.GUI {
             /** @hidden */
             onFocus(): void;
             protected _getTypeName(): string;
+            /**
+                * Function called to get the list of controls that should not steal the focus from this control
+                * @returns an array of controls
+                */
+            keepsFocusWith(): BABYLON.Nullable<Control[]>;
             /** @hidden */
             processKey(keyCode: number, key?: string): void;
             /** @hidden */
@@ -1596,6 +1614,174 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
+    /** Class used to create a RadioGroup
+        * which contains groups of radio buttons
+     */
+    export class SelectorGroup {
+            /** name of SelectorGroup */
+            name: string;
+            /**
+                * Creates a new SelectorGroup
+                * @param name of group, used as a group heading
+                */
+            constructor(
+            /** name of SelectorGroup */
+            name: string);
+            /** Gets the groupPanel of the SelectorGroup  */
+            readonly groupPanel: StackPanel;
+            /** Gets the selectors array */
+            readonly selectors: StackPanel[];
+            /** Gets and sets the group header */
+            header: string;
+            /** @hidden*/
+            _getSelector(selectorNb: number): StackPanel | undefined;
+            /** Removes the selector at the given position
+             * @param selectorNb the position of the selector within the group
+            */
+            removeSelector(selectorNb: number): void;
+    }
+    /** Class used to create a CheckboxGroup
+        * which contains groups of checkbox buttons
+     */
+    export class CheckboxGroup extends SelectorGroup {
+            /** Adds a checkbox as a control
+                * @param text is the label for the selector
+                * @param func is the function called when the Selector is checked
+                * @param checked is true when Selector is checked
+                */
+            addCheckbox(text: string, func?: (s: boolean) => void, checked?: boolean): void;
+            /** @hidden */
+            _setSelectorLabel(selectorNb: number, label: string): void;
+            /** @hidden */
+            _setSelectorLabelColor(selectorNb: number, color: string): void;
+            /** @hidden */
+            _setSelectorButtonColor(selectorNb: number, color: string): void;
+            /** @hidden */
+            _setSelectorButtonBackground(selectorNb: number, color: string): void;
+    }
+    /** Class used to create a RadioGroup
+        * which contains groups of radio buttons
+     */
+    export class RadioGroup extends SelectorGroup {
+            /** Adds a radio button as a control
+                * @param label is the label for the selector
+                * @param func is the function called when the Selector is checked
+                * @param checked is true when Selector is checked
+                */
+            addRadio(label: string, func?: (n: number) => void, checked?: boolean): void;
+            /** @hidden */
+            _setSelectorLabel(selectorNb: number, label: string): void;
+            /** @hidden */
+            _setSelectorLabelColor(selectorNb: number, color: string): void;
+            /** @hidden */
+            _setSelectorButtonColor(selectorNb: number, color: string): void;
+            /** @hidden */
+            _setSelectorButtonBackground(selectorNb: number, color: string): void;
+    }
+    /** Class used to create a SliderGroup
+        * which contains groups of slider buttons
+     */
+    export class SliderGroup extends SelectorGroup {
+            /**
+                * Adds a slider to the SelectorGroup
+                * @param label is the label for the SliderBar
+                * @param func is the function called when the Slider moves
+                * @param unit is a string describing the units used, eg degrees or metres
+                * @param min is the minimum value for the Slider
+                * @param max is the maximum value for the Slider
+                * @param value is the start value for the Slider between min and max
+                * @param onValueChange is the function used to format the value displayed, eg radians to degrees
+                */
+            addSlider(label: string, func?: (v: number) => void, unit?: string, min?: number, max?: number, value?: number, onValueChange?: (v: number) => number): void;
+            /** @hidden */
+            _setSelectorLabel(selectorNb: number, label: string): void;
+            /** @hidden */
+            _setSelectorLabelColor(selectorNb: number, color: string): void;
+            /** @hidden */
+            _setSelectorButtonColor(selectorNb: number, color: string): void;
+            /** @hidden */
+            _setSelectorButtonBackground(selectorNb: number, color: string): void;
+    }
+    /** Class used to hold the controls for the checkboxes, radio buttons and sliders */
+    export class SelectionPanel extends Rectangle {
+            /** name of SelectionPanel */
+            name: string;
+            /** an array of SelectionGroups */
+            groups: SelectorGroup[];
+            /**
+             * Creates a new SelectionPanel
+             * @param name of SelectionPanel
+             * @param groups is an array of SelectionGroups
+             */
+            constructor(
+            /** name of SelectionPanel */
+            name: string, 
+            /** an array of SelectionGroups */
+            groups?: SelectorGroup[]);
+            protected _getTypeName(): string;
+            /** Gets or sets the headerColor */
+            headerColor: string;
+            /** Gets or sets the button color */
+            buttonColor: string;
+            /** Gets or sets the label color */
+            labelColor: string;
+            /** Gets or sets the button background */
+            buttonBackground: string;
+            /** Gets or sets the color of separator bar */
+            barColor: string;
+            /** Add a group to the selection panel
+                * @param group is the selector group to add
+                */
+            addGroup(group: SelectorGroup): void;
+            /** Remove the group from the given position
+                * @param groupNb is the position of the group in the list
+                */
+            removeGroup(groupNb: number): void;
+            /** Change a group header label
+                * @param label is the new group header label
+                * @param groupNb is the number of the group to relabel
+                * */
+            setHeaderName(label: string, groupNb: number): void;
+            /** Change selector label to the one given
+                * @param label is the new selector label
+                * @param groupNb is the number of the groupcontaining the selector
+                * @param selectorNb is the number of the selector within a group to relabel
+                * */
+            relabel(label: string, groupNb: number, selectorNb: number): void;
+            /** For a given group position remove the selector at the given position
+                * @param groupNb is the number of the group to remove the selector from
+                * @param selectorNb is the number of the selector within the group
+                */
+            removeFromGroupSelector(groupNb: number, selectorNb: number): void;
+            /** For a given group position of correct type add a checkbox button
+                * @param groupNb is the number of the group to remove the selector from
+                * @param label is the label for the selector
+                * @param func is the function called when the Selector is checked
+                * @param checked is true when Selector is checked
+                */
+            addToGroupCheckbox(groupNb: number, label: string, func?: () => void, checked?: boolean): void;
+            /** For a given group position of correct type add a radio button
+                * @param groupNb is the number of the group to remove the selector from
+                * @param label is the label for the selector
+                * @param func is the function called when the Selector is checked
+                * @param checked is true when Selector is checked
+                */
+            addToGroupRadio(groupNb: number, label: string, func?: () => void, checked?: boolean): void;
+            /**
+                * For a given slider group add a slider
+                * @param groupNb is the number of the group to add the slider to
+                * @param label is the label for the Slider
+                * @param func is the function called when the Slider moves
+                * @param unit is a string describing the units used, eg degrees or metres
+                * @param min is the minimum value for the Slider
+                * @param max is the maximum value for the Slider
+                * @param value is the start value for the Slider between min and max
+                * @param onVal is the function used to format the value displayed, eg radians to degrees
+                */
+            addToGroupSlider(groupNb: number, label: string, func?: () => void, unit?: string, min?: number, max?: number, value?: number, onVal?: (v: number) => number): void;
+    }
+}
+declare module BABYLON.GUI {
     /**
         * Enum that determines the text-wrapping mode to use.
         */
@@ -1755,22 +1941,31 @@ declare module BABYLON.GUI {
                 * @param shiftState defines the new shift state
                 */
             applyShiftState(shiftState: number): void;
-            /** Gets the input text control attached with the keyboard */
+            /** Gets the input text control currently attached to the keyboard */
             readonly connectedInputText: BABYLON.Nullable<InputText>;
             /**
                 * Connects the keyboard with an input text control
+                *
                 * @param input defines the target control
                 */
             connect(input: InputText): void;
             /**
-                * Disconnects the keyboard from an input text control
+                * Disconnects the keyboard from connected InputText controls
+                *
+                * @param input optionally defines a target control, otherwise all are disconnected
                 */
-            disconnect(): void;
+            disconnect(input?: InputText): void;
+            /**
+                * Release all resources
+                */
+            dispose(): void;
             /**
                 * Creates a new keyboard using a default layout
+                *
+                * @param name defines control name
                 * @returns a new VirtualKeyboard
                 */
-            static CreateDefaultLayout(): VirtualKeyboard;
+            static CreateDefaultLayout(name?: string): VirtualKeyboard;
     }
 }
 declare module BABYLON.GUI {

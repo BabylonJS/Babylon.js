@@ -541,8 +541,7 @@
          * @see http://doc.babylonjs.com/how_to/multi_materials
          */
         public subMeshes: SubMesh[];
-        /** @hidden */
-        public _submeshesOctree: Octree<SubMesh>;
+
         /** @hidden */
         public _intersectionsInProgress = new Array<AbstractMesh>();
 
@@ -1307,33 +1306,6 @@
             this.onCollisionPositionChangeObservable.notifyObservers(this.position);
         }
 
-        // Submeshes octree
-
-        /**
-        * This function will create an octree to help to select the right submeshes for rendering, picking and collision computations.  
-        * Please note that you must have a decent number of submeshes to get performance improvements when using an octree
-        * @param maxCapacity defines the maximum size of each block (64 by default)
-        * @param maxDepth defines the maximum depth to use (no more than 2 levels by default)
-        * @returns the new octree
-        * @see https://www.babylonjs-playground.com/#NA4OQ#12
-        * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
-        */
-        public createOrUpdateSubmeshesOctree(maxCapacity = 64, maxDepth = 2): Octree<SubMesh> {
-            if (!this._submeshesOctree) {
-                this._submeshesOctree = new Octree<SubMesh>(Octree.CreationFuncForSubMeshes, maxCapacity, maxDepth);
-            }
-
-            this.computeWorldMatrix(true);
-
-            let boundingInfo = this.getBoundingInfo();
-
-            // Update octree
-            var bbox = boundingInfo.boundingBox;
-            this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
-
-            return this._submeshesOctree;
-        }
-
         // Collisions
         /** @hidden */
         public _collideForSubMesh(subMesh: SubMesh, transformMatrix: Matrix, collider: Collider): AbstractMesh {
@@ -1364,23 +1336,11 @@
 
         /** @hidden */
         public _processCollisionsForSubMeshes(collider: Collider, transformMatrix: Matrix): AbstractMesh {
-            var subMeshes: SubMesh[];
-            var len: number;
-
-            // Octrees
-            if (this._submeshesOctree && this.useOctreeForCollisions) {
-                var radius = collider._velocityWorldLength + Math.max(collider._radius.x, collider._radius.y, collider._radius.z);
-                var intersections = this._submeshesOctree.intersects(collider._basePointWorld, radius);
-
-                len = intersections.length;
-                subMeshes = intersections.data;
-            } else {
-                subMeshes = this.subMeshes;
-                len = subMeshes.length;
-            }
+            const subMeshes = this._scene.getCollidingSubMeshCandidates(this, collider);
+            const len = subMeshes.length;
 
             for (var index = 0; index < len; index++) {
-                var subMesh = subMeshes[index];
+                var subMesh = subMeshes.data[index];
 
                 // Bounding test
                 if (len > 1 && !subMesh._checkCollision(collider))
@@ -1430,23 +1390,10 @@
 
             var intersectInfo: Nullable<IntersectionInfo> = null;
 
-            // Octrees
-            var subMeshes: SubMesh[];
-            var len: number;
-
-            if (this._submeshesOctree && this.useOctreeForPicking) {
-                var worldRay = Ray.Transform(ray, this.getWorldMatrix());
-                var intersections = this._submeshesOctree.intersectsRay(worldRay);
-
-                len = intersections.length;
-                subMeshes = intersections.data;
-            } else {
-                subMeshes = this.subMeshes;
-                len = subMeshes.length;
-            }
-
+            var subMeshes = this._scene.getIntersectingSubMeshCandidates(this, ray);
+            var len: number = subMeshes.length;
             for (var index = 0; index < len; index++) {
-                var subMesh = subMeshes[index];
+                var subMesh = subMeshes.data[index];
 
                 // Bounding test
                 if (len > 1 && !subMesh.canIntersects(ray))
@@ -1587,16 +1534,6 @@
             // SubMeshes
             if (this.getClassName() !== "InstancedMesh") {
                 this.releaseSubMeshes();
-            }
-
-            // Octree
-            const sceneOctree = this.getScene().selectionOctree;
-            if (sceneOctree !== undefined && sceneOctree !== null) {
-                var index = sceneOctree.dynamicContent.indexOf(this);
-
-                if (index !== -1) {
-                    sceneOctree.dynamicContent.splice(index, 1);
-                }
             }
 
             // Query

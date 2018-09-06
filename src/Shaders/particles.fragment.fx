@@ -12,15 +12,30 @@ uniform sampler2D diffuseSampler;
 
 #include<imageProcessingFunctions>
 
+#ifdef RAMPGRADIENT
+varying vec4 remapRanges;
+uniform sampler2D rampSampler;
+#endif
+
 void main(void) {
 	#include<clipPlaneFragment>
 
 	vec4 textureColor = texture2D(diffuseSampler, vUV);
 	vec4 baseColor = (textureColor * textureMask + (vec4(1., 1., 1., 1.) - textureMask)) * vColor;
 
+	#ifdef RAMPGRADIENT
+		float alpha = textureColor.a;
+		float remappedColorIndex = clamp((alpha - remapRanges.x) / remapRanges.y, 0.0, 1.0);
+
+		baseColor.rgb *= texture2D(rampSampler, vec2(remappedColorIndex, 0.)).rgb;
+
+		// Remapped alpha
+		baseColor.a = clamp((alpha - remapRanges.z) / remapRanges.w, 0.0, 1.0);
+	#endif
+
 	#ifdef BLENDMULTIPLYMODE
-	float alpha = vColor.a * textureColor.a;
-	baseColor.rgb = baseColor.rgb * alpha + vec3(1.0) * (1.0 - alpha);
+		float sourceAlpha = vColor.a * textureColor.a;
+		baseColor.rgb = baseColor.rgb * sourceAlpha + vec3(1.0) * (1.0 - sourceAlpha);
 	#endif
 
 // Apply image processing if relevant. As this applies in linear space, 

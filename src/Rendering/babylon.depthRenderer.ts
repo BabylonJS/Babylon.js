@@ -12,6 +12,13 @@
         private _camera:Nullable<Camera>;
 
         /**
+         * Specifiess that the depth renderer will only be used within
+         * the camera it is created for.
+         * This can help forcing its rendering during the camera processing.
+         */
+        public useOnlyInActiveCamera: boolean = false;
+
+        /**
          * Instantiates a depth renderer
          * @param scene The scene the renderer belongs to
          * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)

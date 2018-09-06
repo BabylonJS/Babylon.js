@@ -218,7 +218,7 @@ module BABYLON {
 
         /** @hidden */
         protected _isAnimationSheetEnabled: boolean;
-        
+       
         /**
          * Gets or sets whether an animation sprite sheet is enabled or not on the particle system
          */
@@ -258,6 +258,9 @@ module BABYLON {
         protected _dragGradients: Nullable<Array<FactorGradient>> = null;
         protected _emitRateGradients: Nullable<Array<FactorGradient>> = null;
         protected _startSizeGradients: Nullable<Array<FactorGradient>> = null;
+        protected _rampGradients: Nullable<Array<ColorGradient>> = null;
+        protected _colorRemapGradients: Nullable<Array<FactorGradient>> = null;
+        protected _alphaRemapGradients: Nullable<Array<FactorGradient>> = null;        
 
         /**
          * Gets the current list of drag gradients.
@@ -297,6 +300,24 @@ module BABYLON {
         public getSizeGradients(): Nullable<Array<FactorGradient>> {
             return this._sizeGradients;
         }        
+
+        /**
+         * Gets the current list of color remap gradients.
+         * You must use addColorRemapGradient and removeColorRemapGradient to udpate this list
+         * @returns the list of color remap gradients
+         */
+        public getColorRemapGradients(): Nullable<Array<FactorGradient>> {
+            return this._colorRemapGradients;
+        }   
+
+        /**
+         * Gets the current list of alpha remap gradients.
+         * You must use addAlphaRemapGradient and removeAlphaRemapGradient to udpate this list
+         * @returns the list of alpha remap gradients
+         */
+        public getAlphaRemapGradients(): Nullable<Array<FactorGradient>> {
+            return this._alphaRemapGradients;
+        }   
 
         /**
          * Gets the current list of life time gradients.
@@ -514,6 +535,28 @@ module BABYLON {
         /** @hidden */
         protected _reset() {
         }
+
+        /** @hidden */
+        protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: RawTexture): BaseParticleSystem {
+            if (!gradients) {
+                return this;
+            }
+
+            let index = 0;
+            for (var valueGradient of gradients) {
+                if (valueGradient.gradient === gradient) {
+                    gradients.splice(index, 1);
+                    break;
+                }
+                index++;
+            }
+
+            if (texture) {
+                texture.dispose();
+            }            
+
+            return this;
+        } 
 
         /**
          * Instantiates a particle system.
