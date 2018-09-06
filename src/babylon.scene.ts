@@ -4067,6 +4067,28 @@
             return this;
         }
 
+        private _computeAllWorldMatricesforBranch(node: Node) {
+            node.computeWorldMatrix(false, true);
+            const children = node.getChildren();
+
+            if (children) {
+                for (var child of children) {
+                    this._computeAllWorldMatricesforBranch(child);
+                }
+            }
+            
+            node._worldMatrixWasUpdated = false;
+        }
+
+        /**
+         * This function will traverse the scene graph and makes sure that all worldMatrix are up to date
+         */
+        public computeAllWorldMatrices() {
+            for (var node of this.rootNodes) {
+                this._computeAllWorldMatricesforBranch(node);
+            }
+        }
+
         private _evaluateActiveMeshes(): void {
             if (this._activeMeshesFrozen && this._activeMeshes.length) {
                 return;
@@ -4089,6 +4111,9 @@
                 step.action();
             }
 
+            // World matrices
+            this.computeAllWorldMatrices();
+
             // Determine mesh candidates
             const meshes = this.getActiveMeshCandidates();
             
@@ -4105,8 +4130,6 @@
                 if (!mesh.isReady() || !mesh.isEnabled()) {
                     continue;
                 }
-
-                mesh.computeWorldMatrix();
 
                 // Intersections
                 if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers2(ActionManager.OnIntersectionEnterTrigger, ActionManager.OnIntersectionExitTrigger)) {
