@@ -68,6 +68,7 @@
 
 ### Core Engine
 
+- Improved the way world matrices were computed ([Deltakosh](https://github.com/deltakosh))
 - Added `scene.rootNodes` to track root nodes (ie. nodes with no parent) ([Deltakosh](https://github.com/deltakosh))
 - Added `scene.pickSpriteWithRay` function ([Deltakosh](https://github.com/deltakosh))
 - Added support for multiple clip planes. [Demo](https://www.babylonjs-playground.com/#Y6W087) ([Deltakosh](https://github.com/deltakosh))
