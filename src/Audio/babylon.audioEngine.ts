@@ -1,5 +1,45 @@
 ﻿module BABYLON {
-    export class AudioEngine {
+    /**
+     * This represents an audio engine and it is responsible
+     * to play, synchronize and analyse sounds throughout the  application.
+     */
+    export interface IAudioEngine extends IDisposable {
+        /**
+         * Gets whether the current host supports Web Audio and thus could create AudioContexts.
+         */
+        readonly canUseWebAudio: boolean;
+
+        /**
+         * Gets the current AudioContext if available.
+         */
+        readonly audioContext: Nullable<AudioContext>;
+
+        /**
+         * The master gain node defines the global audio volume of your audio engine.
+         */
+        readonly masterGain: GainNode;
+
+        /**
+         * Gets whether or not mp3 are supported by your browser.
+         */
+        readonly isMP3supported: boolean;
+
+        /**
+         * Gets whether or not ogg are supported by your browser.
+         */
+        readonly isOGGsupported: boolean;
+
+        /**
+         * Defines if Babylon should emit a warning if WebAudio is not supported.
+         * @ignoreNaming
+         */
+        WarnedWebAudioUnsupported: boolean;
+    }
+
+    // Sets the default audio engine to Babylon JS.
+    Engine.AudioEngineFactory = () => { return new AudioEngine(); };
+
+    export class AudioEngine implements IAudioEngine{
         private _audioContext: Nullable<AudioContext> = null;
         private _audioContextInitialized = false;
         public canUseWebAudio: boolean = false;
@@ -102,7 +142,8 @@
                     this._connectedAnalyser.stopDebugCanvas();
                     this._connectedAnalyser.dispose();
                     this.masterGain.disconnect();
-                    this.masterGain.connect(this._audioContext.destination);
+                    // Looks Strange to me.
+                    // this.masterGain.connect(this._audioContext.destination);
                     this._connectedAnalyser = null;
                 }
                 this.masterGain.gain.value = 1;
