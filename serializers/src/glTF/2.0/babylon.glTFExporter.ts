@@ -1,6 +1,6 @@
 /// <reference path="../../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"/>
 
-module BABYLON.GLTF2 {
+module BABYLON.GLTF2.Exporter {
     /** 
      * Utility interface for storing vertex attribute data
      * @hidden
@@ -207,7 +207,6 @@ module BABYLON.GLTF2 {
          * @param factory The factory function that creates the exporter extension
          */
         public static RegisterExtension(name: string, factory: (exporter: _Exporter) => IGLTFExporterExtension): void {
-            Tools.Log(`Registering extension ${name}`);
             if (_Exporter.UnregisterExtension(name)) {
                 Tools.Warn(`Extension with the name ${name} already exists`);
             }

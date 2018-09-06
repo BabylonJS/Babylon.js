@@ -118,6 +118,9 @@
 - Added support for MSFT_audio_emitter ([najadojo](http://www.github.com/najadojo))
 - Added support for custom loader extensions ([bghgary](http://www.github.com/bghgary))
 
+### glTF Serializer
+- Added support for exporting the scale, rotation and offset texture properties ([kcoley](http://www.github.com/kcoley))
+
 ### Viewer
 
 - No fullscreen button on small devices ([RaananW](https://github.com/RaananW))

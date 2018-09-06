@@ -1,6 +1,6 @@
 /// <reference path="../../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"/>
 
-module BABYLON.GLTF2 {
+module BABYLON.GLTF2.Exporter {
     /** 
      * Interface for storing specular glossiness factors
      * @hidden
@@ -512,7 +512,7 @@ module BABYLON.GLTF2 {
                                 fileReader.readAsDataURL(blob);
                             }
                             else {
-                                reject("Failed to get blob from image canvas!");
+                                reject("gltfMaterialExporter: Failed to get blob from image canvas!");
                             }
                         });
                     }
@@ -1036,7 +1036,7 @@ module BABYLON.GLTF2 {
         private setMetallicRoughnessPbrMaterial(metallicRoughness: Nullable<_IPBRMetallicRoughness>, babylonPBRMaterial: PBRMaterial, glTFMaterial: IMaterial, glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<void> {
             const materialMap = this._exporter._materialMap;
             const materials = this._exporter._materials;
-            let promises = [];
+            let promises = [];  
             if (metallicRoughness) {
                 let alphaMode: Nullable<MaterialAlphaMode> = null;
                 if (babylonPBRMaterial.transparencyMode != null) {
