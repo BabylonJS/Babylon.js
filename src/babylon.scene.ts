@@ -4617,7 +4617,7 @@
                 listeningCamera = this.activeCamera;
             }
 
-            if (listeningCamera && audioEngine.canUseWebAudio && audioEngine.audioContext) {
+            if (listeningCamera && audioEngine.audioContext) {
                 audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
                 // for VR cameras
                 if (listeningCamera.rigCameras && listeningCamera.rigCameras.length > 0) {
@@ -4630,6 +4630,7 @@
                 if (!isNaN(cameraDirection.x) && !isNaN(cameraDirection.y) && !isNaN(cameraDirection.z)) {
                     audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
                 }
+
                 var i: number;
                 for (i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
                     var sound = this.mainSoundTrack.soundCollection[i];
