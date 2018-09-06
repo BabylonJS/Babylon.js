@@ -436,13 +436,17 @@
                 Mesh.MergeMeshes(currentPool, undefined, true);
             }
 
-            if (updateSelectionTree != undefined) {
-                if (updateSelectionTree) {
-                    scene.createOrUpdateSelectionOctree();
+            // Call the octree system optimization if it is defined.
+            const sceneAsAny = scene as any;
+            if (sceneAsAny.createOrUpdateSelectionOctree) {
+                if (updateSelectionTree != undefined) {
+                    if (updateSelectionTree) {
+                        sceneAsAny.createOrUpdateSelectionOctree();
+                    }
                 }
-            }
-            else if (MergeMeshesOptimization.UpdateSelectionTree) {
-                scene.createOrUpdateSelectionOctree();
+                else if (MergeMeshesOptimization.UpdateSelectionTree) {
+                    sceneAsAny.createOrUpdateSelectionOctree();
+                }
             }
 
             return true;
