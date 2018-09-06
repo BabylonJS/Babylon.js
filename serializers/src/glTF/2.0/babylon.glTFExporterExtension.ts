@@ -1,6 +1,6 @@
 /// <reference path="../../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
 
-module BABYLON.GLTF2 {
+module BABYLON.GLTF2.Exporter {
     /**
      * Interface for a glTF exporter extension
      * @hidden

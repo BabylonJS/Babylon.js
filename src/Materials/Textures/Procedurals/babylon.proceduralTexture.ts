@@ -16,7 +16,8 @@
 
         private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
         private _indexBuffer: Nullable<WebGLBuffer>;
-        private _effect: Effect;
+        /** get the internal effect */
+        public _effect: Effect;
 
         private _uniforms = new Array<string>();
         private _samplers = new Array<string>();
@@ -153,7 +154,7 @@
 
                     this._fallbackTextureUsed = true;
                 });
-
+                
             return this._effect.isReady();
         }
 
