@@ -200,11 +200,11 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * Mainly used for help and errors
                 * @param subScreen the name of the subScreen. Those can be defined in the configuration object
                 */
-            showOverlayScreen(subScreen: string): Promise<Template> | Promise<string>;
+            showOverlayScreen(subScreen: string): Promise<string> | Promise<Template>;
             /**
                 * Hide the overlay screen.
                 */
-            hideOverlayScreen(): Promise<Template> | Promise<string>;
+            hideOverlayScreen(): Promise<string> | Promise<Template>;
             /**
                 * show the viewer (in case it was hidden)
                 *
@@ -221,11 +221,11 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * Show the loading screen.
                 * The loading screen can be configured using the configuration object
                 */
-            showLoadingScreen(): Promise<Template> | Promise<string>;
+            showLoadingScreen(): Promise<string> | Promise<Template>;
             /**
                 * Hide the loading screen
                 */
-            hideLoadingScreen(): Promise<Template> | Promise<string>;
+            hideLoadingScreen(): Promise<string> | Promise<Template>;
             dispose(): void;
             protected _onConfigurationLoaded(configuration: ViewerConfiguration): void;
     }
@@ -985,14 +985,13 @@ declare module 'babylonjs-viewer/templating/viewerTemplatePlugin' {
 }
 
 declare module 'babylonjs-viewer/optimizer/custom' {
-    import { extendedUpgrade } from "babylonjs-viewer/optimizer/custom/extended";
     import { SceneManager } from "babylonjs-viewer/managers/sceneManager";
     /**
       *
       * @param name the name of the custom optimizer configuration
       * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
       */
-    export function getCustomOptimizerByName(name: string, upgrade?: boolean): typeof extendedUpgrade;
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
     export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 
@@ -1663,22 +1662,6 @@ declare module 'babylonjs-viewer/loader/plugins' {
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
 }
 
-declare module 'babylonjs-viewer/optimizer/custom/extended' {
-    import { SceneManager } from 'babylonjs-viewer/managers/sceneManager';
-    /**
-        * A custom upgrade-oriented function configuration for the scene optimizer.
-        *
-        * @param viewer the viewer to optimize
-        */
-    export function extendedUpgrade(sceneManager: SceneManager): boolean;
-    /**
-        * A custom degrade-oriented function configuration for the scene optimizer.
-        *
-        * @param viewer the viewer to optimize
-        */
-    export function extendedDegrade(sceneManager: SceneManager): boolean;
-}
-
 declare module 'babylonjs-viewer/configuration/interfaces' {
     export * from 'babylonjs-viewer/configuration/interfaces/cameraConfiguration';
     export * from 'babylonjs-viewer/configuration/interfaces/colorGradingConfiguration';
@@ -2277,73 +2260,7 @@ declare module 'babylonjs-viewer/configuration/interfaces/skyboxConfiguration' {
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/templateConfiguration' {
-    /**
-        * A single template configuration object
-        */
-    export interface ITemplateConfiguration {
-            /**
-                * can be either the id of the template's html element or a URL.
-                * See - http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
-                */
-            location?: string;
-            /**
-                * If no location is provided you can provide here the raw html of this template.
-                * See http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
-                */
-            html?: string;
-            id?: string;
-            /**
-                * Parameters that will be delivered to the template and will render it accordingly.
-                */
-            params?: {
-                    [key: string]: string | number | boolean | object;
-            };
-            /**
-                * Events to attach to this template.
-                * event name is the key. the value can either be a boolean (attach to the parent element)
-                * or a map of html id elements.
-                *
-                * See - http://doc.babylonjs.com/extensions/the_templating_system#event-binding
-                */
-            events?: {
-                    pointerdown?: boolean | {
-                            [id: string]: boolean;
-                    };
-                    pointerup?: boolean | {
-                            [id: string]: boolean;
-                    };
-                    pointermove?: boolean | {
-                            [id: string]: boolean;
-                    };
-                    pointerover?: boolean | {
-                            [id: string]: boolean;
-                    };
-                    pointerout?: boolean | {
-                            [id: string]: boolean;
-                    };
-                    pointerenter?: boolean | {
-                            [id: string]: boolean;
-                    };
-                    pointerleave?: boolean | {
-                            [id: string]: boolean;
-                    };
-                    pointercancel?: boolean | {
-                            [id: string]: boolean;
-                    };
-                    click?: boolean | {
-                            [id: string]: boolean;
-                    };
-                    dragstart?: boolean | {
-                            [id: string]: boolean;
-                    };
-                    drop?: boolean | {
-                            [id: string]: boolean;
-                    };
-                    [key: string]: boolean | {
-                            [id: string]: boolean;
-                    } | undefined;
-            };
-    }
+    
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/vrConfiguration' {

@@ -1844,7 +1844,9 @@ declare module 'babylonjs-gui/2D/controls/selector' {
             /** @hidden */
             _setSelectorButtonBackground(selectorNb: number, color: string): void;
     }
-    /** Class used to hold the controls for the checkboxes, radio buttons and sliders */
+    /** Class used to hold the controls for the checkboxes, radio buttons and sliders
+        * @see http://doc.babylonjs.com/how_to/selector
+     */
     export class SelectionPanel extends Rectangle {
             /** name of SelectionPanel */
             name: string;
@@ -4508,7 +4510,9 @@ declare module BABYLON.GUI {
             /** @hidden */
             _setSelectorButtonBackground(selectorNb: number, color: string): void;
     }
-    /** Class used to hold the controls for the checkboxes, radio buttons and sliders */
+    /** Class used to hold the controls for the checkboxes, radio buttons and sliders
+        * @see http://doc.babylonjs.com/how_to/selector
+     */
     export class SelectionPanel extends Rectangle {
             /** name of SelectionPanel */
             name: string;
