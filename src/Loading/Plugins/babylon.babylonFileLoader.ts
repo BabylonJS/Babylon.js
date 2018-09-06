@@ -220,6 +220,17 @@
                 }
             }
 
+            // Animation Groups
+            if(parsedData.animationGroups !== undefined && parsedData.animationGroups !== null) {
+                for (index = 0, cache = parsedData.animationGroups.length; index < cache; index++){
+                    var parsedAnimationGroup = parsedData.animationGroups[index];
+                    var animationGroup = AnimationGroup.Parse(parsedAnimationGroup, scene);
+                    container.animationGroups.push(animationGroup);
+                    log += (index === 0 ? "\n\tAnimationGroups:" : "");
+                    log += "\n\t\t" + animationGroup.toString(fullDetails);
+                }
+            }
+            
             // Browsing all the graph to connect the dots
             for (index = 0, cache = scene.cameras.length; index < cache; index++) {
                 var camera = scene.cameras[index];
@@ -236,7 +247,7 @@
                     light._waitingParentId = null;
                 }
             }
-
+            
             // Sounds
             // TODO: add sound
             var loadedSounds: Sound[] = [];
@@ -322,9 +333,9 @@
                     light._includedOnlyMeshesIds = [];
                 }
             }
-
+            
             AbstractScene.Parse(parsedData, scene, container, rootUrl);
-
+            
             // Actions (scene)
             if (parsedData.actions !== undefined && parsedData.actions !== null) {
                 ActionManager.Parse(parsedData.actions, null, scene);

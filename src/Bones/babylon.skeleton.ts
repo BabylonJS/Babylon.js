@@ -558,6 +558,10 @@
                 var rest: Nullable<Matrix> = parsedBone.rest ? Matrix.FromArray(parsedBone.rest) : null;
                 var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix), rest);
                 
+                if (parsedBone.id !== undefined && parsedBone.id !== null) {
+                    bone.id = parsedBone.id;
+                }
+
                 if (parsedBone.length) {
                     bone.length = parsedBone.length;
                 }
