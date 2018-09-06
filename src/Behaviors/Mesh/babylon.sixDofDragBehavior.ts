@@ -92,6 +92,7 @@ module BABYLON {
 
                         // Attach the virtual drag mesh to the virtual origin mesh so it can be dragged
                         this._virtualOriginMesh.removeChild(this._virtualDragMesh);
+                        pickedMesh.computeWorldMatrix();
                         this._virtualDragMesh.position.copyFrom(pickedMesh.absolutePosition);
                         if(!pickedMesh.rotationQuaternion){
                             pickedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(pickedMesh.rotation.y,pickedMesh.rotation.x,pickedMesh.rotation.z);
