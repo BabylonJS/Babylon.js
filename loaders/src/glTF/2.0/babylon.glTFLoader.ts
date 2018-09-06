@@ -1647,7 +1647,10 @@ module BABYLON.GLTF2 {
             const image = ArrayItem.Get(`${context}/source`, this.gltf.images, texture.source);
             promises.push(this.loadImageAsync(`#/images/${image.index}`, image).then(data => {
                 const dataUrl = `data:${this._rootUrl}${image.uri || `image${image.index}`}`;
-                babylonTexture.updateURL(dataUrl, new Blob([data], { type: image.mimeType }));
+                babylonTexture.updateURL(
+                    dataUrl,
+                    // TODO: Remove this hack once we can load from Blob objects.
+                    data.buffer);
             }));
 
             assign(babylonTexture);
