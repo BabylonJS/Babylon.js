@@ -278,7 +278,9 @@ export class SliderGroup extends SelectorGroup{
 }
 
 
-/** Class used to hold the controls for the checkboxes, radio buttons and sliders */
+/** Class used to hold the controls for the checkboxes, radio buttons and sliders 
+ * @see http://doc.babylonjs.com/how_to/selector
+*/
 export class SelectionPanel extends Rectangle {
     private _panel: StackPanel;
     private _buttonColor: string = "#364249";
