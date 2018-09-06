@@ -1,7 +1,7 @@
 {
-  "errors": 3875,
+  "errors": 3874,
   "babylon.typedoc.json": {
-    "errors": 3875,
+    "errors": 3874,
     "AnimationGroup": {
       "Constructor": {
         "new AnimationGroup": {
@@ -18222,11 +18222,6 @@
           }
         },
         "nonUniformScaling": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "position": {
           "Comments": {
             "MissingText": true
           }
