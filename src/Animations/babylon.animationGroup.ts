@@ -362,5 +362,76 @@ module BABYLON {
                 this.onAnimationGroupEndObservable.notifyObservers(this);
             }
         }
+
+        // Statics
+        /**
+         * Returns a new AnimationGroup object parsed from the source provided.
+         * @param {Object} parsedAnimationGroup - is the source.
+         * @param {Scene} scene - is the scene that will receive the animationGroup
+         * Example of an expected source
+         * {
+                "name": "Run",
+                "from": 0.0,
+                "to": 1.0,
+                "targetedAnimations": [{
+                    "animation": {
+                        "name": "rotationQuaternion animation",
+                        "property": "rotationQuaternion",
+                        "dataType": 2,
+                        "enableBlending": false,
+                        "blendingSpeed": 0.01,
+                        "loopBehavior": 1,
+                        "framePerSecond": 30,
+                        "keys": [{
+                            "frame": 0,
+                            "values": [-0.7071, -0.002, 0.0022, 0.7071]
+                        }, {
+                            "frame": 1,
+                            "values": [-0.7082, -0.0485, 0.0026, 0.7043]
+                        }]
+                    },
+                    "targetId": "d64f9288-d06a-4a70-872f-edbb5a3779c6"
+                }]
+            }
+         */
+        public static Parse(parsedAnimationGroup: any, scene: Scene): AnimationGroup {
+            var animationGroup = new BABYLON.AnimationGroup(parsedAnimationGroup.name, scene);
+            for (var i = 0; i < parsedAnimationGroup.targetedAnimations.length; i++){
+                var targetedAnimation = parsedAnimationGroup.targetedAnimations[i];
+                var animation = Animation.Parse(targetedAnimation.animation);
+                var id = targetedAnimation.targetId;
+                var targetNode = scene.getNodeByID(id);
+                
+                if(targetNode != null)
+                    animationGroup.addTargetedAnimation(animation,targetNode);
+            }
+            
+            if(parsedAnimationGroup.from !== null && parsedAnimationGroup.from !== null)
+                animationGroup.normalize(parsedAnimationGroup.from, parsedAnimationGroup.to);
+
+            return animationGroup;
+        }
+
+        public getClassName(): string {
+            return "AnimationGroup";
+        }
+
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        public toString(fullDetails?: boolean): string {
+            var ret = "Name: " + this.name;
+            ret += ", type: " + this.getClassName();
+            if (fullDetails) {
+                ret += ", from: " + this._from;
+                ret += ", to: " + this._to;
+                ret += ", isStarted: " + this._isStarted;
+                ret += ", speedRatio: " + this._speedRatio;
+                ret += ", targetedAnimations length: " + this._targetedAnimations.length;
+                ret += ", animatables length: " + this._animatables;
+            }
+            return ret;
+        }
+
     }
 }
