@@ -33,7 +33,7 @@
         setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
         createTexture(): WebGLTexture;
-        loadTexture(texture: WebGLTexture, buffer: ArrayBuffer, mipMap: boolean): void;
+        loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | Blob, mipMap: boolean): void;
         getTexureWidth(texture: WebGLTexture): number;
         getTexureHeight(texture: WebGLTexture): number;
         setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
@@ -708,8 +708,10 @@
                 //     callback(buffer as ArrayBuffer);
                 // }
             } else {
-                var onload = (data: string | ArrayBuffer, responseURL?: string) => {
-                    let arrayBuffer = data as ArrayBuffer;
+                var onload = (data: string | ArrayBuffer | Blob, responseURL?: string) => {
+                    if (typeof(data) === "string") {
+                        throw new Error("Loading textures from string data not yet implemented.");
+                    }
 
                     if (fromBlob && !this.doNotHandleContextLost) {
                         // We need to store the image if we need to rebuild the texture
@@ -728,7 +730,7 @@
                         return;
                     }
 
-                    this._interop.loadTexture(webGLTexture, arrayBuffer, !noMipmap);
+                    this._interop.loadTexture(webGLTexture, data, !noMipmap);
 
                     if (invertY)
                     {
@@ -762,7 +764,7 @@
                 } else if (!fromData) {
                     let onLoadFileError = (request?: XMLHttpRequest, exception?: any) => {
                         onInternalError("Failed to retrieve " + url + ".", exception);
-                    }
+                    };
                     Tools.LoadFile(url, onload, undefined, undefined, /*useArrayBuffer*/true, onLoadFileError);
                 } else {
                     onload(Tools.DecodeBase64(buffer as string));
