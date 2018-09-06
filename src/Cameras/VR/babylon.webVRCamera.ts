@@ -736,7 +736,7 @@ module BABYLON {
                                     }
                                     let activateLightOnSubMeshes = function (mesh: AbstractMesh, light: HemisphericLight) {
                                         let children = mesh.getChildren();
-                                        if (children.length !== 0) {
+                                        if (children && children.length !== 0) {
                                             children.forEach((mesh) => {
                                                 light.includedOnlyMeshes.push(<AbstractMesh>mesh);
                                                 activateLightOnSubMeshes(<AbstractMesh>mesh, light);

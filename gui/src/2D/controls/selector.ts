@@ -5,6 +5,7 @@ import {TextBlock} from "./textBlock";
 import {Checkbox} from "./checkbox";
 import {RadioButton} from "./radioButton";
 import {Slider} from "./slider";
+import { Container } from "./container";
 
 /** Class used to create a RadioGroup 
  * which contains groups of radio buttons
@@ -278,17 +279,20 @@ export class SliderGroup extends SelectorGroup{
 }
 
 
-/** Class used to hold the controls for the checkboxes, radio buttons and sliders */
+/** Class used to hold the controls for the checkboxes, radio buttons and sliders 
+ * @see http://doc.babylonjs.com/how_to/selector
+*/
 export class SelectionPanel extends Rectangle {
     private _panel: StackPanel;
     private _buttonColor: string = "#364249";
     private _buttonBackground: string = "#CCCCCC"; 
     private _headerColor: string = "black";
     private _barColor: string = "white";
+    private _barHeight: string = "2px";
+    private _spacerHeight: string = "20px";
     private _labelColor: string;
     private _groups: SelectorGroup[];
     private _bars: any[] = new Array();
-
 
     /**
     * Creates a new SelectionPanel
@@ -302,7 +306,7 @@ export class SelectionPanel extends Rectangle {
         public groups: SelectorGroup[] = []) {
         super(name);
         this._groups = groups;
-        this.thickness = 4;
+        this.thickness = 2;
         this._panel = new StackPanel();
         this._panel.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
         this._panel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
@@ -426,18 +430,66 @@ export class SelectionPanel extends Rectangle {
 
     private _setBarColor() {
         for(var i = 0; i < this._bars.length; i++) {
-            this._bars[i].background = this._barColor;
+            this._bars[i].children[0].background = this._barColor;
+        }
+    }
+
+    /** Gets or sets the height of separator bar */
+    public get barHeight(): string {
+        return this._barHeight;
+    }
+
+    public set barHeight(value: string) {
+        if(this._barHeight === value) {
+            return;
+        }
+        
+        this._barHeight = value;
+        this._setBarHeight();
+    }
+
+    private _setBarHeight() {
+        for(var i = 0; i < this._bars.length; i++) {
+            this._bars[i].children[0].height = this._barHeight;
+        }
+    }
+
+    /** Gets or sets the height of spacers*/
+    public get spacerHeight(): string {
+        return this._spacerHeight;
+    }
+
+    public set spacerHeight(value: string) {
+        if(this._spacerHeight === value) {
+            return;
+        }
+        
+        this._spacerHeight = value;
+        this._setSpacerHeight();
+    }
+
+    private _setSpacerHeight() {
+        for(var i = 0; i < this._bars.length; i++) {
+            this._bars[i].height = this._spacerHeight;
         }
     }
 
     /** Adds a bar between groups */
     private _addSpacer(): void {
-        var separator = new Rectangle();
+        var separator = new Container();
         separator.width = 1;
-        separator.height = "5px";
+        separator.height = this._spacerHeight;
         separator.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-        separator.background = this._barColor;
-        separator.color = "transparent";
+
+        var bar = new Rectangle();
+        bar.width = 1;
+        bar.height = this._barHeight;
+        bar.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+        bar.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+        bar.background = this._barColor;
+        bar.color = "transparent";
+        separator.addControl(bar);
+
         this._panel.addControl(separator);
         this._bars.push(separator);
     }
