@@ -12,7 +12,7 @@
         gradient: number;
     }
 
-    /** Class used to store color gradient */
+    /** Class used to store color4 gradient */
     export class ColorGradient implements IValueGradient {
         /**
          * Gets or sets the gradient value (between 0 and 1)
@@ -41,6 +41,18 @@
             Color4.LerpToRef(this.color1, this.color2, Math.random(), result);
         }
     }
+
+    /** Class used to store color 3 gradient */
+    export class Color3Gradient implements IValueGradient {
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        public gradient: number;
+        /**
+         * Gets or sets the associated color
+         */
+        public color: Color3;
+    }    
 
     /** Class used to store factor gradient */
     export class FactorGradient implements IValueGradient {

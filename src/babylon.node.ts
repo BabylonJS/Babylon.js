@@ -315,7 +315,7 @@
          * @returns a Matrix
          */
         public getWorldMatrix(): Matrix {
-            if (this._currentRenderId !== this.getScene().getRenderId()) {
+            if (this._currentRenderId !== this._scene.getRenderId()) {
                 this.computeWorldMatrix();
             }
             return this._worldMatrix;
@@ -392,10 +392,8 @@
                 return false;
             }
 
-            if (this._parentNode) {
-                if (!this.isSynchronizedWithParent()) {
-                    return false;
-                }
+            if (!this.isSynchronizedWithParent()) {
+                return false;
             }
 
             return this._isSynchronized();
