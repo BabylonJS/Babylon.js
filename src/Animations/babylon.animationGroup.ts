@@ -362,5 +362,58 @@ module BABYLON {
                 this.onAnimationGroupEndObservable.notifyObservers(this);
             }
         }
+
+        // Statics
+        /**
+         * Returns a new AnimationGroup object parsed from the source provided.
+         * @param parsedAnimationGroup defines the source
+         * @param scene defines the scene that will receive the animationGroup
+         * @returns a new AnimationGroup
+         */
+        public static Parse(parsedAnimationGroup: any, scene: Scene): AnimationGroup {
+            var animationGroup = new BABYLON.AnimationGroup(parsedAnimationGroup.name, scene);
+            for (var i = 0; i < parsedAnimationGroup.targetedAnimations.length; i++){
+                var targetedAnimation = parsedAnimationGroup.targetedAnimations[i];
+                var animation = Animation.Parse(targetedAnimation.animation);
+                var id = targetedAnimation.targetId;
+                var targetNode = scene.getNodeByID(id);
+                
+                if(targetNode != null)
+                    animationGroup.addTargetedAnimation(animation,targetNode);
+            }
+            
+            if(parsedAnimationGroup.from !== null && parsedAnimationGroup.from !== null)
+                animationGroup.normalize(parsedAnimationGroup.from, parsedAnimationGroup.to);
+
+            return animationGroup;
+        }
+
+        /**
+         * Returns the string "AnimationGroup"
+         * @returns "AnimationGroup"
+         */
+        public getClassName(): string {
+            return "AnimationGroup";
+        }
+
+        /**
+         * Creates a detailled string about the object
+         * @param fullDetails defines if the output string will support multiple levels of logging within scene loading
+         * @returns a string representing the object
+         */
+        public toString(fullDetails?: boolean): string {
+            var ret = "Name: " + this.name;
+            ret += ", type: " + this.getClassName();
+            if (fullDetails) {
+                ret += ", from: " + this._from;
+                ret += ", to: " + this._to;
+                ret += ", isStarted: " + this._isStarted;
+                ret += ", speedRatio: " + this._speedRatio;
+                ret += ", targetedAnimations length: " + this._targetedAnimations.length;
+                ret += ", animatables length: " + this._animatables;
+            }
+            return ret;
+        }
+
     }
 }

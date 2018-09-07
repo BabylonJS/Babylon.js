@@ -24,13 +24,15 @@ void main(void) {
 	vec4 baseColor = (textureColor * textureMask + (vec4(1., 1., 1., 1.) - textureMask)) * vColor;
 
 	#ifdef RAMPGRADIENT
-		float alpha = textureColor.a;
+		float alpha = baseColor.a;
 		float remappedColorIndex = clamp((alpha - remapRanges.x) / remapRanges.y, 0.0, 1.0);
 
-		baseColor.rgb *= texture2D(rampSampler, vec2(remappedColorIndex, 0.)).rgb;
+		vec4 rampColor = texture2D(rampSampler, vec2(1.0 - remappedColorIndex, 0.));
+		baseColor.rgb *= rampColor.rgb;
 
 		// Remapped alpha
-		baseColor.a = clamp((alpha - remapRanges.z) / remapRanges.w, 0.0, 1.0);
+		float finalAlpha = baseColor.a;
+		baseColor.a = clamp((alpha * rampColor.a - remapRanges.z) / remapRanges.w, 0.0, 1.0);
 	#endif
 
 	#ifdef BLENDMULTIPLYMODE
