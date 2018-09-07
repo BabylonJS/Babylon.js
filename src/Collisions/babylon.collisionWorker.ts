@@ -113,7 +113,8 @@ module BABYLON {
             //return colTransMat;
         }
 
-        private processCollisionsForSubMeshes(transformMatrix: Matrix, mesh: SerializedMesh): void { // No Octrees for now
+        private processCollisionsForSubMeshes(transformMatrix: Matrix, mesh: SerializedMesh): void { 
+            // No Octrees for now
             //if (this._submeshesOctree && this.useOctreeForCollisions) {
             //    var radius = collider.velocityWorldLength + Math.max(collider.radius.x, collider.radius.y, collider.radius.z);
             //    var intersections = this._submeshesOctree.intersects(collider.basePointWorld, radius);

@@ -48,6 +48,18 @@ uniform float radiusRange;
 #endif
 #endif
 
+#ifdef CYLINDEREMITTER
+uniform float radius;
+uniform float height;
+uniform float radiusRange;
+#ifdef DIRECTEDCYLINDEREMITTER
+  uniform vec3 direction1;
+  uniform vec3 direction2;
+#else
+  uniform float directionRandomizer;
+#endif
+#endif
+
 #ifdef CONEEMITTER
 uniform vec2 radius;
 uniform float coneAngle;
@@ -75,6 +87,9 @@ in vec2 angle;
 #endif
 #ifdef ANIMATESHEET
 in float cellIndex;
+#ifdef ANIMATESHEETRANDOMSTART
+in float cellStartOffset;
+#endif
 #endif
 
 // Output
@@ -97,6 +112,9 @@ out vec2 outAngle;
 #endif
 #ifdef ANIMATESHEET
 out float outCellIndex;
+#ifdef ANIMATESHEETRANDOMSTART
+out float outCellStartOffset;
+#endif
 #endif
 
 #ifdef SIZEGRADIENTS
@@ -109,6 +127,15 @@ uniform sampler2D angularSpeedGradientSampler;
 
 #ifdef VELOCITYGRADIENTS
 uniform sampler2D velocityGradientSampler;
+#endif
+
+#ifdef LIMITVELOCITYGRADIENTS
+uniform sampler2D limitVelocityGradientSampler;
+uniform float limitVelocityDamping;
+#endif
+
+#ifdef DRAGGRADIENTS
+uniform sampler2D dragGradientSampler;
 #endif
 
 #ifdef NOISE
@@ -130,26 +157,12 @@ vec4 getRandomVec4(float offset) {
 }
 
 void main() {
-  if (age >= life) {
-    if (stopFactor == 0.) {
-      outPosition = position;
-      outAge = life;
-      outLife = life;
-      outSeed = seed;
-#ifndef COLORGRADIENTS      
-      outColor = vec4(0.,0.,0.,0.);
-#endif
-      outSize = vec3(0., 0., 0.);
-#ifndef BILLBOARD        
-      outInitialDirection = initialDirection;
-#endif      
-      outDirection = direction;
-      outAngle = angle;
-#ifdef ANIMATESHEET      
-      outCellIndex = cellIndex;
-#endif
-      return;
-    }
+  float newAge = age + timeDelta;
+
+    
+
+  // If particle is dead and system is not stopped, spawn as new particle
+  if (newAge >= life && stopFactor != 0.) {
     vec3 position;
     vec3 direction;
 
@@ -157,8 +170,8 @@ void main() {
     vec4 randoms = getRandomVec4(seed.x);
 
     // Age and life
-    outAge = 0.0;
     outLife = lifeTime.x + (lifeTime.y - lifeTime.x) * randoms.r;
+    outAge = mod(newAge, outLife);
 
     // Seed
     outSeed = seed;
@@ -232,6 +245,27 @@ void main() {
       // Direction
       direction = position + directionRandomizer * randoms3;
     #endif
+#elif defined(CYLINDEREMITTER)
+    vec3 randoms2 = getRandomVec3(seed.y);
+    vec3 randoms3 = getRandomVec3(seed.z);
+
+    // Position on the cylinder
+    float yPos = (randoms2.x - 0.5)*height;
+    float angle = randoms2.y * PI * 2.;
+    float inverseRadiusRangeSquared = ((1.-radiusRange) * (1.-radiusRange));
+    float positionRadius = radius*sqrt(inverseRadiusRangeSquared + (randoms2.z * (1.-inverseRadiusRangeSquared)));
+    float xPos = positionRadius * cos(angle);
+    float zPos = positionRadius * sin(angle);
+    position = vec3(xPos, yPos, zPos);
+
+    #ifdef DIRECTEDCYLINDEREMITTER
+      direction = direction1 + (direction2 - direction1) * randoms3;
+    #else
+      // Direction
+      angle = angle + ((randoms3.x-0.5) * PI);
+      direction = vec3(cos(angle), randoms3.y-0.5, sin(angle));
+      direction = normalize(direction);
+    #endif
 #elif defined(CONEEMITTER)
     vec3 randoms2 = getRandomVec3(seed.y);
 
@@ -280,18 +314,27 @@ void main() {
 #endif
 #ifdef ANIMATESHEET      
     outCellIndex = cellInfos.x;
+
+#ifdef ANIMATESHEETRANDOMSTART
+    outCellStartOffset = randoms.a * outLife;
+#endif    
 #endif
 
-  } else {   
+  } else {
     float directionScale = timeDelta;
-    float ageGradient = age / life;
+    outAge = newAge;
+    float ageGradient = newAge / life;
 
 #ifdef VELOCITYGRADIENTS
     directionScale *= texture(velocityGradientSampler, vec2(ageGradient, 0)).r;
 #endif
 
+#ifdef DRAGGRADIENTS
+    directionScale *= 1.0 - texture(dragGradientSampler, vec2(ageGradient, 0)).r;
+#endif
+
     outPosition = position + direction * directionScale;
-    outAge = age + timeDelta;
+    
     outLife = life;
     outSeed = seed;
 #ifndef COLORGRADIENTS    
@@ -308,7 +351,20 @@ void main() {
 #ifndef BILLBOARD    
     outInitialDirection = initialDirection;
 #endif
-    outDirection = direction + gravity * timeDelta;
+
+    vec3 updatedDirection = direction + gravity * timeDelta;
+
+#ifdef LIMITVELOCITYGRADIENTS
+    float limitVelocity = texture(limitVelocityGradientSampler, vec2(ageGradient, 0)).r;
+
+    float currentVelocity = length(updatedDirection);
+
+    if (currentVelocity > limitVelocity) {
+        updatedDirection = updatedDirection * limitVelocityDamping;
+    }
+#endif
+
+    outDirection = updatedDirection;
 
 #ifdef NOISE
     vec3 localPosition = outPosition - emitterWM[3].xyz;
@@ -330,8 +386,15 @@ void main() {
 #endif
 
 #ifdef ANIMATESHEET      
+    float offsetAge = outAge;
     float dist = cellInfos.y - cellInfos.x;
-    float ratio = clamp(mod(outAge * cellInfos.z, life) / life, 0., 1.0);
+
+#ifdef ANIMATESHEETRANDOMSTART
+    outCellStartOffset = cellStartOffset;
+    offsetAge += cellStartOffset;
+#endif    
+
+    float ratio = clamp(mod(offsetAge * cellInfos.z, life) / life, 0., 1.0);
 
     outCellIndex = float(int(cellInfos.x + ratio * dist));
 #endif

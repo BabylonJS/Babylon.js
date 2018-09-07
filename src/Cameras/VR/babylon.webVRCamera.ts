@@ -525,6 +525,17 @@ module BABYLON {
 
         private updateCacheCalled: boolean;
 
+        // Remove translation from 6dof headset if trackposition is set to false
+        private _correctPositionIfNotTrackPosition(matrix:Matrix, isViewMatrix = false){
+            if(this.rawPose && this.rawPose.position && !this.webVROptions.trackPosition){
+                Matrix.TranslationToRef(this.rawPose.position[0], this.rawPose.position[1], -this.rawPose.position[2], this._tmpMatrix);
+                if(!isViewMatrix){
+                    this._tmpMatrix.invert();
+                }
+                this._tmpMatrix.multiplyToRef(matrix, matrix);
+            }
+        }
+
         /**
          * @hidden
          * Updates the cached values of the camera
@@ -559,6 +570,7 @@ module BABYLON {
                 // Update the gamepad to ensure the mesh is updated on the same frame as camera
                 this.controllers.forEach((controller) => {
                     controller._deviceToWorld.copyFrom(this._deviceToWorld);
+                    this._correctPositionIfNotTrackPosition(controller._deviceToWorld);
                     controller.update();
                 });
             }
@@ -596,6 +608,7 @@ module BABYLON {
             return Matrix.Identity();
         }
 
+        private _tmpMatrix = new BABYLON.Matrix();
         /**
          * This function is called by the two RIG cameras.
          * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
@@ -635,6 +648,9 @@ module BABYLON {
 
                 this._webvrViewMatrix.invert();
             }
+             
+            // Remove translation from 6dof headset if trackposition is set to false
+            parentCamera._correctPositionIfNotTrackPosition(this._webvrViewMatrix, true);
 
             parentCamera._worldToDevice.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
 
@@ -704,6 +720,8 @@ module BABYLON {
                     let webVrController: WebVRController = <WebVRController>gamepad;
                     webVrController.deviceScaleFactor = this.deviceScaleFactor;
                     webVrController._deviceToWorld.copyFrom(this._deviceToWorld);
+                    this._correctPositionIfNotTrackPosition(webVrController._deviceToWorld);
+
                     if (this.webVROptions.controllerMeshes) {
                         if (webVrController.defaultModel) {
                             webVrController.defaultModel.setEnabled(true);
@@ -718,7 +736,7 @@ module BABYLON {
                                     }
                                     let activateLightOnSubMeshes = function (mesh: AbstractMesh, light: HemisphericLight) {
                                         let children = mesh.getChildren();
-                                        if (children.length !== 0) {
+                                        if (children && children.length !== 0) {
                                             children.forEach((mesh) => {
                                                 light.includedOnlyMeshes.push(<AbstractMesh>mesh);
                                                 activateLightOnSubMeshes(<AbstractMesh>mesh, light);

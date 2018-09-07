@@ -48,6 +48,9 @@ function compare(renderData, referenceCanvas) {
 
     referenceContext.putImageData(referenceData, 0, 0);
 
+    if (differencesCount) {
+        console.log("Pixel difference: " + differencesCount + " pixels.")
+    }
     return (differencesCount * 100) / (width * height) > errorRatio;
 }
 
@@ -123,6 +126,7 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done
     var renderB64 = saveRenderImage(renderData, canvas);
     renderImage.src = renderB64;
 
+    engine.applyStates();
     currentScene.dispose();
     currentScene = null;
     engine.setHardwareScalingLevel(1);

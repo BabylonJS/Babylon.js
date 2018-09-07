@@ -11,9 +11,9 @@
          */
         constructor(
             /**The name of the animation range**/
-            public name: string, 
+            public name: string,
             /**The starting frame of the animation */
-            public from: number, 
+            public from: number,
             /**The ending frame of the animation*/
             public to: number) {
         }
@@ -46,9 +46,9 @@
             /** The frame for which the event is triggered **/
             public frame: number,
             /** The event to perform when triggered **/
-            public action: (currentFrame: number) => void , 
+            public action: (currentFrame: number) => void,
             /** Specifies if the event should be triggered only once**/
-            public onlyOnce?: boolean ) {
+            public onlyOnce?: boolean) {
         }
 
         /** @hidden */
@@ -472,15 +472,15 @@
          */
         constructor(
             /**Name of the animation */
-            public name: string, 
+            public name: string,
             /**Property to animate */
-            public targetProperty: string, 
+            public targetProperty: string,
             /**The frames per second of the animation */
-            public framePerSecond: number, 
+            public framePerSecond: number,
             /**The data type of the animation */
             public dataType: number,
-            /**The loop mode of the animation */ 
-            public loopMode?: number, 
+            /**The loop mode of the animation */
+            public loopMode?: number,
             /**Specifies if blending should be enabled */
             public enableBlending?: boolean) {
             this.targetPropertyPath = targetProperty.split(".");
@@ -757,7 +757,7 @@
             }
 
             return value;
-        } 
+        }
 
         /**
          * @hidden Internal use only
@@ -896,7 +896,7 @@
         public matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number, result?: Matrix): Matrix {
             if (Animation.AllowMatrixDecomposeForInterpolation) {
                 if (result) {
-                    Matrix.DecomposeLerpToRef(startValue, endValue, gradient, result);    
+                    Matrix.DecomposeLerpToRef(startValue, endValue, gradient, result);
                     return result;
                 }
                 return Matrix.DecomposeLerp(startValue, endValue, gradient);
@@ -1121,7 +1121,7 @@
             } else if (constructor.Slerp) { // Slerp supported
                 return constructor.Slerp(left, right, amount);
             } else if (left.toFixed) { // Number
-                return left * (1.0 - amount) + amount* right;
+                return left * (1.0 - amount) + amount * right;
             } else { // Blending not supported
                 return right;
             }

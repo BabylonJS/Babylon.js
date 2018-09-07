@@ -1,5 +1,22 @@
 ﻿module BABYLON {
 
+    // Static values to help the garbage collector
+
+    // Quaternion
+    const _staticOffsetValueQuaternion: Readonly<Quaternion> = Object.freeze(new Quaternion(0, 0, 0, 0));
+
+    // Vector3
+    const _staticOffsetValueVector3: Readonly<Vector3> = Object.freeze(Vector3.Zero());
+
+    // Vector2
+    const _staticOffsetValueVector2: Readonly<Vector2> = Object.freeze(Vector2.Zero());
+
+    // Size
+    const _staticOffsetValueSize: Readonly<Size> = Object.freeze(Size.Zero());
+
+    // Color3
+    const _staticOffsetValueColor3: Readonly<Color3> = Object.freeze(Color3.Black());
+
     /**
      * Defines a runtime animation
      */
@@ -15,7 +32,7 @@
          * The animation used by the runtime animation
          */
         private _animation: Animation;
-        
+
         /**
          * The target of the runtime animation
          */
@@ -25,37 +42,37 @@
          * The initiating animatable
          */
         private _host: Animatable;
-        
+
         /**
          * The original value of the runtime animation
          */
         private _originalValue = new Array<any>();
-        
+
         /**
          * The original blend value of the runtime animation
          */
         private _originalBlendValue: any;
-        
+
         /**
          * The offsets cache of the runtime animation
          */
-        private _offsetsCache: {[key: string]: any} = {};
-        
+        private _offsetsCache: { [key: string]: any } = {};
+
         /**
          * The high limits cache of the runtime animation
          */
-        private _highLimitsCache: {[key: string]: any} = {};
-        
+        private _highLimitsCache: { [key: string]: any } = {};
+
         /**
          * Specifies if the runtime animation has been stopped
          */
         private _stopped = false;
-        
+
         /**
          * The blending factor of the runtime animation
          */
         private _blendingFactor = 0;
-        
+
         /**
          * The BabylonJS scene
          */
@@ -65,20 +82,20 @@
          * The current value of the runtime animation
          */
         private _currentValue: any;
-        
+
         /** @hidden */
         public _workValue: any;
-        
+
         /**
          * The active target of the runtime animation
          */
         private _activeTarget: any;
-        
+
         /**
          * The target path of the runtime animation
          */
         private _targetPath: string = "";
-        
+
         /**
          * The weight of the runtime animation
          */
@@ -93,7 +110,7 @@
          * The previous delay of the runtime animation
          */
         private _previousDelay: number = 0;
-        
+
         /**
          * The previous ratio of the runtime animation
          */
@@ -111,7 +128,7 @@
          */
         public get weight(): number {
             return this._weight;
-        }              
+        }
 
         /**
          * Gets the current value of the runtime animation
@@ -196,7 +213,7 @@
             // Events
             for (var index = 0; index < this._events.length; index++) {
                 this._events[index].isDone = false;
-            }                  
+            }
         }
 
         /**
@@ -205,7 +222,7 @@
          */
         public isStopped(): boolean {
             return this._stopped;
-        }        
+        }
 
         /**
          * Disposes of the runtime animation
@@ -217,7 +234,7 @@
                 this._animation.runtimeAnimations.splice(index, 1);
             }
         }
-        
+
         /**
          * Interpolates the animation from the current frame
          * @param currentFrame The frame to interpolate the animation to
@@ -269,7 +286,7 @@
                     property = property[targetPropertyPath[index]];
                 }
 
-                path =  targetPropertyPath[targetPropertyPath.length - 1];
+                path = targetPropertyPath[targetPropertyPath.length - 1];
                 destination = property;
             } else {
                 path = targetPropertyPath[0];
@@ -323,7 +340,7 @@
                             this._currentValue = Matrix.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
                         }
                     }
-                } else { 
+                } else {
                     this._currentValue = Animation._UniversalLerp(this._originalBlendValue, currentValue, this._blendingFactor);
                 }
 
@@ -349,7 +366,7 @@
          * @returns Loop Mode
          */
         private _getCorrectLoopMode(): number | undefined {
-            if ( this._target && this._target.animationPropertiesOverride) {
+            if (this._target && this._target.animationPropertiesOverride) {
                 return this._target.animationPropertiesOverride.loopMode;
             }
 
@@ -424,7 +441,7 @@
             }
 
             //to and from cannot be the same key
-            if(from === to) {
+            if (from === to) {
                 if (from > keys[0].frame) {
                     from--;
                 } else if (to < keys[keys.length - 1].frame) {
@@ -434,7 +451,7 @@
 
             // Compute ratio
             var range = to - from;
-            var offsetValue;
+            var offsetValue: any;
             // ratio represents the frame delta between from and to
             var ratio = (delay * (this._animation.framePerSecond * speedRatio) / 1000.0) + this._ratioOffset;
             var highLimitValue = 0;
@@ -495,30 +512,30 @@
                         break;
                     // Quaternion
                     case Animation.ANIMATIONTYPE_QUATERNION:
-                        offsetValue = new Quaternion(0, 0, 0, 0);
+                        offsetValue = _staticOffsetValueQuaternion;
                         break;
                     // Vector3
                     case Animation.ANIMATIONTYPE_VECTOR3:
-                        offsetValue = Vector3.Zero();
+                        offsetValue = _staticOffsetValueVector3;
                         break;
                     // Vector2
                     case Animation.ANIMATIONTYPE_VECTOR2:
-                        offsetValue = Vector2.Zero();
+                        offsetValue = _staticOffsetValueVector2;
                         break;
                     // Size
                     case Animation.ANIMATIONTYPE_SIZE:
-                        offsetValue = Size.Zero();
+                        offsetValue = _staticOffsetValueSize;
                         break;
                     // Color3
                     case Animation.ANIMATIONTYPE_COLOR3:
-                        offsetValue = Color3.Black();
+                        offsetValue = _staticOffsetValueColor3;
                 }
             }
 
             // Compute value
             var repeatCount = (ratio / range) >> 0;
             var currentFrame = returnValue ? from + ratio % range : to;
-            
+
             // Need to normalize?
             if (this._host && this._host.syncRoot) {
                 let syncRoot = this._host.syncRoot;
@@ -528,16 +545,16 @@
 
             // Reset events if looping
             let events = this._events;
-            if (range > 0 && this.currentFrame > currentFrame || 
+            if (range > 0 && this.currentFrame > currentFrame ||
                 range < 0 && this.currentFrame < currentFrame) {
-                    // Need to reset animation events
-                    for (var index = 0; index < events.length; index++) {
-                        if (!events[index].onlyOnce) {
-                            // reset event, the animation is looping
-                            events[index].isDone = false;
-                        }
-                    }                    
+                // Need to reset animation events
+                for (var index = 0; index < events.length; index++) {
+                    if (!events[index].onlyOnce) {
+                        // reset event, the animation is looping
+                        events[index].isDone = false;
+                    }
                 }
+            }
 
             var currentValue = this._interpolate(currentFrame, repeatCount, this._getCorrectLoopMode(), offsetValue, highLimitValue);
 
@@ -551,7 +568,7 @@
                 if (
                     (range > 0 && currentFrame >= events[index].frame && events[index].frame >= from) ||
                     (range < 0 && currentFrame <= events[index].frame && events[index].frame <= from)
-                ){
+                ) {
                     var event = events[index];
                     if (!event.isDone) {
                         // If event should be done only once, remove it.
@@ -571,6 +588,6 @@
             return returnValue;
         }
     }
-} 
+}
 
 

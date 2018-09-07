@@ -114,22 +114,25 @@ export class Helpers {
     /**
      * Useful function used to create a div
      */
-    public static CreateDiv(className: Nullable<string> = null, parent?: HTMLElement): HTMLDivElement {
-        return <HTMLDivElement>Helpers.CreateElement('div', className, parent);
+    public static CreateDiv(className: Nullable<string> = null, parent?: HTMLElement, tooltip?: string): HTMLDivElement {
+        return <HTMLDivElement>Helpers.CreateElement('div', className, parent, tooltip);
     }
 
     /**
      * Useful function used to create a input
      */
-    public static CreateInput(className?: string, parent?: HTMLElement): HTMLInputElement {
-        return <HTMLInputElement>Helpers.CreateElement('input', className, parent);
+    public static CreateInput(className?: string, parent?: HTMLElement, tooltip?: string): HTMLInputElement {
+        return <HTMLInputElement>Helpers.CreateElement('input', className, parent, tooltip);
     }
 
-    public static CreateElement(element: string, className: Nullable<string> = null, parent?: HTMLElement): HTMLElement {
+    public static CreateElement(element: string, className: Nullable<string> = null, parent?: HTMLElement, tooltip?: string): HTMLElement {
         let elem = Inspector.DOCUMENT.createElement(element);
 
         if (className) {
             elem.className = className;
+        }
+        if(tooltip && tooltip != '') {
+            elem.title = tooltip;
         }
         if (parent) {
             parent.appendChild(elem);
@@ -153,7 +156,7 @@ export class Helpers {
      */
     public static Css(elem: HTMLElement, cssAttribute: string): string {
         let clone = elem.cloneNode(true) as HTMLElement;
-        let div = Helpers.CreateDiv('', Inspector.DOCUMENT.body);
+        let div = Helpers.CreateDiv('', Inspector.DOCUMENT.body, '');
         div.style.display = 'none';
         div.appendChild(clone);
         let value = (<any>Inspector.WINDOW.getComputedStyle(clone))[cssAttribute];
@@ -165,17 +168,17 @@ export class Helpers {
 
     public static LoadScript() {
         Tools.LoadFile("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/highlight.min.js", (elem) => {
-            let script = Helpers.CreateElement('script', '', Inspector.DOCUMENT.body);
+            let script = Helpers.CreateElement('script', '', Inspector.DOCUMENT.body, '');
             script.textContent = elem as string;
 
             // Load glsl detection
             Tools.LoadFile("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/languages/glsl.min.js", (elem) => {
-                let script = Helpers.CreateElement('script', '', Inspector.DOCUMENT.body);
+                let script = Helpers.CreateElement('script', '', Inspector.DOCUMENT.body, '');
                 script.textContent = elem as string;
 
                 // Load css style
                 Tools.LoadFile("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/styles/zenburn.min.css", (elem) => {
-                    let style = Helpers.CreateElement('style', '', Inspector.DOCUMENT.body);
+                    let style = Helpers.CreateElement('style', '', Inspector.DOCUMENT.body, '');
                     style.textContent = elem as string;
                 });
             }, undefined, undefined, undefined, () => {

@@ -489,8 +489,8 @@
             this.onActivateObservable.notifyObservers(camera);
 
             // Clear
-            if (scene._allowPostProcessClear && this.autoClear && this.alphaMode === Engine.ALPHA_DISABLE) {
-                this._engine.clear(this.clearColor ? this.clearColor : scene.clearColor, true, true, true);
+            if (this.autoClear && this.alphaMode === Engine.ALPHA_DISABLE) {
+                this._engine.clear(this.clearColor ? this.clearColor : scene.clearColor, scene._allowPostProcessClearColor, true, true);
             }
 
             if (this._reusable) {

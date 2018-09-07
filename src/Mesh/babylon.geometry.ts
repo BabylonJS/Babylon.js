@@ -42,7 +42,7 @@
         /** @hidden */
         public _delayLoadingFunction: Nullable<(any: any, geometry: Geometry) => void>;
         /** @hidden */
-        public _softwareSkinningRenderId: number;
+        public _softwareSkinningFrameId: number;
         private _vertexArrayObjects: { [key: string]: WebGLVertexArrayObject; };
         private _updatable: boolean;
 
@@ -1297,11 +1297,7 @@
             // Update
             mesh.computeWorldMatrix(true);
 
-            // Octree
-            const sceneOctree = scene.selectionOctree;
-            if (sceneOctree !== undefined && sceneOctree !== null) {
-                sceneOctree.addMesh(<AbstractMesh>mesh);
-            }
+            scene.onMeshImportedObservable.notifyObservers(<AbstractMesh>mesh);
         }
 
         private static _CleanMatricesWeights(parsedGeometry: any, mesh: Mesh): void {

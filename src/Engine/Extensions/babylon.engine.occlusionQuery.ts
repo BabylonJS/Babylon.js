@@ -250,14 +250,19 @@ module BABYLON {
 
     // We also need to update AbstractMesh as there is a portion of the code there
     AbstractMesh.prototype._checkOcclusionQuery = function() {
-        var engine = this.getEngine();
-
-        if (!engine.isQueryResultAvailable) { // Occlusion query where not referenced
+        if (this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
             this._isOccluded = false;
             return;
         }
 
-        if (engine.webGLVersion < 2 || this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
+        var engine = this.getEngine();
+
+        if (engine.webGLVersion < 2) {
+            this._isOccluded = false;
+            return;
+        }
+
+        if (!engine.isQueryResultAvailable) { // Occlusion query where not referenced
             this._isOccluded = false;
             return;
         }

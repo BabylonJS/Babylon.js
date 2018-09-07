@@ -12,7 +12,7 @@
         gradient: number;
     }
 
-    /** Class used to store color gradient */
+    /** Class used to store color4 gradient */
     export class ColorGradient implements IValueGradient {
         /**
          * Gets or sets the gradient value (between 0 and 1)
@@ -41,6 +41,18 @@
             Color4.LerpToRef(this.color1, this.color2, Math.random(), result);
         }
     }
+
+    /** Class used to store color 3 gradient */
+    export class Color3Gradient implements IValueGradient {
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        public gradient: number;
+        /**
+         * Gets or sets the associated color
+         */
+        public color: Color3;
+    }    
 
     /** Class used to store factor gradient */
     export class FactorGradient implements IValueGradient {
@@ -836,6 +848,9 @@
          * content of this file is added into a new script element, attached to the DOM (body element)
          */
         public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void) {
+            if (!Tools.IsWindowObjectExist()) {
+                return;
+            }
             var head = document.getElementsByTagName('head')[0];
             var script = document.createElement('script');
             script.type = 'text/javascript';
@@ -1748,8 +1763,13 @@
                 if (ratio >= currentGradient.gradient && ratio <= nextGradient.gradient) {
                     let scale =  (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
                     updateFunc(currentGradient, nextGradient, scale);
+                    return;
                }
             }
+
+            // Use last index if over
+            const lastIndex = gradients.length - 1;
+            updateFunc(gradients[lastIndex], gradients[lastIndex], 1.0);
         }
     }
 

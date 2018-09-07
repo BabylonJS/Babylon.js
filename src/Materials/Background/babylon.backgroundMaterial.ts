@@ -99,6 +99,7 @@
         public REFLECTIONMAP_CUBIC = false;
         public REFLECTIONMAP_PROJECTION = false;
         public REFLECTIONMAP_SKYBOX = false;
+        public REFLECTIONMAP_SKYBOX_TRANSFORMED = false;
         public REFLECTIONMAP_EXPLICIT = false;
         public REFLECTIONMAP_EQUIRECTANGULAR = false;
         public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
@@ -583,6 +584,21 @@
         }
 
         /**
+         * Gets a boolean indicating that current material needs to register RTT
+         */        
+        public get hasRenderTargetTextures(): boolean {
+            if (this._diffuseTexture && this._diffuseTexture.isRenderTarget) {
+                return true;
+            }
+
+            if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
+                return true;
+            }
+
+            return false;
+        }
+
+        /**
          * The entire material has been created in order to prevent overdraw.
          * @returns false
          */
@@ -687,6 +703,7 @@
                                 break;
                             case Texture.SKYBOX_MODE:
                                 defines.REFLECTIONMAP_SKYBOX = true;
+                                defines.REFLECTIONMAP_SKYBOX_TRANSFORMED = !reflectionTexture.getReflectionTextureMatrix().isIdentity();
                                 break;
                             case Texture.SPHERICAL_MODE:
                                 defines.REFLECTIONMAP_SPHERICAL = true;
@@ -703,8 +720,8 @@
                             case Texture.CUBIC_MODE:
                             case Texture.INVCUBIC_MODE:
                             default:
-                                    defines.REFLECTIONMAP_CUBIC = true;
-                                    break;                        }
+                                defines.REFLECTIONMAP_CUBIC = true;
+                                break;                        }
 
                         if (this.reflectionFresnel) {
                             defines.REFLECTIONFRESNEL = true;
@@ -730,6 +747,7 @@
                         defines.REFLECTIONMAP_CUBIC = false;
                         defines.REFLECTIONMAP_PROJECTION = false;
                         defines.REFLECTIONMAP_SKYBOX = false;
+                        defines.REFLECTIONMAP_SKYBOX_TRANSFORMED = false;
                         defines.REFLECTIONMAP_EXPLICIT = false;
                         defines.REFLECTIONMAP_EQUIRECTANGULAR = false;
                         defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;

@@ -37,6 +37,8 @@
             if (triggerOptions.parameter) {
                 this.trigger = triggerOptions.trigger;
                 this._triggerParameter = triggerOptions.parameter;
+            } else if(triggerOptions.trigger) {
+                this.trigger = triggerOptions.trigger;
             } else {
                 this.trigger = triggerOptions;
             }

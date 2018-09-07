@@ -3,6 +3,10 @@
     AbstractScene.AddParser(SceneComponentConstants.NAME_LENSFLARESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
         // Lens flares
         if (parsedData.lensFlareSystems !== undefined && parsedData.lensFlareSystems !== null) {
+            if (!container.lensFlareSystems) {
+                container.lensFlareSystems = new Array<LensFlareSystem>();
+            }
+
             for (let index = 0, cache = parsedData.lensFlareSystems.length; index < cache; index++) {
                 var parsedLensFlareSystem = parsedData.lensFlareSystems[index];
                 var lf = LensFlareSystem.Parse(parsedLensFlareSystem, scene, rootUrl);

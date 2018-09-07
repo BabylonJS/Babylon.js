@@ -686,6 +686,12 @@
             this._scene = light.getScene();
             light._shadowGenerator = this;
 
+            let component = this._scene._getComponent(SceneComponentConstants.NAME_SHADOWGENERATOR);
+            if (!component) {
+                component = new ShadowGeneratorSceneComponent(this._scene);
+                this._scene._addComponent(component);
+            }
+
             // Texture type fallback from float to int if not supported.
             var caps = this._scene.getEngine().getCaps();
 
