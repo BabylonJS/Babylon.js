@@ -300,7 +300,8 @@
                 "../../src/Particles/EmitterTypes/babylon.sphereParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.hemisphericParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.pointParticleEmitter.js",
-                "../../src/Particles/babylon.particleSystemComponent.js"
+                "../../src/Particles/babylon.particleSystemComponent.js",
+                "../../src/Particles/babylon.subEmitter.js"
             ],
             "dependUpon": [
                 "core"

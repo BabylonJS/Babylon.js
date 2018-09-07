@@ -750,7 +750,7 @@ export class Control {
      * @param container defines the container to look for
      * @returns true if the container is one of the ascendant of the control
      */
-    public isAscendant(container: Container): boolean {
+    public isAscendant(container: Control): boolean {
         if (!this.parent) {
             return false;
         }

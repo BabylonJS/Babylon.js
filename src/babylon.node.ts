@@ -104,6 +104,11 @@
         private _parentNode: Nullable<Node>;
         private _children: Node[];
 
+        /** @hidden */
+        public _worldMatrix = Matrix.Zero();
+        /** @hidden */
+        public _worldMatrixDeterminant = 0;        
+
         /**
          * Gets a boolean indicating if the node has been disposed
          * @returns true if the node was disposed
@@ -304,18 +309,31 @@
             return null;
         }
 
+
         /**
-         * Returns the world matrix of the node
-         * @returns a matrix containing the node's world matrix
+         * Returns the latest update of the World matrix
+         * @returns a Matrix
          */
         public getWorldMatrix(): Matrix {
-            return Matrix.Identity();
+            if (this._currentRenderId !== this._scene.getRenderId()) {
+                this.computeWorldMatrix();
+            }
+            return this._worldMatrix;
         }
+
 
         /** @hidden */
         public _getWorldMatrixDeterminant(): number {
-            return 1;
+            return this._worldMatrixDeterminant;
         }
+
+        /**
+         * Returns directly the latest state of the mesh World matrix. 
+         * A Matrix is returned.    
+         */
+        public get worldMatrixFromCache(): Matrix {
+            return this._worldMatrix;
+        }        
 
         // override it in derived class if you add new variables to the cache
         // and call the parent class method
@@ -349,46 +367,36 @@
 
         /** @hidden */
         public _markSyncedWithParent() {
-            if (this.parent) {
-                this._parentRenderId = this.parent._childRenderId;
+            if (this._parentNode) {
+                this._parentRenderId = this._parentNode._childRenderId;
             }
         }
 
         /** @hidden */
         public isSynchronizedWithParent(): boolean {
-            if (!this.parent) {
+            if (!this._parentNode) {
                 return true;
             }
 
-            if (this._parentRenderId !== this.parent._childRenderId) {
+            if (this._parentRenderId !== this._parentNode._childRenderId) {
                 return false;
             }
 
-            return this.parent.isSynchronized();
+            return this._parentNode.isSynchronized();
         }
 
         /** @hidden */
-        public isSynchronized(updateCache?: boolean): boolean {
-            var check = this.hasNewParent();
-
-            check = check || !this.isSynchronizedWithParent();
-
-            check = check || !this._isSynchronized();
-
-            if (updateCache)
-                this.updateCache(true);
-
-            return !check;
-        }
-
-        /** @hidden */
-        public hasNewParent(): boolean {
-            if (this._cache.parent === this.parent)
+        public isSynchronized(): boolean {
+            if (this._cache.parent != this._parentNode) {
+                this._cache.parent = this._parentNode;
                 return false;
+            }
 
-            this._cache.parent = this.parent;
+            if (!this.isSynchronizedWithParent()) {
+                return false;
+            }
 
-            return true;
+            return this._isSynchronized();
         }
 
         /**
@@ -415,8 +423,8 @@
                 return false;
             }
 
-            if (this.parent !== undefined && this.parent !== null) {
-                return this.parent.isEnabled(checkAncestors);
+            if (this._parentNode !== undefined && this._parentNode !== null) {
+                return this._parentNode.isEnabled(checkAncestors);
             }
 
             return true;
@@ -640,7 +648,10 @@
          * @returns the world matrix
          */
         public computeWorldMatrix(force?: boolean): Matrix {
-            return Matrix.Identity();
+            if (!this._worldMatrix) {
+                this._worldMatrix = Matrix.Identity();
+            }
+            return this._worldMatrix;
         }
 
         /**

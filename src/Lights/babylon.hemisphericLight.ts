@@ -19,9 +19,7 @@
          * The light reflection direction, not the incoming direction.
          */
         @serializeAsVector3()
-        public direction: Vector3
-
-        private _worldMatrix: Matrix;
+        public direction: Vector3;
 
         /**
          * Creates a HemisphericLight object in the scene according to the passed direction (Vector3).  
@@ -93,9 +91,12 @@
         }
 
         /**
-         * @hidden internal use only.
+         * Computes the world matrix of the node
+         * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
+         * @param useWasUpdatedFlag defines a reserved property
+         * @returns the world matrix
          */
-        public _getWorldMatrix(): Matrix {
+        public computeWorldMatrix(force?: boolean, useWasUpdatedFlag?: boolean): Matrix {
             if (!this._worldMatrix) {
                 this._worldMatrix = Matrix.Identity();
             }

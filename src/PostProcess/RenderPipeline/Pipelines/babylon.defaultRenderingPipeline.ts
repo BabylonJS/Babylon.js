@@ -457,6 +457,8 @@
             }
         }
 
+        private _depthOfFieldSceneObserver: Nullable<Observer<Scene>> = null;
+
         private _buildPipeline() {
             if (!this._buildAllowed) {
                 return;
@@ -474,16 +476,36 @@
             this._reset();
             this._prevPostProcess = null;
             this._prevPrevPostProcess = null;
-            this._hasCleared = false;            
+            this._hasCleared = false;
 
             if (this.depthOfFieldEnabled) {
-                var depthTexture = this._scene.enableDepthRenderer(this._cameras[0]).getDepthMap();
-                this.depthOfField.depthTexture = depthTexture;
+                // Multi camera suport
+                if (this._cameras.length > 1) {
+                    for (let camera of this._cameras) {
+                        const depthRenderer = this._scene.enableDepthRenderer(camera);
+                        depthRenderer.useOnlyInActiveCamera = true;
+                    }
+
+                    this._depthOfFieldSceneObserver = this._scene.onAfterRenderTargetsRenderObservable.add((scene) => {
+                        if (this._cameras.indexOf(scene.activeCamera!) > -1) {
+                            this.depthOfField.depthTexture = scene.enableDepthRenderer(scene.activeCamera).getDepthMap();
+                        }
+                    });
+                }
+                else {
+                    this._scene.onAfterRenderTargetsRenderObservable.remove(this._depthOfFieldSceneObserver);
+                    const depthRenderer = this._scene.enableDepthRenderer(this._cameras[0]);
+                    this.depthOfField.depthTexture = depthRenderer.getDepthMap();
+                }
+
                 if(!this.depthOfField._isReady()){
                     this.depthOfField._updateEffects();
                 }
                 this.addEffect(this.depthOfField);
                 this._setAutoClearAndTextureSharing(this.depthOfField._effects[0], true);
+            }
+            else {
+                this._scene.onAfterRenderTargetsRenderObservable.remove(this._depthOfFieldSceneObserver);
             }
 
             if (this.bloomEnabled) {
@@ -562,7 +584,8 @@
                         this.sharpen.dispose(camera);
                     }
     
-                    if(this.depthOfField){
+                    if(this.depthOfField) {
+                        this._scene.onAfterRenderTargetsRenderObservable.remove(this._depthOfFieldSceneObserver);
                         this.depthOfField.disposeEffects(camera);
                     }
 

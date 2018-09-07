@@ -149,7 +149,7 @@ module BABYLON {
                 }
                 
                 if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERDOWN) {
-                    
+
                     if(!this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.pickedPoint && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)){
                         this._startDrag((<PointerEvent>pointerInfo.event).pointerId, pointerInfo.pickInfo.ray, pointerInfo.pickInfo.pickedPoint);
                     }
@@ -159,7 +159,7 @@ module BABYLON {
                     }
                 }else if(pointerInfo.type == BABYLON.PointerEventTypes.POINTERMOVE){
                     var pointerId = (<PointerEvent>pointerInfo.event).pointerId;
-
+                    
                     // Keep track of last pointer ray, this is used simulating the start of a drag in startDrag()
                     if(!this._lastPointerRay[pointerId]){
                         this._lastPointerRay[pointerId] = new BABYLON.Ray(new BABYLON.Vector3(), new BABYLON.Vector3());
@@ -237,7 +237,7 @@ module BABYLON {
             var pickedPoint = this._pickWithRayOnDragPlane(this._startDragRay);
             if(pickedPoint){
                 this.dragging = true;
-                this.currentDraggingPointerID = 1;
+                this.currentDraggingPointerID = pointerId;
                 this.lastDragPosition.copyFrom(pickedPoint);
                 this.onDragStartObservable.notifyObservers({dragPlanePoint: pickedPoint, pointerId: this.currentDraggingPointerID});
                 this._targetPosition.copyFrom((this._attachedNode).absolutePosition)
