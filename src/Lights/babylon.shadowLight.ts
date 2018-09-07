@@ -318,18 +318,16 @@
         /**
          * Computes the world matrix of the node
          * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
-         * @param useWasUpdatedFlag defines a reserved property
          * @returns the world matrix
          */
-        public computeWorldMatrix(force?: boolean, useWasUpdatedFlag?: boolean): Matrix {
-            if (!force && this.isSynchronized(useWasUpdatedFlag)) {
+        public computeWorldMatrix(force?: boolean): Matrix {
+            if (!force && this.isSynchronized()) {
                 this._currentRenderId = this.getScene().getRenderId();
                 return this._worldMatrix;
             }
 
             this._updateCache();
             this._cache.position.copyFrom(this.position);
-            this._worldMatrixWasUpdated = true;
 
             if (!this._worldMatrix) {
                 this._worldMatrix = Matrix.Identity();
