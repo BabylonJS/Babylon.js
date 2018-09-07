@@ -4067,6 +4067,16 @@
             return this;
         }
 
+        private _recursiveComputeWorldMatrix(node:Node){
+            node.computeWorldMatrix();
+            const children = node.getChildren();
+            if (children) {
+                for (var child of children) {
+                    this._recursiveComputeWorldMatrix(child);
+                }
+            }
+        }
+
         private _evaluateActiveMeshes(): void {
             if (this._activeMeshesFrozen && this._activeMeshes.length) {
                 return;
@@ -4092,6 +4102,10 @@
             // Determine mesh candidates
             const meshes = this.getActiveMeshCandidates();
             
+            this.rootNodes.forEach((n)=>{
+                this._recursiveComputeWorldMatrix(n);
+            })
+
             // Check each mesh
             const len = meshes.length;
             for (let i = 0; i < len; i++) {
@@ -4105,8 +4119,6 @@
                 if (!mesh.isReady() || !mesh.isEnabled()) {
                     continue;
                 }
-
-                mesh.computeWorldMatrix();
 
                 // Intersections
                 if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers2(ActionManager.OnIntersectionEnterTrigger, ActionManager.OnIntersectionExitTrigger)) {
