@@ -258,7 +258,7 @@ module BABYLON {
         protected _dragGradients: Nullable<Array<FactorGradient>> = null;
         protected _emitRateGradients: Nullable<Array<FactorGradient>> = null;
         protected _startSizeGradients: Nullable<Array<FactorGradient>> = null;
-        protected _rampGradients: Nullable<Array<ColorGradient>> = null;
+        protected _rampGradients: Nullable<Array<Color3Gradient>> = null;
         protected _colorRemapGradients: Nullable<Array<FactorGradient>> = null;
         protected _alphaRemapGradients: Nullable<Array<FactorGradient>> = null;        
 
