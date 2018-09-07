@@ -37,6 +37,8 @@
         getTexureWidth(texture: WebGLTexture): number;
         getTexureHeight(texture: WebGLTexture): number;
         setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
+        setTextureWrapMode(texture: WebGLTexture, addressModeU: number, addressModeV: number, addressModeW: number): void; // addressModes are NativeAddressMode.XXXX values.
+        setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
         deleteTexture(texture: Nullable<WebGLTexture>): void;
 
         drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
@@ -65,6 +67,15 @@
         public static readonly MINPOINT_MAGLINEAR_MIPPOINT = 8;
         public static readonly MINPOINT_MAGLINEAR_MIPLINEAR = 9;
         public static readonly MINLINEAR_MAGPOINT_MIPPOINT = 10;
+    }
+
+    class NativeAddressMode {
+        // Must match AddressMode enum in SpectreEngine.h.
+        public static readonly WRAP = 0;
+        public static readonly MIRROR = 1;
+        public static readonly CLAMP = 2;
+        public static readonly BORDER = 3;
+        public static readonly MIRROR_ONCE = 4;
     }
 
     /** @hidden */
@@ -211,7 +222,7 @@
                 data instanceof ArrayBuffer) {
                 floatArray = new Float32Array(data);
             } else {
-                floatArray = new Float32Array((<ArrayBufferView>data).buffer);
+                floatArray = new Float32Array((data as ArrayBufferView).buffer);
             }
 
             const buffer = this._interop.createVertexBuffer(floatArray);
@@ -752,7 +763,7 @@
                     if (scene) {
                         scene._removePendingData(texture);
                     }
-        
+
                     texture.onLoadedObservable.notifyObservers(texture);
                     texture.onLoadedObservable.clear();
                 };
@@ -803,6 +814,20 @@
                     return NativeFilter.MINPOINT_MAGLINEAR_MIPLINEAR;
                 default:
                     throw new Error("Unexpected sampling mode: " + samplingMode + ".");
+            }
+        }
+
+        // Returns a NativeAddressMode.XXX value.
+        private _getAddressMode(wrapMode: number): number {
+            switch (wrapMode) {
+                case Engine.TEXTURE_WRAP_ADDRESSMODE:
+                    return NativeAddressMode.WRAP;
+                case Engine.TEXTURE_CLAMP_ADDRESSMODE:
+                    return NativeAddressMode.CLAMP;
+                case Engine.TEXTURE_MIRROR_ADDRESSMODE:
+                    return NativeAddressMode.MIRROR;
+                default:
+                    throw new Error("Unexpected wrap mode: " + wrapMode + ".");
             }
         }
 
@@ -896,6 +921,67 @@
          */
         public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, byteOffset?: number, byteLength?: number): void {
             throw new Error("updateDynamicVertexBuffer not yet implemented.")
+        }
+
+        // TODO: Refactor to share more logic with base Engine implementation.
+        protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false): boolean {
+            let uniform = this._boundUniforms[channel];
+            if (!uniform) {
+                return false;
+            }
+
+            // Not ready?
+            if (!texture) {
+                if (this._boundTexturesCache[channel] != null) {
+                    this._activeChannel = channel;
+                    this._interop.setTexture(uniform, null);
+                }
+                return false;
+            }
+
+            // Video
+            if ((<VideoTexture>texture).video) {
+                this._activeChannel = channel;
+                (<VideoTexture>texture).update();
+            } else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) { // Delay loading
+                texture.delayLoad();
+                return false;
+            }
+
+            let internalTexture: InternalTexture;
+            if (depthStencilTexture) {
+                internalTexture = (<RenderTargetTexture>texture).depthStencilTexture!;
+            }
+            else if (texture.isReady()) {
+                internalTexture = <InternalTexture>texture.getInternalTexture();
+            }
+            else if (texture.isCube) {
+                internalTexture = this.emptyCubeTexture;
+            }
+            else if (texture.is3D) {
+                internalTexture = this.emptyTexture3D;
+            }
+            else {
+                internalTexture = this.emptyTexture;
+            }
+
+            if (!internalTexture._webGLTexture) {
+                return false;
+            }
+
+            this._activeChannel = channel;
+
+            this._interop.setTextureWrapMode(
+                internalTexture._webGLTexture,
+                this._getAddressMode(texture.wrapU),
+                this._getAddressMode(texture.wrapV),
+                this._getAddressMode(texture.wrapR));
+            // TODO: Implement setting anisotropic filtering level.
+            //this._interop.setTextureAnisotropicLevel(internalTexture._webGLTexture, ???);
+
+            this._interop.setTexture(uniform, internalTexture._webGLTexture);
+
+            return true;
         }
 
         protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false, force = false): boolean {
