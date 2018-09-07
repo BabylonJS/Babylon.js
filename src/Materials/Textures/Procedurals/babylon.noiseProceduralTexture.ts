@@ -40,9 +40,12 @@ module BABYLON {
             this._time += scene.getAnimationRatio() * this.animationSpeedFactor * 0.01;
 
             this.setFloat("brightness", this.brightness);
-            this.setInt("octaves", this.octaves);
             this.setFloat("persistence", this.persistence);
             this.setFloat("timeScale", this._time);
+        }
+
+        protected _getDefines(): string {
+            return "#define OCTAVES " + this.octaves;
         }
 
         /** Generate the current state of the procedural texture */

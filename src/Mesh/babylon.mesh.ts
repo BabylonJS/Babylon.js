@@ -831,7 +831,8 @@
 
             var data = this._getPositionData(applySkeleton);
             if (data) {
-                var extend = Tools.ExtractMinAndMax(data, 0, this.getTotalVertices());
+                const bias = this.geometry ? this.geometry.boundingBias : null;
+                var extend = Tools.ExtractMinAndMax(data, 0, this.getTotalVertices(), bias);
                 this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
             }
 
@@ -1415,12 +1416,8 @@
                 engine.setAlphaMode(this._effectiveMaterial.alphaMode);
             }
 
-            // Outline - step 1
-            var savedDepthWrite = engine.getDepthWrite();
-            if (this.renderOutline) {
-                engine.setDepthWrite(false);
-                scene.getOutlineRenderer().render(subMesh, batch);
-                engine.setDepthWrite(savedDepthWrite);
+            for (let step of scene._beforeRenderingMeshStage) {
+                step.action(this, subMesh, batch);
             }
 
             var effect: Nullable<Effect>;
@@ -1475,20 +1472,8 @@
             // Unbind
             this._effectiveMaterial.unbind();
 
-            // Outline - step 2
-            if (this.renderOutline && savedDepthWrite) {
-                engine.setDepthWrite(true);
-                engine.setColorWrite(false);
-                scene.getOutlineRenderer().render(subMesh, batch);
-                engine.setColorWrite(true);
-            }
-
-            // Overlay
-            if (this.renderOverlay) {
-                var currentMode = engine.getAlphaMode();
-                engine.setAlphaMode(Engine.ALPHA_COMBINE);
-                scene.getOutlineRenderer().render(subMesh, batch, true);
-                engine.setAlphaMode(currentMode);
+            for (let step of scene._afterRenderingMeshStage) {
+                step.action(this, subMesh, batch);
             }
 
             if (this._onAfterRenderObservable) {
@@ -1718,7 +1703,7 @@
         /**
          * Modifies the mesh geometry according to the passed transformation matrix.  
          * This method returns nothing but it really modifies the mesh even if it's originally not set as updatable. 
-         * The mesh normals are modified accordingly the same transformation.  
+         * The mesh normals are modified using the same transformation.  
          * tuto : http://doc.babylonjs.com/resources/baking_transformations  
          * Note that, under the hood, this method sets a new VertexBuffer each call.  
          * Returns the Mesh.  
@@ -1744,15 +1729,14 @@
             this.setVerticesData(VertexBuffer.PositionKind, temp, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.PositionKind)).isUpdatable());
 
             // Normals
-            if (!this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                return this;
+            if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                data = <FloatArray>this.getVerticesData(VertexBuffer.NormalKind);
+                temp = [];
+                for (index = 0; index < data.length; index += 3) {
+                    Vector3.TransformNormal(Vector3.FromArray(data, index), transform).normalize().toArray(temp, index);
+                }
+                this.setVerticesData(VertexBuffer.NormalKind, temp, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.NormalKind)).isUpdatable());
             }
-            data = <FloatArray>this.getVerticesData(VertexBuffer.NormalKind);
-            temp = [];
-            for (index = 0; index < data.length; index += 3) {
-                Vector3.TransformNormal(Vector3.FromArray(data, index), transform).normalize().toArray(temp, index);
-            }
-            this.setVerticesData(VertexBuffer.NormalKind, temp, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.NormalKind)).isUpdatable());
 
             // flip faces?
             if (transform.m[0] * transform.m[5] * transform.m[10] < 0) { this.flipFaces(); }
@@ -2355,6 +2339,10 @@
             serializationObject.instances = [];
             for (var index = 0; index < this.instances.length; index++) {
                 var instance = this.instances[index];
+                if (instance.doNotSerialize) {
+                    continue;
+                }
+                
                 var serializationInstance: any = {
                     name: instance.name,
                     id: instance.id,
@@ -2684,7 +2672,11 @@
                     }
 
                     if (Tags) {
-                        Tags.AddTagsTo(instance, parsedInstance.tags);
+                        if (parsedInstance.tags) {
+                            Tags.AddTagsTo(instance, parsedInstance.tags);
+                        } else {
+                            Tags.AddTagsTo(instance, parsedMesh.tags);
+                        }
                     }
 
                     instance.position = Vector3.FromArray(parsedInstance.position);
@@ -3304,11 +3296,11 @@
                 return this;
             }
 
-            if (this.geometry._softwareSkinningRenderId == this.getScene().getRenderId()) {
+            if (this.geometry._softwareSkinningFrameId == this.getScene().getFrameId()) {
                 return this;
             }
 
-            this.geometry._softwareSkinningRenderId = this.getScene().getRenderId();
+            this.geometry._softwareSkinningFrameId = this.getScene().getFrameId();
 
             if (!this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
                 return this;

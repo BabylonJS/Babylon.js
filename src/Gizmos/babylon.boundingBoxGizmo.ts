@@ -18,6 +18,10 @@ module BABYLON {
          * If child meshes should be ignored when calculating the boudning box. This should be set to true to avoid perf hits with heavily nested meshes (Default: false)
          */
         public ignoreChildren = false;
+        /**
+         * Returns true if a descendant should be included when computing the bounding box. When null, all descendants are included. If ignoreChildren is set this will be ignored. (Default: null)
+         */
+        public includeChildPredicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null
 
         /**
          * The size of the rotation spheres attached to the bounding box (Default: 0.1)
@@ -63,32 +67,38 @@ module BABYLON {
         private _anchorMesh: AbstractMesh;
         private _existingMeshScale = new Vector3();
 
-        private _oldPivotPoint = new Vector3();
-        private _pivotTranslation = new Vector3();
-        private removeAndStorePivotPoint(){
-            if(this.attachedMesh){
+        // Stores the state of the pivot cache (_oldPivotPoint, _pivotTranslation)
+        // store/remove pivot point should only be applied during their outermost calls
+        private static _PivotCached = 0;
+        private static _OldPivotPoint = new Vector3();
+        private static _PivotTranslation = new Vector3();
+        private static _PivotTmpVector = new Vector3();
+        /** @hidden */
+        public static _RemoveAndStorePivotPoint(mesh:AbstractMesh){
+            if(mesh && BoundingBoxGizmo._PivotCached === 0){
                 // Save old pivot and set pivot to 0,0,0
-                this.attachedMesh.getPivotPointToRef(this._oldPivotPoint);
-                if(this._oldPivotPoint.equalsToFloats(0,0,0)){
-                    return;
+                mesh.getPivotPointToRef(BoundingBoxGizmo._OldPivotPoint);
+                if(!BoundingBoxGizmo._OldPivotPoint.equalsToFloats(0,0,0)){
+                    mesh.setPivotMatrix(Matrix.IdentityReadOnly);
+                    BoundingBoxGizmo._OldPivotPoint.subtractToRef(mesh.getPivotPoint(), BoundingBoxGizmo._PivotTranslation);
+                    BoundingBoxGizmo._PivotTmpVector.copyFromFloats(1,1,1);
+                    BoundingBoxGizmo._PivotTmpVector.subtractInPlace(mesh.scaling);
+                    BoundingBoxGizmo._PivotTmpVector.multiplyInPlace(BoundingBoxGizmo._PivotTranslation);
+                    mesh.position.addInPlace(BoundingBoxGizmo._PivotTmpVector);
                 }
-                this.attachedMesh.setPivotMatrix(Matrix.IdentityReadOnly);
-                this._oldPivotPoint.subtractToRef(this.attachedMesh.getPivotPoint(), this._pivotTranslation);
-                this._tmpVector.copyFromFloats(1,1,1);
-                this._tmpVector.subtractInPlace(this.attachedMesh.scaling);
-                this._tmpVector.multiplyInPlace(this._pivotTranslation);
-                this.attachedMesh.position.addInPlace(this._tmpVector);
             }
+            BoundingBoxGizmo._PivotCached++;
         }
-        private restorePivotPoint(){
-            if(this.attachedMesh && !this._oldPivotPoint.equalsToFloats(0,0,0)){
-                this.attachedMesh.setPivotPoint(this._oldPivotPoint);    
-                this._oldPivotPoint.subtractToRef(this.attachedMesh.getPivotPoint(), this._pivotTranslation);
-                this._tmpVector.copyFromFloats(1,1,1);
-                this._tmpVector.subtractInPlace(this.attachedMesh.scaling);
-                this._tmpVector.multiplyInPlace(this._pivotTranslation);
-                this.attachedMesh.position.subtractInPlace(this._tmpVector);
+        /** @hidden */
+        public static _RestorePivotPoint(mesh:AbstractMesh){
+            if(mesh && !BoundingBoxGizmo._OldPivotPoint.equalsToFloats(0,0,0) && BoundingBoxGizmo._PivotCached === 1){
+                mesh.setPivotPoint(BoundingBoxGizmo._OldPivotPoint);
+                BoundingBoxGizmo._PivotTmpVector.copyFromFloats(1,1,1);
+                BoundingBoxGizmo._PivotTmpVector.subtractInPlace(mesh.scaling);
+                BoundingBoxGizmo._PivotTmpVector.multiplyInPlace(BoundingBoxGizmo._PivotTranslation);
+                mesh.position.subtractInPlace(BoundingBoxGizmo._PivotTmpVector);
             }
+            this._PivotCached--;
         }
 
         /**
@@ -157,7 +167,7 @@ module BABYLON {
                 _dragBehavior.onDragObservable.add((event) => {
                     this.onRotationSphereDragObservable.notifyObservers({});
                     if (this.attachedMesh) {
-                        this.removeAndStorePivotPoint();
+                        BoundingBoxGizmo._RemoveAndStorePivotPoint(this.attachedMesh);
 
                         var worldDragDirection = startingTurnDirection;
 
@@ -197,7 +207,7 @@ module BABYLON {
                         }
                         this.updateBoundingBox();
 
-                        this.restorePivotPoint();
+                        BoundingBoxGizmo._RestorePivotPoint(this.attachedMesh);
                     }
                 });
 
@@ -232,13 +242,11 @@ module BABYLON {
                         _dragBehavior.onDragObservable.add((event) => {
                             this.onScaleBoxDragObservable.notifyObservers({});
                             if(this.attachedMesh){
-                                this.removeAndStorePivotPoint();
-                                
+                                BoundingBoxGizmo._RemoveAndStorePivotPoint(this.attachedMesh);
                                 var relativeDragDistance = (event.dragDistance / this._boundingDimensions.length())*this._anchorMesh.scaling.length();
                                 var deltaScale = new Vector3(relativeDragDistance,relativeDragDistance,relativeDragDistance);
                                 deltaScale.scaleInPlace(this._scaleDragSpeed);
                                 this.updateBoundingBox();
-
                                 if(this.scalePivot){
                                     this.attachedMesh.getWorldMatrix().getRotationMatrixToRef(this._tmpRotationMatrix);
                                     // Move anchor to desired pivot point (Bottom left corner + dimension/2)
@@ -261,7 +269,7 @@ module BABYLON {
                                 }
                                 this._anchorMesh.removeChild(this.attachedMesh);
 
-                                this.restorePivotPoint();
+                                BoundingBoxGizmo._RestorePivotPoint(this.attachedMesh);
                             }
                         })
 
@@ -313,8 +321,10 @@ module BABYLON {
             if (value) {
                 // Reset anchor mesh to match attached mesh's scale
                 // This is needed to avoid invalid box/sphere position on first drag
+                BoundingBoxGizmo._RemoveAndStorePivotPoint(value);
                 this._anchorMesh.addChild(value);
                 this._anchorMesh.removeChild(value);
+                BoundingBoxGizmo._RestorePivotPoint(value);
                 this.updateBoundingBox();
             }
         }
@@ -326,21 +336,12 @@ module BABYLON {
                 })
         }
 
-        private _recurseComputeWorld(node: Node) {
-            node.computeWorldMatrix(true);
-            if(!this.ignoreChildren){
-                node.getDescendants().forEach((n) => {
-                    this._recurseComputeWorld(n);
-                });
-            }
-        }
-
         /**
          * Updates the bounding box information for the Gizmo
          */
         public updateBoundingBox(){
             if(this.attachedMesh){
-                this.removeAndStorePivotPoint();
+                BoundingBoxGizmo._RemoveAndStorePivotPoint(this.attachedMesh);
                 this._update();
                 // Rotate based on axis
                 if (!this.attachedMesh.rotationQuaternion) {
@@ -358,7 +359,7 @@ module BABYLON {
                 this.attachedMesh.position.set(0, 0, 0);
 
                 // Update bounding dimensions/positions   
-                var boundingMinMax = this.attachedMesh.getHierarchyBoundingVectors(!this.ignoreChildren);
+                var boundingMinMax = this.attachedMesh.getHierarchyBoundingVectors(!this.ignoreChildren, this.includeChildPredicate);
                 boundingMinMax.max.subtractToRef(boundingMinMax.min, this._boundingDimensions);
 
                 // Update gizmo to match bounding box scaling and rotation
@@ -372,7 +373,6 @@ module BABYLON {
                 // restore position/rotation values
                 this.attachedMesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
                 this.attachedMesh.position.copyFrom(this._tmpVector);
-                this._recurseComputeWorld(this.attachedMesh);
             }
             
             // Update rotation sphere locations
@@ -435,7 +435,7 @@ module BABYLON {
             }
             if (this.attachedMesh) {
                 this._existingMeshScale.copyFrom(this.attachedMesh.scaling);   
-                this.restorePivotPoint();
+                BoundingBoxGizmo._RestorePivotPoint(this.attachedMesh);
             }
         }
 

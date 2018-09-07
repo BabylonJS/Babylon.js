@@ -214,6 +214,10 @@ module BABYLON {
 
             this._captureSpritesRenderTime = value;
 
+            if (!this.scene.spriteManagers) {
+                return;
+            }
+
             if (value) {
                 this._onBeforeSpritesRenderingObserver = this.scene.onBeforeSpritesRenderingObservable.add(() => {
                     Tools.StartPerformanceCounter("Sprites");

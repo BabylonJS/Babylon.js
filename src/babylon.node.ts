@@ -104,6 +104,11 @@
         private _parentNode: Nullable<Node>;
         private _children: Node[];
 
+        /** @hidden */
+        public _worldMatrix = Matrix.Zero();
+        /** @hidden */
+        public _worldMatrixDeterminant = 0;        
+
         /**
          * Gets a boolean indicating if the node has been disposed
          * @returns true if the node was disposed
@@ -120,11 +125,18 @@
                 return;
             }
 
+            const previousParentNode = this._parentNode;
+
             // Remove self from list of children of parent
             if (this._parentNode && this._parentNode._children !== undefined && this._parentNode._children !== null) {
                 var index = this._parentNode._children.indexOf(this);
                 if (index !== -1) {
                     this._parentNode._children.splice(index, 1);
+                }
+
+                if (!parent) {
+                    // Need to add this node to the rootNodes
+                    this._scene.rootNodes.push(this);
                 }
             }
 
@@ -137,6 +149,15 @@
                     this._parentNode._children = new Array<Node>();
                 }
                 this._parentNode._children.push(this);
+
+                if (!previousParentNode) {
+                    // Need to remove from rootNodes
+                    const rootNodeIndex = this._scene.rootNodes.indexOf(this);
+
+                    if (rootNodeIndex > -1) {
+                        this._scene.rootNodes.splice(rootNodeIndex, 1);
+                    }
+                }
             }
         }
 
@@ -195,6 +216,8 @@
             this._scene = <Scene>(scene || Engine.LastCreatedScene);
             this.uniqueId = this._scene.getUniqueId();
             this._initCache();
+
+            this._scene.rootNodes.push(this);
         }
 
         /**
@@ -286,18 +309,31 @@
             return null;
         }
 
+
         /**
-         * Returns the world matrix of the node
-         * @returns a matrix containing the node's world matrix
+         * Returns the latest update of the World matrix
+         * @returns a Matrix
          */
         public getWorldMatrix(): Matrix {
-            return Matrix.Identity();
+            if (this._currentRenderId !== this._scene.getRenderId()) {
+                this.computeWorldMatrix();
+            }
+            return this._worldMatrix;
         }
+
 
         /** @hidden */
         public _getWorldMatrixDeterminant(): number {
-            return 1;
+            return this._worldMatrixDeterminant;
         }
+
+        /**
+         * Returns directly the latest state of the mesh World matrix. 
+         * A Matrix is returned.    
+         */
+        public get worldMatrixFromCache(): Matrix {
+            return this._worldMatrix;
+        }        
 
         // override it in derived class if you add new variables to the cache
         // and call the parent class method
@@ -331,47 +367,36 @@
 
         /** @hidden */
         public _markSyncedWithParent() {
-            if (this.parent) {
-                this._parentRenderId = this.parent._childRenderId;
+            if (this._parentNode) {
+                this._parentRenderId = this._parentNode._childRenderId;
             }
         }
 
         /** @hidden */
         public isSynchronizedWithParent(): boolean {
-            if (!this.parent) {
+            if (!this._parentNode) {
                 return true;
             }
 
-            if (this._parentRenderId !== this.parent._childRenderId) {
+            if (this._parentRenderId !== this._parentNode._childRenderId) {
                 return false;
             }
 
-            return this.parent.isSynchronized();
+            return this._parentNode.isSynchronized();
         }
 
         /** @hidden */
-        public isSynchronized(updateCache?: boolean): boolean {
-            var check = this.hasNewParent();
-
-            check = check || !this.isSynchronizedWithParent();
-
-            check = check || !this._isSynchronized();
-
-            if (updateCache)
-                this.updateCache(true);
-
-            return !check;
-        }
-
-        /** @hidden */
-        public hasNewParent(update?: boolean): boolean {
-            if (this._cache.parent === this.parent)
+        public isSynchronized(): boolean {
+            if (this._cache.parent != this._parentNode) {
+                this._cache.parent = this._parentNode;
                 return false;
+            }
 
-            if (update)
-                this._cache.parent = this.parent;
+            if (!this.isSynchronizedWithParent()) {
+                return false;
+            }
 
-            return true;
+            return this._isSynchronized();
         }
 
         /**
@@ -398,8 +423,8 @@
                 return false;
             }
 
-            if (this.parent !== undefined && this.parent !== null) {
-                return this.parent.isEnabled(checkAncestors);
+            if (this._parentNode !== undefined && this._parentNode !== null) {
+                return this._parentNode.isEnabled(checkAncestors);
             }
 
             return true;
@@ -497,6 +522,10 @@
          * @returns an array of {BABYLON.Node}
          */
         public getChildren(predicate?: (node: Node) => boolean): Node[] {
+            if (!predicate) {
+                return this._children;
+            }
+
             return this.getDescendants(true, predicate);
         }
 
@@ -619,7 +648,10 @@
          * @returns the world matrix
          */
         public computeWorldMatrix(force?: boolean): Matrix {
-            return Matrix.Identity();
+            if (!this._worldMatrix) {
+                this._worldMatrix = Matrix.Identity();
+            }
+            return this._worldMatrix;
         }
 
         /**
@@ -641,7 +673,15 @@
                 }
             }
 
-            this.parent = null;
+            if (!this.parent) {
+                const rootNodeIndex = this._scene.rootNodes.indexOf(this);
+
+                if (rootNodeIndex > -1) {
+                    this._scene.rootNodes.splice(rootNodeIndex, 1);
+                }
+            } else {
+                this.parent = null;
+            }
 
             // Callback
             this.onDisposeObservable.notifyObservers(this);

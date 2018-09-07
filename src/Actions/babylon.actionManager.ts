@@ -15,15 +15,15 @@
          */
         constructor(
             /** The mesh or sprite that triggered the action */
-            public source: any, 
+            public source: any,
             /** The X mouse cursor position at the time of the event */
-            public pointerX: number, 
+            public pointerX: number,
             /** The Y mouse cursor position at the time of the event */
-            public pointerY: number, 
+            public pointerY: number,
             /** The mesh that is currently pointed at (can be null) */
-            public meshUnderPointer: Nullable<AbstractMesh>, 
+            public meshUnderPointer: Nullable<AbstractMesh>,
             /** the original (browser) event that triggered the ActionEvent */
-            public sourceEvent?: any, 
+            public sourceEvent?: any,
             /** additional data for the event */
             public additionalData?: any) {
 
@@ -299,6 +299,25 @@
                 var action = this.actions[index];
 
                 if (triggers.indexOf(action.trigger) > -1) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /**
+         * Does this action manager handles actions of any of the given triggers. This function takes two arguments for 
+         * speed.
+         * @param triggerA defines the trigger to be tested
+         * @param triggerB defines the trigger to be tested
+         * @return a boolean indicating whether one (or more) of the triggers is handled 
+         */
+        public hasSpecificTriggers2(triggerA: number, triggerB: number): boolean {
+            for (var index = 0; index < this.actions.length; index++) {
+                var action = this.actions[index];
+
+                if (triggerA == action.trigger || triggerB == action.trigger) {
                     return true;
                 }
             }

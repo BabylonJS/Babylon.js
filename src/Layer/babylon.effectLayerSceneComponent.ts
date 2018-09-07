@@ -2,6 +2,10 @@
     // Adds the parser to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
         if (parsedData.effectLayers) {
+            if (!container.effectLayers) {
+                container.effectLayers = new Array<EffectLayer>();
+            }
+
             for (let index = 0; index < parsedData.effectLayers.length; index++) {
                 var effectLayer = EffectLayer.Parse(parsedData.effectLayers[index], scene, rootUrl);
                 container.effectLayers.push(effectLayer);

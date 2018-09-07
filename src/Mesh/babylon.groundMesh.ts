@@ -45,7 +45,12 @@
             this._subdivisionsX = chunksCount;
             this._subdivisionsY = chunksCount;
             this.subdivide(chunksCount);
-            this.createOrUpdateSubmeshesOctree(octreeBlocksSize);
+
+            // Call the octree system optimization if it is defined.
+            const thisAsAny = this as any;
+            if (thisAsAny.createOrUpdateSubmeshesOctree) {
+                thisAsAny.createOrUpdateSubmeshesOctree(octreeBlocksSize);
+            }
         }
 
         /**

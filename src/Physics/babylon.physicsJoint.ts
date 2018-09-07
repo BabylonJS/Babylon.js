@@ -40,13 +40,13 @@ module BABYLON {
         public set physicsPlugin(physicsPlugin: IPhysicsEnginePlugin) {
             this._physicsPlugin = physicsPlugin;
         }
-        
+
         /**
          * Execute a function that is physics-plugin specific.
          * @param {Function} func the function that will be executed. 
          *                        It accepts two parameters: the physics world and the physics joint.
          */
-        public executeNativeFunction(func : (world: any, physicsJoint:any) => void) {
+        public executeNativeFunction(func: (world: any, physicsJoint: any) => void) {
             func(this._physicsPlugin.world, this._physicsJoint)
         }
 
@@ -87,13 +87,13 @@ module BABYLON {
             this._physicsPlugin.updateDistanceJoint(this, maxDistance, minDistance);
         }
     }
-    
+
     export class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
-        
-        constructor(type: number, jointData:PhysicsJointData) {
+
+        constructor(type: number, jointData: PhysicsJointData) {
             super(type, jointData);
         }
-        
+
         /**
          * Set the motor values.
          * Attention, this function is plugin specific. Engines won't react 100% the same.
@@ -103,7 +103,7 @@ module BABYLON {
         public setMotor(force?: number, maxForce?: number) {
             this._physicsPlugin.setMotor(this, force || 0, maxForce);
         }
-        
+
         /**
          * Set the motor's limits.
          * Attention, this function is plugin specific. Engines won't react 100% the same.
@@ -117,11 +117,11 @@ module BABYLON {
      * This class represents a single hinge physics joint
      */
     export class HingeJoint extends MotorEnabledJoint {
-        
-        constructor(jointData:PhysicsJointData) {
+
+        constructor(jointData: PhysicsJointData) {
             super(PhysicsJoint.HingeJoint, jointData);
         }
-        
+
         /**
          * Set the motor values.
          * Attention, this function is plugin specific. Engines won't react 100% the same.
@@ -131,7 +131,7 @@ module BABYLON {
         public setMotor(force?: number, maxForce?: number) {
             this._physicsPlugin.setMotor(this, force || 0, maxForce);
         }
-        
+
         /**
          * Set the motor's limits.
          * Attention, this function is plugin specific. Engines won't react 100% the same.
@@ -140,16 +140,16 @@ module BABYLON {
             this._physicsPlugin.setLimit(this, upperLimit, lowerLimit);
         }
     }
-    
+
     /**
      * This class represents a dual hinge physics joint (same as wheel joint)
      */
     export class Hinge2Joint extends MotorEnabledJoint {
-        
-        constructor(jointData:PhysicsJointData) {
+
+        constructor(jointData: PhysicsJointData) {
             super(PhysicsJoint.Hinge2Joint, jointData);
         }
-        
+
         /**
          * Set the motor values.
          * Attention, this function is plugin specific. Engines won't react 100% the same.
@@ -160,7 +160,7 @@ module BABYLON {
         public setMotor(force?: number, maxForce?: number, motorIndex: number = 0) {
             this._physicsPlugin.setMotor(this, force || 0, maxForce, motorIndex);
         }
-        
+
         /**
          * Set the motor limits.
          * Attention, this function is plugin specific. Engines won't react 100% the same.
@@ -189,5 +189,7 @@ module BABYLON {
         length: number;
         stiffness: number;
         damping: number;
+        /** this callback will be called when applying the force to the impostors. */
+        forceApplicationCallback: () => void;
     }
 }

@@ -7,18 +7,26 @@ module BABYLON {
      */
     export class BaseParticleSystem {
         /**
-         * Source color is added to the destination color without alpha affecting the result.
+         * Source color is added to the destination color without alpha affecting the result
          */
         public static BLENDMODE_ONEONE = 0;
         /**
-         * Blend current color and particle color using particle’s alpha.
+         * Blend current color and particle color using particle’s alpha
          */
         public static BLENDMODE_STANDARD = 1;
-
         /**
-         * Add current color and particle color multiplied by particle’s alpha.
+         * Add current color and particle color multiplied by particle’s alpha
          */
         public static BLENDMODE_ADD = 2;
+        /**
+         * Multiply current color with particle color 
+         */
+        public static BLENDMODE_MULTIPLY = 3;        
+
+        /**
+         * Multiply current color with particle color then add current color and particle color multiplied by particle’s alpha
+         */
+        public static BLENDMODE_MULTIPLYADD = 4;                
 
         /**
          * List of animations used by the particle system.
@@ -205,13 +213,17 @@ module BABYLON {
          * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use
          */
         public spriteCellHeight = 0;
+        /**
+         * This allows the system to random pick the start cell ID between startSpriteCellID and endSpriteCellID
+         */
+        public spriteRandomStartCell = false;   
 
         /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
         public translationPivot = new Vector2(0, 0);        
 
         /** @hidden */
         protected _isAnimationSheetEnabled: boolean;
-        
+       
         /**
          * Gets or sets whether an animation sprite sheet is enabled or not on the particle system
          */
@@ -228,6 +240,14 @@ module BABYLON {
 
             this._reset();
         }
+        
+        /**
+         * Get hosting scene
+         * @returns the scene
+         */
+        public getScene(): Scene {
+            return this._scene;
+        }    
 
         /**
          * You can use gravity if you want to give an orientation to your particles.
@@ -240,10 +260,25 @@ module BABYLON {
         protected _angularSpeedGradients: Nullable<Array<FactorGradient>> = null;
         protected _velocityGradients: Nullable<Array<FactorGradient>> = null;
         protected _limitVelocityGradients: Nullable<Array<FactorGradient>> = null;
+        protected _dragGradients: Nullable<Array<FactorGradient>> = null;
+        protected _emitRateGradients: Nullable<Array<FactorGradient>> = null;
+        protected _startSizeGradients: Nullable<Array<FactorGradient>> = null;
+        protected _rampGradients: Nullable<Array<Color3Gradient>> = null;
+        protected _colorRemapGradients: Nullable<Array<FactorGradient>> = null;
+        protected _alphaRemapGradients: Nullable<Array<FactorGradient>> = null;        
+
+        /**
+         * Gets the current list of drag gradients.
+         * You must use addDragGradient and removeDragGradient to udpate this list
+         * @returns the list of drag gradients
+         */
+        public getDragGradients(): Nullable<Array<FactorGradient>> {
+            return this._dragGradients;
+        }   
 
         /** Gets or sets a value indicating the damping to apply if the limit velocity factor is reached */
         public limitVelocityDamping = 0.4;
-
+        
         /**
          * Gets the current list of limit velocity gradients.
          * You must use addLimitVelocityGradient and removeLimitVelocityGradient to udpate this list
@@ -272,6 +307,24 @@ module BABYLON {
         }        
 
         /**
+         * Gets the current list of color remap gradients.
+         * You must use addColorRemapGradient and removeColorRemapGradient to udpate this list
+         * @returns the list of color remap gradients
+         */
+        public getColorRemapGradients(): Nullable<Array<FactorGradient>> {
+            return this._colorRemapGradients;
+        }   
+
+        /**
+         * Gets the current list of alpha remap gradients.
+         * You must use addAlphaRemapGradient and removeAlphaRemapGradient to udpate this list
+         * @returns the list of alpha remap gradients
+         */
+        public getAlphaRemapGradients(): Nullable<Array<FactorGradient>> {
+            return this._alphaRemapGradients;
+        }   
+
+        /**
          * Gets the current list of life time gradients.
          * You must use addLifeTimeGradient and removeLifeTimeGradient to udpate this list
          * @returns the list of life time gradients
@@ -297,6 +350,24 @@ module BABYLON {
         public getVelocityGradients(): Nullable<Array<FactorGradient>> {
             return this._velocityGradients;
         }         
+
+        /**
+         * Gets the current list of start size gradients.
+         * You must use addStartSizeGradient and removeStartSizeGradient to udpate this list
+         * @returns the list of start size gradients
+         */
+        public getStartSizeGradients(): Nullable<Array<FactorGradient>> {
+            return this._startSizeGradients;
+        }
+        
+        /**
+         * Gets the current list of emit rate gradients.
+         * You must use addEmitRateGradient and removeEmitRateGradient to udpate this list
+         * @returns the list of emit rate gradients
+         */
+        public getEmitRateGradients(): Nullable<Array<FactorGradient>> {
+            return this._emitRateGradients;
+        }      
 
         /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
@@ -470,6 +541,28 @@ module BABYLON {
         protected _reset() {
         }
 
+        /** @hidden */
+        protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: Nullable<RawTexture>): BaseParticleSystem {
+            if (!gradients) {
+                return this;
+            }
+
+            let index = 0;
+            for (var valueGradient of gradients) {
+                if (valueGradient.gradient === gradient) {
+                    gradients.splice(index, 1);
+                    break;
+                }
+                index++;
+            }
+
+            if (texture) {
+                texture.dispose();
+            }            
+
+            return this;
+        } 
+
         /**
          * Instantiates a particle system.
          * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -528,6 +621,35 @@ module BABYLON {
          */
         public createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
             var particleEmitter = new SphereDirectedParticleEmitter(radius, direction1, direction2)
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
+        }
+
+        /**
+         * Creates a Cylinder Emitter for the particle system (emits from the cylinder to the particle position)
+         * @param radius The radius of the emission cylinder
+         * @param height The height of the emission cylinder
+         * @param radiusRange The range of emission [0-1] 0 Surface only, 1 Entire Radius
+         * @param directionRandomizer How much to randomize the particle direction [0-1]
+         * @returns the emitter
+         */
+        public createCylinderEmitter(radius = 1, height = 1, radiusRange = 1, directionRandomizer = 0): CylinderParticleEmitter {
+            var particleEmitter = new CylinderParticleEmitter(radius, height, radiusRange, directionRandomizer);
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
+        }
+
+        /**
+         * Creates a Directed Cylinder Emitter for the particle system (emits between direction1 and direction2)
+         * @param radius The radius of the cylinder to emit from
+         * @param height The height of the emission cylinder
+         * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default) 
+         * @param direction1 Particles are emitted between the direction1 and direction2 from within the cylinder
+         * @param direction2 Particles are emitted between the direction1 and direction2 from within the cylinder
+         * @returns the emitter
+         */
+        public createDirectedCylinderEmitter(radius = 1, height = 1, radiusRange = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): CylinderDirectedParticleEmitter {
+            var particleEmitter = new CylinderDirectedParticleEmitter(radius, height, radiusRange, direction1, direction2)
             this.particleEmitterType = particleEmitter;
             return particleEmitter;
         }

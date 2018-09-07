@@ -164,6 +164,8 @@ module BABYLON {
 
             this._createRenderTargets(scene, renderTargetSize);
 
+            this.hasRenderTargetTextures = true;
+
             // Create render targets
             this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
                 this._renderTargets.reset();

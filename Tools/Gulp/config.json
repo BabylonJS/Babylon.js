@@ -125,7 +125,8 @@
             "occlusionQuery",
             "transformFeedback",
             "noise",
-            "videoRecorder"
+            "videoRecorder",
+            "sceneHelpers"
         ],
         "minimal": [
             "meshBuilder",
@@ -294,11 +295,13 @@
                 "../../src/Particles/babylon.baseParticleSystem.js",
                 "../../src/Particles/babylon.particleSystem.js",
                 "../../src/Particles/EmitterTypes/babylon.boxParticleEmitter.js",
+                "../../src/Particles/EmitterTypes/babylon.cylinderParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.coneParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.sphereParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.hemisphericParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.pointParticleEmitter.js",
-                "../../src/Particles/babylon.particleSystemComponent.js"
+                "../../src/Particles/babylon.particleSystemComponent.js",
+                "../../src/Particles/babylon.subEmitter.js"
             ],
             "dependUpon": [
                 "core"
@@ -410,7 +413,8 @@
         "sprites": {
             "files": [
                 "../../src/Sprites/babylon.spriteManager.js",
-                "../../src/Sprites/babylon.sprite.js"
+                "../../src/Sprites/babylon.sprite.js",
+                "../../src/Sprites/babylon.spriteSceneComponent.js"
             ],
             "dependUpon": [
                 "core"
@@ -607,7 +611,8 @@
         },
         "shadows": {
             "files": [
-                "../../src/Lights/Shadows/babylon.shadowGenerator.js"
+                "../../src/Lights/Shadows/babylon.shadowGenerator.js",
+                "../../src/Lights/Shadows/babylon.shadowGeneratorSceneComponent.js"
             ],
             "dependUpon": [
                 "postProcesses"
@@ -682,6 +687,7 @@
         "procedural": {
             "files": [
                 "../../src/Materials/Textures/Procedurals/babylon.proceduralTexture.js",
+                "../../src/Materials/Textures/Procedurals/babylon.proceduralTextureSceneComponent.js",
                 "../../src/Materials/Textures/Procedurals/babylon.customProceduralTexture.js"
             ],
             "dependUpon": [
@@ -1200,7 +1206,8 @@
         "octrees": {
             "files": [
                 "../../src/Culling/Octrees/babylon.octree.js",
-                "../../src/Culling/Octrees/babylon.octreeBlock.js"
+                "../../src/Culling/Octrees/babylon.octreeBlock.js",
+                "../../src/Culling/Octrees/babylon.octreeSceneComponent.js"
             ],
             "dependUpon": [
                 "core"
@@ -1363,6 +1370,20 @@
                 "backgroundVertexDeclaration",
                 "backgroundFragmentDeclaration",
                 "backgroundUboDeclaration"
+            ]
+        },
+        "sceneHelpers": {
+            "files": [
+                "../../src/Helpers/babylon.sceneHelpers.js"
+            ],
+            "dependUpon": [
+                "core",
+                "arcRotateCamera",
+                "freeCamera",
+                "hemisphericLight",
+                "pbrMaterial",
+                "environmentHelper",
+                "vr"
             ]
         },
         "environmentHelper": {

@@ -1,4 +1,12 @@
 ﻿module BABYLON {
+    export interface Scene {
+        /**
+         * The list of reflection probes added to the scene
+         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+         */
+        reflectionProbes: Array<ReflectionProbe>;
+    }
+
     /** 
      * Class used to generate realtime reflection / refraction cube textures
      * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
@@ -31,6 +39,10 @@
             size: number, scene: Scene, generateMipMaps = true, useFloat = false) {
             this._scene = scene;
 
+            // Create the scene field if not exist.
+            if (!this._scene.reflectionProbes) {
+                this._scene.reflectionProbes = new Array<ReflectionProbe>();
+            }
             this._scene.reflectionProbes.push(this);
 
             this._renderTargetTexture = new RenderTargetTexture(name, size, scene, generateMipMaps, true, useFloat ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_UNSIGNED_INT, true);

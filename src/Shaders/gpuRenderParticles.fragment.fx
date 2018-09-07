@@ -17,7 +17,13 @@ out vec4 outFragColor;
 
 void main() {
 	#include<clipPlaneFragment> 
-  	outFragColor = texture(textureSampler, vUV) * vColor;
+	vec4 textureColor = texture(textureSampler, vUV);
+  	outFragColor = textureColor * vColor;
+
+	#ifdef BLENDMULTIPLYMODE
+	float alpha = vColor.a * textureColor.a;
+	outFragColor.rgb = outFragColor.rgb * alpha + vec3(1.0) * (1.0 - alpha);	
+	#endif	  
 
 // Apply image processing if relevant. As this applies in linear space, 
 // We first move from gamma to linear.

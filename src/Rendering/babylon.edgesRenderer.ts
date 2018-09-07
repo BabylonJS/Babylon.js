@@ -1,4 +1,67 @@
 ﻿module BABYLON {
+    export interface AbstractMesh {
+        /**
+         * Disables the mesh edge rendering mode
+         * @returns the currentAbstractMesh
+         */
+        disableEdgesRendering(): AbstractMesh;
+        
+        /**
+         * Enables the edge rendering mode on the mesh.  
+         * This mode makes the mesh edges visible
+         * @param epsilon defines the maximal distance between two angles to detect a face
+         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
+         * @returns the currentAbstractMesh 
+         * @see https://www.babylonjs-playground.com/#19O9TU#0
+         */
+        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
+        
+        /**
+         * Gets the edgesRenderer associated with the mesh
+         */
+        edgesRenderer: Nullable<EdgesRenderer>;
+    }
+
+    AbstractMesh.prototype.disableEdgesRendering = function(): AbstractMesh {
+        if (this._edgesRenderer) {
+            this._edgesRenderer.dispose();
+            this._edgesRenderer = null;
+        }
+        return this;
+    }
+
+    AbstractMesh.prototype.enableEdgesRendering = function(epsilon = 0.95, checkVerticesInsteadOfIndices = false): AbstractMesh {
+        this.disableEdgesRendering();
+        this._edgesRenderer = new EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
+        return this;
+    }
+
+    Object.defineProperty(AbstractMesh.prototype, "edgesRenderer", {
+        get: function (this:AbstractMesh) {
+            return this._edgesRenderer;
+        },
+        enumerable: true,
+        configurable: true
+    });
+
+    export interface LinesMesh {
+        /**
+         * Enables the edge rendering mode on the mesh.
+         * This mode makes the mesh edges visible
+         * @param epsilon defines the maximal distance between two angles to detect a face
+         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
+         * @returns the currentAbstractMesh
+         * @see https://www.babylonjs-playground.com/#19O9TU#0
+         */
+        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
+    }
+
+    LinesMesh.prototype.enableEdgesRendering = function(epsilon = 0.95, checkVerticesInsteadOfIndices = false): AbstractMesh {
+        this.disableEdgesRendering();
+        this._edgesRenderer = new LineEdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
+        return this;
+    }
+
     /**
      * FaceAdjacencies Helper class to generate edges
      */
@@ -11,9 +74,30 @@
     }
 
     /**
+     * Defines the minimum contract an Edges renderer should follow.
+     */
+    export interface IEdgesRenderer extends IDisposable {
+        /** 
+         * Gets or sets a boolean indicating if the edgesRenderer is active 
+         */
+        isEnabled: boolean;
+
+        /**
+         * Renders the edges of the attached mesh,
+         */
+        render(): void;
+
+        /**
+         * Checks wether or not the edges renderer is ready to render.
+         * @return true if ready, otherwise false.
+         */
+        isReady(): boolean;
+    }
+
+    /**
      * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
      */
-    export class EdgesRenderer {
+    export class EdgesRenderer implements IEdgesRenderer {
         public edgesWidthScalerForOrthographic = 1000.0;
         public edgesWidthScalerForPerspective = 50.0;
         protected _source: AbstractMesh;
@@ -27,6 +111,9 @@
         protected _ib: WebGLBuffer;
         protected _buffers: { [key: string]: Nullable<VertexBuffer> } = {};
         protected _checkVerticesInsteadOfIndices = false;
+
+        private _meshRebuildObserver: Nullable<Observer<AbstractMesh>>;
+        private _meshDisposeObserver: Nullable<Observer<Node>>;
 
         /** Gets or sets a boolean indicating if the edgesRenderer is active */
         public isEnabled = true;
@@ -49,6 +136,14 @@
             if(generateEdgesLines) {
                 this._generateEdgesLines();
             }
+
+            this._meshRebuildObserver = this._source.onRebuildObservable.add(() => {
+                this._rebuild();
+            });
+
+            this._meshDisposeObserver = this._source.onDisposeObservable.add(() => {
+                this.dispose();
+            });
         }
 
         protected _prepareRessources(): void {
@@ -87,6 +182,8 @@
          * Releases the required resources for the edges renderer
          */
         public dispose(): void {
+            this._source.onRebuildObservable.remove(this._meshRebuildObserver);
+            this._source.onDisposeObservable.remove(this._meshDisposeObserver);
 
             var buffer = this._buffers[VertexBuffer.PositionKind];
             if (buffer) {
@@ -332,10 +429,21 @@
             this._indicesCount = this._linesIndices.length;
         }
 
+        /**
+         * Checks wether or not the edges renderer is ready to render.
+         * @return true if ready, otherwise false.
+         */
+        public isReady(): boolean {
+            return this._lineShader.isReady();
+        }
+
+        /**
+         * Renders the edges of the attached mesh,
+         */
         public render(): void {
             var scene = this._source.getScene();
 
-            if (!this._lineShader.isReady() || !scene.activeCamera) {
+            if (!this.isReady() || !scene.activeCamera) {
                 return;
             }
 

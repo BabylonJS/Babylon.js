@@ -301,8 +301,6 @@ module BABYLON {
             this._markMeshesAsLightDirty();
         }
 
-        private _parentedWorldMatrix: Matrix;
-
         /**
          * Shadow generator associted to the light.
          * @hidden Internal use only.
@@ -352,11 +350,6 @@ module BABYLON {
          * @returns The light
          */
         public abstract transferToEffect(effect: Effect, lightIndex: string): Light;
-
-        /**
-         * @hidden internal use only.
-         */
-        public abstract _getWorldMatrix(): Matrix;
 
         /**
          * Returns the string "Light".
@@ -437,31 +430,6 @@ module BABYLON {
             }
 
             return true;
-        }
-
-        /**
-         * Computes and Returns the light World matrix.
-         * @returns the world matrix 
-         */
-        public getWorldMatrix(): Matrix {
-            this._currentRenderId = this.getScene().getRenderId();
-            this._childRenderId = this._currentRenderId;
-
-            var worldMatrix = this._getWorldMatrix();
-
-            if (this.parent && this.parent.getWorldMatrix) {
-                if (!this._parentedWorldMatrix) {
-                    this._parentedWorldMatrix = Matrix.Identity();
-                }
-
-                worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._parentedWorldMatrix);
-
-                this._markSyncedWithParent();
-
-                return this._parentedWorldMatrix;
-            }
-
-            return worldMatrix;
         }
 
         /**

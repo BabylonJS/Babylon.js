@@ -205,14 +205,20 @@
             if (impostorJoint.joint.type !== PhysicsJoint.SpringJoint) {
                 this.world.addConstraint(constraint);
             } else {
-                impostorJoint.mainImpostor.registerAfterPhysicsStep(function () {
+                (<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback = (<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback || function () {
                     constraint.applyForce();
-                });
+                };
+                impostorJoint.mainImpostor.registerAfterPhysicsStep((<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback);
             }
         }
 
         public removeJoint(impostorJoint: PhysicsImpostorJoint) {
-            this.world.removeConstraint(impostorJoint.joint.physicsJoint);
+            if (impostorJoint.joint.type !== PhysicsJoint.SpringJoint) {
+                this.world.removeConstraint(impostorJoint.joint.physicsJoint);
+            } else {
+                impostorJoint.mainImpostor.unregisterAfterPhysicsStep((<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback);
+            }
+
         }
 
         private _addMaterial(name: string, friction: number, restitution: number) {

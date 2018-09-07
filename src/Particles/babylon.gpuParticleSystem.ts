@@ -108,7 +108,7 @@
         }        
 
         /**
-         * Gets Wether the system has been started.
+         * Gets if the system has been started. (Note: this will still be true after stop is called)
          * @returns True if it has been started, otherwise false.
          */
         public isStarted(): boolean {
@@ -157,29 +157,13 @@
         }            
                
         private _colorGradientsTexture: RawTexture;
-
-        private _removeGradient(gradient: number, gradients: Nullable<IValueGradient[]>, texture: RawTexture): GPUParticleSystem {
-            if (!gradients) {
-                return this;
-            }
-
-            let index = 0;
-            for (var valueGradient of gradients) {
-                if (valueGradient.gradient === gradient) {
-                    gradients.splice(index, 1);
-                    break;
-                }
-                index++;
-            }
-
-            if (texture) {
-                texture.dispose();
-            }            
-
+        
+        protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: RawTexture): BaseParticleSystem {
+            super._removeGradientAndTexture(gradient, gradients, texture);
             this._releaseBuffers();
 
             return this;
-        }    
+        }
         
         /**
          * Adds a new color gradient
@@ -224,7 +208,7 @@
          * @returns the current particle system
          */
         public removeColorGradient(gradient: number): GPUParticleSystem {
-            this._removeGradient(gradient, this._colorGradients, this._colorGradientsTexture);
+            this._removeGradientAndTexture(gradient, this._colorGradients, this._colorGradientsTexture);
             (<any>this._colorGradientsTexture) = null;
 
             return this;
@@ -234,6 +218,7 @@
         private _sizeGradientsTexture: RawTexture;             
         private _velocityGradientsTexture: RawTexture;    
         private _limitVelocityGradientsTexture: RawTexture;    
+        private _dragGradientsTexture: RawTexture;  
 
         private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number) {
             let valueGradient = new FactorGradient();
@@ -283,7 +268,7 @@
          * @returns the current particle system
          */
         public removeSizeGradient(gradient: number): GPUParticleSystem {
-            this._removeGradient(gradient, this._sizeGradients, this._sizeGradientsTexture);
+            this._removeGradientAndTexture(gradient, this._sizeGradients, this._sizeGradientsTexture);
             (<any>this._sizeGradientsTexture) = null;
 
             return this;            
@@ -318,7 +303,7 @@
          * @returns the current particle system
          */
         public removeAngularSpeedGradient(gradient: number): GPUParticleSystem {
-            this._removeGradient(gradient, this._angularSpeedGradients, this._angularSpeedGradientsTexture);
+            this._removeGradientAndTexture(gradient, this._angularSpeedGradients, this._angularSpeedGradientsTexture);
             (<any>this._angularSpeedGradientsTexture) = null;
 
             return this;           
@@ -353,7 +338,7 @@
          * @returns the current particle system
          */
         public removeVelocityGradient(gradient: number): GPUParticleSystem {
-            this._removeGradient(gradient, this._velocityGradients, this._velocityGradientsTexture);
+            this._removeGradientAndTexture(gradient, this._velocityGradients, this._velocityGradientsTexture);
             (<any>this._velocityGradientsTexture) = null;
 
             return this;           
@@ -388,11 +373,170 @@
          * @returns the current particle system
          */
         public removeLimitVelocityGradient(gradient: number): GPUParticleSystem {
-            this._removeGradient(gradient, this._limitVelocityGradients, this._limitVelocityGradientsTexture);
+            this._removeGradientAndTexture(gradient, this._limitVelocityGradients, this._limitVelocityGradientsTexture);
             (<any>this._limitVelocityGradientsTexture) = null;
 
             return this;
         }
+
+        /**
+         * Adds a new drag gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the drag value to affect to the specified gradient    
+         * @returns the current particle system     
+         */
+        public addDragGradient(gradient: number, factor: number): GPUParticleSystem {
+            if (!this._dragGradients) {
+                this._dragGradients = [];
+            }
+
+            this._addFactorGradient(this._dragGradients, gradient, factor);
+
+            if (this._dragGradientsTexture) {
+                this._dragGradientsTexture.dispose();
+                (<any>this._dragGradientsTexture) = null;
+            }
+
+            this._releaseBuffers();   
+
+            return this;
+        }
+
+        /**
+         * Remove a specific drag gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeDragGradient(gradient: number): GPUParticleSystem {
+            this._removeGradientAndTexture(gradient, this._dragGradients, this._dragGradientsTexture);
+            (<any>this._dragGradientsTexture) = null;
+
+            return this;
+        }   
+        
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the emit rate value to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        public addEmitRateGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+            // Do nothing as emit rate is not supported by GPUParticleSystem
+            return this;
+        }
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeEmitRateGradient(gradient: number): IParticleSystem {
+            // Do nothing as emit rate is not supported by GPUParticleSystem
+            return this;
+        } 
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the start size value to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        public addStartSizeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+            // Do nothing as start size is not supported by GPUParticleSystem
+            return this;
+        }
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeStartSizeGradient(gradient: number): IParticleSystem {
+            // Do nothing as start size is not supported by GPUParticleSystem
+            return this;
+        } 
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param min defines the color remap minimal range        
+         * @param max defines the color remap maximal range        
+         * @returns the current particle system
+         */
+        public addColorRemapGradient(gradient: number, min: number, max: number): IParticleSystem {
+            // Do nothing as start size is not supported by GPUParticleSystem
+
+            return this;
+        }
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeColorRemapGradient(gradient: number): IParticleSystem {
+            // Do nothing as start size is not supported by GPUParticleSystem
+
+            return this;
+        }  
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param min defines the alpha remap minimal range        
+         * @param max defines the alpha remap maximal range        
+         * @returns the current particle system
+         */
+        public addAlphaRemapGradient(gradient: number, min: number, max: number): IParticleSystem {
+            // Do nothing as start size is not supported by GPUParticleSystem
+
+            return this;
+        }
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeAlphaRemapGradient(gradient: number): IParticleSystem {
+            // Do nothing as start size is not supported by GPUParticleSystem
+
+            return this;
+        }   
+        
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param color defines the color to affect to the specified gradient
+         * @returns the current particle system
+         */
+        public addRampGradient(gradient: number, color: Color3): IParticleSystem {
+            //Not supported by GPUParticleSystem          
+
+            return this;
+        }
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeRampGradient(gradient: number): IParticleSystem {
+            //Not supported by GPUParticleSystem
+
+            return this;
+        }  
+        
+        /**
+         * Not supported by GPUParticleSystem
+         * @returns the list of ramp gradients
+         */
+        public getRampGradients(): Nullable<Array<Color3Gradient>> {
+            return null;
+        }             
+        
 
         /**
          * Instantiates a GPU particle system.
@@ -436,12 +580,12 @@
             this._scene.particleSystems.push(this);
 
             this._updateEffectOptions = {
-                attributes: ["position", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle", "cellIndex"],
+                attributes: ["position", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle", "cellIndex", "cellStartOffset"],
                 uniformsNames: ["currentCount", "timeDelta", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "scaleRange","gravity", "emitPower",
                                 "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "coneAngle", "stopFactor", 
-                                "angleRange", "radiusRange", "cellInfos", "noiseStrength"],
+                                "angleRange", "radiusRange", "cellInfos", "noiseStrength", "limitVelocityDamping"],
                 uniformBuffersNames: [],
-                samplers:["randomSampler", "randomSampler2", "sizeGradientSampler", "angularSpeedGradientSampler", "velocityGradientSampler", "noiseSampler"],
+                samplers:["randomSampler", "randomSampler2", "sizeGradientSampler", "angularSpeedGradientSampler", "velocityGradientSampler", "limitVelocityGradientSampler", "noiseSampler", "dragGradientSampler"],
                 defines: "",
                 fallbacks: null,  
                 onCompiled: null,
@@ -517,6 +661,10 @@
             if (this._isAnimationSheetEnabled) {
                 updateVertexBuffers["cellIndex"] = source.createVertexBuffer("cellIndex", offset, 1);
                 offset += 1;
+                if (this.spriteRandomStartCell) {
+                    updateVertexBuffers["cellStartOffset"] = source.createVertexBuffer("cellStartOffset", offset, 1);
+                    offset += 1;
+                }
             }            
            
             let vao = this._engine.recordVertexArrayObject(updateVertexBuffers, null, this._updateEffect);
@@ -556,6 +704,10 @@
             if (this._isAnimationSheetEnabled) {
                 renderVertexBuffers["cellIndex"] = source.createVertexBuffer("cellIndex", offset, 1, this._attributesStrideSize, true);
                 offset += 1;
+                if (this.spriteRandomStartCell) {
+                    renderVertexBuffers["cellStartOffset"] = source.createVertexBuffer("cellStartOffset", offset, 1, this._attributesStrideSize, true);
+                    offset += 1;
+                }
             }               
 
             renderVertexBuffers["offset"] = spriteSource.createVertexBuffer("offset", 0, 2);
@@ -589,6 +741,9 @@
 
             if (this._isAnimationSheetEnabled) {
                 this._attributesStrideSize += 1;
+                if (this.spriteRandomStartCell) {
+                    this._attributesStrideSize += 1;
+                }
             }            
 
             for (var particleIndex = 0; particleIndex < this._capacity; particleIndex++) {
@@ -641,6 +796,9 @@
 
                 if (this._isAnimationSheetEnabled) {
                     data.push(0.0); 
+                    if (this.spriteRandomStartCell) {
+                        data.push(0.0); 
+                    }
                 }                
             }
 
@@ -693,10 +851,21 @@
             
             if (this._velocityGradientsTexture) {
                 defines += "\n#define VELOCITYGRADIENTS";
-            }                    
+            }        
+
+            if (this._limitVelocityGradientsTexture) {
+                defines += "\n#define LIMITVELOCITYGRADIENTS";
+            }                
+            
+            if (this._dragGradientsTexture) {
+                defines += "\n#define DRAGGRADIENTS";
+            }              
             
             if (this.isAnimationSheetEnabled) {
                 defines += "\n#define ANIMATESHEET";
+                if (this.spriteRandomStartCell) {
+                    defines += "\n#define ANIMATESHEETRANDOMSTART";
+                }
             }   
             
             if (this.noiseTexture) {
@@ -723,6 +892,9 @@
 
             if (this.isAnimationSheetEnabled) {
                 this._updateEffectOptions.transformFeedbackVaryings.push("outCellIndex");
+                if (this.spriteRandomStartCell) {
+                    this._updateEffectOptions.transformFeedbackVaryings.push("outCellStartOffset");
+                }
             }               
 
             this._updateEffectOptions.defines = defines;
@@ -743,6 +915,10 @@
             }
             if (this._scene.clipPlane4) {
                 defines = "\n#define CLIPPLANE4";
+            }
+
+            if (this.blendMode === ParticleSystem.BLENDMODE_MULTIPLY) {
+                defines = "\n#define BLENDMULTIPLYMODE";
             }
 
             if (this._isBillboardBased) {
@@ -835,6 +1011,14 @@
         private _createVelocityGradientTexture() {
             this._createFactorGradientTexture(this._velocityGradients, "_velocityGradientsTexture");
         }          
+
+        private _createLimitVelocityGradientTexture() {
+            this._createFactorGradientTexture(this._limitVelocityGradients, "_limitVelocityGradientsTexture");
+        }          
+
+        private _createDragGradientTexture() {
+            this._createFactorGradientTexture(this._dragGradients, "_dragGradientsTexture");
+        }            
             
         private _createColorGradientTexture() {
             if (!this._colorGradients || !this._colorGradients.length || this._colorGradientsTexture) {
@@ -875,6 +1059,8 @@
             this._createSizeGradientTexture();
             this._createAngularSpeedGradientTexture();
             this._createVelocityGradientTexture();
+            this._createLimitVelocityGradientTexture();
+            this._createDragGradientTexture();
 
             this._recreateUpdateEffect();
             this._recreateRenderEffect();
@@ -944,6 +1130,15 @@
 
             if (this._velocityGradientsTexture) {      
                 this._updateEffect.setTexture("velocityGradientSampler", this._velocityGradientsTexture);      
+            }
+
+            if (this._limitVelocityGradientsTexture) {      
+                this._updateEffect.setTexture("limitVelocityGradientSampler", this._limitVelocityGradientsTexture);  
+                this._updateEffect.setFloat("limitVelocityDamping", this.limitVelocityDamping);    
+            }            
+
+            if (this._dragGradientsTexture) {      
+                this._updateEffect.setTexture("dragGradientSampler", this._dragGradientsTexture);      
             }
 
             if (this.particleEmitterType) {
@@ -1028,6 +1223,9 @@
                     case ParticleSystem.BLENDMODE_STANDARD:
                         this._engine.setAlphaMode(Engine.ALPHA_COMBINE);
                         break;
+                    case ParticleSystem.BLENDMODE_MULTIPLY:
+                        this._engine.setAlphaMode(Engine.ALPHA_MULTIPLY);
+                        break; 
                 }      
 
                 if (this.forceDepthWrite) {
@@ -1129,7 +1327,12 @@
             if (this._limitVelocityGradientsTexture) {
                 this._limitVelocityGradientsTexture.dispose();
                 (<any>this._limitVelocityGradientsTexture) = null;
-            }         
+            }                   
+
+            if (this._dragGradientsTexture) {
+                this._dragGradientsTexture.dispose();
+                (<any>this._dragGradientsTexture) = null;
+            }               
          
             if (this._randomTexture) {
                 this._randomTexture.dispose();

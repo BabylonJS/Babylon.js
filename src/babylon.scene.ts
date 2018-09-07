@@ -9,22 +9,6 @@
         dispose(): void;
     }
 
-    /**
-     * Interface used to let developers provide their own mesh selection mechanism
-     */
-    export interface IActiveMeshCandidateProvider {
-        /**
-         * Return the list of active meshes
-         * @param scene defines the current scene
-         * @returns the list of active meshes
-         */
-        getMeshes(scene: Scene): AbstractMesh[];
-        /** 
-         * Indicates if the meshes have been checked to make sure they are isEnabled()
-         */
-        readonly checksIsEnabled: boolean;
-    }
-
     /** @hidden */
     class ClickInfo {
         private _singleClick = false;
@@ -207,18 +191,18 @@
          * Gets or sets the active clipplane 2
          */
         public clipPlane2: Nullable<Plane>;
-        
+
 
         /**
          * Gets or sets the active clipplane 3
          */
         public clipPlane3: Nullable<Plane>;
-        
+
 
         /**
          * Gets or sets the active clipplane 4
          */
-        public clipPlane4: Nullable<Plane>;        
+        public clipPlane4: Nullable<Plane>;
 
         /**
          * Gets or sets a boolean indicating if animations are enabled
@@ -277,10 +261,6 @@
          * Use this array to add regular expressions used to disable offline support for specific urls
          */
         public disableOfflineSupportExceptionRules = new Array<RegExp>();
-
-        // Events
-
-        private _spritePredicate: (sprite: Sprite) => boolean;
 
         /**
         * An event triggered when the scene is disposed.
@@ -416,18 +396,6 @@
         public onAfterParticlesRenderingObservable = new Observable<Scene>();
 
         /**
-        * An event triggered when sprites rendering is about to start
-        * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
-        */
-        public onBeforeSpritesRenderingObservable = new Observable<Scene>();
-
-        /**
-        * An event triggered when sprites rendering is done
-        * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
-        */
-        public onAfterSpritesRenderingObservable = new Observable<Scene>();
-
-        /**
         * An event triggered when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed
         */
         public onDataLoadedObservable = new Observable<Scene>();
@@ -517,6 +485,11 @@
          * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
          */
         public onAfterRenderingGroupObservable = new Observable<RenderingGroupInfo>();
+
+        /**
+         * This Observable will when a mesh has been imported into the scene.
+         */
+        public onMeshImportedObservable = new Observable<AbstractMesh>();
 
         // Animations
         private _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<any>(256);
@@ -805,11 +778,6 @@
         * Gets or sets a boolean indicating if sprites are enabled on this scene
         */
         public spritesEnabled = true;
-        /**
-        * All of the sprite managers added to this scene
-        * @see http://doc.babylonjs.com/babylon101/sprites
-        */
-        public spriteManagers = new Array<SpriteManager>();
 
         // Skeletons
         private _skeletonsEnabled = true;
@@ -894,11 +862,6 @@
         * Gets or sets a boolean indicating if probes are enabled on this scene
         */
         public probesEnabled = true;
-        /**
-         * The list of reflection probes added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
-         */
-        public reflectionProbes = new Array<ReflectionProbe>();
 
         // Database
         /**
@@ -919,11 +882,6 @@
         * Gets or sets a boolean indicating if procedural textures are enabled on this scene
         */
         public proceduralTexturesEnabled = true;
-        /**
-         * The list of procedural textures added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_procedural_textures
-         */
-        public proceduralTextures = new Array<ProceduralTexture>();
 
         // Sound Tracks
         private _mainSoundTrack: SoundTrack;
@@ -945,13 +903,6 @@
 
             return this._mainSoundTrack;
         }
-
-        /**
-         * Gets or sets the VRExperienceHelper attached to the scene
-         * @see http://doc.babylonjs.com/how_to/webvr_helper
-         * @ignorenaming
-         */
-        public VRHelper: VRExperienceHelper;
 
         // Private
         private _engine: Engine;
@@ -983,6 +934,7 @@
         public _cachedVisibility: Nullable<number>;
 
         private _renderId = 0;
+        private _frameId = 0;
         private _executeWhenReadyTimeoutId = -1;
         private _intermediateRendering = false;
 
@@ -1021,7 +973,6 @@
         private _alternateSceneUbo: UniformBuffer;
 
         private _pickWithRayInverseMatrix: Matrix;
-        private _outlineRenderer: OutlineRenderer;
 
         private _viewMatrix: Matrix;
         private _projectionMatrix: Matrix;
@@ -1052,16 +1003,10 @@
          */
         public requireLightSorting = false;
 
-        private _selectionOctree: Octree<AbstractMesh>;
-
         private _pointerOverMesh: Nullable<AbstractMesh>;
-        private _pointerOverSprite: Nullable<Sprite>;
-
-        private _debugLayer: DebugLayer;
 
         private _pickedDownMesh: Nullable<AbstractMesh>;
         private _pickedUpMesh: Nullable<AbstractMesh>;
-        private _pickedDownSprite: Nullable<Sprite>;
         private _externalData: StringDictionary<Object>;
         private _uid: Nullable<string>;
 
@@ -1127,7 +1072,6 @@
             return null;
         }
 
-
         /**
          * @hidden
          * Defines the actions happening before camera updates.
@@ -1135,9 +1079,19 @@
         public _beforeCameraUpdateStage = Stage.Create<SimpleStageAction>();
         /**
          * @hidden
-         * Defines the actions happening before camera updates.
+         * Defines the actions happening before clear the canvas.
+         */
+        public _beforeClearStage = Stage.Create<SimpleStageAction>();
+        /**
+         * @hidden
+         * Defines the actions when collecting render targets for the frame.
          */
         public _gatherRenderTargetsStage = Stage.Create<RenderTargetsStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening for one camera in the frame.
+         */
+        public _gatherActiveCameraRenderTargetsStage = Stage.Create<RenderTargetsStageAction>();
         /**
          * @hidden
          * Defines the actions happening during the per mesh ready checks.
@@ -1169,9 +1123,20 @@
          */
         public _beforeCameraDrawStage = Stage.Create<CameraStageAction>();
         /**
+         * @hidden
          * Defines the actions happening just before a rendering group is drawing.
          */
         public _beforeRenderingGroupDrawStage = Stage.Create<RenderingGroupStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening just before a mesh is drawing.
+         */
+        public _beforeRenderingMeshStage = Stage.Create<RenderingMeshStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening just after a mesh has been drawn.
+         */
+        public _afterRenderingMeshStage = Stage.Create<RenderingMeshStageAction>();
         /**
          * @hidden
          * Defines the actions happening just after a rendering group has been drawn.
@@ -1184,9 +1149,19 @@
         public _afterCameraDrawStage = Stage.Create<CameraStageAction>();
         /**
          * @hidden
-         * Defines the actions happening when Geometries are rebuilding.
+         * Defines the actions happening when a pointer move event happens.
          */
-        public _rebuildGeometryStage = Stage.Create<SimpleStageAction>();
+        public _pointerMoveStage = Stage.Create<PointerMoveStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening when a pointer down event happens.
+         */
+        public _pointerDownStage = Stage.Create<PointerUpDownStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening when a pointer up event happens.
+         */
+        public _pointerUpStage = Stage.Create<PointerUpDownStageAction>();
 
         /**
          * Creates a new Scene
@@ -1205,10 +1180,6 @@
                 this.postProcessManager = new PostProcessManager(this);
             }
 
-            if (OutlineRenderer) {
-                this._outlineRenderer = new OutlineRenderer(this);
-            }
-
             if (Tools.IsWindowObjectExist()) {
                 this.attachControl();
             }
@@ -1223,17 +1194,49 @@
             if (ImageProcessingConfiguration) {
                 this._imageProcessingConfiguration = new ImageProcessingConfiguration();
             }
+
+            this.setDefaultCandidateProviders();
+        }
+
+        private _defaultMeshCandidates: ISmartArrayLike<AbstractMesh> = {
+            data: [],
+            length: 0
         }
 
         /**
-         * Gets the debug layer (aka Inspector) associated with the scene
-         * @see http://doc.babylonjs.com/features/playground_debuglayer
+         * @hidden
          */
-        public get debugLayer(): DebugLayer {
-            if (!this._debugLayer) {
-                this._debugLayer = new DebugLayer(this);
-            }
-            return this._debugLayer;
+        public _getDefaultMeshCandidates(): ISmartArrayLike<AbstractMesh> {
+            this._defaultMeshCandidates.data = this.meshes;
+            this._defaultMeshCandidates.length = this.meshes.length;
+            return this._defaultMeshCandidates;
+        }
+
+        private _defaultSubMeshCandidates: ISmartArrayLike<SubMesh> = {
+            data: [],
+            length: 0
+        }
+
+        /**
+         * @hidden
+         */
+        public _getDefaultSubMeshCandidates(mesh: AbstractMesh): ISmartArrayLike<SubMesh> {
+            this._defaultSubMeshCandidates.data = mesh.subMeshes;
+            this._defaultSubMeshCandidates.length = mesh.subMeshes.length;
+            return this._defaultSubMeshCandidates;
+        }
+
+        /**
+         * Sets the default candidate providers for the scene.
+         * This sets the getActiveMeshCandidates, getActiveSubMeshCandidates, getIntersectingSubMeshCandidates
+         * and getCollidingSubMeshCandidates to their default function
+         */
+        public setDefaultCandidateProviders(): void {
+            this.getActiveMeshCandidates = this._getDefaultMeshCandidates.bind(this);
+
+            this.getActiveSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
+            this.getIntersectingSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
+            this.getCollidingSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
         }
 
         public set workerCollisions(enabled: boolean) {
@@ -1259,14 +1262,6 @@
          */
         public get workerCollisions(): boolean {
             return this._workerCollisions;
-        }
-
-        /**
-         * Gets the octree used to boost mesh selection (picking)
-         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
-         */
-        public get selectionOctree(): Octree<AbstractMesh> {
-            return this._selectionOctree;
         }
 
         /**
@@ -1323,14 +1318,6 @@
          */
         public isCachedMaterialInvalid(material: Material, effect: Effect, visibility: number = 1) {
             return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
-        }
-
-        /** 
-         * Gets the outline renderer associated with the scene
-         * @returns a OutlineRenderer
-         */
-        public getOutlineRenderer(): OutlineRenderer {
-            return this._outlineRenderer;
         }
 
         /** 
@@ -1500,11 +1487,19 @@
         }
 
         /** 
-         * Gets an unique Id for the current frame
+         * Gets an unique Id for the current render phase
          * @returns a number
          */
         public getRenderId(): number {
             return this._renderId;
+        }
+
+        /** 
+         * Gets an unique Id for the current frame
+         * @returns a number
+         */
+        public getFrameId(): number {
+            return this._frameId;
         }
 
         /** Call this function if you want to manually increment the render Id*/
@@ -1539,14 +1534,6 @@
         }
 
         // Pointers handling
-        private _pickSpriteButKeepRay(originalPointerInfo: Nullable<PickingInfo>, x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
-            var result = this.pickSprite(x, y, predicate, fastCheck, camera);
-            if (result) {
-                result.ray = originalPointerInfo ? originalPointerInfo.ray : null;
-            }
-            return result;
-        }
-
         private _setRayOnPointerInfo(pointerInfo: PointerInfo) {
             if (pointerInfo.pickInfo) {
                 if (!pointerInfo.pickInfo.ray) {
@@ -1579,10 +1566,12 @@
                 return this;
             }
 
-            if (pickResult && pickResult.hit && pickResult.pickedMesh) {
-                this.setPointerOverSprite(null);
+            // Restore pointer
+            canvas.style.cursor = this.defaultCursor;
 
-                this.setPointerOverMesh(pickResult.pickedMesh);
+            var isMeshPicked = (pickResult && pickResult.hit && pickResult.pickedMesh) ? true : false;
+            if (isMeshPicked) {
+                this.setPointerOverMesh(pickResult!.pickedMesh);
 
                 if (this._pointerOverMesh && this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
                     if (this._pointerOverMesh.actionManager.hoverCursor) {
@@ -1590,26 +1579,13 @@
                     } else {
                         canvas.style.cursor = this.hoverCursor;
                     }
-                } else {
-                    canvas.style.cursor = this.defaultCursor;
                 }
             } else {
                 this.setPointerOverMesh(null);
-                // Sprites
-                pickResult = this._pickSpriteButKeepRay(pickResult, this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers || undefined);
+            }
 
-                if (pickResult && pickResult.hit && pickResult.pickedSprite) {
-                    this.setPointerOverSprite(pickResult.pickedSprite);
-                    if (this._pointerOverSprite && this._pointerOverSprite.actionManager && this._pointerOverSprite.actionManager.hoverCursor) {
-                        canvas.style.cursor = this._pointerOverSprite.actionManager.hoverCursor;
-                    } else {
-                        canvas.style.cursor = this.hoverCursor;
-                    }
-                } else {
-                    this.setPointerOverSprite(null);
-                    // Restore pointer
-                    canvas.style.cursor = this.defaultCursor;
-                }
+            for (let step of this._pointerMoveStage) {
+                pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, isMeshPicked, canvas);
             }
 
             if (pickResult) {
@@ -1688,14 +1664,18 @@
                             if (pickResult && pickResult.hit && pickResult.pickedMesh && actionManager) {
                                 if (this._totalPointersPressed !== 0 &&
                                     ((Date.now() - this._startingPointerTime) > Scene.LongPressDelay) &&
-                                    (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
-                                        Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold)) {
+                                    !this._isPointerSwiping()) {
                                     this._startingPointerTime = 0;
                                     actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 }
                             }
                         }, Scene.LongPressDelay);
                     }
+                }
+            }
+            else {
+                for (let step of this._pointerDownStage) {
+                    pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt);
                 }
             }
 
@@ -1762,6 +1742,14 @@
                     }
                 }
             }
+            else {
+                if (!clickInfo.ignore) {
+                    for (let step of this._pointerUpStage) {
+                        pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt);
+                    }
+                }
+            }
+
             if (this._pickedDownMesh &&
                 this._pickedDownMesh.actionManager &&
                 this._pickedDownMesh.actionManager.hasSpecificTrigger(ActionManager.OnPickOutTrigger) &&
@@ -1810,6 +1798,12 @@
             return this._pointerCaptures[pointerId];
         }
 
+        /** @hidden */
+        public _isPointerSwiping(): boolean {
+            return Math.abs(this._startingPointerPosition.x - this._pointerX) > Scene.DragMovementThreshold ||
+                   Math.abs(this._startingPointerPosition.y - this._pointerY) > Scene.DragMovementThreshold;
+        }
+
         /**
         * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
         * @param attachUp defines if you want to attach events to pointerup
@@ -1855,8 +1849,7 @@
                 }
                 if (checkPicking) {
                     let btn = evt.button;
-                    clickInfo.hasSwiped = Math.abs(this._startingPointerPosition.x - this._pointerX) > Scene.DragMovementThreshold ||
-                        Math.abs(this._startingPointerPosition.y - this._pointerY) > Scene.DragMovementThreshold;
+                    clickInfo.hasSwiped = this._isPointerSwiping();
 
                     if (!clickInfo.hasSwiped) {
                         let checkSingleClickImmediately = !Scene.ExclusiveDoubleClickMode;
@@ -1903,8 +1896,7 @@
                             ) {
                                 // pointer has not moved for 2 clicks, it's a double click
                                 if (!clickInfo.hasSwiped &&
-                                    Math.abs(this._previousStartingPointerPosition.x - this._startingPointerPosition.x) < Scene.DragMovementThreshold &&
-                                    Math.abs(this._previousStartingPointerPosition.y - this._startingPointerPosition.y) < Scene.DragMovementThreshold) {
+                                    !this._isPointerSwiping()) {
                                     this._previousStartingPointerTime = 0;
                                     this._doubleClickOccured = true;
                                     clickInfo.doubleClick = true;
@@ -1948,10 +1940,6 @@
                 }
                 clickInfo.ignore = true;
                 cb(clickInfo, this._currentPickResult);
-            };
-
-            this._spritePredicate = (sprite: Sprite): boolean => {
-                return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPointerTriggers;
             };
 
             this._onPointerMove = (evt: PointerEvent) => {
@@ -2014,32 +2002,6 @@
                 var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerDownPredicate, false, this.cameraToUseForPointers);
 
                 this._processPointerDown(pickResult, evt);
-
-                // Sprites
-                this._pickedDownSprite = null;
-                if (this.spriteManagers.length > 0) {
-                    pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers || undefined);
-
-                    if (pickResult && pickResult.hit && pickResult.pickedSprite) {
-                        if (pickResult.pickedSprite.actionManager) {
-                            this._pickedDownSprite = pickResult.pickedSprite;
-                            switch (evt.button) {
-                                case 0:
-                                    pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
-                                    break;
-                                case 1:
-                                    pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnCenterPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
-                                    break;
-                                case 2:
-                                    pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
-                                    break;
-                            }
-                            if (pickResult.pickedSprite.actionManager) {
-                                pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickDownTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
-                            }
-                        }
-                    }
-                }
             };
 
             this._onPointerUp = (evt: PointerEvent) => {
@@ -2097,29 +2059,6 @@
                     }
 
                     this._processPointerUp(pickResult, evt, clickInfo);
-
-                    // Sprites
-                    if (!clickInfo.ignore) {
-                        if (this.spriteManagers.length > 0) {
-                            let spritePickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers || undefined);
-
-                            if (spritePickResult) {
-                                if (spritePickResult.hit && spritePickResult.pickedSprite) {
-                                    if (spritePickResult.pickedSprite.actionManager) {
-                                        spritePickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, this, evt));
-                                        if (spritePickResult.pickedSprite.actionManager) {
-                                            if (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold && Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold) {
-                                                spritePickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, this, evt));
-                                            }
-                                        }
-                                    }
-                                }
-                                if (this._pickedDownSprite && this._pickedDownSprite.actionManager && this._pickedDownSprite !== spritePickResult.pickedSprite) {
-                                    this._pickedDownSprite.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNewFromSprite(this._pickedDownSprite, this, evt));
-                                }
-                            }
-                        }
-                    }
 
                     this._previousPickResult = this._currentPickResult;
                 });
@@ -2742,12 +2681,13 @@
             totalWeight: number,
             animations: RuntimeAnimation[],
             originalValue: Quaternion
-        }): Quaternion {
+        }, refQuaternion: Quaternion): Quaternion {
             let originalAnimation = holder.animations[0];
             let originalValue = holder.originalValue;
 
             if (holder.animations.length === 1) {
-                return Quaternion.Slerp(originalValue, originalAnimation.currentValue, Math.min(1.0, holder.totalWeight));
+                Quaternion.SlerpToRef(originalValue, originalAnimation.currentValue, Math.min(1.0, holder.totalWeight), refQuaternion);
+                return refQuaternion;
             }
 
             let normalizer = 1.0;
@@ -2764,7 +2704,8 @@
                 weights.push(scale);
             } else {
                 if (holder.animations.length === 2) { // Slerp as soon as we can
-                    return Quaternion.Slerp(holder.animations[0].currentValue, holder.animations[1].currentValue, holder.animations[1].weight / holder.totalWeight);
+                    Quaternion.SlerpToRef(holder.animations[0].currentValue, holder.animations[1].currentValue, holder.animations[1].weight / holder.totalWeight, refQuaternion);
+                    return refQuaternion;
                 }
                 quaternions = [];
                 weights = [];
@@ -2783,7 +2724,8 @@
             let cumulativeQuaternion: Nullable<Quaternion> = null;
             for (var index = 0; index < quaternions.length;) {
                 if (!cumulativeQuaternion) {
-                    cumulativeQuaternion = Quaternion.Slerp(quaternions[index], quaternions[index + 1], weights[index + 1] / (weights[index] + weights[index + 1]));
+                    Quaternion.SlerpToRef(quaternions[index], quaternions[index + 1], weights[index + 1] / (weights[index] + weights[index + 1]), refQuaternion);
+                    cumulativeQuaternion = refQuaternion;
                     cumulativeAmount = weights[index] + weights[index + 1];
                     index += 2;
                     continue;
@@ -2810,13 +2752,13 @@
 
                     let matrixDecomposeMode = Animation.AllowMatrixDecomposeForInterpolation && originalValue.m; // ie. data is matrix
 
-                    let finalValue: any;
+                    let finalValue: any = target[path];
                     if (matrixDecomposeMode) {
                         finalValue = this._processLateAnimationBindingsForMatrices(holder);
                     } else {
                         let quaternionMode = originalValue.w !== undefined;
                         if (quaternionMode) {
-                            finalValue = this._processLateAnimationBindingsForQuaternions(holder);
+                            finalValue = this._processLateAnimationBindingsForQuaternions(holder, finalValue || Quaternion.Identity());
                         } else {
 
                             let startIndex = 0;
@@ -3002,11 +2944,11 @@
         }
 
         /**
-           * Remove a mesh for the list of scene's meshes
-           * @param toRemove defines the mesh to remove
-           * @param recursive if all child meshes should also be removed from the scene
-           * @returns the index where the mesh was in the mesh list
-           */
+         * Remove a mesh for the list of scene's meshes
+         * @param toRemove defines the mesh to remove
+         * @param recursive if all child meshes should also be removed from the scene
+         * @returns the index where the mesh was in the mesh list
+         */
         public removeMesh(toRemove: AbstractMesh, recursive = false): number {
             var index = this.meshes.indexOf(toRemove);
             if (index !== -1) {
@@ -4014,7 +3956,7 @@
                 const material = subMesh.getMaterial();
                 if (material !== null && material !== undefined) {
                     // Render targets
-                    if (material.getRenderTargetTextures !== undefined) {
+                    if (material.hasRenderTargetTextures && material.getRenderTargetTextures !== undefined) {
                         if (this._processedMaterials.indexOf(material) === -1) {
                             this._processedMaterials.push(material);
 
@@ -4076,21 +4018,25 @@
             return this._intermediateRendering
         }
 
-        private _activeMeshCandidateProvider: IActiveMeshCandidateProvider;
         /**
-         * Defines the current active mesh candidate provider
-         * @param provider defines the provider to use
+         * Lambda returning the list of potentially active meshes.
          */
-        public setActiveMeshCandidateProvider(provider: IActiveMeshCandidateProvider): void {
-            this._activeMeshCandidateProvider = provider;
-        }
+        public getActiveMeshCandidates: () => ISmartArrayLike<AbstractMesh>;
+
         /**
-         * Gets the current active mesh candidate provider
-         * @returns the current active mesh candidate provider
+         * Lambda returning the list of potentially active sub meshes.
          */
-        public getActiveMeshCandidateProvider(): IActiveMeshCandidateProvider {
-            return this._activeMeshCandidateProvider;
-        }
+        public getActiveSubMeshCandidates: (mesh: AbstractMesh) => ISmartArrayLike<SubMesh>;
+
+        /**
+         * Lambda returning the list of potentially intersecting sub meshes.
+         */
+        public getIntersectingSubMeshCandidates: (mesh: AbstractMesh, localRay: Ray) => ISmartArrayLike<SubMesh>;
+
+        /**
+         * Lambda returning the list of potentially colliding sub meshes.
+         */
+        public getCollidingSubMeshCandidates: (mesh: AbstractMesh, collider: Collider) => ISmartArrayLike<SubMesh>;
 
         private _activeMeshesFrozen = false;
 
@@ -4143,56 +4089,32 @@
                 step.action();
             }
 
-            // Meshes
-            var meshes: AbstractMesh[];
-            var len: number;
-            var checkIsEnabled = true;
-
             // Determine mesh candidates
-            if (this._activeMeshCandidateProvider !== undefined) {
-                // Use _activeMeshCandidateProvider
-                meshes = this._activeMeshCandidateProvider.getMeshes(this);
-                checkIsEnabled = this._activeMeshCandidateProvider.checksIsEnabled === false;
-                if (meshes !== undefined) {
-                    len = meshes.length;
-                } else {
-                    len = 0;
-                }
-            } else if (this._selectionOctree !== undefined) {
-                // Octree
-                var selection = this._selectionOctree.select(this._frustumPlanes);
-                meshes = selection.data;
-                len = selection.length;
-            } else {
-                // Full scene traversal
-                len = this.meshes.length;
-                meshes = this.meshes;
-            }
-
+            const meshes = this.getActiveMeshCandidates();
+            
             // Check each mesh
-            for (var meshIndex = 0, mesh, meshLOD; meshIndex < len; meshIndex++) {
-                mesh = meshes[meshIndex];
-
+            const len = meshes.length;
+            for (let i = 0; i < len; i++) {
+                const mesh = meshes.data[i];
                 if (mesh.isBlocked) {
                     continue;
                 }
 
                 this._totalVertices.addCount(mesh.getTotalVertices(), false);
 
-                if (!mesh.isReady() || (checkIsEnabled && !mesh.isEnabled())) {
+                if (!mesh.isReady() || !mesh.isEnabled()) {
                     continue;
                 }
 
                 mesh.computeWorldMatrix();
 
                 // Intersections
-                if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers([ActionManager.OnIntersectionEnterTrigger, ActionManager.OnIntersectionExitTrigger])) {
+                if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers2(ActionManager.OnIntersectionEnterTrigger, ActionManager.OnIntersectionExitTrigger)) {
                     this._meshesForIntersections.pushNoDuplicate(mesh);
                 }
 
                 // Switch to current LOD
-                meshLOD = mesh.getLOD(this.activeCamera);
-
+                const meshLOD = mesh.getLOD(this.activeCamera);
                 if (meshLOD === undefined || meshLOD === null) {
                     continue;
                 }
@@ -4236,7 +4158,7 @@
         }
 
         private _activeMesh(sourceMesh: AbstractMesh, mesh: AbstractMesh): void {
-            if (this.skeletonsEnabled && mesh.skeleton !== null && mesh.skeleton !== undefined) {
+            if (this._skeletonsEnabled && mesh.skeleton !== null && mesh.skeleton !== undefined) {
                 if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
                     mesh.skeleton.prepare();
                 }
@@ -4254,23 +4176,10 @@
                 mesh !== undefined && mesh !== null
                 && mesh.subMeshes !== undefined && mesh.subMeshes !== null && mesh.subMeshes.length > 0
             ) {
-                // Submeshes Octrees
-                var len: number;
-                var subMeshes: SubMesh[];
-
-                if (mesh.useOctreeForRenderingSelection && mesh._submeshesOctree !== undefined && mesh._submeshesOctree !== null) {
-                    var intersections = mesh._submeshesOctree.select(this._frustumPlanes);
-
-                    len = intersections.length;
-                    subMeshes = intersections.data;
-                } else {
-                    subMeshes = mesh.subMeshes;
-                    len = subMeshes.length;
-                }
-
-                for (var subIndex = 0, subMesh; subIndex < len; subIndex++) {
-                    subMesh = subMeshes[subIndex];
-
+                const subMeshes = this.getActiveSubMeshCandidates(mesh);
+                const len = subMeshes.length;
+                for (let i = 0; i < len; i++) {
+                    const subMesh = subMeshes.data[i];
                     this._evaluateSubMesh(subMesh, mesh);
                 }
             }
@@ -4295,7 +4204,7 @@
             this._setAlternateTransformMatrix(alternateCamera.getViewMatrix(), alternateCamera.getProjectionMatrix());
         }
         /** @hidden */
-        public _allowPostProcessClear = true;
+        public _allowPostProcessClearColor = true;
         private _renderForCamera(camera: Camera, rigParent?: Camera): void {
             if (camera && camera._skipRendering) {
                 return;
@@ -4342,6 +4251,11 @@
 
             if (rigParent && rigParent.customRenderTargets && rigParent.customRenderTargets.length > 0) {
                 this._renderTargets.concatWithNoDuplicate(rigParent.customRenderTargets);
+            }
+
+            // Collects render targets from external components.
+            for (let step of this._gatherActiveCameraRenderTargetsStage) {
+                step.action(this._renderTargets);
             }
 
             if (this.renderTargetsEnabled) {
@@ -4475,6 +4389,8 @@
             if (this.isDisposed) {
                 return;
             }
+
+            this._frameId++;
 
             // Register components that have been associated lately to the scene.
             this._registerTransientComponents();
@@ -4622,36 +4538,13 @@
             this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
             this.activeCamera = currentActiveCamera;
 
-            // Procedural textures
-            if (this.proceduralTexturesEnabled) {
-                Tools.StartPerformanceCounter("Procedural textures", this.proceduralTextures.length > 0);
-                for (var proceduralIndex = 0; proceduralIndex < this.proceduralTextures.length; proceduralIndex++) {
-                    var proceduralTexture = this.proceduralTextures[proceduralIndex];
-                    if (proceduralTexture._shouldRender()) {
-                        proceduralTexture.render();
-                    }
-                }
-                Tools.EndPerformanceCounter("Procedural textures", this.proceduralTextures.length > 0);
+            for (let step of this._beforeClearStage) {
+                step.action();
             }
 
             // Clear
             if (this.autoClearDepthAndStencil || this.autoClear) {
                 this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, this.autoClearDepthAndStencil, this.autoClearDepthAndStencil);
-            }
-
-            // Shadows
-            if (this.shadowsEnabled) {
-                for (var lightIndex = 0; lightIndex < this.lights.length; lightIndex++) {
-                    var light = this.lights[lightIndex];
-                    var shadowGenerator = light.getShadowGenerator();
-
-                    if (light.isEnabled() && light.shadowEnabled && shadowGenerator) {
-                        var shadowMap = <RenderTargetTexture>(shadowGenerator.getShadowMap());
-                        if (this.textures.indexOf(shadowMap) !== -1) {
-                            this._renderTargets.push(shadowMap);
-                        }
-                    }
-                }
             }
 
             // Collects render targets from external components.
@@ -4697,7 +4590,6 @@
                 if (data) {
                     data.dispose();
                 }
-                this._toBeDisposed[index] = null;
             }
 
             this._toBeDisposed.reset();
@@ -4878,11 +4770,18 @@
             this._cameraDrawRenderTargetStage.clear();
             this._beforeCameraDrawStage.clear();
             this._beforeRenderingGroupDrawStage.clear();
+            this._beforeRenderingMeshStage.clear();
+            this._afterRenderingMeshStage.clear();
             this._afterRenderingGroupDrawStage.clear();
             this._afterCameraDrawStage.clear();
             this._beforeCameraUpdateStage.clear();
+            this._beforeClearStage.clear();
             this._gatherRenderTargetsStage.clear();
-            this._rebuildGeometryStage.clear();
+            this._gatherActiveCameraRenderTargetsStage.clear();
+            this._pointerMoveStage.clear();
+            this._pointerDownStage.clear();
+            this._pointerUpStage.clear();
+
             for (let component of this._components) {
                 component.dispose();
             }
@@ -4914,11 +4813,6 @@
                 request.abort();
             }
 
-            // Debug layer
-            if (this._debugLayer) {
-                this._debugLayer.hide();
-            }
-
             // Events
             this.onDisposeObservable.notifyObservers(this);
 
@@ -4933,8 +4827,6 @@
             this.onAfterActiveMeshesEvaluationObservable.clear();
             this.onBeforeParticlesRenderingObservable.clear();
             this.onAfterParticlesRenderingObservable.clear();
-            this.onBeforeSpritesRenderingObservable.clear();
-            this.onAfterSpritesRenderingObservable.clear();
             this.onBeforeDrawPhaseObservable.clear();
             this.onAfterDrawPhaseObservable.clear();
             this.onBeforePhysicsObservable.clear();
@@ -4944,17 +4836,13 @@
             this.onDataLoadedObservable.clear();
             this.onBeforeRenderingGroupObservable.clear();
             this.onAfterRenderingGroupObservable.clear();
+            this.onMeshImportedObservable.clear();
 
             this.detachControl();
 
             // Release sounds & sounds tracks
             if (AudioEngine) {
                 this.disposeSounds();
-            }
-
-            // VR Helper
-            if (this.VRHelper) {
-                this.VRHelper.dispose();
             }
 
             // Detach cameras
@@ -5004,11 +4892,6 @@
             // Release particles
             while (this.particleSystems.length) {
                 this.particleSystems[0].dispose();
-            }
-
-            // Release sprites
-            while (this.spriteManagers.length) {
-                this.spriteManagers[0].dispose();
             }
 
             // Release postProcesses
@@ -5105,9 +4988,6 @@
             }
         }
 
-
-        // Octrees
-
         /**
          * Get the world extend vectors with an optional filter
          * 
@@ -5138,26 +5018,6 @@
                 min: min,
                 max: max
             };
-        }
-
-        /**
-         * Creates or updates the octree used to boost selection (picking)
-         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
-         * @param maxCapacity defines the maximum capacity per leaf
-         * @param maxDepth defines the maximum depth of the octree
-         * @returns an octree of AbstractMesh
-         */
-        public createOrUpdateSelectionOctree(maxCapacity = 64, maxDepth = 2): Octree<AbstractMesh> {
-            if (!this._selectionOctree) {
-                this._selectionOctree = new Octree<AbstractMesh>(Octree.CreationFuncForMeshes, maxCapacity, maxDepth);
-            }
-
-            var worldExtends = this.getWorldExtends();
-
-            // Update octree
-            this._selectionOctree.update(worldExtends.min, worldExtends.max, this.meshes);
-
-            return this._selectionOctree;
         }
 
         // Picking
@@ -5326,46 +5186,6 @@
             return pickingInfos;
         }
 
-        private _internalPickSprites(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
-            if (!PickingInfo) {
-                return null;
-            }
-
-            var pickingInfo = null;
-
-            if (!camera) {
-                if (!this.activeCamera) {
-                    return null;
-                }
-                camera = this.activeCamera;
-            }
-
-            if (this.spriteManagers.length > 0) {
-                for (var spriteIndex = 0; spriteIndex < this.spriteManagers.length; spriteIndex++) {
-                    var spriteManager = this.spriteManagers[spriteIndex];
-
-                    if (!spriteManager.isPickable) {
-                        continue;
-                    }
-
-                    var result = spriteManager.intersects(ray, camera, predicate, fastCheck);
-                    if (!result || !result.hit)
-                        continue;
-
-                    if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance)
-                        continue;
-
-                    pickingInfo = result;
-
-                    if (fastCheck) {
-                        break;
-                    }
-                }
-            }
-
-            return pickingInfo || new PickingInfo();
-        }
-
         private _tempPickingRay: Nullable<Ray> = Ray ? Ray.Zero() : null;
 
         /** Launch a ray to try to pick a mesh in the scene
@@ -5390,25 +5210,11 @@
             return result;
         }
 
-        /** Launch a ray to try to pick a sprite in the scene
-         * @param x position on screen
-         * @param y position on screen
-         * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
-         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
-         * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
-         * @returns a PickingInfo
-         */
-        public pickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
-            this.createPickingRayInCameraSpaceToRef(x, y, this._tempPickingRay!, camera);
-
-            return this._internalPickSprites(this._tempPickingRay!, predicate, fastCheck, camera);
-        }
-
         private _cachedRayForTransform: Ray;
 
         /** Use the given ray to pick a mesh in the scene
          * @param ray The ray to use to pick meshes
-         * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+         * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
          * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null
          * @returns a PickingInfo
          */
@@ -5491,33 +5297,6 @@
          */
         public getPointerOverMesh(): Nullable<AbstractMesh> {
             return this._pointerOverMesh;
-        }
-
-        /** 
-         * Force the sprite under the pointer
-         * @param sprite defines the sprite to use
-         */
-        public setPointerOverSprite(sprite: Nullable<Sprite>): void {
-            if (this._pointerOverSprite === sprite) {
-                return;
-            }
-
-            if (this._pointerOverSprite && this._pointerOverSprite.actionManager) {
-                this._pointerOverSprite.actionManager.processTrigger(ActionManager.OnPointerOutTrigger, ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
-            }
-
-            this._pointerOverSprite = sprite;
-            if (this._pointerOverSprite && this._pointerOverSprite.actionManager) {
-                this._pointerOverSprite.actionManager.processTrigger(ActionManager.OnPointerOverTrigger, ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
-            }
-        }
-
-        /** 
-         * Gets the sprite under the pointer
-         * @returns a Sprite or null if no sprite is under the pointer
-         */
-        public getPointerOverSprite(): Nullable<Sprite> {
-            return this._pointerOverSprite;
         }
 
         // Physics
@@ -5606,10 +5385,6 @@
             for (var system of this.particleSystems) {
                 system.rebuild();
             }
-
-            for (let step of this._rebuildGeometryStage) {
-                step.action();
-            }
         }
 
         /** @hidden */
@@ -5619,167 +5394,6 @@
             }
 
             this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
-        }
-
-        /**
-         * Creates a default light for the scene.
-         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-light
-         * @param replace has the default false, when true replaces the existing lights in the scene with a hemispheric light
-         */
-        public createDefaultLight(replace = false): void {
-            // Dispose existing light in replace mode.
-            if (replace) {
-                if (this.lights) {
-                    for (var i = 0; i < this.lights.length; i++) {
-                        this.lights[i].dispose();
-                    }
-                }
-            }
-
-            // Light
-            if (this.lights.length === 0) {
-                new HemisphericLight("default light", Vector3.Up(), this);
-            }
-        }
-
-        /**
-         * Creates a default camera for the scene.
-         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-camera
-         * @param createArcRotateCamera has the default false which creates a free camera, when true creates an arc rotate camera
-         * @param replace has default false, when true replaces the active camera in the scene
-         * @param attachCameraControls has default false, when true attaches camera controls to the canvas.
-         */
-        public createDefaultCamera(createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
-            // Dispose existing camera in replace mode.
-            if (replace) {
-                if (this.activeCamera) {
-                    this.activeCamera.dispose();
-                    this.activeCamera = null;
-                }
-            }
-
-            // Camera
-            if (!this.activeCamera) {
-                var worldExtends = this.getWorldExtends();
-                var worldSize = worldExtends.max.subtract(worldExtends.min);
-                var worldCenter = worldExtends.min.add(worldSize.scale(0.5));
-
-                var camera: TargetCamera;
-                var radius = worldSize.length() * 1.5;
-                // empty scene scenario!
-                if (!isFinite(radius)) {
-                    radius = 1;
-                    worldCenter.copyFromFloats(0, 0, 0);
-                }
-                if (createArcRotateCamera) {
-                    var arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI / 2), Math.PI / 2, radius, worldCenter, this);
-                    arcRotateCamera.lowerRadiusLimit = radius * 0.01;
-                    arcRotateCamera.wheelPrecision = 100 / radius;
-                    camera = arcRotateCamera;
-                }
-                else {
-                    var freeCamera = new FreeCamera("default camera", new Vector3(worldCenter.x, worldCenter.y, -radius), this);
-                    freeCamera.setTarget(worldCenter);
-                    camera = freeCamera;
-                }
-                camera.minZ = radius * 0.01;
-                camera.maxZ = radius * 1000;
-                camera.speed = radius * 0.2;
-                this.activeCamera = camera;
-
-                let canvas = this.getEngine().getRenderingCanvas();
-                if (attachCameraControls && canvas) {
-                    camera.attachControl(canvas);
-                }
-            }
-        }
-
-        /**
-         * Creates a default camera and a default light.
-         * @see http://doc.babylonjs.com/how_to/Fast_Build#create-default-camera-or-light
-         * @param createArcRotateCamera has the default false which creates a free camera, when true creates an arc rotate camera
-         * @param replace has the default false, when true replaces the active camera/light in the scene
-         * @param attachCameraControls has the default false, when true attaches camera controls to the canvas.
-         */
-        public createDefaultCameraOrLight(createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
-            this.createDefaultLight(replace);
-            this.createDefaultCamera(createArcRotateCamera, replace, attachCameraControls);
-        }
-
-        /**
-         * Creates a new sky box
-         * @see http://doc.babylonjs.com/how_to/Fast_Build#create-default-skybox
-         * @param environmentTexture defines the texture to use as environment texture
-         * @param pbr has default false which requires the StandardMaterial to be used, when true PBRMaterial must be used 
-         * @param scale defines the overall scale of the skybox
-         * @param blur is only available when pbr is true, default is 0, no blur, maximum value is 1
-         * @param setGlobalEnvTexture has default true indicating that scene.environmentTexture must match the current skybox texture
-         * @returns a new mesh holding the sky box
-         */
-        public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0, setGlobalEnvTexture = true): Nullable<Mesh> {
-
-            if (!environmentTexture) {
-                Tools.Warn("Can not create default skybox without environment texture.");
-                return null;
-            }
-
-            if (setGlobalEnvTexture) {
-                if (environmentTexture) {
-                    this.environmentTexture = environmentTexture;
-                }
-            }
-
-            // Skybox
-            var hdrSkybox = Mesh.CreateBox("hdrSkyBox", scale, this);
-            if (pbr) {
-                let hdrSkyboxMaterial = new PBRMaterial("skyBox", this);
-                hdrSkyboxMaterial.backFaceCulling = false;
-                hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
-                if (hdrSkyboxMaterial.reflectionTexture) {
-                    hdrSkyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
-                }
-                hdrSkyboxMaterial.microSurface = 1.0 - blur;
-                hdrSkyboxMaterial.disableLighting = true;
-                hdrSkyboxMaterial.twoSidedLighting = true;
-                hdrSkybox.infiniteDistance = true;
-                hdrSkybox.material = hdrSkyboxMaterial;
-            }
-            else {
-                let skyboxMaterial = new StandardMaterial("skyBox", this);
-                skyboxMaterial.backFaceCulling = false;
-                skyboxMaterial.reflectionTexture = environmentTexture.clone();
-                if (skyboxMaterial.reflectionTexture) {
-                    skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
-                }
-                skyboxMaterial.disableLighting = true;
-                hdrSkybox.infiniteDistance = true;
-                hdrSkybox.material = skyboxMaterial;
-            }
-
-            return hdrSkybox;
-        }
-
-        /**
-         * Creates a new environment
-         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-environment
-         * @param options defines the options you can use to configure the environment
-         * @returns the new EnvironmentHelper
-         */
-        public createDefaultEnvironment(options: Partial<IEnvironmentHelperOptions>): Nullable<EnvironmentHelper> {
-            if (EnvironmentHelper) {
-                return new EnvironmentHelper(options, this);
-            }
-            return null;
-        }
-
-        /**
-         * Creates a new VREXperienceHelper
-         * @see http://doc.babylonjs.com/how_to/webvr_helper
-         * @param webVROptions defines the options used to create the new VREXperienceHelper
-         * @returns a new VREXperienceHelper
-         */
-        public createDefaultVRExperience(webVROptions: VRExperienceHelperOptions = {}): VRExperienceHelper {
-            return new VRExperienceHelper(this, webVROptions);
         }
 
         // Tags

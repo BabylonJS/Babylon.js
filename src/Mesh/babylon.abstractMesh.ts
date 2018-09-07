@@ -341,21 +341,11 @@
             this._markSubMeshesAsLightDirty();
         }
 
-        /**
-         * Gets or sets a boolean indicating if the outline must be rendered as well
-         * @see https://www.babylonjs-playground.com/#10WJ5S#3
-         */
-        public renderOutline = false;
         /** Defines color to use when rendering outline */
         public outlineColor = Color3.Red();
         /** Define width to use when rendering outline */
         public outlineWidth = 0.02;
 
-        /**
-         * Gets or sets a boolean indicating if the overlay must be rendered as well
-         * @see https://www.babylonjs-playground.com/#10WJ5S#2
-         */        
-        public renderOverlay = false;
         /** Defines color to use when rendering overlay */
         public overlayColor = Color3.Red();
         /** Defines alpha to use when rendering overlay */
@@ -534,7 +524,7 @@
          */
         public edgesColor = new Color4(1, 0, 0, 1);
         /** @hidden */
-        public _edgesRenderer: Nullable<EdgesRenderer>;
+        public _edgesRenderer: Nullable<IEdgesRenderer>;
 
         // Cache
         private _collisionsTransformMatrix = Matrix.Zero();
@@ -551,8 +541,7 @@
          * @see http://doc.babylonjs.com/how_to/multi_materials
          */
         public subMeshes: SubMesh[];
-        /** @hidden */
-        public _submeshesOctree: Octree<SubMesh>;
+
         /** @hidden */
         public _intersectionsInProgress = new Array<AbstractMesh>();
 
@@ -604,6 +593,11 @@
             return this._skeleton;
         }
 
+        /**
+         * An event triggered when the mesh is rebuilt.
+         */
+        public onRebuildObservable = new Observable<AbstractMesh>();
+
         // Constructor
 
         /**
@@ -647,12 +641,10 @@
 
         /** @hidden */
         public _rebuild(): void {
+            this.onRebuildObservable.notifyObservers(this);
+
             if (this._occlusionQuery) {
                 this._occlusionQuery = null;
-            }
-
-            if (this._edgesRenderer) {
-                this._edgesRenderer._rebuild();
             }
 
             if (!this.subMeshes) {
@@ -772,40 +764,6 @@
         }
 
         // Methods
-
-        /**
-         * Disables the mesh edge rendering mode
-         * @returns the currentAbstractMesh
-         */
-        public disableEdgesRendering(): AbstractMesh {
-            if (this._edgesRenderer) {
-                this._edgesRenderer.dispose();
-                this._edgesRenderer = null;
-            }
-            return this;
-        }
-
-        /**
-         * Enables the edge rendering mode on the mesh.  
-         * This mode makes the mesh edges visible
-         * @param epsilon defines the maximal distance between two angles to detect a face
-         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
-         * @returns the currentAbstractMesh 
-         * @see https://www.babylonjs-playground.com/#19O9TU#0
-         */
-        public enableEdgesRendering(epsilon = 0.95, checkVerticesInsteadOfIndices = false): AbstractMesh {
-            this.disableEdgesRendering();
-            this._edgesRenderer = new EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
-            return this;
-        }
-
-        /**
-         * Gets the edgesRenderer associated with the mesh
-         */
-        public get edgesRenderer(): Nullable<EdgesRenderer> {
-            return this._edgesRenderer;
-        }
-
         /**
          * Returns true if the mesh is blocked. Implemented by child classes
          */
@@ -1348,33 +1306,6 @@
             this.onCollisionPositionChangeObservable.notifyObservers(this.position);
         }
 
-        // Submeshes octree
-
-        /**
-        * This function will create an octree to help to select the right submeshes for rendering, picking and collision computations.  
-        * Please note that you must have a decent number of submeshes to get performance improvements when using an octree
-        * @param maxCapacity defines the maximum size of each block (64 by default)
-        * @param maxDepth defines the maximum depth to use (no more than 2 levels by default)
-        * @returns the new octree
-        * @see https://www.babylonjs-playground.com/#NA4OQ#12
-        * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
-        */
-        public createOrUpdateSubmeshesOctree(maxCapacity = 64, maxDepth = 2): Octree<SubMesh> {
-            if (!this._submeshesOctree) {
-                this._submeshesOctree = new Octree<SubMesh>(Octree.CreationFuncForSubMeshes, maxCapacity, maxDepth);
-            }
-
-            this.computeWorldMatrix(true);
-
-            let boundingInfo = this.getBoundingInfo();
-
-            // Update octree
-            var bbox = boundingInfo.boundingBox;
-            this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
-
-            return this._submeshesOctree;
-        }
-
         // Collisions
         /** @hidden */
         public _collideForSubMesh(subMesh: SubMesh, transformMatrix: Matrix, collider: Collider): AbstractMesh {
@@ -1405,23 +1336,11 @@
 
         /** @hidden */
         public _processCollisionsForSubMeshes(collider: Collider, transformMatrix: Matrix): AbstractMesh {
-            var subMeshes: SubMesh[];
-            var len: number;
-
-            // Octrees
-            if (this._submeshesOctree && this.useOctreeForCollisions) {
-                var radius = collider._velocityWorldLength + Math.max(collider._radius.x, collider._radius.y, collider._radius.z);
-                var intersections = this._submeshesOctree.intersects(collider._basePointWorld, radius);
-
-                len = intersections.length;
-                subMeshes = intersections.data;
-            } else {
-                subMeshes = this.subMeshes;
-                len = subMeshes.length;
-            }
+            const subMeshes = this._scene.getCollidingSubMeshCandidates(this, collider);
+            const len = subMeshes.length;
 
             for (var index = 0; index < len; index++) {
-                var subMesh = subMeshes[index];
+                var subMesh = subMeshes.data[index];
 
                 // Bounding test
                 if (len > 1 && !subMesh._checkCollision(collider))
@@ -1471,23 +1390,10 @@
 
             var intersectInfo: Nullable<IntersectionInfo> = null;
 
-            // Octrees
-            var subMeshes: SubMesh[];
-            var len: number;
-
-            if (this._submeshesOctree && this.useOctreeForPicking) {
-                var worldRay = Ray.Transform(ray, this.getWorldMatrix());
-                var intersections = this._submeshesOctree.intersectsRay(worldRay);
-
-                len = intersections.length;
-                subMeshes = intersections.data;
-            } else {
-                subMeshes = this.subMeshes;
-                len = subMeshes.length;
-            }
-
+            var subMeshes = this._scene.getIntersectingSubMeshCandidates(this, ray);
+            var len: number = subMeshes.length;
             for (var index = 0; index < len; index++) {
-                var subMesh = subMeshes[index];
+                var subMesh = subMeshes.data[index];
 
                 // Bounding test
                 if (len > 1 && !subMesh.canIntersects(ray))
@@ -1625,25 +1531,9 @@
                 }
             });
 
-            // Edges
-            if (this._edgesRenderer) {
-                this._edgesRenderer.dispose();
-                this._edgesRenderer = null;
-            }
-
             // SubMeshes
             if (this.getClassName() !== "InstancedMesh") {
                 this.releaseSubMeshes();
-            }
-
-            // Octree
-            const sceneOctree = this.getScene().selectionOctree;
-            if (sceneOctree !== undefined && sceneOctree !== null) {
-                var index = sceneOctree.dynamicContent.indexOf(this);
-
-                if (index !== -1) {
-                    sceneOctree.dynamicContent.splice(index, 1);
-                }
             }
 
             // Query
@@ -1684,6 +1574,7 @@
             this.onAfterWorldMatrixUpdateObservable.clear();
             this.onCollideObservable.clear();
             this.onCollisionPositionChangeObservable.clear();
+            this.onRebuildObservable.clear();
 
             super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
