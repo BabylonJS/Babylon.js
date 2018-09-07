@@ -166,7 +166,7 @@
             this._caps.vertexArrayObject = false;
             this._caps.instancedArrays = false;
 
-            Tools.Log("Babylon.js null engine (v" + Engine.Version + ") launched");
+            Tools.Log("Babylon.js NativeEngineWrapper engine (v" + Engine.Version + ") launched");
 
             // Wrappers
             if (typeof URL === "undefined") {
@@ -346,27 +346,11 @@
             return program;
         }
 
-        /**
-         * Binds an effect to the webGL context
-         * @param effect defines the effect to bind
-         */
-        public bindSamplers(effect: Effect): void {
-            var program = effect.getProgram();
+        protected setProgram(program: WebGLProgram): void {
             if (this._currentProgram !== program) {
-                this._interop.setProgram(effect.getProgram());
+                this._interop.setProgram(program);
                 this._currentProgram = program;
             }
-
-            // var samplers = effect.getSamplers();
-            // for (var index = 0; index < samplers.length; index++) {
-            //     var uniform = effect.getUniform(samplers[index]);
-
-            //     if (uniform) {
-            //         this._boundUniforms[index] = uniform;
-            //     }
-            // }
-
-            this._currentEffect = null;
         }
 
         public getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[] {
@@ -817,20 +801,6 @@
             }
         }
 
-        // Returns a NativeAddressMode.XXX value.
-        private _getAddressMode(wrapMode: number): number {
-            switch (wrapMode) {
-                case Engine.TEXTURE_WRAP_ADDRESSMODE:
-                    return NativeAddressMode.WRAP;
-                case Engine.TEXTURE_CLAMP_ADDRESSMODE:
-                    return NativeAddressMode.CLAMP;
-                case Engine.TEXTURE_MIRROR_ADDRESSMODE:
-                    return NativeAddressMode.MIRROR;
-                default:
-                    throw new Error("Unexpected wrap mode: " + wrapMode + ".");
-            }
-        }
-
         public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture {
             let fullOptions = new RenderTargetCreationOptions();
 
@@ -880,36 +850,15 @@
         }
 
         public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
-            if (this._currentRenderTarget) {
-                this.unBindFramebuffer(this._currentRenderTarget);
-            }
-            this._currentRenderTarget = texture;
-            this._currentFramebuffer = texture._MSAAFramebuffer ? texture._MSAAFramebuffer : texture._framebuffer;
-            if (this._cachedViewport && !forceFullscreenViewport) {
-                this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
-            }
+            throw new Error("bindFramebuffer not yet implemented.")
         }
 
         public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
-            this._currentRenderTarget = null;
-
-            if (onBeforeUnbind) {
-                if (texture._MSAAFramebuffer) {
-                    this._currentFramebuffer = texture._framebuffer;
-                }
-                onBeforeUnbind();
-            }
-            this._currentFramebuffer = null;
+            throw new Error("unBindFramebuffer not yet implemented.")
         }
 
         public createDynamicVertexBuffer(vertices: FloatArray): WebGLBuffer {
-            var vbo = {
-                capacity: 1,
-                references: 1,
-                is32Bits: false
-            }
-
-            return vbo;
+            throw new Error("createDynamicVertexBuffer not yet implemented.")
         }
 
         public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset: number = 0): void {
@@ -988,21 +937,23 @@
             return true;
         }
 
-        protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false, force = false): boolean {
-            if (this._boundTexturesCache[this._activeChannel] !== texture) {
-                this._boundTexturesCache[this._activeChannel] = texture;
-                return false;
-            } else {
-                return true;
+        // Returns a NativeAddressMode.XXX value.
+        private _getAddressMode(wrapMode: number): number {
+            switch (wrapMode) {
+                case Engine.TEXTURE_WRAP_ADDRESSMODE:
+                    return NativeAddressMode.WRAP;
+                case Engine.TEXTURE_CLAMP_ADDRESSMODE:
+                    return NativeAddressMode.CLAMP;
+                case Engine.TEXTURE_MIRROR_ADDRESSMODE:
+                    return NativeAddressMode.MIRROR;
+                default:
+                    throw new Error("Unexpected wrap mode: " + wrapMode + ".");
             }
         }
-
+        
+        /** @hidden */
         public _bindTexture(channel: number, texture: InternalTexture): void {
-            if (channel < 0) {
-                return;
-            }
-
-            this._bindTextureDirectly(0, texture);
+            throw new Error("_bindTexture not implemented.");
         }
 
         protected _deleteBuffer(buffer: WebGLBuffer): void {
@@ -1010,6 +961,7 @@
         }
 
         public releaseEffects() {
+            // TODO: Implement.
         }
 
         /** @hidden */

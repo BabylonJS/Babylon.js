@@ -6170,7 +6170,7 @@
             this._gl.deleteTexture(texture);
         }
 
-        private setProgram(program: WebGLProgram): void {
+        protected setProgram(program: WebGLProgram): void {
             if (this._currentProgram !== program) {
                 this._gl.useProgram(program);
                 this._currentProgram = program;
