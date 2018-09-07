@@ -7,21 +7,26 @@ module BABYLON {
      */
     export class BaseParticleSystem {
         /**
-         * Source color is added to the destination color without alpha affecting the result.
+         * Source color is added to the destination color without alpha affecting the result
          */
         public static BLENDMODE_ONEONE = 0;
         /**
-         * Blend current color and particle color using particle’s alpha.
+         * Blend current color and particle color using particle’s alpha
          */
         public static BLENDMODE_STANDARD = 1;
         /**
-         * Add current color and particle color multiplied by particle’s alpha.
+         * Add current color and particle color multiplied by particle’s alpha
          */
         public static BLENDMODE_ADD = 2;
         /**
          * Multiply current color with particle color 
          */
         public static BLENDMODE_MULTIPLY = 3;        
+
+        /**
+         * Multiply current color with particle color then add current color and particle color multiplied by particle’s alpha
+         */
+        public static BLENDMODE_MULTIPLYADD = 4;                
 
         /**
          * List of animations used by the particle system.
