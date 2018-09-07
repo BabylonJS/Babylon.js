@@ -548,6 +548,7 @@ function showError(errorMessage, errorEvent) {
                 document.getElementById("errorZone").innerHTML = "";
                 document.getElementById("statusBar").innerHTML = "Loading assets...Please wait";
                 var checkCamera = true;
+                var checkSceneCount = true;
                 var wrappedEval = false;
                 var createEngineFunction = "createDefaultEngine";
                 var createSceneFunction;
@@ -595,7 +596,11 @@ function showError(errorMessage, errorEvent) {
     
                         //create scene
                         eval("scene = " + createSceneFunction + "()");
-    
+                        // if scene returns a promise avoid checks
+                        if(scene.then){
+                            checkCamera = false
+                            checkSceneCount = false
+                        }
                         if (!scene) {
                             showError(createSceneFunction + " function must return a scene.", null);
                             return;
@@ -631,7 +636,7 @@ function showError(errorMessage, errorEvent) {
                         fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
                     });
     
-                    if (engine.scenes.length === 0) {
+                    if (checkSceneCount && engine.scenes.length === 0) {
                         showError("You must at least create a scene.", null);
                         return;
                     }
@@ -639,12 +644,16 @@ function showError(errorMessage, errorEvent) {
                     if (checkCamera && engine.scenes[0].activeCamera == null) {
                         showError("You must at least create a camera.", null);
                         return;
-                    }
-    
-                    engine.scenes[0].executeWhenReady(function () {
-                        document.getElementById("statusBar").innerHTML = "";
-                    });
-    
+                    }else if(scene.then){
+                        scene.then(function (){
+                            document.getElementById("statusBar").innerHTML = "";
+                        });
+                    }else{
+                        engine.scenes[0].executeWhenReady(function () {
+                            document.getElementById("statusBar").innerHTML = "";
+                        });
+                    }           
+
                     if (scene) {
                         if (showInspector) {
                             scene.debugLayer.show({ initialTab: initialTabIndex });
