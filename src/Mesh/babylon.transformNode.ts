@@ -14,13 +14,16 @@ module BABYLON {
         private _rightInverted = new Vector3(-1, 0, 0);
 
         // Properties
-        @serializeAsVector3()
+        @serializeAsVector3("position")
+        private _position = Vector3.Zero();
+
+        @serializeAsVector3("rotation")
         private _rotation = Vector3.Zero();
 
-        @serializeAsQuaternion()
+        @serializeAsQuaternion("rotationQuaternion")
         private _rotationQuaternion: Nullable<Quaternion>;
 
-        @serializeAsVector3()
+        @serializeAsVector3("scaling")
         protected _scaling = Vector3.One();
         protected _isDirty = false;
         private _transformToBoneReferal: Nullable<TransformNode>;
@@ -53,17 +56,11 @@ module BABYLON {
         @serialize()
         public ignoreNonUniformScaling = false;
 
-        @serializeAsVector3()
-        public position = Vector3.Zero();
-
         // Cache      
         /** @hidden */
         public _poseMatrix: Matrix;
         private _localWorld = Matrix.Zero();
-        /** @hidden */
-        public _worldMatrix = Matrix.Zero();
-        /** @hidden */
-        public _worldMatrixDeterminant = 0;
+
         private _absolutePosition = Vector3.Zero();
         private _pivotMatrix = Matrix.Identity();
         private _pivotMatrixInverse: Matrix;
@@ -93,9 +90,20 @@ module BABYLON {
         }
 
         /**
-          * Rotation property : a Vector3 depicting the rotation value in radians around each local axis X, Y, Z. 
-          * If rotation quaternion is set, this Vector3 will (almost always) be the Zero vector!
-          * Default : (0.0, 0.0, 0.0)
+          * Gets or set the node position (default is (0.0, 0.0, 0.0))
+          */
+         public get position(): Vector3 {
+            return this._position;
+        }
+
+        public set position(newPosition: Vector3) {
+            this._position = newPosition;
+            this._isDirty = true;
+        }        
+
+        /**
+          * Gets or sets the rotation property : a Vector3 defining the rotation value in radians around each local axis X, Y, Z  (default is (0.0, 0.0, 0.0)).
+          * If rotation quaternion is set, this Vector3 will be ignored and copy from the quaternion
           */
         public get rotation(): Vector3 {
             return this._rotation;
@@ -103,28 +111,24 @@ module BABYLON {
 
         public set rotation(newRotation: Vector3) {
             this._rotation = newRotation;
+            this._isDirty = true;
         }
 
         /**
-         * Scaling property : a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  
-         * Default : (1.0, 1.0, 1.0)
+         * Gets or sets the scaling property : a Vector3 defining the node scaling along each local axis X, Y, Z (default is (0.0, 0.0, 0.0)).
          */
         public get scaling(): Vector3 {
             return this._scaling;
         }
 
-        /**
-         * Scaling property : a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  
-         * Default : (1.0, 1.0, 1.0)
-        */
         public set scaling(newScaling: Vector3) {
             this._scaling = newScaling;
+            this._isDirty = true;
         }
 
         /**
-         * Rotation Quaternion property : this a Quaternion object depicting the mesh rotation by using a unit quaternion. 
-         * It's null by default.  
-         * If set, only the rotationQuaternion is then used to compute the mesh rotation and its property `.rotation\ is then ignored and set to (0.0, 0.0, 0.0)
+         * Gets or sets the rotation Quaternion property : this a Quaternion object defining the node rotation by using a unit quaternion (null by default).
+         * If set, only the rotationQuaternion is then used to compute the node rotation (ie. node.rotation will be ignored)
          */
         public get rotationQuaternion(): Nullable<Quaternion> {
             return this._rotationQuaternion;
@@ -169,30 +173,6 @@ module BABYLON {
         }
 
         /**
-         * Returns the latest update of the World matrix
-         * Returns a Matrix.  
-         */
-        public getWorldMatrix(): Matrix {
-            if (this._currentRenderId !== this.getScene().getRenderId()) {
-                this.computeWorldMatrix();
-            }
-            return this._worldMatrix;
-        }
-
-        /** @hidden */
-        public _getWorldMatrixDeterminant(): number {
-            return this._worldMatrixDeterminant;
-        }
-
-        /**
-         * Returns directly the latest state of the mesh World matrix. 
-         * A Matrix is returned.    
-         */
-        public get worldMatrixFromCache(): Matrix {
-            return this._worldMatrix;
-        }
-
-        /**
          * Copies the parameter passed Matrix into the mesh Pose matrix.  
          * Returns the TransformNode.  
          */
@@ -226,7 +206,7 @@ module BABYLON {
                 return false;
             }
 
-            if (!this._cache.position.equals(this.position))
+            if (!this._cache.position.equals(this._position))
                 return false;
 
             if (this._rotationQuaternion) {
@@ -234,10 +214,10 @@ module BABYLON {
                     return false;
             }
 
-            if (!this._cache.rotation.equals(this.rotation))
+            if (!this._cache.rotation.equals(this._rotation))
                 return false;
 
-            if (!this._cache.scaling.equals(this.scaling))
+            if (!this._cache.scaling.equals(this._scaling))
                 return false;
 
             return true;
@@ -753,22 +733,21 @@ module BABYLON {
         }
 
         /**
-         * Computes the mesh World matrix and returns it.  
-         * If the mesh world matrix is frozen, this computation does nothing more than returning the last frozen values.  
-         * If the parameter `force` is let to `false` (default), the current cached World matrix is returned. 
-         * If the parameter `force`is set to `true`, the actual computation is done.  
-         * Returns the mesh World Matrix.
+         * Computes the world matrix of the node
+         * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
+         * @returns the world matrix
          */
         public computeWorldMatrix(force?: boolean): Matrix {
             if (this._isWorldMatrixFrozen) {
                 return this._worldMatrix;
             }
 
-            if (!force && this.isSynchronized(true)) {
+            if (!force && this.isSynchronized()) {
                 this._currentRenderId = this.getScene().getRenderId();
                 return this._worldMatrix;
             }
 
+            this._updateCache();
             this._cache.position.copyFrom(this.position);
             this._cache.scaling.copyFrom(this.scaling);
             this._cache.pivotMatrixUpdated = false;

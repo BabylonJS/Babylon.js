@@ -609,6 +609,22 @@
             this._environmentBRDFTexture = TextureTools.GetEnvironmentBRDFTexture(scene);
         }
 
+
+        /**
+         * Gets a boolean indicating that current material needs to register RTT
+         */               
+        public get hasRenderTargetTextures(): boolean {
+            if (StandardMaterial.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
+                return true;
+            }
+
+            if (StandardMaterial.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
+                return true;
+            }
+
+            return false;
+        }        
+
         /**
          * Gets the name of the material class.
          */

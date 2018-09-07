@@ -6,7 +6,7 @@
   - New GUI 3D controls toolset. [Complete doc + demos](http://doc.babylonjs.com/how_to/gui3d) ([Deltakosh](https://github.com/deltakosh))
   - New GUI control: [Grid](http://doc.babylonjs.com/how_to/gui#grid) ([Deltakosh](https://github.com/deltakosh))
   - New GUI control: [InputPassword](https://doc.babylonjs.com/how_to/gui#inputpassword) ([theom](https://github.com/theom))
-  -New GUI container SelectionPanel ([JohnK](https://github.com/BabylonJSGuide))
+  -New GUI container [SelectionPanel](http://doc.babylonjs.com/how_to/selector) ([JohnK](https://github.com/BabylonJSGuide))
 - Gizmo Support ([TrevorDev](https://github.com/TrevorDev))
   - Gizmo and GizmoManager classes used to manipulate meshes in a scene. Gizmo types include: position, scale, rotation and bounding box. [Doc](http://doc.babylonjs.com/how_to/gizmo) ([TrevorDev](https://github.com/TrevorDev))
   - New behaviors: PointerDragBehavior, SixDofDragBehavior and MultiPointerScaleBehavior to enable smooth drag and drop/scaling with mouse or 6dof controller on a mesh. [Doc](http://doc.babylonjs.com/how_to/meshbehavior) ([TrevorDev](https://github.com/TrevorDev))
@@ -40,6 +40,8 @@
   - Added support for noise textures. [Doc](http://doc.babylonjs.com/babylon101/particles#noise-texture)
   - Added support for emit rate gradients. [Doc](http://doc.babylonjs.com/babylon101/particles#emit-rate-over-time)
   - Start size gradient support for particles. [Doc](http://doc.babylonjs.com/babylon101/particles#start-size-over-time) ([TrevorDev](https://github.com/TrevorDev))
+  - Attached sub emitters. [Doc](http://doc.babylonjs.com/how_to/sub_emitters) ([TrevorDev](https://github.com/TrevorDev))
+  - Cylinder particle emitter and constructor in baseParticle [Doc](https://doc.babylonjs.com/babylon101/particles#cylinder-emitter) ([TrevorDev](https://github.com/TrevorDev))
   - Added support for cylinder particle emitter. [Doc](https://doc.babylonjs.com/babylon101/particles#cylinder-emitter) ([TrevorDev](https://github.com/TrevorDev))
   - Added support for random start cell when using animated sprite sheets. [Doc](http://doc.babylonjs.com/how_to/animate)
 - Added SceneComponent to help decoupling Scene from its components. ([sebavan](http://www.github.com/sebavan))
@@ -66,6 +68,7 @@
 
 ### Core Engine
 
+- Improved the way world matrices were computed ([Deltakosh](https://github.com/deltakosh))
 - Added `scene.rootNodes` to track root nodes (ie. nodes with no parent) ([Deltakosh](https://github.com/deltakosh))
 - Added `scene.pickSpriteWithRay` function ([Deltakosh](https://github.com/deltakosh))
 - Added support for multiple clip planes. [Demo](https://www.babylonjs-playground.com/#Y6W087) ([Deltakosh](https://github.com/deltakosh))
@@ -190,6 +193,7 @@
 - GPUParticleSystem does not get stuck in burst loop when stopped and started ([TrevorDev](https://github.com/TrevorDev))
 - trackPosition:false not working in webVRCamera ([TrevorDev](https://github.com/TrevorDev))
 - Spring Joint could not be removed ([TrevorDev](https://github.com/TrevorDev))
+- Sometimes duplicate controller models are loaded in VR ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 
@@ -206,6 +210,7 @@
 - Oimo.js now receives quaternion and not euler when a body is being constructed ([RaananW](https://github.com/RaananW))
 - Improving visual quality on SSAO2 shader ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fixed a bug where changing the sample count on `PostProcess` would not update the WebGL Texture ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fixed multi camera support in defaultRenderingPipeline depth of field ([sebavan](http://www.github.com/sebavan))
 
 ### Viewer
 

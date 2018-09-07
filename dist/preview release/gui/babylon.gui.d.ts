@@ -1,6 +1,6 @@
 /*BabylonJS GUI*/
 // Dependencies for this module:
-//   ../../../../tools/Gulp/babylonjs
+//   ../../../../Tools/gulp/babylonjs
 declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
@@ -28,11 +28,10 @@ declare module BABYLON.GUI {
                 */
             processKeyboard(evt: KeyboardEvent): void;
             /**
-                * Function called to let the current focused control keeps the focus
-                * @param pointerId defines the unique id of the current pointer
-                * @returns a boolean indicating if the control wants to keep the focus
+                * Function called to get the list of controls that should not steal the focus from this control
+                * @returns an array of controls
                 */
-            keepFocus(pointerId: number): boolean;
+            keepsFocusWith(): BABYLON.Nullable<Control[]>;
     }
     /**
         * Class used to create texture to support 2D GUI elements
@@ -1086,7 +1085,7 @@ declare module BABYLON.GUI {
                 * @param container defines the container to look for
                 * @returns true if the container is one of the ascendant of the control
                 */
-            IsAscendant(container: Container): boolean;
+            isAscendant(container: Control): boolean;
             /**
                 * Gets coordinates in local control space
                 * @param globalCoordinates defines the coordinates to transform
@@ -1431,11 +1430,10 @@ declare module BABYLON.GUI {
             onFocus(): void;
             protected _getTypeName(): string;
             /**
-                * Function called to let the current focused control keeps the focus
-                * @param pointerId defines the unique id of the current pointer
-                * @returns a boolean indicating if the control wants to keep the focus
+                * Function called to get the list of controls that should not steal the focus from this control
+                * @returns an array of controls
                 */
-            keepFocus(pointerId: number): boolean;
+            keepsFocusWith(): BABYLON.Nullable<Control[]>;
             /** @hidden */
             processKey(keyCode: number, key?: string): void;
             /** @hidden */
@@ -1704,7 +1702,9 @@ declare module BABYLON.GUI {
             /** @hidden */
             _setSelectorButtonBackground(selectorNb: number, color: string): void;
     }
-    /** Class used to hold the controls for the checkboxes, radio buttons and sliders */
+    /** Class used to hold the controls for the checkboxes, radio buttons and sliders
+        * @see http://doc.babylonjs.com/how_to/selector
+     */
     export class SelectionPanel extends Rectangle {
             /** name of SelectionPanel */
             name: string;
@@ -1731,6 +1731,10 @@ declare module BABYLON.GUI {
             buttonBackground: string;
             /** Gets or sets the color of separator bar */
             barColor: string;
+            /** Gets or sets the height of separator bar */
+            barHeight: string;
+            /** Gets or sets the height of spacers*/
+            spacerHeight: string;
             /** Add a group to the selection panel
                 * @param group is the selector group to add
                 */

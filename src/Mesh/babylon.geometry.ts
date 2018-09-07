@@ -42,7 +42,7 @@
         /** @hidden */
         public _delayLoadingFunction: Nullable<(any: any, geometry: Geometry) => void>;
         /** @hidden */
-        public _softwareSkinningRenderId: number;
+        public _softwareSkinningFrameId: number;
         private _vertexArrayObjects: { [key: string]: WebGLVertexArrayObject; };
         private _updatable: boolean;
 

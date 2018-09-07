@@ -831,7 +831,8 @@
 
             var data = this._getPositionData(applySkeleton);
             if (data) {
-                var extend = Tools.ExtractMinAndMax(data, 0, this.getTotalVertices());
+                const bias = this.geometry ? this.geometry.boundingBias : null;
+                var extend = Tools.ExtractMinAndMax(data, 0, this.getTotalVertices(), bias);
                 this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
             }
 
@@ -3295,11 +3296,11 @@
                 return this;
             }
 
-            if (this.geometry._softwareSkinningRenderId == this.getScene().getRenderId()) {
+            if (this.geometry._softwareSkinningFrameId == this.getScene().getFrameId()) {
                 return this;
             }
 
-            this.geometry._softwareSkinningRenderId = this.getScene().getRenderId();
+            this.geometry._softwareSkinningFrameId = this.getScene().getFrameId();
 
             if (!this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
                 return this;
