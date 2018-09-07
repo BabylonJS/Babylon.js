@@ -92,14 +92,7 @@ module BABYLON.GLTF2.Exporter.Extensions {
                 proceduralTexture.setTexture("textureSampler", babylonTexture);
                 proceduralTexture.setMatrix("textureTransformMat", babylonTexture.getTextureMatrix());
 
-                if (!proceduralTexture.isReady()) {
-                    proceduralTexture._effect.onCompiled = () => {
-                        proceduralTexture.render();
-                        resolve(proceduralTexture);
-                    }
-                }
-                else {
-                    proceduralTexture.render();
+                proceduralTexture.onGenerated = () => {
                     resolve(proceduralTexture);
                 }
             });
