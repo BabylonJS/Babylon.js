@@ -512,7 +512,7 @@
          * @param color defines the color to affect to the specified gradient
          * @returns the current particle system
          */
-        public addRampGradient(gradient: number, color: Color4): IParticleSystem {
+        public addRampGradient(gradient: number, color: Color3): IParticleSystem {
             //Not supported by GPUParticleSystem          
 
             return this;
@@ -533,7 +533,7 @@
          * Not supported by GPUParticleSystem
          * @returns the list of ramp gradients
          */
-        public getRampGradients(): Nullable<Array<ColorGradient>> {
+        public getRampGradients(): Nullable<Array<Color3Gradient>> {
             return null;
         }             
         
