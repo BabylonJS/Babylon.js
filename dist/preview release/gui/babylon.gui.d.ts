@@ -1702,7 +1702,9 @@ declare module BABYLON.GUI {
             /** @hidden */
             _setSelectorButtonBackground(selectorNb: number, color: string): void;
     }
-    /** Class used to hold the controls for the checkboxes, radio buttons and sliders */
+    /** Class used to hold the controls for the checkboxes, radio buttons and sliders
+        * @see http://doc.babylonjs.com/how_to/selector
+     */
     export class SelectionPanel extends Rectangle {
             /** name of SelectionPanel */
             name: string;
@@ -1729,6 +1731,10 @@ declare module BABYLON.GUI {
             buttonBackground: string;
             /** Gets or sets the color of separator bar */
             barColor: string;
+            /** Gets or sets the height of separator bar */
+            barHeight: string;
+            /** Gets or sets the height of spacers*/
+            spacerHeight: string;
             /** Add a group to the selection panel
                 * @param group is the selector group to add
                 */

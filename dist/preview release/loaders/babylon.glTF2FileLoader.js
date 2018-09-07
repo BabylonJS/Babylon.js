@@ -1865,11 +1865,18 @@ var BABYLON;
                         return new BABYLON.VertexBuffer(_this.babylonScene.getEngine(), data, kind, false);
                     });
                 }
+                // HACK: If byte offset is not a multiple of component type byte length then load as a float array instead of using Babylon buffers.
+                else if (accessor.byteOffset && accessor.byteOffset % BABYLON.VertexBuffer.GetTypeByteLength(accessor.componentType) !== 0) {
+                    BABYLON.Tools.Warn("Accessor byte offset is not a multiple of component type byte length");
+                    accessor._babylonVertexBuffer = this._loadFloatAccessorAsync("#/accessors/" + accessor.index, accessor).then(function (data) {
+                        return new BABYLON.VertexBuffer(_this.babylonScene.getEngine(), data, kind, false);
+                    });
+                }
                 else {
                     var bufferView_1 = ArrayItem.Get(context + "/bufferView", this.gltf.bufferViews, accessor.bufferView);
-                    accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync(bufferView_1, kind).then(function (buffer) {
+                    accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync(bufferView_1, kind).then(function (babylonBuffer) {
                         var size = GLTFLoader._GetNumComponents(context, accessor.type);
-                        return new BABYLON.VertexBuffer(_this.babylonScene.getEngine(), buffer, kind, false, false, bufferView_1.byteStride, false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true);
+                        return new BABYLON.VertexBuffer(_this.babylonScene.getEngine(), babylonBuffer, kind, false, false, bufferView_1.byteStride, false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true);
                     });
                 }
                 return accessor._babylonVertexBuffer;
