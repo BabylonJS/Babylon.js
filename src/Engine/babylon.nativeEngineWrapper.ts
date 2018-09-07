@@ -6,7 +6,7 @@
         createIndexBuffer(indices: ArrayBuffer, is32Bits: boolean): WebGLBuffer;
         bindIndexBuffer(buffer: WebGLBuffer): void;
         createVertexBuffer(vertices: Float32Array): WebGLBuffer;
-        bindVertexBuffer(buffer: WebGLBuffer, indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number): void;
+        bindVertexBuffer(buffer: WebGLBuffer, index: number, stride: number, offset: number): void;
         deleteBuffer(buffer: WebGLBuffer): void;
 
         createProgram(vertexShader: string, fragmentShader: string): WebGLProgram;
@@ -252,7 +252,7 @@
 
                     var buffer = vertexBuffer.getBuffer();
                     if (buffer) {
-                        this._interop.bindVertexBuffer(buffer, order, vertexBuffer.getSize(), vertexBuffer.type, vertexBuffer.normalized, vertexBuffer.byteStride, vertexBuffer.byteOffset);
+                        this._interop.bindVertexBuffer(buffer, order, vertexBuffer.byteStride, vertexBuffer.byteOffset);
                     }
                 }
             }
