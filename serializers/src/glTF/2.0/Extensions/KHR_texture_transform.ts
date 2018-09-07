@@ -1,6 +1,6 @@
 /// <reference path="../../../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
 
-module BABYLON.GLTF2.Extensions {
+module BABYLON.GLTF2.Exporter.Extensions {
     const NAME = "KHR_texture_transform";
 
     /**
@@ -17,7 +17,7 @@ module BABYLON.GLTF2.Extensions {
     /**
      * @hidden
      */
-    export class Exporter_KHR_texture_transform implements IGLTFExporterExtension {
+    export class KHR_texture_transform implements IGLTFExporterExtension {
         /** Name of this extension */
         public readonly name = NAME;
 
@@ -51,13 +51,13 @@ module BABYLON.GLTF2.Extensions {
                 }
 
                 if (babylonTexture.wAng !== 0) {
-                        texture_transform_extension.rotation = babylonTexture.wAng;
+                    texture_transform_extension.rotation = babylonTexture.wAng;
                 }
 
                 if (!Object.keys(texture_transform_extension).length) {
                     resolve(babylonTexture);
                 }
-                
+
                 const scale = texture_transform_extension.scale ? new Vector2(texture_transform_extension.scale[0], texture_transform_extension.scale[1]) : Vector2.One();
                 const rotation = texture_transform_extension.rotation != null ? texture_transform_extension.rotation : 0;
                 const offset = texture_transform_extension.offset ? new Vector2(texture_transform_extension.offset[0], texture_transform_extension.offset[1]) : Vector2.Zero();
@@ -69,7 +69,7 @@ module BABYLON.GLTF2.Extensions {
                     this.textureTransformTextureAsync(babylonTexture, offset, rotation, scale, scene).then(texture => {
                         resolve(texture as Texture);
                     });
-                }                
+                }
             });
         }
 
@@ -88,17 +88,23 @@ module BABYLON.GLTF2.Extensions {
                     Tools.Log(`Cannot create procedural texture for ${babylonTexture.name}!`);
                     resolve(babylonTexture);
                 }
-                
+
                 proceduralTexture.setTexture("textureSampler", babylonTexture);
                 proceduralTexture.setMatrix("textureTransformMat", babylonTexture.getTextureMatrix());
 
-                // Note: onLoadObservable would be preferable but it does not seem to be resolving...
-                scene.whenReadyAsync().then(() => {
-                    resolve(proceduralTexture);
-                });
+                // isReady trigger creation of effect if it doesnt exist yet
+                if(proceduralTexture.isReady()){
+                    proceduralTexture.render();
+                    resolve(proceduralTexture)
+                }else{
+                    (proceduralTexture as any)._effect.onCompileObservable.add(() => {
+                        proceduralTexture.render();
+                        resolve(proceduralTexture);
+                    });
+                }
             });
         }
     }
 
-    _Exporter.RegisterExtension(NAME, exporter => new Exporter_KHR_texture_transform(exporter));
+    _Exporter.RegisterExtension(NAME, exporter => new KHR_texture_transform(exporter));
 }
