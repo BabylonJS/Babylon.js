@@ -88,7 +88,7 @@
         public _currentStartSize2 = 0;
 
         private readonly _rawTextureWidth = 256;
-        private _rampGradientsTexture: RawTexture;
+        private _rampGradientsTexture: Nullable<RawTexture>;
         private _useRampGradients = false;
 
         /** Gets or sets a boolean indicating that ramp gradients must be used
@@ -1738,6 +1738,11 @@
             if (disposeTexture && this.noiseTexture) {
                 this.noiseTexture.dispose();
                 this.noiseTexture = null;
+            }
+
+            if (this._rampGradientsTexture) {
+                this._rampGradientsTexture.dispose();
+                this._rampGradientsTexture = null;
             }
 
             this._removeFromRoot();

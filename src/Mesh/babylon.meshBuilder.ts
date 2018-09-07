@@ -704,7 +704,9 @@
                 var product = Math.acos(Vector3.Dot(options.sourcePlane.normal, Axis.Z));
                 var vectorProduct = Vector3.Cross(Axis.Z, options.sourcePlane.normal);
 
-                plane.rotate(vectorProduct, product);
+                if (vectorProduct.lengthSquared() > Epsilon) {
+                    plane.rotate(vectorProduct, product);
+                }
             }
 
             return plane;
