@@ -735,15 +735,14 @@ module BABYLON {
         /**
          * Computes the world matrix of the node
          * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
-         * @param useWasUpdatedFlag defines a reserved property
          * @returns the world matrix
          */
-        public computeWorldMatrix(force?: boolean, useWasUpdatedFlag?: boolean): Matrix {
+        public computeWorldMatrix(force?: boolean): Matrix {
             if (this._isWorldMatrixFrozen) {
                 return this._worldMatrix;
             }
 
-            if (!force && this.isSynchronized(useWasUpdatedFlag)) {
+            if (!force && this.isSynchronized()) {
                 this._currentRenderId = this.getScene().getRenderId();
                 return this._worldMatrix;
             }
@@ -756,7 +755,6 @@ module BABYLON {
             this._currentRenderId = this.getScene().getRenderId();
             this._childRenderId = this.getScene().getRenderId();
             this._isDirty = false;
-            this._worldMatrixWasUpdated = true;
 
             // Scaling
             Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, Tmp.Matrix[1]);
