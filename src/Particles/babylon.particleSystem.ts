@@ -728,18 +728,18 @@
             }
 
             let data = new Uint8Array(this._rawTextureWidth * 4);
-            let tmpColor = Tmp.Color4[0];
+            let tmpColor = Tmp.Color3[0];
 
             for (var x = 0; x < this._rawTextureWidth; x++) {
                 var ratio = x / this._rawTextureWidth;
 
                 Tools.GetCurrentGradient(ratio, this._rampGradients, (currentGradient, nextGradient, scale) => {
 
-                    Color4.LerpToRef((<ColorGradient>currentGradient).color1, (<ColorGradient>nextGradient).color1, scale, tmpColor);
+                    Color3.LerpToRef((<Color3Gradient>currentGradient).color, (<Color3Gradient>nextGradient).color, scale, tmpColor);
                     data[x * 4] = tmpColor.r * 255;
                     data[x * 4 + 1] = tmpColor.g * 255;
                     data[x * 4 + 2] = tmpColor.b * 255;
-                    data[x * 4 + 3] = tmpColor.a * 255;
+                    data[x * 4 + 3] = 255;
                 });
 
             }
@@ -752,7 +752,7 @@
          * You must use addRampGradient and removeRampGradient to udpate this list
          * @returns the list of ramp gradients
          */
-        public getRampGradients(): Nullable<Array<ColorGradient>> {
+        public getRampGradients(): Nullable<Array<Color3Gradient>> {
             return this._rampGradients;
         }
 
@@ -762,14 +762,14 @@
          * @param color defines the color to affect to the specified gradient
          * @returns the current particle system
          */
-        public addRampGradient(gradient: number, color: Color4): ParticleSystem {
+        public addRampGradient(gradient: number, color: Color3): ParticleSystem {
             if (!this._rampGradients) {
                 this._rampGradients = [];
             }
 
-            let rampGradient = new ColorGradient();
+            let rampGradient = new Color3Gradient();
             rampGradient.gradient = gradient;
-            rampGradient.color1 = color;
+            rampGradient.color = color;
             this._rampGradients.push(rampGradient);
 
             this._rampGradients.sort((a, b) => {
@@ -1836,7 +1836,7 @@
             }
             if (this._rampGradients) {
                 this._rampGradients.forEach((v) => {
-                    result.addRampGradient(v.gradient, v.color1);
+                    result.addRampGradient(v.gradient, v.color);
                 });
             }
             if (this._colorRemapGradients) {
@@ -1960,7 +1960,7 @@
                 for (var rampGradient of rampGradients) {
                     var serializedGradient: any = {
                         gradient: rampGradient.gradient,
-                        color1: rampGradient.color1.asArray()
+                        color: rampGradient.color.asArray()
                     };
 
                     serializationObject.rampGradients.push(serializedGradient);
@@ -2224,7 +2224,7 @@
 
             if (parsedParticleSystem.rampGradients) {
                 for (var rampGradient of parsedParticleSystem.rampGradients) {
-                    particleSystem.addRampGradient(rampGradient.gradient, Color4.FromArray(rampGradient.color1));
+                    particleSystem.addRampGradient(rampGradient.gradient, Color3.FromArray(rampGradient.color1));
                 }
             }
 

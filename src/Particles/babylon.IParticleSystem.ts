@@ -436,13 +436,13 @@ module BABYLON {
          * @param color defines the color to affect to the specified gradient
          * @returns the current particle system
          */
-        addRampGradient(gradient: number, color: Color4): IParticleSystem;     
+        addRampGradient(gradient: number, color: Color3): IParticleSystem;     
         /**
          * Gets the current list of ramp gradients.
          * You must use addRampGradient and removeRampGradient to udpate this list
          * @returns the list of ramp gradients
          */
-        getRampGradients(): Nullable<Array<ColorGradient>>;             
+        getRampGradients(): Nullable<Array<Color3Gradient>>;             
         
         /**
          * Adds a new color remap gradient
