@@ -196,6 +196,9 @@
         /** @hidden */
         public _shouldRender(): boolean {
             if (!this.isEnabled || !this.isReady() || !this._texture) {
+                if (this._texture) {
+                    this._texture.isReady = false;
+                }
                 return false;
             }
 
