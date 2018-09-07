@@ -3,6 +3,7 @@
 module BABYLON {
     /**
      * Interface for extending the exporter
+     * @hidden
      */
     export interface IGLTFExporterExtension {
         /**

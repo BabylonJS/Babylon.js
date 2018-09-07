@@ -1,6 +1,6 @@
 ﻿{
   "root": "https://rawgit.com/BabylonJS/Website/master",
-  "tests": [  
+  "tests": [ 
     {
       "title": "Clip planes",
       "playgroundId": "#Y6W087#0",
@@ -312,6 +312,11 @@
       "functionToCall": "createMaterialSpecularGlossinessScene",
       "referenceImage": "gltfMaterialSpecularGlossiness.png"
     },
+    {
+      "title": "GLTF Serializer Texture Transform",
+      "playgroundId": "#S5SWJB#32",
+      "referenceImage": "glTFSerializerTextureTransform.png"
+    }, 
     {
       "title": "GLTF Texture Sampler",
       "scriptToRun": "/Demos/GLTFTests/index.js",
