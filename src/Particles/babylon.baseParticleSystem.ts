@@ -537,7 +537,7 @@ module BABYLON {
         }
 
         /** @hidden */
-        protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: RawTexture): BaseParticleSystem {
+        protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: Nullable<RawTexture>): BaseParticleSystem {
             if (!gradients) {
                 return this;
             }

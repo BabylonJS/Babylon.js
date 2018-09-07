@@ -366,33 +366,9 @@ module BABYLON {
         // Statics
         /**
          * Returns a new AnimationGroup object parsed from the source provided.
-         * @param {Object} parsedAnimationGroup - is the source.
-         * @param {Scene} scene - is the scene that will receive the animationGroup
-         * Example of an expected source
-         * {
-                "name": "Run",
-                "from": 0.0,
-                "to": 1.0,
-                "targetedAnimations": [{
-                    "animation": {
-                        "name": "rotationQuaternion animation",
-                        "property": "rotationQuaternion",
-                        "dataType": 2,
-                        "enableBlending": false,
-                        "blendingSpeed": 0.01,
-                        "loopBehavior": 1,
-                        "framePerSecond": 30,
-                        "keys": [{
-                            "frame": 0,
-                            "values": [-0.7071, -0.002, 0.0022, 0.7071]
-                        }, {
-                            "frame": 1,
-                            "values": [-0.7082, -0.0485, 0.0026, 0.7043]
-                        }]
-                    },
-                    "targetId": "d64f9288-d06a-4a70-872f-edbb5a3779c6"
-                }]
-            }
+         * @param parsedAnimationGroup defines the source
+         * @param scene defines the scene that will receive the animationGroup
+         * @returns a new AnimationGroup
          */
         public static Parse(parsedAnimationGroup: any, scene: Scene): AnimationGroup {
             var animationGroup = new BABYLON.AnimationGroup(parsedAnimationGroup.name, scene);
@@ -412,12 +388,18 @@ module BABYLON {
             return animationGroup;
         }
 
+        /**
+         * Returns the string "AnimationGroup"
+         * @returns "AnimationGroup"
+         */
         public getClassName(): string {
             return "AnimationGroup";
         }
 
         /**
-         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         * Creates a detailled string about the object
+         * @param fullDetails defines if the output string will support multiple levels of logging within scene loading
+         * @returns a string representing the object
          */
         public toString(fullDetails?: boolean): string {
             var ret = "Name: " + this.name;
