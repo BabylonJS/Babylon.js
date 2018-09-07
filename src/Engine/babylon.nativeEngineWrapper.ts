@@ -755,7 +755,7 @@
                     texture.height = texture.baseHeight;
                     texture.isReady = true;
         
-                    var filter = this._getSamplingFilter(samplingMode, !noMipmap);
+                    var filter = this._getSamplingFilter(samplingMode);
 
                     this._interop.setTextureSampling(webGLTexture, filter);
 
@@ -786,7 +786,7 @@
         }
 
         // Returns a NativeFilter.XXXX value.
-        private _getSamplingFilter(samplingMode: number, generateMipMaps: boolean): number {
+        private _getSamplingFilter(samplingMode: number): number {
             switch (samplingMode) {
                 case Engine.TEXTURE_BILINEAR_SAMPLINGMODE:
                     return NativeFilter.MINLINEAR_MAGLINEAR_MIPPOINT;
@@ -872,6 +872,10 @@
         }
 
         public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
+            if (texture._webGLTexture) {
+                var filter = this._getSamplingFilter(samplingMode);
+                this._interop.setTextureSampling(texture._webGLTexture, filter);
+            }
             texture.samplingMode = samplingMode;
         }
 
@@ -965,11 +969,11 @@
                 internalTexture = this.emptyTexture;
             }
 
+            this._activeChannel = channel;
+
             if (!internalTexture._webGLTexture) {
                 return false;
             }
-
-            this._activeChannel = channel;
 
             this._interop.setTextureWrapMode(
                 internalTexture._webGLTexture,
