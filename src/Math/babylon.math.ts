@@ -386,10 +386,22 @@
          * @returns a new Color3 object
          */
         public static Lerp(start: Color3, end: Color3, amount: number): Color3 {
-            var r = start.r + ((end.r - start.r) * amount);
-            var g = start.g + ((end.g - start.g) * amount);
-            var b = start.b + ((end.b - start.b) * amount);
-            return new Color3(r, g, b);
+            var result = new Color3(0.0, 0.0, 0.0);
+            Color3.LerpToRef(start, end, amount, result);
+            return result;
+        }
+
+        /**
+         * Creates a new Color3 with values linearly interpolated of "amount" between the start Color3 and the end Color3
+         * @param left defines the start value
+         * @param right defines the end value
+         * @param amount defines the gradient factor
+         * @param result defines the Color3 object where to store the result
+         */
+        public static LerpToRef(left: Color3, right: Color3, amount: number, result: Color3): void {
+            result.r = left.r + ((right.r - left.r) * amount);
+            result.g = left.g + ((right.g - left.g) * amount);
+            result.b = left.b + ((right.b - left.b) * amount);
         }
 
         /**
@@ -808,6 +820,17 @@
             result.g = left.g + (right.g - left.g) * amount;
             result.b = left.b + (right.b - left.b) * amount;
             result.a = left.a + (right.a - left.a) * amount;
+        }
+
+        
+        /**
+         * Creates a new Color4 from a Color3 and an alpha value
+         * @param color3 defines the source Color3 to read from
+         * @param alpha defines the alpha component (1.0 by default)
+         * @returns a new Color4 object
+         */
+        public static FromColor3(color3: Color3, alpha: number = 1.0): Color4 {
+            return new Color4(color3.r, color3.g, color3.b, alpha);
         }
 
         /**
