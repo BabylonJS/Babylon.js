@@ -904,17 +904,13 @@
             let internalTexture: InternalTexture;
             if (depthStencilTexture) {
                 internalTexture = (<RenderTargetTexture>texture).depthStencilTexture!;
-            }
-            else if (texture.isReady()) {
+            } else if (texture.isReady()) {
                 internalTexture = <InternalTexture>texture.getInternalTexture();
-            }
-            else if (texture.isCube) {
+            } else if (texture.isCube) {
                 internalTexture = this.emptyCubeTexture;
-            }
-            else if (texture.is3D) {
+            } else if (texture.is3D) {
                 internalTexture = this.emptyTexture3D;
-            }
-            else {
+            } else {
                 internalTexture = this.emptyTexture;
             }
 
