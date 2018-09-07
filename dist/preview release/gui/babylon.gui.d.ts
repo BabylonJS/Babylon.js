@@ -1,6 +1,6 @@
 /*BabylonJS GUI*/
 // Dependencies for this module:
-//   ../../../../Tools/Gulp/babylonjs
+//   ../../../../Tools/gulp/babylonjs
 declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
