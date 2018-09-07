@@ -392,10 +392,8 @@
                 return false;
             }
 
-            if (this._parentNode) {
-                if (!this.isSynchronizedWithParent()) {
-                    return false;
-                }
+            if (!this.isSynchronizedWithParent()) {
+                return false;
             }
 
             return this._isSynchronized();
