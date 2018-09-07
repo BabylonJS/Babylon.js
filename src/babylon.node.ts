@@ -105,9 +105,6 @@
         private _children: Node[];
 
         /** @hidden */
-        public _worldMatrixWasUpdated = false;
-
-        /** @hidden */
         public _worldMatrix = Matrix.Zero();
         /** @hidden */
         public _worldMatrixDeterminant = 0;        
@@ -318,7 +315,7 @@
          * @returns a Matrix
          */
         public getWorldMatrix(): Matrix {
-            if (this._currentRenderId !== this.getScene().getRenderId()) {
+            if (this._currentRenderId !== this._scene.getRenderId()) {
                 this.computeWorldMatrix();
             }
             return this._worldMatrix;
@@ -389,28 +386,17 @@
         }
 
         /** @hidden */
-        public isSynchronized(useWasUpdatedFlag?: boolean): boolean {
-            var check = this.hasNewParent();
-
-            if (!useWasUpdatedFlag) {
-                check = check || !this.isSynchronizedWithParent();
-            } else if (this._parentNode) {
-                check = this._parentNode._worldMatrixWasUpdated; 
+        public isSynchronized(): boolean {
+            if (this._cache.parent != this._parentNode) {
+                this._cache.parent = this._parentNode;
+                return false;
             }
 
-            check = check || !this._isSynchronized();
-
-            return !check;
-        }
-
-        /** @hidden */
-        public hasNewParent(): boolean {
-            if (this._cache.parent === this._parentNode)
+            if (!this.isSynchronizedWithParent()) {
                 return false;
+            }
 
-            this._cache.parent = this._parentNode;
-
-            return true;
+            return this._isSynchronized();
         }
 
         /**
@@ -659,10 +645,9 @@
         /**
          * Computes the world matrix of the node
          * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
-         * @param useWasUpdatedFlag defines a reserved property
          * @returns the world matrix
          */
-        public computeWorldMatrix(force?: boolean, useWasUpdatedFlag?: boolean): Matrix {
+        public computeWorldMatrix(force?: boolean): Matrix {
             if (!this._worldMatrix) {
                 this._worldMatrix = Matrix.Identity();
             }
