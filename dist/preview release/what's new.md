@@ -39,6 +39,7 @@
   - Added support for drag gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#drag-factor)
   - Added support for noise textures. [Doc](http://doc.babylonjs.com/babylon101/particles#noise-texture)
   - Added support for emit rate gradients. [Doc](http://doc.babylonjs.com/babylon101/particles#emit-rate-over-time)
+  - Added support for ramp gradients. [Doc](http://doc.babylonjs.com/babylon101/particles#ramp-gradients)
   - Start size gradient support for particles. [Doc](http://doc.babylonjs.com/babylon101/particles#start-size-over-time) ([TrevorDev](https://github.com/TrevorDev))
   - Attached sub emitters. [Doc](http://doc.babylonjs.com/how_to/sub_emitters) ([TrevorDev](https://github.com/TrevorDev))
   - Cylinder particle emitter and constructor in baseParticle [Doc](https://doc.babylonjs.com/babylon101/particles#cylinder-emitter) ([TrevorDev](https://github.com/TrevorDev))

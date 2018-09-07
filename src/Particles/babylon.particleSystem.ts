@@ -1695,13 +1695,8 @@
                     break;
             }
 
-            if (this.forceDepthWrite) {
-                engine.setDepthWrite(true);
-            }
-
             if (this._useInstancing) {
                 engine.drawArraysType(Material.TriangleFanDrawMode, 0, 4, this._particles.length);
-
             } else {
                 engine.drawElementsType(Material.TriangleFillMode, 0, this._particles.length * 6);
             }
@@ -1721,6 +1716,10 @@
 
             var engine = this._scene.getEngine();
             engine.setState(false);
+
+            if (this.forceDepthWrite) {
+                engine.setDepthWrite(true);
+            }            
 
             let outparticles = 0;
 
