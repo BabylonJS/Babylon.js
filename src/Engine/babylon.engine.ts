@@ -6177,7 +6177,7 @@
             }
         }
 
-        private _boundUniforms: { [key: number]: WebGLUniformLocation } = {};
+        protected _boundUniforms: { [key: number]: WebGLUniformLocation } = {};
 
         /**
          * Binds an effect to the webGL context
@@ -6430,7 +6430,7 @@
             return this._gl.REPEAT;
         }
 
-        private _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false): boolean {
+        protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false): boolean {
             // Not ready?
             if (!texture) {
                 if (this._boundTexturesCache[channel] != null) {
@@ -6553,6 +6553,8 @@
             if (channel < 0 || !uniform) {
                 return;
             }
+
+            this._boundUniforms[channel] = uniform;
 
             if (!this._textureUnits || this._textureUnits.length !== textures.length) {
                 this._textureUnits = new Int32Array(textures.length);
