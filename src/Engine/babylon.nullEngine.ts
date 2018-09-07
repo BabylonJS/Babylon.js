@@ -402,7 +402,6 @@
         }
 
         public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
-
         }
 
         /**
