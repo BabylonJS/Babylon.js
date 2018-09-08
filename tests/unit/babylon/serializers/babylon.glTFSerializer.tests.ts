@@ -42,7 +42,7 @@ describe('Babylon glTF Serializer', () => {
             babylonStandardMaterial.specularColor = BABYLON.Color3.Black();
             babylonStandardMaterial.specularPower = 64;
             babylonStandardMaterial.alpha = 1;
-            const materialExporter = new BABYLON.GLTF2._GLTFMaterialExporter(new BABYLON.GLTF2._Exporter(scene));
+            const materialExporter = new BABYLON.GLTF2.Exporter._GLTFMaterialExporter(new BABYLON.GLTF2.Exporter._Exporter(scene));
 
             const metalRough = materialExporter._convertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
 
@@ -53,8 +53,8 @@ describe('Babylon glTF Serializer', () => {
             metalRough.roughnessFactor.should.be.approximately(0.328809, 1e-6);
         });
         it('should solve for metallic', () => {
-            BABYLON.GLTF2._GLTFMaterialExporter._SolveMetallic(1.0, 0.0, 1.0).should.be.equal(0);
-            BABYLON.GLTF2._GLTFMaterialExporter._SolveMetallic(0.0, 1.0, 1.0).should.be.approximately(1, 1e-6);
+            BABYLON.GLTF2.Exporter._GLTFMaterialExporter._SolveMetallic(1.0, 0.0, 1.0).should.be.equal(0);
+            BABYLON.GLTF2.Exporter._GLTFMaterialExporter._SolveMetallic(0.0, 1.0, 1.0).should.be.approximately(1, 1e-6);
         });
         it('should serialize empty Babylon scene to glTF with only asset property', () => {
             const scene = new BABYLON.Scene(subject);
