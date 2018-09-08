@@ -380,9 +380,6 @@
             } else {
                 var emitterPosition = (<Vector3>subEmitter.particleSystem.emitter);
                 emitterPosition.copyFrom(particle.position);
-                if (subEmitter.inheritDirection) {
-                    Tools.Warn("subEmitter.inheritDirection is not supported with non-mesh emitter type");
-                }
             }
             // Set inheritedVelocityOffset to be used when new particles are created
             particle.direction.scaleToRef(subEmitter.inheritedVelocityAmount / 2, Tmp.Vector3[0]);
@@ -1020,6 +1017,11 @@
                     } else if (subEmitter instanceof Array) {
                         this._subEmitters.push(subEmitter);
                     }
+                    this._subEmitters[this._subEmitters.length-1].forEach((se)=>{
+                        if (!(se.particleSystem.emitter instanceof AbstractMesh) && se.inheritDirection) {
+                            Tools.Warn("subEmitter.inheritDirection is not supported with non-mesh emitter type");
+                        }
+                    })
                 });
             }
 
@@ -1771,8 +1773,8 @@
 
             this._removeFromRoot();
 
-            if (this._disposeEmitterOnDispose && !(<AbstractMesh>this.emitter).isDisposed) {
-                (<AbstractMesh>this.emitter).dispose();
+            if (this._disposeEmitterOnDispose && this.emitter && (this.emitter as AbstractMesh).dispose) {
+                (<AbstractMesh>this.emitter).dispose(true);
             }
 
             // Remove from scene
