@@ -1771,7 +1771,7 @@
 
             this._removeFromRoot();
 
-            if (this._disposeEmitterOnDispose && this.emitter && !(this.emitter as AbstractMesh).isDisposed === false) {
+            if (this._disposeEmitterOnDispose && this.emitter && (this.emitter as AbstractMesh).dispose && !(this.emitter as AbstractMesh).isDisposed === false) {
                 (<AbstractMesh>this.emitter).dispose();
             }
 
