@@ -39,7 +39,12 @@
          * Gets or sets a boolean which defines if the texture url must be build from the serialized URL instead of just using the name and loading them side by side with the scene file
          */
         public static UseSerializedUrlIfAny = false;
-
+        
+        /**
+         * Gets or sets a string that sets the texture URL that must be generated from the serialized URL instead of just using the name and loading them side by side with the scene file
+         */
+		public static RedefineSerializedUrl = null;
+        
         // Members
         @serialize()
         public url: Nullable<string>;
@@ -512,11 +517,16 @@
                     if (parsedTexture.base64String) {
                         texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps);
                     } else {
+                        if (Texture.RedefineSerializedUrl) {
+                            rootUrl = Texture.RedefineSerializedUrl;
+						}
+                        
                         let url = rootUrl + parsedTexture.name;
 
-                        if (Texture.UseSerializedUrlIfAny && parsedTexture.url) {
+                        if (Texture.UseSerializedUrlIfAny && parsedTexture.url && !Texture.RedefineSerializedUrl) {
                             url = parsedTexture.url;
-                        }
+                        }                        
+                        
                         texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY);
                     }
 
