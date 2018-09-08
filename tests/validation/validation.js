@@ -264,7 +264,20 @@ function runTest(index, done) {
                         code = code.replace(/\/scenes\//g, pgRoot + "/scenes/");
                         code = code.replace(/"scenes\//g, "\"" + pgRoot + "/scenes/");
                         currentScene = eval(code + "\r\ncreateScene(engine)");
-                        processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
+
+                        if(currentScene.then){
+                            // Handle if createScene returns a promise
+                            currentScene.then(function(scene){
+                                currentScene = scene;
+                                processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
+                            }).catch(function(e){
+                                console.error(e);
+                                onError();
+                            })
+                        }else{
+                            // Handle if createScene returns a scene
+                            processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
+                        }
                     }
                     catch (e) {
                         console.error(e);
