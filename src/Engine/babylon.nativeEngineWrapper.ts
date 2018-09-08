@@ -3,7 +3,7 @@
     export interface INativeEngineInterop {
         requestAnimationFrame(callback: () => void): void;
 
-        createIndexBuffer(indices: ArrayBuffer, is32Bits: boolean): WebGLBuffer;
+        createIndexBuffer(indices: DataView, is32Bits: boolean): WebGLBuffer;
         bindIndexBuffer(buffer: WebGLBuffer): void;
         createVertexBuffer(vertices: Float32Array): WebGLBuffer;
         bindVertexBuffer(buffer: WebGLBuffer, index: number, stride: number, offset: number): void;
@@ -194,21 +194,34 @@
             this._interop.clear(color.r, color.g, color.b, color.a, backBuffer, depth, stencil);
         }
 
+        // TODO: Share more of this logic with the base Engine class implementation.
         public createIndexBuffer(indices: IndicesArray): WebGLBuffer {
-            var arrayBuffer: ArrayBuffer;
-            var is32Bits;
+            var dataView: DataView;
+            var is32Bits = false;
             if (indices instanceof Uint16Array) {
-                arrayBuffer = indices.buffer;
-                is32Bits = false;
+                dataView = new DataView(indices.buffer, indices.byteOffset, indices.byteLength);
             } else if (indices instanceof Uint32Array) {
-                arrayBuffer = indices.buffer;
+                dataView = new DataView(indices.buffer, indices.byteOffset, indices.byteLength);
                 is32Bits = true;
             } else {
-                arrayBuffer = new Uint32Array(indices).buffer;
-                is32Bits = true;
+                //number[] or Int32Array, check if 32 bit is necessary
+                for (var index = 0; index < indices.length; index++) {
+                    if (indices[index] > 65535) {
+                        is32Bits = true;
+                        break;
+                    }
+                }
+
+                if (is32Bits) {
+                    let array = new Uint32Array(indices);
+                    dataView = new DataView(array.buffer, array.byteOffset, array.byteLength);
+                } else {
+                    let array = new Uint16Array(indices);
+                    dataView = new DataView(array.buffer, array.byteOffset, array.byteLength);
+                }
             }
 
-            const buffer = this._interop.createIndexBuffer(arrayBuffer, is32Bits);
+            const buffer = this._interop.createIndexBuffer(dataView, is32Bits);
             buffer.capacity = indices.length;
             buffer.references = 1;
             buffer.is32Bits = is32Bits;
@@ -217,12 +230,13 @@
         }
 
         public createVertexBuffer(data: DataArray): WebGLBuffer {
-            var floatArray: Float32Array;
-            if (data instanceof Array ||
-                data instanceof ArrayBuffer) {
+            let floatArray: Float32Array;
+            if (data instanceof Array) {
+                floatArray = new Float32Array(data);
+            } else if (data instanceof ArrayBuffer) {
                 floatArray = new Float32Array(data);
             } else {
-                floatArray = new Float32Array((data as ArrayBufferView).buffer);
+                floatArray = new Float32Array(data.buffer, data.byteOffset, data.byteLength / 4);
             }
 
             const buffer = this._interop.createVertexBuffer(floatArray);
