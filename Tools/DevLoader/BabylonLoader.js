@@ -155,6 +155,10 @@ var BABYLONDEVTOOLS;
                         if (file.indexOf('lib.d.ts') > 0) {
                             continue;
                         }
+                        // Manage exclude files.
+                        if (library.excludeFromLoader && library.excludeFromLoader.indexOf("file") > -1) {
+                            continue;
+                        }
 
                         file = file.replace('.ts', '.js');
                         file = file.replace('../', '');
