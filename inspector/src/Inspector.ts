@@ -28,7 +28,7 @@ export class Inspector {
     /** The original canvas style, before applying the inspector*/
     private _canvasStyle: any;
 
-    private _initialTab: number;
+    private _initialTab: number | string;
 
     private _parentElement: Nullable<HTMLElement>;
 
@@ -40,7 +40,7 @@ export class Inspector {
      * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
      * If the parameter 'popup' is true, the inspector is created in another popup.
      */
-    constructor(scene: Scene, popup?: boolean, initialTab: number = 0, parentElement: Nullable<HTMLElement> = null, newColors?: {
+    constructor(scene: Scene, popup?: boolean, initialTab: number | string = 0, parentElement: Nullable<HTMLElement> = null, newColors?: {
         backgroundColor?: string,
         backgroundColorLighter?: string,
         backgroundColorLighter2?: string,
