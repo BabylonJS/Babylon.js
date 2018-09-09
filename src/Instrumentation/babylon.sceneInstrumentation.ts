@@ -533,11 +533,15 @@ module BABYLON {
             this.scene.onAfterParticlesRenderingObservable.remove(this._onAfterParticlesRenderingObserver);
             this._onAfterParticlesRenderingObserver = null;
 
-            this.scene.onBeforeSpritesRenderingObservable.remove(this._onBeforeSpritesRenderingObserver);
-            this._onBeforeSpritesRenderingObserver = null;
+            if (this._onBeforeSpritesRenderingObserver) {
+                this.scene.onBeforeSpritesRenderingObservable.remove(this._onBeforeSpritesRenderingObserver);
+                this._onBeforeSpritesRenderingObserver = null;
+            }
 
-            this.scene.onAfterSpritesRenderingObservable.remove(this._onAfterSpritesRenderingObserver);
-            this._onAfterSpritesRenderingObserver = null;
+            if (this._onAfterSpritesRenderingObserver) {
+                this.scene.onAfterSpritesRenderingObservable.remove(this._onAfterSpritesRenderingObserver);
+                this._onAfterSpritesRenderingObserver = null;
+            }
 
             this.scene.onBeforeDrawPhaseObservable.remove(this._onBeforeDrawPhaseObserver);
             this._onBeforeDrawPhaseObserver = null;

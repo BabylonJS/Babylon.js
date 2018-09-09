@@ -313,6 +313,11 @@
       "referenceImage": "gltfMaterialSpecularGlossiness.png"
     },
     {
+      "title": "GLTF Serializer Texture Transform",
+      "playgroundId": "#S5SWJB#32",
+      "referenceImage": "glTFSerializerTextureTransform.png"
+    }, 
+    {
       "title": "GLTF Texture Sampler",
       "scriptToRun": "/Demos/GLTFTests/index.js",
       "functionToCall": "createTextureSamplerScene",
