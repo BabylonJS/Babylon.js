@@ -1873,6 +1873,10 @@
                     "../../serializers/src/glTF/babylon.glTFFileExporter.ts",
                     "../../serializers/src/glTF/2.0/Extensions/KHR_texture_transform.ts"
                 ],
+                "excludeFromLoader": [
+                    "../../serializers/src/glTF/2.0/babylon.glTFExporterExtension.ts",
+                    "../../serializers/src/glTF/babylon.glTFFileExporter.ts"
+                ],
                 "shaderFiles": [
                     "../../serializers/src/glTF/2.0/shaders/textureTransform.fragment.fx"
                 ],
