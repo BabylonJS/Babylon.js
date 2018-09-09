@@ -156,7 +156,7 @@ var BABYLONDEVTOOLS;
                             continue;
                         }
                         // Manage exclude files.
-                        if (library.excludeFromLoader && library.excludeFromLoader.indexOf("file") > -1) {
+                        if (library.excludeFromLoader && library.excludeFromLoader.indexOf(file) > -1) {
                             continue;
                         }
 
