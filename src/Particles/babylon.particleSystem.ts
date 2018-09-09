@@ -380,9 +380,6 @@
             } else {
                 var emitterPosition = (<Vector3>subEmitter.particleSystem.emitter);
                 emitterPosition.copyFrom(particle.position);
-                if (subEmitter.inheritDirection) {
-                    Tools.Warn("subEmitter.inheritDirection is not supported with non-mesh emitter type");
-                }
             }
             // Set inheritedVelocityOffset to be used when new particles are created
             particle.direction.scaleToRef(subEmitter.inheritedVelocityAmount / 2, Tmp.Vector3[0]);
@@ -1020,6 +1017,11 @@
                     } else if (subEmitter instanceof Array) {
                         this._subEmitters.push(subEmitter);
                     }
+                    this._subEmitters[this._subEmitters.length-1].forEach((se)=>{
+                        if (!(se.particleSystem.emitter instanceof AbstractMesh) && se.inheritDirection) {
+                            Tools.Warn("subEmitter.inheritDirection is not supported with non-mesh emitter type");
+                        }
+                    })
                 });
             }
 
@@ -1093,6 +1095,13 @@
                 }
             }
 
+            if (this._useRampGradients) {
+                this._vertexData[offset++] = particle.remapData.x;
+                this._vertexData[offset++] = particle.remapData.y;
+                this._vertexData[offset++] = particle.remapData.z;
+                this._vertexData[offset++] = particle.remapData.w;
+            }
+
             if (!this._useInstancing) {
                 if (this._isAnimationSheetEnabled) {
                     if (offsetX === 0)
@@ -1108,13 +1117,6 @@
 
                 this._vertexData[offset++] = offsetX;
                 this._vertexData[offset++] = offsetY;
-            }
-
-            if (this._useRampGradients) {
-                this._vertexData[offset++] = particle.remapData.x;
-                this._vertexData[offset++] = particle.remapData.y;
-                this._vertexData[offset++] = particle.remapData.z;
-                this._vertexData[offset++] = particle.remapData.w;
             }
         }
 
@@ -1415,7 +1417,7 @@
             return effectCreationOption;
         }
 
-        private _getEffect(): Effect {
+        private _getEffect(blendMode: number): Effect {
             if (this._customEffect) {
                 return this._customEffect;
             };
@@ -1442,7 +1444,7 @@
                 defines.push("#define ANIMATESHEET");
             }
 
-            if (this.blendMode === ParticleSystem.BLENDMODE_MULTIPLY) {
+            if (blendMode === ParticleSystem.BLENDMODE_MULTIPLY) {
                 defines.push("#define BLENDMULTIPLYMODE");
             }
 
@@ -1502,10 +1504,8 @@
                 return;
 
             if (!preWarmOnly) {
-                var effect = this._getEffect();
-
                 // Check
-                if (!this.emitter || !this._imageProcessingConfiguration.isReady() || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady())
+                if (!this.isReady())
                     return;
 
                 if (this._currentRenderId === this._scene.getRenderId()) {
@@ -1617,31 +1617,33 @@
          * @return true if the system is ready
          */
         public isReady(): boolean {
-            var effect = this._getEffect();
-            if (!this.emitter || !this._imageProcessingConfiguration.isReady() || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
+            if (!this.emitter || !this._imageProcessingConfiguration.isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
                 return false;
+            }
+
+            if (this.blendMode !== ParticleSystem.BLENDMODE_MULTIPLYADD) {
+                if (!this._getEffect(this.blendMode).isReady()) {
+                    return false;
+                }                
+            } else {
+                if (!this._getEffect(ParticleSystem.BLENDMODE_MULTIPLY).isReady()) {
+                    return false;
+                } 
+                if (!this._getEffect(ParticleSystem.BLENDMODE_ADD).isReady()) {
+                    return false;
+                }                 
             }
 
             return true;
         }
 
-        /**
-         * Renders the particle system in its current state.
-         * @returns the current number of particles
-         */
-        public render(): number {
-            var effect = this._getEffect();
-
-            // Check
-            if (!this.isReady() || !this._particles.length) {
-                return 0;
-            }
+        private _render(blendMode: number) {
+            var effect = this._getEffect(blendMode);
 
             var engine = this._scene.getEngine();
 
             // Render
             engine.enableEffect(effect);
-            engine.setState(false);
 
             var viewMatrix = this._scene.getViewMatrix();
             effect.setTexture("diffuseSampler", this.particleTexture);
@@ -1680,7 +1682,7 @@
             }
 
             // Draw order
-            switch (this.blendMode) {
+            switch (blendMode) {
                 case ParticleSystem.BLENDMODE_ADD:
                     engine.setAlphaMode(Engine.ALPHA_ADD);
                     break;
@@ -1695,19 +1697,43 @@
                     break;
             }
 
-            if (this.forceDepthWrite) {
-                engine.setDepthWrite(true);
-            }
-
             if (this._useInstancing) {
                 engine.drawArraysType(Material.TriangleFanDrawMode, 0, 4, this._particles.length);
-                engine.unbindInstanceAttributes();
             } else {
                 engine.drawElementsType(Material.TriangleFillMode, 0, this._particles.length * 6);
             }
-            engine.setAlphaMode(Engine.ALPHA_DISABLE);
 
             return this._particles.length;
+        }
+
+        /**
+         * Renders the particle system in its current state.
+         * @returns the current number of particles
+         */
+        public render(): number {
+            // Check
+            if (!this.isReady() || !this._particles.length) {
+                return 0;
+            }
+
+            var engine = this._scene.getEngine();
+            engine.setState(false);
+
+            if (this.forceDepthWrite) {
+                engine.setDepthWrite(true);
+            }            
+
+            let outparticles = 0;
+
+            if (this.blendMode === ParticleSystem.BLENDMODE_MULTIPLYADD) {
+                outparticles = this._render(ParticleSystem.BLENDMODE_MULTIPLY) + this._render(ParticleSystem.BLENDMODE_ADD);    
+            }
+            outparticles = this._render(this.blendMode);
+
+            engine.unbindInstanceAttributes();
+            engine.setAlphaMode(Engine.ALPHA_DISABLE);
+
+            return outparticles;
         }
 
         /**
@@ -1747,8 +1773,8 @@
 
             this._removeFromRoot();
 
-            if (this._disposeEmitterOnDispose && !(<AbstractMesh>this.emitter).isDisposed) {
-                (<AbstractMesh>this.emitter).dispose();
+            if (this._disposeEmitterOnDispose && this.emitter && (this.emitter as AbstractMesh).dispose) {
+                (<AbstractMesh>this.emitter).dispose(true);
             }
 
             // Remove from scene
