@@ -997,9 +997,9 @@
 
         /**
          * Starts the particle system and begins to emit
-         * @param delay defines the delay in milliseconds before starting the system (0 by default)
+         * @param delay defines the delay in milliseconds before starting the system (this.startDelay by default)
          */
-        public start(delay = 0): void {
+        public start(delay = this.startDelay): void {
             if(!this.targetStopDuration && this._hasTargetStopDurationDependantGradient()){
                 throw "Particle system started with a targetStopDuration dependant gradient (eg. startSizeGradients) but no targetStopDuration set";
             }

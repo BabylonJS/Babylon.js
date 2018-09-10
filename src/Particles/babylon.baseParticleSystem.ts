@@ -274,6 +274,11 @@ module BABYLON {
         }
 
         /**
+         * Defines the delay in milliseconds before starting the system (0 by default)
+         */
+        public startDelay = 0;
+
+        /**
          * Gets the current list of drag gradients.
          * You must use addDragGradient and removeDragGradient to udpate this list
          * @returns the list of drag gradients
