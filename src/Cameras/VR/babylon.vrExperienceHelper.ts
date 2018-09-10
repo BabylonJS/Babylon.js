@@ -1569,7 +1569,7 @@ module BABYLON {
             // Teleport the hmd to where the user is looking by moving the anchor to where they are looking minus the
             // offset of the headset from the anchor.
             if (this.webVRCamera.leftCamera) {
-                this._workingVector.copyFrom(this.webVRCamera.leftCamera.globalPosition);
+                this.webVRCamera.leftCamera.getWorldMatrix().getTranslationToRef(this._workingVector);
                 this._workingVector.subtractInPlace(this.webVRCamera.position);
                 location.subtractToRef(this._workingVector, this._workingVector);
             } else {

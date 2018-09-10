@@ -263,9 +263,6 @@ module BABYLON {
                 this._mesh.parent = null;
             }
             this._mesh = mesh;
-            if (this._poseControlledCamera) {
-                this._mesh.parent = this._poseControlledCamera;
-            }
             if (!this._mesh.rotationQuaternion) {
                 this._mesh.rotationQuaternion = new Quaternion();
             }
@@ -291,9 +288,6 @@ module BABYLON {
          */
         public attachToPoseControlledCamera(camera: TargetCamera) {
             this._poseControlledCamera = camera;
-            if (this._mesh) {
-                this._mesh.parent = this._poseControlledCamera;
-            }
         }
 
         /**
