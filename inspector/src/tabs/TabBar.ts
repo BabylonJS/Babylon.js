@@ -1,4 +1,4 @@
-import { AbstractMesh, Nullable } from "babylonjs";
+import { AbstractMesh, Nullable, Engine } from "babylonjs";
 import { BasicElement } from "../gui/BasicElement";
 import { Helpers } from "../helpers/Helpers";
 import { Inspector } from "../Inspector";
@@ -60,7 +60,10 @@ export class TabBar extends BasicElement {
         }
         this._tabs.push(new PhysicsTab(this, this._inspector));
         this._tabs.push(new CameraTab(this, this._inspector));
-        this._tabs.push(new SoundTab(this, this._inspector));
+        // Only uses sounds if available.
+        if (Engine.audioEngine) {
+            this._tabs.push(new SoundTab(this, this._inspector));
+        }
         this._tabs.push(new ToolsTab(this, this._inspector));
         this._toolBar = new Toolbar(this._inspector);
 
