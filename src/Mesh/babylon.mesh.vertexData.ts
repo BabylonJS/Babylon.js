@@ -1773,7 +1773,7 @@
                     if(a >= alphaFilter)
                         position.y = options.minHeight + (options.maxHeight - options.minHeight) * gradient;
                     else {
-                        position.y = options.minHeight - 1; // We can't have a height below minHeight, normally.
+                        position.y = options.minHeight - BABYLON.Epsilon; // We can't have a height below minHeight, normally.
                     }
 
                     // Add  vertex
@@ -1794,6 +1794,7 @@
 
                     // Check that all indices are visible (based on our special height)
                     // Only display the vertex if all Indices are visible
+                    // Positions are stored x,y,z for each vertex, hence the * 3 and + 1 for height
                     var isVisibleIdx1 = positions[idx1 * 3 + 1] >= options.minHeight;
                     var isVisibleIdx2 = positions[idx2 * 3 + 1] >= options.minHeight;
                     var isVisibleIdx3 = positions[idx3 * 3 + 1] >= options.minHeight;
