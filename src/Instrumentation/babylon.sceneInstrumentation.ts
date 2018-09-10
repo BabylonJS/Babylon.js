@@ -259,6 +259,10 @@ module BABYLON {
                 return;
             }
 
+            if (!this.scene.onBeforePhysicsObservable) {
+                return;
+            }
+
             this._capturePhysicsTime = value;
 
             if (value) {
@@ -549,11 +553,15 @@ module BABYLON {
             this.scene.onAfterDrawPhaseObservable.remove(this._onAfterDrawPhaseObserver);
             this._onAfterDrawPhaseObserver = null;
 
-            this.scene.onBeforePhysicsObservable.remove(this._onBeforePhysicsObserver);
-            this._onBeforePhysicsObserver = null;
+            if (this._onBeforePhysicsObserver) {
+                this.scene.onBeforePhysicsObservable.remove(this._onBeforePhysicsObserver);
+                this._onBeforePhysicsObserver = null;
+            }
 
-            this.scene.onAfterPhysicsObservable.remove(this._onAfterPhysicsObserver);
-            this._onAfterPhysicsObserver = null;
+            if (this._onAfterPhysicsObserver) {
+                this.scene.onAfterPhysicsObservable.remove(this._onAfterPhysicsObserver);
+                this._onAfterPhysicsObserver = null;
+            }
 
             this.scene.onAfterAnimationsObservable.remove(this._onAfterAnimationsObserver);
             this._onAfterAnimationsObserver = null;
