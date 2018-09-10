@@ -1378,9 +1378,11 @@ export class Control {
             this._root = null;
         }
 
-        var index = this._host._linkedControls.indexOf(this);
-        if (index > -1) {
-            this.linkWithMesh(null);
+        if (this._host) {
+            var index = this._host._linkedControls.indexOf(this);
+            if (index > -1) {
+                this.linkWithMesh(null);
+            }
         }
     }
 
