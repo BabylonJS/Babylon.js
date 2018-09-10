@@ -41,7 +41,7 @@ export class TabBar extends BasicElement {
     /** The list of tabs visible, displayed in the tab bar */
     private _visibleTabs: Array<Tab> = [];
 
-    constructor(inspector: Inspector, initialTab?: number) {
+    constructor(inspector: Inspector, initialTab?: number | string) {
         super();
         this._inspector = inspector;
         this._tabs.push(new SceneTab(this, this._inspector));
@@ -69,9 +69,13 @@ export class TabBar extends BasicElement {
 
         this._build();
 
-        //Check initialTab is defined and between tabs bounds
-        if (!initialTab || initialTab < 0 || initialTab >= this._tabs.length) {
-            initialTab = 0;
+        if (typeof initialTab === "string") {
+            initialTab = this.getTabIndex(initialTab);
+        } else {
+            //Check initialTab is defined and between tabs bounds
+            if (!initialTab || initialTab < 0 || initialTab >= this._tabs.length) {
+                initialTab = 0;
+            }
         }
 
         this._tabs[initialTab].active(true);
@@ -180,6 +184,15 @@ export class TabBar extends BasicElement {
     public getActiveTabIndex(): number {
         for (let i = 0; i < this._tabs.length; i++) {
             if (this._tabs[i].isActive()) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    public getTabIndex(name: string): number {
+        for (let i = 0; i < this._tabs.length; i++) {
+            if (this._tabs[i].name === name) {
                 return i;
             }
         }

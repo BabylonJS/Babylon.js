@@ -38,6 +38,7 @@
         public static readonly STEP_AFTERRENDERINGMESH_OUTLINE = 0;
 
         public static readonly STEP_AFTERRENDERINGGROUPDRAW_EFFECTLAYER_DRAW = 0;
+        public static readonly STEP_AFTERRENDERINGGROUPDRAW_BOUNDINGBOXRENDERER = 1;
 
         public static readonly STEP_BEFORECAMERAUPDATE_SIMPLIFICATIONQUEUE = 0;
         public static readonly STEP_BEFORECAMERAUPDATE_GAMEPAD = 1;
@@ -46,9 +47,8 @@
 
         public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER = 0;
         public static readonly STEP_AFTERCAMERADRAW_LENSFLARESYSTEM = 1;
-        public static readonly STEP_AFTERCAMERADRAW_BOUNDINGBOXRENDERER = 2;
-        public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW = 3;
-        public static readonly STEP_AFTERCAMERADRAW_LAYER = 4;
+        public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW = 2;
+        public static readonly STEP_AFTERCAMERADRAW_LAYER = 3;
 
         public static readonly STEP_GATHERRENDERTARGETS_SHADOWGENERATOR = 0;
         public static readonly STEP_GATHERRENDERTARGETS_GEOMETRYBUFFERRENDERER = 1;
