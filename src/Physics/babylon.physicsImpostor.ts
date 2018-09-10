@@ -36,7 +36,7 @@ module BABYLON {
 
         public static IDENTITY_QUATERNION = Quaternion.Identity();
 
-        private _physicsEngine: Nullable<PhysicsEngine>;
+        private _physicsEngine: Nullable<IPhysicsEngine>;
         //The native cannon/oimo/energy physics body object.
         private _physicsBody: any;
         private _bodyUpdateRequired: boolean = false;

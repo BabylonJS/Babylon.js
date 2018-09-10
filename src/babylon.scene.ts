@@ -963,7 +963,6 @@
         private _softwareSkinnedMeshes = new SmartArrayNoDuplicate<Mesh>(32);
 
         private _renderingManager: RenderingManager;
-        private _physicsEngine: Nullable<PhysicsEngine>;
 
         /** @hidden */
         public _activeAnimatables = new Array<Animatable>();
@@ -4437,7 +4436,7 @@
                     // Physics
                     if (this._physicsEngine) {
                         this.onBeforePhysicsObservable.notifyObservers(this);
-                        this._physicsEngine._step(defaultFrameTime / 1000);
+                        this._physicsEngine.step(defaultFrameTime / 1000);
                         this.onAfterPhysicsObservable.notifyObservers(this);
                     }
 
@@ -4462,7 +4461,7 @@
                 // Physics
                 if (this._physicsEngine) {
                     this.onBeforePhysicsObservable.notifyObservers(this);
-                    this._physicsEngine._step(deltaTime / 1000.0);
+                    this._physicsEngine.step(deltaTime / 1000.0);
                     this.onAfterPhysicsObservable.notifyObservers(this);
                 }
             }
@@ -5301,68 +5300,7 @@
 
         // Physics
 
-        /** 
-         * Gets the current physics engine
-         * @returns a PhysicsEngine or null if none attached
-         */
-        public getPhysicsEngine(): Nullable<PhysicsEngine> {
-            return this._physicsEngine;
-        }
-
-        /**
-         * Enables physics to the current scene
-         * @param gravity defines the scene's gravity for the physics engine
-         * @param plugin defines the physics engine to be used. defaults to OimoJS.
-         * @return a boolean indicating if the physics engine was initialized
-         */
-        public enablePhysics(gravity: Nullable<Vector3> = null, plugin?: IPhysicsEnginePlugin): boolean {
-            if (this._physicsEngine) {
-                return true;
-            }
-
-            try {
-                this._physicsEngine = new PhysicsEngine(gravity, plugin);
-                return true;
-            } catch (e) {
-                Tools.Error(e.message);
-                return false;
-            }
-
-        }
-
-        /** 
-         * Disables and disposes the physics engine associated with the scene
-         */
-        public disablePhysicsEngine(): void {
-            if (!this._physicsEngine) {
-                return;
-            }
-
-            this._physicsEngine.dispose();
-            this._physicsEngine = null;
-        }
-
-        /**
-         * Gets a boolean indicating if there is an active physics engine
-         * @returns a boolean indicating if there is an active physics engine
-         */
-        public isPhysicsEnabled(): boolean {
-            return this._physicsEngine !== undefined;
-        }
-
-        /**
-         * Deletes a physics compound impostor
-         * @param compound defines the compound to delete
-         */
-        public deleteCompoundImpostor(compound: any): void {
-            var mesh: AbstractMesh = compound.parts[0].mesh;
-
-            if (mesh.physicsImpostor) {
-                mesh.physicsImpostor.dispose(/*true*/);
-                mesh.physicsImpostor = null;
-            }
-        }
-
+      
         // Misc.
         /** @hidden */
         public _rebuildGeometries(): void {
