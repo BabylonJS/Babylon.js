@@ -71,10 +71,23 @@ if (BABYLON.Engine.isSupported()) {
     // This is really important to tell Babylon.js to use decomposeLerp and matrix interpolation
     BABYLON.Animation.AllowMatricesInterpolation = true;
 
+    // Update the defaults of the GLTFTab in the inspector.
+    INSPECTOR.GLTFTab._GetLoaderDefaultsAsync().then(function (defaults) {
+        defaults.validate = true;
+    });
+
     // Setting up some GLTF values
     BABYLON.GLTFFileLoader.IncrementalLoading = false;
     BABYLON.SceneLoader.OnPluginActivatedObservable.add(function (plugin) {
         currentPluginName = plugin.name;
+        if (currentPluginName === "gltf") {
+            plugin.onValidatedObservable.add(function (results) {
+                if (results.issues.numErrors > 0) {
+                    debugLayerEnabled = true;
+                    debugLayerLastActiveTab = "GLTF";
+                }
+            });
+        }
     });
 
     // Resize
@@ -241,7 +254,15 @@ if (BABYLON.Engine.isSupported()) {
         loadFromAssetUrl();
     }
     else {
-        filesInput = new BABYLON.FilesInput(engine, null, sceneLoaded, null, null, null, function () { BABYLON.Tools.ClearLogCache() }, null, sceneError);
+        var startProcessingFiles = function () {
+            BABYLON.Tools.ClearLogCache();
+
+            if (currentScene) {
+                debugLayerLastActiveTab = currentScene.debugLayer.getActiveTab();
+            }
+        };
+
+        filesInput = new BABYLON.FilesInput(engine, null, sceneLoaded, null, null, null, startProcessingFiles, null, sceneError);
         filesInput.onProcessFileCallback = (function (file, name, extension) {
             if (filesInput._filesToLoad && filesInput._filesToLoad.length === 1 && extension) {
                 if (extension.toLowerCase() === "dds" || extension.toLowerCase() === "env") {
