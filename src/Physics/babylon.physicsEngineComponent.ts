@@ -1,7 +1,7 @@
 module BABYLON {
     export interface Scene {
         /** @hidden (Backing field) */        
-        _physicsEngine: Nullable<IPhysicsEngine>;
+        _physicsEngine: Nullable<IPhysicsEngine>;             
 
         /**
          * Gets the current physics engine
@@ -33,6 +33,16 @@ module BABYLON {
          * @param compound defines the compound to delete
          */
         deleteCompoundImpostor(compound: any): void;
+
+        /**
+        * An event triggered when physic simulation is about to be run
+        */
+        onBeforePhysicsObservable: Observable<Scene>;
+
+        /**
+         * An event triggered when physic simulation has been done
+         */
+        onAfterPhysicsObservable: Observable<Scene>;
     }
 
     /** 
@@ -52,6 +62,13 @@ module BABYLON {
     Scene.prototype.enablePhysics = function(gravity: Nullable<Vector3> = null, plugin?: IPhysicsEnginePlugin): boolean {
         if (this._physicsEngine) {
             return true;
+        }
+        
+        // Register the component to the scene
+        let component = this._getComponent(SceneComponentConstants.NAME_PHYSICSENGINE) as PhysicsEngineSceneComponent;
+        if (!component) {
+            component = new PhysicsEngineSceneComponent(this);
+            this._addComponent(component);
         }
 
         try {
@@ -93,6 +110,75 @@ module BABYLON {
         if (mesh.physicsImpostor) {
             mesh.physicsImpostor.dispose(/*true*/);
             mesh.physicsImpostor = null;
+        }
+    }
+
+    /** @hidden */
+    Scene.prototype._advancePhysicsEngineStep = function(step: number) {
+        if (this._physicsEngine) {
+            this.onBeforePhysicsObservable.notifyObservers(this);
+            this._physicsEngine._step(step / 1000);
+            this.onAfterPhysicsObservable.notifyObservers(this);
+        }
+    }
+   
+    /**
+     * Defines the physics engine scene component responsible to manage a physics engine
+     */
+    export class PhysicsEngineSceneComponent implements ISceneComponent {
+        /**
+         * The component name helpful to identify the component in the list of scene components.
+         */
+        public readonly name = SceneComponentConstants.NAME_PHYSICSENGINE;
+
+        /**
+         * The scene the component belongs to.
+         */
+        public scene: Scene;
+
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene) {
+            this.scene = scene;
+            this.scene.onBeforePhysicsObservable = new Observable<Scene>();
+            this.scene.onAfterPhysicsObservable = new Observable<Scene>();
+
+            // Replace the function used to get the deterministic frame time
+            this.scene.getDeterministicFrameTime = () => {    
+                if (this.scene._physicsEngine) {
+                    return this.scene._physicsEngine.getTimeStep() * 1000;
+                }
+
+                return 1000.0 / 60.0;
+            }        
+        }
+
+        /**
+         * Registers the component in a given scene
+         */
+        public register(): void {
+        }
+
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        public rebuild(): void {
+            // Nothing to do for this component
+        }
+
+        /**
+         * Disposes the component and the associated ressources
+         */
+        public dispose(): void {
+            this.scene.onBeforePhysicsObservable.clear();
+            this.scene.onAfterPhysicsObservable.clear();
+
+            if (this.scene._physicsEngine) {
+                this.scene.disablePhysicsEngine();
+            }
         }
     }
 }

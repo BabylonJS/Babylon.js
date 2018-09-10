@@ -57,12 +57,12 @@ module BABYLON {
     }
 
     /**
-     * Defines the Geometry Buffer scene component responsible to manage a G-Buffer usefull
+     * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
      * in several rendering techniques.
      */
     export class GeometryBufferRendererSceneComponent implements ISceneComponent {
         /**
-         * The component name helpfull to identify the component in the list of scene components.
+         * The component name helpful to identify the component in the list of scene components.
          */
         public readonly name = SceneComponentConstants.NAME_GEOMETRYBUFFERRENDERER;
 

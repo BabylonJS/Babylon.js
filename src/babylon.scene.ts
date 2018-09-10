@@ -91,7 +91,7 @@
          */
         public static MaxDeltaTime = 1000.0;
 
-        // Members
+        // Members   
 
         /**
          * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
@@ -328,16 +328,6 @@
         * An event triggered after draw calls have been sent
         */
         public onAfterDrawPhaseObservable = new Observable<Scene>();
-
-        /**
-        * An event triggered when physic simulation is about to be run
-        */
-        public onBeforePhysicsObservable = new Observable<Scene>();
-
-        /**
-        * An event triggered when physic simulation has been done
-        */
-        public onAfterPhysicsObservable = new Observable<Scene>();
 
         /**
         * An event triggered when the scene is ready
@@ -4380,6 +4370,18 @@
             }
         }
 
+        /** @hidden */
+        public _advancePhysicsEngineStep(step: number) {
+            // Do nothing. Code will be replaced if physics engine component is referenced
+        }
+
+        /**
+         * User updatable function that will return a deterministic frame time when engine is in deterministic lock step mode
+         */
+        public getDeterministicFrameTime: () => number = () => {
+            return 1000.0 / 60.0; // frame time in ms
+        }
+
         /** 
          * Render the scene
          * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
@@ -4413,11 +4415,8 @@
 
                 var defaultFPS = (60.0 / 1000.0);
 
-                let defaultFrameTime = 1000 / 60; // frame time in MS
+                let defaultFrameTime = this.getDeterministicFrameTime();
 
-                if (this._physicsEngine) {
-                    defaultFrameTime = this._physicsEngine.getTimeStep() * 1000;
-                }
                 let stepsTaken = 0;
 
                 var maxSubSteps = this._engine.getLockstepMaxSteps();
@@ -4434,11 +4433,7 @@
                     this.onAfterAnimationsObservable.notifyObservers(this);
 
                     // Physics
-                    if (this._physicsEngine) {
-                        this.onBeforePhysicsObservable.notifyObservers(this);
-                        this._physicsEngine.step(defaultFrameTime / 1000);
-                        this.onAfterPhysicsObservable.notifyObservers(this);
-                    }
+                    this._advancePhysicsEngineStep(defaultFrameTime);
 
                     this.onAfterStepObservable.notifyObservers(this);
                     this._currentStepId++;
@@ -4459,11 +4454,7 @@
                 this.onAfterAnimationsObservable.notifyObservers(this);
 
                 // Physics
-                if (this._physicsEngine) {
-                    this.onBeforePhysicsObservable.notifyObservers(this);
-                    this._physicsEngine.step(deltaTime / 1000.0);
-                    this.onAfterPhysicsObservable.notifyObservers(this);
-                }
+                this._advancePhysicsEngineStep(deltaTime);
             }
 
             // Before camera update steps
@@ -4828,8 +4819,6 @@
             this.onAfterParticlesRenderingObservable.clear();
             this.onBeforeDrawPhaseObservable.clear();
             this.onAfterDrawPhaseObservable.clear();
-            this.onBeforePhysicsObservable.clear();
-            this.onAfterPhysicsObservable.clear();
             this.onBeforeAnimationsObservable.clear();
             this.onAfterAnimationsObservable.clear();
             this.onDataLoadedObservable.clear();
@@ -4912,11 +4901,6 @@
 
             // Post-processes
             this.postProcessManager.dispose();
-
-            // Physics
-            if (this._physicsEngine) {
-                this.disablePhysicsEngine();
-            }
 
             // Remove from engine
             index = this._engine.scenes.indexOf(this);
@@ -5297,10 +5281,7 @@
         public getPointerOverMesh(): Nullable<AbstractMesh> {
             return this._pointerOverMesh;
         }
-
-        // Physics
-
-      
+     
         // Misc.
         /** @hidden */
         public _rebuildGeometries(): void {
