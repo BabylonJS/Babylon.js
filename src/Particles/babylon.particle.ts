@@ -124,6 +124,11 @@
         public _currentDrag1 = 0;
         /** @hidden */
         public _currentDrag2 = 0;  
+
+        /** @hidden */
+        public _randomNoiseCoordinates1: Vector3;
+        /** @hidden */
+        public _randomNoiseCoordinates2: Vector3;
      
 
         /**
@@ -251,6 +256,15 @@
             }
             if (this.particleSystem.useRampGradients) {
                 other.remapData.copyFrom(this.remapData);
+            }
+            if (this._randomNoiseCoordinates1) {
+                if (other._randomNoiseCoordinates1) {
+                    other._randomNoiseCoordinates1.copyFromFloats(Math.random(), Math.random(), Math.random());
+                    other._randomNoiseCoordinates2.copyFromFloats(Math.random(), Math.random(), Math.random());
+                } else {
+                    other._randomNoiseCoordinates1 = new Vector3(Math.random(), Math.random(), Math.random());
+                    other._randomNoiseCoordinates2 = new Vector3(Math.random(), Math.random(), Math.random());
+                }
             }
         }
     }
