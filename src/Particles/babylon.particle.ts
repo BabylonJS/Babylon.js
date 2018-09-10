@@ -152,16 +152,23 @@
          */
         public updateCellIndex(): void {
             let offsetAge = this.age;
+            let changeSpeed = this.particleSystem.spriteCellChangeSpeed;
 
             if (this.particleSystem.spriteRandomStartCell) {
                 if (this._randomCellOffset === undefined) {         
                     this._randomCellOffset = Math.random() * this.lifeTime;
                 }
-                offsetAge += this._randomCellOffset;
+
+                if (changeSpeed === 0) { // Special case when speed = 0 meaning we want to stay on initial cell
+                    changeSpeed = 1;
+                    offsetAge = this._randomCellOffset;
+                } else {
+                    offsetAge += this._randomCellOffset;
+                }
             }
 
             let dist = (this._initialEndSpriteCellID - this._initialStartSpriteCellID);
-            let ratio = Scalar.Clamp(((offsetAge * this.particleSystem.spriteCellChangeSpeed) % this.lifeTime) / this.lifeTime);
+            let ratio = Scalar.Clamp(((offsetAge * changeSpeed) % this.lifeTime) / this.lifeTime);
 
             this.cellIndex = this._initialStartSpriteCellID + (ratio * dist) | 0;
         }

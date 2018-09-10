@@ -997,9 +997,12 @@
 
         /**
          * Starts the particle system and begins to emit
-         * @param delay defines the delay in milliseconds before starting the system (0 by default)
+         * @param delay defines the delay in milliseconds before starting the system (this.startDelay by default)
          */
-        public start(delay = 0): void {
+        public start(delay = this.startDelay): void {
+            if(!this.targetStopDuration && this._hasTargetStopDurationDependantGradient()){
+                throw "Particle system started with a targetStopDuration dependant gradient (eg. startSizeGradients) but no targetStopDuration set";
+            }
             if (delay) {
                 setTimeout(() => {
                     this.start(0);
@@ -1286,7 +1289,7 @@
                 particle.scale.copyFromFloats(Scalar.RandomRange(this.minScaleX, this.maxScaleX), Scalar.RandomRange(this.minScaleY, this.maxScaleY));
 
                 // Adjust scale by start size
-                if (this._startSizeGradients && this._startSizeGradients[0]) {
+                if (this._startSizeGradients && this._startSizeGradients[0] && this.targetStopDuration) {
                     const ratio = this._actualFrame / this.targetStopDuration;
                     Tools.GetCurrentGradient(ratio, this._startSizeGradients, (currentGradient, nextGradient, scale) => {
                         if (currentGradient !== this._currentStartSizeGradient) {
