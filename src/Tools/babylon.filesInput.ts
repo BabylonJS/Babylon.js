@@ -129,9 +129,8 @@
                     && name.indexOf(".binary.babylon") === -1 && name.indexOf(".incremental.babylon") === -1) {
                     this._sceneFileToLoad = files[i];
                 }
-                else {
-                    FilesInput.FilesToLoad[name] = files[i];
-                }
+
+                FilesInput.FilesToLoad[name] = files[i];
             }
         }
 
@@ -225,7 +224,7 @@
                     this._engine.stopRenderLoop();
                 }
 
-                SceneLoader.LoadAsync("file:", this._sceneFileToLoad, this._engine, progress => {
+                SceneLoader.LoadAsync("file:", this._sceneFileToLoad.name, this._engine, progress => {
                     if (this._progressCallback) {
                         this._progressCallback(progress);
                     }
