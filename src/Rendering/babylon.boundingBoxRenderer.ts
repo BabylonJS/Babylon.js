@@ -81,7 +81,7 @@
         public frontColor = new Color3(1, 1, 1);
         public backColor = new Color3(0.1, 0.1, 0.1);
         public showBackLines = true;
-        public renderList = new SmartArray<BoundingBox>(32);
+        public renderList = new SmartArray<BoundingBox>(32);        
 
         private _colorShader: ShaderMaterial;
         private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
@@ -102,13 +102,14 @@
 
             this.scene._evaluateSubMeshStage.registerStep(SceneComponentConstants.STEP_EVALUATESUBMESH_BOUNDINGBOXRENDERER, this, this._evaluateSubMesh);
 
-            this.scene._afterCameraDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_BOUNDINGBOXRENDERER, this, this.render);
+            this.scene._afterRenderingGroupDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_BOUNDINGBOXRENDERER, this, this.render);
         }
 
         private _evaluateSubMesh(mesh: AbstractMesh, subMesh: SubMesh): void {
             if (mesh.showSubMeshesBoundingBox) {
                 const boundingInfo = subMesh.getBoundingInfo();
                 if (boundingInfo !== null && boundingInfo !== undefined) {
+                    boundingInfo.boundingBox._tag = mesh.renderingGroupId;
                     this.renderList.push(boundingInfo.boundingBox);
                 }
             }
@@ -117,7 +118,7 @@
         private _activeMesh(sourceMesh: AbstractMesh, mesh: AbstractMesh): void {
             if (sourceMesh.showBoundingBox || this.scene.forceShowBoundingBoxes) {
                 let boundingInfo = sourceMesh.getBoundingInfo();
-
+                boundingInfo.boundingBox._tag = mesh.renderingGroupId;
                 this.renderList.push(boundingInfo.boundingBox);
             }
         }
@@ -161,7 +162,7 @@
             this.renderList.reset();
         }
 
-        public render(): void {
+        public render(renderingGroupId: number): void {
             if (this.renderList.length === 0) {
                 return;
             }
@@ -177,6 +178,9 @@
             this._colorShader._preBind();
             for (var boundingBoxIndex = 0; boundingBoxIndex < this.renderList.length; boundingBoxIndex++) {
                 var boundingBox = this.renderList.data[boundingBoxIndex];
+                if (boundingBox._tag !== renderingGroupId) {
+                    continue;
+                }
                 var min = boundingBox.minimum;
                 var max = boundingBox.maximum;
                 var diff = max.subtract(min);
