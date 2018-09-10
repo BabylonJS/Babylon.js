@@ -1031,7 +1031,7 @@ module BABYLON.GLTF2 {
             }
 
             return Promise.all(promises).then(() => {
-                babylonAnimationGroup.normalize(this._parent._normalizeAnimationGroupsToBeginAtZero ? 0 : null);
+                babylonAnimationGroup.normalize(0);
                 return babylonAnimationGroup;
             });
         }
