@@ -372,15 +372,16 @@ var BABYLON;
          * @param data the glTF data to load
          * @param rootUrl root url to load from
          * @param onProgress event that fires when loading progress has occured
-         * @param fullName Defines the FQDN of the file to load
+         * @param fileName Defines the name of the file to load
          * @returns a promise containg the loaded meshes, particles, skeletons and animations
          */
-        GLTFFileLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onProgress, fullName) {
+        GLTFFileLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onProgress, fileName) {
             var _this = this;
             return Promise.resolve().then(function () {
+                _this._log("Loading " + (fileName || ""));
                 var loaderData = _this._parse(data);
                 _this._loader = _this._getLoader(loaderData);
-                return _this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onProgress, fullName);
+                return _this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onProgress, fileName);
             });
         };
         /**
@@ -389,15 +390,16 @@ var BABYLON;
          * @param data the glTF data to load
          * @param rootUrl root url to load from
          * @param onProgress event that fires when loading progress has occured
-         * @param fullName Defines the FQDN of the file to load
+         * @param fileName Defines the name of the file to load
          * @returns a promise which completes when objects have been loaded to the scene
          */
-        GLTFFileLoader.prototype.loadAsync = function (scene, data, rootUrl, onProgress, fullName) {
+        GLTFFileLoader.prototype.loadAsync = function (scene, data, rootUrl, onProgress, fileName) {
             var _this = this;
             return Promise.resolve().then(function () {
+                _this._log("Loading " + (fileName || ""));
                 var loaderData = _this._parse(data);
                 _this._loader = _this._getLoader(loaderData);
-                return _this._loader.loadAsync(scene, loaderData, rootUrl, onProgress, fullName);
+                return _this._loader.loadAsync(scene, loaderData, rootUrl, onProgress, fileName);
             });
         };
         /**
@@ -406,15 +408,16 @@ var BABYLON;
          * @param data The data to import
          * @param rootUrl The root url for scene and resources
          * @param onProgress The callback when the load progresses
-         * @param fullName Defines the FQDN of the file to load
+         * @param fileName Defines the name of the file to load
          * @returns The loaded asset container
          */
-        GLTFFileLoader.prototype.loadAssetContainerAsync = function (scene, data, rootUrl, onProgress, fullName) {
+        GLTFFileLoader.prototype.loadAssetContainerAsync = function (scene, data, rootUrl, onProgress, fileName) {
             var _this = this;
             return Promise.resolve().then(function () {
+                _this._log("Loading " + (fileName || ""));
                 var loaderData = _this._parse(data);
                 _this._loader = _this._getLoader(loaderData);
-                return _this._loader.importMeshAsync(null, scene, loaderData, rootUrl, onProgress, fullName).then(function (result) {
+                return _this._loader.importMeshAsync(null, scene, loaderData, rootUrl, onProgress, fileName).then(function (result) {
                     var container = new BABYLON.AssetContainer(scene);
                     Array.prototype.push.apply(container.meshes, result.meshes);
                     Array.prototype.push.apply(container.particleSystems, result.particleSystems);
@@ -3022,12 +3025,12 @@ var BABYLON;
                 this._parent._clear();
             };
             /** @hidden */
-            GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onProgress, fullName) {
+            GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onProgress, fileName) {
                 var _this = this;
                 return Promise.resolve().then(function () {
                     _this.babylonScene = scene;
                     _this._rootUrl = rootUrl;
-                    _this._fullName = fullName || "" + Date.now();
+                    _this._fileName = fileName || "scene";
                     _this._progressCallback = onProgress;
                     _this._loadData(data);
                     var nodes = null;
@@ -3061,12 +3064,12 @@ var BABYLON;
                 });
             };
             /** @hidden */
-            GLTFLoader.prototype.loadAsync = function (scene, data, rootUrl, onProgress, fullName) {
+            GLTFLoader.prototype.loadAsync = function (scene, data, rootUrl, onProgress, fileName) {
                 var _this = this;
                 return Promise.resolve().then(function () {
                     _this.babylonScene = scene;
                     _this._rootUrl = rootUrl;
-                    _this._fullName = fullName || "" + Date.now();
+                    _this._fileName = fileName || "scene";
                     _this._progressCallback = onProgress;
                     _this._loadData(data);
                     return _this._loadAsync(null, function () { return undefined; });
@@ -3075,6 +3078,7 @@ var BABYLON;
             GLTFLoader.prototype._loadAsync = function (nodes, resultFunc) {
                 var _this = this;
                 return Promise.resolve().then(function () {
+                    _this._uniqueRootUrl = (_this._rootUrl.indexOf("file:") === -1 && _this._fileName) ? _this._rootUrl : "" + _this._rootUrl + Date.now() + "/";
                     _this._loadExtensions();
                     _this._checkExtensions();
                     var loadingToReadyCounterName = BABYLON.GLTFLoaderState[BABYLON.GLTFLoaderState.LOADING] + " => " + BABYLON.GLTFLoaderState[BABYLON.GLTFLoaderState.READY];
@@ -4325,7 +4329,8 @@ var BABYLON;
                 babylonTexture.wrapV = samplerData.wrapV;
                 var image = ArrayItem.Get(context + "/source", this.gltf.images, texture.source);
                 promises.push(this.loadImageAsync("#/images/" + image.index, image).then(function (data) {
-                    var dataUrl = "data:" + _this._fullName + (image.uri || "image" + image.index);
+                    var name = image.uri || _this._fileName + "#image" + image.index;
+                    var dataUrl = "data:" + _this._uniqueRootUrl + name;
                     babylonTexture.updateURL(dataUrl, new Blob([data], { type: image.mimeType }));
                 }));
                 assign(babylonTexture);

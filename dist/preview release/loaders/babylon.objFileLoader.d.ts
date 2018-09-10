@@ -65,10 +65,10 @@ declare module BABYLON {
          * @param data the glTF data to load
          * @param rootUrl root url to load from
          * @param onProgress event that fires when loading progress has occured
-         * @param fullName Defines the FQDN of the file to load
+         * @param fileName Defines the name of the file to load
          * @returns a promise containg the loaded meshes, particles, skeletons and animations
          */
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string): Promise<{
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
             meshes: AbstractMesh[];
             particleSystems: IParticleSystem[];
             skeletons: Skeleton[];
@@ -80,20 +80,20 @@ declare module BABYLON {
          * @param data the glTF data to load
          * @param rootUrl root url to load from
          * @param onProgress event that fires when loading progress has occured
-         * @param fullName Defines the FQDN of the file to load
+         * @param fileName Defines the name of the file to load
          * @returns a promise which completes when objects have been loaded to the scene
          */
-        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string): Promise<void>;
+        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
         /**
          * Load into an asset container.
          * @param scene The scene to load into
          * @param data The data to import
          * @param rootUrl The root url for scene and resources
          * @param onProgress The callback when the load progresses
-         * @param fullName Defines the FQDN of the file to load
+         * @param fileName Defines the name of the file to load
          * @returns The loaded asset container
          */
-        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string): Promise<AssetContainer>;
+        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
         /**
          * Read the OBJ file and create an Array of meshes.
          * Each mesh contains all information given by the OBJ and the MTL file.
