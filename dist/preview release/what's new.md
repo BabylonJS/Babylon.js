@@ -138,6 +138,7 @@
 - Added support for EXT_lights_imageBased ([bghgary](http://www.github.com/bghgary))
 - Added support for MSFT_audio_emitter ([najadojo](http://www.github.com/najadojo))
 - Added support for custom loader extensions ([bghgary](http://www.github.com/bghgary))
+- Added support for validating assets using [glTF-Validator](https://github.com/KhronosGroup/glTF-Validator) ([bghgary](http://www.github.com/bghgary))
 
 ### glTF Serializer
 - Added support for exporting the scale, rotation and offset texture properties ([kcoley](http://www.github.com/kcoley))
