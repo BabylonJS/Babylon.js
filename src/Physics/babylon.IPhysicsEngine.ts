@@ -152,7 +152,7 @@ module BABYLON {
          * Called by the scene. No need to call it.
          * @param delta defines the timespam between frames
          */
-        step(delta: number): void;
+        _step(delta: number): void;
     }
 
 }
