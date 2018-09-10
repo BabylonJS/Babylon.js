@@ -1,4 +1,5 @@
 
+
 declare module BABYLON {
     /**
      * Mode that determines the coordinate system to use.
@@ -35,11 +36,11 @@ declare module BABYLON {
      */
     interface IGLTFLoaderData {
         /**
-         * JSON that represents the glTF.
+         * Object that represents the glTF JSON.
          */
         json: Object;
         /**
-         * The BIN chunk of a binary glTF
+         * The BIN chunk of a binary glTF.
          */
         bin: Nullable<ArrayBufferView>;
     }
@@ -140,8 +141,6 @@ declare module BABYLON {
          * If true, no extra effects are applied to transparent pixels.
          */
         transparencyAsCoverage: boolean;
-        /** @hidden */
-        _normalizeAnimationGroupsToBeginAtZero: boolean;
         /**
          * Function called before loading a url referenced by the asset.
          */
@@ -224,15 +223,6 @@ declare module BABYLON {
          */
         onExtensionLoaded: (extension: IGLTFLoaderExtension) => void;
         /**
-         * Returns a promise that resolves when the asset is completely loaded.
-         * @returns a promise that resolves when the asset is completely loaded.
-         */
-        whenCompleteAsync(): Promise<void>;
-        /**
-         * The loader state or null if the loader is not active.
-         */
-        readonly loaderState: Nullable<GLTFLoaderState>;
-        /**
          * Defines if the loader logging is enabled.
          */
         loggingEnabled: boolean;
@@ -240,6 +230,19 @@ declare module BABYLON {
          * Defines if the loader should capture performance counters.
          */
         capturePerformanceCounters: boolean;
+        /**
+         * Defines if the loader should validate the asset.
+         */
+        validate: boolean;
+        /**
+         * Observable raised after validation when validate is set to true. The event data is the result of the validation.
+         */
+        readonly onValidatedObservable: Observable<IGLTFValidationResults>;
+        private _onValidatedObserver;
+        /**
+         * Callback raised after a loader extension is created.
+         */
+        onValidated: (results: IGLTFValidationResults) => void;
         private _loader;
         /**
          * Name of the loader ("gltf")
@@ -306,11 +309,21 @@ declare module BABYLON {
          * @returns the created plugin
          */
         createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        private _parse;
+        /**
+         * The loader state or null if the loader is not active.
+         */
+        readonly loaderState: Nullable<GLTFLoaderState>;
+        /**
+         * Returns a promise that resolves when the asset is completely loaded.
+         * @returns a promise that resolves when the asset is completely loaded.
+         */
+        whenCompleteAsync(): Promise<void>;
+        private _parseAsync;
+        private _validateAsync;
         private _getLoader;
-        private _parseBinary;
-        private _parseV1;
-        private _parseV2;
+        private _unpackBinary;
+        private _unpackBinaryV1;
+        private _unpackBinaryV2;
         private static _parseVersion;
         private static _compareVersion;
         private static _decodeBufferToText;
@@ -336,7 +349,6 @@ declare module BABYLON {
         private _endPerformanceCounterDisabled;
     }
 }
-
 
 
 declare module BABYLON.GLTF2 {
@@ -908,38 +920,6 @@ declare module BABYLON.GLTF2.Extensions {
 
 declare module BABYLON.GLTF2.Extensions {
     /**
-     * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
-     */
-    class MSFT_audio_emitter implements IGLTFLoaderExtension {
-        /** The name of this extension. */
-        readonly name: string;
-        /** Defines whether this extension is enabled. */
-        enabled: boolean;
-        private _loader;
-        private _clips;
-        private _emitters;
-        /** @hidden */
-        constructor(loader: GLTFLoader);
-        /** @hidden */
-        dispose(): void;
-        /** @hidden */
-        onLoading(): void;
-        /** @hidden */
-        loadSceneAsync(context: string, scene: ILoaderScene): Nullable<Promise<void>>;
-        /** @hidden */
-        loadNodeAsync(context: string, node: ILoaderNode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
-        /** @hidden */
-        loadAnimationAsync(context: string, animation: ILoaderAnimation): Nullable<Promise<AnimationGroup>>;
-        private _loadClipAsync;
-        private _loadEmitterAsync;
-        private _getEventAction;
-        private _loadAnimationEventAsync;
-    }
-}
-
-
-declare module BABYLON.GLTF2.Extensions {
-    /**
      * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_lod)
      */
     class MSFT_lod implements IGLTFLoaderExtension {
@@ -1013,6 +993,38 @@ declare module BABYLON.GLTF2.Extensions {
         constructor(loader: GLTFLoader);
         dispose(): void;
         loadMaterialPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+    }
+}
+
+
+declare module BABYLON.GLTF2.Extensions {
+    /**
+     * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
+     */
+    class MSFT_audio_emitter implements IGLTFLoaderExtension {
+        /** The name of this extension. */
+        readonly name: string;
+        /** Defines whether this extension is enabled. */
+        enabled: boolean;
+        private _loader;
+        private _clips;
+        private _emitters;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        onLoading(): void;
+        /** @hidden */
+        loadSceneAsync(context: string, scene: ILoaderScene): Nullable<Promise<void>>;
+        /** @hidden */
+        loadNodeAsync(context: string, node: ILoaderNode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
+        /** @hidden */
+        loadAnimationAsync(context: string, animation: ILoaderAnimation): Nullable<Promise<AnimationGroup>>;
+        private _loadClipAsync;
+        private _loadEmitterAsync;
+        private _getEventAction;
+        private _loadAnimationEventAsync;
     }
 }
 
