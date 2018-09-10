@@ -52,7 +52,7 @@ module BABYLON {
         /** Creates the inspector window. */
         private _createInspector(config: {
             popup?: boolean,
-            initialTab?: number,
+            initialTab?: number | string,
             parentElement?: HTMLElement,
             newColors?: {
                 backgroundColor?: string,
@@ -117,7 +117,7 @@ module BABYLON {
 
         public show(config: {
             popup?: boolean,
-            initialTab?: number,
+            initialTab?: number | string,
             parentElement?: HTMLElement,
             newColors?: {
                 backgroundColor?: string,
