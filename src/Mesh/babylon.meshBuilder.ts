@@ -776,6 +776,7 @@
          * * The parameter `maxHeight` (float, default 1) is the maximum altitude on the ground.   
          * * The parameter `colorFilter` (optional Color3, default (0.3, 0.59, 0.11) ) is the filter to apply to the image pixel colors to compute the height.  
          * * The parameter `onReady` is a javascript callback function that will be called  once the mesh is just built (the height map download can last some time).  
+         * * The parameter `alphaFilter` will filter any data where the alpha channel is below this value, defaults 0 (all data visible)
          * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          * @param name defines the name of the mesh
          * @param url defines the url to the height map
@@ -785,13 +786,14 @@
          * @see http://doc.babylonjs.com/babylon101/height_map   
          * @see http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#ground-from-a-height-map
          */
-        public static CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, colorFilter?: Color3, updatable?: boolean, onReady?: (mesh: GroundMesh) => void }, scene: Scene): GroundMesh {
+        public static CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, colorFilter?: Color3, alphaFilter?: number, updatable?: boolean, onReady?: (mesh: GroundMesh) => void }, scene: Scene): GroundMesh {
             var width = options.width || 10.0;
             var height = options.height || 10.0;
             var subdivisions = options.subdivisions || 1 | 0;
             var minHeight = options.minHeight || 0.0;
             var maxHeight = options.maxHeight || 1.0;
             var filter = options.colorFilter || new Color3(0.3, 0.59, 0.11);
+            var alphaFilter = options.alphaFilter || 0.0;
             var updatable = options.updatable;
             var onReady = options.onReady;
 
@@ -834,7 +836,8 @@
                     width: width, height: height,
                     subdivisions: subdivisions,
                     minHeight: minHeight, maxHeight: maxHeight, colorFilter: filter,
-                    buffer: buffer, bufferWidth: bufferWidth, bufferHeight: bufferHeight
+                    buffer: buffer, bufferWidth: bufferWidth, bufferHeight: bufferHeight, 
+                    alphaFilter: alphaFilter
                 });
 
                 vertexData.applyToMesh(ground, updatable);
