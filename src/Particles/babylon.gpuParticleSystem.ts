@@ -117,9 +117,12 @@
 
         /**
          * Starts the particle system and begins to emit
-         * @param delay defines the delay in milliseconds before starting the system (0 by default)
+         * @param delay defines the delay in milliseconds before starting the system (this.startDelay by default)
          */
-        public start(delay = 0): void {
+        public start(delay = this.startDelay): void {
+            if(!this.targetStopDuration && this._hasTargetStopDurationDependantGradient()){
+                throw "Particle system started with a targetStopDuration dependant gradient (eg. startSizeGradients) but no targetStopDuration set";
+            }
             if (delay) {
                 setTimeout(()=> {
                     this.start(0);
@@ -580,7 +583,7 @@
             this._scene.particleSystems.push(this);
 
             this._updateEffectOptions = {
-                attributes: ["position", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle", "cellIndex", "cellStartOffset"],
+                attributes: ["position", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle", "cellIndex", "cellStartOffset", "noiseCoordinates1", "noiseCoordinates2"],
                 uniformsNames: ["currentCount", "timeDelta", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "scaleRange","gravity", "emitPower",
                                 "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "coneAngle", "stopFactor", 
                                 "angleRange", "radiusRange", "cellInfos", "noiseStrength", "limitVelocityDamping"],
@@ -665,7 +668,14 @@
                     updateVertexBuffers["cellStartOffset"] = source.createVertexBuffer("cellStartOffset", offset, 1);
                     offset += 1;
                 }
-            }            
+            }           
+            
+            if (this.noiseTexture) {
+                updateVertexBuffers["noiseCoordinates1"] = source.createVertexBuffer("noiseCoordinates1", offset, 3);
+                offset += 3;
+                updateVertexBuffers["noiseCoordinates2"] = source.createVertexBuffer("noiseCoordinates2", offset, 3);
+                offset += 3;
+            }
            
             let vao = this._engine.recordVertexArrayObject(updateVertexBuffers, null, this._updateEffect);
             this._engine.bindArrayBuffer(null);
@@ -708,7 +718,14 @@
                     renderVertexBuffers["cellStartOffset"] = source.createVertexBuffer("cellStartOffset", offset, 1, this._attributesStrideSize, true);
                     offset += 1;
                 }
-            }               
+            }     
+            
+            if (this.noiseTexture) {
+                renderVertexBuffers["noiseCoordinates1"] = source.createVertexBuffer("noiseCoordinates1", offset, 3, this._attributesStrideSize, true);
+                offset += 3;
+                renderVertexBuffers["noiseCoordinates2"] = source.createVertexBuffer("noiseCoordinates2", offset, 3, this._attributesStrideSize, true);
+                offset += 3;
+            }
 
             renderVertexBuffers["offset"] = spriteSource.createVertexBuffer("offset", 0, 2);
             renderVertexBuffers["uv"] = spriteSource.createVertexBuffer("uv", 2, 2);
@@ -744,7 +761,11 @@
                 if (this.spriteRandomStartCell) {
                     this._attributesStrideSize += 1;
                 }
-            }            
+            }     
+            
+            if (this.noiseTexture) {
+                this._attributesStrideSize += 6;
+            }
 
             for (var particleIndex = 0; particleIndex < this._capacity; particleIndex++) {
                 // position
@@ -799,7 +820,16 @@
                     if (this.spriteRandomStartCell) {
                         data.push(0.0); 
                     }
-                }                
+                }    
+                
+                if (this.noiseTexture) { // Random coordinates for reading into noise texture
+                    data.push(Math.random());
+                    data.push(Math.random());
+                    data.push(Math.random());
+                    data.push(Math.random());
+                    data.push(Math.random());
+                    data.push(Math.random());
+                }
             }
 
             // Sprite data
@@ -895,7 +925,12 @@
                 if (this.spriteRandomStartCell) {
                     this._updateEffectOptions.transformFeedbackVaryings.push("outCellStartOffset");
                 }
-            }               
+            }         
+            
+            if (this.noiseTexture) {
+                this._updateEffectOptions.transformFeedbackVaryings.push("outNoiseCoordinates1");
+                this._updateEffectOptions.transformFeedbackVaryings.push("outNoiseCoordinates2");
+            }
 
             this._updateEffectOptions.defines = defines;
             this._updateEffect = new Effect("gpuUpdateParticles", this._updateEffectOptions, this._scene.getEngine());   

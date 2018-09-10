@@ -295,15 +295,9 @@
 
                         // Noise
                         if (noiseTextureData && noiseTextureSize) {
-                            let localPosition = Tmp.Vector3[0];
-                            let emitterPosition = Tmp.Vector3[1];
-
-                            this._emitterWorldMatrix.getTranslationToRef(emitterPosition);
-                            particle.position.subtractToRef(emitterPosition, localPosition);
-
-                            let fetchedColorR = this._fetchR(localPosition.y, localPosition.z, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
-                            let fetchedColorG = this._fetchR(localPosition.x + 0.33, localPosition.z + 0.33, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
-                            let fetchedColorB = this._fetchR(localPosition.x - 0.33, localPosition.y - 0.33, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+                            let fetchedColorR = this._fetchR(particle._randomNoiseCoordinates1.x, particle._randomNoiseCoordinates1.y, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+                            let fetchedColorG = this._fetchR(particle._randomNoiseCoordinates1.z, particle._randomNoiseCoordinates2.x, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+                            let fetchedColorB = this._fetchR(particle._randomNoiseCoordinates2.y, particle._randomNoiseCoordinates2.z, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
 
                             let force = Tmp.Vector3[0];
                             let scaledForce = Tmp.Vector3[1];
@@ -997,9 +991,12 @@
 
         /**
          * Starts the particle system and begins to emit
-         * @param delay defines the delay in milliseconds before starting the system (0 by default)
+         * @param delay defines the delay in milliseconds before starting the system (this.startDelay by default)
          */
-        public start(delay = 0): void {
+        public start(delay = this.startDelay): void {
+            if(!this.targetStopDuration && this._hasTargetStopDurationDependantGradient()){
+                throw "Particle system started with a targetStopDuration dependant gradient (eg. startSizeGradients) but no targetStopDuration set";
+            }
             if (delay) {
                 setTimeout(() => {
                     this.start(0);
@@ -1286,7 +1283,7 @@
                 particle.scale.copyFromFloats(Scalar.RandomRange(this.minScaleX, this.maxScaleX), Scalar.RandomRange(this.minScaleY, this.maxScaleY));
 
                 // Adjust scale by start size
-                if (this._startSizeGradients && this._startSizeGradients[0]) {
+                if (this._startSizeGradients && this._startSizeGradients[0] && this.targetStopDuration) {
                     const ratio = this._actualFrame / this.targetStopDuration;
                     Tools.GetCurrentGradient(ratio, this._startSizeGradients, (currentGradient, nextGradient, scale) => {
                         if (currentGradient !== this._currentStartSizeGradient) {
@@ -1385,6 +1382,18 @@
                 if (this._useRampGradients) {
                     particle.remapData = new Vector4(0, 1, 0, 1);
                 }
+
+                // Noise texture coordinates
+                if (this.noiseTexture) {
+                    if (particle._randomNoiseCoordinates1) {
+                        particle._randomNoiseCoordinates1.copyFromFloats(Math.random(), Math.random(), Math.random());
+                        particle._randomNoiseCoordinates2.copyFromFloats(Math.random(), Math.random(), Math.random());
+                    } else {
+                        particle._randomNoiseCoordinates1 = new Vector3(Math.random(), Math.random(), Math.random());
+                        particle._randomNoiseCoordinates2 = new Vector3(Math.random(), Math.random(), Math.random());
+                    }            
+                }
+    
             }
         }
 
