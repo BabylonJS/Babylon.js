@@ -45,7 +45,7 @@ module BABYLON {
         }
 
         protected _getDefines(): string {
-            return "#define OCTAVES " + this.octaves;
+            return "#define OCTAVES " + (this.octaves | 0);
         }
 
         /** Generate the current state of the procedural texture */

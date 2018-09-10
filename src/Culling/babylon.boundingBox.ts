@@ -15,6 +15,11 @@
         private _worldMatrix: Matrix;
 
         /**
+         * @hidden
+         */
+        public _tag: number;
+
+        /**
          * Creates a new bounding box
          * @param min defines the minimum vector (in local space)
          * @param max defines the maximum vector (in local space)
