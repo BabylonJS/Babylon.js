@@ -91,6 +91,10 @@ in float cellIndex;
 in float cellStartOffset;
 #endif
 #endif
+#ifdef NOISE
+in vec3 noiseCoordinates1;
+in vec3 noiseCoordinates2;
+#endif
 
 // Output
 out vec3 outPosition;
@@ -115,6 +119,10 @@ out float outCellIndex;
 #ifdef ANIMATESHEETRANDOMSTART
 out float outCellStartOffset;
 #endif
+#endif
+#ifdef NOISE
+out vec3 outNoiseCoordinates1;
+out vec3 outNoiseCoordinates2;
 #endif
 
 #ifdef SIZEGRADIENTS
@@ -157,9 +165,7 @@ vec4 getRandomVec4(float offset) {
 }
 
 void main() {
-  float newAge = age + timeDelta;
-
-    
+  float newAge = age + timeDelta;    
 
   // If particle is dead and system is not stopped, spawn as new particle
   if (newAge >= life && stopFactor != 0.) {
@@ -320,6 +326,11 @@ void main() {
 #endif    
 #endif
 
+#ifdef NOISE
+    outNoiseCoordinates1 = noiseCoordinates1;
+    outNoiseCoordinates2 = noiseCoordinates2;
+#endif
+
   } else {
     float directionScale = timeDelta;
     outAge = newAge;
@@ -369,13 +380,17 @@ void main() {
 #ifdef NOISE
     vec3 localPosition = outPosition - emitterWM[3].xyz;
 
-    float fetchedR = texture(noiseSampler, vec2(localPosition.y, localPosition.z) * vec2(0.5) + vec2(0.5)).r;
-    float fetchedG = texture(noiseSampler, vec2(localPosition.x + 0.33, localPosition.z + 0.33) * vec2(0.5) + vec2(0.5)).r;
-    float fetchedB = texture(noiseSampler, vec2(localPosition.z - 0.33, localPosition.y - 0.33) * vec2(0.5) + vec2(0.5)).r;
+    float fetchedR = texture(noiseSampler, vec2(noiseCoordinates1.x, noiseCoordinates1.y) * vec2(0.5) + vec2(0.5)).r;
+    float fetchedG = texture(noiseSampler, vec2(noiseCoordinates1.z, noiseCoordinates2.x) * vec2(0.5) + vec2(0.5)).r;
+    float fetchedB = texture(noiseSampler, vec2(noiseCoordinates2.y, noiseCoordinates2.z) * vec2(0.5) + vec2(0.5)).r;
 
     vec3 force = vec3(2. * fetchedR - 1., 2. * fetchedG - 1., 2. * fetchedB - 1.) * noiseStrength;
 
     outDirection = outDirection + force * timeDelta;
+
+    outNoiseCoordinates1 = noiseCoordinates1;
+    outNoiseCoordinates2 = noiseCoordinates2;
+
 #endif    
 
 #ifdef ANGULARSPEEDGRADIENTS

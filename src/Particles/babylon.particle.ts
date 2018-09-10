@@ -124,6 +124,11 @@
         public _currentDrag1 = 0;
         /** @hidden */
         public _currentDrag2 = 0;  
+
+        /** @hidden */
+        public _randomNoiseCoordinates1: Vector3;
+        /** @hidden */
+        public _randomNoiseCoordinates2: Vector3;
      
 
         /**
@@ -152,16 +157,23 @@
          */
         public updateCellIndex(): void {
             let offsetAge = this.age;
+            let changeSpeed = this.particleSystem.spriteCellChangeSpeed;
 
             if (this.particleSystem.spriteRandomStartCell) {
                 if (this._randomCellOffset === undefined) {         
                     this._randomCellOffset = Math.random() * this.lifeTime;
                 }
-                offsetAge += this._randomCellOffset;
+
+                if (changeSpeed === 0) { // Special case when speed = 0 meaning we want to stay on initial cell
+                    changeSpeed = 1;
+                    offsetAge = this._randomCellOffset;
+                } else {
+                    offsetAge += this._randomCellOffset;
+                }
             }
 
             let dist = (this._initialEndSpriteCellID - this._initialStartSpriteCellID);
-            let ratio = Scalar.Clamp(((offsetAge * this.particleSystem.spriteCellChangeSpeed) % this.lifeTime) / this.lifeTime);
+            let ratio = Scalar.Clamp(((offsetAge * changeSpeed) % this.lifeTime) / this.lifeTime);
 
             this.cellIndex = this._initialStartSpriteCellID + (ratio * dist) | 0;
         }
@@ -244,6 +256,15 @@
             }
             if (this.particleSystem.useRampGradients) {
                 other.remapData.copyFrom(this.remapData);
+            }
+            if (this._randomNoiseCoordinates1) {
+                if (other._randomNoiseCoordinates1) {
+                    other._randomNoiseCoordinates1.copyFromFloats(Math.random(), Math.random(), Math.random());
+                    other._randomNoiseCoordinates2.copyFromFloats(Math.random(), Math.random(), Math.random());
+                } else {
+                    other._randomNoiseCoordinates1 = new Vector3(Math.random(), Math.random(), Math.random());
+                    other._randomNoiseCoordinates2 = new Vector3(Math.random(), Math.random(), Math.random());
+                }
             }
         }
     }
