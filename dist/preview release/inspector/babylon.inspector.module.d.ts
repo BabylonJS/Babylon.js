@@ -113,7 +113,7 @@ declare module 'babylonjs-inspector/Inspector' {
                 * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
                 * If the parameter 'popup' is true, the inspector is created in another popup.
                 */
-            constructor(scene: Scene, popup?: boolean, initialTab?: number, parentElement?: Nullable<HTMLElement>, newColors?: {
+            constructor(scene: Scene, popup?: boolean, initialTab?: number | string, parentElement?: Nullable<HTMLElement>, newColors?: {
                     backgroundColor?: string;
                     backgroundColorLighter?: string;
                     backgroundColorLighter2?: string;
@@ -835,12 +835,15 @@ declare module 'babylonjs-inspector/tabs/GLTFTab' {
     import { Inspector } from "babylonjs-inspector/Inspector";
     import { Tab } from "babylonjs-inspector/tabs/Tab";
     import { TabBar } from "babylonjs-inspector/tabs/TabBar";
+    import "babylonjs-gltf2interface";
     export class GLTFTab extends Tab {
         static readonly IsSupported: boolean;
         /** @hidden */
         static _Initialize(): void;
         constructor(tabbar: TabBar, inspector: Inspector);
         dispose(): void;
+        /** @hidden */
+        static _GetLoaderDefaultsAsync(): Promise<any>;
     }
 }
 
@@ -1014,7 +1017,7 @@ declare module 'babylonjs-inspector/tabs/TabBar' {
         * The default active tab is the first one of the list.
         */
     export class TabBar extends BasicElement {
-            constructor(inspector: Inspector, initialTab?: number);
+            constructor(inspector: Inspector, initialTab?: number | string);
             update(): void;
             protected _build(): void;
             /** Dispose the current tab, set the given tab as active, and refresh the treeview */
@@ -1026,6 +1029,7 @@ declare module 'babylonjs-inspector/tabs/TabBar' {
             /** Returns the active tab */
             getActiveTab(): Nullable<Tab>;
             getActiveTabIndex(): number;
+            getTabIndex(name: string): number;
             readonly inspector: Inspector;
             /**
                 * Returns the total width in pixel of the tabbar,
@@ -1373,7 +1377,7 @@ declare module INSPECTOR {
                 * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
                 * If the parameter 'popup' is true, the inspector is created in another popup.
                 */
-            constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number, parentElement?: BABYLON.Nullable<HTMLElement>, newColors?: {
+            constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number | string, parentElement?: BABYLON.Nullable<HTMLElement>, newColors?: {
                     backgroundColor?: string;
                     backgroundColorLighter?: string;
                     backgroundColorLighter2?: string;
@@ -2000,6 +2004,8 @@ declare module INSPECTOR {
         static _Initialize(): void;
         constructor(tabbar: TabBar, inspector: Inspector);
         dispose(): void;
+        /** @hidden */
+        static _GetLoaderDefaultsAsync(): Promise<any>;
     }
 }
 declare module INSPECTOR {
@@ -2118,7 +2124,7 @@ declare module INSPECTOR {
         * The default active tab is the first one of the list.
         */
     export class TabBar extends BasicElement {
-            constructor(inspector: Inspector, initialTab?: number);
+            constructor(inspector: Inspector, initialTab?: number | string);
             update(): void;
             protected _build(): void;
             /** Dispose the current tab, set the given tab as active, and refresh the treeview */
@@ -2130,6 +2136,7 @@ declare module INSPECTOR {
             /** Returns the active tab */
             getActiveTab(): BABYLON.Nullable<Tab>;
             getActiveTabIndex(): number;
+            getTabIndex(name: string): number;
             readonly inspector: Inspector;
             /**
                 * Returns the total width in pixel of the tabbar,

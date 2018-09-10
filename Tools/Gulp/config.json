@@ -1087,7 +1087,8 @@
                 "../../src/Physics/babylon.physicsEngine.js",
                 "../../src/Physics/babylon.physicsHelper.js",
                 "../../src/Physics/Plugins/babylon.cannonJSPlugin.js",
-                "../../src/Physics/Plugins/babylon.oimoJSPlugin.js"
+                "../../src/Physics/Plugins/babylon.oimoJSPlugin.js",
+                "../../src/Physics/babylon.physicsEngineComponent.js"
             ],
             "dependUpon": [
                 "core",
