@@ -258,10 +258,10 @@ var BABYLON;
          * @param data the glTF data to load
          * @param rootUrl root url to load from
          * @param onProgress event that fires when loading progress has occured
-         * @param fullName Defines the FQDN of the file to load
+         * @param fileName Defines the name of the file to load
          * @returns a promise containg the loaded meshes, particles, skeletons and animations
          */
-        OBJFileLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onProgress, fullName) {
+        OBJFileLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onProgress, fileName) {
             //get the meshes from OBJ file
             return this._parseSolid(meshesNames, scene, data, rootUrl).then(function (meshes) {
                 return {
@@ -278,10 +278,10 @@ var BABYLON;
          * @param data the glTF data to load
          * @param rootUrl root url to load from
          * @param onProgress event that fires when loading progress has occured
-         * @param fullName Defines the FQDN of the file to load
+         * @param fileName Defines the name of the file to load
          * @returns a promise which completes when objects have been loaded to the scene
          */
-        OBJFileLoader.prototype.loadAsync = function (scene, data, rootUrl, onProgress, fullName) {
+        OBJFileLoader.prototype.loadAsync = function (scene, data, rootUrl, onProgress, fileName) {
             //Get the 3D model
             return this.importMeshAsync(null, scene, data, rootUrl, onProgress).then(function () {
                 // return void
@@ -293,10 +293,10 @@ var BABYLON;
          * @param data The data to import
          * @param rootUrl The root url for scene and resources
          * @param onProgress The callback when the load progresses
-         * @param fullName Defines the FQDN of the file to load
+         * @param fileName Defines the name of the file to load
          * @returns The loaded asset container
          */
-        OBJFileLoader.prototype.loadAssetContainerAsync = function (scene, data, rootUrl, onProgress, fullName) {
+        OBJFileLoader.prototype.loadAssetContainerAsync = function (scene, data, rootUrl, onProgress, fileName) {
             return this.importMeshAsync(null, scene, data, rootUrl).then(function (result) {
                 var container = new BABYLON.AssetContainer(scene);
                 result.meshes.forEach(function (mesh) { return container.meshes.push(mesh); });

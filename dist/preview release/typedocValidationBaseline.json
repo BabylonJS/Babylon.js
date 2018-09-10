@@ -1,7 +1,7 @@
 {
-  "errors": 3874,
+  "errors": 3867,
   "babylon.typedoc.json": {
-    "errors": 3874,
+    "errors": 3867,
     "AnimationGroup": {
       "Constructor": {
         "new AnimationGroup": {
@@ -7826,47 +7826,12 @@
                 "MissingText": true
               }
             },
-            "url": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "width": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "height": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "subdivisions": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "minHeight": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "maxHeight": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
             "scene": {
               "Comments": {
                 "MissingText": true
               }
             },
             "updatable": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "onReady": {
               "Comments": {
                 "MissingText": true
               }
