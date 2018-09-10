@@ -3,7 +3,7 @@ module BABYLON {
     export class PhysicsHelper {
 
         private _scene: Scene;
-        private _physicsEngine: Nullable<PhysicsEngine>;
+        private _physicsEngine: Nullable<IPhysicsEngine>;
 
         constructor(scene: Scene) {
             this._scene = scene;
