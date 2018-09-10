@@ -1,7 +1,7 @@
 {
-  "errors": 3867,
+  "errors": 3866,
   "babylon.typedoc.json": {
-    "errors": 3867,
+    "errors": 3866,
     "AnimationGroup": {
       "Constructor": {
         "new AnimationGroup": {
@@ -1837,11 +1837,6 @@
       },
       "Method": {
         "dispose": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "render": {
           "Comments": {
             "MissingText": true
           }

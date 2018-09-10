@@ -162,6 +162,10 @@
             this.renderList.reset();
         }
 
+        /**
+         * Render the bounding boxes of a specific rendering group
+         * @param renderingGroupId defines the rendering group to render
+         */
         public render(renderingGroupId: number): void {
             if (this.renderList.length === 0) {
                 return;
