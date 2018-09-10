@@ -1769,7 +1769,7 @@
                     var gradient = r * filter.r + g * filter.g + b * filter.b;
                     
                     // If our alpha channel is not within our filter then we will assign a 'special' height 
-                    // Then when building the indicies, we will ignore any vertex that is using the special height
+                    // Then when building the indices, we will ignore any vertex that is using the special height
                     if(a >= alphaFilter)
                         position.y = options.minHeight + (options.maxHeight - options.minHeight) * gradient;
                     else {
@@ -1786,16 +1786,14 @@
             // Indices
             for (row = 0; row < options.subdivisions; row++) {
                 for (col = 0; col < options.subdivisions; col++) {
-                    // Calculate indcies
+                    // Calculate Indices
                     var idx1 = (col + 1 + (row + 1) * (options.subdivisions + 1));
                     var idx2 = (col + 1 + row * (options.subdivisions + 1));
                     var idx3 = (col + row * (options.subdivisions + 1));
                     var idx4 = (col + (row + 1) * (options.subdivisions + 1));
-                    var idx5 = (col + 1 + (row + 1) * (options.subdivisions + 1));
-                    var idx6 = (col + row * (options.subdivisions + 1));
 
-                    // Check that all indicies are visible (based on our special height)
-                    // Only display the vertex if all indcies are visible
+                    // Check that all indices are visible (based on our special height)
+                    // Only display the vertex if all Indices are visible
                     var isVisibleIdx1 = positions[idx1 * 3 + 1] >= options.minHeight;
                     var isVisibleIdx2 = positions[idx2 * 3 + 1] >= options.minHeight;
                     var isVisibleIdx3 = positions[idx3 * 3 + 1] >= options.minHeight;
@@ -1806,12 +1804,10 @@
                     }
 
                     var isVisibleIdx4 = positions[idx4 * 3 + 1] >= options.minHeight;
-                    var isVisibleIdx5 = positions[idx5 * 3 + 1] >= options.minHeight;
-                    var isVisibleIdx6 = positions[idx6 * 3 + 1] >= options.minHeight;
-                    if (isVisibleIdx4 && isVisibleIdx5 && isVisibleIdx6) {
+                    if (isVisibleIdx4 && isVisibleIdx1 && isVisibleIdx3) {
                         indices.push(idx4);
-                        indices.push(idx5);
-                        indices.push(idx6);
+                        indices.push(idx1);
+                        indices.push(idx3);
                     }
                 }
             }
