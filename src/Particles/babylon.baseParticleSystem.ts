@@ -266,6 +266,17 @@ module BABYLON {
         protected _rampGradients: Nullable<Array<Color3Gradient>> = null;
         protected _colorRemapGradients: Nullable<Array<FactorGradient>> = null;
         protected _alphaRemapGradients: Nullable<Array<FactorGradient>> = null;        
+        
+        protected _hasTargetStopDurationDependantGradient(){
+            return (this._startSizeGradients && this._startSizeGradients.length > 0)
+                || (this._emitRateGradients && this._emitRateGradients.length > 0)
+                || (this._lifeTimeGradients && this._lifeTimeGradients.length > 0);
+        }
+
+        /**
+         * Defines the delay in milliseconds before starting the system (0 by default)
+         */
+        public startDelay = 0;
 
         /**
          * Gets the current list of drag gradients.
