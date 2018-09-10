@@ -3136,6 +3136,7 @@
          * The parameter `minHeight` (float, default 0) is the minimum altitude on the ground.     
          * The parameter `maxHeight` (float, default 1) is the maximum altitude on the ground.   
          * The parameter `onReady` is a javascript callback function that will be called  once the mesh is just built (the height map download can last some time).  
+         * The parameter `alphaFilter` will filter any data where the alpha channel is below this value, defaults 0 (all data visible)
          * This function is passed the newly built mesh : 
          * ```javascript
          * function(mesh) { // do things
@@ -3143,7 +3144,7 @@
          * ```
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void): GroundMesh {
+        public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void, alphaFilter?: number): GroundMesh {
             var options = {
                 width: width,
                 height: height,
@@ -3151,7 +3152,8 @@
                 minHeight: minHeight,
                 maxHeight: maxHeight,
                 updatable: updatable,
-                onReady: onReady
+                onReady: onReady,
+                alphaFilter: alphaFilter
             };
 
             return MeshBuilder.CreateGroundFromHeightMap(name, url, options, scene);
