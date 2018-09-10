@@ -149,7 +149,7 @@
          * Called by the scene. No need to call it.
          * @param delta defines the timespam between frames
          */
-        public step(delta: number) {
+        public _step(delta: number) {
             //check if any mesh has no body / requires an update
             this._impostors.forEach((impostor) => {
 
