@@ -33,7 +33,7 @@ declare module INSPECTOR {
                 * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
                 * If the parameter 'popup' is true, the inspector is created in another popup.
                 */
-            constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number, parentElement?: BABYLON.Nullable<HTMLElement>, newColors?: {
+            constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number | string, parentElement?: BABYLON.Nullable<HTMLElement>, newColors?: {
                     backgroundColor?: string;
                     backgroundColorLighter?: string;
                     backgroundColorLighter2?: string;
@@ -660,6 +660,8 @@ declare module INSPECTOR {
         static _Initialize(): void;
         constructor(tabbar: TabBar, inspector: Inspector);
         dispose(): void;
+        /** @hidden */
+        static _GetLoaderDefaultsAsync(): Promise<any>;
     }
 }
 declare module INSPECTOR {
@@ -778,7 +780,7 @@ declare module INSPECTOR {
         * The default active tab is the first one of the list.
         */
     export class TabBar extends BasicElement {
-            constructor(inspector: Inspector, initialTab?: number);
+            constructor(inspector: Inspector, initialTab?: number | string);
             update(): void;
             protected _build(): void;
             /** Dispose the current tab, set the given tab as active, and refresh the treeview */
@@ -790,6 +792,7 @@ declare module INSPECTOR {
             /** Returns the active tab */
             getActiveTab(): BABYLON.Nullable<Tab>;
             getActiveTabIndex(): number;
+            getTabIndex(name: string): number;
             readonly inspector: Inspector;
             /**
                 * Returns the total width in pixel of the tabbar,

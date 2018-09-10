@@ -14,6 +14,10 @@ declare module BABYLON {
          * The sample rate to bake animation curves
          */
         animationSampleRate?: number;
+        /**
+         * Begin serialization without waiting for the scene to be ready
+         */
+        exportWithoutWaitingForScene?: boolean;
     }
     /**
      * Class for generating glTF data from a Babylon scene.
@@ -28,6 +32,8 @@ declare module BABYLON {
          * as keys and their data and paths as values
          */
         static GLTFAsync(scene: Scene, filePrefix: string, options?: IExportOptions): Promise<GLTFData>;
+        private static _PreExportAsync;
+        private static _PostExportAsync;
         /**
          * Exports the geometry of the scene to .glb file format asychronously
          * @param scene Babylon scene with scene hierarchy information
@@ -40,7 +46,7 @@ declare module BABYLON {
 }
 
 
-declare module BABYLON.GLTF2 {
+declare module BABYLON.GLTF2.Exporter {
     /**
      * Converts Babylon Scene into glTF 2.0.
      * @hidden
@@ -49,11 +55,11 @@ declare module BABYLON.GLTF2 {
         /**
          * Stores all generated buffer views, which represents views into the main glTF buffer data
          */
-        private _bufferViews;
+        _bufferViews: IBufferView[];
         /**
          * Stores all the generated accessors, which is used for accessing the data within the buffer views in glTF
          */
-        private _accessors;
+        _accessors: IAccessor[];
         /**
          * Stores all the generated nodes, which contains transform and/or mesh information per node
          */
@@ -131,13 +137,37 @@ declare module BABYLON.GLTF2 {
          */
         private _shouldExportTransformNode;
         private _localEngine;
-        private _glTFMaterialExporter;
+        _glTFMaterialExporter: _GLTFMaterialExporter;
+        private _extensions;
+        private _extensionsUsed;
+        private _extensionsRequired;
+        private static _ExtensionNames;
+        private static _ExtensionFactories;
+        private _applyExtensions;
+        _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Nullable<Promise<BaseTexture>>;
+        _extensionsPostExportMeshPrimitiveAsync(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Nullable<Promise<IMeshPrimitive>>;
+        /**
+         * Load glTF serializer extensions
+         */
+        private _loadExtensions;
         /**
          * Creates a glTF Exporter instance, which can accept optional exporter options
          * @param babylonScene Babylon scene object
          * @param options Options to modify the behavior of the exporter
          */
         constructor(babylonScene: Scene, options?: IExportOptions);
+        /**
+         * Registers a glTF exporter extension
+         * @param name Name of the extension to export
+         * @param factory The factory function that creates the exporter extension
+         */
+        static RegisterExtension(name: string, factory: (exporter: _Exporter) => IGLTFExporterExtension): void;
+        /**
+         * Un-registers an exporter extension
+         * @param name The name fo the exporter extension
+         * @returns A boolean indicating whether the extension has been un-registered
+         */
+        static UnregisterExtension(name: string): boolean;
         /**
          * Lazy load a local engine with premultiplied alpha set to false
          */
@@ -208,7 +238,7 @@ declare module BABYLON.GLTF2 {
          * @param binaryWriter The buffer to write the binary data to
          * @param indices Used to specify the order of the vertex data
          */
-        private writeAttributeData;
+        writeAttributeData(vertexBufferKind: string, meshAttributeArray: FloatArray, byteStride: number, binaryWriter: _BinaryWriter): void;
         /**
          * Generates glTF json data
          * @param shouldUseGlb Indicates whether the json should be written for a glb file
@@ -279,7 +309,7 @@ declare module BABYLON.GLTF2 {
          * @param babylonTransformNode Babylon mesh to get the primitive attribute data from
          * @param binaryWriter Buffer to write the attribute data to
          */
-        private setPrimitiveAttributes;
+        private setPrimitiveAttributesAsync;
         /**
          * Creates a glTF scene based on the array of meshes
          * Returns the the total byte offset
@@ -295,14 +325,14 @@ declare module BABYLON.GLTF2 {
          * @param binaryWriter Buffer to write binary data to
          * @returns Node mapping of unique id to index
          */
-        private createNodeMapAndAnimations;
+        private createNodeMapAndAnimationsAsync;
         /**
          * Creates a glTF node from a Babylon mesh
          * @param babylonMesh Source Babylon mesh
          * @param binaryWriter Buffer for storing geometry data
          * @returns glTF node
          */
-        private createNode;
+        private createNodeAsync;
     }
     /**
      * @hidden
@@ -396,7 +426,7 @@ declare module BABYLON {
 }
 
 
-declare module BABYLON.GLTF2 {
+declare module BABYLON.GLTF2.Exporter {
     /**
      * Utility methods for working with glTF material conversion properties.  This class should only be used internally
      * @hidden
@@ -600,12 +630,10 @@ declare module BABYLON.GLTF2 {
          * Extracts a texture from a Babylon texture into file data and glTF data
          * @param babylonTexture Babylon texture to extract
          * @param mimeType Mime Type of the babylonTexture
-         * @param images Array of glTF images
-         * @param textures Array of glTF textures
-         * @param imageData map of image file name and data
          * @return glTF texture info, or null if the texture format is not supported
          */
-        private _exportTextureAsync;
+        _exportTextureAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>>;
+        _exportTextureInfoAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>>;
         /**
          * Builds a texture from base64 string
          * @param base64Texture base64 texture string
@@ -621,7 +649,7 @@ declare module BABYLON.GLTF2 {
 }
 
 
-declare module BABYLON.GLTF2 {
+declare module BABYLON.GLTF2.Exporter {
     /**
      * @hidden
      * Interface to store animation data.
@@ -797,7 +825,7 @@ declare module BABYLON.GLTF2 {
 }
 
 
-declare module BABYLON.GLTF2 {
+declare module BABYLON.GLTF2.Exporter {
     /**
      * @hidden
      */
@@ -889,5 +917,87 @@ declare module BABYLON.GLTF2 {
          */
         static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]): void;
         static _NormalizeTangentFromRef(tangent: Vector4): void;
+    }
+}
+
+
+declare module BABYLON.GLTF2.Exporter {
+    /**
+     * Interface for a glTF exporter extension
+     * @hidden
+     */
+    interface IGLTFExporterExtension extends BABYLON.IGLTFExporterExtension, IDisposable {
+        /**
+         * Define this method to modify the default behavior before exporting a texture
+         * @param context The context when loading the asset
+         * @param babylonTexture The glTF texture info property
+         * @param mimeType The mime-type of the generated image
+         * @returns A promise that resolves with the exported glTF texture info when the export is complete, or null if not handled
+         */
+        preExportTextureAsync?(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Nullable<Promise<Texture>>;
+        /**
+         * Define this method to modify the default behavior when exporting texture info
+         * @param context The context when loading the asset
+         * @param meshPrimitive glTF mesh primitive
+         * @param babylonSubMesh Babylon submesh
+         * @param binaryWriter glTF serializer binary writer instance
+         */
+        postExportMeshPrimitiveAsync?(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Nullable<Promise<IMeshPrimitive>>;
+    }
+}
+/**
+ * Defines the module for the built-in glTF 2.0 exporter extensions.
+ */
+declare module BABYLON.GLTF2.Extensions {
+}
+
+
+declare module BABYLON {
+    /**
+     * Interface for extending the exporter
+     * @hidden
+     */
+    interface IGLTFExporterExtension {
+        /**
+         * The name of this extension
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled
+         */
+        enabled: boolean;
+        /**
+         * Defines whether this extension is required
+         */
+        required: boolean;
+    }
+}
+
+
+declare module BABYLON.GLTF2.Exporter.Extensions {
+    /**
+     * @hidden
+     */
+    class KHR_texture_transform implements IGLTFExporterExtension {
+        /** Name of this extension */
+        readonly name: string;
+        /** Defines whether this extension is enabled */
+        enabled: boolean;
+        /** Defines whether this extension is required */
+        required: boolean;
+        /** Reference to the glTF exporter */
+        private _exporter;
+        constructor(exporter: _Exporter);
+        dispose(): void;
+        preExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Nullable<Promise<Texture>>;
+        /**
+         * Transform the babylon texture by the offset, rotation and scale parameters using a procedural texture
+         * @param babylonTexture
+         * @param offset
+         * @param rotation
+         * @param scale
+         * @param scene
+         */
+        textureTransformTextureAsync(babylonTexture: Texture, offset: Vector2, rotation: number, scale: Vector2, scene: Scene): Promise<BaseTexture>;
     }
 }

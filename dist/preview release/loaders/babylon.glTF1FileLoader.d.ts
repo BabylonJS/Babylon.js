@@ -1,4 +1,5 @@
 
+
 declare module BABYLON {
     /**
      * Mode that determines the coordinate system to use.
@@ -35,11 +36,11 @@ declare module BABYLON {
      */
     interface IGLTFLoaderData {
         /**
-         * JSON that represents the glTF.
+         * Object that represents the glTF JSON.
          */
         json: Object;
         /**
-         * The BIN chunk of a binary glTF
+         * The BIN chunk of a binary glTF.
          */
         bin: Nullable<ArrayBufferView>;
     }
@@ -76,13 +77,13 @@ declare module BABYLON {
     /** @hidden */
     interface IGLTFLoader extends IDisposable {
         readonly state: Nullable<GLTFLoaderState>;
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string) => Promise<{
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<{
             meshes: AbstractMesh[];
             particleSystems: IParticleSystem[];
             skeletons: Skeleton[];
             animationGroups: AnimationGroup[];
         }>;
-        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string) => Promise<void>;
+        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
     }
     /**
      * File loader for loading glTF files into a scene.
@@ -140,8 +141,6 @@ declare module BABYLON {
          * If true, no extra effects are applied to transparent pixels.
          */
         transparencyAsCoverage: boolean;
-        /** @hidden */
-        _normalizeAnimationGroupsToBeginAtZero: boolean;
         /**
          * Function called before loading a url referenced by the asset.
          */
@@ -224,15 +223,6 @@ declare module BABYLON {
          */
         onExtensionLoaded: (extension: IGLTFLoaderExtension) => void;
         /**
-         * Returns a promise that resolves when the asset is completely loaded.
-         * @returns a promise that resolves when the asset is completely loaded.
-         */
-        whenCompleteAsync(): Promise<void>;
-        /**
-         * The loader state or null if the loader is not active.
-         */
-        readonly loaderState: Nullable<GLTFLoaderState>;
-        /**
          * Defines if the loader logging is enabled.
          */
         loggingEnabled: boolean;
@@ -240,6 +230,19 @@ declare module BABYLON {
          * Defines if the loader should capture performance counters.
          */
         capturePerformanceCounters: boolean;
+        /**
+         * Defines if the loader should validate the asset.
+         */
+        validate: boolean;
+        /**
+         * Observable raised after validation when validate is set to true. The event data is the result of the validation.
+         */
+        readonly onValidatedObservable: Observable<IGLTFValidationResults>;
+        private _onValidatedObserver;
+        /**
+         * Callback raised after a loader extension is created.
+         */
+        onValidated: (results: IGLTFValidationResults) => void;
         private _loader;
         /**
          * Name of the loader ("gltf")
@@ -262,10 +265,10 @@ declare module BABYLON {
          * @param data the glTF data to load
          * @param rootUrl root url to load from
          * @param onProgress event that fires when loading progress has occured
-         * @param fullName Defines the FQDN of the file to load
+         * @param fileName Defines the name of the file to load
          * @returns a promise containg the loaded meshes, particles, skeletons and animations
          */
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string): Promise<{
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
             meshes: AbstractMesh[];
             particleSystems: IParticleSystem[];
             skeletons: Skeleton[];
@@ -277,20 +280,20 @@ declare module BABYLON {
          * @param data the glTF data to load
          * @param rootUrl root url to load from
          * @param onProgress event that fires when loading progress has occured
-         * @param fullName Defines the FQDN of the file to load
+         * @param fileName Defines the name of the file to load
          * @returns a promise which completes when objects have been loaded to the scene
          */
-        loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string): Promise<void>;
+        loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
         /**
          * Load into an asset container.
          * @param scene The scene to load into
          * @param data The data to import
          * @param rootUrl The root url for scene and resources
          * @param onProgress The callback when the load progresses
-         * @param fullName Defines the FQDN of the file to load
+         * @param fileName Defines the name of the file to load
          * @returns The loaded asset container
          */
-        loadAssetContainerAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string): Promise<AssetContainer>;
+        loadAssetContainerAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
         /**
          * If the data string can be loaded directly.
          * @param data string contianing the file data
@@ -306,11 +309,21 @@ declare module BABYLON {
          * @returns the created plugin
          */
         createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        private _parse;
+        /**
+         * The loader state or null if the loader is not active.
+         */
+        readonly loaderState: Nullable<GLTFLoaderState>;
+        /**
+         * Returns a promise that resolves when the asset is completely loaded.
+         * @returns a promise that resolves when the asset is completely loaded.
+         */
+        whenCompleteAsync(): Promise<void>;
+        private _parseAsync;
+        private _validateAsync;
         private _getLoader;
-        private _parseBinary;
-        private _parseV1;
-        private _parseV2;
+        private _unpackBinary;
+        private _unpackBinaryV1;
+        private _unpackBinaryV2;
         private static _parseVersion;
         private static _compareVersion;
         private static _decodeBufferToText;

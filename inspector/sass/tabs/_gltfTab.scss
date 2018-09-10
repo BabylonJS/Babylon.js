@@ -22,6 +22,15 @@
             }
         }
 
+        .gltf-icon {
+            width      : 1em;
+            height     : 1em;
+            line-height: 1em;
+            display    : inline-block;
+            font-family: $font-family-icons;
+            margin-right:10px;
+        }
+
         .gltf-checkbox {
             @extend .gltf-action;
             &:before {

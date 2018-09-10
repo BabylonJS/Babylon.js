@@ -1087,7 +1087,8 @@
                 "../../src/Physics/babylon.physicsEngine.js",
                 "../../src/Physics/babylon.physicsHelper.js",
                 "../../src/Physics/Plugins/babylon.cannonJSPlugin.js",
-                "../../src/Physics/Plugins/babylon.oimoJSPlugin.js"
+                "../../src/Physics/Plugins/babylon.oimoJSPlugin.js",
+                "../../src/Physics/babylon.physicsEngineComponent.js"
             ],
             "dependUpon": [
                 "core",
@@ -1796,10 +1797,10 @@
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderInterfaces.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
-                    "../../loaders/src/glTF/2.0/Extensions/MSFT_audio_emitter.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_minecraftMesh.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_sRGBFactors.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/MSFT_audio_emitter.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_unlit.ts",
@@ -1822,10 +1823,10 @@
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderInterfaces.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
-                    "../../loaders/src/glTF/2.0/Extensions/MSFT_audio_emitter.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_minecraftMesh.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_sRGBFactors.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/MSFT_audio_emitter.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_unlit.ts",

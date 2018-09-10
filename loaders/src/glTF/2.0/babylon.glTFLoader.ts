@@ -64,7 +64,8 @@ module BABYLON.GLTF2 {
         private _state: Nullable<GLTFLoaderState> = null;
         private _extensions: { [name: string]: IGLTFLoaderExtension } = {};
         private _rootUrl: string;
-        private _fullName: string;
+        private _fileName: string;
+        private _uniqueRootUrl: string;
         private _rootBabylonMesh: Mesh;
         private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
         private _progressCallback?: (event: SceneLoaderProgressEvent) => void;
@@ -157,11 +158,11 @@ module BABYLON.GLTF2 {
         }
 
         /** @hidden */
-        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
             return Promise.resolve().then(() => {
                 this.babylonScene = scene;
                 this._rootUrl = rootUrl;
-                this._fullName = fullName || `${Date.now()}`;
+                this._fileName = fileName || "scene";
                 this._progressCallback = onProgress;
                 this._loadData(data);
 
@@ -200,11 +201,11 @@ module BABYLON.GLTF2 {
         }
 
         /** @hidden */
-        public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string): Promise<void> {
+        public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
             return Promise.resolve().then(() => {
                 this.babylonScene = scene;
                 this._rootUrl = rootUrl;
-                this._fullName = fullName || `${Date.now()}`;
+                this._fileName = fileName || "scene";
                 this._progressCallback = onProgress;
                 this._loadData(data);
                 return this._loadAsync(null, () => undefined);
@@ -213,6 +214,8 @@ module BABYLON.GLTF2 {
 
         private _loadAsync<T>(nodes: Nullable<Array<number>>, resultFunc: () => T): Promise<T> {
             return Promise.resolve().then(() => {
+                this._uniqueRootUrl = (this._rootUrl.indexOf("file:") === -1 && this._fileName) ? this._rootUrl : `${this._rootUrl}${Date.now()}/`;
+
                 this._loadExtensions();
                 this._checkExtensions();
 
@@ -1028,7 +1031,7 @@ module BABYLON.GLTF2 {
             }
 
             return Promise.all(promises).then(() => {
-                babylonAnimationGroup.normalize(this._parent._normalizeAnimationGroupsToBeginAtZero ? 0 : null);
+                babylonAnimationGroup.normalize(0);
                 return babylonAnimationGroup;
             });
         }
@@ -1658,7 +1661,8 @@ module BABYLON.GLTF2 {
 
             const image = ArrayItem.Get(`${context}/source`, this.gltf.images, texture.source);
             promises.push(this.loadImageAsync(`#/images/${image.index}`, image).then(data => {
-                const dataUrl = `data:${this._fullName}${image.uri || `image${image.index}`}`;
+                const name = image.uri || `${this._fileName}#image${image.index}`;
+                const dataUrl = `data:${this._uniqueRootUrl}${name}`;
                 babylonTexture.updateURL(dataUrl, new Blob([data], { type: image.mimeType }));
             }));
 

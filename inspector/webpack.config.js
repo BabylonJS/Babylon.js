@@ -39,6 +39,12 @@ module.exports = {
             commonjs2: "babylonjs-gui",
             amd: "babylonjs-gui"
         },
+        "babylonjs-gltf2interface": {
+            root: "BABYLON",
+            commonjs: "babylonjs-gltf2interface",
+            commonjs2: "babylonjs-gltf2interface",
+            amd: "babylonjs-gltf2interface"
+        },
         "babylonjs-loaders": {
             root: "BABYLON",
             commonjs: "babylonjs-loaders",

@@ -1739,15 +1739,17 @@
           * * buffer the array holding the image color data 
           * * bufferWidth the width of image
           * * bufferHeight the height of image
+          * * alphaFilter Remove any data where the alpha channel is below this value, defaults 0 (all data visible)
          * @returns the VertexData of the Ground designed from a heightmap   
          */
-        public static CreateGroundFromHeightMap(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, colorFilter: Color3, buffer: Uint8Array, bufferWidth: number, bufferHeight: number }): VertexData {
+        public static CreateGroundFromHeightMap(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, colorFilter: Color3, buffer: Uint8Array, bufferWidth: number, bufferHeight: number, alphaFilter: number }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
             var row, col;
             var filter = options.colorFilter || new Color3(0.3, 0.59, 0.11);
+            var alphaFilter = options.alphaFilter || 0.0;
 
             // Vertices
             for (row = 0; row <= options.subdivisions; row++) {
@@ -1762,10 +1764,17 @@
                     var r = options.buffer[pos] / 255.0;
                     var g = options.buffer[pos + 1] / 255.0;
                     var b = options.buffer[pos + 2] / 255.0;
+                    var a = options.buffer[pos + 3] / 255.0;
 
                     var gradient = r * filter.r + g * filter.g + b * filter.b;
-
-                    position.y = options.minHeight + (options.maxHeight - options.minHeight) * gradient;
+                    
+                    // If our alpha channel is not within our filter then we will assign a 'special' height 
+                    // Then when building the indices, we will ignore any vertex that is using the special height
+                    if(a >= alphaFilter)
+                        position.y = options.minHeight + (options.maxHeight - options.minHeight) * gradient;
+                    else {
+                        position.y = options.minHeight - BABYLON.Epsilon; // We can't have a height below minHeight, normally.
+                    }
 
                     // Add  vertex
                     positions.push(position.x, position.y, position.z);
@@ -1777,13 +1786,30 @@
             // Indices
             for (row = 0; row < options.subdivisions; row++) {
                 for (col = 0; col < options.subdivisions; col++) {
-                    indices.push(col + 1 + (row + 1) * (options.subdivisions + 1));
-                    indices.push(col + 1 + row * (options.subdivisions + 1));
-                    indices.push(col + row * (options.subdivisions + 1));
+                    // Calculate Indices
+                    var idx1 = (col + 1 + (row + 1) * (options.subdivisions + 1));
+                    var idx2 = (col + 1 + row * (options.subdivisions + 1));
+                    var idx3 = (col + row * (options.subdivisions + 1));
+                    var idx4 = (col + (row + 1) * (options.subdivisions + 1));
 
-                    indices.push(col + (row + 1) * (options.subdivisions + 1));
-                    indices.push(col + 1 + (row + 1) * (options.subdivisions + 1));
-                    indices.push(col + row * (options.subdivisions + 1));
+                    // Check that all indices are visible (based on our special height)
+                    // Only display the vertex if all Indices are visible
+                    // Positions are stored x,y,z for each vertex, hence the * 3 and + 1 for height
+                    var isVisibleIdx1 = positions[idx1 * 3 + 1] >= options.minHeight;
+                    var isVisibleIdx2 = positions[idx2 * 3 + 1] >= options.minHeight;
+                    var isVisibleIdx3 = positions[idx3 * 3 + 1] >= options.minHeight;
+                    if (isVisibleIdx1 && isVisibleIdx2 && isVisibleIdx3) {
+                        indices.push(idx1);
+                        indices.push(idx2);
+                        indices.push(idx3);
+                    }
+
+                    var isVisibleIdx4 = positions[idx4 * 3 + 1] >= options.minHeight;
+                    if (isVisibleIdx4 && isVisibleIdx1 && isVisibleIdx3) {
+                        indices.push(idx4);
+                        indices.push(idx1);
+                        indices.push(idx3);
+                    }
                 }
             }
 
