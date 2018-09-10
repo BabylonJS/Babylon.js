@@ -102,7 +102,7 @@
 
             this.scene._evaluateSubMeshStage.registerStep(SceneComponentConstants.STEP_EVALUATESUBMESH_BOUNDINGBOXRENDERER, this, this._evaluateSubMesh);
 
-            this.scene._afterRenderingGroupDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_BOUNDINGBOXRENDERER, this, this.render);
+            this.scene._afterRenderingGroupDrawStage.registerStep(SceneComponentConstants.STEP_AFTERRENDERINGGROUPDRAW_BOUNDINGBOXRENDERER, this, this.render);
         }
 
         private _evaluateSubMesh(mesh: AbstractMesh, subMesh: SubMesh): void {
@@ -162,6 +162,10 @@
             this.renderList.reset();
         }
 
+        /**
+         * Render the bounding boxes of a specific rendering group
+         * @param renderingGroupId defines the rendering group to render
+         */
         public render(renderingGroupId: number): void {
             if (this.renderList.length === 0) {
                 return;
