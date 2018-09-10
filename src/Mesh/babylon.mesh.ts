@@ -3130,13 +3130,14 @@
          * Creates a ground mesh from a height map.    
          * tuto : http://doc.babylonjs.com/babylon101/height_map   
          * Please consider using the same method from the MeshBuilder class instead.    
-         * The parameter `url` sets the URL of the height map image resource.  
-         * The parameters `width` and `height` (positive floats, default 10) set the ground width and height sizes.     
-         * The parameter `subdivisions` (positive integer, default 1) sets the number of subdivision per side.  
-         * The parameter `minHeight` (float, default 0) is the minimum altitude on the ground.     
-         * The parameter `maxHeight` (float, default 1) is the maximum altitude on the ground.   
-         * The parameter `onReady` is a javascript callback function that will be called  once the mesh is just built (the height map download can last some time).  
-         * The parameter `alphaFilter` will filter any data where the alpha channel is below this value, defaults 0 (all data visible)
+         * @param url sets the URL of the height map image resource.  
+         * @param width (positive float, default 10) set the ground width size.  
+         * @param height (positive float, default 10) set the ground height size.  
+         * @param subdivisions (positive integer, default 1) sets the number of subdivision per side.  
+         * @param minHeight (float, default 0) is the minimum altitude on the ground.     
+         * @param maxHeight (float, default 1) is the maximum altitude on the ground.   
+         * @param onReady is a javascript callback function that will be called  once the mesh is just built (the height map download can last some time).  
+         * @param alphaFilter will filter any data where the alpha channel is below this value, defaults 0 (all data visible).
          * This function is passed the newly built mesh : 
          * ```javascript
          * function(mesh) { // do things
