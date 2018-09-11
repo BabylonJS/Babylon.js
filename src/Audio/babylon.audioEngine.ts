@@ -142,8 +142,7 @@
                     this._connectedAnalyser.stopDebugCanvas();
                     this._connectedAnalyser.dispose();
                     this.masterGain.disconnect();
-                    // Looks Strange to me.
-                    // this.masterGain.connect(this._audioContext.destination);
+                    this.masterGain.connect(this._audioContext.destination);
                     this._connectedAnalyser = null;
                 }
                 this.masterGain.gain.value = 1;
