@@ -835,7 +835,6 @@ declare module 'babylonjs-inspector/tabs/GLTFTab' {
     import { Inspector } from "babylonjs-inspector/Inspector";
     import { Tab } from "babylonjs-inspector/tabs/Tab";
     import { TabBar } from "babylonjs-inspector/tabs/TabBar";
-    import "babylonjs-gltf2interface";
     export class GLTFTab extends Tab {
         static readonly IsSupported: boolean;
         /** @hidden */

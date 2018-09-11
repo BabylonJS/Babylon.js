@@ -2693,18 +2693,42 @@
 
                     instance.scaling = Vector3.FromArray(parsedInstance.scaling);
 
-                    instance.checkCollisions = mesh.checkCollisions;
+                    if(parsedInstance.checkCollisions != undefined && parsedInstance.checkCollisions != null){
+                        instance.checkCollisions = parsedInstance.checkCollisions;
+                    }
+                    if(parsedInstance.pickable != undefined && parsedInstance.pickable != null){
+                        instance.isPickable = parsedInstance.pickable;
+                    }
+                    if(parsedInstance.showBoundingBox != undefined && parsedInstance.showBoundingBox != null){
+                        instance.showBoundingBox = parsedInstance.showBoundingBox;
+                    }
+                    if(parsedInstance.showSubMeshesBoundingBox != undefined && parsedInstance.showSubMeshesBoundingBox != null){
+                        instance.showSubMeshesBoundingBox = parsedInstance.showSubMeshesBoundingBox;
+                    }
+                    if(parsedInstance.alphaIndex != undefined && parsedInstance.showSubMeshesBoundingBox != null){
+                        instance.alphaIndex = parsedInstance.alphaIndex;
+                    }
+                    
+                    // Physics
+                    if (parsedInstance.physicsImpostor) {
+                        instance.physicsImpostor = new PhysicsImpostor(instance, parsedInstance.physicsImpostor, {
+                            mass: parsedInstance.physicsMass,
+                            friction: parsedInstance.physicsFriction,
+                            restitution: parsedInstance.physicsRestitution
+                        }, scene);
+                    }
 
-                    if (parsedMesh.animations) {
-                        for (animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
-                            parsedAnimation = parsedMesh.animations[animationIndex];
+                    // Animation
+                    if (parsedInstance.animations) {
+                        for (animationIndex = 0; animationIndex < parsedInstance.animations.length; animationIndex++) {
+                            parsedAnimation = parsedInstance.animations[animationIndex];
 
                             instance.animations.push(Animation.Parse(parsedAnimation));
                         }
-                        Node.ParseAnimationRanges(instance, parsedMesh, scene);
+                        Node.ParseAnimationRanges(instance, parsedInstance, scene);
 
-                        if (parsedMesh.autoAnimate) {
-                            scene.beginAnimation(instance, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, parsedMesh.autoAnimateSpeed || 1.0);
+                        if (parsedInstance.autoAnimate) {
+                            scene.beginAnimation(instance, parsedInstance.autoAnimateFrom, parsedInstance.autoAnimateTo, parsedInstance.autoAnimateLoop, parsedInstance.autoAnimateSpeed || 1.0);
                         }
                     }
                 }

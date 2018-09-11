@@ -392,7 +392,7 @@
                 return false;
             }
 
-            if (!this.isSynchronizedWithParent()) {
+            if (this._parentNode && !this.isSynchronizedWithParent()) {
                 return false;
             }
 
