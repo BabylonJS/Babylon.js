@@ -60,6 +60,12 @@ module BABYLON {
         constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback: Nullable<() => void> = null, options?: any) {
             this.name = name;
             this._scene = scene;
+            let compo = scene._getComponent(SceneComponentConstants.NAME_AUDIO);
+            if (!compo) {
+                compo = new AudioSceneComponent(scene);
+                scene._addComponent(compo);
+            }
+
             this._readyToPlayCallback = readyToPlayCallback;
             // Default custom attenuation function is a linear attenuation
             this._customAttenuationFunction = (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => {
@@ -243,7 +249,7 @@ module BABYLON {
                 if (this.soundTrackId === -1) {
                     this._scene.mainSoundTrack.RemoveSound(this);
                 }
-                else {
+                else if (this._scene.soundTracks) {
                     this._scene.soundTracks[this.soundTrackId].RemoveSound(this);
                 }
                 if (this._soundGain) {

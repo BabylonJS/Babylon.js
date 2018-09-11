@@ -247,31 +247,6 @@
                     light._waitingParentId = null;
                 }
             }
-            
-            // Sounds
-            // TODO: add sound
-            var loadedSounds: Sound[] = [];
-            var loadedSound: Sound;
-            if (AudioEngine && parsedData.sounds !== undefined && parsedData.sounds !== null) {
-                for (index = 0, cache = parsedData.sounds.length; index < cache; index++) {
-                    var parsedSound = parsedData.sounds[index];
-                    if (Engine.audioEngine.canUseWebAudio) {
-                        if (!parsedSound.url) parsedSound.url = parsedSound.name;
-                        if (!loadedSounds[parsedSound.url]) {
-                            loadedSound = Sound.Parse(parsedSound, scene, rootUrl);
-                            loadedSounds[parsedSound.url] = loadedSound;
-                            container.sounds.push(loadedSound);
-                        }
-                        else {
-                            container.sounds.push(Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]));
-                        }
-                    } else {
-                        container.sounds.push(new Sound(parsedSound.name, null, scene));
-                    }
-                }
-            }
-
-            loadedSounds = [];
 
             // Connect parents & children and parse actions
             for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
