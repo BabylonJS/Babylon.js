@@ -463,12 +463,6 @@
          */
         public actionManager: Nullable<ActionManager> = null;
 
-        /**
-         * Gets or sets impostor used for physic simulation
-         * @see http://doc.babylonjs.com/features/physics_engine
-         */
-        public physicsImpostor: Nullable<PhysicsImpostor> = null;
-
         // Collisions
         private _checkCollisions = false;
         private _collisionMask = -1;
@@ -1173,15 +1167,6 @@
         }
 
         /**
-         * Gets the current physics impostor
-         * @see http://doc.babylonjs.com/features/physics_engine
-         * @returns a physics impostor or null
-         */
-        public getPhysicsImpostor(): Nullable<PhysicsImpostor> {
-            return this.physicsImpostor;
-        }
-
-        /**
          * Gets the position of the current mesh in camera space
          * @param camera defines the camera to use
          * @returns a position
@@ -1204,43 +1189,7 @@
                 camera = (<Camera>this.getScene().activeCamera);
             }
             return this.absolutePosition.subtract(camera.position).length();
-        }
-
-        /**
-         * Apply a physic impulse to the mesh 
-         * @param force defines the force to apply
-         * @param contactPoint defines where to apply the force
-         * @returns the current mesh
-         * @see http://doc.babylonjs.com/how_to/using_the_physics_engine
-         */
-        public applyImpulse(force: Vector3, contactPoint: Vector3): AbstractMesh {
-            if (!this.physicsImpostor) {
-                return this;
-            }
-            this.physicsImpostor.applyImpulse(force, contactPoint);
-            return this;
-        }
-
-        /**
-         * Creates a physic joint between two meshes
-         * @param otherMesh defines the other mesh to use
-         * @param pivot1 defines the pivot to use on this mesh
-         * @param pivot2 defines the pivot to use on the other mesh
-         * @param options defines additional options (can be plugin dependent)
-         * @returns the current mesh
-         * @see https://www.babylonjs-playground.com/#0BS5U0#0
-         */
-        public setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): AbstractMesh {
-            if (!this.physicsImpostor || !otherMesh.physicsImpostor) {
-                return this;
-            }
-            this.physicsImpostor.createJoint(otherMesh.physicsImpostor, PhysicsJoint.HingeJoint, {
-                mainPivot: pivot1,
-                connectedPivot: pivot2,
-                nativeParams: options
-            });
-            return this;
-        }
+        }    
 
         // Collisions
 
@@ -1484,11 +1433,6 @@
 
             // Skeleton
             this._skeleton = null;
-
-            // Physics
-            if (this.physicsImpostor) {
-                this.physicsImpostor.dispose(/*!doNotRecurse*/);
-            }
 
             // Intersections in progress
             for (index = 0; index < this._intersectionsInProgress.length; index++) {
