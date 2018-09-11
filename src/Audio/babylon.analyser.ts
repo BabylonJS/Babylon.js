@@ -38,7 +38,7 @@ module BABYLON {
         private _debugCanvasContext: Nullable<CanvasRenderingContext2D>;
         private _scene: Scene;
         private _registerFunc: Nullable<() => void>;
-        private _audioEngine: AudioEngine;
+        private _audioEngine: IAudioEngine;
 
         /**
          * Creates a new analyser

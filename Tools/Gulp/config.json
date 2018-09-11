@@ -586,7 +586,9 @@
                 "../../src/Audio/babylon.sound.js",
                 "../../src/Audio/babylon.soundtrack.js",
                 "../../src/Audio/babylon.analyser.js",
-                "../../src/Audio/babylon.weightedsound.js"
+                "../../src/Audio/babylon.weightedsound.js",
+                "../../src/Audio/babylon.audioSceneComponent.js",
+                "../../src/Actions/babylon.directAudioActions.js"
             ],
             "dependUpon": [
                 "core"

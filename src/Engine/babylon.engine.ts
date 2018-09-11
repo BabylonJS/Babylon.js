@@ -667,7 +667,14 @@
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
          * @ignorenaming
          */
-        public static audioEngine: AudioEngine;
+        public static audioEngine: IAudioEngine;
+
+        /**
+         * Default AudioEngine Factory responsible of creating the Audio Engine.
+         * By default, this will create a BabylonJS Audio Engine if the workload
+         * has been embedded.
+         */
+        public static AudioEngineFactory: () => IAudioEngine;
 
         // Focus
         private _onFocus: () => void;
@@ -1176,8 +1183,9 @@
                 window.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);
             }
 
-            if (options.audioEngine && AudioEngine && !Engine.audioEngine) {
-                Engine.audioEngine = new AudioEngine();
+            // Create Audio Engine if needed.
+            if (!Engine.audioEngine && options.audioEngine && Engine.AudioEngineFactory) {
+                Engine.audioEngine = Engine.AudioEngineFactory();
             }
 
             // Prepare buffer pointers
@@ -6733,7 +6741,7 @@
             }
 
             // Release audio engine
-            if (Engine.audioEngine) {
+            if (Engine.Instances.length === 1 && Engine.audioEngine) {
                 Engine.audioEngine.dispose();
             }
 
