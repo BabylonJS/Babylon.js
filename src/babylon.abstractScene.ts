@@ -165,11 +165,6 @@
         public actionManagers = new Array<ActionManager>();
 
         /**
-         * Sounds to keep.
-         */
-        public sounds = new Array<Sound>();
-
-        /**
          * Textures to keep.
          */
         public textures = new Array<BaseTexture>();

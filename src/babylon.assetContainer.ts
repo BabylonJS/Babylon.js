@@ -62,11 +62,6 @@ module BABYLON {
             this.actionManagers.forEach((o) => {
                 this.scene.addActionManager(o);
             });
-            this.sounds.forEach((o) => {
-                o.play();
-                o.autoplay = true;
-                this.scene.mainSoundTrack.AddSound(o);
-            });
             this.textures.forEach((o) => {
                 this.scene.addTexture(o);
             });
@@ -115,11 +110,6 @@ module BABYLON {
             });
             this.actionManagers.forEach((o) => {
                 this.scene.removeActionManager(o);
-            });
-            this.sounds.forEach((o) => {
-                o.stop();
-                o.autoplay = false;
-                this.scene.mainSoundTrack.RemoveSound(o);
             });
             this.textures.forEach((o) => {
                 this.scene.removeTexture(o);
