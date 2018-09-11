@@ -73,6 +73,12 @@ module BABYLON {
 
     Object.defineProperty(Scene.prototype, "mainSoundTrack", {
         get: function (this:Scene) {
+            let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
+            if (!compo) {
+                compo = new AudioSceneComponent(this);
+                this._addComponent(compo);
+            }
+
             if (!this._mainSoundTrack) {
                 this._mainSoundTrack = new SoundTrack(this, { mainTrack: true });
             }
@@ -106,22 +112,26 @@ module BABYLON {
 
     Object.defineProperty(Scene.prototype, "audioEnabled", {
         get: function (this:Scene) {
-            const compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
+            let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
             if (!compo) {
-                return false;
+                compo = new AudioSceneComponent(this);
+                this._addComponent(compo);
             }
 
             return compo.audioEnabled;
         },
         set: function(this:Scene, value: boolean) {
-            const compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
-            if (compo) {
-                if (value) {
-                    compo.enableAudio();
-                }
-                else {
-                    compo.disableAudio();
-                }
+            let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
+            if (!compo) {
+                compo = new AudioSceneComponent(this);
+                this._addComponent(compo);
+            }
+
+            if (value) {
+                compo.enableAudio();
+            }
+            else {
+                compo.disableAudio();
             }
         },
         enumerable: true,
@@ -130,22 +140,26 @@ module BABYLON {
 
     Object.defineProperty(Scene.prototype, "headphone", {
         get: function (this:Scene) {
-            const compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
+            let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
             if (!compo) {
-                return false;
+                compo = new AudioSceneComponent(this);
+                this._addComponent(compo);
             }
 
             return compo.headphone;
         },
         set: function(this:Scene, value: boolean) {
-            const compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
-            if (compo) {
-                if (value) {
-                    compo.switchAudioModeForHeadphones();
-                }
-                else {
-                    compo.switchAudioModeForNormalSpeakers();
-                }
+            let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
+            if (!compo) {
+                compo = new AudioSceneComponent(this);
+                this._addComponent(compo);
+            }
+            
+            if (value) {
+                compo.switchAudioModeForHeadphones();
+            }
+            else {
+                compo.switchAudioModeForNormalSpeakers();
             }
         },
         enumerable: true,
