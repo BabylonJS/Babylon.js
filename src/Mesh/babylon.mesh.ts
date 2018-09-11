@@ -2693,7 +2693,15 @@
 
                     instance.scaling = Vector3.FromArray(parsedInstance.scaling);
 
-                    instance.checkCollisions = mesh.checkCollisions;
+                    if(parsedInstance.checkCollisions != undefined && parsedInstance.checkCollisions != null){
+                        instance.checkCollisions = parsedInstance.checkCollisions;
+                    }
+                    if(parsedInstance.pickable != undefined && parsedInstance.pickable != null){
+                        instance.isPickable = parsedInstance.pickable;
+                    }
+                    if(parsedInstance.showBoundingBox != undefined && parsedInstance.showBoundingBox != null){
+                        instance.showBoundingBox = parsedInstance.showBoundingBox;
+                    }
 
                     if (parsedMesh.animations) {
                         for (animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
@@ -2703,8 +2711,8 @@
                         }
                         Node.ParseAnimationRanges(instance, parsedMesh, scene);
 
-                        if (parsedMesh.autoAnimate) {
-                            scene.beginAnimation(instance, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, parsedMesh.autoAnimateSpeed || 1.0);
+                        if (parsedInstance.autoAnimate) {
+                            scene.beginAnimation(instance, parsedInstance.autoAnimateFrom, parsedInstance.autoAnimateTo, parsedInstance.autoAnimateLoop, parsedInstance.autoAnimateSpeed || 1.0);
                         }
                     }
                 }
