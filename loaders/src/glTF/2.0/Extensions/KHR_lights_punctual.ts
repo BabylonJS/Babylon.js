@@ -23,6 +23,7 @@ module BABYLON.GLTF2.Extensions {
             outerConeAngle?: number;
         };
     }
+    
 
     interface ILights {
         lights: ILight[];

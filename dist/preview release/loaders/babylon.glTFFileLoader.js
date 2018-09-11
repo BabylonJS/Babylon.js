@@ -5603,16 +5603,15 @@ var BABYLON;
     (function (GLTF2) {
         var Extensions;
         (function (Extensions) {
-            var NAME = "KHR_lights";
+            var NAME = "KHR_lights_punctual";
             var LightType;
             (function (LightType) {
-                LightType["AMBIENT"] = "ambient";
                 LightType["DIRECTIONAL"] = "directional";
                 LightType["POINT"] = "point";
                 LightType["SPOT"] = "spot";
             })(LightType || (LightType = {}));
             /**
-             * [Specification](https://github.com/MiiBond/glTF/tree/khr_lights_v1/extensions/Khronos/KHR_lights) (Experimental)
+             * [Specification](https://github.com/KhronosGroup/glTF/blob/1048d162a44dbcb05aefc1874bfd423cf60135a6/extensions/2.0/Khronos/KHR_lights_punctual/README.md) (Experimental)
              */
             var KHR_lights = /** @class */ (function () {
                 /** @hidden */
@@ -5637,19 +5636,6 @@ var BABYLON;
                     }
                 };
                 /** @hidden */
-                KHR_lights.prototype.loadSceneAsync = function (context, scene) {
-                    var _this = this;
-                    return GLTF2.GLTFLoader.LoadExtensionAsync(context, scene, this.name, function (extensionContext, extension) {
-                        var promise = _this._loader.loadSceneAsync(context, scene);
-                        var light = GLTF2.ArrayItem.Get(extensionContext, _this._lights, extension.light);
-                        if (light.type !== LightType.AMBIENT) {
-                            throw new Error(extensionContext + ": Only ambient lights are allowed on a scene");
-                        }
-                        _this._loader.babylonScene.ambientColor = light.color ? BABYLON.Color3.FromArray(light.color) : BABYLON.Color3.Black();
-                        return promise;
-                    });
-                };
-                /** @hidden */
                 KHR_lights.prototype.loadNodeAsync = function (context, node, assign) {
                     var _this = this;
                     return GLTF2.GLTFLoader.LoadExtensionAsync(context, node, this.name, function (extensionContext, extension) {
@@ -5658,11 +5644,8 @@ var BABYLON;
                             var name = babylonMesh.name;
                             var light = GLTF2.ArrayItem.Get(extensionContext, _this._lights, extension.light);
                             switch (light.type) {
-                                case LightType.AMBIENT: {
-                                    throw new Error(extensionContext + ": Ambient lights are not allowed on a node");
-                                }
                                 case LightType.DIRECTIONAL: {
-                                    babylonLight = new BABYLON.DirectionalLight(name, BABYLON.Vector3.Forward(), _this._loader.babylonScene);
+                                    babylonLight = new BABYLON.DirectionalLight(name, BABYLON.Vector3.Backward(), _this._loader.babylonScene);
                                     break;
                                 }
                                 case LightType.POINT: {
@@ -5670,18 +5653,20 @@ var BABYLON;
                                     break;
                                 }
                                 case LightType.SPOT: {
-                                    // TODO: support inner and outer cone angles
-                                    //const innerConeAngle = spotLight.innerConeAngle || 0;
-                                    var outerConeAngle = light.spot && light.spot.outerConeAngle || Math.PI / 4;
-                                    babylonLight = new BABYLON.SpotLight(name, BABYLON.Vector3.Zero(), BABYLON.Vector3.Forward(), outerConeAngle, 2, _this._loader.babylonScene);
+                                    var babylonSpotLight = new BABYLON.SpotLight(name, BABYLON.Vector3.Zero(), BABYLON.Vector3.Backward(), 0, 2, _this._loader.babylonScene);
+                                    babylonSpotLight.angle = light.spot && light.spot.outerConeAngle || Math.PI / 4;
+                                    babylonSpotLight.innerAngle = light.spot && light.spot.innerConeAngle || 0;
+                                    babylonLight = babylonSpotLight;
                                     break;
                                 }
                                 default: {
                                     throw new Error(extensionContext + ": Invalid light type (" + light.type + ")");
                                 }
                             }
+                            babylonLight.falloffType = BABYLON.Light.FALLOFF_GLTF;
                             babylonLight.diffuse = light.color ? BABYLON.Color3.FromArray(light.color) : BABYLON.Color3.White();
                             babylonLight.intensity = light.intensity == undefined ? 1 : light.intensity;
+                            babylonLight.range = light.range == undefined ? Number.MAX_VALUE : light.range;
                             babylonLight.parent = babylonMesh;
                             assign(babylonMesh);
                         });
@@ -5695,7 +5680,7 @@ var BABYLON;
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=KHR_lights.js.map
+//# sourceMappingURL=KHR_lights_punctual.js.map
 
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
@@ -5767,13 +5752,13 @@ var BABYLON;
     (function (GLTF2) {
         var Extensions;
         (function (Extensions) {
-            var NAME = "EXT_lights_imageBased";
+            var NAME = "EXT_lights_image_based";
             /**
-             * [Specification](TODO) (Experimental)
+             * [Specification](https://github.com/KhronosGroup/glTF/blob/eb3e32332042e04691a5f35103f8c261e50d8f1e/extensions/2.0/Khronos/EXT_lights_image_based/README.md) (Experimental)
              */
-            var EXT_lights_imageBased = /** @class */ (function () {
+            var EXT_lights_image_based = /** @class */ (function () {
                 /** @hidden */
-                function EXT_lights_imageBased(loader) {
+                function EXT_lights_image_based(loader) {
                     /** The name of this extension. */
                     this.name = NAME;
                     /** Defines whether this extension is enabled. */
@@ -5781,12 +5766,12 @@ var BABYLON;
                     this._loader = loader;
                 }
                 /** @hidden */
-                EXT_lights_imageBased.prototype.dispose = function () {
+                EXT_lights_image_based.prototype.dispose = function () {
                     delete this._loader;
                     delete this._lights;
                 };
                 /** @hidden */
-                EXT_lights_imageBased.prototype.onLoading = function () {
+                EXT_lights_image_based.prototype.onLoading = function () {
                     var extensions = this._loader.gltf.extensions;
                     if (extensions && extensions[this.name]) {
                         var extension = extensions[this.name];
@@ -5794,7 +5779,7 @@ var BABYLON;
                     }
                 };
                 /** @hidden */
-                EXT_lights_imageBased.prototype.loadSceneAsync = function (context, scene) {
+                EXT_lights_image_based.prototype.loadSceneAsync = function (context, scene) {
                     var _this = this;
                     return GLTF2.GLTFLoader.LoadExtensionAsync(context, scene, this.name, function (extensionContext, extension) {
                         var promises = new Array();
@@ -5808,7 +5793,7 @@ var BABYLON;
                         return Promise.all(promises).then(function () { });
                     });
                 };
-                EXT_lights_imageBased.prototype._loadLightAsync = function (context, light) {
+                EXT_lights_image_based.prototype._loadLightAsync = function (context, light) {
                     var _this = this;
                     if (!light._loaded) {
                         var promises = new Array();
@@ -5863,12 +5848,12 @@ var BABYLON;
                         return light._babylonTexture;
                     });
                 };
-                return EXT_lights_imageBased;
+                return EXT_lights_image_based;
             }());
-            Extensions.EXT_lights_imageBased = EXT_lights_imageBased;
-            GLTF2.GLTFLoader.RegisterExtension(NAME, function (loader) { return new EXT_lights_imageBased(loader); });
+            Extensions.EXT_lights_image_based = EXT_lights_image_based;
+            GLTF2.GLTFLoader.RegisterExtension(NAME, function (loader) { return new EXT_lights_image_based(loader); });
         })(Extensions = GLTF2.Extensions || (GLTF2.Extensions = {}));
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=EXT_lights_imageBased.js.map
+//# sourceMappingURL=EXT_lights_image_based.js.map
