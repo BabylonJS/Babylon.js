@@ -4,6 +4,7 @@ module BABYLON {
         // TODO: add sound
         var loadedSounds: Sound[] = [];
         var loadedSound: Sound;
+        container.sounds = container.sounds || [];
         if (parsedData.sounds !== undefined && parsedData.sounds !== null) {
             for (let index = 0, cache = parsedData.sounds.length; index < cache; index++) {
                 var parsedSound = parsedData.sounds[index];
@@ -30,7 +31,7 @@ module BABYLON {
         /**
          * The list of sounds used in the scene.
          */
-        sounds: Array<Sound>;
+        sounds: Nullable<Array<Sound>>;
     }
 
     export interface Scene {
@@ -48,7 +49,7 @@ module BABYLON {
          * The list of sound tracks added to the scene
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
-        soundTracks: Array<SoundTrack>;
+        soundTracks: Nullable<Array<SoundTrack>>;
 
         /**
          * Gets a sound using a given name
@@ -90,10 +91,12 @@ module BABYLON {
             }
         }
 
-        for (var sdIndex = 0; sdIndex < this.soundTracks.length; sdIndex++) {
-            for (index = 0; index < this.soundTracks[sdIndex].soundCollection.length; index++) {
-                if (this.soundTracks[sdIndex].soundCollection[index].name === name) {
-                    return this.soundTracks[sdIndex].soundCollection[index];
+        if (this.soundTracks) {
+            for (var sdIndex = 0; sdIndex < this.soundTracks.length; sdIndex++) {
+                for (index = 0; index < this.soundTracks[sdIndex].soundCollection.length; index++) {
+                    if (this.soundTracks[sdIndex].soundCollection[index].name === name) {
+                        return this.soundTracks[sdIndex].soundCollection[index];
+                    }
                 }
             }
         }
@@ -215,11 +218,13 @@ module BABYLON {
         public serialize(serializationObject: any): void {
             serializationObject.sounds = [];
 
-            for (var index = 0; index < this.scene.soundTracks.length; index++) {
-                var soundtrack = this.scene.soundTracks[index];
+            if (this.scene.soundTracks) {
+                for (var index = 0; index < this.scene.soundTracks.length; index++) {
+                    var soundtrack = this.scene.soundTracks[index];
 
-                for (var soundId = 0; soundId < soundtrack.soundCollection.length; soundId++) {
-                    serializationObject.sounds.push(soundtrack.soundCollection[soundId].serialize());
+                    for (var soundId = 0; soundId < soundtrack.soundCollection.length; soundId++) {
+                        serializationObject.sounds.push(soundtrack.soundCollection[soundId].serialize());
+                    }
                 }
             }
         }
@@ -263,8 +268,10 @@ module BABYLON {
                 scene.mainSoundTrack.dispose();
             }
 
-            for (var scIndex = 0; scIndex < scene.soundTracks.length; scIndex++) {
-                scene.soundTracks[scIndex].dispose();
+            if (scene.soundTracks) {
+                for (var scIndex = 0; scIndex < scene.soundTracks.length; scIndex++) {
+                    scene.soundTracks[scIndex].dispose();
+                }
             }
         }
 
@@ -279,9 +286,11 @@ module BABYLON {
             for (i = 0; i < scene.mainSoundTrack.soundCollection.length; i++) {
                 scene.mainSoundTrack.soundCollection[i].pause();
             }
-            for (i = 0; i < scene.soundTracks.length; i++) {
-                for (var j = 0; j < scene.soundTracks[i].soundCollection.length; j++) {
-                    scene.soundTracks[i].soundCollection[j].pause();
+            if (scene.soundTracks) {
+                for (i = 0; i < scene.soundTracks.length; i++) {
+                    for (var j = 0; j < scene.soundTracks[i].soundCollection.length; j++) {
+                        scene.soundTracks[i].soundCollection[j].pause();
+                    }
                 }
             }
         }
@@ -299,10 +308,12 @@ module BABYLON {
                     scene.mainSoundTrack.soundCollection[i].play();
                 }
             }
-            for (i = 0; i < scene.soundTracks.length; i++) {
-                for (var j = 0; j < scene.soundTracks[i].soundCollection.length; j++) {
-                    if (scene.soundTracks[i].soundCollection[j].isPaused) {
-                        scene.soundTracks[i].soundCollection[j].play();
+            if (scene.soundTracks) {
+                for (i = 0; i < scene.soundTracks.length; i++) {
+                    for (var j = 0; j < scene.soundTracks[i].soundCollection.length; j++) {
+                        if (scene.soundTracks[i].soundCollection[j].isPaused) {
+                            scene.soundTracks[i].soundCollection[j].play();
+                        }
                     }
                 }
             }
@@ -316,9 +327,10 @@ module BABYLON {
             this._headphone = true;
 
             scene.mainSoundTrack.switchPanningModelToHRTF();
-
-            for (var i = 0; i < scene.soundTracks.length; i++) {
-                scene.soundTracks[i].switchPanningModelToHRTF();
+            if (scene.soundTracks) {
+                for (var i = 0; i < scene.soundTracks.length; i++) {
+                    scene.soundTracks[i].switchPanningModelToHRTF();
+                }
             }
         }
 
@@ -331,14 +343,16 @@ module BABYLON {
 
             scene.mainSoundTrack.switchPanningModelToEqualPower();
 
-            for (var i = 0; i < scene.soundTracks.length; i++) {
-                scene.soundTracks[i].switchPanningModelToEqualPower();
+            if (scene.soundTracks) {
+                for (var i = 0; i < scene.soundTracks.length; i++) {
+                    scene.soundTracks[i].switchPanningModelToEqualPower();
+                }
             }
         }
 
         private _afterRender() {
             const scene = this.scene;
-            if (!this._audioEnabled || !scene._mainSoundTrack || (scene._mainSoundTrack.soundCollection.length === 0 && scene.soundTracks.length === 1)) {
+            if (!this._audioEnabled || !scene._mainSoundTrack || !scene.soundTracks || (scene._mainSoundTrack.soundCollection.length === 0 && scene.soundTracks.length === 1)) {
                 return;
             }
     
@@ -372,11 +386,13 @@ module BABYLON {
                         sound.updateDistanceFromListener();
                     }
                 }
-                for (i = 0; i < scene.soundTracks.length; i++) {
-                    for (var j = 0; j < scene.soundTracks[i].soundCollection.length; j++) {
-                        sound = scene.soundTracks[i].soundCollection[j];
-                        if (sound.useCustomAttenuation) {
-                            sound.updateDistanceFromListener();
+                if (scene.soundTracks) {
+                    for (i = 0; i < scene.soundTracks.length; i++) {
+                        for (var j = 0; j < scene.soundTracks[i].soundCollection.length; j++) {
+                            sound = scene.soundTracks[i].soundCollection[j];
+                            if (sound.useCustomAttenuation) {
+                                sound.updateDistanceFromListener();
+                            }
                         }
                     }
                 }

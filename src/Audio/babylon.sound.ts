@@ -249,7 +249,7 @@ module BABYLON {
                 if (this.soundTrackId === -1) {
                     this._scene.mainSoundTrack.RemoveSound(this);
                 }
-                else {
+                else if (this._scene.soundTracks) {
                     this._scene.soundTracks[this.soundTrackId].RemoveSound(this);
                 }
                 if (this._soundGain) {
