@@ -106,7 +106,7 @@
         private _children: Node[];
 
         /** @hidden */
-        public _worldMatrix = Matrix.Zero();
+        public _worldMatrix = Matrix.Identity();
         /** @hidden */
         public _worldMatrixDeterminant = 0;        
 
