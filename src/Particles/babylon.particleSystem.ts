@@ -1030,8 +1030,21 @@
             }
 
             if (this.preWarmCycles) {
-                for (var index = 0; index < this.preWarmCycles; index++) {
-                    this.animate(true);
+                let noiseTextureAsProcedural = this.noiseTexture as ProceduralTexture;
+
+                if (noiseTextureAsProcedural && noiseTextureAsProcedural.onGeneratedObservable) {
+                    noiseTextureAsProcedural.onGeneratedObservable.addOnce(() => {
+                        setTimeout(() => {
+                            for (var index = 0; index < this.preWarmCycles; index++) {
+                                this.animate(true);
+                                noiseTextureAsProcedural.render();
+                            }    
+                        });
+                    });
+                } else { 
+                    for (var index = 0; index < this.preWarmCycles; index++) {
+                        this.animate(true);
+                    }
                 }
             }
         }
