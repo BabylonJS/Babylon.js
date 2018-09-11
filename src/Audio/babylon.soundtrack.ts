@@ -14,7 +14,7 @@
             this.soundCollection = new Array();
             this._options = options;
 
-            if (!this._isMainTrack) {
+            if (!this._isMainTrack && this._scene.soundTracks) {
                 this._scene.soundTracks.push(this);
                 this.id = this._scene.soundTracks.length - 1;
             }
@@ -60,7 +60,7 @@
                 if (sound.soundTrackId === -1) {
                     this._scene.mainSoundTrack.RemoveSound(sound);
                 }
-                else {
+                else if (this._scene.soundTracks) {
                     this._scene.soundTracks[sound.soundTrackId].RemoveSound(sound);
                 }
             }
