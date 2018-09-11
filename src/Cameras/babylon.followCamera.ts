@@ -89,11 +89,33 @@
         }
     }
 
+    /**
+     * Arc Rotate version of the follow camera.
+     * It still follows a defined mesh but in an Arc Rotate Camera fashion.
+     */
     export class ArcFollowCamera extends TargetCamera {
 
         private _cartesianCoordinates: Vector3 = Vector3.Zero();
 
-        constructor(name: string, public alpha: number, public beta: number, public radius: number, public target: Nullable<AbstractMesh>, scene: Scene) {
+        /**
+         * Instantiates a new ArcFollowCamera
+         * @param name Defines the name of the camera
+         * @param alpha Defines the rotation angle of the camera around the logitudinal axis
+         * @param beta Defines the rotation angle of the camera around the elevation axis
+         * @param radius Defines the radius of the camera from its target point
+         * @param target Defines the target of the camera
+         * @param scene Defines the scene the camera belongs to
+         */
+        constructor(name: string, 
+            /** The longitudinal angle of the camera */
+            public alpha: number, 
+            /** The latitudinal angle of the camera */
+            public beta: number, 
+            /** The radius of the camera from its target */
+            public radius: number, 
+            /** Defines the camera target (the messh it should follow) */
+            public target: Nullable<AbstractMesh>, 
+            scene: Scene) {
             super(name, Vector3.Zero(), scene);
             this.follow();
         }
@@ -117,6 +139,10 @@
             this.follow();
         }
 
+        /**
+         * Returns the class name of the object.
+         * It is mostly used internally for serialization purposes.
+         */
         public getClassName(): string {
             return "ArcFollowCamera";
         }

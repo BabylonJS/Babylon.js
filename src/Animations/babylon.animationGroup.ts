@@ -20,6 +20,9 @@ module BABYLON {
         private _isStarted: boolean;
         private _speedRatio = 1;
 
+        /**
+         * This observable will notify when one animation have ended.
+         */
         public onAnimationEndObservable = new Observable<TargetedAnimation>();
 
         /**
@@ -90,7 +93,17 @@ module BABYLON {
             return this._animatables;
         }
 
-        public constructor(public name: string, scene: Nullable<Scene> = null) {
+        /**
+         * Instantiates a new Animation Group.
+         * This helps managing several animations at once. 
+         * @see http://doc.babylonjs.com/how_to/group
+         * @param name Defines the name of the group
+         * @param scene Defines the scene the group belongs to
+         */
+        public constructor(
+            /** The name of the animation group */
+            public name: string, 
+            scene: Nullable<Scene> = null) {
             this._scene = scene || Engine.LastCreatedScene!;
 
             this._scene.animationGroups.push(this);
@@ -127,6 +140,7 @@ module BABYLON {
          * It can add constant keys at begin or end
          * @param beginFrame defines the new begin frame for all animations or the smallest begin frame of all animations if null (defaults to null)
          * @param endFrame defines the new end frame for all animations or the largest end frame of all animations if null (defaults to null)
+         * @returns the animation group
          */
         public normalize(beginFrame: Nullable<number> = null, endFrame: Nullable<number> = null): AnimationGroup {
             if (beginFrame == null) beginFrame = this._from;
@@ -198,6 +212,7 @@ module BABYLON {
 
         /**
          * Pause all animations
+         * @returns the animation group
          */
         public pause(): AnimationGroup {
             if (!this._isStarted) {
@@ -218,6 +233,7 @@ module BABYLON {
          * Play all animations to initial state
          * This function will start() the animations if they were not started or will restart() them if they were paused
          * @param loop defines if animations must loop
+         * @returns the animation group
          */
         public play(loop?: boolean): AnimationGroup {
             // only if all animatables are ready and exist
@@ -239,6 +255,7 @@ module BABYLON {
 
         /**
          * Reset all animations to initial state
+         * @returns the animation group
          */
         public reset(): AnimationGroup {
             if (!this._isStarted) {
@@ -255,6 +272,7 @@ module BABYLON {
 
         /**
          * Restart animations from key 0
+         * @returns the animation group
          */
         public restart(): AnimationGroup {
             if (!this._isStarted) {
@@ -271,6 +289,7 @@ module BABYLON {
 
         /**
          * Stop all animations
+         * @returns the animation group
          */
         public stop(): AnimationGroup {
             if (!this._isStarted) {

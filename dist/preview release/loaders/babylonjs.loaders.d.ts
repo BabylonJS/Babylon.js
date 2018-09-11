@@ -1786,7 +1786,7 @@ declare module BABYLON.GLTF2.Extensions {
 
 declare module BABYLON.GLTF2.Extensions {
     /**
-     * [Specification](https://github.com/MiiBond/glTF/tree/khr_lights_v1/extensions/Khronos/KHR_lights) (Experimental)
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/1048d162a44dbcb05aefc1874bfd423cf60135a6/extensions/2.0/Khronos/KHR_lights_punctual/README.md) (Experimental)
      */
     class KHR_lights implements IGLTFLoaderExtension {
         /** The name of this extension. */
@@ -1801,8 +1801,6 @@ declare module BABYLON.GLTF2.Extensions {
         dispose(): void;
         /** @hidden */
         onLoading(): void;
-        /** @hidden */
-        loadSceneAsync(context: string, scene: ILoaderScene): Nullable<Promise<void>>;
         /** @hidden */
         loadNodeAsync(context: string, node: ILoaderNode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
     }
@@ -1831,9 +1829,9 @@ declare module BABYLON.GLTF2.Extensions {
 
 declare module BABYLON.GLTF2.Extensions {
     /**
-     * [Specification](TODO) (Experimental)
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/eb3e32332042e04691a5f35103f8c261e50d8f1e/extensions/2.0/Khronos/EXT_lights_image_based/README.md) (Experimental)
      */
-    class EXT_lights_imageBased implements IGLTFLoaderExtension {
+    class EXT_lights_image_based implements IGLTFLoaderExtension {
         /** The name of this extension. */
         readonly name: string;
         /** Defines whether this extension is enabled. */

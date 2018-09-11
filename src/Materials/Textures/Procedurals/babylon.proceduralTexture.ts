@@ -49,6 +49,9 @@
 
         private _cachedDefines = "";
 
+        private _contentUpdateId = -1;
+        private _contentData: Nullable<ArrayBufferView>;
+
         constructor(name: string, size: any, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, public isCube = false) {
             super(null, scene, !generateMipMaps);
 
@@ -89,6 +92,21 @@
             this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(this._engine, vertices, VertexBuffer.PositionKind, false, false, 2);
 
             this._createIndexBuffer();
+        }
+
+        /**
+         * Gets texture content (Use this function wisely as reading from a texture can be slow)
+         * @returns an ArrayBufferView (Uint8Array or Float32Array)
+         */
+        public getContent(): Nullable<ArrayBufferView> {
+            if (this._contentData && this._currentRefreshId == this._contentUpdateId) {
+                return this._contentData;
+            }
+
+            this._contentData = this.readPixels(0, 0, this._contentData);
+            this._contentUpdateId = this._currentRefreshId;
+
+            return this._contentData;
         }
 
         private _createIndexBuffer(): void {

@@ -377,6 +377,12 @@ module BABYLON {
             return ret;
         }
 
+        /** @hidden */
+        protected _syncParentEnabledState() {
+            super._syncParentEnabledState();
+            this._resyncMeshes();
+        }
+
         /**
          * Set the enabled state of this node.
          * @param value - the new enabled state
