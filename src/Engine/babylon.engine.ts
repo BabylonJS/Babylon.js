@@ -6975,7 +6975,7 @@
         }
 
         /** @hidden */
-        public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer?: ArrayBufferView): ArrayBufferView {
+        public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null): ArrayBufferView {
             let gl = this._gl;
             if (!this._dummyFramebuffer) {
                 let dummy = gl.createFramebuffer();

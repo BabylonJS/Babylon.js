@@ -179,17 +179,14 @@
             // Default emitter type
             this.particleEmitterType = new BoxParticleEmitter();
 
-            // Update
-            let noiseTextureData: Nullable<Uint8Array> = null;
+            // Update            
             this.updateFunction = (particles: Particle[]): void => {
                 let noiseTextureSize: Nullable<ISize> = null;
-
+                let noiseTextureData: Nullable<Uint8Array> = null;
+                
                 if (this.noiseTexture) { // We need to get texture data back to CPU
                     noiseTextureSize = this.noiseTexture.getSize();
-                    if (!noiseTextureData) {
-                        noiseTextureData = new Uint8Array(4 * noiseTextureSize.width * noiseTextureSize.height); 
-                    }
-                    this.noiseTexture.readPixels(0, 0, noiseTextureData);
+                    noiseTextureData = <Nullable<Uint8Array>>(this.noiseTexture.getContent());
                 }
 
                 for (var index = 0; index < particles.length; index++) {
@@ -1834,12 +1831,13 @@
             var result = new ParticleSystem(name, this._capacity, this._scene, custom);
             result.customShader = program;
 
-            Tools.DeepCopy(this, result, ["particles", "customShader"]);
+            Tools.DeepCopy(this, result, ["particles", "customShader", "noiseTexture"]);
 
             if (newEmitter === undefined) {
                 newEmitter = this.emitter;
             }
 
+            result.noiseTexture = this.noiseTexture;
             result.emitter = newEmitter;
             if (this.particleTexture) {
                 result.particleTexture = new Texture(this.particleTexture.url, this._scene);
@@ -2188,9 +2186,8 @@
                 serializationObject.limitVelocityDamping = particleSystem.limitVelocityDamping;
             }
 
-            if (ProceduralTexture && particleSystem.noiseTexture && particleSystem.noiseTexture instanceof ProceduralTexture) {
-                const noiseTexture = particleSystem.noiseTexture as ProceduralTexture;
-                serializationObject.noiseTexture = noiseTexture.serialize();
+            if (particleSystem.noiseTexture) {
+                serializationObject.noiseTexture = particleSystem.noiseTexture.serialize();
             }
         }
 
