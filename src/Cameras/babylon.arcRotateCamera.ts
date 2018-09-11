@@ -791,7 +791,10 @@
             }
         }
 
-        public rebuildAnglesAndRadius() {
+        /**
+         * Rebuilds angles (alpha, beta) and radius from the give position and target.
+         */
+        public rebuildAnglesAndRadius(): void {
             this.position.subtractToRef(this._getTargetPosition(), this._computationVector);
             this.radius = this._computationVector.length();
 
