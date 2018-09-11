@@ -3,13 +3,29 @@
         return () => new ArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);
     });
 
+    /**
+     * This represents an orbital type of camera.
+     * 
+     * This camera always points towards a given target position and can be rotated around that target with the target as the centre of rotation. It can be controlled with cursors and mouse, or with touch events.
+     * Think of this camera as one orbiting its target position, or more imaginatively as a spy satellite orbiting the earth. Its position relative to the target (earth) can be set by three parameters, alpha (radians) the longitudinal rotation, beta (radians) the latitudinal rotation and radius the distance from the target position.
+     * @see http://doc.babylonjs.com/babylon101/cameras#arc-rotate-camera
+     */
     export class ArcRotateCamera extends TargetCamera {
+        /**
+         * Defines the rotation angle of the camera along the longitudinal axis.
+         */
         @serialize()
         public alpha: number;
 
+        /**
+         * Defines the rotation angle of the camera along the latitudinal axis.
+         */
         @serialize()
         public beta: number;
 
+        /**
+         * Defines the radius of the camera from it s target point.
+         */
         @serialize()
         public radius: number;
 
@@ -17,6 +33,10 @@
         protected _target: Vector3;
         protected _targetHost: Nullable<AbstractMesh>;
 
+        /**
+         * Defines the target point of the camera.
+         * The camera looks towards it form the radius distance.
+         */
         public get target(): Vector3 {
             return this._target;
         }
@@ -24,52 +44,114 @@
             this.setTarget(value);
         }
 
+        /**
+         * Current inertia value on the longitudinal axis.
+         * The bigger this number the longer it will take for the camera to stop.
+         */
         @serialize()
         public inertialAlphaOffset = 0;
 
+        /**
+         * Current inertia value on the latitudinal axis.
+         * The bigger this number the longer it will take for the camera to stop.
+         */
         @serialize()
         public inertialBetaOffset = 0;
 
+        /**
+         * Current inertia value on the radius axis.
+         * The bigger this number the longer it will take for the camera to stop.
+         */
         @serialize()
         public inertialRadiusOffset = 0;
 
+        /**
+         * Minimum allowed angle on the longitudinal axis.
+         * This can help limiting how the Camera is able to move in the scene.
+         */
         @serialize()
         public lowerAlphaLimit: Nullable<number> = null;
 
+        /**
+         * Maximum allowed angle on the longitudinal axis.
+         * This can help limiting how the Camera is able to move in the scene.
+         */
         @serialize()
         public upperAlphaLimit: Nullable<number> = null;
 
+        /**
+         * Minimum allowed angle on the latitudinal axis.
+         * This can help limiting how the Camera is able to move in the scene.
+         */
         @serialize()
         public lowerBetaLimit = 0.01;
 
+        /**
+         * Maximum allowed angle on the latitudinal axis.
+         * This can help limiting how the Camera is able to move in the scene.
+         */
         @serialize()
         public upperBetaLimit = Math.PI;
 
+        /**
+         * Minimum allowed distance of the camera to the target (The camera can not get closer).
+         * This can help limiting how the Camera is able to move in the scene.
+         */
         @serialize()
         public lowerRadiusLimit: Nullable<number> = null;
 
+        /**
+         * Maximum allowed distance of the camera to the target (The camera can not get further).
+         * This can help limiting how the Camera is able to move in the scene.
+         */
         @serialize()
         public upperRadiusLimit: Nullable<number> = null;
 
+        /**
+         * Defines the current inertia value used during panning of the camera along the X axis.
+         */
         @serialize()
         public inertialPanningX: number = 0;
 
+        /**
+         * Defines the current inertia value used during panning of the camera along the Y axis.
+         */
         @serialize()
         public inertialPanningY: number = 0;
 
+        /**
+         * Defines the distance used to consider the camera in pan mode vs pinch/zoom.
+         * Basically if your fingers moves away from more than this distance you will be considered
+         * in pinch mode.
+         */
         @serialize()
         public pinchToPanMaxDistance: number = 20;
 
+        /**
+         * Defines the maximum distance the camera can pan.
+         * This could help keeping the cammera always in your scene.
+         */
         @serialize()
         public panningDistanceLimit: Nullable<number> = null;
 
+        /**
+         * Defines the target of the camera before paning.
+         */
         @serializeAsVector3()
         public panningOriginTarget: Vector3 = Vector3.Zero();
 
+        /**
+         * Defines the value of the inertia used during panning.
+         * 0 would mean stop inertia and one would mean no decelleration at all.
+         */
         @serialize()
         public panningInertia = 0.9;
 
         //-- begin properties for backward compatibility for inputs
+
+        /**
+         * Gets or Set the pointer angular sensibility  along the X axis  or how fast is the camera rotating.
+         */
         public get angularSensibilityX(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
@@ -85,6 +167,9 @@
             }
         }
 
+        /**
+         * Gets or Set the pointer angular sensibility along the Y axis or how fast is the camera rotating.
+         */
         public get angularSensibilityY(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
@@ -100,6 +185,9 @@
             }
         }
 
+        /**
+         * Gets or Set the pointer pinch precision or how fast is the camera zooming.
+         */
         public get pinchPrecision(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
@@ -115,6 +203,11 @@
             }
         }
 
+        /**
+         * Gets or Set the pointer pinch delta percentage or how fast is the camera zooming.
+         * It will be used instead of pinchDeltaPrecision if different from 0. 
+         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
+         */
         public get pinchDeltaPercentage(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
@@ -130,6 +223,9 @@
             }
         }
 
+        /**
+         * Gets or Set the pointer panning sensibility or how fast is the camera moving.
+         */
         public get panningSensibility(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
@@ -145,6 +241,9 @@
             }
         }
 
+        /**
+         * Gets or Set the list of keyboard keys used to control beta angle in a positive direction.
+         */
         public get keysUp(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
@@ -159,6 +258,9 @@
                 keyboard.keysUp = value;
         }
 
+        /**
+         * Gets or Set the list of keyboard keys used to control beta angle in a negative direction.
+         */
         public get keysDown(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
@@ -173,6 +275,9 @@
                 keyboard.keysDown = value;
         }
 
+        /**
+         * Gets or Set the list of keyboard keys used to control alpha angle in a negative direction.
+         */
         public get keysLeft(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
@@ -187,6 +292,9 @@
                 keyboard.keysLeft = value;
         }
 
+        /**
+         * Gets or Set the list of keyboard keys used to control alpha angle in a positive direction.
+         */
         public get keysRight(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
@@ -201,6 +309,9 @@
                 keyboard.keysRight = value;
         }
 
+        /**
+         * Gets or Set the mouse wheel precision or how fast is the camera zooming.
+         */
         public get wheelPrecision(): number {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
             if (mousewheel)
@@ -215,6 +326,11 @@
                 mousewheel.wheelPrecision = value;
         }
 
+        /**
+         * Gets or Set the mouse wheel delta percentage or how fast is the camera zooming.
+         * It will be used instead of pinchDeltaPrecision if different from 0. 
+         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
+         */
         public get wheelDeltaPercentage(): number {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
             if (mousewheel)
@@ -231,11 +347,22 @@
 
         //-- end properties for backward compatibility for inputs
 
+        /**
+         * Defines how much the radius should be scaled while zomming on a particular mesh (through the zoomOn function)
+         */
         @serialize()
         public zoomOnFactor = 1;
 
+        /**
+         * Defines a screen offset for the camera position.
+         */
+        @serialize()
         public targetScreenOffset = Vector2.Zero();
 
+        /**
+         * Allows the camera to be completely reversed.
+         * If false the camera can not arrive upside down.
+         */
         @serialize()
         public allowUpsideDown = true;
 
@@ -246,12 +373,17 @@
         /** @hidden */
         public _panningMouseButton: number;
 
+        /**
+         * Defines the inpute associated to the camera.
+         */
         public inputs: ArcRotateCameraInputsManager;
 
         /** @hidden */
         public _reset: () => void;
 
-        // Panning
+        /**
+         * Defines the allowed panning axis.
+         */
         public panningAxis: Vector3 = new Vector3(1, 1, 0);
         protected _localDirection: Vector3;
         protected _transformedDirection: Vector3;
@@ -259,10 +391,18 @@
         // Behaviors
         private _bouncingBehavior: Nullable<BouncingBehavior>;
 
+        /**
+         * Gets the bouncing behavior of the camera if it has been enabled.
+         * @see http://doc.babylonjs.com/how_to/camera_behaviors#bouncing-behavior
+         */
         public get bouncingBehavior(): Nullable<BouncingBehavior> {
             return this._bouncingBehavior;
         }
 
+        /**
+         * Defines if the bouncing behavior of the camera is enabled on the camera.
+         * @see http://doc.babylonjs.com/how_to/camera_behaviors#bouncing-behavior
+         */
         public get useBouncingBehavior(): boolean {
             return this._bouncingBehavior != null;
         }
@@ -283,10 +423,18 @@
 
         private _framingBehavior: Nullable<FramingBehavior>;
 
+        /**
+         * Gets the framing behavior of the camera if it has been enabled.
+         * @see http://doc.babylonjs.com/how_to/camera_behaviors#framing-behavior
+         */
         public get framingBehavior(): Nullable<FramingBehavior> {
             return this._framingBehavior;
         }
 
+        /**
+         * Defines if the framing behavior of the camera is enabled on the camera.
+         * @see http://doc.babylonjs.com/how_to/camera_behaviors#framing-behavior
+         */
         public get useFramingBehavior(): boolean {
             return this._framingBehavior != null;
         }
@@ -307,10 +455,18 @@
 
         private _autoRotationBehavior: Nullable<AutoRotationBehavior>;
 
+        /**
+         * Gets the auto rotation behavior of the camera if it has been enabled.
+         * @see http://doc.babylonjs.com/how_to/camera_behaviors#autorotation-behavior
+         */
         public get autoRotationBehavior(): Nullable<AutoRotationBehavior> {
             return this._autoRotationBehavior;
         }
 
+        /**
+         * Defines if the auto rotation behavior of the camera is enabled on the camera.
+         * @see http://doc.babylonjs.com/how_to/camera_behaviors#autorotation-behavior
+         */
         public get useAutoRotationBehavior(): boolean {
             return this._autoRotationBehavior != null;
         }
@@ -329,12 +485,29 @@
             }
         }
 
+        /**
+         * Observable triggered when the mesh target has been changed on the camera.
+         */
         public onMeshTargetChangedObservable = new Observable<Nullable<AbstractMesh>>();
 
-        // Collisions
+        /**
+         * Event raised when the camera is colliding with a mesh.
+         */
         public onCollide: (collidedMesh: AbstractMesh) => void;
+
+        /**
+         * Defines whether the camera should check collision with the objects oh the scene.
+         * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#how-can-i-do-this
+         */
         public checkCollisions = false;
+
+        /**
+         * Defines the collision radius of the camera.
+         * This simulates a sphere around the camera.
+         * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#arcrotatecamera
+         */
         public collisionRadius = new Vector3(0.5, 0.5, 0.5);
+
         protected _collider: Collider;
         protected _previousPosition = Vector3.Zero();
         protected _collisionVelocity = Vector3.Zero();
@@ -349,6 +522,16 @@
 
         private _computationVector: Vector3 = Vector3.Zero();
 
+        /**
+         * Instantiates a new ArcRotateCamera in a given scene
+         * @param name Defines the name of the camera
+         * @param alpha Defines the camera rotation along the logitudinal axis
+         * @param beta Defines the camera rotation along the latitudinal axis
+         * @param radius Defines the camera distance from its target
+         * @param target Defines the camera target
+         * @param scene Defines the scene the camera belongs to
+         * @param setActiveOnSceneIfNoneActive Defines wheter the camera should be marked as active if not other active cameras have been defined
+         */
         constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
             super(name, Vector3.Zero(), scene, setActiveOnSceneIfNoneActive);
 
@@ -409,16 +592,15 @@
             return this._target;
         }
 
-        // State
-
-        /**
-         * Store current camera state (fov, position, etc..)
-         */
         private _storedAlpha: number;
         private _storedBeta: number;
         private _storedRadius: number;
         private _storedTarget: Vector3;
 
+        /**
+         * Stores the current state of the camera (alpha, beta, radius and target)
+         * @returns the camera itself
+         */
         public storeState(): Camera {
             this._storedAlpha = this.alpha;
             this._storedBeta = this.beta;
@@ -464,7 +646,13 @@
                 && this._cache.targetScreenOffset.equals(this.targetScreenOffset);
         }
 
-        // Methods
+        /**
+         * Attached controls to the current camera.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         * @param useCtrlForPanning  Defines whether ctrl is used for paning within the controls
+         * @param panningMouseButton Defines whether panning is allowed through mouse click button
+         */
         public attachControl(element: HTMLElement, noPreventDefault?: boolean, useCtrlForPanning: boolean = true, panningMouseButton: number = 2): void {
             this._useCtrlForPanning = useCtrlForPanning;
             this._panningMouseButton = panningMouseButton;
@@ -480,6 +668,11 @@
             };
         }
 
+        /**
+         * Detach the current controls from the camera.
+         * The camera will stop reacting to inputs.
+         * @param element Defines the element to stop listening the inputs from
+         */
         public detachControl(element: HTMLElement): void {
             this.inputs.detachElement(element);
 
@@ -598,7 +791,10 @@
             }
         }
 
-        public rebuildAnglesAndRadius() {
+        /**
+         * Rebuilds angles (alpha, beta) and radius from the give position and target.
+         */
+        public rebuildAnglesAndRadius(): void {
             this.position.subtractToRef(this._getTargetPosition(), this._computationVector);
             this.radius = this._computationVector.length();
 
@@ -619,6 +815,10 @@
             this._checkLimits();
         }
 
+        /**
+         * Use a position to define the current camera related information like aplha, beta and radius
+         * @param position Defines the position to set the camera at
+         */
         public setPosition(position: Vector3): void {
             if (this.position.equals(position)) {
                 return;
@@ -628,6 +828,13 @@
             this.rebuildAnglesAndRadius();
         }
 
+        /**
+         * Defines the target the camera should look at.
+         * This will automatically adapt alpha beta and radius to fit within the new target.
+         * @param target Defines the new target as a Vector or a mesh
+         * @param toBoundingCenter In case of a mesh target, defines wether to target the mesh position or its bounding information center
+         * @param allowSamePosition If false, prevents reapplying the new computed position if it is identical to the current one (optim)
+         */
         public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false): void {
 
             if ((<any>target).getBoundingInfo) {
@@ -740,6 +947,11 @@
             this._collisionTriggered = false;
         }
 
+        /**
+         * Zooms on a mesh to be at the min distance where we could see it fully in the current viewport.
+         * @param meshes Defines the mesh to zoom on
+         * @param doNotUpdateMaxZ Defines whether or not maxZ should be updated whilst zooming on the mesh (this can happen if the mesh is big and the maxradius pretty small for instance)
+         */
         public zoomOn(meshes?: AbstractMesh[], doNotUpdateMaxZ = false): void {
             meshes = meshes || this.getScene().meshes;
 
@@ -751,6 +963,12 @@
             this.focusOn({ min: minMaxVector.min, max: minMaxVector.max, distance: distance }, doNotUpdateMaxZ);
         }
 
+        /**
+         * Focus on a mesh or a bounding box. This adapts the target and maxRadius if necessary but does not update the current radius.
+         * The target will be changed but the radius
+         * @param meshesOrMinMaxVectorAndDistance Defines the mesh or bounding info to focus on
+         * @param doNotUpdateMaxZ Defines whether or not maxZ should be updated whilst zooming on the mesh (this can happen if the mesh is big and the maxradius pretty small for instance)
+         */
         public focusOn(meshesOrMinMaxVectorAndDistance: AbstractMesh[] | { min: Vector3, max: Vector3, distance: number }, doNotUpdateMaxZ = false): void {
             var meshesOrMinMaxVector: { min: Vector3, max: Vector3 };
             var distance: number;
@@ -823,11 +1041,18 @@
             super._updateRigCameras();
         }
 
+        /**
+         * Destroy the camera and release the current resources hold by it.
+         */
         public dispose(): void {
             this.inputs.clear();
             super.dispose();
         }
 
+        /**
+         * Gets the current object class name.
+         * @return the class name
+         */
         public getClassName(): string {
             return "ArcRotateCamera";
         }
