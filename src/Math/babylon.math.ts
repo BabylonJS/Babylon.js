@@ -2164,6 +2164,13 @@
             return new Vector3(0.0, 0.0, 1.0);
         }
         /**
+         * Returns a new Vector3 set to (0.0, 0.0, -1.0)
+         * @returns a new forward Vector3
+         */
+        public static Backward(): Vector3 {
+            return new Vector3(0.0, 0.0, -1.0);
+        }
+        /**
          * Returns a new Vector3 set to (1.0, 0.0, 0.0)
          * @returns a new right Vector3
          */
@@ -6196,17 +6203,44 @@
         }
     }
 
+    /**
+     * This represents an arc in a 2d space.
+     */
     export class Arc2 {
-        centerPoint: Vector2;
-        radius: number;
-        angle: Angle;
-        startAngle: Angle;
-        orientation: Orientation;
+        /**
+         * Defines the center point of the arc.
+         */
+        public centerPoint: Vector2;
+        /**
+         * Defines the radius of the arc.
+         */
+        public radius: number;
+        /**
+         * Defines the angle of the arc (from mid point to end point).
+         */
+        public angle: Angle;
+        /**
+         * Defines the start angle of the arc (from start point to middle point).
+         */
+        public startAngle: Angle;
+        /**
+         * Defines the orientation of the arc (clock wise/counter clock wise).
+         */
+        public orientation: Orientation;
 
         /**
-         * Creates an Arc object from the three given points : start, middle and end.  
+         * Creates an Arc object from the three given points : start, middle and end.
+         * @param startPoint Defines the start point of the arc
+         * @param midPoint Defines the midlle point of the arc
+         * @param endPoint Defines the end point of the arc
          */
-        constructor(public startPoint: Vector2, public midPoint: Vector2, public endPoint: Vector2) {
+        constructor(
+            /** Defines the start point of the arc */
+            public startPoint: Vector2, 
+            /** Defines the mid point of the arc */
+            public midPoint: Vector2, 
+            /** Defines the end point of the arc */
+            public endPoint: Vector2) {
 
             var temp = Math.pow(midPoint.x, 2) + Math.pow(midPoint.y, 2);
             var startToMid = (Math.pow(startPoint.x, 2) + Math.pow(startPoint.y, 2) - temp) / 2.;

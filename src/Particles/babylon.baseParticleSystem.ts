@@ -166,7 +166,7 @@ module BABYLON {
         /**
          * Gets or sets a texture used to add random noise to particle positions
          */
-        public noiseTexture: Nullable<BaseTexture>;
+        public noiseTexture: Nullable<ProceduralTexture>;
 
         /** Gets or sets the strength to apply to the noise value (default is (10, 10, 10)) */
         public noiseStrength = new Vector3(10, 10, 10);

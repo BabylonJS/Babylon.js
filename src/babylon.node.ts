@@ -88,6 +88,7 @@
         public onReady: (node: Node) => void;
 
         private _isEnabled = true;
+        private _isParentEnabled = true;
         private _isReady = true;
         /** @hidden */
         public _currentRenderId = -1;
@@ -105,7 +106,7 @@
         private _children: Node[];
 
         /** @hidden */
-        public _worldMatrix = Matrix.Zero();
+        public _worldMatrix = Matrix.Identity();
         /** @hidden */
         public _worldMatrixDeterminant = 0;        
 
@@ -159,6 +160,9 @@
                     }
                 }
             }
+
+            // Enabled state
+            this._syncParentEnabledState();
         }
 
         public get parent(): Nullable<Node> {
@@ -419,15 +423,22 @@
                 return this._isEnabled;
             }
 
-            if (this._isEnabled === false) {
+            if (!this._isEnabled) {
                 return false;
             }
 
-            if (this._parentNode !== undefined && this._parentNode !== null) {
-                return this._parentNode.isEnabled(checkAncestors);
-            }
+            return this._isParentEnabled;
+        }
 
-            return true;
+        /** @hidden */
+        protected _syncParentEnabledState() {
+            this._isParentEnabled = this._parentNode ? this._parentNode.isEnabled() : true;
+
+            if (this._children) {
+                this._children.forEach(c => {
+                    c._syncParentEnabledState(); // Force children to update accordingly
+                });
+            }            
         }
 
         /**
@@ -436,6 +447,8 @@
          */
         public setEnabled(value: boolean): void {
             this._isEnabled = value;
+
+            this._syncParentEnabledState();
         }
 
         /**

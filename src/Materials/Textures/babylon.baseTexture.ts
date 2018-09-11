@@ -314,10 +314,10 @@
          * float values (0-1) depending of the underlying buffer type.
          * @param faceIndex defines the face of the texture to read (in case of cube texture)
          * @param level defines the LOD level of the texture to read (in case of Mip Maps)
-         * @param buffer defines a user defined buffer to fill with data
+         * @param buffer defines a user defined buffer to fill with data (can be null)
          * @returns The Array buffer containing the pixels data.
          */
-        public readPixels(faceIndex = 0, level = 0, buffer?: ArrayBufferView): Nullable<ArrayBufferView> {
+        public readPixels(faceIndex = 0, level = 0, buffer: Nullable<ArrayBufferView> = null): Nullable<ArrayBufferView> {
             if (!this._texture) {
                 return null;
             }
