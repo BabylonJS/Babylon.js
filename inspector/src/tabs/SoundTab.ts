@@ -15,12 +15,14 @@ export class SoundTab extends PropertyTab {
 
         // get all cameras from the first scene
         let instances = this._inspector.scene;
-        for (let sounds of instances.soundTracks) {
-            let sound = sounds.soundCollection;
-            sound.forEach(element => {
-                arr.push(new TreeItem(this, new SoundAdapter(element)));
-            });
+        if (instances.soundTracks) {
+            for (let sounds of instances.soundTracks) {
+                let sound = sounds.soundCollection;
+                sound.forEach(element => {
+                    arr.push(new TreeItem(this, new SoundAdapter(element)));
+                });
 
+            }
         }
         return arr;
     }
