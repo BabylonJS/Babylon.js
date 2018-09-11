@@ -312,11 +312,12 @@
          * Reads the pixels stored in the webgl texture and returns them as an ArrayBuffer.
          * This will returns an RGBA array buffer containing either in values (0-255) or
          * float values (0-1) depending of the underlying buffer type.
-         * @param faceIndex The face of the texture to read (in case of cube texture)
-         * @param level The LOD level of the texture to read (in case of Mip Maps)
+         * @param faceIndex defines the face of the texture to read (in case of cube texture)
+         * @param level defines the LOD level of the texture to read (in case of Mip Maps)
+         * @param buffer defines a user defined buffer to fill with data
          * @returns The Array buffer containing the pixels data.
          */
-        public readPixels(faceIndex = 0, level = 0): Nullable<ArrayBufferView> {
+        public readPixels(faceIndex = 0, level = 0, buffer?: ArrayBufferView): Nullable<ArrayBufferView> {
             if (!this._texture) {
                 return null;
             }
@@ -341,10 +342,10 @@
             }
 
             if (this._texture.isCube) {
-                return engine._readTexturePixels(this._texture, width, height, faceIndex, level);
+                return engine._readTexturePixels(this._texture, width, height, faceIndex, level, buffer);
             }
 
-            return engine._readTexturePixels(this._texture, width, height, -1, level);
+            return engine._readTexturePixels(this._texture, width, height, -1, level, buffer);
         }
 
         public releaseInternalTexture(): void {
