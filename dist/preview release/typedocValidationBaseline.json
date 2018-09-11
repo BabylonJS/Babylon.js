@@ -1,7 +1,7 @@
 {
-  "errors": 3753,
+  "errors": 3752,
   "babylon.typedoc.json": {
-    "errors": 3753,
+    "errors": 3752,
     "AnimationGroup": {
       "Constructor": {
         "new AnimationGroup": {
@@ -11566,11 +11566,6 @@
       },
       "Property": {
         "isEnabled": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onGenerated": {
           "Comments": {
             "MissingText": true
           }

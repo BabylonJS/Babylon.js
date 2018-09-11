@@ -12,7 +12,15 @@
         private _currentRefreshId = -1;
         private _refreshRate = 1;
 
+        /**
+         * Callback called when the texture is generated
+         */
         public onGenerated: () => void;
+
+        /**
+         * Event raised when the texture is generated
+         */
+        public onGeneratedObservable = new Observable<ProceduralTexture>();
 
         private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
         private _indexBuffer: Nullable<WebGLBuffer>;
@@ -417,6 +425,8 @@
             if (this.onGenerated) {
                 this.onGenerated();
             }
+
+            this.onGeneratedObservable.notifyObservers(this);
         }
 
         public clone(): ProceduralTexture {

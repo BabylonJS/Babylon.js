@@ -9,8 +9,9 @@ import { Inspector } from "../Inspector";
 import { Tab } from "./Tab";
 import { TabBar } from "./TabBar";
 
-import "babylonjs-gltf2interface";
 import * as Split from "Split";
+
+import {} from "babylonjs-gltf2interface";
 
 export class GLTFTab extends Tab {
     private static _LoaderDefaults: any = null;
