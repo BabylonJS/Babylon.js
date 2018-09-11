@@ -212,9 +212,7 @@ module BABYLON {
             if (this._rotationQuaternion) {
                 if (!this._cache.rotationQuaternion.equals(this._rotationQuaternion))
                     return false;
-            }
-
-            if (!this._cache.rotation.equals(this._rotation))
+            } else if (!this._cache.rotation.equals(this._rotation))
                 return false;
 
             if (!this._cache.scaling.equals(this._scaling))
