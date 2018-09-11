@@ -677,8 +677,12 @@
                                 value = target = scene.getNodeByName(value);
                         else if (name === "parent")
                             value = scene.getNodeByName(value);
-                        else if (name === "sound")
-                            value = scene.getSoundByName(value);
+                        else if (name === "sound") {
+                            // Can not externalize to component, so only checks for the presence off the API.
+                            if (scene.getSoundByName) {
+                                value = scene.getSoundByName(value);
+                            }
+                        }
                         else if (name !== "propertyPath") {
                             if (parsedAction.type === 2 && name === "operator")
                                 value = (<any>ValueCondition)[value];

@@ -667,7 +667,14 @@
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
          * @ignorenaming
          */
-        public static audioEngine: AudioEngine;
+        public static audioEngine: IAudioEngine;
+
+        /**
+         * Default AudioEngine Factory responsible of creating the Audio Engine.
+         * By default, this will create a BabylonJS Audio Engine if the workload
+         * has been embedded.
+         */
+        public static AudioEngineFactory: () => IAudioEngine;
 
         // Focus
         private _onFocus: () => void;
@@ -1176,8 +1183,9 @@
                 window.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);
             }
 
-            if (options.audioEngine && AudioEngine && !Engine.audioEngine) {
-                Engine.audioEngine = new AudioEngine();
+            // Create Audio Engine if needed.
+            if (!Engine.audioEngine && options.audioEngine && Engine.AudioEngineFactory) {
+                Engine.audioEngine = Engine.AudioEngineFactory();
             }
 
             // Prepare buffer pointers
@@ -6733,7 +6741,7 @@
             }
 
             // Release audio engine
-            if (Engine.audioEngine) {
+            if (Engine.Instances.length === 1 && Engine.audioEngine) {
                 Engine.audioEngine.dispose();
             }
 
@@ -6967,7 +6975,7 @@
         }
 
         /** @hidden */
-        public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0): ArrayBufferView {
+        public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer?: ArrayBufferView): ArrayBufferView {
             let gl = this._gl;
             if (!this._dummyFramebuffer) {
                 let dummy = gl.createFramebuffer();
@@ -6987,15 +6995,18 @@
             }
 
             let readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
-            let buffer: ArrayBufferView;
 
             switch (readType) {
                 case gl.UNSIGNED_BYTE:
-                    buffer = new Uint8Array(4 * width * height);
+                    if (!buffer) {
+                        buffer = new Uint8Array(4 * width * height);
+                    }
                     readType = gl.UNSIGNED_BYTE;
                     break;
                 default:
-                    buffer = new Float32Array(4 * width * height);
+                    if (!buffer) {
+                        buffer = new Float32Array(4 * width * height);
+                    }
                     readType = gl.FLOAT;
                     break;
             }

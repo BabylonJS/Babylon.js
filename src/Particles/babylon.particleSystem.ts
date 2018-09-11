@@ -179,13 +179,17 @@
             // Default emitter type
             this.particleEmitterType = new BoxParticleEmitter();
 
+            // Update
+            let noiseTextureData: Nullable<Uint8Array> = null;
             this.updateFunction = (particles: Particle[]): void => {
-                let noiseTextureData: Nullable<Uint8Array> = null;
                 let noiseTextureSize: Nullable<ISize> = null;
 
                 if (this.noiseTexture) { // We need to get texture data back to CPU
-                    noiseTextureData = <Nullable<Uint8Array>>(this.noiseTexture.readPixels());
                     noiseTextureSize = this.noiseTexture.getSize();
+                    if (!noiseTextureData) {
+                        noiseTextureData = new Uint8Array(4 * noiseTextureSize.width * noiseTextureSize.height); 
+                    }
+                    this.noiseTexture.readPixels(0, 0, noiseTextureData);
                 }
 
                 for (var index = 0; index < particles.length; index++) {
@@ -1030,8 +1034,21 @@
             }
 
             if (this.preWarmCycles) {
-                for (var index = 0; index < this.preWarmCycles; index++) {
-                    this.animate(true);
+                let noiseTextureAsProcedural = this.noiseTexture as ProceduralTexture;
+
+                if (noiseTextureAsProcedural && noiseTextureAsProcedural.onGeneratedObservable) {
+                    noiseTextureAsProcedural.onGeneratedObservable.addOnce(() => {
+                        setTimeout(() => {
+                            for (var index = 0; index < this.preWarmCycles; index++) {
+                                this.animate(true);
+                                noiseTextureAsProcedural.render();
+                            }    
+                        });
+                    });
+                } else { 
+                    for (var index = 0; index < this.preWarmCycles; index++) {
+                        this.animate(true);
+                    }
                 }
             }
         }
