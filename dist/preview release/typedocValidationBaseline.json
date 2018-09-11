@@ -1,7 +1,7 @@
 {
-  "errors": 3752,
+  "errors": 3750,
   "babylon.typedoc.json": {
-    "errors": 3752,
+    "errors": 3750,
     "AnimationGroup": {
       "Constructor": {
         "new AnimationGroup": {
@@ -10925,13 +10925,6 @@
         }
       }
     },
-    "PlaySoundAction": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
     "PointerDragBehavior": {
       "Method": {
         "releaseDrag": {
@@ -15738,13 +15731,6 @@
       }
     },
     "StopAnimationAction": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "StopSoundAction": {
       "Class": {
         "Comments": {
           "MissingText": true
