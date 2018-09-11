@@ -1,7 +1,7 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2.Extensions {
-    const NAME = "EXT_lights_imageBased";
+    const NAME = "EXT_lights_image_based";
 
     interface ILightReference {
         light: number;
@@ -23,9 +23,9 @@ module BABYLON.GLTF2.Extensions {
     }
 
     /**
-     * [Specification](TODO) (Experimental)
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/eb3e32332042e04691a5f35103f8c261e50d8f1e/extensions/2.0/Khronos/EXT_lights_image_based/README.md) (Experimental)
      */
-    export class EXT_lights_imageBased implements IGLTFLoaderExtension {
+    export class EXT_lights_image_based implements IGLTFLoaderExtension {
         /** The name of this extension. */
         public readonly name = NAME;
 
@@ -138,5 +138,5 @@ module BABYLON.GLTF2.Extensions {
         }
     }
 
-    GLTFLoader.RegisterExtension(NAME, loader => new EXT_lights_imageBased(loader));
+    GLTFLoader.RegisterExtension(NAME, loader => new EXT_lights_image_based(loader));
 }
