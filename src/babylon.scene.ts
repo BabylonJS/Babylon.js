@@ -873,27 +873,6 @@
         */
         public proceduralTexturesEnabled = true;
 
-        // Sound Tracks
-        private _mainSoundTrack: SoundTrack;
-        /**
-         * The list of sound tracks added to the scene
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-         */
-        public soundTracks = new Array<SoundTrack>();
-        private _audioEnabled = true;
-        private _headphone = false;
-
-        /**
-         * Gets the main soundtrack associated with the scene
-         */
-        public get mainSoundTrack(): SoundTrack {
-            if (!this._mainSoundTrack) {
-                this._mainSoundTrack = new SoundTrack(this, { mainTrack: true });
-            }
-
-            return this._mainSoundTrack;
-        }
-
         // Private
         private _engine: Engine;
 
@@ -1136,6 +1115,11 @@
          * Defines the actions happening just after the active camera has been drawn.
          */
         public _afterCameraDrawStage = Stage.Create<CameraStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening just after rendering all cameras and computing intersections.
+         */
+        public _afterRenderStage = Stage.Create<SimpleStageAction>();
         /**
          * @hidden
          * Defines the actions happening when a pointer move event happens.
@@ -3783,32 +3767,6 @@
         }
 
         /**
-         * Gets a sound using a given name
-         * @param name defines the name to search for
-         * @return the found sound or null if not found at all.
-         */
-        public getSoundByName(name: string): Nullable<Sound> {
-            var index: number;
-            if (AudioEngine) {
-                for (index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
-                    if (this.mainSoundTrack.soundCollection[index].name === name) {
-                        return this.mainSoundTrack.soundCollection[index];
-                    }
-                }
-
-                for (var sdIndex = 0; sdIndex < this.soundTracks.length; sdIndex++) {
-                    for (index = 0; index < this.soundTracks[sdIndex].soundCollection.length; index++) {
-                        if (this.soundTracks[sdIndex].soundCollection[index].name === name) {
-                            return this.soundTracks[sdIndex].soundCollection[index];
-                        }
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        /**
          * Gets a skeleton using a given id (if many are found, this function will pick the last one)
          * @param id defines the id to search for
          * @return the found skeleton or null if not found at all.
@@ -4562,9 +4520,9 @@
             // Intersection checks
             this._checkIntersections();
 
-            // Update the audio listener attached to the camera
-            if (AudioEngine) {
-                this._updateAudioParameters();
+            // Executes the after render stage actions.
+            for (let step of this._afterRenderStage) {
+                step.action();
             }
 
             // After render
@@ -4591,137 +4549,6 @@
             this._activeBones.addCount(0, true);
             this._activeIndices.addCount(0, true);
             this._activeParticles.addCount(0, true);
-        }
-
-        private _updateAudioParameters() {
-            if (!this.audioEnabled || !this._mainSoundTrack || (this._mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 1)) {
-                return;
-            }
-
-            var listeningCamera: Nullable<Camera>;
-            var audioEngine = Engine.audioEngine;
-
-            if (this.activeCameras.length > 0) {
-                listeningCamera = this.activeCameras[0];
-            } else {
-                listeningCamera = this.activeCamera;
-            }
-
-            if (listeningCamera && audioEngine.audioContext) {
-                audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
-                // for VR cameras
-                if (listeningCamera.rigCameras && listeningCamera.rigCameras.length > 0) {
-                    listeningCamera = listeningCamera.rigCameras[0];
-                }
-                var mat = Matrix.Invert(listeningCamera.getViewMatrix());
-                var cameraDirection = Vector3.TransformNormal(new Vector3(0, 0, -1), mat);
-                cameraDirection.normalize();
-                // To avoid some errors on GearVR
-                if (!isNaN(cameraDirection.x) && !isNaN(cameraDirection.y) && !isNaN(cameraDirection.z)) {
-                    audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
-                }
-
-                var i: number;
-                for (i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
-                    var sound = this.mainSoundTrack.soundCollection[i];
-                    if (sound.useCustomAttenuation) {
-                        sound.updateDistanceFromListener();
-                    }
-                }
-                for (i = 0; i < this.soundTracks.length; i++) {
-                    for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
-                        sound = this.soundTracks[i].soundCollection[j];
-                        if (sound.useCustomAttenuation) {
-                            sound.updateDistanceFromListener();
-                        }
-                    }
-                }
-            }
-        }
-
-        // Audio
-        /**
-         * Gets or sets if audio support is enabled
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-         */
-        public get audioEnabled(): boolean {
-            return this._audioEnabled;
-        }
-
-        public set audioEnabled(value: boolean) {
-            this._audioEnabled = value;
-            if (AudioEngine) {
-                if (this._audioEnabled) {
-                    this._enableAudio();
-                }
-                else {
-                    this._disableAudio();
-                }
-            }
-        }
-
-        private _disableAudio() {
-            var i: number;
-            for (i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
-                this.mainSoundTrack.soundCollection[i].pause();
-            }
-            for (i = 0; i < this.soundTracks.length; i++) {
-                for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
-                    this.soundTracks[i].soundCollection[j].pause();
-                }
-            }
-        }
-
-        private _enableAudio() {
-            var i: number;
-            for (i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
-                if (this.mainSoundTrack.soundCollection[i].isPaused) {
-                    this.mainSoundTrack.soundCollection[i].play();
-                }
-            }
-            for (i = 0; i < this.soundTracks.length; i++) {
-                for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
-                    if (this.soundTracks[i].soundCollection[j].isPaused) {
-                        this.soundTracks[i].soundCollection[j].play();
-                    }
-                }
-            }
-        }
-
-        /**
-         * Gets or sets if audio will be output to headphones
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-         */
-        public get headphone(): boolean {
-            return this._headphone;
-        }
-
-        public set headphone(value: boolean) {
-            this._headphone = value;
-            if (AudioEngine) {
-                if (this._headphone) {
-                    this._switchAudioModeForHeadphones();
-                }
-                else {
-                    this._switchAudioModeForNormalSpeakers();
-                }
-            }
-        }
-
-        private _switchAudioModeForHeadphones() {
-            this.mainSoundTrack.switchPanningModelToHRTF();
-
-            for (var i = 0; i < this.soundTracks.length; i++) {
-                this.soundTracks[i].switchPanningModelToHRTF();
-            }
-        }
-
-        private _switchAudioModeForNormalSpeakers() {
-            this.mainSoundTrack.switchPanningModelToEqualPower();
-
-            for (var i = 0; i < this.soundTracks.length; i++) {
-                this.soundTracks[i].switchPanningModelToEqualPower();
-            }
         }
 
         /** 
@@ -4765,6 +4592,7 @@
             this._afterRenderingMeshStage.clear();
             this._afterRenderingGroupDrawStage.clear();
             this._afterCameraDrawStage.clear();
+            this._afterRenderStage.clear();
             this._beforeCameraUpdateStage.clear();
             this._beforeClearStage.clear();
             this._gatherRenderTargetsStage.clear();
@@ -4828,11 +4656,6 @@
             this.onMeshImportedObservable.clear();
 
             this.detachControl();
-
-            // Release sounds & sounds tracks
-            if (AudioEngine) {
-                this.disposeSounds();
-            }
 
             // Detach cameras
             var canvas = this._engine.getRenderingCanvas();
@@ -4919,21 +4742,6 @@
          */
         public get isDisposed(): boolean {
             return this._isDisposed;
-        }
-
-        /**
-         *  Releases sounds & soundtracks
-         */
-        public disposeSounds() {
-            if (!this._mainSoundTrack) {
-                return;
-            }
-
-            this.mainSoundTrack.dispose();
-
-            for (var scIndex = 0; scIndex < this.soundTracks.length; scIndex++) {
-                this.soundTracks[scIndex].dispose();
-            }
         }
 
         /**
