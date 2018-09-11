@@ -1425,4 +1425,4 @@ gulp.task("typescript-all", gulp.series("typescript", "typescript-libraries", "n
 /**
  * The default task, concat and min the main BJS files.
  */
-gulp.task("default", gulp.series("typescript-all", "intellisense", "typedoc-all", "tests-unit", "tests-validation-virtualscreen", "tests-validation-browserstack"));
+gulp.task("default", gulp.series("typescript-all", "intellisense", "typedoc-all", "tests-unit", "tests-modules", "tests-validation-virtualscreen", "tests-validation-browserstack"));
