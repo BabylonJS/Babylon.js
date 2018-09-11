@@ -2164,6 +2164,13 @@
             return new Vector3(0.0, 0.0, 1.0);
         }
         /**
+         * Returns a new Vector3 set to (0.0, 0.0, -1.0)
+         * @returns a new forward Vector3
+         */
+        public static Backward(): Vector3 {
+            return new Vector3(0.0, 0.0, -1.0);
+        }
+        /**
          * Returns a new Vector3 set to (1.0, 0.0, 0.0)
          * @returns a new right Vector3
          */
