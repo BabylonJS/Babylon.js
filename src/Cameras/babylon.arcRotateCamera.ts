@@ -150,7 +150,7 @@
         //-- begin properties for backward compatibility for inputs
 
         /**
-         * Gets or Set the pointer angular sensibility  along the X axis  or how fast is the camera rotating.
+         * Gets or Set the pointer angular sensibility  along the X axis or how fast is the camera rotating.
          */
         public get angularSensibilityX(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
