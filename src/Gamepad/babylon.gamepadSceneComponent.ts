@@ -37,6 +37,10 @@ module BABYLON {
     }
 
     export interface ArcRotateCameraInputsManager {
+        /**
+         * Adds gamepad input support to the ArcRotateCamera InputManager.
+         * @returns the camera inputs manager
+         */
         addGamepad(): ArcRotateCameraInputsManager;
     }
     
