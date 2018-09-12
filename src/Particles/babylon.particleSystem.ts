@@ -1009,6 +1009,10 @@
             }
 
             if (this.preWarmCycles) {
+                if (this.emitter instanceof AbstractMesh) {
+                    this.emitter.computeWorldMatrix(true);
+                }
+
                 let noiseTextureAsProcedural = this.noiseTexture as ProceduralTexture;
 
                 if (noiseTextureAsProcedural && noiseTextureAsProcedural.onGeneratedObservable) {
