@@ -93,9 +93,9 @@ function processEs6Packages(version) {
         // build the viewer
         console.log("cleanup " + buildPath);
         rmDir(buildPath);
-        console.log("executing " + 'tsc -m esNext -p ' + projectPath);
+        console.log("executing " + 'tsc -t es6 -m esNext -p ' + projectPath);
 
-        let tscCompile = shelljs.exec('tsc -m esNext -p ' + projectPath);
+        let tscCompile = shelljs.exec('tsc -t es6 -m esNext -p ' + projectPath);
         if (tscCompile.code !== 0) {
             throw new Error("tsc compilation failed");
         }
