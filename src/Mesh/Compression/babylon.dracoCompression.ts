@@ -38,7 +38,7 @@ module BABYLON {
      * 
      * **Decoder**
      * 
-     * By default, the configuration points to a copy of the Draco decoder files for glTF from https://preview.babylonjs.com.
+     * By default, the configuration points to a copy of the Draco decoder files for glTF from the babylon.js preview cdn https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js.
      * 
      * To update the configuration, use the following code:
      * ```javascript
