@@ -1,8 +1,10 @@
 module BABYLON {
 
     //WebWorker code will be inserted to this variable.
+    /** @hidden */
     export var CollisionWorker = "";
 
+    /** @hidden */
     export interface ICollisionCoordinator {
         getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
         init(scene: Scene): void;
@@ -17,6 +19,7 @@ module BABYLON {
         onGeometryDeleted(geometry: Geometry): void;
     }
 
+    /** @hidden */
     export interface SerializedMesh {
         id: string;
         name: string;
@@ -31,6 +34,7 @@ module BABYLON {
         checkCollisions: boolean;
     }
 
+    /** @hidden */
     export interface SerializedSubMesh {
         position: number;
         verticesStart: number;
@@ -45,7 +49,8 @@ module BABYLON {
     }
 
     /**
-     * Interface describing the value associated with a geometry
+     * Interface describing the value associated with a geometry.
+     * @hidden
      */
     export interface SerializedGeometry {
         /**
@@ -66,11 +71,13 @@ module BABYLON {
         normals: Float32Array;
     }
 
+    /** @hidden */
     export interface BabylonMessage {
         taskType: WorkerTaskType;
         payload: InitPayload | CollidePayload | UpdatePayload /*any for TS under 1.4*/;
     }
 
+    /** @hidden */
     export interface SerializedColliderToWorker {
         position: Array<number>;
         velocity: Array<number>;
@@ -87,22 +94,26 @@ module BABYLON {
         COLLIDE
     }
 
+    /** @hidden */
     export interface WorkerReply {
         error: WorkerReplyType;
         taskType: WorkerTaskType;
         payload?: any;
     }
 
+    /** @hidden */
     export interface CollisionReplyPayload {
         newPosition: Array<number>;
         collisionId: number;
         collidedMeshUniqueId: number;
     }
 
+    /** @hidden */
     export interface InitPayload {
 
     }
 
+    /** @hidden */
     export interface CollidePayload {
         collisionId: number;
         collider: SerializedColliderToWorker;
@@ -110,6 +121,7 @@ module BABYLON {
         excludedMeshUniqueId: Nullable<number>;
     }
 
+    /** @hidden */
     export interface UpdatePayload {
         updatedMeshes: { [n: number]: SerializedMesh; };
         updatedGeometries: { [s: string]: SerializedGeometry; };
@@ -125,6 +137,7 @@ module BABYLON {
         UNKNOWN_ERROR
     }
 
+    /** @hidden */
     export class CollisionCoordinatorWorker implements ICollisionCoordinator {
 
         private _scene: Scene;
@@ -371,6 +384,7 @@ module BABYLON {
         }
     }
 
+    /** @hidden */
     export class CollisionCoordinatorLegacy implements ICollisionCoordinator {
 
         private _scene: Scene;

@@ -6,8 +6,10 @@ const safePostMessage: any = self.postMessage;
 module BABYLON {
 
     //If this file is included in the main thread, this will be initialized.
+    /** @hidden */
     export var WorkerIncluded: boolean = true;
 
+    /** @hidden */
     export class CollisionCache {
         private _meshes: { [n: string]: SerializedMesh; } = {};
         private _geometries: { [s: string]: SerializedGeometry; } = {};
@@ -45,6 +47,7 @@ module BABYLON {
         }
     }
 
+    /** @hidden */
     export class CollideWorker {
 
         private collisionsScalingMatrix = Matrix.Zero();
@@ -181,12 +184,14 @@ module BABYLON {
         }
     }
 
+    /** @hidden */
     export interface ICollisionDetector {
         onInit(payload: InitPayload): void;
         onUpdate(payload: UpdatePayload): void;
         onCollision(payload: CollidePayload): void;
     }
 
+    /** @hidden */
     export class CollisionDetectorTransferable implements ICollisionDetector {
         private _collisionCache: CollisionCache;
 
