@@ -179,6 +179,34 @@
         }
 
         /** @hidden */
+        public _inheritParticleInfoToSubEmitter(subEmitter: SubEmitter) {
+            if ((<AbstractMesh>subEmitter.particleSystem.emitter).position) {
+                var emitterMesh = (<AbstractMesh>subEmitter.particleSystem.emitter);
+                emitterMesh.position.copyFrom(this.position);
+                if (subEmitter.inheritDirection) { 
+                    emitterMesh.position.subtractToRef(this.direction, BABYLON.Tmp.Vector3[0]);
+                    // Look at using Y as forward
+                    emitterMesh.lookAt(BABYLON.Tmp.Vector3[0], 0, Math.PI / 2);
+                }
+            } else {
+                var emitterPosition = (<Vector3>subEmitter.particleSystem.emitter);
+                emitterPosition.copyFrom(this.position);
+            }
+            // Set inheritedVelocityOffset to be used when new particles are created
+            this.direction.scaleToRef(subEmitter.inheritedVelocityAmount / 2, Tmp.Vector3[0]);
+            subEmitter.particleSystem._inheritedVelocityOffset.copyFrom(Tmp.Vector3[0]);
+        }
+
+        /** @hidden */
+        public _inheritParticleInfoToSubEmitters() {
+            if (this._attachedSubEmitters && this._attachedSubEmitters.length > 0) {
+                this._attachedSubEmitters.forEach((subEmitter) => {
+                    this._inheritParticleInfoToSubEmitter(subEmitter);
+                });
+            }
+        }
+
+        /** @hidden */
         public _reset() {
             this.age = 0;
             this._currentColorGradient = null;

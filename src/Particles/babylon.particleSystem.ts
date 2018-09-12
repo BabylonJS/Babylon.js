@@ -353,32 +353,10 @@
                         }
 
                         // Update the position of the attached sub-emitters to match their attached particle
-                        if (particle._attachedSubEmitters && particle._attachedSubEmitters.length > 0) {
-                            particle._attachedSubEmitters.forEach((subEmitter) => {
-                                ParticleSystem._InheritParticleInfoToSubEmitter(subEmitter, particle);
-                            });
-                        }
+                        particle._inheritParticleInfoToSubEmitters();
                     }
                 }
             }
-        }
-
-        private static _InheritParticleInfoToSubEmitter(subEmitter: SubEmitter, particle: Particle) {
-            if ((<AbstractMesh>subEmitter.particleSystem.emitter).position) {
-                var emitterMesh = (<AbstractMesh>subEmitter.particleSystem.emitter);
-                emitterMesh.position.copyFrom(particle.position);
-                if (subEmitter.inheritDirection) {
-                    emitterMesh.position.subtractToRef(particle.direction, BABYLON.Tmp.Vector3[0]);
-                    // Look at using Y as forward
-                    emitterMesh.lookAt(BABYLON.Tmp.Vector3[0], 0, Math.PI / 2);
-                }
-            } else {
-                var emitterPosition = (<Vector3>subEmitter.particleSystem.emitter);
-                emitterPosition.copyFrom(particle.position);
-            }
-            // Set inheritedVelocityOffset to be used when new particles are created
-            particle.direction.scaleToRef(subEmitter.inheritedVelocityAmount / 2, Tmp.Vector3[0]);
-            subEmitter.particleSystem._inheritedVelocityOffset.copyFrom(Tmp.Vector3[0]);
         }
 
         private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number, factor2?: number) {
@@ -1200,7 +1178,7 @@
             this._subEmitters[templateIndex].forEach((subEmitter) => {
                 if (subEmitter.type === SubEmitterType.END) {
                     var subSystem = subEmitter.clone();
-                    ParticleSystem._InheritParticleInfoToSubEmitter(subSystem, particle);
+                    particle._inheritParticleInfoToSubEmitter(subSystem);
                     subSystem.particleSystem._rootParticleSystem = this;
                     this.activeSubSystems.push(subSystem.particleSystem);
                     subSystem.particleSystem.start();
@@ -1407,6 +1385,9 @@
                         particle._randomNoiseCoordinates2 = new Vector3(Math.random(), Math.random(), Math.random());
                     }            
                 }
+
+                // Update the position of the attached sub-emitters to match their attached particle
+                particle._inheritParticleInfoToSubEmitters();
     
             }
         }
