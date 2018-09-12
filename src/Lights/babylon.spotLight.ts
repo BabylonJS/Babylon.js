@@ -56,7 +56,7 @@
          */
         @serialize()
         public get innerAngle(): number {
-            return this._angle
+            return this._innerAngle;
         }
         /**
          * Only used in gltf falloff mode, this defines the angle where 
