@@ -1203,6 +1203,13 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
+    export class ConfigurationContainer {
+        configuration: ViewerConfiguration;
+        viewerId: string;
+        mainColor: BABYLON.Color3;
+        reflectionColor: BABYLON.Color3;
+        scene?: BABYLON.Scene;
+    }
 }
 declare module BabylonViewer {
     /**
