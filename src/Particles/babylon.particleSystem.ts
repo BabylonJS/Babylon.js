@@ -1944,6 +1944,7 @@
             Animation.AppendSerializedAnimations(particleSystem, serializationObject);
 
             // Particle system
+            serializationObject.startDelay = particleSystem.startDelay;
             serializationObject.renderingGroupId = particleSystem.renderingGroupId;
             serializationObject.isBillboardBased = particleSystem.isBillboardBased;
             serializationObject.minAngularSpeed = particleSystem.minAngularSpeed;
@@ -2216,6 +2217,7 @@
             }
 
             // Particle system
+            particleSystem.startDelay = parsedParticleSystem.startDelay | 0;
             particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
             particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
             particleSystem.minSize = parsedParticleSystem.minSize;
