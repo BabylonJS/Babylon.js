@@ -3,6 +3,7 @@
         "experimentalDecorators": true,
         "module": "esnext",
         "target": "es5",
+        "moduleResolution": "node",
         "noImplicitAny": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
