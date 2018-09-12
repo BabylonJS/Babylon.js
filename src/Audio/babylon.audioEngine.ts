@@ -211,6 +211,7 @@
 
         /**
          * Sets the global volume of your experience (sets on the master gain).
+         * @param newVloume Defines the new global volume of the application
          */
         public setGlobalVolume(newVolume: number): void {
             if (this.canUseWebAudio && this._audioContextInitialized) {
