@@ -49,6 +49,7 @@
         }
         /**
          * Gets the current easing mode.
+         * @returns the easing mode
          */
         public getEasingMode(): number {
             return this._easingMode;
