@@ -222,6 +222,8 @@ module BABYLON {
             if(this._virtualDragMesh){
                 this._virtualDragMesh.dispose();
             }
+            this.onDragEndObservable.clear();
+            this.onDragStartObservable.clear();
         }
     }
 }
