@@ -33,8 +33,15 @@ module BABYLON {
          * If camera controls should be detached during the drag
          */
         public detachCameraControls = true;
-
-
+        /**
+         * Fires each time a drag starts
+         */
+        public onDragStartObservable = new Observable<{}>()
+        /**
+         *  Fires each time a drag ends (eg. mouse release after drag)
+         */
+        public onDragEndObservable = new Observable<{}>()
+        
         constructor(){
         }
         
@@ -118,6 +125,7 @@ module BABYLON {
                             }
                         }
                         BoundingBoxGizmo._RestorePivotPoint(pickedMesh);
+                        this.onDragStartObservable.notifyObservers({});
                     }
                 }else if(pointerInfo.type == BABYLON.PointerEventTypes.POINTERUP){
                     if(this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId){
@@ -131,6 +139,7 @@ module BABYLON {
                         if(this.detachCameraControls && attachedElement && this._scene.activeCamera && !this._scene.activeCamera.leftCamera){
                             this._scene.activeCamera.attachControl(attachedElement, true);
                         }
+                        this.onDragEndObservable.notifyObservers({});
                     }
                 }else if(pointerInfo.type == BABYLON.PointerEventTypes.POINTERMOVE){
                     if(this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId && this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray && pickedMesh){
@@ -213,6 +222,8 @@ module BABYLON {
             if(this._virtualDragMesh){
                 this._virtualDragMesh.dispose();
             }
+            this.onDragEndObservable.clear();
+            this.onDragStartObservable.clear();
         }
     }
 }

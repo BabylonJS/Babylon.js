@@ -17,6 +17,7 @@
   - Add uniform scaling drag support to scale gizmo ([TrevorDev](https://github.com/TrevorDev))
   - Support interacting with child elements ([TrevorDev](https://github.com/TrevorDev))
   - BoundingBox gizmo support for including/excluding descendants when computing the bounding box ([TrevorDev](https://github.com/TrevorDev))
+  - Drag start and stop events for bounding box drag and uniform scale drag ([TrevorDev](https://github.com/TrevorDev))
 - Particle system improvements ([Deltakosh](https://github.com/deltakosh))
   - Added a ParticleHelper class to create some pre-configured particle systems in a one-liner method style. [Doc](https://doc.babylonjs.com/How_To/ParticleHelper) ([Deltakosh](https://github.com/deltakosh)) / ([DevChris](https://github.com/yovanoc))
   - Improved CPU particles rendering performance (up to x2 on low end devices)
