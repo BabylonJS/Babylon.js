@@ -3,69 +3,14 @@ let shelljs = require('shelljs');
 let fs = require('fs-extra');
 let path = require('path');
 
-let basePath = '../../dist/preview release';
-
 // This can be changed when we have a new major release.
 let minimumDependency = '>=3.2.0-alpha';
 
 process.env.PATH += (path.delimiter + path.join(__dirname, 'node_modules', '.bin'));
 
-let packages = [
-    {
-        name: 'core',
-        path: '../../'
-    },
-    {
-        name: 'gui',
-        path: basePath + '/gui/'
-    },
-    {
-        name: 'materials',
-        path: basePath + '/materialsLibrary/'
-    },
-    {
-        name: 'postProcess',
-        path: basePath + '/postProcessesLibrary/'
-    },
-    {
-        name: 'gltf2interface',
-        path: basePath + '/gltf2interface/'
-    },
-    {
-        name: 'loaders',
-        path: basePath + '/loaders/'
-    },
-    {
-        name: 'serializers',
-        path: basePath + '/serializers/'
-    },
-    {
-        name: 'proceduralTextures',
-        path: basePath + '/proceduralTexturesLibrary/'
-    },
-    {
-        name: 'inspector',
-        path: basePath + '/inspector/'
-    },
-    {
-        name: 'viewer',
-        path: basePath + '/../../Viewer/',
-        required: [
-            basePath + '/viewer/readme.md',
-            basePath + '/viewer/package.json',
-            basePath + '/viewer/babylon.viewer.js',
-            basePath + '/viewer/babylon.viewer.max.js'
-        ]
-    },
-    {
-        name: 'viewer-assets',
-        path: basePath + '/../../Viewer/build/assets/',
-        required: [
-            basePath + '/../../Viewer/assets/readme.md',
-            basePath + '/../../Viewer/assets/package.json',
-        ]
-    }
-];
+let config = require("./config/config.json");
+let basePath = config.basePath;
+let packages = config.packages;
 
 function updateEngineVersion(newVersion) {
     console.log("updating version in babylon.engine.ts");
@@ -84,21 +29,35 @@ function runGulp() {
     }
 }
 
+var rmDir = function (dirPath) {
+    try { var files = fs.readdirSync(dirPath); }
+    catch (e) { return; }
+    if (files.length > 0)
+        for (var i = 0; i < files.length; i++) {
+            var filePath = dirPath + '/' + files[i];
+            if (fs.statSync(filePath).isFile())
+                fs.unlinkSync(filePath);
+            else
+                rmDir(filePath);
+        }
+    fs.rmdirSync(dirPath);
+};
+
 function processPackages(version) {
     packages.forEach((package) => {
         if (package.name === "core") {
             processCore(package, version);
-        } else if (package.name === "viewer") {
+        } /*else if (package.name === "viewer") {
             processViewer(package, version);
-        } else {
+        }*/ else {
 
             if (package.required) {
                 package.required.forEach(file => {
-                    fs.copySync(file, package.path + '/' + path.basename(file));
+                    fs.copySync(basePath + file, basePath + package.path + '/' + path.basename(file));
                 });
             }
 
-            let packageJson = require(package.path + 'package.json');
+            let packageJson = require(basePath + package.path + 'package.json');
             packageJson.version = version;
             if (packageJson.dependencies) {
                 Object.keys(packageJson.dependencies).forEach(key => {
@@ -108,12 +67,67 @@ function processPackages(version) {
                 });
             }
             if (packageJson.peerDependencies) packageJson.peerDependencies.babylonjs = minimumDependency;
-            fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));
+            fs.writeFileSync(basePath + package.path + 'package.json', JSON.stringify(packageJson, null, 4));
 
-            publish(version, package.name, package.path);
+            publish(version, package.name, basePath + package.path);
         }
 
     });
+}
+
+function processEs6Packages(version) {
+    let es6Packages = config.es6;
+
+    es6Packages.forEach(package => {
+        let projectPath = package.path;
+        let buildPath = path.normalize(basePath + projectPath + package.buildPath);
+
+
+        if (package.required) {
+            package.required.forEach(file => {
+                fs.copySync(file, basePath + '/' + path.basename(file));
+            });
+        }
+        // the viewer needs to be built using tsc on the viewer's main repository
+
+        // build the viewer
+        console.log("cleanup " + buildPath);
+        rmDir(buildPath);
+        console.log("executing " + 'tsc -m esNext -p ' + projectPath);
+
+        let tscCompile = shelljs.exec('tsc -m esNext -p ' + projectPath);
+        if (tscCompile.code !== 0) {
+            throw new Error("tsc compilation failed");
+        }
+
+        let packageJson = require("./config" + '/template.package.json');
+
+        let files = getFiles(buildPath).map(f => f.replace(buildPath + "/", "")).filter(f => f.indexOf("assets/") === -1);
+
+        packageJson.files = files;
+        packageJson.version = version;
+
+        Object.keys(package.payload).forEach(key => {
+            packageJson[key] = package.payload[key]
+        });
+
+        ["dependencies", "peerDependencies", "devDependencies"].forEach(key => {
+            if (package.payload[key]) {
+                packageJson[key] = {};
+                Object.keys(package.payload[key]).forEach(packageName => {
+                    if (package.payload[key][packageName] === true) {
+                        packageJson[key][packageName] = version;
+                    } else {
+                        packageJson[key][packageName] = package.payload[key][packageName];
+                    }
+                });
+            }
+        });
+
+        fs.writeFileSync(buildPath + '/package.json', JSON.stringify(packageJson, null, 4));
+
+        publish(version, package.name, buildPath);
+    })
 }
 
 //check if logged in
@@ -129,6 +143,7 @@ if (loginCheck.code === 0) {
             runGulp();
         }
         processPackages(version);
+        processEs6Packages(version);
 
         console.log("done, please tag git with " + version);
     });
@@ -140,42 +155,42 @@ function processCore(package, version) {
     let packageJson = require(package.path + 'package.json');
 
     // make a temporary directory
-    fs.ensureDirSync(basePath + '/package/');
+    fs.ensureDirSync(basePath + 'package/');
 
     let files = [
         {
-            path: basePath + "/babylon.d.ts",
+            path: basePath + "babylon.d.ts",
             objectName: "babylon.d.ts"
         },
         {
-            path: basePath + "/es6.js",
+            path: basePath + "es6.js",
             objectName: "es6.js"
         },
         {
-            path: basePath + "/babylon.js",
+            path: basePath + "babylon.js",
             objectName: "babylon.js"
         },
         {
-            path: basePath + "/babylon.max.js",
+            path: basePath + "babylon.max.js",
             objectName: "babylon.max.js"
         },
         {
-            path: basePath + "/babylon.worker.js",
+            path: basePath + "babylon.worker.js",
             objectName: "babylon.worker.js"
         },
         {
-            path: basePath + "/Oimo.js",
+            path: basePath + "Oimo.js",
             objectName: "Oimo.js"
         },
         {
-            path: package.path + "readme.md",
+            path: basePath + package.path + "readme.md",
             objectName: "readme.md"
         }
     ];
 
     //copy them to the package path
     files.forEach(file => {
-        fs.copySync(file.path, basePath + '/package/' + file.objectName);
+        fs.copySync(file.path, basePath + 'package/' + file.objectName);
     });
 
     // update package.json
@@ -195,12 +210,12 @@ function processCore(package, version) {
     packageJson.main = "babylon.js";
     packageJson.typings = "babylon.d.ts";
 
-    fs.writeFileSync(basePath + '/package/' + 'package.json', JSON.stringify(packageJson, null, 4));
+    fs.writeFileSync(basePath + 'package/' + 'package.json', JSON.stringify(packageJson, null, 4));
 
-    publish(version, package.name, basePath + '/package/');
+    publish(version, package.name, basePath + 'package/');
 
     // remove package directory
-    fs.removeSync(basePath + '/package/');
+    fs.removeSync(basePath + 'package/');
 
     // now update the main package.json
     packageJson.files = packageJson.files.map(file => {
@@ -216,15 +231,15 @@ function processCore(package, version) {
     fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));
 }
 
-function processViewer(package, version) {
+/*function processViewer(package, version) {
 
-    let buildPath = package.path + "build/src/";
+    let buildPath = basePath + package.path + "build/src/";
     let projectPath = '../../Viewer';
 
     if (package.required) {
         package.required.forEach(file => {
 
-            fs.copySync(file, buildPath + '/' + path.basename(file));
+            fs.copySync(basePath + file, buildPath + '/' + path.basename(file));
         });
     }
     // the viewer needs to be built using tsc on the viewer's main repository
@@ -251,7 +266,7 @@ function processViewer(package, version) {
 
     publish(version, package.name, buildPath);
 
-}
+}*/
 
 function publish(version, packageName, basePath) {
     console.log('Publishing ' + packageName + " from " + basePath);
