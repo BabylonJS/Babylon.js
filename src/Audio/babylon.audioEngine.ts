@@ -39,20 +39,53 @@
     // Sets the default audio engine to Babylon JS.
     Engine.AudioEngineFactory = () => { return new AudioEngine(); };
 
+    /**
+     * This represents the default audio engine used in babylon.
+     * It is responsible to play, synchronize and analyse sounds throughout the  application.
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
     export class AudioEngine implements IAudioEngine{
-        private _audioContext: Nullable<AudioContext> = null;
-        private _audioContextInitialized = false;
+        /**
+         * Gets whether the current host supports Web Audio and thus could create AudioContexts.
+         */
         public canUseWebAudio: boolean = false;
+
+        /**
+         * The master gain node defines the global audio volume of your audio engine.
+         */
         public masterGain: GainNode;
 
-        private _connectedAnalyser: Nullable<Analyser>;
+        /**
+         * Defines if Babylon should emit a warning if WebAudio is not supported.
+         * @ignoreNaming
+         */
         public WarnedWebAudioUnsupported: boolean = false;
-        public unlocked: boolean = false;
-        public onAudioUnlocked: () => any;
 
+        /**
+         * Gets whether or not mp3 are supported by your browser.
+         */
         public isMP3supported: boolean = false;
+
+        /**
+         * Gets whether or not ogg are supported by your browser.
+         */
         public isOGGsupported: boolean = false;
 
+        /**
+         * Gets whether audio has been unlocked on the device.
+         * Some Browsers have strong restrictions about Audio and won t autoplay unless
+         * a user interaction has happened.
+         */
+        public unlocked: boolean = false;
+
+        /**
+         * Event raised when audio has been unlocked on the browser.
+         */
+        public onAudioUnlocked: () => any;
+
+        /**
+         * Gets the current AudioContext if available.
+         */
         public get audioContext(): Nullable<AudioContext> {
             if (!this._audioContextInitialized) {
                 this._initializeAudioContext();
@@ -60,6 +93,16 @@
             return this._audioContext;
         }
 
+        private _audioContext: Nullable<AudioContext> = null;
+        private _audioContextInitialized = false;
+        private _connectedAnalyser: Nullable<Analyser>;
+        
+        /**
+         * Instantiates a new audio engine.
+         * 
+         * There should be only one per page as some browsers restrict the number
+         * of audio contexts you can create.
+         */
         constructor() {
             if (typeof window.AudioContext !== 'undefined' || typeof window.webkitAudioContext !== 'undefined') {
                 window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -136,7 +179,10 @@
             }
         }
 
-        public dispose() {
+        /**
+         * Destroy and release the resources associated with the audio ccontext.
+         */
+        public dispose(): void {
             if (this.canUseWebAudio && this._audioContextInitialized) {
                 if (this._connectedAnalyser && this._audioContext) {
                     this._connectedAnalyser.stopDebugCanvas();
@@ -150,6 +196,10 @@
             this.WarnedWebAudioUnsupported = false;
         }
 
+        /**
+         * Gets the global volume sets on the master gain.
+         * @returns the global volume if set or -1 otherwise
+         */
         public getGlobalVolume(): number {
             if (this.canUseWebAudio && this._audioContextInitialized) {
                 return this.masterGain.gain.value;
@@ -159,13 +209,22 @@
             }
         }
 
-        public setGlobalVolume(newVolume: number) {
+        /**
+         * Sets the global volume of your experience (sets on the master gain).
+         */
+        public setGlobalVolume(newVolume: number): void {
             if (this.canUseWebAudio && this._audioContextInitialized) {
                 this.masterGain.gain.value = newVolume;
             }
         }
 
-        public connectToAnalyser(analyser: Analyser) {
+        /**
+         * Connect the audio engine to an audio analyser allowing some amazing 
+         * synchornization between the sounds/music and your visualization (VuMeter for instance).
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
+         * @param analyser The analyser to connect to the engine
+         */
+        public connectToAnalyser(analyser: Analyser): void {
             if (this._connectedAnalyser) {
                 this._connectedAnalyser.stopDebugCanvas();
             }
