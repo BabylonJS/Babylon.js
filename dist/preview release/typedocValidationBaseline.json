@@ -7559,44 +7559,6 @@
         }
       }
     },
-    "MeshLODLevel": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new MeshLODLevel": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "distance": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "mesh": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Property": {
-        "distance": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "mesh": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "MirrorTexture": {
       "Class": {
         "Comments": {
