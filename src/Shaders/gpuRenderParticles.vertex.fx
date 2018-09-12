@@ -47,7 +47,6 @@ uniform vec3 sheetInfos;
 	uniform vec3 eyePosition;	
 #endif
 	
-#ifdef BILLBOARDY		
 vec3 rotate(vec3 yaxis, vec3 rotatedCorner) {
 	vec3 xaxis = normalize(cross(vec3(0., 1.0, 0.), yaxis));
 	vec3 zaxis = normalize(cross(yaxis, xaxis));
@@ -62,7 +61,6 @@ vec3 rotate(vec3 yaxis, vec3 rotatedCorner) {
 
 	return position + alignedCorner;
 }
-#endif
 
 #ifdef BILLBOARDSTRETCHED
 vec3 rotateAlign(vec3 toCamera, vec3 rotatedCorner) {
