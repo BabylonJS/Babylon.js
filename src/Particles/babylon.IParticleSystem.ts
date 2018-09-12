@@ -143,6 +143,10 @@ module BABYLON {
          * It can be for example box, sphere, or cone...
          */
         particleEmitterType: Nullable<IParticleEmitterType>;  
+        /**
+         * Defines the delay in milliseconds before starting the system (0 by default)
+         */
+        startDelay: number;        
         /** 
          * Gets or sets a value indicating how many cycles (or frames) must be executed before first rendering (this value has to be set before starting the system). Default is 0 
          */
