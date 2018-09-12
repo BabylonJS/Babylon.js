@@ -6,6 +6,20 @@
      * @example https://doc.babylonjs.com/babylon101/particles
      */
     export class ParticleSystem extends BaseParticleSystem implements IDisposable, IAnimatable, IParticleSystem {
+
+        /**
+         * Billboard mode will only apply to Y axis
+         */
+        public static readonly BILLBOARDMODE_Y = 2;
+        /**
+         * Billboard mode will apply to all axes
+         */
+        public static readonly BILLBOARDMODE_ALL = 7;
+        /**
+         * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
+         */
+        public static readonly BILLBOARDMODE_STRETCHED = 8;
+
         /**
          * This function can be defined to provide custom update for active particles.
          * This function will be called instead of regular update (age, position, color, etc.).
@@ -865,7 +879,7 @@
                 this._vertexBufferSize += 1;
             }
 
-            if (!this._isBillboardBased) {
+            if (!this._isBillboardBased || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
                 this._vertexBufferSize += 3;
             }
 
@@ -900,7 +914,7 @@
                 dataOffset += 1;
             }
 
-            if (!this._isBillboardBased) {
+            if (!this._isBillboardBased || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
                 var directionBuffer = this._vertexBuffer.createVertexBuffer("direction", dataOffset, 3, this._vertexBufferSize, this._useInstancing);
                 this._vertexBuffers["direction"] = directionBuffer;
                 dataOffset += 3;
@@ -1086,6 +1100,10 @@
                     this._vertexData[offset++] = particle.direction.y;
                     this._vertexData[offset++] = particle.direction.z;
                 }
+            } else if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
+                this._vertexData[offset++] = particle.direction.x;
+                this._vertexData[offset++] = particle.direction.y;
+                this._vertexData[offset++] = particle.direction.z;
             }
 
             if (this._useRampGradients) {
@@ -1464,10 +1482,13 @@
                 defines.push("#define BILLBOARD");
 
                 switch (this.billboardMode) {
-                    case AbstractMesh.BILLBOARDMODE_Y:
+                    case ParticleSystem.BILLBOARDMODE_Y:
                         defines.push("#define BILLBOARDY");
                         break;
-                    case AbstractMesh.BILLBOARDMODE_ALL:
+                    case ParticleSystem.BILLBOARDMODE_STRETCHED:
+                        defines.push("#define BILLBOARDSTRETCHED");
+                        break;                        
+                    case ParticleSystem.BILLBOARDMODE_ALL:
                     default:
                         break;
                 }
@@ -1483,7 +1504,7 @@
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
 
-                var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased, this._useRampGradients);
+                var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased && this.billboardMode !== ParticleSystem.BILLBOARDMODE_STRETCHED, this._useRampGradients);
                 var effectCreationOption = ParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled);
 
                 var samplers = ["diffuseSampler", "rampSampler"];
