@@ -17,17 +17,16 @@ module BABYLON {
         public zGizmo:AxisScaleGizmo;
 
         /**
-         * @hidden
          * Internal gizmo used to scale all axis equally
          */
-        private _uniformGizmo:AxisScaleGizmo;
+        public uniformScaleGizmo:AxisScaleGizmo;
 
         public set attachedMesh(mesh:Nullable<AbstractMesh>){
             if(this.xGizmo){
                 this.xGizmo.attachedMesh = mesh;
                 this.yGizmo.attachedMesh = mesh;
                 this.zGizmo.attachedMesh = mesh;
-                this._uniformGizmo.attachedMesh = mesh;
+                this.uniformScaleGizmo.attachedMesh = mesh;
             }
         }
         /**
@@ -41,12 +40,12 @@ module BABYLON {
             this.zGizmo = new AxisScaleGizmo(new Vector3(0,0,1), BABYLON.Color3.Blue().scale(0.5), gizmoLayer);
 
             // Create uniform scale gizmo
-            this._uniformGizmo = new AxisScaleGizmo(new Vector3(0,1,0), BABYLON.Color3.Yellow().scale(0.5), gizmoLayer);
-            this._uniformGizmo.updateGizmoRotationToMatchAttachedMesh = false;
-            this._uniformGizmo.uniformScaling = true
-            var octahedron = BABYLON.Mesh.CreatePolyhedron("", {type: 1}, this._uniformGizmo.gizmoLayer.utilityLayerScene);
+            this.uniformScaleGizmo = new AxisScaleGizmo(new Vector3(0,1,0), BABYLON.Color3.Yellow().scale(0.5), gizmoLayer);
+            this.uniformScaleGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+            this.uniformScaleGizmo.uniformScaling = true
+            var octahedron = BABYLON.Mesh.CreatePolyhedron("", {type: 1}, this.uniformScaleGizmo.gizmoLayer.utilityLayerScene);
             octahedron.scaling.scaleInPlace(0.007);
-            this._uniformGizmo.setCustomMesh(octahedron, true);
+            this.uniformScaleGizmo.setCustomMesh(octahedron, true);
             
             this.attachedMesh = null;
         }
@@ -70,7 +69,7 @@ module BABYLON {
                 this.xGizmo.snapDistance = value;
                 this.yGizmo.snapDistance = value;
                 this.zGizmo.snapDistance = value;
-                this._uniformGizmo.snapDistance = value;
+                this.uniformScaleGizmo.snapDistance = value;
             }
         }
         public get snapDistance(){
@@ -85,7 +84,7 @@ module BABYLON {
                 this.xGizmo.scaleRatio = value;
                 this.yGizmo.scaleRatio = value;
                 this.zGizmo.scaleRatio = value;
-                this._uniformGizmo.scaleRatio = value;
+                this.uniformScaleGizmo.scaleRatio = value;
             }
         }
         public get scaleRatio(){
@@ -99,7 +98,7 @@ module BABYLON {
             this.xGizmo.dispose();
             this.yGizmo.dispose();
             this.zGizmo.dispose();
-            this._uniformGizmo.dispose();
+            this.uniformScaleGizmo.dispose();
         }
     }
 }
