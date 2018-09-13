@@ -57,6 +57,7 @@
         }
         )();
 
+    /** @hidden */
     export class Collider {
         /** Define if a collision was found */
         public collisionFound: boolean;
