@@ -40,6 +40,11 @@
          * Gets whether or not the audio engine is unlocked (require first a user gesture on some browser).
          */
         readonly unlocked: boolean;
+
+        /**
+         * Event raised when audio has been unlocked on the browser.
+         */
+        onAudioUnlockedObservable: Observable<AudioEngine>;
     }
 
     // Sets the default audio engine to Babylon JS.
@@ -55,6 +60,7 @@
         private _audioContextInitialized = false;
         private _muteButtonDisplayed = false;
         private _muteButton: HTMLButtonElement;
+        private _engine: Engine;
 
         /**
          * Gets whether the current host supports Web Audio and thus could create AudioContexts.
@@ -94,7 +100,7 @@
         /**
          * Event raised when audio has been unlocked on the browser.
          */
-        public onAudioUnlocked: () => any;
+        public onAudioUnlockedObservable = new Observable<AudioEngine>();
 
         /**
          * Gets the current AudioContext if available.
@@ -118,14 +124,16 @@
          * 
          * There should be only one per page as some browsers restrict the number
          * of audio contexts you can create.
+         * @param engine defines the hosting engine
          */
-        constructor() {
+        constructor(engine = Engine.LastCreatedEngine) {
             if (typeof window.AudioContext !== 'undefined' || typeof window.webkitAudioContext !== 'undefined') {
                 window.AudioContext = window.AudioContext || window.webkitAudioContext;
                 this.canUseWebAudio = true;
             }
 
             var audioElem = document.createElement('audio');
+            this._engine = engine!;
 
             try {
                 if (audioElem && !!audioElem.canPlayType && audioElem.canPlayType('audio/mpeg; codecs="mp3"').replace(/^no$/, '')) {
@@ -144,9 +152,6 @@
             catch (e) {
                 // protect error during capability check.
             }
-
-            this._canvas = Engine.LastCreatedEngine!.getRenderingCanvas();
-            window.addEventListener("resize", this._onResize);
 
             if (/iPad|iPhone|iPod/.test(navigator.platform)) {
                 this._unlockiOSaudio();
@@ -221,9 +226,7 @@
                this._hideMuteButton(); 
             }
             // Notify users that the audio stack is unlocked/unmuted
-            if (this.onAudioUnlocked) {
-                this.onAudioUnlocked();
-            }
+            this.onAudioUnlockedObservable.notifyObservers(this);
         }
 
         private _triggerSuspendedState() {
@@ -249,10 +252,13 @@
                 this._muteButton.addEventListener('mousedown', () => {this._resumeAudioContext();}, false);
             }
             this._muteButtonDisplayed = true;
+
+            this._canvas = this._engine.getRenderingCanvas();
+            window.addEventListener("resize", this._onResize);
         }
 
         private _moveButtonToTopLeft() {
-            if (this._canvas) {
+            if (this._canvas && this._muteButton) {
                 this._muteButton.style.top = this._canvas.offsetTop + 20 + "px";
                 this._muteButton.style.left = this._canvas.offsetLeft + 20 + "px";
             }
@@ -273,7 +279,6 @@
          * Destroy and release the resources associated with the audio ccontext.
          */
         public dispose(): void {
-
             if (this.canUseWebAudio && this._audioContextInitialized) {
                 if (this._connectedAnalyser && this._audioContext) {
                     this._connectedAnalyser.stopDebugCanvas();
@@ -287,6 +292,8 @@
             this.WarnedWebAudioUnsupported = false;
             this._hideMuteButton();
             window.removeEventListener("resize", this._onResize);
+
+            this.onAudioUnlockedObservable.clear();
         }
 
         /**

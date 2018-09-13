@@ -578,7 +578,7 @@ module BABYLON {
                                     }
                                 }
                                 else {
-                                    window.setTimeout(tryToPlay, 500);
+                                    Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => tryToPlay);
                                 }
                             }
                             tryToPlay();
