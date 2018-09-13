@@ -63,7 +63,7 @@
         public static ForceAttachControlToAlwaysPreventDefault = false;
 
         /**
-         * @hidden.
+         * @hidden
          * Might be removed once multiview will be a thing
          */
         public static UseAlternateWebVRRendering = false;
@@ -336,7 +336,6 @@
 
         /**
          * Gets the current world space position of the camera.
-         * @returns the world space position
          */
         public get globalPosition(): Vector3 {
             return this._globalPosition;
@@ -869,6 +868,7 @@
 
         /**
          * Gets the left camera target of a rig setup in case of Rigged Camera
+         * @returns the target position
          */
         public getLeftTarget(): Nullable<Vector3> {
             if (this._rigCameras.length < 1) {
@@ -879,6 +879,7 @@
 
         /**
          * Gets the right camera target of a rig setup in case of Rigged Camera
+         * @returns the target position
          */
         public getRightTarget(): Nullable<Vector3> {
             if (this._rigCameras.length < 2) {
