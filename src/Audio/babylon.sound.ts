@@ -560,7 +560,28 @@ module BABYLON {
                         this._streamingSource.disconnect();
                         this._streamingSource.connect(this._inputAudioNode);
                         if (this._htmlAudioElement) {
-                            this._htmlAudioElement.play();
+                            // required to manage properly the new suspended default state of Chrome
+                            // When the option 'streaming: true' is used, we need first to wait for
+                            // the audio engine to be unlocked by a user gesture before trying to play
+                            // an HTML Audio elememt
+                            var tryToPlay = () => {
+                                if (Engine.audioEngine.unlocked) {
+                                    var playPromise = this._htmlAudioElement.play();
+
+                                    // In browsers that don’t yet support this functionality,
+                                    // playPromise won’t be defined.
+                                    if (playPromise !== undefined) {
+                                        playPromise.catch(function(error) {
+                                        // Automatic playback failed.
+                                        // Waiting for the audio engine to be unlocked by user click on unmute
+                                        });
+                                    }
+                                }
+                                else {
+                                    window.setTimeout(tryToPlay, 500);
+                                }
+                            }
+                            tryToPlay();
                         }
                     }
                     else {
