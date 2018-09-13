@@ -4,6 +4,7 @@ module BABYLON {
     });    
     /**
      * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras
      */      
     export class StereoscopicUniversalCamera extends UniversalCamera {
         /**
