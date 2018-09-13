@@ -10,12 +10,12 @@ module BABYLON {
     export class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
 
         /**
-         * 
-         * @param name 
-         * @param position 
-         * @param scene 
-         * @param compensateDistortion 
-         * @param vrCameraMetrics 
+         * Creates a new VRDeviceOrientationFreeCamera
+         * @param name defines camera name
+         * @param position defines the start position of the camera
+         * @param scene defines the scene the camera belongs to
+         * @param compensateDistortion defines if the camera needs to compensate the lens distorsion
+         * @param vrCameraMetrics defines the vr metrics associated to the camera
          */
         constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()) {
             super(name, position, scene);
