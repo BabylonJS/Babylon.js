@@ -138,7 +138,7 @@
 
         /**
          * Define the default inertia of the camera.
-         * This helps giving a smooth feeling to the camera movment.
+         * This helps giving a smooth feeling to the camera movement.
          */
         @serialize()
         public inertia = 0.9;

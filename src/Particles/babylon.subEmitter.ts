@@ -44,7 +44,7 @@ module BABYLON {
          * Clones the sub emitter
          * @returns the cloned sub emitter
          */
-        clone(): SubEmitter {
+        public clone(): SubEmitter {
             // Clone particle system
             var emitter = this.particleSystem.emitter;
             if (!emitter) {
@@ -63,7 +63,13 @@ module BABYLON {
             clone.inheritedVelocityAmount = this.inheritedVelocityAmount;
 
             clone.particleSystem._disposeEmitterOnDispose = true;
+            clone.particleSystem.disposeOnStop = true;
             return clone;
+        }
+
+        /** Release associated resources */
+        public dispose() {
+            this.particleSystem.dispose();
         }
     }
 }

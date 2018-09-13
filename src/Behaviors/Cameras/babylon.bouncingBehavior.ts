@@ -1,8 +1,12 @@
 module BABYLON {
     /**
      * Add a bouncing effect to an ArcRotateCamera when reaching a specified minimum and maximum radius
+     * @see http://doc.babylonjs.com/how_to/camera_behaviors#bouncing-behavior
      */
     export class BouncingBehavior implements Behavior<ArcRotateCamera> {
+        /**
+         * Gets the name of the behavior.
+         */
         public get name(): string {
             return "Bouncing";
         }
@@ -79,10 +83,17 @@ module BABYLON {
         private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;
         private _onMeshTargetChangedObserver: Nullable<Observer<Nullable<AbstractMesh>>>;
 
+        /**
+         * Initializes the behavior.
+         */
         public init(): void {
             // Do notihng
         }
 
+        /**
+         * Attaches the behavior to its arc rotate camera.
+         * @param camera Defines the camera to attach the behavior to
+         */
         public attach(camera: ArcRotateCamera): void {
             this._attachedCamera = camera;
             this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(() => {
@@ -102,6 +113,9 @@ module BABYLON {
             });
         }
 
+        /**
+         * Detaches the behavior from its current arc rotate camera.
+         */
         public detach(): void {
             if (!this._attachedCamera) {
                 return;

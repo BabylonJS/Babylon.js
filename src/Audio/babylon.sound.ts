@@ -1,10 +1,35 @@
 module BABYLON {
+    /**
+     * Defines a sound that can be played in the application.
+     * The sound can either be an ambient track or a simple sound played in reaction to a user action.
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
     export class Sound {
+        /**
+         * The name of the sound in the scene.
+         */
         public name: string;
+        /**
+         * Does the sound autoplay once loaded.
+         */
         public autoplay: boolean = false;
+        /**
+         * Does the sound loop after it finishes playing once.
+         */
         public loop: boolean = false;
+        /**
+         * Does the sound use a custom attenuation curve to simulate the falloff
+         * happening when the source gets further away from the camera.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
+         */
         public useCustomAttenuation: boolean = false;
+        /**
+         * The sound track id this sound belongs to.
+         */
         public soundTrackId: number;
+        /**
+         * Does this sound enables spatial sound.
+         */
         public spatialSound: boolean = false;
         public refDistance: number = 1;
         public rolloffFactor: number = 1;
@@ -535,7 +560,29 @@ module BABYLON {
                         this._streamingSource.disconnect();
                         this._streamingSource.connect(this._inputAudioNode);
                         if (this._htmlAudioElement) {
-                            this._htmlAudioElement.play();
+                            // required to manage properly the new suspended default state of Chrome
+                            // When the option 'streaming: true' is used, we need first to wait for
+                            // the audio engine to be unlocked by a user gesture before trying to play
+                            // an HTML Audio elememt
+                            var tryToPlay = () => {
+                                if (Engine.audioEngine.unlocked) {
+                                    var playPromise = this._htmlAudioElement.play();
+
+                                    // In browsers that don’t yet support this functionality,
+                                    // playPromise won’t be defined.
+                                    if (playPromise !== undefined) {
+                                        playPromise.catch(function(error) {
+                                            // Automatic playback failed.
+                                            // Waiting for the audio engine to be unlocked by user click on unmute
+                                            Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => tryToPlay);
+                                        });
+                                    }
+                                }
+                                else {
+                                    Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => tryToPlay);
+                                }
+                            }
+                            tryToPlay();
                         }
                     }
                     else {

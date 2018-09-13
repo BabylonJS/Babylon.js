@@ -913,7 +913,7 @@
         private _alternateProjectionUpdateFlag = -1;
 
         /** @hidden */
-        public _toBeDisposed = new SmartArray<Nullable<IDisposable>>(256);
+        public _toBeDisposed = new Array<Nullable<IDisposable>>(256);
         private _activeRequests = new Array<IFileRequest>();
         private _pendingData = new Array();
         private _isDisposed = false;
@@ -4533,14 +4533,16 @@
             this.onAfterRenderObservable.notifyObservers(this);
 
             // Cleaning
-            for (var index = 0; index < this._toBeDisposed.length; index++) {
-                var data = this._toBeDisposed.data[index];
-                if (data) {
-                    data.dispose();
+            if (this._toBeDisposed.length) {
+                for (var index = 0; index < this._toBeDisposed.length; index++) {
+                    var data = this._toBeDisposed[index];
+                    if (data) {
+                        data.dispose();
+                    }
                 }
-            }
 
-            this._toBeDisposed.reset();
+                this._toBeDisposed = [];
+            }
 
             if (this.dumpNextRenderTargets) {
                 this.dumpNextRenderTargets = false;
@@ -4625,7 +4627,7 @@
             this._renderTargets.dispose();
             this._registeredForLateAnimationBindings.dispose();
             this._meshesForIntersections.dispose();
-            this._toBeDisposed.dispose();
+            this._toBeDisposed = [];
 
             // Abort active requests
             for (let request of this._activeRequests) {
