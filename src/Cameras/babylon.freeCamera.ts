@@ -4,22 +4,45 @@
         return () => new UniversalCamera(name, Vector3.Zero(), scene);
     });
 
+    /**
+     * This represents a free type of camera. It can be usefull in First Person Shooter game for instance.
+     * Please consider using the new UniversalCamera instead as it adds more functionality like the gamepad.
+     * @see http://doc.babylonjs.com/features/cameras#universal-camera
+     */
     export class FreeCamera extends TargetCamera {
+        /**
+         * Define the collision ellipsoid of the camera.
+         * This is helpful to simulate a camera body like the player body around the camera
+         * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#arcrotatecamera
+         */
         @serializeAsVector3()
         public ellipsoid = new Vector3(0.5, 1, 0.5);
 
+        /**
+         * Define an offset for the position of the ellipsoid around the camera.
+         * This can be helpful to determine the center of the body near the gravity center of the body 
+         * instead of its head.
+         */
         @serializeAsVector3()
         public ellipsoidOffset = new Vector3(0, 0, 0);
 
+        /**
+         * Enable or disable collisions of the camera with the rest of the scene objects.
+         */
         @serialize()
         public checkCollisions = false;
 
+        /**
+         * Enable or disable gravity on the camera.
+         */
         @serialize()
         public applyGravity = false;
 
+        /**
+         * Define the input manager associated to the camera.
+         */
         public inputs: FreeCameraInputsManager;
 
-        //-- begin properties for backward compatibility for inputs
         /**
          * Gets the input sensibility for a mouse input. (default is 2000.0)
          * Higher values reduce sensitivity.
@@ -42,6 +65,9 @@
                 mouse.angularSensibility = value;
         }
 
+        /**
+         * Gets or Set the list of keyboard keys used to control the forward move of the camera.
+         */
         public get keysUp(): number[] {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
@@ -56,6 +82,9 @@
                 keyboard.keysUp = value;
         }
 
+        /**
+         * Gets or Set the list of keyboard keys used to control the backward move of the camera.
+         */
         public get keysDown(): number[] {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
@@ -70,6 +99,9 @@
                 keyboard.keysDown = value;
         }
 
+        /**
+         * Gets or Set the list of keyboard keys used to control the left strafe move of the camera.
+         */
         public get keysLeft(): number[] {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
@@ -84,6 +116,9 @@
                 keyboard.keysLeft = value;
         }
 
+        /**
+         * Gets or Set the list of keyboard keys used to control the right strafe move of the camera.
+         */
         public get keysRight(): number[] {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
@@ -98,8 +133,9 @@
                 keyboard.keysRight = value;
         }
 
-        //-- end properties for backward compatibility for inputs
-
+        /**
+         * Event raised when the camera collide with a mesh in the scene.
+         */
         public onCollide: (collidedMesh: AbstractMesh) => void;
 
         private _collider: Collider;
@@ -113,17 +149,36 @@
         /** @hidden */
         public _transformedDirection: Vector3;
 
+        /**
+         * Instantiates a Free Camera.
+         * This represents a free type of camera. It can be usefull in First Person Shooter game for instance.
+         * Please consider using the new UniversalCamera instead as it adds more functionality like touch to this camera.
+         * @see http://doc.babylonjs.com/features/cameras#universal-camera
+         * @param name Define the name of the camera in the scene
+         * @param position Define the start position of the camera in the scene
+         * @param scene Define the scene the camera belongs to
+         * @param setActiveOnSceneIfNoneActive Defines wheter the camera should be marked as active if not other active cameras have been defined
+         */
         constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
             super(name, position, scene, setActiveOnSceneIfNoneActive);
             this.inputs = new FreeCameraInputsManager(this);
             this.inputs.addKeyboard().addMouse();
         }
 
-        // Controls
+        /**
+         * Attached controls to the current camera.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
         public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
             this.inputs.attachElement(element, noPreventDefault);
         }
 
+        /**
+         * Detach the current controls from the camera.
+         * The camera will stop reacting to inputs.
+         * @param element Defines the element to stop listening the inputs from
+         */
         public detachControl(element: HTMLElement): void {
             this.inputs.detachElement(element);
 
@@ -134,6 +189,9 @@
         // Collisions
         private _collisionMask = -1;
 
+        /**
+         * Define a collision mask to limit the list of object the camera can collide with
+         */
         public get collisionMask(): number {
             return this._collisionMask;
         }
@@ -222,11 +280,18 @@
             }
         }
 
+        /**
+         * Destroy the camera and release the current resources hold by it.
+         */
         public dispose(): void {
             this.inputs.clear();
             super.dispose();
         }
 
+        /**
+         * Gets the current object class name.
+         * @return the class name
+         */
         public getClassName(): string {
             return "FreeCamera";
         }
