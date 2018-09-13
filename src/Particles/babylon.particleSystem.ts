@@ -205,8 +205,6 @@
 
                 for (var index = 0; index < particles.length; index++) {
                     var particle = particles[index];
-                    particle.age += this._scaledUpdateSpeed;
-
                     if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
                         this._emitFromParticle(particle);
                         if (particle._attachedSubEmitters) {
@@ -221,6 +219,20 @@
                         continue;
                     }
                     else {
+                        let scaledUpdateSpeed = this._scaledUpdateSpeed;
+                        let previousAge = particle.age;
+                        particle.age += scaledUpdateSpeed;
+
+                        if (particle.age > particle.lifeTime) {
+                            let diff = particle.age - previousAge;
+                            let oldDiff = particle.lifeTime - previousAge;
+
+                            scaledUpdateSpeed = (diff * scaledUpdateSpeed) / oldDiff;
+
+                            particle.age = particle.lifeTime;
+
+                        }
+
                         let ratio = particle.age / particle.lifeTime;
 
                         // Color
@@ -235,7 +247,7 @@
                             });
                         }
                         else {
-                            particle.colorStep.scaleToRef(this._scaledUpdateSpeed, this._scaledColorStep);
+                            particle.colorStep.scaleToRef(scaledUpdateSpeed, this._scaledColorStep);
                             particle.color.addInPlace(this._scaledColorStep);
 
                             if (particle.color.a < 0) {
@@ -254,10 +266,10 @@
                                 particle.angularSpeed = Scalar.Lerp(particle._currentAngularSpeed1, particle._currentAngularSpeed2, scale);
                             });
                         }
-                        particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
+                        particle.angle += particle.angularSpeed * scaledUpdateSpeed;
 
                         // Direction
-                        let directionScale = this._scaledUpdateSpeed;
+                        let directionScale = scaledUpdateSpeed;
 
                         /// Velocity
                         if (this._velocityGradients && this._velocityGradients.length > 0) {
@@ -319,12 +331,12 @@
 
                             force.copyFromFloats((2 * fetchedColorR - 1) * this.noiseStrength.x, (2 * fetchedColorG - 1) * this.noiseStrength.y, (2 * fetchedColorB - 1) * this.noiseStrength.z);
 
-                            force.scaleToRef(this._scaledUpdateSpeed, scaledForce);
+                            force.scaleToRef(scaledUpdateSpeed, scaledForce);
                             particle.direction.addInPlace(scaledForce);
                         }
 
                         // Gravity
-                        this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
+                        this.gravity.scaleToRef(scaledUpdateSpeed, this._scaledGravity);
                         particle.direction.addInPlace(this._scaledGravity);
 
                         // Size
