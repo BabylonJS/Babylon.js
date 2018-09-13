@@ -1,14 +1,63 @@
 ﻿module BABYLON {
+    /**
+     * This defines an action responsible to change the value of a property
+     * by interpolating between its current value and the newly set one once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
     export class InterpolateValueAction extends Action {
+        /**
+         * Defines the path of the property where the value should be interpolated
+         */
+        public propertyPath: string;
+        
+        /**
+         * Defines the target value at the end of the interpolation.
+         */
+        public value: any;
+
+        /**
+         * Defines the time it will take for the property to interpolate to the value.
+         */
+        public duration: number = 1000;
+
+        /**
+         * Defines if the other scene animations should be stopped when the action has been triggered
+         */
+        public stopOtherAnimations?: boolean;
+
+        /**
+         * Defines a callback raised once the interpolation animation has been done.
+         */
+        public onInterpolationDone?: () => void;
+        
+        /**
+         * Observable triggered once the interpolation animation has been done.
+         */
+        public onInterpolationDoneObservable = new Observable<InterpolateValueAction>();
+
         private _target: any;
         private _effectiveTarget: any;
         private _property: string;
 
-        public onInterpolationDoneObservable = new Observable<InterpolateValueAction>();
-
-        constructor(triggerOptions: any, target: any, public propertyPath: string, public value: any, public duration: number = 1000, condition?: Condition, public stopOtherAnimations?: boolean, public onInterpolationDone?: () => void) {
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the object containing the value to interpolate
+         * @param propertyPath defines the path to the property in the target object
+         * @param value defines the target value at the end of the interpolation
+         * @param duration deines the time it will take for the property to interpolate to the value.
+         * @param condition defines the trigger related conditions
+         * @param stopOtherAnimations defines if the other scene animations should be stopped when the action has been triggered
+         * @param onInterpolationDone defines a callback raised once the interpolation animation has been done
+         */
+        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, duration: number = 1000, condition?: Condition, stopOtherAnimations?: boolean, onInterpolationDone?: () => void) {
             super(triggerOptions, condition);
 
+            this.propertyPath = propertyPath;
+            this.value = value;
+            this.duration = duration;
+            this.stopOtherAnimations = stopOtherAnimations;
+            this.onInterpolationDone = onInterpolationDone;
             this._target = this._effectiveTarget = target;
         }
 
@@ -18,6 +67,9 @@
             this._property = this._getProperty(this.propertyPath);
         }
 
+        /**
+         * Execute the action starts the value interpolation.
+         */
         public execute(): void {
             var scene = this._actionManager.getScene();
             var keys = [
@@ -65,6 +117,11 @@
             scene.beginDirectAnimation(this._effectiveTarget, [animation], 0, 100, false, 1, wrapper);
         }
 
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
         public serialize(parent: any): any {
             return super._serialize({
                 name: "InterpolateValueAction",

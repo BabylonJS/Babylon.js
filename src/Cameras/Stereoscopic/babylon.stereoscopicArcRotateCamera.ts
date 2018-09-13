@@ -5,7 +5,8 @@ module BABYLON {
 
     /**
      * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
-     */      
+     * @see http://doc.babylonjs.com/features/cameras
+     */
     export class StereoscopicArcRotateCamera extends ArcRotateCamera {
         /**
          * Creates a new StereoscopicArcRotateCamera
