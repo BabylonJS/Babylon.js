@@ -48,7 +48,7 @@
     }
 
     // Sets the default audio engine to Babylon JS.
-    Engine.AudioEngineFactory = () => { return new AudioEngine(); };
+    Engine.AudioEngineFactory = (engine: Engine) => { return new AudioEngine(engine); };
 
     /**
      * This represents the default audio engine used in babylon.
