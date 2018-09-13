@@ -1555,8 +1555,13 @@
             /**
              * Defines the third coordinates (on Z axis)
              */
-            public z: number = 0
+            public z: number = 0 
         ) {
+            if(x.x && x.y && x.z) {
+                this.x = x.x;
+                this.y = x.y;
+                this.z = x.z;
+            }
         }
 
         /**
