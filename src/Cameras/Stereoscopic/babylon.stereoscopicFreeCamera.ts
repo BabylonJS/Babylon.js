@@ -5,6 +5,7 @@ module BABYLON {
 
     /**
      * Camera used to simulate stereoscopic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras
      */    
     export class StereoscopicFreeCamera extends FreeCamera {
         /**
