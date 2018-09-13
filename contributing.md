@@ -10,7 +10,7 @@
 
 ### Backward compatibility
 
-The first golden rule is a really important because we want our users to trust Babylon.js. And when we need to introduce something that will break backward compatibility, we know that it will imply more work for our customers to switch to a new version. So even if something could be simpler to do by breaking the backward compatibility, we will not do it (exceptions may apply of course if there is a problem with performance or if this is related to a bug).
+The first golden rule is a really important one because we want our users to trust Babylon.js. And when we need to introduce something that will break backward compatibility, we know that it will imply more work for our customers to switch to a new version. So even if something could be simpler to do by breaking the backward compatibility, we will not do it (exceptions may apply of course if there is a problem with performance or if this is related to a bug).
 
 ### Performance
 
