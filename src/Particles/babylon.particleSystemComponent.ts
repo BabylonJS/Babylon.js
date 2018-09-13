@@ -67,4 +67,46 @@
             effectCreationOption.concat(uniformsNames),
             samplers, defines, fallbacks, onCompiled, onError);
     }
+
+    export interface Mesh {
+        /**
+         * Returns an array populated with IParticleSystem objects whose the mesh is the emitter
+         * @returns an array of IParticleSystem
+         */
+        getEmittedParticleSystems(): IParticleSystem[];
+    
+        /**
+         * Returns an array populated with IParticleSystem objects whose the mesh or its children are the emitter
+         * @returns an array of IParticleSystem
+         */
+        getHierarchyEmittedParticleSystems(): IParticleSystem[];
+    }
+
+    Mesh.prototype.getEmittedParticleSystems = function(): IParticleSystem[] {
+        var results = new Array<IParticleSystem>();
+        for (var index = 0; index < this.getScene().particleSystems.length; index++) {
+            var particleSystem = this.getScene().particleSystems[index];
+            if (particleSystem.emitter === this) {
+                results.push(particleSystem);
+            }
+        }
+        return results;
+    }
+
+    Mesh.prototype.getHierarchyEmittedParticleSystems = function(): IParticleSystem[] {
+        var results = new Array<IParticleSystem>();
+        var descendants = this.getDescendants();
+        descendants.push(this);
+
+        for (var index = 0; index < this.getScene().particleSystems.length; index++) {
+            var particleSystem = this.getScene().particleSystems[index];
+            let emitter: any = particleSystem.emitter;
+
+            if (emitter.position && descendants.indexOf(emitter) !== -1) {
+                results.push(particleSystem);
+            }
+        }
+
+        return results;
+    }
 } 

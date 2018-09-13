@@ -140,7 +140,7 @@
         */
         public activeSubSystems: Array<ParticleSystem>;
 
-        private _rootParticleSystem: ParticleSystem;
+        private _rootParticleSystem: Nullable<ParticleSystem>;
         //end of Sub-emitter
 
         /**
@@ -205,22 +205,21 @@
 
                 for (var index = 0; index < particles.length; index++) {
                     var particle = particles[index];
-                    particle.age += this._scaledUpdateSpeed;
 
-                    if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
-                        this._emitFromParticle(particle);
-                        if (particle._attachedSubEmitters) {
-                            particle._attachedSubEmitters.forEach((subEmitter) => {
-                                subEmitter.particleSystem.disposeOnStop = true;
-                                subEmitter.particleSystem.stop();
-                            });
-                            particle._attachedSubEmitters = null;
+                        let scaledUpdateSpeed = this._scaledUpdateSpeed;
+                        let previousAge = particle.age;
+                        particle.age += scaledUpdateSpeed;
+
+                        // Evaluate step to death
+                        if (particle.age > particle.lifeTime) {
+                            let diff = particle.age - previousAge;
+                            let oldDiff = particle.lifeTime - previousAge;
+
+                            scaledUpdateSpeed = (oldDiff * scaledUpdateSpeed) / diff;
+
+                            particle.age = particle.lifeTime;
                         }
-                        this.recycleParticle(particle);
-                        index--;
-                        continue;
-                    }
-                    else {
+
                         let ratio = particle.age / particle.lifeTime;
 
                         // Color
@@ -235,7 +234,7 @@
                             });
                         }
                         else {
-                            particle.colorStep.scaleToRef(this._scaledUpdateSpeed, this._scaledColorStep);
+                            particle.colorStep.scaleToRef(scaledUpdateSpeed, this._scaledColorStep);
                             particle.color.addInPlace(this._scaledColorStep);
 
                             if (particle.color.a < 0) {
@@ -254,10 +253,10 @@
                                 particle.angularSpeed = Scalar.Lerp(particle._currentAngularSpeed1, particle._currentAngularSpeed2, scale);
                             });
                         }
-                        particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
+                        particle.angle += particle.angularSpeed * scaledUpdateSpeed;
 
                         // Direction
-                        let directionScale = this._scaledUpdateSpeed;
+                        let directionScale = scaledUpdateSpeed;
 
                         /// Velocity
                         if (this._velocityGradients && this._velocityGradients.length > 0) {
@@ -319,12 +318,12 @@
 
                             force.copyFromFloats((2 * fetchedColorR - 1) * this.noiseStrength.x, (2 * fetchedColorG - 1) * this.noiseStrength.y, (2 * fetchedColorB - 1) * this.noiseStrength.z);
 
-                            force.scaleToRef(this._scaledUpdateSpeed, scaledForce);
+                            force.scaleToRef(scaledUpdateSpeed, scaledForce);
                             particle.direction.addInPlace(scaledForce);
                         }
 
                         // Gravity
-                        this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
+                        this.gravity.scaleToRef(scaledUpdateSpeed, this._scaledGravity);
                         particle.direction.addInPlace(this._scaledGravity);
 
                         // Size
@@ -368,7 +367,20 @@
 
                         // Update the position of the attached sub-emitters to match their attached particle
                         particle._inheritParticleInfoToSubEmitters();
-                    }
+
+                        if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
+                            this._emitFromParticle(particle);
+                            if (particle._attachedSubEmitters) {
+                                particle._attachedSubEmitters.forEach((subEmitter) => {
+                                    subEmitter.particleSystem.disposeOnStop = true;
+                                    subEmitter.particleSystem.stop();
+                                });
+                                particle._attachedSubEmitters = null;
+                            }
+                            this.recycleParticle(particle);
+                            index--;
+                            continue;
+                        }
                 }
             }
         }
@@ -1189,6 +1201,8 @@
             if (index !== -1) {
                 this._rootParticleSystem.activeSubSystems.splice(index, 1);
             }
+
+            this._rootParticleSystem = null;
         }
 
         private _emitFromParticle: (particle: Particle) => void = (particle) => {
@@ -1802,6 +1816,17 @@
 
             this._removeFromRoot();
 
+            if (this._subEmitters && this._subEmitters.length) {
+                for (var index = 0; index < this._subEmitters.length; index++) {
+                    for (var subEmitter of this._subEmitters[index]) {
+                        subEmitter.dispose();
+                    }
+                }
+
+                this._subEmitters = [];
+                this.subEmitters = [];
+            }
+
             if (this._disposeEmitterOnDispose && this.emitter && (this.emitter as AbstractMesh).dispose) {
                 (<AbstractMesh>this.emitter).dispose(true);
             }
@@ -1812,9 +1837,13 @@
                 this._scene.particleSystems.splice(index, 1);
             }
 
+            this._scene._activeParticleSystems.dispose();
+
             // Callback
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
+
+            this.reset();
         }
 
         // Clone
