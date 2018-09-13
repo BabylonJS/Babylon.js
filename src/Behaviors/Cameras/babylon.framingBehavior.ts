@@ -1,5 +1,12 @@
 module BABYLON {
+    /**
+     * The framing behavior (BABYLON.FramingBehavior) is designed to automatically position an ArcRotateCamera when its target is set to a mesh. It is also useful if you want to prevent the camera to go under a virtual horizontal plane.
+     * @see http://doc.babylonjs.com/how_to/camera_behaviors#framing-behavior
+     */
     export class FramingBehavior implements Behavior<ArcRotateCamera> {
+        /**
+         * Gets the name of the behavior.
+         */
         public get name(): string {
             return "Framing";
         }
@@ -147,10 +154,17 @@ module BABYLON {
         private _isPointerDown = false;
         private _lastInteractionTime = -Infinity;
 
+        /**
+         * Initializes the behavior.
+         */
         public init(): void {
             // Do notihng
         }
 
+        /**
+         * Attaches the behavior to its arc rotate camera.
+         * @param camera Defines the camera to attach the behavior to
+         */
         public attach(camera: ArcRotateCamera): void {
             this._attachedCamera = camera;
             let scene = this._attachedCamera.getScene();
@@ -184,6 +198,9 @@ module BABYLON {
             });
         }
 
+        /**
+         * Detaches the behavior from its current arc rotate camera.
+         */
         public detach(): void {
             if (!this._attachedCamera) {
                 return;

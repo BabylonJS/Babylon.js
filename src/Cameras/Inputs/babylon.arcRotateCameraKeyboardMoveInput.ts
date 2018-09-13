@@ -1,6 +1,6 @@
 module BABYLON {
     /**
-     * Manage the keyboard inputs to control the movment of an arc rotate camera.
+     * Manage the keyboard inputs to control the movement of an arc rotate camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
      */
     export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
@@ -55,7 +55,7 @@ module BABYLON {
         public zoomingSensibility: number = 25.0;
 
         /**
-         * Defines wether maintaining the alt key down switch the movment mode from
+         * Defines wether maintaining the alt key down switch the movement mode from
          * orientation to zoom.
          */
         @serialize()
