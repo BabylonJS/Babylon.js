@@ -2,6 +2,7 @@ module BABYLON {
     /**
      * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
      * Screen rotation is taken into account.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
      */
     export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
         private _camera: FreeCamera;
@@ -15,11 +16,18 @@ module BABYLON {
         private _beta: number = 0;
         private _gamma: number = 0;
 
+        /**
+         * Instantiates a new input
+         * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+         */
         constructor() {
             this._constantTranform = new Quaternion(- Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
             this._orientationChanged();
         }
 
+        /**
+         * Define the camera controlled by the input.
+         */
         public get camera(): FreeCamera {
             return this._camera;
         }
@@ -31,7 +39,12 @@ module BABYLON {
             }
         }
 
-        attachControl(element: HTMLElement, noPreventDefault?: boolean) {
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
             window.addEventListener("orientationchange", this._orientationChanged);
             window.addEventListener("deviceorientation", this._deviceOrientation);
             //In certain cases, the attach control is called AFTER orientation was changed,
@@ -51,12 +64,20 @@ module BABYLON {
             this._gamma = evt.gamma !== null ? evt.gamma : 0;
         }
 
-        detachControl(element: Nullable<HTMLElement>) {
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        public detachControl(element: Nullable<HTMLElement>): void {
             window.removeEventListener("orientationchange", this._orientationChanged);
             window.removeEventListener("deviceorientation", this._deviceOrientation);
         }
 
-        public checkInputs() {
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        public checkInputs(): void {
             //if no device orientation provided, don't update the rotation.
             //Only testing against alpha under the assumption thatnorientation will never be so exact when set.
             if (!this._alpha) return;
@@ -68,11 +89,19 @@ module BABYLON {
             this._camera.rotationQuaternion.w *= -1;
         }
 
-        getClassName(): string {
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        public getClassName(): string {
             return "FreeCameraDeviceOrientationInput";
         }
 
-        getSimpleName() {
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        public getSimpleName(): string {
             return "deviceOrientation";
         }
     }
