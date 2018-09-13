@@ -572,8 +572,9 @@ module BABYLON {
                                     // playPromise won’t be defined.
                                     if (playPromise !== undefined) {
                                         playPromise.catch(function(error) {
-                                        // Automatic playback failed.
-                                        // Waiting for the audio engine to be unlocked by user click on unmute
+                                            // Automatic playback failed.
+                                            // Waiting for the audio engine to be unlocked by user click on unmute
+                                            Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => tryToPlay);
                                         });
                                     }
                                 }
