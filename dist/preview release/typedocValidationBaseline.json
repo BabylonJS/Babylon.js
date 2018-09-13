@@ -1,50 +1,19 @@
 {
-  "errors": 3369,
+  "errors": 3144,
   "babylon.typedoc.json": {
-    "errors": 3369,
+    "errors": 3144,
     "AsyncLoop": {
-      "Property": {
-        "index": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "iterations": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
       "Method": {
         "Run": {
-          "Comments": {
-            "MissingReturn": true
-          },
           "Parameter": {
-            "iterations": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
             "_fn": {
-              "Comments": {
-                "MissingText": true
-              },
               "Naming": {
                 "NotCamelCase": true
               }
             },
             "_successCallback": {
-              "Comments": {
-                "MissingText": true
-              },
               "Naming": {
                 "NotCamelCase": true
-              }
-            },
-            "offset": {
-              "Comments": {
-                "MissingText": true
               }
             }
           }
@@ -52,162 +21,14 @@
       }
     },
     "AudioEngine": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new AudioEngine": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Property": {
-        "WarnedWebAudioUnsupported": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "audioContext": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "canUseWebAudio": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "isMP3supported": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "isOGGsupported": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "masterGain": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onAudioUnlocked": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "unlocked": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
       "Method": {
-        "connectToAnalyser": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "analyser": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "dispose": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getGlobalVolume": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "setGlobalVolume": {
-          "Comments": {
-            "MissingText": true
-          },
           "Parameter": {
             "newVolume": {
               "Comments": {
                 "MissingText": true
               }
             }
-          }
-        }
-      }
-    },
-    "AutoRotationBehavior": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "name": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "attach": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "camera": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "detach": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "init": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "BackEase": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new BackEase": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "amplitude": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Property": {
-        "amplitude": {
-          "Comments": {
-            "MissingText": true
           }
         }
       }
@@ -553,64 +374,6 @@
         }
       }
     },
-    "BezierCurveEase": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new BezierCurveEase": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "x1": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "y1": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "x2": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "y2": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Property": {
-        "x1": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "x2": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "y1": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "y2": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "BlackAndWhitePostProcess": {
       "Class": {
         "Comments": {
@@ -619,44 +382,6 @@
       },
       "Property": {
         "degree": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "BounceEase": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new BounceEase": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "bounces": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "bounciness": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Property": {
-        "bounces": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "bounciness": {
           "Comments": {
             "MissingText": true
           }
@@ -1434,546 +1159,10 @@
       }
     },
     "Camera": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
       "Property": {
-        "_activeMeshes": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "_postProcesses": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "_projectionMatrix": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "cameraRigMode": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "customRenderTargets": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "globalPosition": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "inertia": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "inputs": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "interaxialDistance": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "isIntermediate": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "isStereoscopicSideBySide": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "leftCamera": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "maxZ": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "minZ": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "mode": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onAfterCheckInputsObservable": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onProjectionMatrixChangedObservable": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onRestoreStateObservable": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onViewMatrixChangedObservable": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "orthoBottom": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "orthoLeft": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "orthoRight": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "orthoTop": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "position": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "rigCameras": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "rigPostProcess": {
           "Comments": {
             "MissingText": true
-          }
-        },
-        "rightCamera": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "viewport": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "ForceAttachControlToAlwaysPreventDefault": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "ORTHOGRAPHIC_CAMERA": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "PERSPECTIVE_CAMERA": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "RIG_MODE_NONE": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "RIG_MODE_STEREOSCOPIC_ANAGLYPH": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "RIG_MODE_STEREOSCOPIC_OVERUNDER": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "RIG_MODE_VR": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "RIG_MODE_WEBVR": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "UseAlternateWebVRRendering": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "attachControl": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "element": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "noPreventDefault": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "attachPostProcess": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "postProcess": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "insertAt": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "clone": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "name": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "createRigCamera": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "name": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "cameraIndex": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "detachControl": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "element": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "detachPostProcess": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "postProcess": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "freezeProjectionMatrix": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "projection": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getActiveMeshes": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getDirection": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "localAxis": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getDirectionToRef": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "localAxis": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "result": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getForwardRay": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "length": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "transform": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "origin": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getLeftTarget": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getProjectionMatrix": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "force": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getRightTarget": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getViewMatrix": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "force": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "isActiveMesh": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "mesh": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "isCompletelyInFrustum": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "target": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "isInFrustum": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "target": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "restoreState": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "serialize": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "setCameraRigMode": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "mode": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "rigParams": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "setCameraRigParameter": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "name": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "value": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "storeState": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "ToString": {
-          "Comments": {
-            "MissingText": true,
-            "MissingReturn": true
-          }
-        },
-        "unfreezeProjectionMatrix": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "update": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "GetConstructorFromName": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "type": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "name": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "scene": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "interaxial_distance": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "isStereoscopicSideBySide": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "Parse": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "parsedCamera": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "scene": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         }
       }
@@ -2497,13 +1686,6 @@
         }
       }
     },
-    "CircleEase": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
     "ColorCorrectionPostProcess": {
       "Class": {
         "Comments": {
@@ -2622,13 +1804,6 @@
               }
             }
           }
-        }
-      }
-    },
-    "CubicEase": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
         }
       }
     },
@@ -3041,73 +2216,6 @@
         }
       }
     },
-    "EasingFunction": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "EASINGMODE_EASEIN": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "EASINGMODE_EASEINOUT": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "EASINGMODE_EASEOUT": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "ease": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "gradient": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "easeInCore": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "gradient": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getEasingMode": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "setEasingMode": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "easingMode": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
     "EdgesRenderer": {
       "Property": {
         "edgesWidthScalerForOrthographic": {
@@ -3116,44 +2224,6 @@
           }
         },
         "edgesWidthScalerForPerspective": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "ElasticEase": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new ElasticEase": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "oscillations": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "springiness": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Property": {
-        "oscillations": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "springiness": {
           "Comments": {
             "MissingText": true
           }
@@ -3198,34 +2268,6 @@
       },
       "Property": {
         "func": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "ExponentialEase": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new ExponentialEase": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "exponent": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Property": {
-        "exponent": {
           "Comments": {
             "MissingText": true
           }
@@ -3355,40 +2397,6 @@
         }
       }
     },
-    "FollowCamera": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "cameraAcceleration": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "heightOffset": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "maxCameraSpeed": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "radius": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "rotationOffset": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "FramingBehavior": {
       "Class": {
         "Comments": {
@@ -3437,65 +2445,6 @@
                 "MissingText": true
               }
             }
-          }
-        }
-      }
-    },
-    "FreeCamera": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "applyGravity": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "checkCollisions": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "collisionMask": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "ellipsoid": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "ellipsoidOffset": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "keysDown": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "keysLeft": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "keysRight": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "keysUp": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onCollide": {
-          "Comments": {
-            "MissingText": true
           }
         }
       }
@@ -3638,47 +2587,19 @@
       }
     },
     "FreeCameraInputsManager": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
       "Method": {
-        "addDeviceOrientation": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "addGamepad": {
           "Comments": {
             "MissingText": true
           }
         },
-        "addKeyboard": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "addMouse": {
-          "Comments": {
-            "MissingText": true
-          },
           "Parameter": {
             "touchEnabled": {
               "Comments": {
                 "MissingText": true
               }
             }
-          }
-        },
-        "addTouch": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "addVirtualJoystick": {
-          "Comments": {
-            "MissingText": true
           }
         }
       }
@@ -4342,13 +3263,6 @@
           "Comments": {
             "MissingText": true
           }
-        }
-      }
-    },
-    "GamepadCamera": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
         }
       }
     },
@@ -9959,34 +8873,6 @@
         }
       }
     },
-    "PowerEase": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new PowerEase": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "power": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Property": {
-        "power": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "ProceduralTexture": {
       "Class": {
         "Comments": {
@@ -10201,13 +9087,6 @@
       }
     },
     "PushMaterial": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "QuadraticEase": {
       "Class": {
         "Comments": {
           "MissingText": true
@@ -10443,20 +9322,6 @@
               }
             }
           }
-        }
-      }
-    },
-    "QuarticEase": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "QuinticEase": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
         }
       }
     },
@@ -12893,13 +11758,6 @@
         }
       }
     },
-    "SineEase": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
     "SixDofDragBehavior": {
       "Constructor": {
         "new SixDofDragBehavior": {
@@ -15040,69 +13898,6 @@
         }
       }
     },
-    "TargetCamera": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "cameraDirection": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "cameraRotation": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "lockedTarget": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "noRotationConstraint": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "rotation": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "rotationQuaternion": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "speed": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "getFrontPosition": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "distance": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getTarget": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        }
-      }
-    },
     "TargetedAnimation": {
       "Property": {
         "animation": {
@@ -16432,25 +15227,6 @@
         }
       }
     },
-    "TouchCamera": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "touchAngularSensibility": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "touchMoveSensibility": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "TransformNode": {
       "Class": {
         "Comments": {
@@ -16946,25 +15722,6 @@
         "isDynamic": {
           "Comments": {
             "MissingReturn": true
-          }
-        }
-      }
-    },
-    "UniversalCamera": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "gamepadAngularSensibility": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "gamepadMoveSensibility": {
-          "Comments": {
-            "MissingText": true
           }
         }
       }
@@ -18126,13 +16883,6 @@
         }
       }
     },
-    "VirtualJoysticksCamera": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
     "VolumetricLightScatteringPostProcess": {
       "Class": {
         "Comments": {
@@ -18318,27 +17068,6 @@
           },
           "Parameter": {
             "frustumPlanes": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
-    "IEasingFunction": {
-      "Interface": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Method": {
-        "ease": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "gradient": {
               "Comments": {
                 "MissingText": true
               }
