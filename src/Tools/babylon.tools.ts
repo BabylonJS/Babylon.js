@@ -1944,20 +1944,32 @@
     }
 
     /**
-    * An implementation of a loop for asynchronous functions.
-    */
+     * An implementation of a loop for asynchronous functions.
+     */
     export class AsyncLoop {
+        /**
+         * Defines the current index of the loop.
+         */
         public index: number;
+
         private _done: boolean;
 
         /**
-         * Constroctor.
+         * Constructor.
          * @param iterations the number of iterations.
          * @param _fn the function to run each iteration
          * @param _successCallback the callback that will be called upon succesful execution
          * @param offset starting offset.
          */
-        constructor(public iterations: number, private _fn: (asyncLoop: AsyncLoop) => void, private _successCallback: () => void, offset: number = 0) {
+        constructor(
+            /**
+             * Defines the number of iterations for the loop
+             */
+            public iterations: number, 
+            private _fn: (asyncLoop: AsyncLoop) => void, 
+            private _successCallback: () => void, 
+            offset: number = 0) {
+
             this.index = offset - 1;
             this._done = false;
         }
@@ -1985,7 +1997,12 @@
         }
 
         /**
-         * Helper function
+         * Create and run an async loop.
+         * @param iterations the number of iterations.
+         * @param _fn the function to run each iteration
+         * @param _successCallback the callback that will be called upon succesful execution
+         * @param offset starting offset.
+         * @returns the created async loop object
          */
         public static Run(iterations: number, _fn: (asyncLoop: AsyncLoop) => void, _successCallback: () => void, offset: number = 0): AsyncLoop {
             var loop = new AsyncLoop(iterations, _fn, _successCallback, offset);
@@ -1995,7 +2012,6 @@
             return loop;
         }
 
-
         /**
          * A for-loop that will run a given number of iterations synchronous and the rest async.
          * @param iterations total number of iterations
@@ -2004,10 +2020,10 @@
          * @param callback a success call back that will be called when iterating stops.
          * @param breakFunction a break condition (optional)
          * @param timeout timeout settings for the setTimeout function. default - 0.
-         * @constructor
+         * @returns the created async loop object
          */
-        public static SyncAsyncForLoop(iterations: number, syncedIterations: number, fn: (iteration: number) => void, callback: () => void, breakFunction?: () => boolean, timeout: number = 0) {
-            AsyncLoop.Run(Math.ceil(iterations / syncedIterations), (loop: AsyncLoop) => {
+        public static SyncAsyncForLoop(iterations: number, syncedIterations: number, fn: (iteration: number) => void, callback: () => void, breakFunction?: () => boolean, timeout: number = 0): AsyncLoop {
+            return AsyncLoop.Run(Math.ceil(iterations / syncedIterations), (loop: AsyncLoop) => {
                 if (breakFunction && breakFunction()) loop.breakLoop();
                 else {
                     setTimeout(() => {

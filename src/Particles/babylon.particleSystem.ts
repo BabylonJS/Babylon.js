@@ -795,17 +795,17 @@
         /**
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param color defines the color to affect to the specified gradient
+         * @param color1 defines the color to affect to the specified gradient
          * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
          */
-        public addColorGradient(gradient: number, color: Color4, color2?: Color4): IParticleSystem {
+        public addColorGradient(gradient: number, color1: Color4, color2?: Color4): IParticleSystem {
             if (!this._colorGradients) {
                 this._colorGradients = [];
             }
 
             let colorGradient = new ColorGradient();
             colorGradient.gradient = gradient;
-            colorGradient.color1 = color;
+            colorGradient.color1 = color1;
             colorGradient.color2 = color2;
             this._colorGradients.push(colorGradient);
 

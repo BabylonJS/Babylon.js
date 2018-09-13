@@ -53,6 +53,7 @@ module BABYLON {
                 emitter = emitter.clone();
             } else if (emitter instanceof AbstractMesh) {
                 emitter = new Mesh("", emitter.getScene());
+                emitter.isVisible = false;
             }
             var clone = new SubEmitter(this.particleSystem.clone("", emitter));
 
