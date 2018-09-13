@@ -1,7 +1,8 @@
 ﻿module BABYLON {
     /**
      * This represents an audio engine and it is responsible
-     * to play, synchronize and analyse sounds throughout the  application.
+     * to play, synchronize and analyse sounds throughout the application.
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
      */
     export interface IAudioEngine extends IDisposable {
         /**
@@ -211,7 +212,7 @@
 
         /**
          * Sets the global volume of your experience (sets on the master gain).
-         * @param newVloume Defines the new global volume of the application
+         * @param newVolume Defines the new global volume of the application
          */
         public setGlobalVolume(newVolume: number): void {
             if (this.canUseWebAudio && this._audioContextInitialized) {
