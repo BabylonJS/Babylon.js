@@ -223,6 +223,7 @@
                         let previousAge = particle.age;
                         particle.age += scaledUpdateSpeed;
 
+                        // Evaluate step to death
                         if (particle.age > particle.lifeTime) {
                             let diff = particle.age - previousAge;
                             let oldDiff = particle.lifeTime - previousAge;
@@ -230,7 +231,6 @@
                             scaledUpdateSpeed = (diff * scaledUpdateSpeed) / oldDiff;
 
                             particle.age = particle.lifeTime;
-
                         }
 
                         let ratio = particle.age / particle.lifeTime;
