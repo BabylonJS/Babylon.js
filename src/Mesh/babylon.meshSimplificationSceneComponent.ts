@@ -32,11 +32,12 @@
     export interface Mesh {
         /**
          * Simplify the mesh according to the given array of settings.
-         * Function will return immediately and will simplify async. It returns the Mesh.  
-         * @param settings a collection of simplification settings.
-         * @param parallelProcessing should all levels calculate parallel or one after the other.
-         * @param type the type of simplification to run.
-         * @param successCallback optional success callback to be called after the simplification finished processing all settings.
+         * Function will return immediately and will simplify async
+         * @param settings a collection of simplification settings
+         * @param parallelProcessing should all levels calculate parallel or one after the other
+         * @param simplificationType the type of simplification to run
+         * @param successCallback optional success callback to be called after the simplification finished processing all settings
+         * @returns the current mesh
          */
         simplify(settings: Array<ISimplificationSettings>, parallelProcessing?: boolean, simplificationType?: SimplificationType, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): Mesh;
     }
