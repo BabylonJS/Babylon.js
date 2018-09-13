@@ -1,19 +1,46 @@
 ﻿module BABYLON {
+    /**
+     * A target camera takes a mesh or position as a target and continues to look at it while it moves. 
+     * This is the base of the follow, arc rotate cameras and Free camera
+     * @see http://doc.babylonjs.com/features/cameras
+     */
     export class TargetCamera extends Camera {
 
+        /**
+         * Define the current direction the camera is moving to
+         */
         public cameraDirection = new Vector3(0, 0, 0);
+        /**
+         * Define the current rotation the camera is rotating to
+         */
         public cameraRotation = new Vector2(0, 0);
 
+        /**
+         * Define the current rotation of the camera
+         */
         @serializeAsVector3()
         public rotation = new Vector3(0, 0, 0);
 
+        /**
+         * Define the current rotation of the camera as a quaternion to prevent Gimbal lock
+         */
         public rotationQuaternion: Quaternion;
 
+        /**
+         * Define the current speed of the camera
+         */
         @serialize()
         public speed = 2.0;
 
+        /**
+         * Add cconstraint to the camera to prevent it to move freely in all directions and
+         * around all axis.
+         */
         public noRotationConstraint = false;
 
+        /**
+         * Define the current target of the camera as an object or a position.
+         */
         @serializeAsMeshReference("lockedTargetId")
         public lockedTarget: any = null;
 
@@ -42,10 +69,24 @@
 
         private _defaultUp = BABYLON.Vector3.Up();
 
+        /**
+         * Instantiates a target camera that takes a meshor position as a target and continues to look at it while it moves. 
+         * This is the base of the follow, arc rotate cameras and Free camera
+         * @see http://doc.babylonjs.com/features/cameras
+         * @param name Defines the name of the camera in the scene
+         * @param position Defines the start position of the camera in the scene
+         * @param scene Defines the scene the camera belongs to
+         * @param setActiveOnSceneIfNoneActive Defines wheter the camera should be marked as active if not other active cameras have been defined
+         */
         constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
             super(name, position, scene, setActiveOnSceneIfNoneActive);
         }
 
+        /**
+         * Gets the position in front of the camera at a given distance.
+         * @param distance The distance from the camera we want the position to be
+         * @returns the position
+         */
         public getFrontPosition(distance: number): Vector3 {
             this.getWorldMatrix();
             var direction = this.getTarget().subtract(this.position);
@@ -67,15 +108,14 @@
             return this.lockedTarget.absolutePosition || this.lockedTarget;
         }
 
-        // State
-
-        /**
-         * Store current camera state (fov, position, etc..)
-         */
         private _storedPosition: Vector3;
         private _storedRotation: Vector3;
         private _storedRotationQuaternion: Quaternion;
 
+        /**
+         * Store current camera state of the camera (fov, position, rotation, etc..)
+         * @returns the camera
+         */
         public storeState(): Camera {
             this._storedPosition = this.position.clone();
             this._storedRotation = this.rotation.clone();
@@ -109,7 +149,6 @@
             return true;
         }
 
-        // Cache
         /** @hidden */
         public _initCache() {
             super._initCache();
@@ -206,6 +245,7 @@
 
         /**
          * Return the current target position of the camera. This value is expressed in local space.
+         * @returns the target position
          */
         public getTarget(): Vector3 {
             return this._currentTarget;
@@ -355,8 +395,7 @@
         }
 
         /**
-         * @override
-         * Override Camera.createRigCamera
+         * @hidden
          */
         public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
@@ -375,8 +414,6 @@
 
         /**
          * @hidden
-         * @override
-         * Override Camera._updateRigCameras
          */
         public _updateRigCameras() {
             var camLeft = <TargetCamera>this._rigCameras[0];
@@ -425,6 +462,10 @@
             Vector3.TransformCoordinatesToRef(this.position, this._rigCamTransformMatrix, result);
         }
 
+        /**
+         * Gets the current object class name.
+         * @return the class name
+         */
         public getClassName(): string {
             return "TargetCamera";
         }

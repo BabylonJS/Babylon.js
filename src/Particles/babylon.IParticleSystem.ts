@@ -143,6 +143,10 @@ module BABYLON {
          * It can be for example box, sphere, or cone...
          */
         particleEmitterType: Nullable<IParticleEmitterType>;  
+        /**
+         * Defines the delay in milliseconds before starting the system (0 by default)
+         */
+        startDelay: number;        
         /** 
          * Gets or sets a value indicating how many cycles (or frames) must be executed before first rendering (this value has to be set before starting the system). Default is 0 
          */
@@ -264,7 +268,7 @@ module BABYLON {
         /**
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param color defines the color to affect to the specified gradient
+         * @param color1 defines the color to affect to the specified gradient
          * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
          * @returns the current particle system
          */

@@ -5,6 +5,7 @@ module BABYLON {
 
     /**
      * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
      */       
     export class AnaglyphGamepadCamera extends GamepadCamera {
         /**

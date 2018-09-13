@@ -9,6 +9,9 @@ attribute float cellIndex;
 #ifndef BILLBOARD	
 attribute vec3 direction;
 #endif
+#ifdef BILLBOARDSTRETCHED
+attribute vec3 direction; 
+#endif
 #ifdef RAMPGRADIENT
 attribute vec4 remapData;
 #endif
@@ -54,6 +57,23 @@ vec3 rotate(vec3 yaxis, vec3 rotatedCorner) {
 	return position + alignedCorner; 
 }
 
+#ifdef BILLBOARDSTRETCHED
+vec3 rotateAlign(vec3 toCamera, vec3 rotatedCorner) {
+	vec3 normalizedToCamera = normalize(toCamera);
+	vec3 normalizedCrossDirToCamera = normalize(cross(normalize(direction), normalizedToCamera));
+	vec3 crossProduct = normalize(cross(normalizedToCamera, normalizedCrossDirToCamera));
+
+	vec3 row0 = vec3(normalizedCrossDirToCamera.x, normalizedCrossDirToCamera.y, normalizedCrossDirToCamera.z);
+	vec3 row1 = vec3(crossProduct.x, crossProduct.y, crossProduct.z);
+	vec3 row2 = vec3(normalizedToCamera.x, normalizedToCamera.y, normalizedToCamera.z);
+
+	mat3 rotMatrix =  mat3(row0, row1, row2);
+
+	vec3 alignedCorner = rotMatrix * rotatedCorner;
+	return position + alignedCorner; 
+}
+#endif
+
 void main(void) {	
 	vec2 cornerPos;
 	
@@ -72,6 +92,15 @@ void main(void) {
 	yaxis.y = 0.;
 	
 	vec3 worldPos = rotate(normalize(yaxis), rotatedCorner);
+	
+	vec3 viewPos = (view * vec4(worldPos, 1.0)).xyz; 
+#elif defined(BILLBOARDSTRETCHED)
+	rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
+	rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
+	rotatedCorner.z = 0.;
+
+	vec3 toCamera = position - eyePosition;	
+	vec3 worldPos = rotateAlign(toCamera, rotatedCorner);
 	
 	vec3 viewPos = (view * vec4(worldPos, 1.0)).xyz; 
 #else

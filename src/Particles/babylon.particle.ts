@@ -239,7 +239,7 @@
             other.colorStep.copyFrom(this.colorStep);
             other.lifeTime = this.lifeTime;
             other.age = this.age;
-            other._randomCellOffset = undefined;
+            other._randomCellOffset = this._randomCellOffset;
             other.size = this.size;
             other.scale.copyFrom(this.scale);
             other.angle = this.angle;
@@ -287,11 +287,11 @@
             }
             if (this._randomNoiseCoordinates1) {
                 if (other._randomNoiseCoordinates1) {
-                    other._randomNoiseCoordinates1.copyFromFloats(Math.random(), Math.random(), Math.random());
-                    other._randomNoiseCoordinates2.copyFromFloats(Math.random(), Math.random(), Math.random());
+                    other._randomNoiseCoordinates1.copyFrom(this._randomNoiseCoordinates1);
+                    other._randomNoiseCoordinates2.copyFrom(this._randomNoiseCoordinates2);
                 } else {
-                    other._randomNoiseCoordinates1 = new Vector3(Math.random(), Math.random(), Math.random());
-                    other._randomNoiseCoordinates2 = new Vector3(Math.random(), Math.random(), Math.random());
+                    other._randomNoiseCoordinates1 = this._randomNoiseCoordinates1.clone();
+                    other._randomNoiseCoordinates2 = this._randomNoiseCoordinates2.clone();
                 }
             }
         }

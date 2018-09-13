@@ -82,161 +82,106 @@
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions
      */
     export class ActionManager {
-        // Statics
-        private static _NothingTrigger = 0;
-        private static _OnPickTrigger = 1;
-        private static _OnLeftPickTrigger = 2;
-        private static _OnRightPickTrigger = 3;
-        private static _OnCenterPickTrigger = 4;
-        private static _OnPickDownTrigger = 5;
-        private static _OnDoublePickTrigger = 6;
-        private static _OnPickUpTrigger = 7;
-        private static _OnLongPressTrigger = 8;
-        private static _OnPointerOverTrigger = 9;
-        private static _OnPointerOutTrigger = 10;
-        private static _OnEveryFrameTrigger = 11;
-        private static _OnIntersectionEnterTrigger = 12;
-        private static _OnIntersectionExitTrigger = 13;
-        private static _OnKeyDownTrigger = 14;
-        private static _OnKeyUpTrigger = 15;
-        private static _OnPickOutTrigger = 16;
-
         /**
          * Nothing
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get NothingTrigger(): number {
-            return ActionManager._NothingTrigger;
-        }
+        public static readonly NothingTrigger = 0;
 
         /** 
          * On pick 
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnPickTrigger(): number {
-            return ActionManager._OnPickTrigger;
-        }
+        public static readonly OnPickTrigger = 1;
 
         /** 
          * On left pick
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnLeftPickTrigger(): number {
-            return ActionManager._OnLeftPickTrigger;
-        }
+        public static readonly OnLeftPickTrigger  = 2;
 
         /** 
          * On right pick
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnRightPickTrigger(): number {
-            return ActionManager._OnRightPickTrigger;
-        }
+        public static readonly OnRightPickTrigger = 3;
 
         /** 
          * On center pick 
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnCenterPickTrigger(): number {
-            return ActionManager._OnCenterPickTrigger;
-        }
+        public static readonly OnCenterPickTrigger = 4;
 
         /** 
          * On pick down
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnPickDownTrigger(): number {
-            return ActionManager._OnPickDownTrigger;
-        }
+        public static readonly OnPickDownTrigger = 5;
 
         /** 
          * On double pick
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnDoublePickTrigger(): number {
-            return ActionManager._OnDoublePickTrigger;
-        }
+        public static readonly OnDoublePickTrigger = 6;
 
         /** 
          * On pick up
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnPickUpTrigger(): number {
-            return ActionManager._OnPickUpTrigger;
-        }
-
+        public static readonly OnPickUpTrigger = 7;
         /**
          * On pick out.
          * This trigger will only be raised if you also declared a OnPickDown
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnPickOutTrigger(): number {
-            return ActionManager._OnPickOutTrigger;
-        }
+        public static readonly OnPickOutTrigger = 16;
 
         /** 
          * On long press
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnLongPressTrigger(): number {
-            return ActionManager._OnLongPressTrigger;
-        }
+        public static readonly OnLongPressTrigger = 8;
 
         /** 
          * On pointer over
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnPointerOverTrigger(): number {
-            return ActionManager._OnPointerOverTrigger;
-        }
+        public static readonly OnPointerOverTrigger = 9;
 
         /** 
          * On pointer out
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnPointerOutTrigger(): number {
-            return ActionManager._OnPointerOutTrigger;
-        }
+        public static readonly OnPointerOutTrigger = 10;
 
         /** 
          * On every frame
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnEveryFrameTrigger(): number {
-            return ActionManager._OnEveryFrameTrigger;
-        }
-
+        public static readonly OnEveryFrameTrigger = 11;
         /** 
          * On intersection enter
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnIntersectionEnterTrigger(): number {
-            return ActionManager._OnIntersectionEnterTrigger;
-        }
+        public static readonly OnIntersectionEnterTrigger = 12;
 
         /** 
          * On intersection exit
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnIntersectionExitTrigger(): number {
-            return ActionManager._OnIntersectionExitTrigger;
-        }
+        public static readonly OnIntersectionExitTrigger = 13;
 
         /**
          * On key down
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnKeyDownTrigger(): number {
-            return ActionManager._OnKeyDownTrigger;
-        }
+        public static readonly OnKeyDownTrigger = 14;
 
         /**
          * On key up
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnKeyUpTrigger(): number {
-            return ActionManager._OnKeyUpTrigger;
-        }
+        public static readonly OnKeyUpTrigger = 15;
 
         /** Gets the list of active triggers */
         public static Triggers: { [key: string]: number } = {};
@@ -356,7 +301,7 @@
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
 
-                if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPointerOutTrigger) {
+                if (action.trigger >= ActionManager.OnPickTrigger && action.trigger <= ActionManager.OnPointerOutTrigger) {
                     return true;
                 }
             }
@@ -371,7 +316,7 @@
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
 
-                if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPickUpTrigger) {
+                if (action.trigger >= ActionManager.OnPickTrigger && action.trigger <= ActionManager.OnPickUpTrigger) {
                     return true;
                 }
             }
@@ -398,7 +343,7 @@
             for (var t in ActionManager.Triggers) {
                 if (ActionManager.Triggers.hasOwnProperty(t)) {
                     let t_int = parseInt(t);
-                    if (t_int >= ActionManager._OnPickTrigger && t_int <= ActionManager._OnPickUpTrigger) {
+                    if (t_int >= ActionManager.OnPickTrigger && t_int <= ActionManager.OnPickUpTrigger) {
                         return true;
                     }
                 }

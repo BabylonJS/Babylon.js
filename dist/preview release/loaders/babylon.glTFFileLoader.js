@@ -5641,8 +5641,8 @@ var BABYLON;
                     return GLTF2.GLTFLoader.LoadExtensionAsync(context, node, this.name, function (extensionContext, extension) {
                         return _this._loader.loadNodeAsync(context, node, function (babylonMesh) {
                             var babylonLight;
-                            var name = babylonMesh.name;
                             var light = GLTF2.ArrayItem.Get(extensionContext, _this._lights, extension.light);
+                            var name = light.name || babylonMesh.name;
                             switch (light.type) {
                                 case LightType.DIRECTIONAL: {
                                     babylonLight = new BABYLON.DirectionalLight(name, BABYLON.Vector3.Backward(), _this._loader.babylonScene);
@@ -5653,9 +5653,9 @@ var BABYLON;
                                     break;
                                 }
                                 case LightType.SPOT: {
-                                    var babylonSpotLight = new BABYLON.SpotLight(name, BABYLON.Vector3.Zero(), BABYLON.Vector3.Backward(), 0, 2, _this._loader.babylonScene);
-                                    babylonSpotLight.angle = light.spot && light.spot.outerConeAngle || Math.PI / 4;
-                                    babylonSpotLight.innerAngle = light.spot && light.spot.innerConeAngle || 0;
+                                    var babylonSpotLight = new BABYLON.SpotLight(name, BABYLON.Vector3.Zero(), BABYLON.Vector3.Backward(), 0, 1, _this._loader.babylonScene);
+                                    babylonSpotLight.angle = ((light.spot && light.spot.outerConeAngle) || Math.PI / 4) * 2;
+                                    babylonSpotLight.innerAngle = ((light.spot && light.spot.innerConeAngle) || 0) * 2;
                                     babylonLight = babylonSpotLight;
                                     break;
                                 }
