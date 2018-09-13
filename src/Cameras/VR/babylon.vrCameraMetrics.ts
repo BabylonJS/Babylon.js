@@ -109,6 +109,7 @@
 
         /**
          * Get the default VRMetrics based on the most generic setup.
+         * @returns the default vr metrics
          */
         public static GetDefault(): VRCameraMetrics {
             var result = new VRCameraMetrics();
