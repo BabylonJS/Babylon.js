@@ -1951,14 +1951,15 @@
          * Defines the current index of the loop.
          */
         public index: number;
-
         private _done: boolean;
+        private _fn: (asyncLoop: AsyncLoop) => void;
+        private _successCallback: () => void;
 
         /**
          * Constructor.
          * @param iterations the number of iterations.
-         * @param _fn the function to run each iteration
-         * @param _successCallback the callback that will be called upon succesful execution
+         * @param func the function to run each iteration
+         * @param successCallback the callback that will be called upon succesful execution
          * @param offset starting offset.
          */
         constructor(
@@ -1966,12 +1967,14 @@
              * Defines the number of iterations for the loop
              */
             public iterations: number, 
-            private _fn: (asyncLoop: AsyncLoop) => void, 
-            private _successCallback: () => void, 
+            func: (asyncLoop: AsyncLoop) => void, 
+            successCallback: () => void, 
             offset: number = 0) {
 
             this.index = offset - 1;
             this._done = false;
+            this._fn = func;
+            this._successCallback = successCallback;
         }
 
         /**
