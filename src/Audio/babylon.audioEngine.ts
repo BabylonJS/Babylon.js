@@ -1,7 +1,8 @@
 ﻿module BABYLON {
     /**
      * This represents an audio engine and it is responsible
-     * to play, synchronize and analyse sounds throughout the  application.
+     * to play, synchronize and analyse sounds throughout the application.
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
      */
     export interface IAudioEngine extends IDisposable {
         /**
