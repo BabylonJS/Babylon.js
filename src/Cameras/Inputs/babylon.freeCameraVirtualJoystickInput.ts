@@ -14,6 +14,7 @@ module BABYLON {
 
         /**
          * Gets the left stick of the virtual joystick.
+         * @returns The virtual Joystick
          */
         public getLeftJoystick(): VirtualJoystick {
             return this._leftjoystick;
@@ -21,6 +22,7 @@ module BABYLON {
 
         /**
          * Gets the right stick of the virtual joystick.
+         * @returns The virtual Joystick
          */
         public getRightJoystick(): VirtualJoystick {
             return this._rightjoystick;
