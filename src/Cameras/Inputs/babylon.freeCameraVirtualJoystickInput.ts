@@ -1,18 +1,35 @@
 module BABYLON {
+    /**
+     * Manage the Virtual Joystick inputs to control the movement of a free camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
     export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
+        /**
+         * Defines the camera the input is attached to.
+         */
+        public camera: FreeCamera;
 
         private _leftjoystick: VirtualJoystick;
         private _rightjoystick: VirtualJoystick;
-        
+
+        /**
+         * Gets the left stick of the virtual joystick.
+         */
         public getLeftJoystick(): VirtualJoystick {
             return this._leftjoystick;
         }
 
+        /**
+         * Gets the right stick of the virtual joystick.
+         */
         public getRightJoystick(): VirtualJoystick {
             return this._rightjoystick;
         }
 
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
         public checkInputs() {
             if (this._leftjoystick){
                 var camera = this.camera;
@@ -30,8 +47,13 @@ module BABYLON {
                 }
             }
         }
-        
-        attachControl(element : HTMLElement, noPreventDefault?: boolean) {
+
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        public attachControl(element : HTMLElement, noPreventDefault?: boolean): void {
             this._leftjoystick = new VirtualJoystick(true);
             this._leftjoystick.setAxisForUpDown(JoystickAxis.Z);
             this._leftjoystick.setAxisForLeftRight(JoystickAxis.X);
@@ -44,16 +66,28 @@ module BABYLON {
             this._rightjoystick.setJoystickColor("yellow");
         }
 
-        detachControl(element: Nullable<HTMLElement>) {
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        public detachControl(element: Nullable<HTMLElement>): void {
             this._leftjoystick.releaseCanvas();
             this._rightjoystick.releaseCanvas();
         }
 
-        getClassName(): string {
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        public getClassName(): string {
             return "FreeCameraVirtualJoystickInput";
         }
-        
-        getSimpleName(){
+
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        public getSimpleName(): string {
             return "virtualJoystick";
         }
     }
