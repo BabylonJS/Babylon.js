@@ -140,7 +140,7 @@
         */
         public activeSubSystems: Array<ParticleSystem>;
 
-        private _rootParticleSystem: ParticleSystem;
+        private _rootParticleSystem: Nullable<ParticleSystem>;
         //end of Sub-emitter
 
         /**
@@ -205,20 +205,7 @@
 
                 for (var index = 0; index < particles.length; index++) {
                     var particle = particles[index];
-                    if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
-                        this._emitFromParticle(particle);
-                        if (particle._attachedSubEmitters) {
-                            particle._attachedSubEmitters.forEach((subEmitter) => {
-                                subEmitter.particleSystem.disposeOnStop = true;
-                                subEmitter.particleSystem.stop();
-                            });
-                            particle._attachedSubEmitters = null;
-                        }
-                        this.recycleParticle(particle);
-                        index--;
-                        continue;
-                    }
-                    else {
+
                         let scaledUpdateSpeed = this._scaledUpdateSpeed;
                         let previousAge = particle.age;
                         particle.age += scaledUpdateSpeed;
@@ -228,7 +215,7 @@
                             let diff = particle.age - previousAge;
                             let oldDiff = particle.lifeTime - previousAge;
 
-                            scaledUpdateSpeed = (diff * scaledUpdateSpeed) / oldDiff;
+                            scaledUpdateSpeed = (oldDiff * scaledUpdateSpeed) / diff;
 
                             particle.age = particle.lifeTime;
                         }
@@ -380,7 +367,20 @@
 
                         // Update the position of the attached sub-emitters to match their attached particle
                         particle._inheritParticleInfoToSubEmitters();
-                    }
+
+                        if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
+                            this._emitFromParticle(particle);
+                            if (particle._attachedSubEmitters) {
+                                particle._attachedSubEmitters.forEach((subEmitter) => {
+                                    subEmitter.particleSystem.disposeOnStop = true;
+                                    subEmitter.particleSystem.stop();
+                                });
+                                particle._attachedSubEmitters = null;
+                            }
+                            this.recycleParticle(particle);
+                            index--;
+                            continue;
+                        }
                 }
             }
         }
@@ -1201,6 +1201,8 @@
             if (index !== -1) {
                 this._rootParticleSystem.activeSubSystems.splice(index, 1);
             }
+
+            this._rootParticleSystem = null;
         }
 
         private _emitFromParticle: (particle: Particle) => void = (particle) => {
@@ -1814,6 +1816,17 @@
 
             this._removeFromRoot();
 
+            if (this._subEmitters && this._subEmitters.length) {
+                for (var index = 0; index < this._subEmitters.length; index++) {
+                    for (var subEmitter of this._subEmitters[index]) {
+                        subEmitter.dispose();
+                    }
+                }
+
+                this._subEmitters = [];
+                this.subEmitters = [];
+            }
+
             if (this._disposeEmitterOnDispose && this.emitter && (this.emitter as AbstractMesh).dispose) {
                 (<AbstractMesh>this.emitter).dispose(true);
             }
@@ -1824,9 +1837,13 @@
                 this._scene.particleSystems.splice(index, 1);
             }
 
+            this._scene._activeParticleSystems.dispose();
+
             // Callback
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
+
+            this.reset();
         }
 
         // Clone

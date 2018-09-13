@@ -1,7 +1,7 @@
 {
-  "errors": 3144,
+  "errors": 2751,
   "babylon.typedoc.json": {
-    "errors": 3144,
+    "errors": 2751,
     "AsyncLoop": {
       "Method": {
         "Run": {
@@ -14,19 +14,6 @@
             "_successCallback": {
               "Naming": {
                 "NotCamelCase": true
-              }
-            }
-          }
-        }
-      }
-    },
-    "AudioEngine": {
-      "Method": {
-        "setGlobalVolume": {
-          "Parameter": {
-            "newVolume": {
-              "Comments": {
-                "MissingText": true
               }
             }
           }
@@ -382,39 +369,6 @@
       },
       "Property": {
         "degree": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "BouncingBehavior": {
-      "Property": {
-        "name": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "attach": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "camera": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "detach": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "init": {
           "Comments": {
             "MissingText": true
           }
@@ -1721,20 +1675,6 @@
         }
       }
     },
-    "CombineAction": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "children": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "CubeTexture": {
       "Class": {
         "Comments": {
@@ -2209,13 +2149,6 @@
         }
       }
     },
-    "DoNothingAction": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
     "EdgesRenderer": {
       "Property": {
         "edgesWidthScalerForOrthographic": {
@@ -2254,20 +2187,6 @@
       },
       "Method": {
         "dispose": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "ExecuteCodeAction": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "func": {
           "Comments": {
             "MissingText": true
           }
@@ -2398,41 +2317,7 @@
       }
     },
     "FramingBehavior": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "name": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
       "Method": {
-        "attach": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "camera": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "detach": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "init": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "zoomOnBoundingInfo": {
           "Parameter": {
             "minimumWorld": {
@@ -2445,143 +2330,6 @@
                 "MissingText": true
               }
             }
-          }
-        }
-      }
-    },
-    "FreeCameraDeviceOrientationInput": {
-      "Constructor": {
-        "new FreeCameraDeviceOrientationInput": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Property": {
-        "camera": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "attachControl": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "element": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "noPreventDefault": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "checkInputs": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "detachControl": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "element": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getClassName": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getSimpleName": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "FreeCameraGamepadInput": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "camera": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "gamepad": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "gamepadAngularSensibility": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "gamepadMoveSensibility": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "attachControl": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "element": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "noPreventDefault": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "checkInputs": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "detachControl": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "element": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getClassName": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getSimpleName": {
-          "Comments": {
-            "MissingText": true
           }
         }
       }
@@ -2600,310 +2348,6 @@
                 "MissingText": true
               }
             }
-          }
-        }
-      }
-    },
-    "FreeCameraKeyboardMoveInput": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "camera": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "keysDown": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "keysLeft": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "keysRight": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "keysUp": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "attachControl": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "element": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "noPreventDefault": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "checkInputs": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "detachControl": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "element": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getClassName": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getSimpleName": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "FreeCameraMouseInput": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new FreeCameraMouseInput": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "touchEnabled": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Property": {
-        "angularSensibility": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "buttons": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "camera": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "touchEnabled": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "attachControl": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "element": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "noPreventDefault": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "detachControl": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "element": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getClassName": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getSimpleName": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "FreeCameraTouchInput": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "camera": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "touchAngularSensibility": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "touchMoveSensibility": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "attachControl": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "element": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "noPreventDefault": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "checkInputs": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "detachControl": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "element": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getClassName": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getSimpleName": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "FreeCameraVirtualJoystickInput": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "camera": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "attachControl": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "element": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "noPreventDefault": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "checkInputs": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "detachControl": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "element": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getClassName": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getLeftJoystick": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getRightJoystick": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getSimpleName": {
-          "Comments": {
-            "MissingText": true
           }
         }
       }
@@ -3589,25 +3033,6 @@
         }
       }
     },
-    "IncrementValueAction": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "propertyPath": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "value": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "InstancedMesh": {
       "Property": {
         "sourceMesh": {
@@ -3620,45 +3045,6 @@
         "refreshBoundingInfo": {
           "Comments": {
             "MissingReturn": true
-          }
-        }
-      }
-    },
-    "InterpolateValueAction": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "duration": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onInterpolationDone": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onInterpolationDoneObservable": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "propertyPath": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "stopOtherAnimations": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "value": {
-          "Comments": {
-            "MissingText": true
           }
         }
       }
@@ -6930,30 +6316,6 @@
         }
       }
     },
-    "PlayAnimationAction": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "from": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "loop": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "to": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "PointerDragBehavior": {
       "Method": {
         "releaseDrag": {
@@ -10016,46 +9378,6 @@
         }
       }
     },
-    "SetParentAction": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "SetStateAction": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "value": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "SetValueAction": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "propertyPath": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "value": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "ShaderMaterial": {
       "Class": {
         "Comments": {
@@ -10611,17 +9933,7 @@
       }
     },
     "Sound": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
       "Property": {
-        "autoplay": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "distanceModel": {
           "Comments": {
             "MissingText": true
@@ -10637,17 +9949,7 @@
             "MissingText": true
           }
         },
-        "loop": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "maxDistance": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "name": {
           "Comments": {
             "MissingText": true
           }
@@ -10663,21 +9965,6 @@
           }
         },
         "rolloffFactor": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "soundTrackId": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "spatialSound": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "useCustomAttenuation": {
           "Comments": {
             "MissingText": true
           }
@@ -11703,13 +10990,6 @@
         }
       }
     },
-    "StopAnimationAction": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
     "StringDictionary": {
       "Property": {
         "count": {
@@ -12079,20 +11359,6 @@
                 "MissingText": true
               }
             }
-          }
-        }
-      }
-    },
-    "SwitchBooleanAction": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "propertyPath": {
-          "Comments": {
-            "MissingText": true
           }
         }
       }
@@ -14402,138 +13668,6 @@
           "Comments": {
             "MissingReturn": true
           }
-        }
-      }
-    },
-    "VRCameraMetrics": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "aspectRatio": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "aspectRatioFov": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "chromaAbCorrection": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "compensateDistortion": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "distortionK": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "eyeToScreenDistance": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "hResolution": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "hScreenSize": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "interpupillaryDistance": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "leftHMatrix": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "leftPreViewMatrix": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "lensCenterOffset": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "lensSeparationDistance": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "postProcessScaleFactor": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "rightHMatrix": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "rightPreViewMatrix": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "vResolution": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "vScreenCenter": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "vScreenSize": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "GetDefault": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "VRDeviceOrientationArcRotateCamera": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "VRDeviceOrientationFreeCamera": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "VRDeviceOrientationGamepadCamera": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
         }
       }
     },
