@@ -63,6 +63,7 @@ module BABYLON {
             clone.inheritedVelocityAmount = this.inheritedVelocityAmount;
 
             clone.particleSystem._disposeEmitterOnDispose = true;
+            clone.particleSystem.disposeOnStop = true;
             return clone;
         }
     }
