@@ -1,10 +1,35 @@
 module BABYLON {
+    /**
+     * Defines a sound that can be played in the application.
+     * The sound can either be an ambient track or a simple sound played in reaction to a user action.
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
     export class Sound {
+        /**
+         * The name of the sound in the scene.
+         */
         public name: string;
+        /**
+         * Does the sound autoplay once loaded.
+         */
         public autoplay: boolean = false;
+        /**
+         * Does the sound loop after it finishes playing once.
+         */
         public loop: boolean = false;
+        /**
+         * Does the sound use a custom attenuation curve to simulate the falloff
+         * happening when the source gets further away from the camera.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
+         */
         public useCustomAttenuation: boolean = false;
+        /**
+         * The sound track id this sound belongs to.
+         */
         public soundTrackId: number;
+        /**
+         * Does this sound enables spatial sound.
+         */
         public spatialSound: boolean = false;
         public refDistance: number = 1;
         public rolloffFactor: number = 1;
