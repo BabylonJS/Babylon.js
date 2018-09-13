@@ -72,12 +72,6 @@
          */
         public WarnedWebAudioUnsupported: boolean = false;
 
-        public unlocked: boolean = false;
-        // Event raised to notify users that the audio stack is unlocked (iOS) or unmuted (Chrome)
-        // Which means, the audio context is ready to be used as expected
-        public onAudioUnlocked: () => any;
-
-
         /**
          * Gets whether or not mp3 are supported by your browser.
          */
@@ -117,8 +111,6 @@
             return this._audioContext;
         }
 
-        private _audioContext: Nullable<AudioContext> = null;
-        private _audioContextInitialized = false;
         private _connectedAnalyser: Nullable<Analyser>;
         
         /**
