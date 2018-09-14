@@ -107,32 +107,38 @@
             this._isBlendConstantsDirty = false;
         }
 
-        public apply(engine: Engine) {
+        public apply(gl: WebGLRenderingContext) {
+
             if (!this.isDirty) {
                 return;
             }
 
             // Alpha blend
             if (this._isAlphaBlendDirty) {
-                engine._applyAlphaBlend(this._alphaBlend);
+                if (this._alphaBlend) {
+                    gl.enable(gl.BLEND);
+                } else {
+                    gl.disable(gl.BLEND);
+                }
+
                 this._isAlphaBlendDirty = false;
             }
 
             // Alpha function
             if (this._isBlendFunctionParametersDirty) {
-                engine._applAlphaBlendFunctionParameters(this._blendFunctionParameters)
+                gl.blendFuncSeparate(<number>this._blendFunctionParameters[0], <number>this._blendFunctionParameters[1], <number>this._blendFunctionParameters[2], <number>this._blendFunctionParameters[3]);
                 this._isBlendFunctionParametersDirty = false;
             }
 
             // Alpha equation
             if (this._isBlendEquationParametersDirty) {
-                engine._applyAlphaEquationParameters(this._blendEquationParameters);
+                gl.blendEquationSeparate((<any>this._isBlendEquationParametersDirty)[0], (<any>this._isBlendEquationParametersDirty)[1]);
                 this._isBlendEquationParametersDirty = false;
             }
 
             // Constants
             if (this._isBlendConstantsDirty) {
-                engine._applyAlphaBlendConstants(this._blendConstants);
+                gl.blendColor(<number>this._blendConstants[0], <number>this._blendConstants[1], <number>this._blendConstants[2], <number>this._blendConstants[3]);
                 this._isBlendConstantsDirty = false;
             }
         }
