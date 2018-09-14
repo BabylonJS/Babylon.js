@@ -150,36 +150,32 @@
             this._isStencilOpDirty = true;
         }
 
-        public apply(gl: WebGLRenderingContext) {
+        public apply(engine: Engine) {
             if (!this.isDirty) {
                 return;
             }
 
             // Stencil test
             if (this._isStencilTestDirty) {
-                if (this.stencilTest) {
-                    gl.enable(gl.STENCIL_TEST);
-                } else {
-                    gl.disable(gl.STENCIL_TEST);
-                }
+                engine._applyStencilTest(this.stencilTest);
                 this._isStencilTestDirty = false;
             }
 
             // Stencil mask
             if (this._isStencilMaskDirty) {
-                gl.stencilMask(this.stencilMask);
+                engine._applyStencilMask(this.stencilMask);
                 this._isStencilMaskDirty = false;
             }
 
             // Stencil func
             if (this._isStencilFuncDirty) {
-                gl.stencilFunc(this.stencilFunc, this.stencilFuncRef, this.stencilFuncMask);
+                engine._applyStencilFunc(this.stencilFunc, this.stencilFuncRef, this.stencilFuncMask)
                 this._isStencilFuncDirty = false;
             }
 
             // Stencil op
             if (this._isStencilOpDirty) {
-                gl.stencilOp(this.stencilOpStencilFail, this.stencilOpDepthFail, this.stencilOpStencilDepthPass);
+                engine._applyStencilOp(this.stencilOpStencilFail, this.stencilOpDepthFail, this.stencilOpStencilDepthPass);
                 this._isStencilOpDirty = false;
             }
         }
