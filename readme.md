@@ -3,7 +3,7 @@ Babylon.js
 
 Getting started? Play directly with the Babylon.js API via our [playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it.
 
-[![Build Status](https://travis-ci.com/BabylonJS/Babylon.js.svg)](https://travis-ci.com/BabylonJS/Babylon.js) 
+[![Build Status](https://travis-ci.com/BabylonJS/Babylon.js.svg)](https://travis-ci.com/BabylonJS/Babylon.js)
 
 **Any questions?** Here is our official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com.
 
@@ -113,6 +113,7 @@ If you want to contribute, please read our [contribution guidelines](https://git
  - Maya [exporter](https://github.com/BabylonJS/Exporters/tree/master/Maya) can be used to generate a .babylon file from 3DS Max
  - Blender [exporter](https://github.com/BabylonJS/Exporters/tree/master/Blender) can be used to generate a .babylon file from Blender 3d
  - Unity 5 [exporter](https://github.com/BabylonJS/Exporters/tree/master/Unity%205) can be used to export your geometries from Unity 5 scene editor(animations are supported)
+ - [glTF Tools](https://github.com/KhronosGroup/glTF#gltf-tools) by KhronosGroup
 
 ## Features
 To get a complete list of supported features, please visit our [website](http://www.babylonjs.com/#specifications).
