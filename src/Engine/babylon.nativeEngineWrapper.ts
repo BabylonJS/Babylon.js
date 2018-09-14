@@ -24,6 +24,7 @@
         setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
         setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
         setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
+        setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void;
         setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
         setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
         setFloat(uniform: WebGLUniformLocation, value: number): void;
@@ -490,7 +491,7 @@
             if (!uniform)
                 return;
 
-            this._interop.setMatrix(uniform, matrices);
+            this._interop.setMatrices(uniform, matrices);
         }
 
         public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void {
