@@ -1674,7 +1674,7 @@
                 }
 
                 // Fog
-                MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
+                MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect, true);
 
                 // Morph targets
                 if (defines.NUM_MORPH_INFLUENCERS) {
