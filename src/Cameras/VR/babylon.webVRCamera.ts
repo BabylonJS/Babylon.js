@@ -313,7 +313,7 @@ module BABYLON {
         public useStandingMatrix(callback = (bool: boolean) => { }) {
             // Use standing matrix if available
             this.getEngine().initWebVRAsync().then((result) => {
-                if (!result.vrDisplay || !result.vrDisplay.stageParameters || !result.vrDisplay.stageParameters.sittingToStandingTransform) {
+                if (!result.vrDisplay || !result.vrDisplay.stageParameters || !result.vrDisplay.stageParameters.sittingToStandingTransform  || !this.webVROptions.trackPosition) {
                     callback(false);
                 } else {
                     this._standingMatrix = new Matrix();
