@@ -39,6 +39,7 @@
         getTexureHeight(texture: WebGLTexture): number;
         setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
         setTextureWrapMode(texture: WebGLTexture, addressModeU: number, addressModeV: number, addressModeW: number): void; // addressModes are NativeAddressMode.XXXX values.
+        setTextureAnisotropicLevel(texture: WebGLTexture, value: number): void;
         setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
         deleteTexture(texture: Nullable<WebGLTexture>): void;
 
@@ -145,8 +146,7 @@
             this._caps.etc1 = null;
             this._caps.etc2 = null;
 
-            this._caps.textureAnisotropicFilterExtension = null;
-            this._caps.maxAnisotropy = 0;
+            this._caps.maxAnisotropy = 16;  // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
             this._caps.uintIndices = false;
             this._caps.fragmentDepthSupported = false;
             this._caps.highPrecisionShaderSupported = true;
@@ -931,7 +931,8 @@
 
             this._activeChannel = channel;
 
-            if (!internalTexture._webGLTexture) {
+            if (!internalTexture ||
+                !internalTexture._webGLTexture) {
                 return false;
             }
 
@@ -940,12 +941,27 @@
                 this._getAddressMode(texture.wrapU),
                 this._getAddressMode(texture.wrapV),
                 this._getAddressMode(texture.wrapR));
-            // TODO: Implement setting anisotropic filtering level.
-            //this._interop.setTextureAnisotropicLevel(internalTexture._webGLTexture, ???);
+            this._updateAnisotropicLevel(texture);
 
             this._interop.setTexture(uniform, internalTexture._webGLTexture);
 
             return true;
+        }
+
+        // TODO: Share more of this logic with the base implementation.
+        // TODO: Rename to match naming in base implementation once refactoring allows different parameters.
+        private _updateAnisotropicLevel(texture: BaseTexture) {
+            var internalTexture = texture.getInternalTexture();
+            var value = texture.anisotropicFilteringLevel;
+
+            if (!internalTexture || !internalTexture._webGLTexture) {
+                return;
+            }
+
+            if (internalTexture._cachedAnisotropicFilteringLevel !== value) {
+                this._interop.setTextureAnisotropicLevel(internalTexture._webGLTexture, value);
+                internalTexture._cachedAnisotropicFilteringLevel = value;
+            }
         }
 
         // Returns a NativeAddressMode.XXX value.
