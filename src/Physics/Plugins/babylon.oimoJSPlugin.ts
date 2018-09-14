@@ -1,6 +1,7 @@
 module BABYLON {
     declare var OIMO: any;
 
+    /** @hidden */
     export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
         public world: any;
