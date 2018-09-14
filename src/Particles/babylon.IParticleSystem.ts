@@ -179,7 +179,12 @@ module BABYLON {
         /**
          * This allows the system to random pick the start cell ID between startSpriteCellID and endSpriteCellID
          */
-        spriteRandomStartCell: boolean;            
+        spriteRandomStartCell: boolean;        
+        
+        /**
+         * Gets or sets a boolean indicating if a spritesheet is used to animate the particles texture
+         */
+        isAnimationSheetEnabled: boolean;
 
         /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
         translationPivot: Vector2;
@@ -194,7 +199,7 @@ module BABYLON {
         
         /**
          * Gets or sets the billboard mode to use when isBillboardBased = true.
-         * Only BABYLON.AbstractMesh.BILLBOARDMODE_ALL and AbstractMesh.BILLBOARDMODE_Y are supported so far
+         * Value can be: ParticleSystem.BILLBOARDMODE_ALL, ParticleSystem.BILLBOARDMODE_Y, ParticleSystem.BILLBOARDMODE_STRETCHED
          */
         billboardMode: number;
 
