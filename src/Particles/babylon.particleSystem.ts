@@ -2027,6 +2027,7 @@
             serializationObject.spriteCellChangeSpeed = particleSystem.spriteCellChangeSpeed;
             serializationObject.spriteCellWidth = particleSystem.spriteCellWidth;
             serializationObject.spriteCellHeight = particleSystem.spriteCellHeight;
+            serializationObject.spriteRandomStartCell = particleSystem.spriteRandomStartCell;
 
             let colorGradients = particleSystem.getColorGradients();
             if (colorGradients) {
@@ -2418,6 +2419,7 @@
             particleSystem.spriteCellWidth = parsedParticleSystem.spriteCellWidth;
             particleSystem.spriteCellHeight = parsedParticleSystem.spriteCellHeight;
             particleSystem.spriteCellChangeSpeed = parsedParticleSystem.spriteCellChangeSpeed;
+            particleSystem.spriteRandomStartCell = parsedParticleSystem.spriteRandomStartCell;
         }
 
         /**
