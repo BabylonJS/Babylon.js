@@ -1902,6 +1902,8 @@
          * @param stencil defines if the stencil buffer must be cleared
          */
         public clear(color: Nullable<Color4>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+            this.applyStates();
+
             var mode = 0;
             if (backBuffer && color) {
                 this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
