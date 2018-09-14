@@ -139,66 +139,49 @@
             this._isFrontFaceDirty = false;
         }
 
-        public apply(gl: WebGLRenderingContext) {
-
+        public apply(engine: Engine) {
             if (!this.isDirty) {
                 return;
             }
 
             // Cull
             if (this._isCullDirty) {
-                if (this.cull) {
-                    gl.enable(gl.CULL_FACE);
-                } else {
-                    gl.disable(gl.CULL_FACE);
-                }
-
+                engine._applyCull(this.cull);
                 this._isCullDirty = false;
             }
 
             // Cull face
             if (this._isCullFaceDirty) {
-                gl.cullFace(<number>this.cullFace);
+                engine._applyCullFace(this.cullFace);
                 this._isCullFaceDirty = false;
             }
 
             // Depth mask
             if (this._isDepthMaskDirty) {
-                gl.depthMask(this.depthMask);
+                engine._applyDepthMask(this.depthMask);
                 this._isDepthMaskDirty = false;
             }
 
             // Depth test
             if (this._isDepthTestDirty) {
-                if (this.depthTest) {
-                    gl.enable(gl.DEPTH_TEST);
-                } else {
-                    gl.disable(gl.DEPTH_TEST);
-                }
+                engine._applyDepthTest(this.depthTest);
                 this._isDepthTestDirty = false;
             }
 
             // Depth func
             if (this._isDepthFuncDirty) {
-                gl.depthFunc(<number>this.depthFunc);
-                this._isDepthFuncDirty = false;
+                engine._applyDepthFunc(this.depthFunc);
             }
 
             // zOffset
             if (this._isZOffsetDirty) {
-                if (this.zOffset) {
-                    gl.enable(gl.POLYGON_OFFSET_FILL);
-                    gl.polygonOffset(this.zOffset, 0);
-                } else {
-                    gl.disable(gl.POLYGON_OFFSET_FILL);
-                }
-
+                engine._applyZOffset(this.zOffset);
                 this._isZOffsetDirty = false;
             }
 
             // Front face
             if (this._isFrontFaceDirty) {
-                gl.frontFace(<number>this.frontFace);
+                engine._applyFrontFace(this.frontFace);
                 this._isFrontFaceDirty = false;
             }
         }
