@@ -303,7 +303,7 @@
                 request = Tools.LoadFile(fileInfo.url, dataCallback, onProgress ? event => {
                     onProgress(SceneLoaderProgressEvent.FromProgressEvent(event));
                 } : undefined, database, useArrayBuffer, (request, exception) => {
-                    onError("Failed to load scene." + (exception ? "" : " " + exception.message), exception);
+                    onError("Failed to load scene." + (exception ? " " + exception.message : ""), exception);
                 });
             };
 
