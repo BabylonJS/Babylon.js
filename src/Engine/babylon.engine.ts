@@ -6569,8 +6569,7 @@
             }
         }
 
-        /** @hidden */
-        public _setAnisotropicLevel(target: number, texture: BaseTexture) {
+        private _setAnisotropicLevel(target: number, texture: BaseTexture) {
             var internalTexture = texture.getInternalTexture();
 
             if (!internalTexture) {
