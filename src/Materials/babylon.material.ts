@@ -331,62 +331,32 @@
         /**
          * The dirty texture flag value
          */
-        private static _TextureDirtyFlag = 1;
+        public static readonly TextureDirtyFlag = 1;
 
         /**
          * The dirty light flag value
          */
-        private static _LightDirtyFlag = 2;
+        public static readonly LightDirtyFlag = 2;
 
         /**
          * The dirty fresnel flag value
          */
-        private static _FresnelDirtyFlag = 4;
+        public static readonly FresnelDirtyFlag = 4;
 
         /**
          * The dirty attribute flag value
          */
-        private static _AttributesDirtyFlag = 8;
+        public static readonly AttributesDirtyFlag = 8;
 
         /**
          * The dirty misc flag value
          */
-        private static _MiscDirtyFlag = 16;
+        public static readonly MiscDirtyFlag = 16;
 
         /**
-         * Returns the dirty texture flag value
+         * The all dirty flag value
          */
-        public static get TextureDirtyFlag(): number {
-            return Material._TextureDirtyFlag;
-        }
-
-        /**
-         * Returns the dirty light flag value
-         */
-        public static get LightDirtyFlag(): number {
-            return Material._LightDirtyFlag;
-        }
-
-        /**
-         * Returns the dirty fresnel flag value
-         */
-        public static get FresnelDirtyFlag(): number {
-            return Material._FresnelDirtyFlag;
-        }
-
-        /**
-         * Returns the dirty attributes flag value
-         */
-        public static get AttributesDirtyFlag(): number {
-            return Material._AttributesDirtyFlag;
-        }
-
-        /**
-         * Returns the dirty misc flag value
-         */
-        public static get MiscDirtyFlag(): number {
-            return Material._MiscDirtyFlag;
-        }
+        public static readonly AllDirtyFlag = 31;
 
         /**
          * The ID of the material

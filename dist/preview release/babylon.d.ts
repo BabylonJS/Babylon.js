@@ -2412,6 +2412,7 @@ declare module BABYLON {
          * @returns The auto clear setup for the requested rendering group
          */
         getAutoClearDepthStencilSetup(index: number): IRenderingManagerAutoClearSetup;
+        private _blockMaterialDirtyMechanism;
         /** Gets or sets a boolean blocking all the calls to markAllMaterialsAsDirty (ie. the materials won't be updated if they are out of sync) */
         blockMaterialDirtyMechanism: boolean;
         /**
@@ -3636,6 +3637,581 @@ declare module BABYLON {
          * @returns the serialized object
          */
         serialize(parent: any): any;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class used to work with sound analyzer using fast fourier transform (FFT)
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
+    class Analyser {
+        /**
+         * Gets or sets the smoothing
+         * @ignorenaming
+         */
+        SMOOTHING: number;
+        /**
+         * Gets or sets the FFT table size
+         * @ignorenaming
+         */
+        FFT_SIZE: number;
+        /**
+         * Gets or sets the bar graph amplitude
+         * @ignorenaming
+         */
+        BARGRAPHAMPLITUDE: number;
+        /**
+         * Gets or sets the position of the debug canvas
+         * @ignorenaming
+         */
+        DEBUGCANVASPOS: {
+            x: number;
+            y: number;
+        };
+        /**
+         * Gets or sets the debug canvas size
+         * @ignorenaming
+         */
+        DEBUGCANVASSIZE: {
+            width: number;
+            height: number;
+        };
+        private _byteFreqs;
+        private _byteTime;
+        private _floatFreqs;
+        private _webAudioAnalyser;
+        private _debugCanvas;
+        private _debugCanvasContext;
+        private _scene;
+        private _registerFunc;
+        private _audioEngine;
+        /**
+         * Creates a new analyser
+         * @param scene defines hosting scene
+         */
+        constructor(scene: Scene);
+        /**
+         * Get the number of data values you will have to play with for the visualization
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/frequencyBinCount
+         * @returns a number
+         */
+        getFrequencyBinCount(): number;
+        /**
+         * Gets the current frequency data as a byte array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
+         * @returns a Uint8Array
+         */
+        getByteFrequencyData(): Uint8Array;
+        /**
+         * Gets the current waveform as a byte array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
+         * @returns a Uint8Array
+         */
+        getByteTimeDomainData(): Uint8Array;
+        /**
+         * Gets the current frequency data as a float array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
+         * @returns a Float32Array
+         */
+        getFloatFrequencyData(): Float32Array;
+        /**
+         * Renders the debug canvas
+         */
+        drawDebugCanvas(): void;
+        /**
+         * Stops rendering the debug canvas and removes it
+         */
+        stopDebugCanvas(): void;
+        /**
+         * Connects two audio nodes
+         * @param inputAudioNode defines first node to connect
+         * @param outputAudioNode defines second node to connect
+         */
+        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This represents an audio engine and it is responsible
+     * to play, synchronize and analyse sounds throughout the application.
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
+    interface IAudioEngine extends IDisposable {
+        /**
+         * Gets whether the current host supports Web Audio and thus could create AudioContexts.
+         */
+        readonly canUseWebAudio: boolean;
+        /**
+         * Gets the current AudioContext if available.
+         */
+        readonly audioContext: Nullable<AudioContext>;
+        /**
+         * The master gain node defines the global audio volume of your audio engine.
+         */
+        readonly masterGain: GainNode;
+        /**
+         * Gets whether or not mp3 are supported by your browser.
+         */
+        readonly isMP3supported: boolean;
+        /**
+         * Gets whether or not ogg are supported by your browser.
+         */
+        readonly isOGGsupported: boolean;
+        /**
+         * Defines if Babylon should emit a warning if WebAudio is not supported.
+         * @ignoreNaming
+         */
+        WarnedWebAudioUnsupported: boolean;
+        /**
+         * Gets whether or not the audio engine is unlocked (require first a user gesture on some browser).
+         */
+        readonly unlocked: boolean;
+        /**
+         * Event raised when audio has been unlocked on the browser.
+         */
+        onAudioUnlockedObservable: Observable<AudioEngine>;
+    }
+    /**
+     * This represents the default audio engine used in babylon.
+     * It is responsible to play, synchronize and analyse sounds throughout the  application.
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
+    class AudioEngine implements IAudioEngine {
+        private _audioContext;
+        private _audioContextInitialized;
+        private _muteButtonDisplayed;
+        private _muteButton;
+        private _engine;
+        /**
+         * Gets whether the current host supports Web Audio and thus could create AudioContexts.
+         */
+        canUseWebAudio: boolean;
+        /**
+         * The master gain node defines the global audio volume of your audio engine.
+         */
+        masterGain: GainNode;
+        /**
+         * Defines if Babylon should emit a warning if WebAudio is not supported.
+         * @ignoreNaming
+         */
+        WarnedWebAudioUnsupported: boolean;
+        /**
+         * Gets whether or not mp3 are supported by your browser.
+         */
+        isMP3supported: boolean;
+        /**
+         * Gets whether or not ogg are supported by your browser.
+         */
+        isOGGsupported: boolean;
+        private _canvas;
+        /**
+         * Gets whether audio has been unlocked on the device.
+         * Some Browsers have strong restrictions about Audio and won t autoplay unless
+         * a user interaction has happened.
+         */
+        unlocked: boolean;
+        /**
+         * Event raised when audio has been unlocked on the browser.
+         */
+        onAudioUnlockedObservable: Observable<AudioEngine>;
+        /**
+         * Gets the current AudioContext if available.
+         */
+        readonly audioContext: Nullable<AudioContext>;
+        private _connectedAnalyser;
+        /**
+         * Instantiates a new audio engine.
+         *
+         * There should be only one per page as some browsers restrict the number
+         * of audio contexts you can create.
+         * @param engine defines the hosting engine
+         */
+        constructor(engine?: Nullable<Engine>);
+        private _unlockiOSaudio;
+        private _resumeAudioContext;
+        private _initializeAudioContext;
+        private _triggerRunningState;
+        private _triggerSuspendedState;
+        private _displayMuteButton;
+        private _moveButtonToTopLeft;
+        private _onResize;
+        private _hideMuteButton;
+        /**
+         * Destroy and release the resources associated with the audio ccontext.
+         */
+        dispose(): void;
+        /**
+         * Gets the global volume sets on the master gain.
+         * @returns the global volume if set or -1 otherwise
+         */
+        getGlobalVolume(): number;
+        /**
+         * Sets the global volume of your experience (sets on the master gain).
+         * @param newVolume Defines the new global volume of the application
+         */
+        setGlobalVolume(newVolume: number): void;
+        /**
+         * Connect the audio engine to an audio analyser allowing some amazing
+         * synchornization between the sounds/music and your visualization (VuMeter for instance).
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
+         * @param analyser The analyser to connect to the engine
+         */
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
+    interface AbstractScene {
+        /**
+         * The list of sounds used in the scene.
+         */
+        sounds: Nullable<Array<Sound>>;
+    }
+    interface Scene {
+        /**
+         * @hidden
+         * Backing field
+         */
+        _mainSoundTrack: SoundTrack;
+        /**
+         * The main sound track played by the scene.
+         * It cotains your primary collection of sounds.
+         */
+        mainSoundTrack: SoundTrack;
+        /**
+         * The list of sound tracks added to the scene
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         */
+        soundTracks: Nullable<Array<SoundTrack>>;
+        /**
+         * Gets a sound using a given name
+         * @param name defines the name to search for
+         * @return the found sound or null if not found at all.
+         */
+        getSoundByName(name: string): Nullable<Sound>;
+        /**
+         * Gets or sets if audio support is enabled
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         */
+        audioEnabled: boolean;
+        /**
+         * Gets or sets if audio will be output to headphones
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         */
+        headphone: boolean;
+    }
+    /**
+     * Defines the sound scene component responsible to manage any sounds
+     * in a given scene.
+     */
+    class AudioSceneComponent implements ISceneSerializableComponent {
+        /**
+         * The component name helpfull to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        private _audioEnabled;
+        /**
+         * Gets whether audio is enabled or not.
+         * Please use related enable/disable method to switch state.
+         */
+        readonly audioEnabled: boolean;
+        private _headphone;
+        /**
+         * Gets whether audio is outputing to headphone or not.
+         * Please use the according Switch methods to change output.
+         */
+        readonly headphone: boolean;
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Serializes the component data to the specified json object
+         * @param serializationObject The object to serialize to
+         */
+        serialize(serializationObject: any): void;
+        /**
+         * Adds all the element from the container to the scene
+         * @param container the container holding the elements
+         */
+        addFromContainer(container: AbstractScene): void;
+        /**
+         * Removes all the elements in the container from the scene
+         * @param container contains the elements to remove
+         */
+        removeFromContainer(container: AbstractScene): void;
+        /**
+         * Disposes the component and the associated ressources.
+         */
+        dispose(): void;
+        /**
+         * Disables audio in the associated scene.
+         */
+        disableAudio(): void;
+        /**
+         * Enables audio in the associated scene.
+         */
+        enableAudio(): void;
+        /**
+         * Switch audio to headphone output.
+         */
+        switchAudioModeForHeadphones(): void;
+        /**
+         * Switch audio to normal speakers.
+         */
+        switchAudioModeForNormalSpeakers(): void;
+        private _afterRender;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Defines a sound that can be played in the application.
+     * The sound can either be an ambient track or a simple sound played in reaction to a user action.
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
+    class Sound {
+        /**
+         * The name of the sound in the scene.
+         */
+        name: string;
+        /**
+         * Does the sound autoplay once loaded.
+         */
+        autoplay: boolean;
+        /**
+         * Does the sound loop after it finishes playing once.
+         */
+        loop: boolean;
+        /**
+         * Does the sound use a custom attenuation curve to simulate the falloff
+         * happening when the source gets further away from the camera.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
+         */
+        useCustomAttenuation: boolean;
+        /**
+         * The sound track id this sound belongs to.
+         */
+        soundTrackId: number;
+        /**
+         * Does this sound enables spatial sound.
+         */
+        spatialSound: boolean;
+        refDistance: number;
+        rolloffFactor: number;
+        maxDistance: number;
+        distanceModel: string;
+        private _panningModel;
+        onended: () => any;
+        /**
+         * Observable event when the current playing sound finishes.
+         */
+        onEndedObservable: Observable<Sound>;
+        private _playbackRate;
+        private _streaming;
+        private _startTime;
+        private _startOffset;
+        private _position;
+        /** @hidden */
+        _positionInEmitterSpace: boolean;
+        private _localDirection;
+        private _volume;
+        private _isReadyToPlay;
+        isPlaying: boolean;
+        isPaused: boolean;
+        private _isDirectional;
+        private _readyToPlayCallback;
+        private _audioBuffer;
+        private _soundSource;
+        private _streamingSource;
+        private _soundPanner;
+        private _soundGain;
+        private _inputAudioNode;
+        private _outputAudioNode;
+        private _coneInnerAngle;
+        private _coneOuterAngle;
+        private _coneOuterGain;
+        private _scene;
+        private _connectedMesh;
+        private _customAttenuationFunction;
+        private _registerFunc;
+        private _isOutputConnected;
+        private _htmlAudioElement;
+        private _urlType;
+        /**
+        * Create a sound and attach it to a scene
+        * @param name Name of your sound
+        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
+        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
+        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
+        */
+        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: any);
+        dispose(): void;
+        isReady(): boolean;
+        private _soundLoaded;
+        setAudioBuffer(audioBuffer: AudioBuffer): void;
+        updateOptions(options: any): void;
+        private _createSpatialParameters;
+        private _updateSpatialParameters;
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        private _switchPanningModel;
+        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
+        /**
+        * Transform this sound into a directional source
+        * @param coneInnerAngle Size of the inner cone in degree
+        * @param coneOuterAngle Size of the outer cone in degree
+        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
+        */
+        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
+        /**
+         * Gets or sets the inner angle for the directional cone.
+         */
+        /**
+        * Gets or sets the inner angle for the directional cone.
+        */
+        directionalConeInnerAngle: number;
+        /**
+         * Gets or sets the outer angle for the directional cone.
+         */
+        /**
+        * Gets or sets the outer angle for the directional cone.
+        */
+        directionalConeOuterAngle: number;
+        setPosition(newPosition: Vector3): void;
+        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
+        private _updateDirection;
+        updateDistanceFromListener(): void;
+        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
+        /**
+        * Play the sound
+        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+        * @param offset (optional) Start the sound setting it at a specific time
+        */
+        play(time?: number, offset?: number): void;
+        private _onended;
+        /**
+        * Stop the sound
+        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
+        */
+        stop(time?: number): void;
+        pause(): void;
+        setVolume(newVolume: number, time?: number): void;
+        setPlaybackRate(newPlaybackRate: number): void;
+        getVolume(): number;
+        attachToMesh(meshToConnectTo: AbstractMesh): void;
+        detachFromMesh(): void;
+        private _onRegisterAfterWorldMatrixUpdate;
+        clone(): Nullable<Sound>;
+        getAudioBuffer(): AudioBuffer | null;
+        serialize(): any;
+        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
+    }
+}
+
+declare module BABYLON {
+    class SoundTrack {
+        private _outputAudioNode;
+        private _scene;
+        id: number;
+        soundCollection: Array<Sound>;
+        private _isMainTrack;
+        private _connectedAnalyser;
+        private _options;
+        private _isInitialized;
+        constructor(scene: Scene, options?: any);
+        private _initializeSoundTrackAudioGraph;
+        dispose(): void;
+        AddSound(sound: Sound): void;
+        RemoveSound(sound: Sound): void;
+        setVolume(newVolume: number): void;
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Wraps one or more Sound objects and selects one with random weight for playback.
+     */
+    class WeightedSound {
+        /** When true a Sound will be selected and played when the current playing Sound completes. */
+        loop: boolean;
+        private _coneInnerAngle;
+        private _coneOuterAngle;
+        private _volume;
+        /** A Sound is currently playing. */
+        isPlaying: boolean;
+        /** A Sound is currently paused. */
+        isPaused: boolean;
+        private _sounds;
+        private _weights;
+        private _currentIndex?;
+        /**
+         * Creates a new WeightedSound from the list of sounds given.
+         * @param loop When true a Sound will be selected and played when the current playing Sound completes.
+         * @param sounds Array of Sounds that will be selected from.
+         * @param weights Array of number values for selection weights; length must equal sounds, values will be normalized to 1
+         */
+        constructor(loop: boolean, sounds: Sound[], weights: number[]);
+        /**
+         * The size of cone in degrees for a directional sound in which there will be no attenuation.
+         */
+        /**
+        * The size of cone in degress for a directional sound in which there will be no attenuation.
+        */
+        directionalConeInnerAngle: number;
+        /**
+         * Size of cone in degrees for a directional sound outside of which there will be no sound.
+         * Listener angles between innerAngle and outerAngle will falloff linearly.
+         */
+        /**
+        * Size of cone in degrees for a directional sound outside of which there will be no sound.
+        * Listener angles between innerAngle and outerAngle will falloff linearly.
+        */
+        directionalConeOuterAngle: number;
+        /**
+         * Playback volume.
+         */
+        /**
+        * Playback volume.
+        */
+        volume: number;
+        private _onended;
+        /**
+         * Suspend playback
+         */
+        pause(): void;
+        /**
+         * Stop playback
+         */
+        stop(): void;
+        /**
+         * Start playback.
+         * @param startOffset Position the clip head at a specific time in seconds.
+         */
+        play(startOffset?: number): void;
     }
 }
 
@@ -4985,581 +5561,6 @@ declare module BABYLON {
          * @returns a boolean indicating if the animation is running
          */
         animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number): boolean;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Class used to work with sound analyzer using fast fourier transform (FFT)
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-     */
-    class Analyser {
-        /**
-         * Gets or sets the smoothing
-         * @ignorenaming
-         */
-        SMOOTHING: number;
-        /**
-         * Gets or sets the FFT table size
-         * @ignorenaming
-         */
-        FFT_SIZE: number;
-        /**
-         * Gets or sets the bar graph amplitude
-         * @ignorenaming
-         */
-        BARGRAPHAMPLITUDE: number;
-        /**
-         * Gets or sets the position of the debug canvas
-         * @ignorenaming
-         */
-        DEBUGCANVASPOS: {
-            x: number;
-            y: number;
-        };
-        /**
-         * Gets or sets the debug canvas size
-         * @ignorenaming
-         */
-        DEBUGCANVASSIZE: {
-            width: number;
-            height: number;
-        };
-        private _byteFreqs;
-        private _byteTime;
-        private _floatFreqs;
-        private _webAudioAnalyser;
-        private _debugCanvas;
-        private _debugCanvasContext;
-        private _scene;
-        private _registerFunc;
-        private _audioEngine;
-        /**
-         * Creates a new analyser
-         * @param scene defines hosting scene
-         */
-        constructor(scene: Scene);
-        /**
-         * Get the number of data values you will have to play with for the visualization
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/frequencyBinCount
-         * @returns a number
-         */
-        getFrequencyBinCount(): number;
-        /**
-         * Gets the current frequency data as a byte array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
-         * @returns a Uint8Array
-         */
-        getByteFrequencyData(): Uint8Array;
-        /**
-         * Gets the current waveform as a byte array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
-         * @returns a Uint8Array
-         */
-        getByteTimeDomainData(): Uint8Array;
-        /**
-         * Gets the current frequency data as a float array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
-         * @returns a Float32Array
-         */
-        getFloatFrequencyData(): Float32Array;
-        /**
-         * Renders the debug canvas
-         */
-        drawDebugCanvas(): void;
-        /**
-         * Stops rendering the debug canvas and removes it
-         */
-        stopDebugCanvas(): void;
-        /**
-         * Connects two audio nodes
-         * @param inputAudioNode defines first node to connect
-         * @param outputAudioNode defines second node to connect
-         */
-        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This represents an audio engine and it is responsible
-     * to play, synchronize and analyse sounds throughout the application.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-     */
-    interface IAudioEngine extends IDisposable {
-        /**
-         * Gets whether the current host supports Web Audio and thus could create AudioContexts.
-         */
-        readonly canUseWebAudio: boolean;
-        /**
-         * Gets the current AudioContext if available.
-         */
-        readonly audioContext: Nullable<AudioContext>;
-        /**
-         * The master gain node defines the global audio volume of your audio engine.
-         */
-        readonly masterGain: GainNode;
-        /**
-         * Gets whether or not mp3 are supported by your browser.
-         */
-        readonly isMP3supported: boolean;
-        /**
-         * Gets whether or not ogg are supported by your browser.
-         */
-        readonly isOGGsupported: boolean;
-        /**
-         * Defines if Babylon should emit a warning if WebAudio is not supported.
-         * @ignoreNaming
-         */
-        WarnedWebAudioUnsupported: boolean;
-        /**
-         * Gets whether or not the audio engine is unlocked (require first a user gesture on some browser).
-         */
-        readonly unlocked: boolean;
-        /**
-         * Event raised when audio has been unlocked on the browser.
-         */
-        onAudioUnlockedObservable: Observable<AudioEngine>;
-    }
-    /**
-     * This represents the default audio engine used in babylon.
-     * It is responsible to play, synchronize and analyse sounds throughout the  application.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-     */
-    class AudioEngine implements IAudioEngine {
-        private _audioContext;
-        private _audioContextInitialized;
-        private _muteButtonDisplayed;
-        private _muteButton;
-        private _engine;
-        /**
-         * Gets whether the current host supports Web Audio and thus could create AudioContexts.
-         */
-        canUseWebAudio: boolean;
-        /**
-         * The master gain node defines the global audio volume of your audio engine.
-         */
-        masterGain: GainNode;
-        /**
-         * Defines if Babylon should emit a warning if WebAudio is not supported.
-         * @ignoreNaming
-         */
-        WarnedWebAudioUnsupported: boolean;
-        /**
-         * Gets whether or not mp3 are supported by your browser.
-         */
-        isMP3supported: boolean;
-        /**
-         * Gets whether or not ogg are supported by your browser.
-         */
-        isOGGsupported: boolean;
-        private _canvas;
-        /**
-         * Gets whether audio has been unlocked on the device.
-         * Some Browsers have strong restrictions about Audio and won t autoplay unless
-         * a user interaction has happened.
-         */
-        unlocked: boolean;
-        /**
-         * Event raised when audio has been unlocked on the browser.
-         */
-        onAudioUnlockedObservable: Observable<AudioEngine>;
-        /**
-         * Gets the current AudioContext if available.
-         */
-        readonly audioContext: Nullable<AudioContext>;
-        private _connectedAnalyser;
-        /**
-         * Instantiates a new audio engine.
-         *
-         * There should be only one per page as some browsers restrict the number
-         * of audio contexts you can create.
-         * @param engine defines the hosting engine
-         */
-        constructor(engine?: Nullable<Engine>);
-        private _unlockiOSaudio;
-        private _resumeAudioContext;
-        private _initializeAudioContext;
-        private _triggerRunningState;
-        private _triggerSuspendedState;
-        private _displayMuteButton;
-        private _moveButtonToTopLeft;
-        private _onResize;
-        private _hideMuteButton;
-        /**
-         * Destroy and release the resources associated with the audio ccontext.
-         */
-        dispose(): void;
-        /**
-         * Gets the global volume sets on the master gain.
-         * @returns the global volume if set or -1 otherwise
-         */
-        getGlobalVolume(): number;
-        /**
-         * Sets the global volume of your experience (sets on the master gain).
-         * @param newVolume Defines the new global volume of the application
-         */
-        setGlobalVolume(newVolume: number): void;
-        /**
-         * Connect the audio engine to an audio analyser allowing some amazing
-         * synchornization between the sounds/music and your visualization (VuMeter for instance).
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
-         * @param analyser The analyser to connect to the engine
-         */
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    interface AbstractScene {
-        /**
-         * The list of sounds used in the scene.
-         */
-        sounds: Nullable<Array<Sound>>;
-    }
-    interface Scene {
-        /**
-         * @hidden
-         * Backing field
-         */
-        _mainSoundTrack: SoundTrack;
-        /**
-         * The main sound track played by the scene.
-         * It cotains your primary collection of sounds.
-         */
-        mainSoundTrack: SoundTrack;
-        /**
-         * The list of sound tracks added to the scene
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-         */
-        soundTracks: Nullable<Array<SoundTrack>>;
-        /**
-         * Gets a sound using a given name
-         * @param name defines the name to search for
-         * @return the found sound or null if not found at all.
-         */
-        getSoundByName(name: string): Nullable<Sound>;
-        /**
-         * Gets or sets if audio support is enabled
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-         */
-        audioEnabled: boolean;
-        /**
-         * Gets or sets if audio will be output to headphones
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-         */
-        headphone: boolean;
-    }
-    /**
-     * Defines the sound scene component responsible to manage any sounds
-     * in a given scene.
-     */
-    class AudioSceneComponent implements ISceneSerializableComponent {
-        /**
-         * The component name helpfull to identify the component in the list of scene components.
-         */
-        readonly name: string;
-        /**
-         * The scene the component belongs to.
-         */
-        scene: Scene;
-        private _audioEnabled;
-        /**
-         * Gets whether audio is enabled or not.
-         * Please use related enable/disable method to switch state.
-         */
-        readonly audioEnabled: boolean;
-        private _headphone;
-        /**
-         * Gets whether audio is outputing to headphone or not.
-         * Please use the according Switch methods to change output.
-         */
-        readonly headphone: boolean;
-        /**
-         * Creates a new instance of the component for the given scene
-         * @param scene Defines the scene to register the component in
-         */
-        constructor(scene: Scene);
-        /**
-         * Registers the component in a given scene
-         */
-        register(): void;
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        rebuild(): void;
-        /**
-         * Serializes the component data to the specified json object
-         * @param serializationObject The object to serialize to
-         */
-        serialize(serializationObject: any): void;
-        /**
-         * Adds all the element from the container to the scene
-         * @param container the container holding the elements
-         */
-        addFromContainer(container: AbstractScene): void;
-        /**
-         * Removes all the elements in the container from the scene
-         * @param container contains the elements to remove
-         */
-        removeFromContainer(container: AbstractScene): void;
-        /**
-         * Disposes the component and the associated ressources.
-         */
-        dispose(): void;
-        /**
-         * Disables audio in the associated scene.
-         */
-        disableAudio(): void;
-        /**
-         * Enables audio in the associated scene.
-         */
-        enableAudio(): void;
-        /**
-         * Switch audio to headphone output.
-         */
-        switchAudioModeForHeadphones(): void;
-        /**
-         * Switch audio to normal speakers.
-         */
-        switchAudioModeForNormalSpeakers(): void;
-        private _afterRender;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Defines a sound that can be played in the application.
-     * The sound can either be an ambient track or a simple sound played in reaction to a user action.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-     */
-    class Sound {
-        /**
-         * The name of the sound in the scene.
-         */
-        name: string;
-        /**
-         * Does the sound autoplay once loaded.
-         */
-        autoplay: boolean;
-        /**
-         * Does the sound loop after it finishes playing once.
-         */
-        loop: boolean;
-        /**
-         * Does the sound use a custom attenuation curve to simulate the falloff
-         * happening when the source gets further away from the camera.
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
-         */
-        useCustomAttenuation: boolean;
-        /**
-         * The sound track id this sound belongs to.
-         */
-        soundTrackId: number;
-        /**
-         * Does this sound enables spatial sound.
-         */
-        spatialSound: boolean;
-        refDistance: number;
-        rolloffFactor: number;
-        maxDistance: number;
-        distanceModel: string;
-        private _panningModel;
-        onended: () => any;
-        /**
-         * Observable event when the current playing sound finishes.
-         */
-        onEndedObservable: Observable<Sound>;
-        private _playbackRate;
-        private _streaming;
-        private _startTime;
-        private _startOffset;
-        private _position;
-        /** @hidden */
-        _positionInEmitterSpace: boolean;
-        private _localDirection;
-        private _volume;
-        private _isReadyToPlay;
-        isPlaying: boolean;
-        isPaused: boolean;
-        private _isDirectional;
-        private _readyToPlayCallback;
-        private _audioBuffer;
-        private _soundSource;
-        private _streamingSource;
-        private _soundPanner;
-        private _soundGain;
-        private _inputAudioNode;
-        private _outputAudioNode;
-        private _coneInnerAngle;
-        private _coneOuterAngle;
-        private _coneOuterGain;
-        private _scene;
-        private _connectedMesh;
-        private _customAttenuationFunction;
-        private _registerFunc;
-        private _isOutputConnected;
-        private _htmlAudioElement;
-        private _urlType;
-        /**
-        * Create a sound and attach it to a scene
-        * @param name Name of your sound
-        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
-        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
-        */
-        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: any);
-        dispose(): void;
-        isReady(): boolean;
-        private _soundLoaded;
-        setAudioBuffer(audioBuffer: AudioBuffer): void;
-        updateOptions(options: any): void;
-        private _createSpatialParameters;
-        private _updateSpatialParameters;
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        private _switchPanningModel;
-        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
-        /**
-        * Transform this sound into a directional source
-        * @param coneInnerAngle Size of the inner cone in degree
-        * @param coneOuterAngle Size of the outer cone in degree
-        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
-        */
-        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
-        /**
-         * Gets or sets the inner angle for the directional cone.
-         */
-        /**
-        * Gets or sets the inner angle for the directional cone.
-        */
-        directionalConeInnerAngle: number;
-        /**
-         * Gets or sets the outer angle for the directional cone.
-         */
-        /**
-        * Gets or sets the outer angle for the directional cone.
-        */
-        directionalConeOuterAngle: number;
-        setPosition(newPosition: Vector3): void;
-        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
-        private _updateDirection;
-        updateDistanceFromListener(): void;
-        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
-        /**
-        * Play the sound
-        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
-        * @param offset (optional) Start the sound setting it at a specific time
-        */
-        play(time?: number, offset?: number): void;
-        private _onended;
-        /**
-        * Stop the sound
-        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
-        */
-        stop(time?: number): void;
-        pause(): void;
-        setVolume(newVolume: number, time?: number): void;
-        setPlaybackRate(newPlaybackRate: number): void;
-        getVolume(): number;
-        attachToMesh(meshToConnectTo: AbstractMesh): void;
-        detachFromMesh(): void;
-        private _onRegisterAfterWorldMatrixUpdate;
-        clone(): Nullable<Sound>;
-        getAudioBuffer(): AudioBuffer | null;
-        serialize(): any;
-        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
-    }
-}
-
-declare module BABYLON {
-    class SoundTrack {
-        private _outputAudioNode;
-        private _scene;
-        id: number;
-        soundCollection: Array<Sound>;
-        private _isMainTrack;
-        private _connectedAnalyser;
-        private _options;
-        private _isInitialized;
-        constructor(scene: Scene, options?: any);
-        private _initializeSoundTrackAudioGraph;
-        dispose(): void;
-        AddSound(sound: Sound): void;
-        RemoveSound(sound: Sound): void;
-        setVolume(newVolume: number): void;
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Wraps one or more Sound objects and selects one with random weight for playback.
-     */
-    class WeightedSound {
-        /** When true a Sound will be selected and played when the current playing Sound completes. */
-        loop: boolean;
-        private _coneInnerAngle;
-        private _coneOuterAngle;
-        private _volume;
-        /** A Sound is currently playing. */
-        isPlaying: boolean;
-        /** A Sound is currently paused. */
-        isPaused: boolean;
-        private _sounds;
-        private _weights;
-        private _currentIndex?;
-        /**
-         * Creates a new WeightedSound from the list of sounds given.
-         * @param loop When true a Sound will be selected and played when the current playing Sound completes.
-         * @param sounds Array of Sounds that will be selected from.
-         * @param weights Array of number values for selection weights; length must equal sounds, values will be normalized to 1
-         */
-        constructor(loop: boolean, sounds: Sound[], weights: number[]);
-        /**
-         * The size of cone in degrees for a directional sound in which there will be no attenuation.
-         */
-        /**
-        * The size of cone in degress for a directional sound in which there will be no attenuation.
-        */
-        directionalConeInnerAngle: number;
-        /**
-         * Size of cone in degrees for a directional sound outside of which there will be no sound.
-         * Listener angles between innerAngle and outerAngle will falloff linearly.
-         */
-        /**
-        * Size of cone in degrees for a directional sound outside of which there will be no sound.
-        * Listener angles between innerAngle and outerAngle will falloff linearly.
-        */
-        directionalConeOuterAngle: number;
-        /**
-         * Playback volume.
-         */
-        /**
-        * Playback volume.
-        */
-        volume: number;
-        private _onended;
-        /**
-         * Suspend playback
-         */
-        pause(): void;
-        /**
-         * Stop playback
-         */
-        stop(): void;
-        /**
-         * Start playback.
-         * @param startOffset Position the clip head at a specific time in seconds.
-         */
-        play(startOffset?: number): void;
     }
 }
 
@@ -8444,6 +8445,183 @@ interface Gamepad {
     readonly displayId: number;
 }
 
+declare module BABYLON {
+    class BoundingBox implements ICullable {
+        vectors: Vector3[];
+        center: Vector3;
+        centerWorld: Vector3;
+        extendSize: Vector3;
+        extendSizeWorld: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        minimum: Vector3;
+        maximum: Vector3;
+        private _worldMatrix;
+        /**
+         * @hidden
+         */
+        _tag: number;
+        /**
+         * Creates a new bounding box
+         * @param min defines the minimum vector (in local space)
+         * @param max defines the maximum vector (in local space)
+         */
+        constructor(min: Vector3, max: Vector3);
+        /**
+         * Recreates the entire bounding box from scratch
+         * @param min defines the new minimum vector (in local space)
+         * @param max defines the new maximum vector (in local space)
+         */
+        reConstruct(min: Vector3, max: Vector3): void;
+        /**
+         * Scale the current bounding box by applying a scale factor
+         * @param factor defines the scale factor to apply
+         * @returns the current bounding box
+         */
+        scale(factor: number): BoundingBox;
+        getWorldMatrix(): Matrix;
+        setWorldMatrix(matrix: Matrix): BoundingBox;
+        /** @hidden */
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+    }
+}
+
+declare module BABYLON {
+    interface ICullable {
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+    }
+    class BoundingInfo implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        private _isLocked;
+        constructor(minimum: Vector3, maximum: Vector3);
+        isLocked: boolean;
+        update(world: Matrix): void;
+        /**
+         * Recreate the bounding info to be centered around a specific point given a specific extend.
+         * @param center New center of the bounding info
+         * @param extend New extend of the bounding info
+         */
+        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
+        /**
+         * Scale the current bounding info by applying a scale factor
+         * @param factor defines the scale factor to apply
+         * @returns the current bounding info
+         */
+        scale(factor: number): BoundingInfo;
+        /**
+         * Returns `true` if the bounding info is within the frustum defined by the passed array of planes.
+         * @param frustumPlanes defines the frustum to test
+         * @param strategy defines the strategy to use for the culling (default is BABYLON.Scene.CULLINGSTRATEGY_STANDARD)
+         * @returns true if the bounding info is in the frustum planes
+         */
+        isInFrustum(frustumPlanes: Plane[], strategy?: number): boolean;
+        /**
+         * Gets the world distance between the min and max points of the bounding box
+         */
+        readonly diagonalLength: number;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        /** @hidden */
+        _checkCollision(collider: Collider): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingSphere {
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        minimum: Vector3;
+        maximum: Vector3;
+        /**
+         * Creates a new bounding sphere
+         * @param min defines the minimum vector (in local space)
+         * @param max defines the maximum vector (in local space)
+         */
+        constructor(min: Vector3, max: Vector3);
+        /**
+         * Recreates the entire bounding sphere from scratch
+         * @param min defines the new minimum vector (in local space)
+         * @param max defines the new maximum vector (in local space)
+         */
+        reConstruct(min: Vector3, max: Vector3): void;
+        /**
+         * Scale the current bounding sphere by applying a scale factor
+         * @param factor defines the scale factor to apply
+         * @returns the current bounding box
+         */
+        scale(factor: number): BoundingSphere;
+        /** @hidden */
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Ray {
+        origin: Vector3;
+        direction: Vector3;
+        length: number;
+        private _edge1;
+        private _edge2;
+        private _pvec;
+        private _tvec;
+        private _qvec;
+        private _tmpRay;
+        constructor(origin: Vector3, direction: Vector3, length?: number);
+        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
+        intersectsBox(box: BoundingBox): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
+        intersectsPlane(plane: Plane): Nullable<number>;
+        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
+        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
+        private _comparePickingInfo;
+        private static smallnum;
+        private static rayl;
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
+        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        static Zero(): Ray;
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
+        static Transform(ray: Ray, matrix: Matrix): Ray;
+        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
+    }
+}
+
 /**
  * Module Debug contains the (visual) components to debug a scene correctly
  */
@@ -8711,183 +8889,6 @@ declare module BABYLON.Debug {
         update(): void;
         /** Release associated resources */
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class BoundingBox implements ICullable {
-        vectors: Vector3[];
-        center: Vector3;
-        centerWorld: Vector3;
-        extendSize: Vector3;
-        extendSizeWorld: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        minimum: Vector3;
-        maximum: Vector3;
-        private _worldMatrix;
-        /**
-         * @hidden
-         */
-        _tag: number;
-        /**
-         * Creates a new bounding box
-         * @param min defines the minimum vector (in local space)
-         * @param max defines the maximum vector (in local space)
-         */
-        constructor(min: Vector3, max: Vector3);
-        /**
-         * Recreates the entire bounding box from scratch
-         * @param min defines the new minimum vector (in local space)
-         * @param max defines the new maximum vector (in local space)
-         */
-        reConstruct(min: Vector3, max: Vector3): void;
-        /**
-         * Scale the current bounding box by applying a scale factor
-         * @param factor defines the scale factor to apply
-         * @returns the current bounding box
-         */
-        scale(factor: number): BoundingBox;
-        getWorldMatrix(): Matrix;
-        setWorldMatrix(matrix: Matrix): BoundingBox;
-        /** @hidden */
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-    }
-}
-
-declare module BABYLON {
-    interface ICullable {
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-    }
-    class BoundingInfo implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        private _isLocked;
-        constructor(minimum: Vector3, maximum: Vector3);
-        isLocked: boolean;
-        update(world: Matrix): void;
-        /**
-         * Recreate the bounding info to be centered around a specific point given a specific extend.
-         * @param center New center of the bounding info
-         * @param extend New extend of the bounding info
-         */
-        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
-        /**
-         * Scale the current bounding info by applying a scale factor
-         * @param factor defines the scale factor to apply
-         * @returns the current bounding info
-         */
-        scale(factor: number): BoundingInfo;
-        /**
-         * Returns `true` if the bounding info is within the frustum defined by the passed array of planes.
-         * @param frustumPlanes defines the frustum to test
-         * @param strategy defines the strategy to use for the culling (default is BABYLON.Scene.CULLINGSTRATEGY_STANDARD)
-         * @returns true if the bounding info is in the frustum planes
-         */
-        isInFrustum(frustumPlanes: Plane[], strategy?: number): boolean;
-        /**
-         * Gets the world distance between the min and max points of the bounding box
-         */
-        readonly diagonalLength: number;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        /** @hidden */
-        _checkCollision(collider: Collider): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingSphere {
-        center: Vector3;
-        radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        minimum: Vector3;
-        maximum: Vector3;
-        /**
-         * Creates a new bounding sphere
-         * @param min defines the minimum vector (in local space)
-         * @param max defines the maximum vector (in local space)
-         */
-        constructor(min: Vector3, max: Vector3);
-        /**
-         * Recreates the entire bounding sphere from scratch
-         * @param min defines the new minimum vector (in local space)
-         * @param max defines the new maximum vector (in local space)
-         */
-        reConstruct(min: Vector3, max: Vector3): void;
-        /**
-         * Scale the current bounding sphere by applying a scale factor
-         * @param factor defines the scale factor to apply
-         * @returns the current bounding box
-         */
-        scale(factor: number): BoundingSphere;
-        /** @hidden */
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
-    }
-}
-
-declare module BABYLON {
-    class Ray {
-        origin: Vector3;
-        direction: Vector3;
-        length: number;
-        private _edge1;
-        private _edge2;
-        private _pvec;
-        private _tvec;
-        private _qvec;
-        private _tmpRay;
-        constructor(origin: Vector3, direction: Vector3, length?: number);
-        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
-        intersectsBox(box: BoundingBox): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
-        intersectsPlane(plane: Plane): Nullable<number>;
-        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
-        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
-        private _comparePickingInfo;
-        private static smallnum;
-        private static rayl;
-        /**
-         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
-         * @param sega the first point of the segment to test the intersection against
-         * @param segb the second point of the segment to test the intersection against
-         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
-         */
-        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
-        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        static Zero(): Ray;
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
-        static Transform(ray: Ray, matrix: Matrix): Ray;
-        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
     }
 }
 
@@ -12516,6 +12517,226 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * This class can be used to get instrumentation data from a Babylon engine
+     */
+    class EngineInstrumentation implements IDisposable {
+        engine: Engine;
+        private _captureGPUFrameTime;
+        private _gpuFrameTimeToken;
+        private _gpuFrameTime;
+        private _captureShaderCompilationTime;
+        private _shaderCompilationTime;
+        private _onBeginFrameObserver;
+        private _onEndFrameObserver;
+        private _onBeforeShaderCompilationObserver;
+        private _onAfterShaderCompilationObserver;
+        /**
+         * Gets the perf counter used for GPU frame time
+         */
+        readonly gpuFrameTimeCounter: PerfCounter;
+        /**
+         * Gets the GPU frame time capture status
+         */
+        /**
+        * Enable or disable the GPU frame time capture
+        */
+        captureGPUFrameTime: boolean;
+        /**
+         * Gets the perf counter used for shader compilation time
+         */
+        readonly shaderCompilationTimeCounter: PerfCounter;
+        /**
+         * Gets the shader compilation time capture status
+         */
+        /**
+        * Enable or disable the shader compilation time capture
+        */
+        captureShaderCompilationTime: boolean;
+        constructor(engine: Engine);
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This class can be used to get instrumentation data from a Babylon engine
+     */
+    class SceneInstrumentation implements IDisposable {
+        scene: Scene;
+        private _captureActiveMeshesEvaluationTime;
+        private _activeMeshesEvaluationTime;
+        private _captureRenderTargetsRenderTime;
+        private _renderTargetsRenderTime;
+        private _captureFrameTime;
+        private _frameTime;
+        private _captureRenderTime;
+        private _renderTime;
+        private _captureInterFrameTime;
+        private _interFrameTime;
+        private _captureParticlesRenderTime;
+        private _particlesRenderTime;
+        private _captureSpritesRenderTime;
+        private _spritesRenderTime;
+        private _capturePhysicsTime;
+        private _physicsTime;
+        private _captureAnimationsTime;
+        private _animationsTime;
+        private _captureCameraRenderTime;
+        private _cameraRenderTime;
+        private _onBeforeActiveMeshesEvaluationObserver;
+        private _onAfterActiveMeshesEvaluationObserver;
+        private _onBeforeRenderTargetsRenderObserver;
+        private _onAfterRenderTargetsRenderObserver;
+        private _onAfterRenderObserver;
+        private _onBeforeDrawPhaseObserver;
+        private _onAfterDrawPhaseObserver;
+        private _onBeforeAnimationsObserver;
+        private _onBeforeParticlesRenderingObserver;
+        private _onAfterParticlesRenderingObserver;
+        private _onBeforeSpritesRenderingObserver;
+        private _onAfterSpritesRenderingObserver;
+        private _onBeforePhysicsObserver;
+        private _onAfterPhysicsObserver;
+        private _onAfterAnimationsObserver;
+        private _onBeforeCameraRenderObserver;
+        private _onAfterCameraRenderObserver;
+        /**
+         * Gets the perf counter used for active meshes evaluation time
+         */
+        readonly activeMeshesEvaluationTimeCounter: PerfCounter;
+        /**
+         * Gets the active meshes evaluation time capture status
+         */
+        /**
+        * Enable or disable the active meshes evaluation time capture
+        */
+        captureActiveMeshesEvaluationTime: boolean;
+        /**
+         * Gets the perf counter used for render targets render time
+         */
+        readonly renderTargetsRenderTimeCounter: PerfCounter;
+        /**
+         * Gets the render targets render time capture status
+         */
+        /**
+        * Enable or disable the render targets render time capture
+        */
+        captureRenderTargetsRenderTime: boolean;
+        /**
+         * Gets the perf counter used for particles render time
+         */
+        readonly particlesRenderTimeCounter: PerfCounter;
+        /**
+         * Gets the particles render time capture status
+         */
+        /**
+        * Enable or disable the particles render time capture
+        */
+        captureParticlesRenderTime: boolean;
+        /**
+         * Gets the perf counter used for sprites render time
+         */
+        readonly spritesRenderTimeCounter: PerfCounter;
+        /**
+         * Gets the sprites render time capture status
+         */
+        /**
+        * Enable or disable the sprites render time capture
+        */
+        captureSpritesRenderTime: boolean;
+        /**
+         * Gets the perf counter used for physics time
+         */
+        readonly physicsTimeCounter: PerfCounter;
+        /**
+         * Gets the physics time capture status
+         */
+        /**
+        * Enable or disable the physics time capture
+        */
+        capturePhysicsTime: boolean;
+        /**
+         * Gets the perf counter used for animations time
+         */
+        readonly animationsTimeCounter: PerfCounter;
+        /**
+         * Gets the animations time capture status
+         */
+        /**
+        * Enable or disable the animations time capture
+        */
+        captureAnimationsTime: boolean;
+        /**
+         * Gets the perf counter used for frame time capture
+         */
+        readonly frameTimeCounter: PerfCounter;
+        /**
+         * Gets the frame time capture status
+         */
+        /**
+        * Enable or disable the frame time capture
+        */
+        captureFrameTime: boolean;
+        /**
+         * Gets the perf counter used for inter-frames time capture
+         */
+        readonly interFrameTimeCounter: PerfCounter;
+        /**
+         * Gets the inter-frames time capture status
+         */
+        /**
+        * Enable or disable the inter-frames time capture
+        */
+        captureInterFrameTime: boolean;
+        /**
+         * Gets the perf counter used for render time capture
+         */
+        readonly renderTimeCounter: PerfCounter;
+        /**
+         * Gets the render time capture status
+         */
+        /**
+        * Enable or disable the render time capture
+        */
+        captureRenderTime: boolean;
+        /**
+         * Gets the perf counter used for camera render time capture
+         */
+        readonly cameraRenderTimeCounter: PerfCounter;
+        /**
+         * Gets the camera render time capture status
+         */
+        /**
+        * Enable or disable the camera render time capture
+        */
+        captureCameraRenderTime: boolean;
+        /**
+         * Gets the perf counter used for draw calls
+         */
+        readonly drawCallsCounter: PerfCounter;
+        /**
+         * Gets the perf counter used for texture collisions
+         */
+        readonly textureCollisionsCounter: PerfCounter;
+        constructor(scene: Scene);
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    class _TimeToken {
+        _startTimeQuery: Nullable<WebGLQuery>;
+        _endTimeQuery: Nullable<WebGLQuery>;
+        _timeElapsedQuery: Nullable<WebGLQuery>;
+        _timeElapsedQueryEnded: boolean;
+    }
+}
+
+declare module BABYLON {
+    /**
      * Effect layer options. This helps customizing the behaviour
      * of the effect layer.
      */
@@ -13350,226 +13571,6 @@ declare module BABYLON {
         private _draw;
         private _drawBackground;
         private _drawForeground;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This class can be used to get instrumentation data from a Babylon engine
-     */
-    class EngineInstrumentation implements IDisposable {
-        engine: Engine;
-        private _captureGPUFrameTime;
-        private _gpuFrameTimeToken;
-        private _gpuFrameTime;
-        private _captureShaderCompilationTime;
-        private _shaderCompilationTime;
-        private _onBeginFrameObserver;
-        private _onEndFrameObserver;
-        private _onBeforeShaderCompilationObserver;
-        private _onAfterShaderCompilationObserver;
-        /**
-         * Gets the perf counter used for GPU frame time
-         */
-        readonly gpuFrameTimeCounter: PerfCounter;
-        /**
-         * Gets the GPU frame time capture status
-         */
-        /**
-        * Enable or disable the GPU frame time capture
-        */
-        captureGPUFrameTime: boolean;
-        /**
-         * Gets the perf counter used for shader compilation time
-         */
-        readonly shaderCompilationTimeCounter: PerfCounter;
-        /**
-         * Gets the shader compilation time capture status
-         */
-        /**
-        * Enable or disable the shader compilation time capture
-        */
-        captureShaderCompilationTime: boolean;
-        constructor(engine: Engine);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This class can be used to get instrumentation data from a Babylon engine
-     */
-    class SceneInstrumentation implements IDisposable {
-        scene: Scene;
-        private _captureActiveMeshesEvaluationTime;
-        private _activeMeshesEvaluationTime;
-        private _captureRenderTargetsRenderTime;
-        private _renderTargetsRenderTime;
-        private _captureFrameTime;
-        private _frameTime;
-        private _captureRenderTime;
-        private _renderTime;
-        private _captureInterFrameTime;
-        private _interFrameTime;
-        private _captureParticlesRenderTime;
-        private _particlesRenderTime;
-        private _captureSpritesRenderTime;
-        private _spritesRenderTime;
-        private _capturePhysicsTime;
-        private _physicsTime;
-        private _captureAnimationsTime;
-        private _animationsTime;
-        private _captureCameraRenderTime;
-        private _cameraRenderTime;
-        private _onBeforeActiveMeshesEvaluationObserver;
-        private _onAfterActiveMeshesEvaluationObserver;
-        private _onBeforeRenderTargetsRenderObserver;
-        private _onAfterRenderTargetsRenderObserver;
-        private _onAfterRenderObserver;
-        private _onBeforeDrawPhaseObserver;
-        private _onAfterDrawPhaseObserver;
-        private _onBeforeAnimationsObserver;
-        private _onBeforeParticlesRenderingObserver;
-        private _onAfterParticlesRenderingObserver;
-        private _onBeforeSpritesRenderingObserver;
-        private _onAfterSpritesRenderingObserver;
-        private _onBeforePhysicsObserver;
-        private _onAfterPhysicsObserver;
-        private _onAfterAnimationsObserver;
-        private _onBeforeCameraRenderObserver;
-        private _onAfterCameraRenderObserver;
-        /**
-         * Gets the perf counter used for active meshes evaluation time
-         */
-        readonly activeMeshesEvaluationTimeCounter: PerfCounter;
-        /**
-         * Gets the active meshes evaluation time capture status
-         */
-        /**
-        * Enable or disable the active meshes evaluation time capture
-        */
-        captureActiveMeshesEvaluationTime: boolean;
-        /**
-         * Gets the perf counter used for render targets render time
-         */
-        readonly renderTargetsRenderTimeCounter: PerfCounter;
-        /**
-         * Gets the render targets render time capture status
-         */
-        /**
-        * Enable or disable the render targets render time capture
-        */
-        captureRenderTargetsRenderTime: boolean;
-        /**
-         * Gets the perf counter used for particles render time
-         */
-        readonly particlesRenderTimeCounter: PerfCounter;
-        /**
-         * Gets the particles render time capture status
-         */
-        /**
-        * Enable or disable the particles render time capture
-        */
-        captureParticlesRenderTime: boolean;
-        /**
-         * Gets the perf counter used for sprites render time
-         */
-        readonly spritesRenderTimeCounter: PerfCounter;
-        /**
-         * Gets the sprites render time capture status
-         */
-        /**
-        * Enable or disable the sprites render time capture
-        */
-        captureSpritesRenderTime: boolean;
-        /**
-         * Gets the perf counter used for physics time
-         */
-        readonly physicsTimeCounter: PerfCounter;
-        /**
-         * Gets the physics time capture status
-         */
-        /**
-        * Enable or disable the physics time capture
-        */
-        capturePhysicsTime: boolean;
-        /**
-         * Gets the perf counter used for animations time
-         */
-        readonly animationsTimeCounter: PerfCounter;
-        /**
-         * Gets the animations time capture status
-         */
-        /**
-        * Enable or disable the animations time capture
-        */
-        captureAnimationsTime: boolean;
-        /**
-         * Gets the perf counter used for frame time capture
-         */
-        readonly frameTimeCounter: PerfCounter;
-        /**
-         * Gets the frame time capture status
-         */
-        /**
-        * Enable or disable the frame time capture
-        */
-        captureFrameTime: boolean;
-        /**
-         * Gets the perf counter used for inter-frames time capture
-         */
-        readonly interFrameTimeCounter: PerfCounter;
-        /**
-         * Gets the inter-frames time capture status
-         */
-        /**
-        * Enable or disable the inter-frames time capture
-        */
-        captureInterFrameTime: boolean;
-        /**
-         * Gets the perf counter used for render time capture
-         */
-        readonly renderTimeCounter: PerfCounter;
-        /**
-         * Gets the render time capture status
-         */
-        /**
-        * Enable or disable the render time capture
-        */
-        captureRenderTime: boolean;
-        /**
-         * Gets the perf counter used for camera render time capture
-         */
-        readonly cameraRenderTimeCounter: PerfCounter;
-        /**
-         * Gets the camera render time capture status
-         */
-        /**
-        * Enable or disable the camera render time capture
-        */
-        captureCameraRenderTime: boolean;
-        /**
-         * Gets the perf counter used for draw calls
-         */
-        readonly drawCallsCounter: PerfCounter;
-        /**
-         * Gets the perf counter used for texture collisions
-         */
-        readonly textureCollisionsCounter: PerfCounter;
-        constructor(scene: Scene);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * @hidden
-     **/
-    class _TimeToken {
-        _startTimeQuery: Nullable<WebGLQuery>;
-        _endTimeQuery: Nullable<WebGLQuery>;
-        _timeElapsedQuery: Nullable<WebGLQuery>;
-        _timeElapsedQueryEnded: boolean;
     }
 }
 
@@ -16207,43 +16208,27 @@ declare module BABYLON {
         /**
          * The dirty texture flag value
          */
-        private static _TextureDirtyFlag;
+        static readonly TextureDirtyFlag: number;
         /**
          * The dirty light flag value
          */
-        private static _LightDirtyFlag;
+        static readonly LightDirtyFlag: number;
         /**
          * The dirty fresnel flag value
          */
-        private static _FresnelDirtyFlag;
+        static readonly FresnelDirtyFlag: number;
         /**
          * The dirty attribute flag value
          */
-        private static _AttributesDirtyFlag;
+        static readonly AttributesDirtyFlag: number;
         /**
          * The dirty misc flag value
          */
-        private static _MiscDirtyFlag;
-        /**
-         * Returns the dirty texture flag value
-         */
-        static readonly TextureDirtyFlag: number;
-        /**
-         * Returns the dirty light flag value
-         */
-        static readonly LightDirtyFlag: number;
-        /**
-         * Returns the dirty fresnel flag value
-         */
-        static readonly FresnelDirtyFlag: number;
-        /**
-         * Returns the dirty attributes flag value
-         */
-        static readonly AttributesDirtyFlag: number;
-        /**
-         * Returns the dirty misc flag value
-         */
         static readonly MiscDirtyFlag: number;
+        /**
+         * The all dirty flag value
+         */
+        static readonly AllDirtyFlag: number;
         /**
          * The ID of the material
          */
@@ -16850,13 +16835,15 @@ declare module BABYLON {
          * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
          */
         static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights?: number, usePhysicalLightFalloff?: boolean): void;
+        private static _tempFogColor;
         /**
          * Binds the fog information from the scene to the effect for the given mesh.
          * @param scene The scene the lights belongs to
          * @param mesh The mesh we are binding the information to render
          * @param effect The effect we are binding the data to
+         * @param linearSpace Defines if the fog effect is applied in linear space
          */
-        static BindFogParameters(scene: Scene, mesh: AbstractMesh, effect: Effect): void;
+        static BindFogParameters(scene: Scene, mesh: AbstractMesh, effect: Effect, linearSpace?: boolean): void;
         /**
          * Binds the bones information from the mesh to the effect.
          * @param mesh The mesh we are binding the information to render
@@ -21178,199 +21165,6 @@ declare module BABYLON {
          * @returns the spherical harmonics
          */
         static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalHarmonics;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Defines a target to use with MorphTargetManager
-     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
-     */
-    class MorphTarget implements IAnimatable {
-        /** defines the name of the target */
-        name: string;
-        /**
-         * Gets or sets the list of animations
-         */
-        animations: Animation[];
-        private _scene;
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _influence;
-        /**
-         * Observable raised when the influence changes
-         */
-        onInfluenceChanged: Observable<boolean>;
-        /**
-         * Gets or sets the influence of this target (ie. its weight in the overall morphing)
-         */
-        influence: number;
-        private _animationPropertiesOverride;
-        /**
-         * Gets or sets the animation properties override
-         */
-        animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
-        /**
-         * Creates a new MorphTarget
-         * @param name defines the name of the target
-         * @param influence defines the influence to use
-         */
-        constructor(
-        /** defines the name of the target */
-        name: string, influence?: number, scene?: Nullable<Scene>);
-        /**
-         * Gets a boolean defining if the target contains position data
-         */
-        readonly hasPositions: boolean;
-        /**
-         * Gets a boolean defining if the target contains normal data
-         */
-        readonly hasNormals: boolean;
-        /**
-         * Gets a boolean defining if the target contains tangent data
-         */
-        readonly hasTangents: boolean;
-        /**
-         * Affects position data to this target
-         * @param data defines the position data to use
-         */
-        setPositions(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the position data stored in this target
-         * @returns a FloatArray containing the position data (or null if not present)
-         */
-        getPositions(): Nullable<FloatArray>;
-        /**
-         * Affects normal data to this target
-         * @param data defines the normal data to use
-         */
-        setNormals(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the normal data stored in this target
-         * @returns a FloatArray containing the normal data (or null if not present)
-         */
-        getNormals(): Nullable<FloatArray>;
-        /**
-         * Affects tangent data to this target
-         * @param data defines the tangent data to use
-         */
-        setTangents(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the tangent data stored in this target
-         * @returns a FloatArray containing the tangent data (or null if not present)
-         */
-        getTangents(): Nullable<FloatArray>;
-        /**
-         * Serializes the current target into a Serialization object
-         * @returns the serialized object
-         */
-        serialize(): any;
-        /**
-         * Creates a new target from serialized data
-         * @param serializationObject defines the serialized data to use
-         * @returns a new MorphTarget
-         */
-        static Parse(serializationObject: any): MorphTarget;
-        /**
-         * Creates a MorphTarget from mesh data
-         * @param mesh defines the source mesh
-         * @param name defines the name to use for the new target
-         * @param influence defines the influence to attach to the target
-         * @returns a new MorphTarget
-         */
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This class is used to deform meshes using morphing between different targets
-     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
-     */
-    class MorphTargetManager {
-        private _targets;
-        private _targetObservable;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _vertexCount;
-        private _uniqueId;
-        private _tempInfluences;
-        /**
-         * Creates a new MorphTargetManager
-         * @param scene defines the current scene
-         */
-        constructor(scene?: Nullable<Scene>);
-        /**
-         * Gets the unique ID of this manager
-         */
-        readonly uniqueId: number;
-        /**
-         * Gets the number of vertices handled by this manager
-         */
-        readonly vertexCount: number;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of normals
-         */
-        readonly supportsNormals: boolean;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of tangents
-         */
-        readonly supportsTangents: boolean;
-        /**
-         * Gets the number of targets stored in this manager
-         */
-        readonly numTargets: number;
-        /**
-         * Gets the number of influencers (ie. the number of targets with influences > 0)
-         */
-        readonly numInfluencers: number;
-        /**
-         * Gets the list of influences (one per target)
-         */
-        readonly influences: Float32Array;
-        /**
-         * Gets the active target at specified index. An active target is a target with an influence > 0
-         * @param index defines the index to check
-         * @returns the requested target
-         */
-        getActiveTarget(index: number): MorphTarget;
-        /**
-         * Gets the target at specified index
-         * @param index defines the index to check
-         * @returns the requested target
-         */
-        getTarget(index: number): MorphTarget;
-        /**
-         * Add a new target to this manager
-         * @param target defines the target to add
-         */
-        addTarget(target: MorphTarget): void;
-        /**
-         * Removes a target from the manager
-         * @param target defines the target to remove
-         */
-        removeTarget(target: MorphTarget): void;
-        /**
-         * Serializes the current manager into a Serialization object
-         * @returns the serialized object
-         */
-        serialize(): any;
-        private _syncActiveTargets;
-        /**
-         * Syncrhonize the targets with all the meshes using this morph target manager
-         */
-        synchronize(): void;
-        /**
-         * Creates a new MorphTargetManager from serialized data
-         * @param serializationObject defines the serialized data
-         * @param scene defines the hosting scene
-         * @returns the new MorphTargetManager
-         */
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
     }
 }
 
@@ -29064,6 +28858,199 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * Defines a target to use with MorphTargetManager
+     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    class MorphTarget implements IAnimatable {
+        /** defines the name of the target */
+        name: string;
+        /**
+         * Gets or sets the list of animations
+         */
+        animations: Animation[];
+        private _scene;
+        private _positions;
+        private _normals;
+        private _tangents;
+        private _influence;
+        /**
+         * Observable raised when the influence changes
+         */
+        onInfluenceChanged: Observable<boolean>;
+        /**
+         * Gets or sets the influence of this target (ie. its weight in the overall morphing)
+         */
+        influence: number;
+        private _animationPropertiesOverride;
+        /**
+         * Gets or sets the animation properties override
+         */
+        animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
+        /**
+         * Creates a new MorphTarget
+         * @param name defines the name of the target
+         * @param influence defines the influence to use
+         */
+        constructor(
+        /** defines the name of the target */
+        name: string, influence?: number, scene?: Nullable<Scene>);
+        /**
+         * Gets a boolean defining if the target contains position data
+         */
+        readonly hasPositions: boolean;
+        /**
+         * Gets a boolean defining if the target contains normal data
+         */
+        readonly hasNormals: boolean;
+        /**
+         * Gets a boolean defining if the target contains tangent data
+         */
+        readonly hasTangents: boolean;
+        /**
+         * Affects position data to this target
+         * @param data defines the position data to use
+         */
+        setPositions(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the position data stored in this target
+         * @returns a FloatArray containing the position data (or null if not present)
+         */
+        getPositions(): Nullable<FloatArray>;
+        /**
+         * Affects normal data to this target
+         * @param data defines the normal data to use
+         */
+        setNormals(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the normal data stored in this target
+         * @returns a FloatArray containing the normal data (or null if not present)
+         */
+        getNormals(): Nullable<FloatArray>;
+        /**
+         * Affects tangent data to this target
+         * @param data defines the tangent data to use
+         */
+        setTangents(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the tangent data stored in this target
+         * @returns a FloatArray containing the tangent data (or null if not present)
+         */
+        getTangents(): Nullable<FloatArray>;
+        /**
+         * Serializes the current target into a Serialization object
+         * @returns the serialized object
+         */
+        serialize(): any;
+        /**
+         * Creates a new target from serialized data
+         * @param serializationObject defines the serialized data to use
+         * @returns a new MorphTarget
+         */
+        static Parse(serializationObject: any): MorphTarget;
+        /**
+         * Creates a MorphTarget from mesh data
+         * @param mesh defines the source mesh
+         * @param name defines the name to use for the new target
+         * @param influence defines the influence to attach to the target
+         * @returns a new MorphTarget
+         */
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This class is used to deform meshes using morphing between different targets
+     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    class MorphTargetManager {
+        private _targets;
+        private _targetObservable;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _vertexCount;
+        private _uniqueId;
+        private _tempInfluences;
+        /**
+         * Creates a new MorphTargetManager
+         * @param scene defines the current scene
+         */
+        constructor(scene?: Nullable<Scene>);
+        /**
+         * Gets the unique ID of this manager
+         */
+        readonly uniqueId: number;
+        /**
+         * Gets the number of vertices handled by this manager
+         */
+        readonly vertexCount: number;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of normals
+         */
+        readonly supportsNormals: boolean;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of tangents
+         */
+        readonly supportsTangents: boolean;
+        /**
+         * Gets the number of targets stored in this manager
+         */
+        readonly numTargets: number;
+        /**
+         * Gets the number of influencers (ie. the number of targets with influences > 0)
+         */
+        readonly numInfluencers: number;
+        /**
+         * Gets the list of influences (one per target)
+         */
+        readonly influences: Float32Array;
+        /**
+         * Gets the active target at specified index. An active target is a target with an influence > 0
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getActiveTarget(index: number): MorphTarget;
+        /**
+         * Gets the target at specified index
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getTarget(index: number): MorphTarget;
+        /**
+         * Add a new target to this manager
+         * @param target defines the target to add
+         */
+        addTarget(target: MorphTarget): void;
+        /**
+         * Removes a target from the manager
+         * @param target defines the target to remove
+         */
+        removeTarget(target: MorphTarget): void;
+        /**
+         * Serializes the current manager into a Serialization object
+         * @returns the serialized object
+         */
+        serialize(): any;
+        private _syncActiveTargets;
+        /**
+         * Syncrhonize the targets with all the meshes using this morph target manager
+         */
+        synchronize(): void;
+        /**
+         * Creates a new MorphTargetManager from serialized data
+         * @param serializationObject defines the serialized data
+         * @param scene defines the hosting scene
+         * @returns the new MorphTargetManager
+         */
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
+    }
+}
+
+declare module BABYLON {
+    /**
      * Interface used to describe a physics joint
      */
     interface PhysicsImpostorJoint {
@@ -36539,192 +36526,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new AnaglyphArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphFreeCamera extends FreeCamera {
-        /**
-         * Creates a new AnaglyphFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new AnaglyphGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new AnaglyphUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphUniversalCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new StereoscopicArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicFreeCamera extends FreeCamera {
-        /**
-         * Creates a new StereoscopicFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new StereoscopicGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new StereoscopicUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicUniversalCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
      * This represents all the required metrics to create a VR camera.
      * @see http://doc.babylonjs.com/babylon101/cameras#device-orientation-camera
      */
@@ -37491,6 +37292,192 @@ declare module BABYLON {
          * Initializes the controllers and their meshes
          */
         initControllers(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new AnaglyphArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphFreeCamera extends FreeCamera {
+        /**
+         * Creates a new AnaglyphFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new AnaglyphGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new AnaglyphUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphUniversalCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new StereoscopicArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicFreeCamera extends FreeCamera {
+        /**
+         * Creates a new StereoscopicFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new StereoscopicGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new StereoscopicUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicUniversalCamera
+         */
+        getClassName(): string;
     }
 }
 
