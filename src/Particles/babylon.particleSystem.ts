@@ -994,21 +994,7 @@
             return this._started;
         }
 
-        /**
-         * Starts the particle system and begins to emit
-         * @param delay defines the delay in milliseconds before starting the system (this.startDelay by default)
-         */
-        public start(delay = this.startDelay): void {
-            if(!this.targetStopDuration && this._hasTargetStopDurationDependantGradient()){
-                throw "Particle system started with a targetStopDuration dependant gradient (eg. startSizeGradients) but no targetStopDuration set";
-            }
-            if (delay) {
-                setTimeout(() => {
-                    this.start(0);
-                }, delay);
-                return;
-            }
-            // Convert the subEmitters field to the constant type field _subEmitters
+        private _prepareSubEmitterInternalArray() {
             this._subEmitters = new Array<Array<SubEmitter>>();
             if (this.subEmitters) {
                 this.subEmitters.forEach((subEmitter) => {
@@ -1026,6 +1012,24 @@
                     })
                 });
             }
+        }
+
+        /**
+         * Starts the particle system and begins to emit
+         * @param delay defines the delay in milliseconds before starting the system (this.startDelay by default)
+         */
+        public start(delay = this.startDelay): void {
+            if(!this.targetStopDuration && this._hasTargetStopDurationDependantGradient()){
+                throw "Particle system started with a targetStopDuration dependant gradient (eg. startSizeGradients) but no targetStopDuration set";
+            }
+            if (delay) {
+                setTimeout(() => {
+                    this.start(0);
+                }, delay);
+                return;
+            }
+            // Convert the subEmitters field to the constant type field _subEmitters
+            this._prepareSubEmitterInternalArray();
 
             this._started = true;
             this._stopped = false;
@@ -1960,7 +1964,23 @@
             serializationObject.customShader = this.customShader;
             serializationObject.preventAutoStart = this.preventAutoStart;
 
-            serializationObject.isAnimationSheetEnabled = this._isAnimationSheetEnabled;
+            // SubEmitters
+            if (this.subEmitters) {
+                serializationObject.subEmitters = [];
+
+                if (!this._subEmitters) {
+                    this._prepareSubEmitterInternalArray();
+                }
+                
+                for (var subs of this._subEmitters) {
+                    let cell = [];
+                    for (var sub of subs) {
+                        cell.push(sub.serialize());
+                    }
+
+                    serializationObject.subEmitters.push(cell);
+                }
+            }
 
             return serializationObject;
         }
@@ -1997,6 +2017,7 @@
             serializationObject.startDelay = particleSystem.startDelay;
             serializationObject.renderingGroupId = particleSystem.renderingGroupId;
             serializationObject.isBillboardBased = particleSystem.isBillboardBased;
+            serializationObject.billboardMode = particleSystem.billboardMode;
             serializationObject.minAngularSpeed = particleSystem.minAngularSpeed;
             serializationObject.maxAngularSpeed = particleSystem.maxAngularSpeed;
             serializationObject.minSize = particleSystem.minSize;
@@ -2028,6 +2049,7 @@
             serializationObject.spriteCellWidth = particleSystem.spriteCellWidth;
             serializationObject.spriteCellHeight = particleSystem.spriteCellHeight;
             serializationObject.spriteRandomStartCell = particleSystem.spriteRandomStartCell;
+            serializationObject.isAnimationSheetEnabled = particleSystem.isAnimationSheetEnabled;
 
             let colorGradients = particleSystem.getColorGradients();
             if (colorGradients) {
@@ -2237,7 +2259,7 @@
             }
 
             // Emitter
-            if (parsedParticleSystem.emitterId === undefined) {
+            if (!parsedParticleSystem.emitterId && parsedParticleSystem.emitterId !== 0 && parsedParticleSystem.emitter === undefined) {
                 particleSystem.emitter = Vector3.Zero();
             }
             else if (parsedParticleSystem.emitterId) {
@@ -2253,6 +2275,10 @@
 
             if (parsedParticleSystem.isBillboardBased !== undefined) {
                 particleSystem.isBillboardBased = parsedParticleSystem.isBillboardBased;
+            }
+
+            if (parsedParticleSystem.billboardMode !== undefined) {
+                particleSystem.billboardMode = parsedParticleSystem.billboardMode;
             }
 
             // Animations
@@ -2444,6 +2470,20 @@
             if (parsedParticleSystem.id) {
                 particleSystem.id = parsedParticleSystem.id;
             }
+
+            // SubEmitters
+            if (parsedParticleSystem.subEmitters) {
+                particleSystem.subEmitters = [];
+                for (var cell of parsedParticleSystem.subEmitters) {
+                    let cellArray = [];
+                    for (var sub of cell) {
+                        cellArray.push(SubEmitter.Parse(sub, scene, rootUrl));
+                    }
+
+                    particleSystem.subEmitters.push(cellArray);
+                }
+            }
+            
 
             // Auto start
             if (parsedParticleSystem.preventAutoStart) {

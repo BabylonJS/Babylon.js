@@ -478,9 +478,9 @@ module BABYLON {
 
         /**
          * Gets or sets the billboard mode to use when isBillboardBased = true.
-         * Only BABYLON.AbstractMesh.BILLBOARDMODE_ALL and AbstractMesh.BILLBOARDMODE_Y are supported so far
+         * Value can be: ParticleSystem.BILLBOARDMODE_ALL, ParticleSystem.BILLBOARDMODE_Y, ParticleSystem.BILLBOARDMODE_STRETCHED
          */
-        public billboardMode = AbstractMesh.BILLBOARDMODE_ALL;        
+        public billboardMode = ParticleSystem.BILLBOARDMODE_ALL;        
         
         protected _isBillboardBased = true;
         /**
