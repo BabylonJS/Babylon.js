@@ -1095,7 +1095,7 @@
                 this.bindView(effect);
 
                 // Fog
-                MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
+                MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect, true);
 
                 // image processing
                 if (this._imageProcessingConfiguration) {

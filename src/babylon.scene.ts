@@ -5232,8 +5232,24 @@
             return this._renderingManager.getAutoClearDepthStencilSetup(index);
         }
 
+        private _blockMaterialDirtyMechanism = false;
+
         /** Gets or sets a boolean blocking all the calls to markAllMaterialsAsDirty (ie. the materials won't be updated if they are out of sync) */
-        public blockMaterialDirtyMechanism = false;
+        public get blockMaterialDirtyMechanism(): boolean {
+            return this._blockMaterialDirtyMechanism;
+        }
+
+        public set blockMaterialDirtyMechanism(value: boolean) {
+            if (this._blockMaterialDirtyMechanism === value) {
+                return;
+            }
+
+            this._blockMaterialDirtyMechanism = value;
+
+            if (!value) { // Do a complete update
+                this.markAllMaterialsAsDirty(Material.AllDirtyFlag);
+            }
+        }
 
         /**
          * Will flag all materials as dirty to trigger new shader compilation
@@ -5241,7 +5257,7 @@
          * @param predicate If not null, it will be used to specifiy if a material has to be marked as dirty
          */
         public markAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void {
-            if (this.blockMaterialDirtyMechanism) {
+            if (this._blockMaterialDirtyMechanism) {
                 return;
             }
 

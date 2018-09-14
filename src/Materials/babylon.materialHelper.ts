@@ -569,16 +569,25 @@ module BABYLON {
             }
         }
 
+        private static _tempFogColor = BABYLON.Color3.Black();
         /**
          * Binds the fog information from the scene to the effect for the given mesh.
          * @param scene The scene the lights belongs to
          * @param mesh The mesh we are binding the information to render 
          * @param effect The effect we are binding the data to
+         * @param linearSpace Defines if the fog effect is applied in linear space
          */
-        public static BindFogParameters(scene: Scene, mesh: AbstractMesh, effect: Effect): void {
+        public static BindFogParameters(scene: Scene, mesh: AbstractMesh, effect: Effect, linearSpace = false): void {
             if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
                 effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-                effect.setColor3("vFogColor", scene.fogColor);
+                // Convert fog color to linear space if used in a linear space computed shader.
+                if (linearSpace) {
+                    scene.fogColor.toLinearSpaceToRef(this._tempFogColor);
+                    effect.setColor3("vFogColor", this._tempFogColor);
+                }
+                else {
+                    effect.setColor3("vFogColor", scene.fogColor);
+                }
             }
         }
 
