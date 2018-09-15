@@ -1,6 +1,6 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
-module BABYLON.GLTF2.Extensions {
+module BABYLON.GLTF2.Loader.Extensions {
     const NAME = "EXT_lights_image_based";
 
     interface ILightReference {
@@ -56,7 +56,7 @@ module BABYLON.GLTF2.Extensions {
         }
 
         /** @hidden */
-        public loadSceneAsync(context: string, scene: ILoaderScene): Nullable<Promise<void>> { 
+        public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> { 
             return GLTFLoader.LoadExtensionAsync<ILightReference>(context, scene, this.name, (extensionContext, extension) => {
                 const promises = new Array<Promise<any>>();
 
