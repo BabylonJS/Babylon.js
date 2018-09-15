@@ -1,6 +1,6 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
-module BABYLON.GLTF2.Extensions {
+module BABYLON.GLTF2.Loader.Extensions {
     const NAME = "MSFT_audio_emitter";
 
     interface IClipReference {
@@ -119,7 +119,7 @@ module BABYLON.GLTF2.Extensions {
         }
 
         /** @hidden */
-        public loadSceneAsync(context: string, scene: ILoaderScene): Nullable<Promise<void>> {
+        public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
             return GLTFLoader.LoadExtensionAsync<IEmittersReference>(context, scene, this.name, (extensionContext, extension) => {
                 const promises = new Array<Promise<any>>();
 
@@ -140,7 +140,7 @@ module BABYLON.GLTF2.Extensions {
         }
 
         /** @hidden */
-        public loadNodeAsync(context: string, node: ILoaderNode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> {
+        public loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> {
             return GLTFLoader.LoadExtensionAsync<IEmittersReference, Mesh>(context, node, this.name, (extensionContext, extension) => {
                 const promises = new Array<Promise<any>>();
 
@@ -171,7 +171,7 @@ module BABYLON.GLTF2.Extensions {
         }
 
         /** @hidden */
-        public loadAnimationAsync(context: string, animation: ILoaderAnimation): Nullable<Promise<AnimationGroup>> {
+        public loadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>> {
             return GLTFLoader.LoadExtensionAsync<ILoaderAnimationEvents, AnimationGroup>(context, animation, this.name, (extensionContext, extension) => {
                 return this._loader.loadAnimationAsync(context, animation).then(babylonAnimationGroup => {
                     const promises = new Array<Promise<any>>();
@@ -274,7 +274,7 @@ module BABYLON.GLTF2.Extensions {
             }
         }
 
-        private _loadAnimationEventAsync(context: string, animationContext: string, animation: ILoaderAnimation, event: ILoaderAnimationEvent, babylonAnimationGroup: AnimationGroup): Promise<void> {
+        private _loadAnimationEventAsync(context: string, animationContext: string, animation: IAnimation, event: ILoaderAnimationEvent, babylonAnimationGroup: AnimationGroup): Promise<void> {
             if (babylonAnimationGroup.targetedAnimations.length == 0) {
                 return Promise.resolve();
             }
