@@ -147,7 +147,7 @@ module BABYLON {
         }
 
         /**
-         * Define if the behavior should automatically correct change the configured
+         * Define if the behavior should automatically change the configured
          * camera limits and sensibilities.
          */
         public autoCorrectCameraLimitsAndSensibility = true;
