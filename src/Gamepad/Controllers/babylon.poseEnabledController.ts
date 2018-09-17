@@ -145,6 +145,20 @@ module BABYLON {
          */
         public rawPose: DevicePose; //GamepadPose;
 
+        // Used to convert 6dof controllers to 3dof
+        private _trackPosition = true;
+        private _maxRotationDistFromHeadset = Math.PI/5;
+        private _draggedRoomRotation = 0;
+        /**
+         * @hidden
+         */
+        public _disableTrackPosition(fixedPosition:Vector3){
+            if(this._trackPosition){
+                this._calculatedPosition.copyFrom(fixedPosition);
+                this._trackPosition = false;
+            }
+        }
+
         /**
          * Internal, the mesh attached to the controller
          * @hidden
@@ -193,14 +207,39 @@ module BABYLON {
             super.update();
             this._updatePoseAndMesh();
         }
-
+        
         /**
          * Updates only the pose device and mesh without doing any button event checking
          */
         protected _updatePoseAndMesh() {
             var pose: GamepadPose = this.browserGamepad.pose;
             this.updateFromDevice(pose);
-
+            
+            if(!this._trackPosition && BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.activeCamera && (<WebVRFreeCamera>BABYLON.Engine.LastCreatedScene.activeCamera).devicePosition){
+                var camera = <WebVRFreeCamera>BABYLON.Engine.LastCreatedScene.activeCamera
+                camera._computeDevicePosition();
+                
+                this._deviceToWorld.setTranslation(camera.devicePosition)
+                if(camera.deviceRotationQuaternion){
+                    var camera = camera;
+                    camera._deviceRoomRotationQuaternion.toEulerAnglesToRef(BABYLON.Tmp.Vector3[0]);
+                    
+                    // Find the radian distance away that the headset is from the controllers rotation
+                    var distanceAway = Math.atan2(Math.sin(BABYLON.Tmp.Vector3[0].y - this._draggedRoomRotation), Math.cos(BABYLON.Tmp.Vector3[0].y - this._draggedRoomRotation))
+                    if(Math.abs(distanceAway) > this._maxRotationDistFromHeadset){
+                        // Only rotate enouph to be within the _maxRotationDistFromHeadset
+                        var rotationAmount = distanceAway - (distanceAway < 0 ? -this._maxRotationDistFromHeadset : this._maxRotationDistFromHeadset);
+                        this._draggedRoomRotation += rotationAmount;
+                        
+                        // Rotate controller around headset
+                        var sin = Math.sin(-rotationAmount);
+                        var cos = Math.cos(-rotationAmount);
+                        this._calculatedPosition.x = this._calculatedPosition.x * cos - this._calculatedPosition.z * sin;
+                        this._calculatedPosition.z = this._calculatedPosition.x * sin + this._calculatedPosition.z * cos;
+                    }                  
+                }
+            }
+            
             Vector3.TransformCoordinatesToRef(this._calculatedPosition, this._deviceToWorld, this.devicePosition)
             this._deviceToWorld.getRotationMatrixToRef(this._workingMatrix);
             Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
@@ -227,8 +266,9 @@ module BABYLON {
                     if (this._mesh && this._mesh.getScene().useRightHandedSystem) {
                         this._deviceRoomPosition.z *= -1;
                     }
-
-                    this._deviceRoomPosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
+                    if(this._trackPosition){
+                        this._deviceRoomPosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
+                    }
                     this._calculatedPosition.addInPlace(this.position);
                 }
                 let pose = this.rawPose;
