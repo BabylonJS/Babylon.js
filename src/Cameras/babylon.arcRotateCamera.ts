@@ -366,6 +366,12 @@
         @serialize()
         public allowUpsideDown = true;
 
+        /**
+         * Define if double tap/click is used to restore the previously saved state of the camera.
+         */
+        @serialize()
+        public useInputToRestoreState = true;
+
         /** @hidden */
         public _viewMatrix = new Matrix();
         /** @hidden */

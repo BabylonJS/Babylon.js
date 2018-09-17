@@ -62,7 +62,7 @@ module BABYLON {
          * Revers pinch action direction.
          */
         public pinchInwards = true;
-        
+
         private _isPanClick: boolean = false;
         private _pointerInput: (p: PointerInfo, s: EventState) => void;
         private _observer: Nullable<Observer<PointerInfo>>;
@@ -126,7 +126,9 @@ module BABYLON {
                     }
                 }
                 else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
-                    this.camera.restoreState();
+                    if (this.camera.useInputToRestoreState) {
+                        this.camera.restoreState();
+                    }
                 }
                 else if (p.type === PointerEventTypes.POINTERUP && srcElement) {
                     try {

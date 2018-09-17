@@ -4,6 +4,8 @@ Babylon.js
 Getting started? Play directly with the Babylon.js API via our [playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it.
 
 [![Build Status](https://travis-ci.com/BabylonJS/Babylon.js.svg)](https://travis-ci.com/BabylonJS/Babylon.js)
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/babylonJS/babylon.js.svg)](http://isitmaintained.com/project/babylonJS/babylon.js "Average time to resolve an issue")
+[![Percentage of issues still open](http://isitmaintained.com/badge/open/babylonJS/babylon.js.svg)](http://isitmaintained.com/project/babylonJS/babylon.js "Percentage of issues still open")
 
 **Any questions?** Here is our official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com.
 

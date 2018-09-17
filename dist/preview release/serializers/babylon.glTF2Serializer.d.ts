@@ -945,11 +945,6 @@ declare module BABYLON.GLTF2.Exporter {
         postExportMeshPrimitiveAsync?(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Nullable<Promise<IMeshPrimitive>>;
     }
 }
-/**
- * Defines the module for the built-in glTF 2.0 exporter extensions.
- */
-declare module BABYLON.GLTF2.Extensions {
-}
 
 
 declare module BABYLON {
@@ -974,6 +969,9 @@ declare module BABYLON {
 }
 
 
+/**
+ * @hidden
+ */
 declare module BABYLON.GLTF2.Exporter.Extensions {
     /**
      * @hidden
