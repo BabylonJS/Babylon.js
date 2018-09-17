@@ -23,7 +23,5 @@ module BABYLON.GLTF2.Exporter {
          * @param binaryWriter glTF serializer binary writer instance
          */
         postExportMeshPrimitiveAsync?(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Nullable<Promise<IMeshPrimitive>>;
-
-
     }
 }
