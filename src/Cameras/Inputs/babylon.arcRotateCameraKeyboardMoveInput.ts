@@ -195,7 +195,9 @@ module BABYLON {
                             camera.inertialBetaOffset += 0.01;
                         }
                     } else if (this.keysReset.indexOf(keyCode) !== -1) {
-                        camera.restoreState();
+                        if (camera.useInputToRestoreState) {
+                            camera.restoreState();
+                        }
                     }
                 }
             }
