@@ -18,7 +18,7 @@
         /**
          * Creates a box mesh
          * * The parameter `size` sets the size (float) of each box side (default 1)
-         * * You can set some different box dimensions by using the parameters `width`, `height` and `depth` (all by default have the same value than `size`)
+         * * You can set some different box dimensions by using the parameters `width`, `height` and `depth` (all by default have the same value of `size`)
          * * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of 6 Color3 elements) and `faceUV` (an array of 6 Vector4 elements)
          * * Please read this tutorial : http://doc.babylonjs.com/tutorials/CreateBox_Per_Face_Textures_And_Colors  
          * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
@@ -46,7 +46,7 @@
         /**
          * Creates a sphere mesh  
          * * The parameter `diameter` sets the diameter size (float) of the sphere (default 1)
-         * * You can set some different sphere dimensions, for instance to build an ellipsoid, by using the parameters `diameterX`, `diameterY` and `diameterZ` (all by default have the same value than `diameter`)
+         * * You can set some different sphere dimensions, for instance to build an ellipsoid, by using the parameters `diameterX`, `diameterY` and `diameterZ` (all by default have the same value of `diameter`)
          * * The parameter `segments` sets the sphere number of horizontal stripes (positive integer, default 32)
          * * You can create an unclosed sphere with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference (latitude) : 2 x PI x ratio  
          * * You can create an unclosed sphere on its height with the parameter `slice` (positive float, default1), valued between 0 and 1, what is the height ratio (longitude)
@@ -102,7 +102,7 @@
         /**
          * Creates a sphere based upon an icosahedron with 20 triangular faces which can be subdivided
          * * The parameter `radius` sets the radius size (float) of the icosphere (default 1)
-         * * You can set some different icosphere dimensions, for instance to build an ellipsoid, by using the parameters `radiusX`, `radiusY` and `radiusZ` (all by default have the same value than `radius`)
+         * * You can set some different icosphere dimensions, for instance to build an ellipsoid, by using the parameters `radiusX`, `radiusY` and `radiusZ` (all by default have the same value of `radius`)
          * * The parameter `subdivisions` sets the number of subdivisions (postive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size
          * * The parameter `flat` (boolean, default true) gives each side its own normals. Set it to false to get a smooth continuous light reflection on the surface
          * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
@@ -677,7 +677,7 @@
         /**
          * Creates a plane mesh
          * * The parameter `size` sets the size (float) of both sides of the plane at once (default 1)
-         * * You can set some different plane dimensions by using the parameters `width` and `height` (both by default have the same value than `size`)
+         * * You can set some different plane dimensions by using the parameters `width` and `height` (both by default have the same value of `size`)
          * * The parameter `sourcePlane` is a Plane instance. It builds a mesh plane from a Math plane
          * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
          * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation    

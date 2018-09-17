@@ -351,7 +351,7 @@ describe('Babylon Scene Loader', function () {
 
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
                 const observer = loader.onExtensionLoadedObservable.add(extension => {
-                    if (extension instanceof BABYLON.GLTF2.Extensions.MSFT_lod) {
+                    if (extension instanceof BABYLON.GLTF2.Loader.Extensions.MSFT_lod) {
                         loader.onExtensionLoadedObservable.remove(observer);
                         extension.onMaterialLODsLoadedObservable.add(indexLOD => {
                             const expectedMaterialName = `LOD${2 - indexLOD}`;
@@ -377,7 +377,7 @@ describe('Babylon Scene Loader', function () {
 
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
                 const observer = loader.onExtensionLoadedObservable.add(extension => {
-                    if (extension instanceof BABYLON.GLTF2.Extensions.MSFT_lod) {
+                    if (extension instanceof BABYLON.GLTF2.Loader.Extensions.MSFT_lod) {
                         loader.onExtensionLoadedObservable.remove(observer);
                         extension.onMaterialLODsLoadedObservable.add(indexLOD => {
                             expect(indexLOD, "indexLOD").to.equal(0);
