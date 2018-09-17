@@ -214,6 +214,7 @@ module BABYLON {
                                                 }
                                             });
                                             document.body.appendChild(this._htmlAudioElement);
+                                            this._htmlAudioElement.load();
                                         }
                                         break;
                                     }
