@@ -574,6 +574,7 @@ module BABYLON {
                                         playPromise.catch(function(error) {
                                             // Automatic playback failed.
                                             // Waiting for the audio engine to be unlocked by user click on unmute
+                                            Engine.audioEngine.lock();
                                             Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => { tryToPlay(); });
                                         });
                                     }
