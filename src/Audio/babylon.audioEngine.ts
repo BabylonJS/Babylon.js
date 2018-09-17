@@ -40,7 +40,7 @@
          * Defines if the audio engine relies on a custom unlocked button.
          * In this case, the embedded button will not be displayed.
          */
-        useCutomUnlockedButton: boolean;
+        useCustomUnlockedButton: boolean;
 
         /**
          * Gets whether or not the audio engine is unlocked (require first a user gesture on some browser).
@@ -124,7 +124,7 @@
          * Defines if the audio engine relies on a custom unlocked button.
          * In this case, the embedded button will not be displayed.
          */
-        public useCutomUnlockedButton: boolean = false;
+        public useCustomUnlockedButton: boolean = false;
 
         /**
          * Event raised when audio has been unlocked on the browser.
@@ -294,7 +294,7 @@
         }
 
         private _displayMuteButton(iOS: boolean = false) {
-            if (this.useCutomUnlockedButton) {
+            if (this.useCustomUnlockedButton) {
                 return;
             }
 
