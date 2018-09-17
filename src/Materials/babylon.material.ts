@@ -1,4 +1,4 @@
-module BABYLON {
+﻿module BABYLON {
     /**
      * Manages the defines for the Material
      */
@@ -1270,6 +1270,7 @@ module BABYLON {
             if (index >= 0) {
                 this._scene.materials.splice(index, 1);
             }
+            this._scene.onMaterialRemovedObservable.notifyObservers(this);
 
             // Remove from meshes
             for (index = 0; index < this._scene.meshes.length; index++) {
