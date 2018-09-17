@@ -3118,6 +3118,8 @@ module BABYLON {
             if (index !== -1) {
                 this.materials.splice(index, 1);
             }
+            this.onMaterialRemovedObservable.notifyObservers(toRemove);
+            
             return index;
         }
 
