@@ -187,9 +187,10 @@
                 // protect error during capability check.
             }
 
-            if (/iPad|iPhone|iPod/.test(navigator.platform)) {
-                this._unlockiOSaudio();
-            }
+            // Not Required as we deal like the other platforms.
+            // if (/iPad|iPhone|iPod/.test(navigator.platform)) {
+            //     this._unlockiOSaudio();
+            // }
         }
 
         /** 
@@ -206,34 +207,6 @@
          */
         public unlock() {
             this._triggerRunningState();
-        }
-
-        private _unlockiOSaudio() {
-            this._displayMuteButton(true);
-
-            var unlockaudio = () => {
-                if (!this.audioContext) {
-                    return;
-                }
-                var buffer = this.audioContext.createBuffer(1, 1, 22050);
-                var source = this.audioContext.createBufferSource();
-                source.buffer = buffer;
-                source.connect(this.audioContext.destination);
-                source.start(0);
-  
-                setTimeout(() => {
-                    if (((<any>source).playbackState === (<any>source).PLAYING_STATE || (<any>source).playbackState === (<any>source).FINISHED_STATE)) { 
-                        this._triggerRunningState();
-                        if (this._muteButton) {
-                            this._muteButton.removeEventListener('touchend', unlockaudio, false);
-                        }
-                    }
-                }, 0);
-            };
-
-            if (this._muteButton) {
-                this._muteButton.addEventListener('touchend', unlockaudio, false);
-            }
         }
 
         private _resumeAudioContext() {
@@ -293,7 +266,7 @@
             this._displayMuteButton();
         }
 
-        private _displayMuteButton(iOS: boolean = false) {
+        private _displayMuteButton() {
             if (this.useCustomUnlockedButton) {
                 return;
             }
@@ -314,11 +287,13 @@
 
             this._moveButtonToTopLeft();
 
-            if (!iOS) {
-                this._muteButton.addEventListener('mousedown', () => { 
-                    this._triggerRunningState(); 
-                }, false);
-            }
+            this._muteButton.addEventListener('mousedown', () => { 
+                this._triggerRunningState();
+            }, false);
+            this._muteButton.addEventListener('touchend', () => { 
+                this._triggerRunningState();
+            }, false);
+
             this._muteButtonDisplayed = true;
 
             window.addEventListener("resize", this._onResize);
