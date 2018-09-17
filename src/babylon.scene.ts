@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Define an interface for all classes that will hold resources
      */
@@ -439,6 +439,16 @@
         * An event triggered when a mesh is removed
         */
         public onMeshRemovedObservable = new Observable<AbstractMesh>();
+        
+        /**
+        * An event triggered when a mesh is created
+        */
+        public onNewMaterialAddedObservable = new Observable<Material>();
+
+        /**
+        * An event triggered when a mesh is removed
+        */
+        public onMaterialRemovedObservable = new Observable<Material>();
 
         /**
         * An event triggered when render targets are about to be rendered
