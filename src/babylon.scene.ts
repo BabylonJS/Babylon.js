@@ -4669,6 +4669,25 @@ module BABYLON {
             this.onBeforeRenderingGroupObservable.clear();
             this.onAfterRenderingGroupObservable.clear();
             this.onMeshImportedObservable.clear();
+            this.onBeforeCameraRenderObservable.clear();
+            this.onAfterCameraRenderObservable.clear();
+            this.onReadyObservable.clear();
+            this.onNewCameraAddedObservable.clear();
+            this.onCameraRemovedObservable.clear();
+            this.onNewLightAddedObservable.clear();
+            this.onLightRemovedObservable.clear();
+            this.onNewGeometryAddedObservable.clear();
+            this.onGeometryRemovedObservable.clear();
+            this.onNewTransformNodeAddedObservable.clear();
+            this.onTransformNodeRemovedObservable.clear();
+            this.onNewMeshAddedObservable.clear();
+            this.onMeshRemovedObservable.clear();
+            this.onNewMaterialAddedObservable.clear();
+            this.onMaterialRemovedObservable.clear();
+            this.onPrePointerObservable.clear();
+            this.onPointerObservable.clear();
+            this.onPreKeyboardObservable.clear();
+            this.onKeyboardObservable.clear();
 
             this.detachControl();
 
