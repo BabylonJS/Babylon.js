@@ -73,6 +73,7 @@
                     var parsedMaterial = parsedData.materials[index];
                     var mat = Material.Parse(parsedMaterial, scene, rootUrl);
                     container.materials.push(mat);
+                    container.scene.onNewMaterialAddedObservable.notifyObservers(mat);
                     log += (index === 0 ? "\n\tMaterials:" : "");
                     log += "\n\t\t" + mat.toString(fullDetails);
                 }

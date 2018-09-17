@@ -3230,6 +3230,7 @@ module BABYLON {
          */
         public addMaterial(newMaterial: Material): void {
             this.materials.push(newMaterial);
+            this.onNewMaterialAddedObservable.notifyObservers(newMesh);
         }
 
         /**

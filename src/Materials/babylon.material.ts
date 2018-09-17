@@ -789,6 +789,7 @@ module BABYLON {
 
             if (!doNotAdd) {
                 this._scene.materials.push(this);
+                this._scene.onNewMaterialAddedObservable.notifyObservers(this);
             }
         }
 
