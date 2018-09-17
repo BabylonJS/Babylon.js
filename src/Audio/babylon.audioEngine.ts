@@ -186,11 +186,6 @@
             catch (e) {
                 // protect error during capability check.
             }
-
-            // Not Required as we deal like the other platforms.
-            // if (/iPad|iPhone|iPod/.test(navigator.platform)) {
-            //     this._unlockiOSaudio();
-            // }
         }
 
         /** 
