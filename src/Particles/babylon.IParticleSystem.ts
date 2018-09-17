@@ -451,7 +451,12 @@ module BABYLON {
          * You must use addRampGradient and removeRampGradient to udpate this list
          * @returns the list of ramp gradients
          */
-        getRampGradients(): Nullable<Array<Color3Gradient>>;             
+        getRampGradients(): Nullable<Array<Color3Gradient>>;
+        
+        /** Gets or sets a boolean indicating that ramp gradients must be used
+         * @see http://doc.babylonjs.com/babylon101/particles#ramp-gradients
+         */        
+        useRampGradients: boolean;
         
         /**
          * Adds a new color remap gradient

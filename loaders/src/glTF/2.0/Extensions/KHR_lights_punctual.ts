@@ -1,6 +1,6 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
-module BABYLON.GLTF2.Extensions {
+module BABYLON.GLTF2.Loader.Extensions {
     const NAME = "KHR_lights_punctual";
 
     enum LightType {
@@ -63,7 +63,7 @@ module BABYLON.GLTF2.Extensions {
         }
 
         /** @hidden */
-        public loadNodeAsync(context: string, node: ILoaderNode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> { 
+        public loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> { 
             return GLTFLoader.LoadExtensionAsync<ILightReference, Mesh>(context, node, this.name, (extensionContext, extension) => {
                 return this._loader.loadNodeAsync(context, node, babylonMesh => {
                     let babylonLight: Light;
