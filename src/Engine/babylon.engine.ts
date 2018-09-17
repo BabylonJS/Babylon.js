@@ -705,7 +705,7 @@
         protected _caps: EngineCapabilities;
         private _pointerLockRequested: boolean;
         private _isStencilEnable: boolean;
-        private _colorWrite = true;
+        protected _colorWrite = true;
 
         private _loadingScreen: ILoadingScreen;
 
