@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Manages the defines for the Material
      */
@@ -466,8 +466,10 @@
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */
-        public hasRenderTargetTextures = false;
-
+        public get hasRenderTargetTextures(): boolean {
+          return false;
+        }
+        
         /**
          * Specifies if the material should be serialized
          */
