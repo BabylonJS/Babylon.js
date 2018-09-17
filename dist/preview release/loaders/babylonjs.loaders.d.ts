@@ -1043,7 +1043,7 @@ declare module BABYLON.GLTF1 {
 }
 
 
-declare module BABYLON.GLTF2 {
+declare module BABYLON.GLTF2.Loader {
     /**
      * Loader interface with an index field.
      */
@@ -1056,7 +1056,7 @@ declare module BABYLON.GLTF2 {
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderAccessor extends IAccessor, IArrayItem {
+    interface IAccessor extends GLTF2.IAccessor, IArrayItem {
         /** @hidden */
         _data?: Promise<ArrayBufferView>;
         /** @hidden */
@@ -1065,10 +1065,10 @@ declare module BABYLON.GLTF2 {
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderAnimationChannel extends IAnimationChannel, IArrayItem {
+    interface IAnimationChannel extends GLTF2.IAnimationChannel, IArrayItem {
     }
     /** @hidden */
-    interface _ILoaderAnimationSamplerData {
+    interface _IAnimationSamplerData {
         input: Float32Array;
         interpolation: AnimationSamplerInterpolation;
         output: Float32Array;
@@ -1076,30 +1076,30 @@ declare module BABYLON.GLTF2 {
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderAnimationSampler extends IAnimationSampler, IArrayItem {
+    interface IAnimationSampler extends GLTF2.IAnimationSampler, IArrayItem {
         /** @hidden */
-        _data?: Promise<_ILoaderAnimationSamplerData>;
+        _data?: Promise<_IAnimationSamplerData>;
     }
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderAnimation extends IAnimation, IArrayItem {
-        channels: ILoaderAnimationChannel[];
-        samplers: ILoaderAnimationSampler[];
+    interface IAnimation extends GLTF2.IAnimation, IArrayItem {
+        channels: IAnimationChannel[];
+        samplers: IAnimationSampler[];
         /** @hidden */
         _babylonAnimationGroup?: AnimationGroup;
     }
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderBuffer extends IBuffer, IArrayItem {
+    interface IBuffer extends GLTF2.IBuffer, IArrayItem {
         /** @hidden */
         _data?: Promise<ArrayBufferView>;
     }
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderBufferView extends IBufferView, IArrayItem {
+    interface IBufferView extends GLTF2.IBufferView, IArrayItem {
         /** @hidden */
         _data?: Promise<ArrayBufferView>;
         /** @hidden */
@@ -1108,40 +1108,40 @@ declare module BABYLON.GLTF2 {
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderCamera extends ICamera, IArrayItem {
+    interface ICamera extends GLTF2.ICamera, IArrayItem {
     }
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderImage extends IImage, IArrayItem {
+    interface IImage extends GLTF2.IImage, IArrayItem {
         /** @hidden */
         _data?: Promise<ArrayBufferView>;
     }
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderMaterialNormalTextureInfo extends IMaterialNormalTextureInfo, ILoaderTextureInfo {
+    interface IMaterialNormalTextureInfo extends GLTF2.IMaterialNormalTextureInfo, ITextureInfo {
     }
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderMaterialOcclusionTextureInfo extends IMaterialOcclusionTextureInfo, ILoaderTextureInfo {
+    interface IMaterialOcclusionTextureInfo extends GLTF2.IMaterialOcclusionTextureInfo, ITextureInfo {
     }
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderMaterialPbrMetallicRoughness extends IMaterialPbrMetallicRoughness {
-        baseColorTexture?: ILoaderTextureInfo;
-        metallicRoughnessTexture?: ILoaderTextureInfo;
+    interface IMaterialPbrMetallicRoughness extends GLTF2.IMaterialPbrMetallicRoughness {
+        baseColorTexture?: ITextureInfo;
+        metallicRoughnessTexture?: ITextureInfo;
     }
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderMaterial extends IMaterial, IArrayItem {
-        pbrMetallicRoughness?: ILoaderMaterialPbrMetallicRoughness;
-        normalTexture?: ILoaderMaterialNormalTextureInfo;
-        occlusionTexture?: ILoaderMaterialOcclusionTextureInfo;
-        emissiveTexture?: ILoaderTextureInfo;
+    interface IMaterial extends GLTF2.IMaterial, IArrayItem {
+        pbrMetallicRoughness?: IMaterialPbrMetallicRoughness;
+        normalTexture?: IMaterialNormalTextureInfo;
+        occlusionTexture?: IMaterialOcclusionTextureInfo;
+        emissiveTexture?: ITextureInfo;
         /** @hidden */
         _babylonData?: {
             [drawMode: number]: {
@@ -1154,22 +1154,22 @@ declare module BABYLON.GLTF2 {
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderMesh extends IMesh, IArrayItem {
-        primitives: ILoaderMeshPrimitive[];
+    interface IMesh extends GLTF2.IMesh, IArrayItem {
+        primitives: IMeshPrimitive[];
     }
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderMeshPrimitive extends IMeshPrimitive, IArrayItem {
+    interface IMeshPrimitive extends GLTF2.IMeshPrimitive, IArrayItem {
     }
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderNode extends INode, IArrayItem {
+    interface INode extends GLTF2.INode, IArrayItem {
         /**
          * The parent glTF node.
          */
-        parent?: ILoaderNode;
+        parent?: INode;
         /** @hidden */
         _babylonMesh?: Mesh;
         /** @hidden */
@@ -1180,7 +1180,7 @@ declare module BABYLON.GLTF2 {
         _numMorphTargets?: number;
     }
     /** @hidden */
-    interface _ILoaderSamplerData {
+    interface _ISamplerData {
         noMipMaps: boolean;
         samplingMode: number;
         wrapU: number;
@@ -1189,19 +1189,19 @@ declare module BABYLON.GLTF2 {
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderSampler extends ISampler, IArrayItem {
+    interface ISampler extends GLTF2.ISampler, IArrayItem {
         /** @hidden */
-        _data?: _ILoaderSamplerData;
+        _data?: _ISamplerData;
     }
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderScene extends IScene, IArrayItem {
+    interface IScene extends GLTF2.IScene, IArrayItem {
     }
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderSkin extends ISkin, IArrayItem {
+    interface ISkin extends GLTF2.ISkin, IArrayItem {
         /** @hidden */
         _babylonSkeleton?: Skeleton;
         /** @hidden */
@@ -1210,30 +1210,30 @@ declare module BABYLON.GLTF2 {
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderTexture extends ITexture, IArrayItem {
+    interface ITexture extends GLTF2.ITexture, IArrayItem {
     }
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderTextureInfo extends ITextureInfo {
+    interface ITextureInfo extends GLTF2.ITextureInfo {
     }
     /**
      * Loader interface with additional members.
      */
-    interface ILoaderGLTF extends IGLTF {
-        accessors?: ILoaderAccessor[];
-        animations?: ILoaderAnimation[];
-        buffers?: ILoaderBuffer[];
-        bufferViews?: ILoaderBufferView[];
-        cameras?: ILoaderCamera[];
-        images?: ILoaderImage[];
-        materials?: ILoaderMaterial[];
-        meshes?: ILoaderMesh[];
-        nodes?: ILoaderNode[];
-        samplers?: ILoaderSampler[];
-        scenes?: ILoaderScene[];
-        skins?: ILoaderSkin[];
-        textures?: ILoaderTexture[];
+    interface IGLTF extends GLTF2.IGLTF {
+        accessors?: IAccessor[];
+        animations?: IAnimation[];
+        buffers?: IBuffer[];
+        bufferViews?: IBufferView[];
+        cameras?: ICamera[];
+        images?: IImage[];
+        materials?: IMaterial[];
+        meshes?: IMesh[];
+        nodes?: INode[];
+        samplers?: ISampler[];
+        scenes?: IScene[];
+        skins?: ISkin[];
+        textures?: ITexture[];
     }
 }
 
@@ -1258,14 +1258,14 @@ declare module BABYLON.GLTF2 {
          * Assign an `index` field to each item of the given array.
          * @param array The array of items
          */
-        static Assign(array?: IArrayItem[]): void;
+        static Assign(array?: Loader.IArrayItem[]): void;
     }
     /**
      * The glTF 2.0 loader
      */
     class GLTFLoader implements IGLTFLoader {
         /** The glTF object parsed from the JSON. */
-        gltf: ILoaderGLTF;
+        gltf: Loader.IGLTF;
         /** The Babylon scene when loading the asset. */
         babylonScene: Scene;
         /** @hidden */
@@ -1326,7 +1326,7 @@ declare module BABYLON.GLTF2 {
          * @param scene The glTF scene property
          * @returns A promise that resolves when the load is complete
          */
-        loadSceneAsync(context: string, scene: ILoaderScene): Promise<void>;
+        loadSceneAsync(context: string, scene: Loader.IScene): Promise<void>;
         private _forEachPrimitive;
         private _getMeshes;
         private _getSkeletons;
@@ -1339,7 +1339,7 @@ declare module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded Babylon mesh when the load is complete
          */
-        loadNodeAsync(context: string, node: ILoaderNode, assign?: (babylonMesh: Mesh) => void): Promise<Mesh>;
+        loadNodeAsync(context: string, node: Loader.INode, assign?: (babylonMesh: Mesh) => void): Promise<Mesh>;
         private _loadMeshAsync;
         private _loadMeshPrimitiveAsync;
         private _loadVertexDataAsync;
@@ -1360,7 +1360,7 @@ declare module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded Babylon camera when the load is complete
          */
-        loadCameraAsync(context: string, camera: ILoaderCamera, assign?: (babylonCamera: Camera) => void): Promise<Camera>;
+        loadCameraAsync(context: string, camera: Loader.ICamera, assign?: (babylonCamera: Camera) => void): Promise<Camera>;
         private _loadAnimationsAsync;
         /**
          * Loads a glTF animation.
@@ -1368,7 +1368,7 @@ declare module BABYLON.GLTF2 {
          * @param animation The glTF animation property
          * @returns A promise that resolves with the loaded Babylon animation group when the load is complete
          */
-        loadAnimationAsync(context: string, animation: ILoaderAnimation): Promise<AnimationGroup>;
+        loadAnimationAsync(context: string, animation: Loader.IAnimation): Promise<AnimationGroup>;
         private _loadAnimationChannelAsync;
         private _loadAnimationSamplerAsync;
         private _loadBufferAsync;
@@ -1378,14 +1378,14 @@ declare module BABYLON.GLTF2 {
          * @param bufferView The glTF buffer view property
          * @returns A promise that resolves with the loaded data when the load is complete
          */
-        loadBufferViewAsync(context: string, bufferView: ILoaderBufferView): Promise<ArrayBufferView>;
+        loadBufferViewAsync(context: string, bufferView: Loader.IBufferView): Promise<ArrayBufferView>;
         private _loadIndicesAccessorAsync;
         private _loadFloatAccessorAsync;
         private _loadVertexBufferViewAsync;
         private _loadVertexAccessorAsync;
         private _loadMaterialMetallicRoughnessPropertiesAsync;
         /** @hidden */
-        _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign?: (babylonMaterial: Material) => void): Promise<Material>;
+        _loadMaterialAsync(context: string, material: Loader.IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign?: (babylonMaterial: Material) => void): Promise<Material>;
         private _createDefaultMaterial;
         /**
          * Creates a Babylon material from a glTF material.
@@ -1394,7 +1394,7 @@ declare module BABYLON.GLTF2 {
          * @param babylonDrawMode The draw mode for the Babylon material
          * @returns The Babylon material
          */
-        createMaterial(context: string, material: ILoaderMaterial, babylonDrawMode: number): Material;
+        createMaterial(context: string, material: Loader.IMaterial, babylonDrawMode: number): Material;
         /**
          * Loads properties from a glTF material into a Babylon material.
          * @param context The context when loading the asset
@@ -1402,7 +1402,7 @@ declare module BABYLON.GLTF2 {
          * @param babylonMaterial The Babylon material
          * @returns A promise that resolves when the load is complete
          */
-        loadMaterialPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: Material): Promise<void>;
+        loadMaterialPropertiesAsync(context: string, material: Loader.IMaterial, babylonMaterial: Material): Promise<void>;
         /**
          * Loads the normal, occlusion, and emissive properties from a glTF material into a Babylon material.
          * @param context The context when loading the asset
@@ -1410,7 +1410,7 @@ declare module BABYLON.GLTF2 {
          * @param babylonMaterial The Babylon material
          * @returns A promise that resolves when the load is complete
          */
-        loadMaterialBasePropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: Material): Promise<void>;
+        loadMaterialBasePropertiesAsync(context: string, material: Loader.IMaterial, babylonMaterial: Material): Promise<void>;
         /**
          * Loads the alpha properties from a glTF material into a Babylon material.
          * Must be called after the setting the albedo texture of the Babylon material when the material has an albedo texture.
@@ -1418,7 +1418,7 @@ declare module BABYLON.GLTF2 {
          * @param material The glTF material property
          * @param babylonMaterial The Babylon material
          */
-        loadMaterialAlphaProperties(context: string, material: ILoaderMaterial, babylonMaterial: Material): void;
+        loadMaterialAlphaProperties(context: string, material: Loader.IMaterial, babylonMaterial: Material): void;
         /**
          * Loads a glTF texture info.
          * @param context The context when loading the asset
@@ -1426,7 +1426,7 @@ declare module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded Babylon texture when the load is complete
          */
-        loadTextureInfoAsync(context: string, textureInfo: ILoaderTextureInfo, assign?: (babylonTexture: BaseTexture) => void): Promise<BaseTexture>;
+        loadTextureInfoAsync(context: string, textureInfo: Loader.ITextureInfo, assign?: (babylonTexture: BaseTexture) => void): Promise<BaseTexture>;
         private _loadTextureAsync;
         private _loadSampler;
         /**
@@ -1435,7 +1435,7 @@ declare module BABYLON.GLTF2 {
          * @param image The glTF image property
          * @returns A promise that resolves with the loaded data when the load is complete
          */
-        loadImageAsync(context: string, image: ILoaderImage): Promise<ArrayBufferView>;
+        loadImageAsync(context: string, image: Loader.IImage): Promise<ArrayBufferView>;
         /**
          * Loads a glTF uri.
          * @param context The context when loading the asset
@@ -1531,7 +1531,7 @@ declare module BABYLON.GLTF2 {
          * @param scene The glTF scene property
          * @returns A promise that resolves when the load is complete or null if not handled
          */
-        loadSceneAsync?(context: string, scene: ILoaderScene): Nullable<Promise<void>>;
+        loadSceneAsync?(context: string, scene: Loader.IScene): Nullable<Promise<void>>;
         /**
          * Define this method to modify the default behavior when loading nodes.
          * @param context The context when loading the asset
@@ -1539,7 +1539,7 @@ declare module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded Babylon mesh when the load is complete or null if not handled
          */
-        loadNodeAsync?(context: string, node: ILoaderNode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
+        loadNodeAsync?(context: string, node: Loader.INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
         /**
          * Define this method to modify the default behavior when loading cameras.
          * @param context The context when loading the asset
@@ -1547,14 +1547,14 @@ declare module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded Babylon camera when the load is complete or null if not handled
          */
-        loadCameraAsync?(context: string, camera: ILoaderCamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>>;
+        loadCameraAsync?(context: string, camera: Loader.ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>>;
         /**
          * @hidden Define this method to modify the default behavior when loading vertex data for mesh primitives.
          * @param context The context when loading the asset
          * @param primitive The glTF mesh primitive property
          * @returns A promise that resolves with the loaded geometry when the load is complete or null if not handled
          */
-        _loadVertexDataAsync?(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>>;
+        _loadVertexDataAsync?(context: string, primitive: Loader.IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>>;
         /**
          * @hidden Define this method to modify the default behavior when loading materials. Load material creates the material and then loads material properties.
          * @param context The context when loading the asset
@@ -1562,7 +1562,7 @@ declare module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded Babylon material when the load is complete or null if not handled
          */
-        _loadMaterialAsync?(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
+        _loadMaterialAsync?(context: string, material: Loader.IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
         /**
          * Define this method to modify the default behavior when creating materials.
          * @param context The context when loading the asset
@@ -1570,7 +1570,7 @@ declare module BABYLON.GLTF2 {
          * @param babylonDrawMode The draw mode for the Babylon material
          * @returns The Babylon material or null if not handled
          */
-        createMaterial?(context: string, material: ILoaderMaterial, babylonDrawMode: number): Nullable<Material>;
+        createMaterial?(context: string, material: Loader.IMaterial, babylonDrawMode: number): Nullable<Material>;
         /**
          * Define this method to modify the default behavior when loading material properties.
          * @param context The context when loading the asset
@@ -1578,7 +1578,7 @@ declare module BABYLON.GLTF2 {
          * @param babylonMaterial The Babylon material
          * @returns A promise that resolves when the load is complete or null if not handled
          */
-        loadMaterialPropertiesAsync?(context: string, material: ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        loadMaterialPropertiesAsync?(context: string, material: Loader.IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         /**
          * Define this method to modify the default behavior when loading texture infos.
          * @param context The context when loading the asset
@@ -1586,14 +1586,14 @@ declare module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded Babylon texture when the load is complete or null if not handled
          */
-        loadTextureInfoAsync?(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
+        loadTextureInfoAsync?(context: string, textureInfo: Loader.ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
         /**
          * Define this method to modify the default behavior when loading animations.
          * @param context The context when loading the asset
          * @param animation The glTF animation property
          * @returns A promise that resolves with the loaded Babylon animation group when the load is complete or null if not handled
          */
-        loadAnimationAsync?(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>>;
+        loadAnimationAsync?(context: string, animation: Loader.IAnimation): Nullable<Promise<AnimationGroup>>;
         /**
          * Define this method to modify the default behavior when loading uris.
          * @param context The context when loading the asset
@@ -1606,11 +1606,11 @@ declare module BABYLON.GLTF2 {
 /**
  * Defines the module for the built-in glTF 2.0 loader extensions.
  */
-declare module BABYLON.GLTF2.Extensions {
+declare module BABYLON.GLTF2.Loader.Extensions {
 }
 
 
-declare module BABYLON.GLTF2.Extensions {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_lod)
      */
@@ -1649,9 +1649,9 @@ declare module BABYLON.GLTF2.Extensions {
         /** @hidden */
         onReady(): void;
         /** @hidden */
-        loadNodeAsync(context: string, node: ILoaderNode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
+        loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
         /** @hidden */
-        _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
+        _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
         /** @hidden */
         _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
         /**
@@ -1663,7 +1663,7 @@ declare module BABYLON.GLTF2.Extensions {
 }
 
 
-declare module BABYLON.GLTF2.Extensions {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /** @hidden */
     class MSFT_minecraftMesh implements IGLTFLoaderExtension {
         readonly name: string;
@@ -1671,12 +1671,12 @@ declare module BABYLON.GLTF2.Extensions {
         private _loader;
         constructor(loader: GLTFLoader);
         dispose(): void;
-        loadMaterialPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
     }
 }
 
 
-declare module BABYLON.GLTF2.Extensions {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /** @hidden */
     class MSFT_sRGBFactors implements IGLTFLoaderExtension {
         readonly name: string;
@@ -1684,12 +1684,12 @@ declare module BABYLON.GLTF2.Extensions {
         private _loader;
         constructor(loader: GLTFLoader);
         dispose(): void;
-        loadMaterialPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
     }
 }
 
 
-declare module BABYLON.GLTF2.Extensions {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
      * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
      */
@@ -1708,11 +1708,11 @@ declare module BABYLON.GLTF2.Extensions {
         /** @hidden */
         onLoading(): void;
         /** @hidden */
-        loadSceneAsync(context: string, scene: ILoaderScene): Nullable<Promise<void>>;
+        loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>>;
         /** @hidden */
-        loadNodeAsync(context: string, node: ILoaderNode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
+        loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
         /** @hidden */
-        loadAnimationAsync(context: string, animation: ILoaderAnimation): Nullable<Promise<AnimationGroup>>;
+        loadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>>;
         private _loadClipAsync;
         private _loadEmitterAsync;
         private _getEventAction;
@@ -1721,7 +1721,7 @@ declare module BABYLON.GLTF2.Extensions {
 }
 
 
-declare module BABYLON.GLTF2.Extensions {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)
      */
@@ -1737,12 +1737,12 @@ declare module BABYLON.GLTF2.Extensions {
         /** @hidden */
         dispose(): void;
         /** @hidden */
-        _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>>;
+        _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>>;
     }
 }
 
 
-declare module BABYLON.GLTF2.Extensions {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness)
      */
@@ -1757,13 +1757,13 @@ declare module BABYLON.GLTF2.Extensions {
         /** @hidden */
         dispose(): void;
         /** @hidden */
-        loadMaterialPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadSpecularGlossinessPropertiesAsync;
     }
 }
 
 
-declare module BABYLON.GLTF2.Extensions {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
      */
@@ -1778,13 +1778,13 @@ declare module BABYLON.GLTF2.Extensions {
         /** @hidden */
         dispose(): void;
         /** @hidden */
-        loadMaterialPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadUnlitPropertiesAsync;
     }
 }
 
 
-declare module BABYLON.GLTF2.Extensions {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/blob/1048d162a44dbcb05aefc1874bfd423cf60135a6/extensions/2.0/Khronos/KHR_lights_punctual/README.md) (Experimental)
      */
@@ -1802,14 +1802,14 @@ declare module BABYLON.GLTF2.Extensions {
         /** @hidden */
         onLoading(): void;
         /** @hidden */
-        loadNodeAsync(context: string, node: ILoaderNode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
+        loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
     }
 }
 
 
-declare module BABYLON.GLTF2.Extensions {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Specification](https://github.com/AltspaceVR/glTF/blob/avr-sampler-offset-tile/extensions/2.0/Khronos/KHR_texture_transform/README.md) (Experimental)
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_texture_transform/README.md)
      */
     class KHR_texture_transform implements IGLTFLoaderExtension {
         /** The name of this extension. */
@@ -1827,7 +1827,7 @@ declare module BABYLON.GLTF2.Extensions {
 }
 
 
-declare module BABYLON.GLTF2.Extensions {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/blob/eb3e32332042e04691a5f35103f8c261e50d8f1e/extensions/2.0/Khronos/EXT_lights_image_based/README.md) (Experimental)
      */
@@ -1845,7 +1845,7 @@ declare module BABYLON.GLTF2.Extensions {
         /** @hidden */
         onLoading(): void;
         /** @hidden */
-        loadSceneAsync(context: string, scene: ILoaderScene): Nullable<Promise<void>>;
+        loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>>;
         private _loadLightAsync;
     }
 }

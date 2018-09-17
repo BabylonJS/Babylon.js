@@ -2008,6 +2008,7 @@
 
             if (particleSystem.particleTexture) {
                 serializationObject.textureName = particleSystem.particleTexture.name;
+                serializationObject.invertY = particleSystem.particleTexture._invertY;
             }
 
             // Animations
@@ -2079,6 +2080,7 @@
 
                     serializationObject.rampGradients.push(serializedGradient);
                 }
+                serializationObject.useRampGradients = particleSystem.useRampGradients;
             }
 
             let colorRemapGradients = particleSystem.getColorRemapGradients();
@@ -2254,7 +2256,7 @@
         public static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, scene: Scene, rootUrl: string) {
             // Texture
             if (parsedParticleSystem.textureName) {
-                particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene);
+                particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene, false, parsedParticleSystem.invertY !== undefined ? parsedParticleSystem.invertY : true);
                 particleSystem.particleTexture.name = parsedParticleSystem.textureName;
             }
 
@@ -2342,8 +2344,9 @@
 
             if (parsedParticleSystem.rampGradients) {
                 for (var rampGradient of parsedParticleSystem.rampGradients) {
-                    particleSystem.addRampGradient(rampGradient.gradient, Color3.FromArray(rampGradient.color1));
+                    particleSystem.addRampGradient(rampGradient.gradient, Color3.FromArray(rampGradient.color));
                 }
+                particleSystem.useRampGradients = parsedParticleSystem.useRampGradients;
             }
 
             if (parsedParticleSystem.colorRemapGradients) {

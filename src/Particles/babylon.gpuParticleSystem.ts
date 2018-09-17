@@ -538,7 +538,21 @@
          */
         public getRampGradients(): Nullable<Array<Color3Gradient>> {
             return null;
-        }             
+        }   
+        
+        /** 
+         * Not supported by GPUParticleSystem
+         * Gets or sets a boolean indicating that ramp gradients must be used
+         * @see http://doc.babylonjs.com/babylon101/particles#ramp-gradients
+         */
+        public get useRampGradients(): boolean {
+            //Not supported by GPUParticleSystem
+            return false;
+        }
+
+        public set useRampGradients(value: boolean) {
+            //Not supported by GPUParticleSystem
+        }
         
 
         /**
