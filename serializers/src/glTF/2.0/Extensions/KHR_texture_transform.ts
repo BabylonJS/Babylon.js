@@ -1,5 +1,8 @@
 /// <reference path="../../../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
 
+/**
+ * @hidden
+ */
 module BABYLON.GLTF2.Exporter.Extensions {
     const NAME = "KHR_texture_transform";
 
