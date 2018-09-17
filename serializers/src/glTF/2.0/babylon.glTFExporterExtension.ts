@@ -27,9 +27,3 @@ module BABYLON.GLTF2.Exporter {
 
     }
 }
-
-/**
- * Defines the module for the built-in glTF 2.0 exporter extensions.
- */
-module BABYLON.GLTF2.Extensions {
-}
