@@ -146,6 +146,12 @@ module BABYLON {
             return this._framingTime;
         }
 
+        /**
+         * Define if the behavior should automatically correct change the configured
+         * camera limits and sensibilities.
+         */
+        public autoCorrectCameraLimitsAndSensibility = true;
+
         // Default behavior functions
         private _onPrePointerObservableObserver: Nullable<Observer<PointerInfoPre>>;
         private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;
@@ -324,19 +330,23 @@ module BABYLON {
             let radius = 0;
             if (this._mode === FramingBehavior.FitFrustumSidesMode) {
                 let position = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
-                this._attachedCamera.lowerRadiusLimit = radiusWorld.length() + this._attachedCamera.minZ;
+                if (this.autoCorrectCameraLimitsAndSensibility) {
+                    this._attachedCamera.lowerRadiusLimit = radiusWorld.length() + this._attachedCamera.minZ;
+                }
                 radius = position;
             } else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
                 radius = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
-                if (this._attachedCamera.lowerRadiusLimit === null) {
+                if (this.autoCorrectCameraLimitsAndSensibility && this._attachedCamera.lowerRadiusLimit === null) {
                     this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
                 }
             }
 
             // Set sensibilities
-            let extend = maximumWorld.subtract(minimumWorld).length();
-            this._attachedCamera.panningSensibility = 5000 / extend;
-            this._attachedCamera.wheelPrecision = 100 / radius;
+            if (this.autoCorrectCameraLimitsAndSensibility) {
+                const extend = maximumWorld.subtract(minimumWorld).length();
+                this._attachedCamera.panningSensibility = 5000 / extend;
+                this._attachedCamera.wheelPrecision = 100 / radius;
+            }
 
             // transition to new radius
             if (!this._radiusTransition) {
