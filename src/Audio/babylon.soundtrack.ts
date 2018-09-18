@@ -87,6 +87,7 @@
         /**
          * Adds a sound to this sound track
          * @param sound define the cound to add
+         * @ignoreNaming 
          */
         public AddSound(sound: Sound): void {
             if (!this._isInitialized) {
@@ -111,6 +112,7 @@
         /**
          * Removes a sound to this sound track
          * @param sound define the cound to remove
+         * @ignoreNaming 
          */
         public RemoveSound(sound: Sound): void {
             var index = this.soundCollection.indexOf(sound);
