@@ -247,9 +247,10 @@
          * Attach a behavior to the node
          * @see http://doc.babylonjs.com/features/behaviour
          * @param behavior defines the behavior to attach
+         * @param attachImmediately defines that the behavior must be attached even if the scene is still loading
          * @returns the current Node
          */
-        public addBehavior(behavior: Behavior<Node>): Node {
+        public addBehavior(behavior: Behavior<Node>, attachImmediately = false): Node {
             var index = this._behaviors.indexOf(behavior);
 
             if (index !== -1) {
@@ -257,7 +258,7 @@
             }
 
             behavior.init();
-            if (this._scene.isLoading) {
+            if (this._scene.isLoading && !attachImmediately) {
                 // We defer the attach when the scene will be loaded
                 this._scene.onDataLoadedObservable.addOnce(() => {
                     behavior.attach(this);
