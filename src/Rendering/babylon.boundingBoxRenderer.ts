@@ -67,6 +67,11 @@
         configurable: true
     });
 
+    /**
+     * Component responsible of rendering the bounding box of the meshes in a scene.
+     * This is usually used through the mesh.showBoundingBox or the scene.forceShowBoundingBoxes properties
+     * 
+     */
     export class BoundingBoxRenderer implements ISceneComponent {
         /**
          * The component name helpfull to identify the component in the list of scene components.
@@ -78,15 +83,31 @@
          */
         public scene: Scene;
 
+        /**
+         * Color of the bounding box lines placed in front of an object
+         */
         public frontColor = new Color3(1, 1, 1);
+        /**
+         * Color of the bounding box lines placed behind an object
+         */
         public backColor = new Color3(0.1, 0.1, 0.1);
+        /**
+         * Defines if the renderer should show the back lines or not
+         */
         public showBackLines = true;
-        public renderList = new SmartArray<BoundingBox>(32);        
+        /**
+         * @hidden
+         */
+        public renderList = new SmartArray<BoundingBox>(32);
 
         private _colorShader: ShaderMaterial;
         private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
         private _indexBuffer: WebGLBuffer;
 
+        /**
+         * Instantiates a new bounding box renderer in a scene.
+         * @param scene the scene the  renderer renders in
+         */
         constructor(scene: Scene) {
             this.scene = scene;
             scene._addComponent(this);
@@ -158,6 +179,9 @@
             this._createIndexBuffer();
         }
 
+        /**
+         * @hidden
+         */
         public reset(): void {
             this.renderList.reset();
         }
@@ -222,6 +246,10 @@
             engine.setDepthWrite(true);
         }
 
+        /**
+         * In case of occlusion queries, we can render the occlusion bounding box through this method
+         * @param mesh Define the mesh to render the occlusion bounding box for
+         */
         public renderOcclusionBoundingBox(mesh: AbstractMesh): void {
 
             this._prepareRessources();
@@ -259,6 +287,9 @@
             engine.setColorWrite(true);
         }
 
+        /**
+         * Dispose and release the resources attached to this renderer.
+         */
         public dispose(): void {
             if (!this._colorShader) {
                 return;
