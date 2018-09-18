@@ -2231,6 +2231,24 @@
                 }
             }
 
+            let lifeTimeGradients = particleSystem.getLifeTimeGradients();
+            if (lifeTimeGradients) {
+                serializationObject.lifeTimeGradients = [];
+                for (var lifeTimeGradient of lifeTimeGradients) {
+
+                    var serializedGradient: any = {
+                        gradient: lifeTimeGradient.gradient,
+                        factor1: lifeTimeGradient.factor1
+                    };
+
+                    if (lifeTimeGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = lifeTimeGradient.factor2;
+                    }
+
+                    serializationObject.lifeTimeGradients.push(serializedGradient);
+                }
+            }            
+
             let limitVelocityGradients = particleSystem.getLimitVelocityGradients();
             if (limitVelocityGradients) {
                 serializationObject.limitVelocityGradients = [];
@@ -2410,6 +2428,12 @@
                     particleSystem.addStartSizeGradient(startSizeGradient.gradient, startSizeGradient.factor1 !== undefined ? startSizeGradient.factor1 : startSizeGradient.factor, startSizeGradient.factor2);
                 }
             }
+
+            if (parsedParticleSystem.lifeTimeGradients) {
+                for (var lifeTimeGradient of parsedParticleSystem.lifeTimeGradients) {
+                    particleSystem.addLifeTimeGradient(lifeTimeGradient.gradient, lifeTimeGradient.factor1 !== undefined ? lifeTimeGradient.factor1 : lifeTimeGradient.factor, lifeTimeGradient.factor2);
+                }
+            }            
 
             if (parsedParticleSystem.limitVelocityGradients) {
                 for (var limitVelocityGradient of parsedParticleSystem.limitVelocityGradients) {

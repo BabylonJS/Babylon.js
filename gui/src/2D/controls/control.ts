@@ -891,6 +891,10 @@ export class Control {
 
     /** @hidden */
     public _markAsDirty(): void {
+        if (!this._isVisible) {
+            return;
+        }
+
         this._isDirty = true;
 
         if (!this._host) {
