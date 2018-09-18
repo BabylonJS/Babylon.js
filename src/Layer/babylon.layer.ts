@@ -94,6 +94,10 @@
         public onAfterRenderObservable = new Observable<Layer>();
 
         private _onAfterRenderObserver: Nullable<Observer<Layer>>;
+        /**
+         * Back compatibility with callback before the onAfterRenderObservable existed.
+         * The set callback will be triggered just after rendering the layer.
+         */
         public set onAfterRender(callback: () => void) {
             if (this._onAfterRenderObserver) {
                 this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
@@ -112,7 +116,15 @@
          * @param isBackground Defines whether the layer is displayed in front or behind the scene
          * @param color Defines a color for the layer
          */
-        constructor(public name: string, imgUrl: Nullable<string>, scene: Nullable<Scene>, isBackground?: boolean, color?: Color4) {
+        constructor(
+            /**
+             * Define the name of the layer.
+             */
+            public name: string, 
+            imgUrl: Nullable<string>, 
+            scene: Nullable<Scene>, 
+            isBackground?: boolean, color?: Color4) {
+            
             this.texture = imgUrl ? new Texture(imgUrl, scene, true) : null;
             this.isBackground = isBackground === undefined ? true : isBackground;
             this.color = color === undefined ? new Color4(1, 1, 1, 1) : color;
