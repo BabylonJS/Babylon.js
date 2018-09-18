@@ -3,6 +3,7 @@ module BABYLON {
      * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
      */
     export class PointerDragBehavior implements Behavior<Mesh> {
+        private static _AnyMouseID = -2;
         private _attachedNode: Mesh; 
         private _dragPlane: Mesh;
         private _scene:Scene;
@@ -159,6 +160,15 @@ module BABYLON {
                     }
                 }else if(pointerInfo.type == BABYLON.PointerEventTypes.POINTERMOVE){
                     var pointerId = (<PointerEvent>pointerInfo.event).pointerId;
+
+                    // If drag was started with anyMouseID specified, set pointerID to the next mouse that moved
+                    if(this.currentDraggingPointerID === PointerDragBehavior._AnyMouseID && pointerId !== PointerDragBehavior._AnyMouseID && (<PointerEvent>pointerInfo.event).pointerType == "mouse"){
+                        if(this._lastPointerRay[this.currentDraggingPointerID]){
+                            this._lastPointerRay[pointerId] = this._lastPointerRay[this.currentDraggingPointerID];
+                            delete this._lastPointerRay[this.currentDraggingPointerID];
+                        }
+                        this.currentDraggingPointerID = pointerId;
+                    }
                     
                     // Keep track of last pointer ray, this is used simulating the start of a drag in startDrag()
                     if(!this._lastPointerRay[pointerId]){
@@ -204,19 +214,25 @@ module BABYLON {
         private _lastPointerRay:{[key: number]: Ray} = {};
         /**
          * Simulates the start of a pointer drag event on the behavior
-         * @param pointerId pointerID of the pointer that should be simulated (Default: 1 for mouse pointer)
+         * @param pointerId pointerID of the pointer that should be simulated (Default: Any mouse pointer ID)
          * @param fromRay initial ray of the pointer to be simulated (Default: Ray from camera to attached mesh)
          * @param startPickedPoint picked point of the pointer to be simulated (Default: attached mesh position)
          */
-        public startDrag(pointerId = 1, fromRay?:Ray, startPickedPoint?:Vector3){
+        public startDrag(pointerId:number = PointerDragBehavior._AnyMouseID, fromRay?:Ray, startPickedPoint?:Vector3){
             this._startDrag(pointerId, fromRay, startPickedPoint);
-            if(this._lastPointerRay[pointerId]){
+            
+            var lastRay =  this._lastPointerRay[pointerId];
+            if(pointerId === PointerDragBehavior._AnyMouseID){
+                lastRay = this._lastPointerRay[<any>Object.keys(this._lastPointerRay)[0]];
+            }
+            
+            if(lastRay){
                 // if there was a last pointer ray drag the object there
-                this._moveDrag(this._lastPointerRay[pointerId]);
+                this._moveDrag(lastRay);
             }
         }
 
-        private _startDrag(pointerId = 1, fromRay?:Ray, startPickedPoint?:Vector3){
+        private _startDrag(pointerId:number, fromRay?:Ray, startPickedPoint?:Vector3){
             if(!this._scene.activeCamera || this.dragging || !this._attachedNode){
                 return;
             }
