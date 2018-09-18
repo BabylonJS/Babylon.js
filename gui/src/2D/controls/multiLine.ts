@@ -62,7 +62,7 @@ export class MultiLine extends Control {
 
     /** Function called when a point is updated */
     public onPointUpdate = (): void => {
-        this._markAsDirty();
+        if (this.isVisible) this._markAsDirty();
     }
 
     /**
@@ -125,6 +125,18 @@ export class MultiLine extends Control {
         point.dispose();
 
         this._points.splice(index, 1);
+    }
+
+    public reset(): void {
+        while (this._points.length > 0) {
+            this.remove(this._points.length - 1);
+        }
+    }
+
+    public resetLinks(): void {
+        this._points.forEach(point => {
+            if (point != null) point.resetLinks();
+        });
     }
 
     /** Gets or sets line width */
@@ -239,9 +251,7 @@ export class MultiLine extends Control {
     }
 
     public dispose(): void {
-        while (this._points.length > 0) {
-            this.remove(this._points.length - 1);
-        }
+        this.reset();
 
         super.dispose();
     }
