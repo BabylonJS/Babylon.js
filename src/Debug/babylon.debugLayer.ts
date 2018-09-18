@@ -97,6 +97,7 @@ module BABYLON {
 
         /**
          * Get if the inspector is visible or not.
+         * @returns true if visible otherwise, false
          */
         public isVisible(): boolean {
             if (!this._inspector) {
