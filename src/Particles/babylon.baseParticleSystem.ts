@@ -158,10 +158,11 @@ module BABYLON {
         public customShader: any = null;
 
         /**
-         * By default particle system does not start as soon as they are created. This prevents the 
+         * By default particle system starts as soon as they are created. This prevents the 
          * automatic start to happen and let you decide when to start emitting particles.
          */
-        public preventAutoStart: boolean = true
+        public preventAutoStart: boolean = false;
+
         /**
          * Gets or sets a texture used to add random noise to particle positions
          */

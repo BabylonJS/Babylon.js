@@ -1459,9 +1459,10 @@
          * @param parsedParticleSystem The JSON object to parse
          * @param scene The scene to create the particle system in
          * @param rootUrl The root url to use to load external dependencies like texture
+         * @param doNotStart Ignore the preventAutoStart attribute and does not start 
          * @returns the parsed GPU particle system
          */
-        public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): GPUParticleSystem {
+        public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string, doNotStart = false): GPUParticleSystem {
             var name = parsedParticleSystem.name;
             var particleSystem = new GPUParticleSystem(name, {capacity: parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize}, scene);
 
@@ -1469,6 +1470,15 @@
                 particleSystem.activeParticleCount = parsedParticleSystem.activeParticleCount;
             }
             ParticleSystem._Parse(parsedParticleSystem, particleSystem, scene, rootUrl);
+
+            // Auto start
+            if (parsedParticleSystem.preventAutoStart) {
+                particleSystem.preventAutoStart = parsedParticleSystem.preventAutoStart;
+            }
+
+            if (!doNotStart && !particleSystem.preventAutoStart) {
+                particleSystem.start();
+            }            
 
             return particleSystem;
         }        

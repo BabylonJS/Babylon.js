@@ -2470,9 +2470,10 @@
          * @param parsedParticleSystem The JSON object to parse
          * @param scene The scene to create the particle system in
          * @param rootUrl The root url to use to load external dependencies like texture
+         * @param doNotStart Ignore the preventAutoStart attribute and does not start 
          * @returns the Parsed particle system
          */
-        public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
+        public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string, doNotStart = false): ParticleSystem {
             var name = parsedParticleSystem.name;
             var custom: Nullable<Effect> = null;
             var program: any = null;
@@ -2501,17 +2502,16 @@
                 }
             }
             
+            ParticleSystem._Parse(parsedParticleSystem, particleSystem, scene, rootUrl);
+
+            particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
 
             // Auto start
             if (parsedParticleSystem.preventAutoStart) {
                 particleSystem.preventAutoStart = parsedParticleSystem.preventAutoStart;
             }
 
-            ParticleSystem._Parse(parsedParticleSystem, particleSystem, scene, rootUrl);
-
-            particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
-
-            if (!particleSystem.preventAutoStart) {
+            if (!doNotStart && !particleSystem.preventAutoStart) {
                 particleSystem.start();
             }
 
