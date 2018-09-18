@@ -227,6 +227,11 @@ module BABYLON {
         beginAnimationLoop: boolean;       
 
         /**
+         * Specifies whether the particle system will be disposed once it reaches the end of the animation.
+         */
+        disposeOnStop: boolean;        
+
+        /**
          * Gets the maximum number of particles active at the same time.
          * @returns The max number of active particles.
          */
