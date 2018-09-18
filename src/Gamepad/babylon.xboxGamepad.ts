@@ -110,11 +110,14 @@
         }
  
         /**
-         * Gets or sets left trigger value
+         * Gets the left trigger value
          */
         public get leftTrigger(): number {
             return this._leftTrigger;
         }
+        /**
+         * Sets the left trigger value
+         */
         public set leftTrigger(newValue: number) {
             if (this._onlefttriggerchanged && this._leftTrigger !== newValue) {
                 this._onlefttriggerchanged(newValue);
@@ -123,11 +126,14 @@
         }
 
         /**
-         * Gets or sets right trigger value
+         * Gets the right trigger value
          */        
         public get rightTrigger(): number {
             return this._rightTrigger;
         }
+        /**
+         * Sets the right trigger value
+         */
         public set rightTrigger(newValue: number) {
             if (this._onrighttriggerchanged && this._rightTrigger !== newValue) {
                 this._onrighttriggerchanged(newValue);
@@ -208,114 +214,184 @@
             return newValue;
         }
 
-        /** Gets or sets value of A button */
+        /** 
+         * Gets the value of the `A` button 
+         */
         public get buttonA(): number {
             return this._buttonA;
         }
+        /**
+         * Sets the value of the `A` button
+         */
         public set buttonA(value) {
             this._buttonA = this._setButtonValue(value, this._buttonA, Xbox360Button.A);
         }
 
-        /** Gets or sets value of B button */
+        /** 
+         * Gets the value of the `B` button 
+         */
         public get buttonB(): number {
             return this._buttonB;
         }
+        /** 
+         * Sets the value of the `B` button 
+         */
         public set buttonB(value) {
             this._buttonB = this._setButtonValue(value, this._buttonB, Xbox360Button.B);
         }
 
-        /** Gets or sets value of X button */       
+        /** 
+         * Gets the value of the `X` button 
+         */      
         public get buttonX(): number {
             return this._buttonX;
         }
+        /** 
+         * Sets the value of the `X` button 
+         */
         public set buttonX(value) {
             this._buttonX = this._setButtonValue(value, this._buttonX, Xbox360Button.X);
         }
 
-        /** Gets or sets value of Y button */        
+        /** 
+         * Gets the value of the `Y` button 
+         */      
         public get buttonY(): number {
             return this._buttonY;
         }
+        /** 
+         * Sets the value of the `Y` button 
+         */
         public set buttonY(value) {
             this._buttonY = this._setButtonValue(value, this._buttonY, Xbox360Button.Y);
         }        
         
-        /** Gets or sets value of Start button  */
+        /** 
+         * Gets the value of the `Start` button 
+         */
         public get buttonStart(): number {
             return this._buttonStart;
         }
+        /** 
+         * Sets the value of the `Start` button 
+         */
         public set buttonStart(value) {
             this._buttonStart = this._setButtonValue(value, this._buttonStart, Xbox360Button.Start);
         }
 
-        /** Gets or sets value of Back button  */        
+        /** 
+         * Gets the value of the `Back` button 
+         */ 
         public get buttonBack(): number {
             return this._buttonBack;
         }
+        /** 
+         * Sets the value of the `Back` button 
+         */
         public set buttonBack(value) {
             this._buttonBack = this._setButtonValue(value, this._buttonBack, Xbox360Button.Back);
         }
 
-        /** Gets or sets value of Left button  */        
+        /** 
+         * Gets the value of the `Left` button 
+         */     
         public get buttonLB(): number {
             return this._buttonLB;
         }
+        /** 
+         * Sets the value of the `Left` button 
+         */
         public set buttonLB(value) {
             this._buttonLB = this._setButtonValue(value, this._buttonLB, Xbox360Button.LB);
         }
 
-        /** Gets or sets value of Right button  */        
+        /** 
+         * Gets the value of the `Right` button 
+         */     
         public get buttonRB(): number {
             return this._buttonRB;
         }
+        /** 
+         * Sets the value of the `Right` button 
+         */
         public set buttonRB(value) {
             this._buttonRB = this._setButtonValue(value, this._buttonRB, Xbox360Button.RB);
         }
 
-        /** Gets or sets value of left stick */  
+        /** 
+         * Gets the value of the Left joystick 
+         */ 
         public get buttonLeftStick(): number {
             return this._buttonLeftStick;
         }
+        /** 
+         * Sets the value of the Left joystick 
+         */ 
         public set buttonLeftStick(value) {
             this._buttonLeftStick = this._setButtonValue(value, this._buttonLeftStick, Xbox360Button.LeftStick);
         }
 
-        /** Gets or sets value of right stick */  
+        /** 
+         * Gets the value of the Right joystick 
+         */ 
         public get buttonRightStick(): number {
             return this._buttonRightStick;
         }
+        /** 
+         * Sets the value of the Right joystick 
+         */ 
         public set buttonRightStick(value) {
             this._buttonRightStick = this._setButtonValue(value, this._buttonRightStick, Xbox360Button.RightStick);
         }
 
-        /** Gets or sets value of DPad up */  
+        /** 
+         * Gets the value of D-pad up 
+         */  
         public get dPadUp(): number {
             return this._dPadUp;
         }
+        /** 
+         * Sets the value of D-pad up 
+         */
         public set dPadUp(value) {
             this._dPadUp = this._setDPadValue(value, this._dPadUp, Xbox360Dpad.Up);
         }
 
-        /** Gets or sets value of DPad down */  
+        /** 
+         * Gets the value of D-pad down 
+         */
         public get dPadDown(): number {
             return this._dPadDown;
         }
+        /** 
+         * Sets the value of D-pad down 
+         */
         public set dPadDown(value) {
             this._dPadDown = this._setDPadValue(value, this._dPadDown, Xbox360Dpad.Down);
         }
 
-        /** Gets or sets value of DPad left */  
+        /** 
+         * Gets the value of D-pad left 
+         */ 
         public get dPadLeft(): number {
             return this._dPadLeft;
         }
+        /** 
+         * Sets the value of D-pad left 
+         */
         public set dPadLeft(value) {
             this._dPadLeft = this._setDPadValue(value, this._dPadLeft, Xbox360Dpad.Left);
         }
 
-        /** Gets or sets value of DPad right */  
+        /** 
+         * Gets the value of D-pad right 
+         */
         public get dPadRight(): number {
             return this._dPadRight;
         }
+        /** 
+         * Sets the value of D-pad right 
+         */
         public set dPadRight(value) {
             this._dPadRight = this._setDPadValue(value, this._dPadRight, Xbox360Dpad.Right);
         }
@@ -362,6 +438,9 @@
             }
         }
 
+        /**
+         * Disposes the gamepad
+         */
         public dispose(){
             super.dispose();
             this.onButtonDownObservable.clear();
