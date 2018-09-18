@@ -11,6 +11,9 @@ module BABYLON {
         private _ownerNode:Mesh;
         private _sceneRenderObserver:Nullable<Observer<Scene>> = null;
 
+        /**
+         * Instantiate a new behavior that when attached to a mesh will allow the mesh to be scaled
+         */
         constructor(){
             this._dragBehaviorA = new BABYLON.PointerDragBehavior({});
             this._dragBehaviorA.moveAttached = false;
