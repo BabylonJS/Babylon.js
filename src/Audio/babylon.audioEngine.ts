@@ -81,7 +81,6 @@
     export class AudioEngine implements IAudioEngine{
         private _audioContext: Nullable<AudioContext> = null;
         private _audioContextInitialized = false;
-        private _muteButtonDisplayed = false;
         private _muteButton: Nullable<HTMLButtonElement> = null;
         private _engine: Engine;
 
@@ -118,7 +117,7 @@
          * Some Browsers have strong restrictions about Audio and won t autoplay unless
          * a user interaction has happened.
          */
-        public unlocked: boolean = false;
+        public unlocked: boolean = true;
 
         /**
          * Defines if the audio engine relies on a custom unlocked button.
@@ -144,7 +143,7 @@
                 this._initializeAudioContext();
             }
             else {
-                if (!this.unlocked && !this._muteButtonDisplayed) {
+                if (!this.unlocked && !this._muteButton) {
                     this._displayMuteButton();
                 }
             }
@@ -204,10 +203,12 @@
             this._triggerRunningState();
         }
 
-        private _resumeAudioContext() {
+        private _resumeAudioContext(): Promise<void> {
+            let result: Promise<void>;
             if (this._audioContext!.resume) {
-                this._audioContext!.resume();
+                result = this._audioContext!.resume();
             }
+            return result! || Promise.resolve();
         }
 
         private _initializeAudioContext() {
@@ -220,21 +221,19 @@
                     this.masterGain.connect(this._audioContext.destination);
                     this._audioContextInitialized = true;
                     if (this._audioContext.state === "running") {
+                        // Do not wait for the promise to unlock.
                         this._triggerRunningState();
                     }
                     else {
-                        if (!this._muteButtonDisplayed) {
-                            this._displayMuteButton();
+                        if (this._audioContext && this._audioContext.resume) {
+                            this._resumeAudioContext().then(() => {
+                                    this._triggerRunningState();
+                                }).catch(() => {
+                                    // Can not resume automatically
+                                    // Needs user action
+                                    this.lock();
+                                });
                         }
-                        // 3 possible states: https://webaudio.github.io/web-audio-api/#BaseAudioContext
-                        this._audioContext.addEventListener("statechange", () => {
-                            if (this._audioContext!.state === "running") {
-                                this._triggerRunningState();
-                            }
-                            else {
-                                this._triggerSuspendedState();
-                            }
-                        });
                     }
                 }
             }
@@ -245,14 +244,18 @@
         }
 
         private _triggerRunningState() {
-            this._resumeAudioContext();
+            this._resumeAudioContext()
+                .then(() => {
+                    this.unlocked = true;
+                    if (this._muteButton) {
+                        this._hideMuteButton(); 
+                    }
 
-            this.unlocked = true;
-            if (this._muteButtonDisplayed) {
-               this._hideMuteButton(); 
-            }
-            // Notify users that the audio stack is unlocked/unmuted
-            this.onAudioUnlockedObservable.notifyObservers(this);
+                    // Notify users that the audio stack is unlocked/unmuted
+                    this.onAudioUnlockedObservable.notifyObservers(this);
+                }).catch(() => {
+                    this.unlocked = false;
+                });
         }
 
         private _triggerSuspendedState() {
@@ -289,8 +292,6 @@
                 this._triggerRunningState();
             }, false);
 
-            this._muteButtonDisplayed = true;
-
             window.addEventListener("resize", this._onResize);
         }
 
@@ -306,9 +307,9 @@
         }
 
         private _hideMuteButton() {
-            if (this._muteButtonDisplayed && this._muteButton) {
+            if (this._muteButton) {
                 document.body.removeChild(this._muteButton);
-                this._muteButtonDisplayed = false;
+                this._muteButton = null;
             }
         }
 
