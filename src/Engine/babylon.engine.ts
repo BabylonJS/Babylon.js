@@ -4117,7 +4117,7 @@
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
             var fromData = url.substr(0, 5) === "data:";
             var fromBlob = url.substr(0, 5) === "blob:";
-            var isBase64 = fromData && url.indexOf("base64") !== -1;
+            var isBase64 = fromData && url.indexOf(";base64,") !== -1;
 
             let texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_URL);
 
