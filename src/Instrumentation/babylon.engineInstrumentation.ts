@@ -1,6 +1,7 @@
 module BABYLON {
     /**
      * This class can be used to get instrumentation data from a Babylon engine
+     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
      */
     export class EngineInstrumentation implements IDisposable {
         private _captureGPUFrameTime = false;
@@ -8,7 +9,7 @@ module BABYLON {
         private _gpuFrameTime = new PerfCounter();
 
         private _captureShaderCompilationTime = false;
-        private _shaderCompilationTime = new PerfCounter();        
+        private _shaderCompilationTime = new PerfCounter();
 
         // Observers
         private _onBeginFrameObserver: Nullable<Observer<Engine>> = null;
@@ -109,9 +110,22 @@ module BABYLON {
             }
         }
 
-        public constructor(public engine: Engine) {
+        /**
+         * Instantiates a new engine instrumentation.
+         * This class can be used to get instrumentation data from a Babylon engine
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
+         * @param engine Defines the engine to instrument
+         */
+        public constructor(
+            /**
+             * Define the instrumented engine.
+             */
+            public engine: Engine) {
         }
 
+        /**
+         * Dispose and release associated resources.
+         */
         public dispose() {
             this.engine.onBeginFrameObservable.remove(this._onBeginFrameObserver);
             this._onBeginFrameObserver = null;
