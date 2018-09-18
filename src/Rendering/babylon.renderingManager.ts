@@ -19,6 +19,11 @@
         stencil: boolean;
     }
 
+    /**
+     * This is the manager responsible of all the rendering for meshes sprites and particles.
+     * It is enable to manage the different groups as well as the different necessary sort functions.
+     * This should not be used directly aside of the few static configurations
+     */
     export class RenderingManager {
         /**
          * The max id used for rendering groups (not included)
@@ -50,6 +55,10 @@
         private _customTransparentSortCompareFn: { [id: number]: Nullable<(a: SubMesh, b: SubMesh) => number> } = {};
         private _renderingGroupInfo: Nullable<RenderingGroupInfo> = new RenderingGroupInfo();
 
+        /**
+         * Instantiates a new rendering group for a particular scene
+         * @param scene Defines the scene the groups belongs to
+         */
         constructor(scene: Scene) {
             this._scene = scene;
 
@@ -67,6 +76,10 @@
             this._depthStencilBufferAlreadyCleaned = true;
         }
 
+        /**
+         * Renders the entire managed groups. This is used by the scene or the different rennder targets.
+         * @hidden
+         */
         public render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>,
             activeMeshes: Nullable<AbstractMesh[]>, renderParticles: boolean, renderSprites: boolean): void {
 
@@ -121,6 +134,10 @@
             }
         }
 
+        /**
+         * Resets the different information of the group to prepare a new frame
+         * @hidden
+         */
         public reset(): void {
             for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 var renderingGroup = this._renderingGroups[index];
@@ -130,6 +147,10 @@
             }
         }
 
+        /**
+         * Dispose and release the group and its associated resources.
+         * @hidden
+         */
         public dispose(): void {
             this.freeRenderingGroups();
             this._renderingGroups.length = 0;
@@ -158,6 +179,10 @@
             }
         }
 
+        /**
+         * Add a sprite manager to the rendering manager in order to render it this frame.
+         * @param spriteManager Define the sprite manager to render
+         */
         public dispatchSprites(spriteManager: ISpriteManager) {
             var renderingGroupId = spriteManager.renderingGroupId || 0;
 
@@ -166,6 +191,10 @@
             this._renderingGroups[renderingGroupId].dispatchSprites(spriteManager);
         }
 
+        /**
+         * Add a particle system to the rendering manager in order to render it this frame.
+         * @param particleSystem Define the particle system to render
+         */
         public dispatchParticles(particleSystem: IParticleSystem) {
             var renderingGroupId = particleSystem.renderingGroupId || 0;
 
@@ -175,9 +204,10 @@
         }
 
         /**
+         * Add a submesh to the manager in order to render it this frame
          * @param subMesh The submesh to dispatch
-         * @param [mesh] Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
-         * @param [material] Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
+         * @param mesh Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
+         * @param material Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
          */
         public dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void {
             if (mesh === undefined) {

@@ -70,7 +70,6 @@
     /**
      * Component responsible of rendering the bounding box of the meshes in a scene.
      * This is usually used through the mesh.showBoundingBox or the scene.forceShowBoundingBoxes properties
-     * 
      */
     export class BoundingBoxRenderer implements ISceneComponent {
         /**
