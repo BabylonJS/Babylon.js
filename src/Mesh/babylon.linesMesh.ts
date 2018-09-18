@@ -95,10 +95,6 @@
             return false;
         }
 
-        public createInstance(name: string): InstancedMesh {
-            throw new Error("LinesMeshes do not support createInstance.");
-        }
-
         /** @hidden */
         public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): LinesMesh {
             if (!this._geometry) {
