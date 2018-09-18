@@ -295,6 +295,9 @@ module BABYLON {
             }
         }
 
+        /**
+         * Release the sound and its associated resources
+         */
         public dispose() {
             if (Engine.audioEngine.canUseWebAudio) {
                 if (this.isPlaying) {
