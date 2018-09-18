@@ -2007,13 +2007,13 @@
         /**
          * Create and run an async loop.
          * @param iterations the number of iterations.
-         * @param _fn the function to run each iteration
-         * @param _successCallback the callback that will be called upon succesful execution
+         * @param fn the function to run each iteration
+         * @param successCallback the callback that will be called upon succesful execution
          * @param offset starting offset.
          * @returns the created async loop object
          */
-        public static Run(iterations: number, _fn: (asyncLoop: AsyncLoop) => void, _successCallback: () => void, offset: number = 0): AsyncLoop {
-            var loop = new AsyncLoop(iterations, _fn, _successCallback, offset);
+        public static Run(iterations: number, fn: (asyncLoop: AsyncLoop) => void, successCallback: () => void, offset: number = 0): AsyncLoop {
+            var loop = new AsyncLoop(iterations, fn, successCallback, offset);
 
             loop.executeNext();
 
