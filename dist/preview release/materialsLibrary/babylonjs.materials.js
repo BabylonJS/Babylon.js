@@ -1601,7 +1601,6 @@ var BABYLON;
             _this._lastTime = 0;
             _this._lastDeltaTime = 0;
             _this._createRenderTargets(scene, renderTargetSize);
-            _this.hasRenderTargetTextures = true;
             // Create render targets
             _this.getRenderTargetTextures = function () {
                 _this._renderTargets.reset();
@@ -1611,6 +1610,16 @@ var BABYLON;
             };
             return _this;
         }
+        Object.defineProperty(WaterMaterial.prototype, "hasRenderTargetTextures", {
+            /**
+             * Gets a boolean indicating that current material needs to register RTT
+             */
+            get: function () {
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(WaterMaterial.prototype, "useLogarithmicDepth", {
             get: function () {
                 return this._useLogarithmicDepth;

@@ -1,6 +1,7 @@
 module BABYLON {
     /**
      * This class can be used to get instrumentation data from a Babylon engine
+     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
      */
     export class SceneInstrumentation implements IDisposable {
         private _captureActiveMeshesEvaluationTime = false;
@@ -459,7 +460,17 @@ module BABYLON {
             return this.scene.getEngine()._textureCollisions;
         }
 
-        public constructor(public scene: Scene) {
+        /**
+         * Instantiates a new scene instrumentation.
+         * This class can be used to get instrumentation data from a Babylon engine
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
+         * @param scene Defines the scene to instrument
+         */
+        public constructor(
+            /**
+             * Defines the scene to instrument
+             */
+            public scene: Scene) {
             // Before render
             this._onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
                 if (this._captureActiveMeshesEvaluationTime) {
@@ -512,6 +523,9 @@ module BABYLON {
             });
         }
 
+        /**
+         * Dispose and release associated resources.
+         */
         public dispose() {
             this.scene.onAfterRenderObservable.remove(this._onAfterRenderObserver);
             this._onAfterRenderObserver = null;

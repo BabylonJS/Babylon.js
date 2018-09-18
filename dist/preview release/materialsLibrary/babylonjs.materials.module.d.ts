@@ -226,6 +226,10 @@ declare module BABYLON {
         private _useLogarithmicDepth;
         private _waitingRenderList;
         /**
+         * Gets a boolean indicating that current material needs to register RTT
+         */
+        readonly hasRenderTargetTextures: boolean;
+        /**
         * Constructor
         */
         constructor(name: string, scene: Scene, renderTargetSize?: Vector2);

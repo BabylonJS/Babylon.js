@@ -466,8 +466,10 @@
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */
-        public hasRenderTargetTextures = false;
-
+        public get hasRenderTargetTextures(): boolean {
+          return false;
+        }
+        
         /**
          * Specifies if the material should be serialized
          */
@@ -787,6 +789,7 @@
 
             if (!doNotAdd) {
                 this._scene.materials.push(this);
+                this._scene.onNewMaterialAddedObservable.notifyObservers(this);
             }
         }
 
@@ -1267,6 +1270,7 @@
             if (index >= 0) {
                 this._scene.materials.splice(index, 1);
             }
+            this._scene.onMaterialRemovedObservable.notifyObservers(this);
 
             // Remove from meshes
             for (index = 0; index < this._scene.meshes.length; index++) {

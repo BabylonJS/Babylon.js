@@ -95,6 +95,7 @@ module BABYLON {
             subEmitter.type = serializationObject.type;
             subEmitter.inheritDirection = serializationObject.inheritDirection;
             subEmitter.inheritedVelocityAmount = serializationObject.inheritedVelocityAmount;
+            subEmitter.particleSystem._isSubEmitter = true;
 
             return subEmitter;
         }

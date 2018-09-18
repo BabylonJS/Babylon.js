@@ -27,15 +27,24 @@ module BABYLON {
         configurable: true
     });
 
+    /**
+     * Interface representing a free camera inputs manager
+     */
     export interface FreeCameraInputsManager {
         addGamepad(): FreeCameraInputsManager;
     }
     
+    /**
+     * Adds a gamepad to the free camera inputs manager
+     */
     FreeCameraInputsManager.prototype.addGamepad = function(): FreeCameraInputsManager {
         this.add(new FreeCameraGamepadInput());
         return this;
     }
 
+    /**
+     * Interface representing an arc rotate camera inputs manager
+     */
     export interface ArcRotateCameraInputsManager {
         /**
          * Adds gamepad input support to the ArcRotateCamera InputManager.
@@ -44,6 +53,9 @@ module BABYLON {
         addGamepad(): ArcRotateCameraInputsManager;
     }
     
+    /**
+     * Adds a gamepad to the arc rotate camera inputs manager
+     */
     ArcRotateCameraInputsManager.prototype.addGamepad = function(): ArcRotateCameraInputsManager {
         this.add(new ArcRotateCameraGamepadInput());
         return this;
