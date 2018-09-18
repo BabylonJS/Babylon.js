@@ -1,18 +1,56 @@
 ﻿module BABYLON {
+    /**
+     * Represents a gamepad control stick position
+     */
     export class StickValues {
-        constructor(public x: number, public y: number) {
+        /**
+         * Initializes the gamepad x and y control stick values
+         * @param x The x component of the gamepad control stick value
+         * @param y The y component of the gamepad control stick value
+         */
+        constructor(
+            /**
+             * The x component of the control stick
+             */
+            public x: number, 
+            /**
+             * The y component of the control stick
+             */
+            public y: number
+        ) {
         }
     }
 
+    /**
+     * An interface which manages callbacks for gamepad button changes
+     */
     export interface GamepadButtonChanges {
+        /**
+         * Called when a gamepad has been changed
+         */
         changed: boolean;
+        /**
+         * Called when a gamepad press event has been triggered
+         */
         pressChanged: boolean;
+        /**
+         * Called when a touch event has been triggered
+         */
         touchChanged: boolean;
+        /**
+         * Called when a value has changed
+         */
         valueChanged: boolean;
     }
 
+    /**
+     * Represents a gamepad
+     */
     export class Gamepad {
 
+        /**
+         * Specifies what type of gamepad this represents
+         */
         public type: number;
 
         private _leftStick: StickValues = { x: 0, y: 0 };
@@ -26,21 +64,69 @@
         private _rightStickAxisX: number;
         private _rightStickAxisY: number;
 
+        /**
+         * Triggered when the left control stick has been changed
+         */
         private _onleftstickchanged: (values: StickValues) => void;
+
+        /**
+         * Triggered when the right control stick has been changed
+         */
         private _onrightstickchanged: (values: StickValues) => void;
 
+        /**
+         * Represents a gamepad controller
+         */
         public static GAMEPAD = 0;
+        /**
+         * Represents a generic controller
+         */
         public static GENERIC = 1;
+        /**
+         * Represents an XBox controller
+         */
         public static XBOX = 2;
+        /**
+         * Represents a pose-enabled controller
+         */
         public static POSE_ENABLED = 3;
 
+        /**
+         * Specifies whether the left control stick should be Y-inverted
+         */
         protected _invertLeftStickY: boolean = false;
 
+        /**
+         * Specifies if the gamepad has been connected
+         */
         public get isConnected(): boolean {
             return this._isConnected;
         }
 
-        constructor(public id: string, public index: number, public browserGamepad: any, leftStickX: number = 0, leftStickY: number = 1, rightStickX: number = 2, rightStickY: number = 3) {
+        /**
+         * Initializes the gamepad
+         * @param id The id of the gamepad
+         * @param index The index of the gamepad
+         * @param browserGamepad The browser gamepad
+         * @param leftStickX The x component of the left joystick
+         * @param leftStickY The y component of the left joystick
+         * @param rightStickX The x component of the right joystick
+         * @param rightStickY The y component of the right joystick
+         */
+        constructor(
+            /**
+             * The id of the gamepad
+             */
+            public id: string, 
+            /**
+             * The index of the gamepad
+             */
+            public index: number, 
+            /**
+             * The browser gamepad
+             */
+            public browserGamepad: any, 
+            leftStickX: number = 0, leftStickY: number = 1, rightStickX: number = 2, rightStickY: number = 3) {
             this.type = Gamepad.GAMEPAD;
             this._leftStickAxisX = leftStickX;
             this._leftStickAxisY = leftStickY;
