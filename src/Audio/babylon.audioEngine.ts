@@ -243,9 +243,15 @@
             }
         }
 
+        private _tryToRun = false;
         private _triggerRunningState() {
+            if (this._tryToRun) {
+                return;
+            }
+            this._tryToRun = true;
             this._resumeAudioContext()
                 .then(() => {
+                    this._tryToRun = false;
                     this.unlocked = true;
                     if (this._muteButton) {
                         this._hideMuteButton(); 
@@ -254,6 +260,7 @@
                     // Notify users that the audio stack is unlocked/unmuted
                     this.onAudioUnlockedObservable.notifyObservers(this);
                 }).catch(() => {
+                    this._tryToRun = false;
                     this.unlocked = false;
                 });
         }
@@ -287,10 +294,13 @@
 
             this._muteButton.addEventListener('mousedown', () => { 
                 this._triggerRunningState();
-            }, false);
+            }, true);
             this._muteButton.addEventListener('touchend', () => { 
                 this._triggerRunningState();
-            }, false);
+            }, true);
+            this._muteButton.addEventListener('click', () => {
+                this._triggerRunningState();
+            }, true);
 
             window.addEventListener("resize", this._onResize);
         }

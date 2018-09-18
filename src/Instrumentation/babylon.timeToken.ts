@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     /**
      * @hidden
-     **/    
+     **/
     export class _TimeToken {
         public _startTimeQuery: Nullable<WebGLQuery>;
         public _endTimeQuery: Nullable<WebGLQuery>;
