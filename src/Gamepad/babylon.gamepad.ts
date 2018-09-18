@@ -164,7 +164,6 @@
         }
         /**
          * Sets the left joystick values
-         * @param newValues The value to set the left joystick to
          */
         public set leftStick(newValues: StickValues) {
             if (this._onleftstickchanged && (this._leftStick.x !== newValues.x || this._leftStick.y !== newValues.y)) {
@@ -180,7 +179,6 @@
         }
         /**
          * Sets the right joystick value
-         * @param newValues The value to set the right joystick to
          */
         public set rightStick(newValues: StickValues) {
             if (this._onrightstickchanged && (this._rightStick.x !== newValues.x || this._rightStick.y !== newValues.y)) {
