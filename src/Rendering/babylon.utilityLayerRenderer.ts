@@ -72,6 +72,7 @@ module BABYLON {
             public originalScene: Scene){
             // Create scene which will be rendered in the foreground and remove it from being referenced by engine to avoid interfering with existing app
             this.utilityLayerScene = new BABYLON.Scene(originalScene.getEngine());
+            this.utilityLayerScene.useRightHandedSystem = originalScene.useRightHandedSystem;
             this.utilityLayerScene._allowPostProcessClearColor = false;
             originalScene.getEngine().scenes.pop();
       
