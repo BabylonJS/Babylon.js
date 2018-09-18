@@ -359,7 +359,7 @@ module BABYLON {
                         onAnimationEnd();
                     }
 
-                    if (this._attachedCamera) {
+                    if (this._attachedCamera && this._attachedCamera.useInputToRestoreState) {
                         this._attachedCamera.storeState();
                     }
                 });
