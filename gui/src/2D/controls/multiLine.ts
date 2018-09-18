@@ -62,7 +62,7 @@ export class MultiLine extends Control {
 
     /** Function called when a point is updated */
     public onPointUpdate = (): void => {
-        if (this.isVisible) this._markAsDirty();
+        this._markAsDirty();
     }
 
     /**
