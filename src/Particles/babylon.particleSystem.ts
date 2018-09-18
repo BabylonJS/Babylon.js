@@ -1005,11 +1005,6 @@
                     } else if (subEmitter instanceof Array) {
                         this._subEmitters.push(subEmitter);
                     }
-                    this._subEmitters[this._subEmitters.length-1].forEach((se)=>{
-                        if (!(se.particleSystem.emitter instanceof AbstractMesh) && se.inheritDirection) {
-                            Tools.Warn("subEmitter.inheritDirection is not supported with non-mesh emitter type");
-                        }
-                    })
                 });
             }
         }
@@ -1059,6 +1054,11 @@
                         this.animate(true);
                     }
                 }
+            }
+
+            // Animations
+            if (this.beginAnimationOnStart && this.animations && this.animations.length > 0) {
+                this.getScene().beginAnimation(this, this.beginAnimationFrom, this.beginAnimationTo, this.beginAnimationLoop);
             }
         }
 
@@ -2013,6 +2013,10 @@
 
             // Animations
             Animation.AppendSerializedAnimations(particleSystem, serializationObject);
+            serializationObject.beginAnimationOnStart = particleSystem.beginAnimationOnStart;
+            serializationObject.beginAnimationFrom = particleSystem.beginAnimationFrom;
+            serializationObject.beginAnimationTo = particleSystem.beginAnimationTo;
+            serializationObject.beginAnimationLoop = particleSystem.beginAnimationLoop;
 
             // Particle system
             serializationObject.startDelay = particleSystem.startDelay;
@@ -2289,6 +2293,10 @@
                     var parsedAnimation = parsedParticleSystem.animations[animationIndex];
                     particleSystem.animations.push(Animation.Parse(parsedAnimation));
                 }
+                particleSystem.beginAnimationOnStart = parsedParticleSystem.beginAnimationOnStart;
+                particleSystem.beginAnimationFrom = parsedParticleSystem.beginAnimationFrom;
+                particleSystem.beginAnimationTo = parsedParticleSystem.beginAnimationTo;
+                particleSystem.beginAnimationLoop = parsedParticleSystem.beginAnimationLoop;
             }
 
             if (parsedParticleSystem.autoAnimate) {
@@ -2428,6 +2436,12 @@
                     case "ConeParticleEmitter":
                         emitterType = new ConeParticleEmitter();
                         break;
+                    case "CylinderParticleEmitter":
+                        emitterType = new CylinderParticleEmitter();
+                        break;
+                    case "HemisphericParticleEmitter":
+                        emitterType = new HemisphericParticleEmitter();
+                        break;                   
                     case "BoxEmitter":
                     case "BoxParticleEmitter":
                     default:

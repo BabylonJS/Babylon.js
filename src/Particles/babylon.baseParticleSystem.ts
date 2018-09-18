@@ -158,11 +158,10 @@ module BABYLON {
         public customShader: any = null;
 
         /**
-         * By default particle system starts as soon as they are created. This prevents the 
+         * By default particle system does not start as soon as they are created. This prevents the 
          * automatic start to happen and let you decide when to start emitting particles.
          */
-        public preventAutoStart: boolean = false;
-
+        public preventAutoStart: boolean = true
         /**
          * Gets or sets a texture used to add random noise to particle positions
          */
@@ -223,6 +222,26 @@ module BABYLON {
 
         /** @hidden */
         protected _isAnimationSheetEnabled: boolean;
+
+        /**
+         * Gets or sets a boolean indicating that hosted animations (in the system.animations array) must be started when system.start() is called
+         */
+        public beginAnimationOnStart = false;
+
+        /**
+         * Gets or sets the frame to start the animation from when beginAnimationOnStart is true
+         */
+        public beginAnimationFrom = 0;
+
+        /**
+         * Gets or sets the frame to end the animation on when beginAnimationOnStart is true
+         */        
+        public beginAnimationTo = 60;
+
+        /**
+         * Gets or sets a boolean indicating if animations must loop when beginAnimationOnStart is true
+         */
+        public beginAnimationLoop = false;
        
         /**
          * Gets or sets whether an animation sprite sheet is enabled or not on the particle system
@@ -475,6 +494,9 @@ module BABYLON {
          * It can be for example box, sphere, or cone...
          */
         public particleEmitterType: IParticleEmitterType;
+
+        /** @hidden */
+        public _isSubEmitter = false;
 
         /**
          * Gets or sets the billboard mode to use when isBillboardBased = true.

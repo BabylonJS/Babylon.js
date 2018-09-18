@@ -192,7 +192,7 @@
                 1
             ],
             "customShader": null,
-            "preventAutoStart": false
+            "preventAutoStart": true
         },
         {
             "name": "sparksEdge",
@@ -431,7 +431,7 @@
                 1
             ],
             "customShader": null,
-            "preventAutoStart": false
+            "preventAutoStart": true
         },
         {
             "name": "fireSystem2",
@@ -624,7 +624,7 @@
                 1
             ],
             "customShader": null,
-            "preventAutoStart": false
+            "preventAutoStart": true
         },
         {
             "name": "fireSystem3",
@@ -817,7 +817,7 @@
                 1
             ],
             "customShader": null,
-            "preventAutoStart": false
+            "preventAutoStart": true
         }
     ]
 }

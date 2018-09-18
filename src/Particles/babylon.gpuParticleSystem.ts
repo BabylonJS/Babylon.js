@@ -132,6 +132,11 @@
             this._started = true;
             this._stopped = false;
             this._preWarmDone = false;
+
+            // Animations
+            if (this.beginAnimationOnStart && this.animations && this.animations.length > 0) {
+                this.getScene().beginAnimation(this, this.beginAnimationFrom, this.beginAnimationTo, this.beginAnimationLoop);
+            }
         }
 
         /**
