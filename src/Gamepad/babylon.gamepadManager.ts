@@ -111,6 +111,7 @@
         /**
          * Get the gamepad controllers based on type
          * @param type The type of gamepad controller
+         * @returns Nullable gamepad
          */
         public getGamepadByType(type: number = Gamepad.XBOX): Nullable<Gamepad> {
             for (var gamepad of this._babylonGamepads) {
