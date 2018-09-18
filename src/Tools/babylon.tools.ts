@@ -571,6 +571,11 @@
             }
         }
 
+        /**
+         * Sets the cors behavior on a dom element. This will add the required Tools.CorsBehavior to the element.
+         * @param url define the url we are trying 
+         * @param element define the dom element where to configure the cors policy
+         */
         public static SetCorsBehavior(url: string | string[], element: { crossOrigin: string | null }): void {
             if (url && url.indexOf("data:") === 0) {
                 return;
