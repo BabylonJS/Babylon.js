@@ -475,7 +475,7 @@
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "3.3.0-beta.5";
+            return "3.3.0-rc.0";
         }
 
         // Updatable statics so stick with vars here
@@ -674,7 +674,7 @@
          * By default, this will create a BabylonJS Audio Engine if the workload
          * has been embedded.
          */
-        public static AudioEngineFactory: () => IAudioEngine;
+        public static AudioEngineFactory: (engine: Engine) => IAudioEngine;
 
         // Focus
         private _onFocus: () => void;
@@ -1185,7 +1185,7 @@
 
             // Create Audio Engine if needed.
             if (!Engine.audioEngine && options.audioEngine && Engine.AudioEngineFactory) {
-                Engine.audioEngine = Engine.AudioEngineFactory();
+                Engine.audioEngine = Engine.AudioEngineFactory(this);
             }
 
             // Prepare buffer pointers
@@ -4117,7 +4117,7 @@
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
             var fromData = url.substr(0, 5) === "data:";
             var fromBlob = url.substr(0, 5) === "blob:";
-            var isBase64 = fromData && url.indexOf("base64") !== -1;
+            var isBase64 = fromData && url.indexOf(";base64,") !== -1;
 
             let texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_URL);
 

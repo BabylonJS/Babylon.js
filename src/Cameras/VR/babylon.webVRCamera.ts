@@ -313,7 +313,7 @@ module BABYLON {
         public useStandingMatrix(callback = (bool: boolean) => { }) {
             // Use standing matrix if available
             this.getEngine().initWebVRAsync().then((result) => {
-                if (!result.vrDisplay || !result.vrDisplay.stageParameters || !result.vrDisplay.stageParameters.sittingToStandingTransform) {
+                if (!result.vrDisplay || !result.vrDisplay.stageParameters || !result.vrDisplay.stageParameters.sittingToStandingTransform  || !this.webVROptions.trackPosition) {
                     callback(false);
                 } else {
                     this._standingMatrix = new Matrix();
@@ -348,6 +348,9 @@ module BABYLON {
         public dispose(): void {
             this._detachIfAttached();
             this.getEngine().onVRRequestPresentComplete.removeCallback(this._onVREnabled);
+            if(this._updateCacheWhenTrackingDisabledObserver){
+                this._scene.onBeforeRenderObservable.remove(this._updateCacheWhenTrackingDisabledObserver);
+            }
             super.dispose();
         }
 
@@ -582,12 +585,19 @@ module BABYLON {
         }
 
         /**
+         * @hidden
+         * Get current device position in babylon world
+         */
+        public _computeDevicePosition(){
+            Vector3.TransformCoordinatesToRef(this._deviceRoomPosition, this._deviceToWorld, this.devicePosition);
+        }
+
+        /**
          * Updates the current device position and rotation in the babylon world
          */
         public update() {
-            // Get current device position in babylon world
-            Vector3.TransformCoordinatesToRef(this._deviceRoomPosition, this._deviceToWorld, this.devicePosition);
-
+            this._computeDevicePosition();
+            
             // Get current device rotation in babylon world
             Matrix.FromQuaternionToRef(this._deviceRoomRotationQuaternion, this._workingMatrix);
             this._workingMatrix.multiplyToRef(this._deviceToWorld, this._workingMatrix)
@@ -686,7 +696,7 @@ module BABYLON {
 
         private _onGamepadConnectedObserver: Nullable<Observer<Gamepad>>;
         private _onGamepadDisconnectedObserver: Nullable<Observer<Gamepad>>;
-
+        private _updateCacheWhenTrackingDisabledObserver: Nullable<Observer<Scene>>;
         /**
          * Initializes the controllers and their meshes
          */
@@ -718,6 +728,15 @@ module BABYLON {
             this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
                 if (gamepad.type === Gamepad.POSE_ENABLED) {
                     let webVrController: WebVRController = <WebVRController>gamepad;
+                    if(!this.webVROptions.trackPosition){
+                        webVrController._disableTrackPosition(new Vector3(webVrController.hand == "left" ? -0.15 : 0.15,-0.5, 0.25));
+                        // Cache must be updated before rendering controllers to avoid them being one frame behind
+                        if(!this._updateCacheWhenTrackingDisabledObserver){
+                            this._updateCacheWhenTrackingDisabledObserver = this._scene.onBeforeRenderObservable.add(()=>{
+                                this._updateCache();
+                            });
+                        }                        
+                    }
                     webVrController.deviceScaleFactor = this.deviceScaleFactor;
                     webVrController._deviceToWorld.copyFrom(this._deviceToWorld);
                     this._correctPositionIfNotTrackPosition(webVrController._deviceToWorld);

@@ -44,7 +44,7 @@ module BABYLON {
          * Clones the sub emitter
          * @returns the cloned sub emitter
          */
-        clone(): SubEmitter {
+        public clone(): SubEmitter {
             // Clone particle system
             var emitter = this.particleSystem.emitter;
             if (!emitter) {
@@ -53,6 +53,7 @@ module BABYLON {
                 emitter = emitter.clone();
             } else if (emitter instanceof AbstractMesh) {
                 emitter = new Mesh("", emitter.getScene());
+                emitter.isVisible = false;
             }
             var clone = new SubEmitter(this.particleSystem.clone("", emitter));
 
@@ -62,7 +63,45 @@ module BABYLON {
             clone.inheritedVelocityAmount = this.inheritedVelocityAmount;
 
             clone.particleSystem._disposeEmitterOnDispose = true;
+            clone.particleSystem.disposeOnStop = true;
             return clone;
+        }
+
+        /**
+         * Serialize current object to a JSON object
+         * @returns the serialized object
+         */
+        public serialize(): any {
+            let serializationObject: any = {};
+
+            serializationObject.type = this.type;
+            serializationObject.inheritDirection = this.inheritDirection;
+            serializationObject.inheritedVelocityAmount = this.inheritedVelocityAmount;
+            serializationObject.particleSystem = this.particleSystem.serialize();
+
+            return serializationObject;
+        }
+
+        /**
+         * Creates a new SubEmitter from a serialized JSON version
+         * @param serializationObject defines the JSON object to read from
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the rootUrl for data loading
+         * @returns a new SubEmitter
+         */
+        public static Parse(serializationObject: any, scene: Scene, rootUrl: string): SubEmitter {
+            let system = serializationObject.particleSystem;
+            let subEmitter = new SubEmitter(ParticleSystem.Parse(system, scene, rootUrl));
+            subEmitter.type = serializationObject.type;
+            subEmitter.inheritDirection = serializationObject.inheritDirection;
+            subEmitter.inheritedVelocityAmount = serializationObject.inheritedVelocityAmount;
+
+            return subEmitter;
+        }
+
+        /** Release associated resources */
+        public dispose() {
+            this.particleSystem.dispose();
         }
     }
 }

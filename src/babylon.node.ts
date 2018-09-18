@@ -536,10 +536,6 @@
          * @returns an array of {BABYLON.Node}
          */
         public getChildren(predicate?: (node: Node) => boolean): Node[] {
-            if (!predicate) {
-                return this._children;
-            }
-
             return this.getDescendants(true, predicate);
         }
 

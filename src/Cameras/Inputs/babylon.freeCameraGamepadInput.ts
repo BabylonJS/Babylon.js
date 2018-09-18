@@ -1,24 +1,47 @@
 module BABYLON {
+    /**
+     * Manage the gamepad inputs to control a free camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
     export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
+        /**
+         * Define the camera the input is attached to.
+         */
+        public camera: FreeCamera;
 
-        public gamepad: Nullable<Gamepad>;        
-        private _onGamepadConnectedObserver : Nullable<Observer<Gamepad>>;
-        private _onGamepadDisconnectedObserver : Nullable<Observer<Gamepad>>;
+        /**
+         * Define the Gamepad controlling the input
+         */
+        public gamepad: Nullable<Gamepad>;
 
+        /**
+         * Defines the gamepad rotation sensiblity.
+         * This is the threshold from when rotation starts to be accounted for to prevent jittering.
+         */
         @serialize()
         public gamepadAngularSensibility = 200;
 
+        /**
+         * Defines the gamepad move sensiblity.
+         * This is the threshold from when moving starts to be accounted for for to prevent jittering.
+         */
         @serialize()
         public gamepadMoveSensibility = 40;
-
+        
         // private members
+        private _onGamepadConnectedObserver : Nullable<Observer<Gamepad>>;
+        private _onGamepadDisconnectedObserver : Nullable<Observer<Gamepad>>;
         private _cameraTransform: Matrix = Matrix.Identity();
         private _deltaTransform: Vector3 = Vector3.Zero();
         private _vector3: Vector3 = Vector3.Zero();
         private _vector2: Vector2 = Vector2.Zero();
 
-        attachControl(element: HTMLElement, noPreventDefault?: boolean) {
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
             let manager = this.camera.getScene().gamepadManager;
             this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
                 if (gamepad.type !== Gamepad.POSE_ENABLED) {
@@ -38,13 +61,21 @@ module BABYLON {
             this.gamepad = manager.getGamepadByType(Gamepad.XBOX);
         }
 
-        detachControl(element: Nullable<HTMLElement>) {
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        public detachControl(element: Nullable<HTMLElement>): void {
             this.camera.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
             this.camera.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
             this.gamepad = null;
         }
 
-        checkInputs() {
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        public checkInputs(): void {
             if (this.gamepad && this.gamepad.leftStick) {
                 var camera = this.camera;
                 var LSValues = this.gamepad.leftStick;
@@ -80,11 +111,19 @@ module BABYLON {
             }
         }
 
-        getClassName(): string {
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        public getClassName(): string {
             return "FreeCameraGamepadInput";
         }
 
-        getSimpleName() {
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        public getSimpleName(): string {
             return "gamepad";
         }
     }

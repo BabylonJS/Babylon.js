@@ -1,16 +1,35 @@
 module BABYLON {
+    /**
+     * Manage the pointers inputs to control an arc rotate camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
     export class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
+        /**
+         * Defines the camera the input is attached to.
+         */
+        public camera: ArcRotateCamera;
 
+        /**
+         * Defines the buttons associated with the input to handle camera move.
+         */
         @serialize()
         public buttons = [0, 1, 2];
 
+        /**
+         * Defines the pointer angular sensibility  along the X axis or how fast is the camera rotating.
+         */
         @serialize()
         public angularSensibilityX = 1000.0;
 
+        /**
+         * Defines the pointer angular sensibility along the Y axis or how fast is the camera rotating.
+         */
         @serialize()
         public angularSensibilityY = 1000.0;
 
+        /**
+         * Defines the pointer pinch precision or how fast is the camera zooming.
+         */
         @serialize()
         public pinchPrecision = 12.0;
 
@@ -21,18 +40,30 @@ module BABYLON {
         @serialize()
         public pinchDeltaPercentage = 0;
 
+        /**
+         * Defines the pointer panning sensibility or how fast is the camera moving.
+         */
         @serialize()
         public panningSensibility: number = 1000.0;
 
+        /**
+         * Defines whether panning (2 fingers swipe) is enabled through multitouch.
+         */
         @serialize()
         public multiTouchPanning: boolean = true;
 
+        /**
+         * Defines whether panning is enabled for both pan (2 fingers swipe) and zoom (pinch) through multitouch.
+         */
         @serialize()
         public multiTouchPanAndZoom: boolean = true;
 
-        private _isPanClick: boolean = false;
+        /**
+         * Revers pinch action direction.
+         */
         public pinchInwards = true;
 
+        private _isPanClick: boolean = false;
         private _pointerInput: (p: PointerInfo, s: EventState) => void;
         private _observer: Nullable<Observer<PointerInfo>>;
         private _onMouseMove: Nullable<(e: MouseEvent) => any>;
@@ -42,7 +73,12 @@ module BABYLON {
         private _onLostFocus: Nullable<(e: FocusEvent) => any>;
         private _onContextMenu: Nullable<(e: PointerEvent) => void>;
 
-        public attachControl(element: HTMLElement, noPreventDefault?: boolean) {
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
             var engine = this.camera.getEngine();
             var cacheSoloPointer: Nullable<{ x: number, y: number, pointerId: number, type: any }>; // cache pointer object for better perf on camera rotation
             var pointA: Nullable<{ x: number, y: number, pointerId: number, type: any }> = null;
@@ -90,7 +126,9 @@ module BABYLON {
                     }
                 }
                 else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
-                    this.camera.restoreState();
+                    if (this.camera.useInputToRestoreState) {
+                        this.camera.restoreState();
+                    }
                 }
                 else if (p.type === PointerEventTypes.POINTERUP && srcElement) {
                     try {
@@ -314,7 +352,11 @@ module BABYLON {
             ]);
         }
 
-        public detachControl(element: Nullable<HTMLElement>) {
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        public detachControl(element: Nullable<HTMLElement>): void {
             if (this._onLostFocus) {
                 Tools.UnregisterTopRootEvents([
                     { name: "blur", handler: this._onLostFocus }
@@ -353,11 +395,19 @@ module BABYLON {
             }
         }
 
-        getClassName(): string {
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        public getClassName(): string {
             return "ArcRotateCameraPointersInput";
         }
 
-        getSimpleName() {
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        public getSimpleName(): string {
             return "pointers";
         }
     }

@@ -6,6 +6,20 @@
      * @example https://doc.babylonjs.com/babylon101/particles
      */
     export class ParticleSystem extends BaseParticleSystem implements IDisposable, IAnimatable, IParticleSystem {
+
+        /**
+         * Billboard mode will only apply to Y axis
+         */
+        public static readonly BILLBOARDMODE_Y = 2;
+        /**
+         * Billboard mode will apply to all axes
+         */
+        public static readonly BILLBOARDMODE_ALL = 7;
+        /**
+         * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
+         */
+        public static readonly BILLBOARDMODE_STRETCHED = 8;
+
         /**
          * This function can be defined to provide custom update for active particles.
          * This function will be called instead of regular update (age, position, color, etc.).
@@ -126,7 +140,7 @@
         */
         public activeSubSystems: Array<ParticleSystem>;
 
-        private _rootParticleSystem: ParticleSystem;
+        private _rootParticleSystem: Nullable<ParticleSystem>;
         //end of Sub-emitter
 
         /**
@@ -191,22 +205,21 @@
 
                 for (var index = 0; index < particles.length; index++) {
                     var particle = particles[index];
-                    particle.age += this._scaledUpdateSpeed;
 
-                    if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
-                        this._emitFromParticle(particle);
-                        if (particle._attachedSubEmitters) {
-                            particle._attachedSubEmitters.forEach((subEmitter) => {
-                                subEmitter.particleSystem.disposeOnStop = true;
-                                subEmitter.particleSystem.stop();
-                            });
-                            particle._attachedSubEmitters = null;
+                        let scaledUpdateSpeed = this._scaledUpdateSpeed;
+                        let previousAge = particle.age;
+                        particle.age += scaledUpdateSpeed;
+
+                        // Evaluate step to death
+                        if (particle.age > particle.lifeTime) {
+                            let diff = particle.age - previousAge;
+                            let oldDiff = particle.lifeTime - previousAge;
+
+                            scaledUpdateSpeed = (oldDiff * scaledUpdateSpeed) / diff;
+
+                            particle.age = particle.lifeTime;
                         }
-                        this.recycleParticle(particle);
-                        index--;
-                        continue;
-                    }
-                    else {
+
                         let ratio = particle.age / particle.lifeTime;
 
                         // Color
@@ -221,7 +234,7 @@
                             });
                         }
                         else {
-                            particle.colorStep.scaleToRef(this._scaledUpdateSpeed, this._scaledColorStep);
+                            particle.colorStep.scaleToRef(scaledUpdateSpeed, this._scaledColorStep);
                             particle.color.addInPlace(this._scaledColorStep);
 
                             if (particle.color.a < 0) {
@@ -240,10 +253,10 @@
                                 particle.angularSpeed = Scalar.Lerp(particle._currentAngularSpeed1, particle._currentAngularSpeed2, scale);
                             });
                         }
-                        particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
+                        particle.angle += particle.angularSpeed * scaledUpdateSpeed;
 
                         // Direction
-                        let directionScale = this._scaledUpdateSpeed;
+                        let directionScale = scaledUpdateSpeed;
 
                         /// Velocity
                         if (this._velocityGradients && this._velocityGradients.length > 0) {
@@ -305,12 +318,12 @@
 
                             force.copyFromFloats((2 * fetchedColorR - 1) * this.noiseStrength.x, (2 * fetchedColorG - 1) * this.noiseStrength.y, (2 * fetchedColorB - 1) * this.noiseStrength.z);
 
-                            force.scaleToRef(this._scaledUpdateSpeed, scaledForce);
+                            force.scaleToRef(scaledUpdateSpeed, scaledForce);
                             particle.direction.addInPlace(scaledForce);
                         }
 
                         // Gravity
-                        this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
+                        this.gravity.scaleToRef(scaledUpdateSpeed, this._scaledGravity);
                         particle.direction.addInPlace(this._scaledGravity);
 
                         // Size
@@ -354,7 +367,20 @@
 
                         // Update the position of the attached sub-emitters to match their attached particle
                         particle._inheritParticleInfoToSubEmitters();
-                    }
+
+                        if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
+                            this._emitFromParticle(particle);
+                            if (particle._attachedSubEmitters) {
+                                particle._attachedSubEmitters.forEach((subEmitter) => {
+                                    subEmitter.particleSystem.disposeOnStop = true;
+                                    subEmitter.particleSystem.stop();
+                                });
+                                particle._attachedSubEmitters = null;
+                            }
+                            this.recycleParticle(particle);
+                            index--;
+                            continue;
+                        }
                 }
             }
         }
@@ -781,17 +807,17 @@
         /**
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param color defines the color to affect to the specified gradient
+         * @param color1 defines the color to affect to the specified gradient
          * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
          */
-        public addColorGradient(gradient: number, color: Color4, color2?: Color4): IParticleSystem {
+        public addColorGradient(gradient: number, color1: Color4, color2?: Color4): IParticleSystem {
             if (!this._colorGradients) {
                 this._colorGradients = [];
             }
 
             let colorGradient = new ColorGradient();
             colorGradient.gradient = gradient;
-            colorGradient.color1 = color;
+            colorGradient.color1 = color1;
             colorGradient.color2 = color2;
             this._colorGradients.push(colorGradient);
 
@@ -865,7 +891,7 @@
                 this._vertexBufferSize += 1;
             }
 
-            if (!this._isBillboardBased) {
+            if (!this._isBillboardBased || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
                 this._vertexBufferSize += 3;
             }
 
@@ -900,7 +926,7 @@
                 dataOffset += 1;
             }
 
-            if (!this._isBillboardBased) {
+            if (!this._isBillboardBased || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
                 var directionBuffer = this._vertexBuffer.createVertexBuffer("direction", dataOffset, 3, this._vertexBufferSize, this._useInstancing);
                 this._vertexBuffers["direction"] = directionBuffer;
                 dataOffset += 3;
@@ -968,21 +994,7 @@
             return this._started;
         }
 
-        /**
-         * Starts the particle system and begins to emit
-         * @param delay defines the delay in milliseconds before starting the system (this.startDelay by default)
-         */
-        public start(delay = this.startDelay): void {
-            if(!this.targetStopDuration && this._hasTargetStopDurationDependantGradient()){
-                throw "Particle system started with a targetStopDuration dependant gradient (eg. startSizeGradients) but no targetStopDuration set";
-            }
-            if (delay) {
-                setTimeout(() => {
-                    this.start(0);
-                }, delay);
-                return;
-            }
-            // Convert the subEmitters field to the constant type field _subEmitters
+        private _prepareSubEmitterInternalArray() {
             this._subEmitters = new Array<Array<SubEmitter>>();
             if (this.subEmitters) {
                 this.subEmitters.forEach((subEmitter) => {
@@ -1000,6 +1012,24 @@
                     })
                 });
             }
+        }
+
+        /**
+         * Starts the particle system and begins to emit
+         * @param delay defines the delay in milliseconds before starting the system (this.startDelay by default)
+         */
+        public start(delay = this.startDelay): void {
+            if(!this.targetStopDuration && this._hasTargetStopDurationDependantGradient()){
+                throw "Particle system started with a targetStopDuration dependant gradient (eg. startSizeGradients) but no targetStopDuration set";
+            }
+            if (delay) {
+                setTimeout(() => {
+                    this.start(0);
+                }, delay);
+                return;
+            }
+            // Convert the subEmitters field to the constant type field _subEmitters
+            this._prepareSubEmitterInternalArray();
 
             this._started = true;
             this._stopped = false;
@@ -1009,6 +1039,10 @@
             }
 
             if (this.preWarmCycles) {
+                if (this.emitter instanceof AbstractMesh) {
+                    this.emitter.computeWorldMatrix(true);
+                }
+
                 let noiseTextureAsProcedural = this.noiseTexture as ProceduralTexture;
 
                 if (noiseTextureAsProcedural && noiseTextureAsProcedural.onGeneratedObservable) {
@@ -1082,6 +1116,10 @@
                     this._vertexData[offset++] = particle.direction.y;
                     this._vertexData[offset++] = particle.direction.z;
                 }
+            } else if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
+                this._vertexData[offset++] = particle.direction.x;
+                this._vertexData[offset++] = particle.direction.y;
+                this._vertexData[offset++] = particle.direction.z;
             }
 
             if (this._useRampGradients) {
@@ -1167,6 +1205,8 @@
             if (index !== -1) {
                 this._rootParticleSystem.activeSubSystems.splice(index, 1);
             }
+
+            this._rootParticleSystem = null;
         }
 
         private _emitFromParticle: (particle: Particle) => void = (particle) => {
@@ -1460,10 +1500,13 @@
                 defines.push("#define BILLBOARD");
 
                 switch (this.billboardMode) {
-                    case AbstractMesh.BILLBOARDMODE_Y:
+                    case ParticleSystem.BILLBOARDMODE_Y:
                         defines.push("#define BILLBOARDY");
                         break;
-                    case AbstractMesh.BILLBOARDMODE_ALL:
+                    case ParticleSystem.BILLBOARDMODE_STRETCHED:
+                        defines.push("#define BILLBOARDSTRETCHED");
+                        break;                        
+                    case ParticleSystem.BILLBOARDMODE_ALL:
                     default:
                         break;
                 }
@@ -1479,7 +1522,7 @@
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
 
-                var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased, this._useRampGradients);
+                var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased && this.billboardMode !== ParticleSystem.BILLBOARDMODE_STRETCHED, this._useRampGradients);
                 var effectCreationOption = ParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled);
 
                 var samplers = ["diffuseSampler", "rampSampler"];
@@ -1777,6 +1820,17 @@
 
             this._removeFromRoot();
 
+            if (this._subEmitters && this._subEmitters.length) {
+                for (var index = 0; index < this._subEmitters.length; index++) {
+                    for (var subEmitter of this._subEmitters[index]) {
+                        subEmitter.dispose();
+                    }
+                }
+
+                this._subEmitters = [];
+                this.subEmitters = [];
+            }
+
             if (this._disposeEmitterOnDispose && this.emitter && (this.emitter as AbstractMesh).dispose) {
                 (<AbstractMesh>this.emitter).dispose(true);
             }
@@ -1787,9 +1841,13 @@
                 this._scene.particleSystems.splice(index, 1);
             }
 
+            this._scene._activeParticleSystems.dispose();
+
             // Callback
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
+
+            this.reset();
         }
 
         // Clone
@@ -1906,7 +1964,23 @@
             serializationObject.customShader = this.customShader;
             serializationObject.preventAutoStart = this.preventAutoStart;
 
-            serializationObject.isAnimationSheetEnabled = this._isAnimationSheetEnabled;
+            // SubEmitters
+            if (this.subEmitters) {
+                serializationObject.subEmitters = [];
+
+                if (!this._subEmitters) {
+                    this._prepareSubEmitterInternalArray();
+                }
+                
+                for (var subs of this._subEmitters) {
+                    let cell = [];
+                    for (var sub of subs) {
+                        cell.push(sub.serialize());
+                    }
+
+                    serializationObject.subEmitters.push(cell);
+                }
+            }
 
             return serializationObject;
         }
@@ -1934,14 +2008,17 @@
 
             if (particleSystem.particleTexture) {
                 serializationObject.textureName = particleSystem.particleTexture.name;
+                serializationObject.invertY = particleSystem.particleTexture._invertY;
             }
 
             // Animations
             Animation.AppendSerializedAnimations(particleSystem, serializationObject);
 
             // Particle system
+            serializationObject.startDelay = particleSystem.startDelay;
             serializationObject.renderingGroupId = particleSystem.renderingGroupId;
             serializationObject.isBillboardBased = particleSystem.isBillboardBased;
+            serializationObject.billboardMode = particleSystem.billboardMode;
             serializationObject.minAngularSpeed = particleSystem.minAngularSpeed;
             serializationObject.maxAngularSpeed = particleSystem.maxAngularSpeed;
             serializationObject.minSize = particleSystem.minSize;
@@ -1972,6 +2049,8 @@
             serializationObject.spriteCellChangeSpeed = particleSystem.spriteCellChangeSpeed;
             serializationObject.spriteCellWidth = particleSystem.spriteCellWidth;
             serializationObject.spriteCellHeight = particleSystem.spriteCellHeight;
+            serializationObject.spriteRandomStartCell = particleSystem.spriteRandomStartCell;
+            serializationObject.isAnimationSheetEnabled = particleSystem.isAnimationSheetEnabled;
 
             let colorGradients = particleSystem.getColorGradients();
             if (colorGradients) {
@@ -2001,6 +2080,7 @@
 
                     serializationObject.rampGradients.push(serializedGradient);
                 }
+                serializationObject.useRampGradients = particleSystem.useRampGradients;
             }
 
             let colorRemapGradients = particleSystem.getColorRemapGradients();
@@ -2176,12 +2256,12 @@
         public static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, scene: Scene, rootUrl: string) {
             // Texture
             if (parsedParticleSystem.textureName) {
-                particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene);
+                particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene, false, parsedParticleSystem.invertY !== undefined ? parsedParticleSystem.invertY : true);
                 particleSystem.particleTexture.name = parsedParticleSystem.textureName;
             }
 
             // Emitter
-            if (parsedParticleSystem.emitterId === undefined) {
+            if (!parsedParticleSystem.emitterId && parsedParticleSystem.emitterId !== 0 && parsedParticleSystem.emitter === undefined) {
                 particleSystem.emitter = Vector3.Zero();
             }
             else if (parsedParticleSystem.emitterId) {
@@ -2199,6 +2279,10 @@
                 particleSystem.isBillboardBased = parsedParticleSystem.isBillboardBased;
             }
 
+            if (parsedParticleSystem.billboardMode !== undefined) {
+                particleSystem.billboardMode = parsedParticleSystem.billboardMode;
+            }
+
             // Animations
             if (parsedParticleSystem.animations) {
                 for (var animationIndex = 0; animationIndex < parsedParticleSystem.animations.length; animationIndex++) {
@@ -2212,6 +2296,7 @@
             }
 
             // Particle system
+            particleSystem.startDelay = parsedParticleSystem.startDelay | 0;
             particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
             particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
             particleSystem.minSize = parsedParticleSystem.minSize;
@@ -2259,8 +2344,9 @@
 
             if (parsedParticleSystem.rampGradients) {
                 for (var rampGradient of parsedParticleSystem.rampGradients) {
-                    particleSystem.addRampGradient(rampGradient.gradient, Color3.FromArray(rampGradient.color1));
+                    particleSystem.addRampGradient(rampGradient.gradient, Color3.FromArray(rampGradient.color));
                 }
+                particleSystem.useRampGradients = parsedParticleSystem.useRampGradients;
             }
 
             if (parsedParticleSystem.colorRemapGradients) {
@@ -2362,6 +2448,7 @@
             particleSystem.spriteCellWidth = parsedParticleSystem.spriteCellWidth;
             particleSystem.spriteCellHeight = parsedParticleSystem.spriteCellHeight;
             particleSystem.spriteCellChangeSpeed = parsedParticleSystem.spriteCellChangeSpeed;
+            particleSystem.spriteRandomStartCell = parsedParticleSystem.spriteRandomStartCell;
         }
 
         /**
@@ -2386,6 +2473,20 @@
             if (parsedParticleSystem.id) {
                 particleSystem.id = parsedParticleSystem.id;
             }
+
+            // SubEmitters
+            if (parsedParticleSystem.subEmitters) {
+                particleSystem.subEmitters = [];
+                for (var cell of parsedParticleSystem.subEmitters) {
+                    let cellArray = [];
+                    for (var sub of cell) {
+                        cellArray.push(SubEmitter.Parse(sub, scene, rootUrl));
+                    }
+
+                    particleSystem.subEmitters.push(cellArray);
+                }
+            }
+            
 
             // Auto start
             if (parsedParticleSystem.preventAutoStart) {

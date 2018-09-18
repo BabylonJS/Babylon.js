@@ -1,32 +1,67 @@
 module BABYLON {
+    /**
+     * Manage the keyboard inputs to control the movement of an arc rotate camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
     export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        private _keys = new Array<number>();
-        
+        /**
+         * Defines the camera the input is attached to.
+         */
+        public camera: ArcRotateCamera;
+
+        /**
+         * Defines the list of key codes associated with the up action (increase alpha)
+         */
         @serialize()
         public keysUp = [38];
 
+        /**
+         * Defines the list of key codes associated with the down action (decrease alpha)
+         */
         @serialize()
         public keysDown = [40];
 
+        /**
+         * Defines the list of key codes associated with the left action (increase beta)
+         */
         @serialize()
         public keysLeft = [37];
 
+        /**
+         * Defines the list of key codes associated with the right action (decrease beta)
+         */
         @serialize()
         public keysRight = [39];
 
+        /**
+         * Defines the list of key codes associated with the reset action.
+         * Those keys reset the camera to its last stored state (with the method camera.storeState())
+         */
         @serialize()
         public keysReset = [220];
 
+        /**
+         * Defines the panning sensibility of the inputs.
+         * (How fast is the camera paning)
+         */
         @serialize()
         public panningSensibility: number = 50.0;
 
+        /**
+         * Defines the zooming sensibility of the inputs.
+         * (How fast is the camera zooming)
+         */
         @serialize()
         public zoomingSensibility: number = 25.0;
 
+        /**
+         * Defines wether maintaining the alt key down switch the movement mode from
+         * orientation to zoom.
+         */
         @serialize()
         public useAltToZoom: boolean = true;
 
+        private _keys = new Array<number>();
         private _ctrlPressed: boolean;
         private _altPressed: boolean;
         private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
@@ -34,7 +69,12 @@ module BABYLON {
         private _engine: Engine;
         private _scene: Scene;
 
-        public attachControl(element: HTMLElement, noPreventDefault?: boolean) {
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
             if (this._onCanvasBlurObserver) {
                 return;
             }
@@ -93,6 +133,10 @@ module BABYLON {
             });    
         }
 
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
         public detachControl(element: Nullable<HTMLElement>) {
             if (this._scene) {
                 if (this._onKeyboardObserver) {
@@ -108,7 +152,11 @@ module BABYLON {
             this._keys = [];
         }
 
-        public checkInputs() {
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        public checkInputs(): void {
             if (this._onKeyboardObserver){
                 var camera = this.camera;
 
@@ -147,17 +195,27 @@ module BABYLON {
                             camera.inertialBetaOffset += 0.01;
                         }
                     } else if (this.keysReset.indexOf(keyCode) !== -1) {
-                        camera.restoreState();
+                        if (camera.useInputToRestoreState) {
+                            camera.restoreState();
+                        }
                     }
                 }
             }
         }
 
-        getClassName(): string {
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        public getClassName(): string {
             return "ArcRotateCameraKeyboardMoveInput";
         }
-        
-        getSimpleName(){
+
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        public getSimpleName(): string{
             return "keyboard";
         }
     }

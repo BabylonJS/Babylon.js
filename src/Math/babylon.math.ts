@@ -1,6 +1,18 @@
 ﻿module BABYLON {
+    /** 
+     * Constant used to convert a value to gamma space 
+     * @ignorenaming
+     */
     export const ToGammaSpace = 1 / 2.2;
-    export const ToLinearSpace = 2.2;
+    /** 
+     * Constant used to convert a value to linear space 
+     * @ignorenaming
+     */
+     export const ToLinearSpace = 2.2;
+    /** 
+     * Constant used to define the minimal number value in Babylon.js 
+     * @ignorenaming
+     */
     export const Epsilon = 0.001;
 
     /**
@@ -5973,13 +5985,34 @@
         }
     }
 
+    /**
+     * Class used to represent a viewport on screen
+     */
     export class Viewport {
         /**
-         * Creates a Viewport object located at (x, y) and sized (width, height).  
+         * Creates a Viewport object located at (x, y) and sized (width, height)
+         * @param x defines viewport left coordinate
+         * @param y defines viewport top coordinate
+         * @param width defines the viewport width
+         * @param height defines the viewport height
          */
-        constructor(public x: number, public y: number, public width: number, public height: number) {
+        constructor(
+            /** viewport left coordinate */
+            public x: number, 
+            /** viewport top coordinate */
+            public y: number, 
+            /**viewport width */
+            public width: number, 
+            /** viewport height */
+            public height: number) {
         }
 
+        /**
+         * Creates a new viewport using absolute sizing (from 0-> width, 0-> height instead of 0->1)
+         * @param renderWidthOrEngine defines either an engine or the rendering width
+         * @param renderHeight defines the rendering height
+         * @returns a new Viewport
+         */
         public toGlobal(renderWidthOrEngine: number | Engine, renderHeight: number): Viewport {
             if ((<Engine>renderWidthOrEngine).getRenderWidth) {
                 var engine = (<Engine>renderWidthOrEngine);
@@ -5988,8 +6021,10 @@
             let renderWidth = <number>renderWidthOrEngine;
             return new Viewport(this.x * renderWidth, this.y * renderHeight, this.width * renderWidth, this.height * renderHeight);
         }
+
         /**
-         * Returns a new Viewport copied from the current one.  
+         * Returns a new Viewport copied from the current one
+         * @returns a new Viewport
          */
         public clone(): Viewport {
             return new Viewport(this.x, this.y, this.width, this.height);
@@ -6101,11 +6136,18 @@
         public static Z: Vector3 = new Vector3(0.0, 0.0, 1.0);
     };
 
+    /** Class used to represent a Bezier curve */
     export class BezierCurve {
         /**
-         * Returns the cubic Bezier interpolated value (float) at "t" (float) from the given x1, y1, x2, y2 floats.  
+         * Returns the cubic Bezier interpolated value (float) at "t" (float) from the given x1, y1, x2, y2 floats
+         * @param t defines the time
+         * @param x1 defines the left coordinate on X axis
+         * @param y1 defines the left coordinate on Y axis
+         * @param x2 defines the right coordinate on X axis
+         * @param y2 defines the right coordinate on Y axis
+         * @returns the interpolated value
          */
-        public static interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number {
+        public static Interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number {
 
             // Extract X (which is equal to time here)
             var f0 = 1 - 3 * x2 + 3 * x1;

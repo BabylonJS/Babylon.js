@@ -11,7 +11,10 @@ module BABYLON {
         private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
         private _attachedMesh:Nullable<AbstractMesh> = null;
         private _boundingBoxColor = BABYLON.Color3.FromHexString("#0984e3");
-        private _dragBehavior = new BABYLON.SixDofDragBehavior();
+        /**
+         * When bounding box gizmo is enabled, this can be used to track drag/end events
+         */
+        public boundingBoxDragBehavior = new BABYLON.SixDofDragBehavior();
         /**
          * Array of meshes which will have the gizmo attached when a pointer selected them. If null, all meshes are attachable. (Default: null)
          */
@@ -72,7 +75,7 @@ module BABYLON {
          */
         public attachToMesh(mesh:Nullable<AbstractMesh>){
             if(this._attachedMesh){
-                this._attachedMesh.removeBehavior(this._dragBehavior);
+                this._attachedMesh.removeBehavior(this.boundingBoxDragBehavior);
             }
             this._attachedMesh = mesh;
             for(var key in this.gizmos){
@@ -82,7 +85,7 @@ module BABYLON {
                 }
             }
             if(this.boundingBoxGizmoEnabled && this._attachedMesh){
-                this._attachedMesh.addBehavior(this._dragBehavior);
+                this._attachedMesh.addBehavior(this.boundingBoxDragBehavior);
             }
         }
 
@@ -145,8 +148,8 @@ module BABYLON {
                 this.gizmos.boundingBoxGizmo = this.gizmos.boundingBoxGizmo || new BoundingBoxGizmo(this._boundingBoxColor);
                 this.gizmos.boundingBoxGizmo.attachedMesh = this._attachedMesh;
                 if(this._attachedMesh){
-                    this._attachedMesh.removeBehavior(this._dragBehavior);
-                    this._attachedMesh.addBehavior(this._dragBehavior);
+                    this._attachedMesh.removeBehavior(this.boundingBoxDragBehavior);
+                    this._attachedMesh.addBehavior(this.boundingBoxDragBehavior);
                 }
             }else if(this.gizmos.boundingBoxGizmo){
                 this.gizmos.boundingBoxGizmo.attachedMesh = null;
@@ -168,7 +171,7 @@ module BABYLON {
                     gizmo.dispose();
                 }
             }
-            this._dragBehavior.detach();
+            this.boundingBoxDragBehavior.detach();
         }
     }
 }

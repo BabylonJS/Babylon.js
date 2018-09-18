@@ -171,7 +171,7 @@
         /**
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param color defines the color to affect to the specified gradient
+         * @param color1 defines the color to affect to the specified gradient
          * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
          * @returns the current particle system
          */
@@ -538,7 +538,21 @@
          */
         public getRampGradients(): Nullable<Array<Color3Gradient>> {
             return null;
-        }             
+        }   
+        
+        /** 
+         * Not supported by GPUParticleSystem
+         * Gets or sets a boolean indicating that ramp gradients must be used
+         * @see http://doc.babylonjs.com/babylon101/particles#ramp-gradients
+         */
+        public get useRampGradients(): boolean {
+            //Not supported by GPUParticleSystem
+            return false;
+        }
+
+        public set useRampGradients(value: boolean) {
+            //Not supported by GPUParticleSystem
+        }
         
 
         /**
@@ -697,6 +711,9 @@
                 offset += 4;
             }
             
+            if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
+                renderVertexBuffers["direction"] = source.createVertexBuffer("direction", offset, 3, this._attributesStrideSize, true);
+            }
             offset += 3; // Direction
 
             if (!this._isBillboardBased) {
@@ -960,10 +977,13 @@
                 defines += "\n#define BILLBOARD";
 
                 switch (this.billboardMode) {
-                    case AbstractMesh.BILLBOARDMODE_Y:
+                    case ParticleSystem.BILLBOARDMODE_Y:
                         defines += "\n#define BILLBOARDY";
                         break;
-                    case AbstractMesh.BILLBOARDMODE_ALL:
+                    case ParticleSystem.BILLBOARDMODE_STRETCHED:
+                        defines += "\n#define BILLBOARDSTRETCHED";
+                        break;                          
+                    case ParticleSystem.BILLBOARDMODE_ALL:
                     default:
                         break;
                 }                
@@ -995,7 +1015,7 @@
             }
 
             this._renderEffect = new Effect("gpuRenderParticles", 
-                                            ["position", "age", "life", "size", "color", "offset", "uv", "initialDirection", "angle", "cellIndex"], 
+                                            ["position", "age", "life", "size", "color", "offset", "uv", "direction", "initialDirection", "angle", "cellIndex"], 
                                             uniforms, 
                                             samplers, this._scene.getEngine(), defines);
         }        
