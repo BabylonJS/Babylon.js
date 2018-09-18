@@ -441,12 +441,12 @@ module BABYLON {
         public onMeshRemovedObservable = new Observable<AbstractMesh>();
         
         /**
-        * An event triggered when a mesh is created
+        * An event triggered when a material is created
         */
         public onNewMaterialAddedObservable = new Observable<Material>();
 
         /**
-        * An event triggered when a mesh is removed
+        * An event triggered when a material is removed
         */
         public onMaterialRemovedObservable = new Observable<Material>();
 
