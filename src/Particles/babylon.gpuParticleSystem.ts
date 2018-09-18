@@ -558,8 +558,31 @@
         public set useRampGradients(value: boolean) {
             //Not supported by GPUParticleSystem
         }
-        
 
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the life time factor to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        public addLifeTimeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+            //Not supported by GPUParticleSystem
+
+            return this;
+        }
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeLifeTimeGradient(gradient: number): IParticleSystem {
+            //Not supported by GPUParticleSystem
+
+            return this;
+        }        
+        
         /**
          * Instantiates a GPU particle system.
          * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.

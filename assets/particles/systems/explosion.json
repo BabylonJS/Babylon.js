@@ -2,8 +2,8 @@
     "systems":
     [
         {
-            "name": "default system",
-            "id": "default system",
+            "name": "flash",
+            "id": "flash",
             "capacity": 40,
             "emitter":
             [
@@ -133,8 +133,8 @@
             "preventAutoStart": true
         },
         {
-            "name": "default system",
-            "id": "default system",
+            "name": "shockwave",
+            "id": "shockwave",
             "capacity": 500,
             "emitter":
             [
@@ -415,8 +415,8 @@
             "preventAutoStart": true
         },
         {
-            "name": "default system",
-            "id": "default system",
+            "name": "fireball",
+            "id": "fireball",
             "capacity": 1000,
             "emitter":
             [
@@ -738,6 +738,17 @@
                     "factor1": 1
                 }
             ],
+            "lifeTimeGradients":
+            [
+                {
+                    "gradient": 0,
+                    "factor1": 3
+                },
+                {
+                    "gradient": 1,
+                    "factor1": 1.75
+                }
+            ],            
             "limitVelocityDamping": 0.7,
             "textureMask":
             [
@@ -750,8 +761,8 @@
             "preventAutoStart": true
         },
         {
-            "name": "default system",
-            "id": "default system",
+            "name": "debris",
+            "id": "debris",
             "capacity": 10,
             "emitter":
             [
@@ -878,8 +889,8 @@
                         "inheritedVelocityAmount": 0,
                         "particleSystem":
                         {
-                            "name": "default system",
-                            "id": "default system",
+                            "name": "fireSubEmitter",
+                            "id": "fireSubEmitter",
                             "capacity": 200,
                             "emitter":
                             [
@@ -1060,8 +1071,8 @@
                         "inheritedVelocityAmount": 0,
                         "particleSystem":
                         {
-                            "name": "default system",
-                            "id": "default system",
+                            "name": "smokeSubEmitter",
+                            "id": "smokeSubEmitter",
                             "capacity": 600,
                             "emitter":
                             [
@@ -1321,6 +1332,17 @@
                                     "factor1": 0.05
                                 }
                             ],
+                            "lifeTimeGradients":
+                            [
+                                {
+                                    "gradient": 0,
+                                    "factor1": 3
+                                },
+                                {
+                                    "gradient": 1,
+                                    "factor1": 1.75
+                                }
+                            ],                             
                             "textureMask":
                             [
                                 1,
