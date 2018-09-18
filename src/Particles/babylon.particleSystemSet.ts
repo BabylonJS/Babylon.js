@@ -119,7 +119,7 @@ module BABYLON {
             scene = scene || Engine.LastCreatedScene;
 
             for (var system of data.systems) {
-                result.systems.push(gpu ? GPUParticleSystem.Parse(system, scene, rootUrl) : ParticleSystem.Parse(system, scene, rootUrl));
+                result.systems.push(gpu ? GPUParticleSystem.Parse(system, scene, rootUrl, true) : ParticleSystem.Parse(system, scene, rootUrl, true));
             }
 
             if (data.emitter) {
