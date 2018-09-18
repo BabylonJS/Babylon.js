@@ -179,15 +179,33 @@ module BABYLON {
         setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
     }
 
+    /**
+     * Joint data for a distance joint
+     */
     export interface DistanceJointData extends PhysicsJointData {
+        /**
+         * Max distance the 2 joint objects can be apart
+         */
         maxDistance: number;
         //Oimo - minDistance
         //Cannon - maxForce
     }
 
+    /**
+     * Joint data from a spring joint
+     */
     export interface SpringJointData extends PhysicsJointData {
+        /**
+         * Length of the spring
+         */
         length: number;
+        /**
+         * Stiffness of the spring
+         */
         stiffness: number;
+        /**
+         * Damping of the spring
+         */
         damping: number;
         /** this callback will be called when applying the force to the impostors. */
         forceApplicationCallback: () => void;

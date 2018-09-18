@@ -1,5 +1,11 @@
 ﻿module BABYLON {
+    /**
+     * Interface containing an array of animations
+     */
     export interface IAnimatable {
+        /**
+         * Array of animations
+         */
         animations: Array<Animation>;
     }
 
@@ -110,6 +116,9 @@
         }
     }
 
+    /**
+     * File request interface
+     */
     export interface IFileRequest {
         /**
          * Raised when the request is complete (success or error).
