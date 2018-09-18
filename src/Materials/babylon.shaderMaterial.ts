@@ -202,9 +202,6 @@
             var defines = [];
             var attribs = [];
             var fallbacks = new EffectFallbacks();
-            if (useInstances) {
-                defines.push("#define INSTANCES");
-            }
 
             for (var index = 0; index < this._options.defines.length; index++) {
                 defines.push(this._options.defines[index]);
@@ -217,6 +214,11 @@
             if (mesh && mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
                 attribs.push(VertexBuffer.ColorKind);
                 defines.push("#define VERTEXCOLOR");
+            }
+
+            if (useInstances) {
+                defines.push("#define INSTANCES");
+                MaterialHelper.PrepareAttributesForInstances(attribs, defines);
             }
 
             // Bones
