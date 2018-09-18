@@ -32,6 +32,7 @@
          * @param color Define the lens color
          * @param imgUrl Define the lens texture url
          * @param system Define the `lensFlareSystem` this flare is part of
+         * @returns The newly created Lens Flare
          */
         public static AddFlare(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem): LensFlare {
             return new LensFlare(size, position, color, imgUrl, system);

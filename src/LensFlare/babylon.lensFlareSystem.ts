@@ -54,7 +54,13 @@
          * @param emitter Define the source (the emitter) of the lens flares (it can be a camera, a light or a mesh).
          * @param scene Define the scene the lens flare system belongs to
          */
-        constructor(public name: string, emitter: any, scene: Scene) {
+        constructor(
+            /**
+             * Define the name of the lens flare system
+             */
+            public name: string,
+            emitter: any,
+            scene: Scene) {
 
             this._scene = scene || Engine.LastCreatedScene;
             let component = this._scene._getComponent(SceneComponentConstants.NAME_LENSFLARESYSTEM) as LensFlareSystemSceneComponent;
@@ -121,6 +127,7 @@
         /**
          * Get the emitter of the lens flare system.
          * It defines the source of the lens flares (it can be a camera, a light or a mesh).
+         * @returns the emitter of the lens flare system
          */
         public getEmitter(): any {
             return this._emitter;
@@ -129,6 +136,7 @@
         /**
          * Set the emitter of the lens flare system.
          * It defines the source of the lens flares (it can be a camera, a light or a mesh).
+         * @param newEmitter Define the new emitter of the system
          */
         public setEmitter(newEmitter: any): void {
             this._emitter = newEmitter;
@@ -137,6 +145,7 @@
         /**
          * Get the lens flare system emitter position.
          * The emitter defines the source of the lens flares (it can be a camera, a light or a mesh).
+         * @returns the position
          */
         public getEmitterPosition(): Vector3 {
             return this._emitter.getAbsolutePosition ? this._emitter.getAbsolutePosition() : this._emitter.position;
