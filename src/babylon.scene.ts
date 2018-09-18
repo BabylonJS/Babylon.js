@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Define an interface for all classes that will hold resources
      */
@@ -439,6 +439,26 @@
         * An event triggered when a mesh is removed
         */
         public onMeshRemovedObservable = new Observable<AbstractMesh>();
+        
+        /**
+        * An event triggered when a material is created
+        */
+        public onNewMaterialAddedObservable = new Observable<Material>();
+
+        /**
+        * An event triggered when a material is removed
+        */
+        public onMaterialRemovedObservable = new Observable<Material>();
+        
+        /**
+        * An event triggered when a texture is created
+        */
+        public onNewTextureAddedObservable = new Observable<BaseTexture>();
+
+        /**
+        * An event triggered when a texture is removed
+        */
+        public onTextureRemovedObservable = new Observable<BaseTexture>();
 
         /**
         * An event triggered when render targets are about to be rendered
@@ -3108,6 +3128,8 @@
             if (index !== -1) {
                 this.materials.splice(index, 1);
             }
+            this.onMaterialRemovedObservable.notifyObservers(toRemove);
+            
             return index;
         }
 
@@ -3134,6 +3156,8 @@
             if (index !== -1) {
                 this.textures.splice(index, 1);
             }
+            this.onTextureRemovedObservable.notifyObservers(toRemove);
+            
             return index;
         }
 
@@ -3220,6 +3244,7 @@
          */
         public addMaterial(newMaterial: Material): void {
             this.materials.push(newMaterial);
+            this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
         }
 
         /**
@@ -3252,6 +3277,7 @@
          */
         public addTexture(newTexture: BaseTexture): void {
             this.textures.push(newTexture);
+            this.onNewTextureAddedObservable.notifyObservers(newTexture);
         }
 
         /**
@@ -4656,6 +4682,27 @@
             this.onBeforeRenderingGroupObservable.clear();
             this.onAfterRenderingGroupObservable.clear();
             this.onMeshImportedObservable.clear();
+            this.onBeforeCameraRenderObservable.clear();
+            this.onAfterCameraRenderObservable.clear();
+            this.onReadyObservable.clear();
+            this.onNewCameraAddedObservable.clear();
+            this.onCameraRemovedObservable.clear();
+            this.onNewLightAddedObservable.clear();
+            this.onLightRemovedObservable.clear();
+            this.onNewGeometryAddedObservable.clear();
+            this.onGeometryRemovedObservable.clear();
+            this.onNewTransformNodeAddedObservable.clear();
+            this.onTransformNodeRemovedObservable.clear();
+            this.onNewMeshAddedObservable.clear();
+            this.onMeshRemovedObservable.clear();
+            this.onNewMaterialAddedObservable.clear();
+            this.onMaterialRemovedObservable.clear();
+            this.onNewTextureAddedObservable.clear();
+            this.onTextureRemovedObservable.clear();
+            this.onPrePointerObservable.clear();
+            this.onPointerObservable.clear();
+            this.onPreKeyboardObservable.clear();
+            this.onKeyboardObservable.clear();
 
             this.detachControl();
 
