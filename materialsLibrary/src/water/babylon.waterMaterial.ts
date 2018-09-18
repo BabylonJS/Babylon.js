@@ -157,14 +157,19 @@ module BABYLON {
         private _waitingRenderList: Nullable<string[]>;
 
         /**
+         * Gets a boolean indicating that current material needs to register RTT
+         */
+        public get hasRenderTargetTextures(): boolean {
+            return true;
+          }        
+
+        /**
 		* Constructor
 		*/
         constructor(name: string, scene: Scene, public renderTargetSize: Vector2 = new Vector2(512, 512)) {
             super(name, scene);
 
             this._createRenderTargets(scene, renderTargetSize);
-
-            this.hasRenderTargetTextures = true;
 
             // Create render targets
             this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
@@ -174,7 +179,6 @@ module BABYLON {
 
                 return this._renderTargets;
             }
-
         }
 
         @serialize()

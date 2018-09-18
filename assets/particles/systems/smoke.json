@@ -154,7 +154,7 @@
                 1
             ],
             "customShader": null,
-            "preventAutoStart": false,
+            "preventAutoStart": true,
             "isAnimationSheetEnabled": true
         }
     ]

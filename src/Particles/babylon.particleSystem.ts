@@ -1005,11 +1005,6 @@
                     } else if (subEmitter instanceof Array) {
                         this._subEmitters.push(subEmitter);
                     }
-                    this._subEmitters[this._subEmitters.length-1].forEach((se)=>{
-                        if (!(se.particleSystem.emitter instanceof AbstractMesh) && se.inheritDirection) {
-                            Tools.Warn("subEmitter.inheritDirection is not supported with non-mesh emitter type");
-                        }
-                    })
                 });
             }
         }
@@ -1059,6 +1054,11 @@
                         this.animate(true);
                     }
                 }
+            }
+
+            // Animations
+            if (this.beginAnimationOnStart && this.animations && this.animations.length > 0) {
+                this.getScene().beginAnimation(this, this.beginAnimationFrom, this.beginAnimationTo, this.beginAnimationLoop);
             }
         }
 
@@ -2013,6 +2013,10 @@
 
             // Animations
             Animation.AppendSerializedAnimations(particleSystem, serializationObject);
+            serializationObject.beginAnimationOnStart = particleSystem.beginAnimationOnStart;
+            serializationObject.beginAnimationFrom = particleSystem.beginAnimationFrom;
+            serializationObject.beginAnimationTo = particleSystem.beginAnimationTo;
+            serializationObject.beginAnimationLoop = particleSystem.beginAnimationLoop;
 
             // Particle system
             serializationObject.startDelay = particleSystem.startDelay;
@@ -2289,6 +2293,10 @@
                     var parsedAnimation = parsedParticleSystem.animations[animationIndex];
                     particleSystem.animations.push(Animation.Parse(parsedAnimation));
                 }
+                particleSystem.beginAnimationOnStart = parsedParticleSystem.beginAnimationOnStart;
+                particleSystem.beginAnimationFrom = parsedParticleSystem.beginAnimationFrom;
+                particleSystem.beginAnimationTo = parsedParticleSystem.beginAnimationTo;
+                particleSystem.beginAnimationLoop = parsedParticleSystem.beginAnimationLoop;
             }
 
             if (parsedParticleSystem.autoAnimate) {
@@ -2428,6 +2436,12 @@
                     case "ConeParticleEmitter":
                         emitterType = new ConeParticleEmitter();
                         break;
+                    case "CylinderParticleEmitter":
+                        emitterType = new CylinderParticleEmitter();
+                        break;
+                    case "HemisphericParticleEmitter":
+                        emitterType = new HemisphericParticleEmitter();
+                        break;                   
                     case "BoxEmitter":
                     case "BoxParticleEmitter":
                     default:
@@ -2456,9 +2470,10 @@
          * @param parsedParticleSystem The JSON object to parse
          * @param scene The scene to create the particle system in
          * @param rootUrl The root url to use to load external dependencies like texture
+         * @param doNotStart Ignore the preventAutoStart attribute and does not start 
          * @returns the Parsed particle system
          */
-        public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
+        public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string, doNotStart = false): ParticleSystem {
             var name = parsedParticleSystem.name;
             var custom: Nullable<Effect> = null;
             var program: any = null;
@@ -2487,17 +2502,16 @@
                 }
             }
             
+            ParticleSystem._Parse(parsedParticleSystem, particleSystem, scene, rootUrl);
+
+            particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
 
             // Auto start
             if (parsedParticleSystem.preventAutoStart) {
                 particleSystem.preventAutoStart = parsedParticleSystem.preventAutoStart;
             }
 
-            ParticleSystem._Parse(parsedParticleSystem, particleSystem, scene, rootUrl);
-
-            particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
-
-            if (!particleSystem.preventAutoStart) {
+            if (!doNotStart && !particleSystem.preventAutoStart) {
                 particleSystem.start();
             }
 

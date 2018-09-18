@@ -136,7 +136,7 @@
                 1
             ],
             "customShader": null,
-            "preventAutoStart": false
+            "preventAutoStart": true
         },
         {
             "name": "rainSplash",
@@ -273,7 +273,7 @@
                 1
             ],
             "customShader": null,
-            "preventAutoStart": false,
+            "preventAutoStart": true,
             "subEmitters":
             [
                 [
@@ -368,7 +368,7 @@
                                 1
                             ],
                             "customShader": null,
-                            "preventAutoStart": false
+                            "preventAutoStart": true
                         }
                     }
                 ]
