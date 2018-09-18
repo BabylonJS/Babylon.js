@@ -475,7 +475,9 @@
                 this.originalPostProcess = this._basePostProcess;
             }
 
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRPassPostProcess", () => { return this.originalPostProcess; }, true));
+            if (this._bloomEnabled || this._vlsEnabled || this._lensFlareEnabled || this._depthOfFieldEnabled || this._motionBlurEnabled) {
+                this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRPassPostProcess", () => { return this.originalPostProcess; }, true));
+            }
 
             this._currentDepthOfFieldSource = this.originalPostProcess;
 
