@@ -81,7 +81,6 @@
     export class AudioEngine implements IAudioEngine{
         private _audioContext: Nullable<AudioContext> = null;
         private _audioContextInitialized = false;
-        private _muteButtonDisplayed = false;
         private _muteButton: Nullable<HTMLButtonElement> = null;
         private _engine: Engine;
 
@@ -118,7 +117,7 @@
          * Some Browsers have strong restrictions about Audio and won t autoplay unless
          * a user interaction has happened.
          */
-        public unlocked: boolean = false;
+        public unlocked: boolean = true;
 
         /**
          * Defines if the audio engine relies on a custom unlocked button.
@@ -144,7 +143,7 @@
                 this._initializeAudioContext();
             }
             else {
-                if (!this.unlocked && !this._muteButtonDisplayed) {
+                if (!this.unlocked && !this._muteButton) {
                     this._displayMuteButton();
                 }
             }
@@ -186,10 +185,6 @@
             catch (e) {
                 // protect error during capability check.
             }
-
-            if (/iPad|iPhone|iPod/.test(navigator.platform)) {
-                this._unlockiOSaudio();
-            }
         }
 
         /** 
@@ -208,38 +203,12 @@
             this._triggerRunningState();
         }
 
-        private _unlockiOSaudio() {
-            this._displayMuteButton(true);
-
-            var unlockaudio = () => {
-                if (!this.audioContext) {
-                    return;
-                }
-                var buffer = this.audioContext.createBuffer(1, 1, 22050);
-                var source = this.audioContext.createBufferSource();
-                source.buffer = buffer;
-                source.connect(this.audioContext.destination);
-                source.start(0);
-  
-                setTimeout(() => {
-                    if (((<any>source).playbackState === (<any>source).PLAYING_STATE || (<any>source).playbackState === (<any>source).FINISHED_STATE)) { 
-                        this._triggerRunningState();
-                        if (this._muteButton) {
-                            this._muteButton.removeEventListener('touchend', unlockaudio, false);
-                        }
-                    }
-                }, 0);
-            };
-
-            if (this._muteButton) {
-                this._muteButton.addEventListener('touchend', unlockaudio, false);
-            }
-        }
-
-        private _resumeAudioContext() {
+        private _resumeAudioContext(): Promise<void> {
+            let result: Promise<void>;
             if (this._audioContext!.resume) {
-                this._audioContext!.resume();
+                result = this._audioContext!.resume();
             }
+            return result! || Promise.resolve();
         }
 
         private _initializeAudioContext() {
@@ -252,21 +221,19 @@
                     this.masterGain.connect(this._audioContext.destination);
                     this._audioContextInitialized = true;
                     if (this._audioContext.state === "running") {
+                        // Do not wait for the promise to unlock.
                         this._triggerRunningState();
                     }
                     else {
-                        if (!this._muteButtonDisplayed) {
-                            this._displayMuteButton();
+                        if (this._audioContext && this._audioContext.resume) {
+                            this._resumeAudioContext().then(() => {
+                                    this._triggerRunningState();
+                                }).catch(() => {
+                                    // Can not resume automatically
+                                    // Needs user action
+                                    this.lock();
+                                });
                         }
-                        // 3 possible states: https://webaudio.github.io/web-audio-api/#BaseAudioContext
-                        this._audioContext.addEventListener("statechange", () => {
-                            if (this._audioContext!.state === "running") {
-                                this._triggerRunningState();
-                            }
-                            else {
-                                this._triggerSuspendedState();
-                            }
-                        });
                     }
                 }
             }
@@ -276,15 +243,26 @@
             }
         }
 
+        private _tryToRun = false;
         private _triggerRunningState() {
-            this._resumeAudioContext();
-
-            this.unlocked = true;
-            if (this._muteButtonDisplayed) {
-               this._hideMuteButton(); 
+            if (this._tryToRun) {
+                return;
             }
-            // Notify users that the audio stack is unlocked/unmuted
-            this.onAudioUnlockedObservable.notifyObservers(this);
+            this._tryToRun = true;
+            this._resumeAudioContext()
+                .then(() => {
+                    this._tryToRun = false;
+                    this.unlocked = true;
+                    if (this._muteButton) {
+                        this._hideMuteButton(); 
+                    }
+
+                    // Notify users that the audio stack is unlocked/unmuted
+                    this.onAudioUnlockedObservable.notifyObservers(this);
+                }).catch(() => {
+                    this._tryToRun = false;
+                    this.unlocked = false;
+                });
         }
 
         private _triggerSuspendedState() {
@@ -293,7 +271,7 @@
             this._displayMuteButton();
         }
 
-        private _displayMuteButton(iOS: boolean = false) {
+        private _displayMuteButton() {
             if (this.useCustomUnlockedButton) {
                 return;
             }
@@ -314,12 +292,15 @@
 
             this._moveButtonToTopLeft();
 
-            if (!iOS) {
-                this._muteButton.addEventListener('mousedown', () => { 
-                    this._triggerRunningState(); 
-                }, false);
-            }
-            this._muteButtonDisplayed = true;
+            this._muteButton.addEventListener('mousedown', () => { 
+                this._triggerRunningState();
+            }, true);
+            this._muteButton.addEventListener('touchend', () => { 
+                this._triggerRunningState();
+            }, true);
+            this._muteButton.addEventListener('click', () => {
+                this._triggerRunningState();
+            }, true);
 
             window.addEventListener("resize", this._onResize);
         }
@@ -336,9 +317,9 @@
         }
 
         private _hideMuteButton() {
-            if (this._muteButtonDisplayed && this._muteButton) {
+            if (this._muteButton) {
                 document.body.removeChild(this._muteButton);
-                this._muteButtonDisplayed = false;
+                this._muteButton = null;
             }
         }
 

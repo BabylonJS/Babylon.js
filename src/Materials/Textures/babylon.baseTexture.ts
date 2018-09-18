@@ -185,6 +185,7 @@
             this._scene = scene || Engine.LastCreatedScene;
             if (this._scene) {
                 this._scene.textures.push(this);
+                this._scene.onNewTextureAddedObservable.notifyObservers(this);
             }
             this._uid = null;
         }
@@ -410,6 +411,7 @@
             if (index >= 0) {
                 this._scene.textures.splice(index, 1);
             }
+            this._scene.onTextureRemovedObservable.notifyObservers(this);
 
             if (this._texture === undefined) {
                 return;
