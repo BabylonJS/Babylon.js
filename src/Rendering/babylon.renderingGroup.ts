@@ -1,4 +1,10 @@
 ﻿module BABYLON {
+    /**
+     * This represents the object necessary to create a rendering group.
+     * This is exclusively used and created by the rendering manager.
+     * To modify the behavior, you use the available helpers in your scene or meshes.
+     * @hidden
+     */
     export class RenderingGroup {
         private _scene: Scene;
         private _opaqueSubMeshes = new SmartArray<SubMesh>(256);
