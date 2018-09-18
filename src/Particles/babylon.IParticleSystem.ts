@@ -207,6 +207,26 @@ module BABYLON {
         limitVelocityDamping: number;
 
         /**
+         * Gets or sets a boolean indicating that hosted animations (in the system.animations array) must be started when system.start() is called
+         */
+        beginAnimationOnStart: boolean;
+
+        /**
+         * Gets or sets the frame to start the animation from when beginAnimationOnStart is true
+         */
+        beginAnimationFrom: number;
+
+        /**
+         * Gets or sets the frame to end the animation on when beginAnimationOnStart is true
+         */        
+        beginAnimationTo: number;
+
+        /**
+         * Gets or sets a boolean indicating if animations must loop when beginAnimationOnStart is true
+         */
+        beginAnimationLoop: boolean;       
+
+        /**
          * Gets the maximum number of particles active at the same time.
          * @returns The max number of active particles.
          */
