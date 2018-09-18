@@ -449,6 +449,16 @@ module BABYLON {
         * An event triggered when a material is removed
         */
         public onMaterialRemovedObservable = new Observable<Material>();
+        
+        /**
+        * An event triggered when a texture is created
+        */
+        public onNewTextureAddedObservable = new Observable<BaseTexture>();
+
+        /**
+        * An event triggered when a texture is removed
+        */
+        public onTextureRemovedObservable = new Observable<BaseTexture>();
 
         /**
         * An event triggered when render targets are about to be rendered
@@ -3146,6 +3156,8 @@ module BABYLON {
             if (index !== -1) {
                 this.textures.splice(index, 1);
             }
+            this.onTextureRemovedObservable.notifyObservers(toRemove);
+            
             return index;
         }
 
@@ -3265,6 +3277,7 @@ module BABYLON {
          */
         public addTexture(newTexture: BaseTexture): void {
             this.textures.push(newTexture);
+            this.onNewTextureAddedObservable.notifyObservers(newTexture);
         }
 
         /**
@@ -4684,6 +4697,8 @@ module BABYLON {
             this.onMeshRemovedObservable.clear();
             this.onNewMaterialAddedObservable.clear();
             this.onMaterialRemovedObservable.clear();
+            this.onNewTextureAddedObservable.clear();
+            this.onTextureRemovedObservable.clear();
             this.onPrePointerObservable.clear();
             this.onPointerObservable.clear();
             this.onPreKeyboardObservable.clear();
