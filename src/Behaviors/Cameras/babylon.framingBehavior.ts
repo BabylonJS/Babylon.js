@@ -1,5 +1,12 @@
 module BABYLON {
+    /**
+     * The framing behavior (BABYLON.FramingBehavior) is designed to automatically position an ArcRotateCamera when its target is set to a mesh. It is also useful if you want to prevent the camera to go under a virtual horizontal plane.
+     * @see http://doc.babylonjs.com/how_to/camera_behaviors#framing-behavior
+     */
     export class FramingBehavior implements Behavior<ArcRotateCamera> {
+        /**
+         * Gets the name of the behavior.
+         */
         public get name(): string {
             return "Framing";
         }
@@ -139,6 +146,12 @@ module BABYLON {
             return this._framingTime;
         }
 
+        /**
+         * Define if the behavior should automatically change the configured
+         * camera limits and sensibilities.
+         */
+        public autoCorrectCameraLimitsAndSensibility = true;
+
         // Default behavior functions
         private _onPrePointerObservableObserver: Nullable<Observer<PointerInfoPre>>;
         private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;
@@ -147,10 +160,17 @@ module BABYLON {
         private _isPointerDown = false;
         private _lastInteractionTime = -Infinity;
 
+        /**
+         * Initializes the behavior.
+         */
         public init(): void {
             // Do notihng
         }
 
+        /**
+         * Attaches the behavior to its arc rotate camera.
+         * @param camera Defines the camera to attach the behavior to
+         */
         public attach(camera: ArcRotateCamera): void {
             this._attachedCamera = camera;
             let scene = this._attachedCamera.getScene();
@@ -184,6 +204,9 @@ module BABYLON {
             });
         }
 
+        /**
+         * Detaches the behavior from its current arc rotate camera.
+         */
         public detach(): void {
             if (!this._attachedCamera) {
                 return;
@@ -307,19 +330,23 @@ module BABYLON {
             let radius = 0;
             if (this._mode === FramingBehavior.FitFrustumSidesMode) {
                 let position = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
-                this._attachedCamera.lowerRadiusLimit = radiusWorld.length() + this._attachedCamera.minZ;
+                if (this.autoCorrectCameraLimitsAndSensibility) {
+                    this._attachedCamera.lowerRadiusLimit = radiusWorld.length() + this._attachedCamera.minZ;
+                }
                 radius = position;
             } else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
                 radius = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
-                if (this._attachedCamera.lowerRadiusLimit === null) {
+                if (this.autoCorrectCameraLimitsAndSensibility && this._attachedCamera.lowerRadiusLimit === null) {
                     this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
                 }
             }
 
             // Set sensibilities
-            let extend = maximumWorld.subtract(minimumWorld).length();
-            this._attachedCamera.panningSensibility = 5000 / extend;
-            this._attachedCamera.wheelPrecision = 100 / radius;
+            if (this.autoCorrectCameraLimitsAndSensibility) {
+                const extend = maximumWorld.subtract(minimumWorld).length();
+                this._attachedCamera.panningSensibility = 5000 / extend;
+                this._attachedCamera.wheelPrecision = 100 / radius;
+            }
 
             // transition to new radius
             if (!this._radiusTransition) {

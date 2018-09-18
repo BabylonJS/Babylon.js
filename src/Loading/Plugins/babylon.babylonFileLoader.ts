@@ -262,10 +262,6 @@
                     mesh.parent = scene.getLastEntryByID(mesh._waitingParentId);
                     mesh._waitingParentId = null;
                 }
-                if (mesh._waitingActions) {
-                    ActionManager.Parse(mesh._waitingActions, mesh, scene);
-                    mesh._waitingActions = null;
-                }
             }
 
             // freeze world matrix application
@@ -311,7 +307,14 @@
             
             AbstractScene.Parse(parsedData, scene, container, rootUrl);
             
-            // Actions (scene)
+            // Actions (scene) Done last as it can access other objects.
+            for (index = 0, cache = scene.meshes.length; index < cache; index++) {
+                var mesh = scene.meshes[index];
+                if (mesh._waitingActions) {
+                    ActionManager.Parse(mesh._waitingActions, mesh, scene);
+                    mesh._waitingActions = null;
+                }
+            }
             if (parsedData.actions !== undefined && parsedData.actions !== null) {
                 ActionManager.Parse(parsedData.actions, null, scene);
             }

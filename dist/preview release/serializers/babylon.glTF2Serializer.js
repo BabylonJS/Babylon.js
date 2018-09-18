@@ -3457,6 +3457,9 @@ var BABYLON;
 //# sourceMappingURL=babylon.glTFFileExporter.js.map
 
 /// <reference path="../../../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
+/**
+ * @hidden
+ */
 var BABYLON;
 (function (BABYLON) {
     var GLTF2;

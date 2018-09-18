@@ -1,6 +1,6 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
-module BABYLON.GLTF2.Extensions {
+module BABYLON.GLTF2.Loader.Extensions {
     const NAME = "MSFT_sRGBFactors";
 
     /** @hidden */
@@ -18,7 +18,7 @@ module BABYLON.GLTF2.Extensions {
             delete this._loader;
         }
 
-        public loadMaterialPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
+        public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
             return GLTFLoader.LoadExtraAsync<boolean>(context, material, this.name, (extraContext, extra) => {
                 if (extra) {
                     if (!(babylonMaterial instanceof PBRMaterial)) {

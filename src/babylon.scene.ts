@@ -913,7 +913,7 @@
         private _alternateProjectionUpdateFlag = -1;
 
         /** @hidden */
-        public _toBeDisposed = new SmartArray<Nullable<IDisposable>>(256);
+        public _toBeDisposed = new Array<Nullable<IDisposable>>(256);
         private _activeRequests = new Array<IFileRequest>();
         private _pendingData = new Array();
         private _isDisposed = false;
@@ -4533,14 +4533,16 @@
             this.onAfterRenderObservable.notifyObservers(this);
 
             // Cleaning
-            for (var index = 0; index < this._toBeDisposed.length; index++) {
-                var data = this._toBeDisposed.data[index];
-                if (data) {
-                    data.dispose();
+            if (this._toBeDisposed.length) {
+                for (var index = 0; index < this._toBeDisposed.length; index++) {
+                    var data = this._toBeDisposed[index];
+                    if (data) {
+                        data.dispose();
+                    }
                 }
-            }
 
-            this._toBeDisposed.reset();
+                this._toBeDisposed = [];
+            }
 
             if (this.dumpNextRenderTargets) {
                 this.dumpNextRenderTargets = false;
@@ -4625,7 +4627,7 @@
             this._renderTargets.dispose();
             this._registeredForLateAnimationBindings.dispose();
             this._meshesForIntersections.dispose();
-            this._toBeDisposed.dispose();
+            this._toBeDisposed = [];
 
             // Abort active requests
             for (let request of this._activeRequests) {
@@ -5230,8 +5232,24 @@
             return this._renderingManager.getAutoClearDepthStencilSetup(index);
         }
 
+        private _blockMaterialDirtyMechanism = false;
+
         /** Gets or sets a boolean blocking all the calls to markAllMaterialsAsDirty (ie. the materials won't be updated if they are out of sync) */
-        public blockMaterialDirtyMechanism = false;
+        public get blockMaterialDirtyMechanism(): boolean {
+            return this._blockMaterialDirtyMechanism;
+        }
+
+        public set blockMaterialDirtyMechanism(value: boolean) {
+            if (this._blockMaterialDirtyMechanism === value) {
+                return;
+            }
+
+            this._blockMaterialDirtyMechanism = value;
+
+            if (!value) { // Do a complete update
+                this.markAllMaterialsAsDirty(Material.AllDirtyFlag);
+            }
+        }
 
         /**
          * Will flag all materials as dirty to trigger new shader compilation
@@ -5239,7 +5257,7 @@
          * @param predicate If not null, it will be used to specifiy if a material has to be marked as dirty
          */
         public markAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void {
-            if (this.blockMaterialDirtyMechanism) {
+            if (this._blockMaterialDirtyMechanism) {
                 return;
             }
 

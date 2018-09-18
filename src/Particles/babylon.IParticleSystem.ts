@@ -143,6 +143,10 @@ module BABYLON {
          * It can be for example box, sphere, or cone...
          */
         particleEmitterType: Nullable<IParticleEmitterType>;  
+        /**
+         * Defines the delay in milliseconds before starting the system (0 by default)
+         */
+        startDelay: number;        
         /** 
          * Gets or sets a value indicating how many cycles (or frames) must be executed before first rendering (this value has to be set before starting the system). Default is 0 
          */
@@ -175,7 +179,12 @@ module BABYLON {
         /**
          * This allows the system to random pick the start cell ID between startSpriteCellID and endSpriteCellID
          */
-        spriteRandomStartCell: boolean;            
+        spriteRandomStartCell: boolean;        
+        
+        /**
+         * Gets or sets a boolean indicating if a spritesheet is used to animate the particles texture
+         */
+        isAnimationSheetEnabled: boolean;
 
         /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
         translationPivot: Vector2;
@@ -190,7 +199,7 @@ module BABYLON {
         
         /**
          * Gets or sets the billboard mode to use when isBillboardBased = true.
-         * Only BABYLON.AbstractMesh.BILLBOARDMODE_ALL and AbstractMesh.BILLBOARDMODE_Y are supported so far
+         * Value can be: ParticleSystem.BILLBOARDMODE_ALL, ParticleSystem.BILLBOARDMODE_Y, ParticleSystem.BILLBOARDMODE_STRETCHED
          */
         billboardMode: number;
 
@@ -264,7 +273,7 @@ module BABYLON {
         /**
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param color defines the color to affect to the specified gradient
+         * @param color1 defines the color to affect to the specified gradient
          * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
          * @returns the current particle system
          */
@@ -442,7 +451,12 @@ module BABYLON {
          * You must use addRampGradient and removeRampGradient to udpate this list
          * @returns the list of ramp gradients
          */
-        getRampGradients(): Nullable<Array<Color3Gradient>>;             
+        getRampGradients(): Nullable<Array<Color3Gradient>>;
+        
+        /** Gets or sets a boolean indicating that ramp gradients must be used
+         * @see http://doc.babylonjs.com/babylon101/particles#ramp-gradients
+         */        
+        useRampGradients: boolean;
         
         /**
          * Adds a new color remap gradient

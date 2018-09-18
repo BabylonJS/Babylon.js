@@ -2,6 +2,7 @@
     //declare var require: any;
     declare var CANNON: any;
 
+    /** @hidden */
     export class CannonJSPlugin implements IPhysicsEnginePlugin {
 
         public world: any;
@@ -10,8 +11,6 @@
         private _fixedTimeStep: number = 1 / 60;
         //See https://github.com/schteppe/CANNON.js/blob/gh-pages/demos/collisionFilter.html
         public BJSCANNON = CANNON;
-
-
 
         public constructor(private _useDeltaForWorldStep: boolean = true, iterations: number = 10) {
             if (!this.isSupported()) {

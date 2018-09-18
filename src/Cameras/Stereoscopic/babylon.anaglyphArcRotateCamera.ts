@@ -5,7 +5,8 @@ module BABYLON {
 
     /**
      * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
-     */    
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
     export class AnaglyphArcRotateCamera extends ArcRotateCamera {
 
         /**

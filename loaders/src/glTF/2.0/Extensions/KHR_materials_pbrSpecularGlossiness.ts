@@ -1,6 +1,6 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
-module BABYLON.GLTF2.Extensions {
+module BABYLON.GLTF2.Loader.Extensions {
     const NAME = "KHR_materials_pbrSpecularGlossiness";
 
     interface IKHRMaterialsPbrSpecularGlossiness {
@@ -34,7 +34,7 @@ module BABYLON.GLTF2.Extensions {
         }
 
         /** @hidden */
-        public loadMaterialPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
+        public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
             return GLTFLoader.LoadExtensionAsync<IKHRMaterialsPbrSpecularGlossiness>(context, material, this.name, (extensionContext, extension) => {
                 const promises = new Array<Promise<any>>();
                 promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
@@ -44,7 +44,7 @@ module BABYLON.GLTF2.Extensions {
             });
         }
 
-        private _loadSpecularGlossinessPropertiesAsync(context: string, material: ILoaderMaterial, properties: IKHRMaterialsPbrSpecularGlossiness, babylonMaterial: Material): Promise<void> {
+        private _loadSpecularGlossinessPropertiesAsync(context: string, material: IMaterial, properties: IKHRMaterialsPbrSpecularGlossiness, babylonMaterial: Material): Promise<void> {
             if (!(babylonMaterial instanceof PBRMaterial)) {
                 throw new Error(`${context}: Material type not supported`);
             }

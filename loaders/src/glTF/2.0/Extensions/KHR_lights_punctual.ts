@@ -1,6 +1,6 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
-module BABYLON.GLTF2.Extensions {
+module BABYLON.GLTF2.Loader.Extensions {
     const NAME = "KHR_lights_punctual";
 
     enum LightType {
@@ -63,13 +63,13 @@ module BABYLON.GLTF2.Extensions {
         }
 
         /** @hidden */
-        public loadNodeAsync(context: string, node: ILoaderNode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> { 
+        public loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> { 
             return GLTFLoader.LoadExtensionAsync<ILightReference, Mesh>(context, node, this.name, (extensionContext, extension) => {
                 return this._loader.loadNodeAsync(context, node, babylonMesh => {
                     let babylonLight: Light;
 
-                    const name = babylonMesh.name;
                     const light = ArrayItem.Get(extensionContext, this._lights, extension.light);
+                    const name = light.name || babylonMesh.name;
 
                     switch (light.type) {
                         case LightType.DIRECTIONAL: {
@@ -81,9 +81,9 @@ module BABYLON.GLTF2.Extensions {
                             break;
                         }
                         case LightType.SPOT: {
-                            const babylonSpotLight = new SpotLight(name, Vector3.Zero(), Vector3.Backward(), 0, 2, this._loader.babylonScene);
-                            babylonSpotLight.angle = light.spot && light.spot.outerConeAngle || Math.PI / 4;
-                            babylonSpotLight.innerAngle = light.spot && light.spot.innerConeAngle || 0;
+                            const babylonSpotLight = new SpotLight(name, Vector3.Zero(), Vector3.Backward(), 0, 1, this._loader.babylonScene);
+                            babylonSpotLight.angle = ((light.spot && light.spot.outerConeAngle) || Math.PI / 4) * 2;
+                            babylonSpotLight.innerAngle = ((light.spot && light.spot.innerConeAngle) || 0) * 2;
                             babylonLight = babylonSpotLight;
                             break;
                         }

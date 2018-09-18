@@ -3618,6 +3618,9 @@ var BABYLON;
 //# sourceMappingURL=babylon.glTFFileExporter.js.map
 
 
+/**
+ * @hidden
+ */
 var BABYLON;
 (function (BABYLON) {
     var GLTF2;
