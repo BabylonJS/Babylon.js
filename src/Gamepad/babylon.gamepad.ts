@@ -140,32 +140,58 @@
             }
         }
 
+        /**
+         * Callback triggered when the left joystick has changed
+         * @param callback 
+         */
         public onleftstickchanged(callback: (values: StickValues) => void) {
             this._onleftstickchanged = callback;
         }
 
+        /**
+         * Callback triggered when the right joystick has changed
+         * @param callback 
+         */
         public onrightstickchanged(callback: (values: StickValues) => void) {
             this._onrightstickchanged = callback;
         }
 
+        /**
+         * Gets the left joystick
+         */
         public get leftStick(): StickValues {
             return this._leftStick;
         }
+        /**
+         * Sets the left joystick values
+         * @param newValues The value to set the left joystick to
+         */
         public set leftStick(newValues: StickValues) {
             if (this._onleftstickchanged && (this._leftStick.x !== newValues.x || this._leftStick.y !== newValues.y)) {
                 this._onleftstickchanged(newValues);
             }
             this._leftStick = newValues;
         }
+        /**
+         * Gets the right joystick
+         */
         public get rightStick(): StickValues {
             return this._rightStick;
         }
+        /**
+         * Sets the right joystick value
+         * @param newValues The value to set the right joystick to
+         */
         public set rightStick(newValues: StickValues) {
             if (this._onrightstickchanged && (this._rightStick.x !== newValues.x || this._rightStick.y !== newValues.y)) {
                 this._onrightstickchanged(newValues);
             }
             this._rightStick = newValues;
         }
+
+        /**
+         * Updates the gamepad joystick positions
+         */
 
         public update() {
             if (this._leftStick) {
@@ -179,25 +205,51 @@
             }
         }
 
+        /**
+         * Disposes the gamepad
+         */
         public dispose() {
         }
     }
 
+    /**
+     * Represents a generic gamepad
+     */
     export class GenericPad extends Gamepad {
         private _buttons: Array<number>;
         private _onbuttondown: (buttonPressed: number) => void;
         private _onbuttonup: (buttonReleased: number) => void;
 
+        /**
+         * Observable triggered when a button has been pressed
+         */
         public onButtonDownObservable = new Observable<number>();
+        /**
+         * Observable triggered when a button has been released
+         */
         public onButtonUpObservable = new Observable<number>();
 
+        /**
+         * Callback triggered when a button has been pressed
+         * @param callback Called when a button has been pressed
+         */
         public onbuttondown(callback: (buttonPressed: number) => void) {
             this._onbuttondown = callback;
         }
+        /**
+         * Callback triggered when a button has been released
+         * @param callback Called when a button has been released
+         */
         public onbuttonup(callback: (buttonReleased: number) => void) {
             this._onbuttonup = callback;
         }
 
+        /**
+         * Initializes the generic gamepad
+         * @param id The id of the generic gamepad
+         * @param index The index of the generic gamepad
+         * @param browserGamepad The browser gamepad
+         */
         constructor(id: string, index: number, browserGamepad: any) {
             super(id, index, browserGamepad);
             this.type = Gamepad.GENERIC;
@@ -224,6 +276,9 @@
             return newValue;
         }
 
+        /**
+         * Updates the generic gamepad
+         */
         public update() {
             super.update();
             for (var index = 0; index < this._buttons.length; index++) {
@@ -231,6 +286,9 @@
             }
         }
 
+        /**
+         * Disposes the generic gamepad
+         */
         public dispose() {
             super.dispose();
             this.onButtonDownObservable.clear();
