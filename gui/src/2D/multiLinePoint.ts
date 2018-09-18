@@ -115,8 +115,8 @@ export class MultiLinePoint {
     }
 
     public resetLinks(): void {
-        this.mesh = null;
         this.control = null;
+        this.mesh = null;
     }
 
     /** 
