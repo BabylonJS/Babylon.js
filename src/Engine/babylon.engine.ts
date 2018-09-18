@@ -1881,7 +1881,6 @@
         /**
          * Toggle full screen mode
          * @param requestPointerLock defines if a pointer lock should be requested from the user
-         * @param options defines an option object to be sent to the requestFullscreen function
          */
         public switchFullscreen(requestPointerLock: boolean): void {
             if (this.isFullscreen) {
