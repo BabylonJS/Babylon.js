@@ -198,6 +198,9 @@ module BABYLON {
             });
         }
 
+        /**
+         * Force relase the drag action by code.
+         */
         public releaseDrag(){
             this.dragging = false;
             this.onDragEndObservable.notifyObservers({dragPlanePoint: this.lastDragPosition, pointerId: this.currentDraggingPointerID});

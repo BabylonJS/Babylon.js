@@ -98,8 +98,17 @@
      * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
      */
     export class EdgesRenderer implements IEdgesRenderer {
+
+        /**
+         * Define the size of the edges with an orthographic camera
+         */
         public edgesWidthScalerForOrthographic = 1000.0;
+
+        /**
+         * Define the size of the edges with a perspective camera
+         */
         public edgesWidthScalerForPerspective = 50.0;
+
         protected _source: AbstractMesh;
         protected _linesPositions = new Array<number>();
         protected _linesNormals = new Array<number>();
