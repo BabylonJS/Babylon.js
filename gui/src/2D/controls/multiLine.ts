@@ -127,12 +127,18 @@ export class MultiLine extends Control {
         this._points.splice(index, 1);
     }
 
+    /**
+     * Resets this object to initial state (no point)
+     */
     public reset(): void {
         while (this._points.length > 0) {
             this.remove(this._points.length - 1);
         }
     }
 
+    /**
+     * Resets all links
+     */
     public resetLinks(): void {
         this._points.forEach(point => {
             if (point != null) point.resetLinks();

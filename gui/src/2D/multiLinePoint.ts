@@ -114,6 +114,7 @@ export class MultiLinePoint {
         this._multiLine._markAsDirty();
     }
 
+    /** Resets links */
     public resetLinks(): void {
         this.control = null;
         this.mesh = null;
