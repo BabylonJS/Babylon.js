@@ -3,7 +3,7 @@ module BABYLON {
      * Define an interface for all classes that will hold resources
      */
     export interface IDisposable {
-        /** 
+        /**
          * Releases all held resources
          */
         dispose(): void;
@@ -91,7 +91,7 @@ module BABYLON {
          */
         public static MaxDeltaTime = 1000.0;
 
-        // Members   
+        // Members
 
         /**
          * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
@@ -439,7 +439,7 @@ module BABYLON {
         * An event triggered when a mesh is removed
         */
         public onMeshRemovedObservable = new Observable<AbstractMesh>();
-        
+
         /**
         * An event triggered when a material is created
         */
@@ -449,7 +449,7 @@ module BABYLON {
         * An event triggered when a material is removed
         */
         public onMaterialRemovedObservable = new Observable<Material>();
-        
+
         /**
         * An event triggered when a texture is created
         */
@@ -658,6 +658,7 @@ module BABYLON {
         /**
         * Gets or sets a boolean indicating if fog is enabled on this scene
         * @see http://doc.babylonjs.com/babylon101/environment#fog
+        * (Default is true)
         */
         public set fogEnabled(value: boolean) {
             if (this._fogEnabled === value) {
@@ -674,6 +675,12 @@ module BABYLON {
         /**
         * Gets or sets the fog mode to use
         * @see http://doc.babylonjs.com/babylon101/environment#fog
+        * | mode | value |
+        * | --- | --- |
+        * | FOGMODE_NONE | 0 |
+        * | FOGMODE_EXP | 1 |
+        * | FOGMODE_EXP2 | 2 |
+        * | FOGMODE_LINEAR | 3 |
         */
         public set fogMode(value: number) {
             if (this._fogMode === value) {
@@ -689,21 +696,25 @@ module BABYLON {
         /**
         * Gets or sets the fog color to use
         * @see http://doc.babylonjs.com/babylon101/environment#fog
+        * (Default is Color3(0.2, 0.2, 0.3))
         */
         public fogColor = new Color3(0.2, 0.2, 0.3);
         /**
         * Gets or sets the fog density to use
         * @see http://doc.babylonjs.com/babylon101/environment#fog
+        * (Default is 0.1)
         */
         public fogDensity = 0.1;
         /**
         * Gets or sets the fog start distance to use
         * @see http://doc.babylonjs.com/babylon101/environment#fog
+        * (Default is 0)
         */
         public fogStart = 0;
         /**
         * Gets or sets the fog end distance to use
         * @see http://doc.babylonjs.com/babylon101/environment#fog
+        * (Default is 1000)
         */
         public fogEnd = 1000.0;
 
@@ -821,7 +832,7 @@ module BABYLON {
         private _workerCollisions: boolean;
         /** @hidden */
         public collisionCoordinator: ICollisionCoordinator;
-        /** 
+        /**
          * Defines the gravity applied to this scene (used only for collisions)
          * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
          */
@@ -1031,7 +1042,7 @@ module BABYLON {
         /**
          * @hidden
          * Add a component to the scene.
-         * Note that the ccomponent could be registered on th next frame if this is called after 
+         * Note that the ccomponent could be registered on th next frame if this is called after
          * the register component stage.
          * @param component Defines the component to add to the scene
          */
@@ -1278,7 +1289,7 @@ module BABYLON {
             return this._pointerY;
         }
 
-        /** 
+        /**
          * Gets the cached material (ie. the latest rendered one)
          * @returns the cached material
          */
@@ -1286,7 +1297,7 @@ module BABYLON {
             return this._cachedMaterial;
         }
 
-        /** 
+        /**
          * Gets the cached effect (ie. the latest rendered one)
          * @returns the cached effect
          */
@@ -1294,7 +1305,7 @@ module BABYLON {
             return this._cachedEffect;
         }
 
-        /** 
+        /**
          * Gets the cached visibility state (ie. the latest rendered one)
          * @returns the cached visibility state
          */
@@ -1313,7 +1324,7 @@ module BABYLON {
             return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
         }
 
-        /** 
+        /**
          * Gets the engine associated with the scene
          * @returns an Engine
          */
@@ -1321,7 +1332,7 @@ module BABYLON {
             return this._engine;
         }
 
-        /** 
+        /**
          * Gets the total number of vertices rendered per frame
          * @returns the total number of vertices rendered per frame
          */
@@ -1337,9 +1348,9 @@ module BABYLON {
             return this._totalVertices;
         }
 
-        /** 
+        /**
          * Gets the total number of active indices rendered per frame (You can deduce the number of rendered triangles by dividing this number by 3)
-         * @returns the total number of active indices rendered per frame         
+         * @returns the total number of active indices rendered per frame
          */
         public getActiveIndices(): number {
             return this._activeIndices.current;
@@ -1353,9 +1364,9 @@ module BABYLON {
             return this._activeIndices;
         }
 
-        /** 
+        /**
          * Gets the total number of active particles rendered per frame
-         * @returns the total number of active particles rendered per frame         
+         * @returns the total number of active particles rendered per frame
          */
         public getActiveParticles(): number {
             return this._activeParticles.current;
@@ -1369,9 +1380,9 @@ module BABYLON {
             return this._activeParticles;
         }
 
-        /** 
+        /**
          * Gets the total number of active bones rendered per frame
-         * @returns the total number of active bones rendered per frame         
+         * @returns the total number of active bones rendered per frame
          */
         public getActiveBones(): number {
             return this._activeBones.current;
@@ -1421,9 +1432,9 @@ module BABYLON {
             return null;
         }
 
-        /** 
+        /**
          * Gets the array of active meshes
-         * @returns an array of AbstractMesh 
+         * @returns an array of AbstractMesh
          */
         public getActiveMeshes(): SmartArray<AbstractMesh> {
             return this._activeMeshes;
@@ -1471,7 +1482,7 @@ module BABYLON {
             return null;
         }
 
-        /** 
+        /**
          * Gets the animation ratio (which is 1.0 is the scene renders at 60fps and 2 if the scene renders at 30fps, etc.)
          * @returns a number
          */
@@ -1479,7 +1490,7 @@ module BABYLON {
             return this._animationRatio !== undefined ? this._animationRatio : 1;
         }
 
-        /** 
+        /**
          * Gets an unique Id for the current render phase
          * @returns a number
          */
@@ -1487,7 +1498,7 @@ module BABYLON {
             return this._renderId;
         }
 
-        /** 
+        /**
          * Gets an unique Id for the current frame
          * @returns a number
          */
@@ -1998,7 +2009,7 @@ module BABYLON {
             };
 
             this._onPointerUp = (evt: PointerEvent) => {
-                if (this._totalPointersPressed === 0) {  // We are attaching the pointer up to windows because of a bug in FF                    
+                if (this._totalPointersPressed === 0) {  // We are attaching the pointer up to windows because of a bug in FF
                     return;                             // So we need to test it the pointer down was pressed before.
                 }
 
@@ -2334,7 +2345,7 @@ module BABYLON {
             }
         }
 
-        /** 
+        /**
          * Returns the number of items waiting to be loaded
          * @returns the number of items waiting to be loaded
          */
@@ -2635,7 +2646,7 @@ module BABYLON {
 
             var scale = 1;
             if (holder.totalWeight < 1.0) {
-                // We need to mix the original value in                     
+                // We need to mix the original value in
                 originalValue.decompose(finalScaling, finalQuaternion, finalPosition);
                 scale = 1.0 - holder.totalWeight;
             } else {
@@ -2758,7 +2769,7 @@ module BABYLON {
                             let normalizer = 1.0;
 
                             if (holder.totalWeight < 1.0) {
-                                // We need to mix the original value in     
+                                // We need to mix the original value in
                                 if (originalValue.scale) {
                                     finalValue = originalValue.scale(1.0 - holder.totalWeight);
                                 } else {
@@ -2806,7 +2817,7 @@ module BABYLON {
             this._useAlternateCameraConfiguration = active;
         }
 
-        /** 
+        /**
          * Gets the current view matrix
          * @returns a Matrix
          */
@@ -2814,7 +2825,7 @@ module BABYLON {
             return this._useAlternateCameraConfiguration ? this._alternateViewMatrix : this._viewMatrix;
         }
 
-        /** 
+        /**
          * Gets the current projection matrix
          * @returns a Matrix
          */
@@ -2822,7 +2833,7 @@ module BABYLON {
             return this._useAlternateCameraConfiguration ? this._alternateProjectionMatrix : this._projectionMatrix;
         }
 
-        /** 
+        /**
          * Gets the current transform matrix
          * @returns a Matrix made of View * Projection
          */
@@ -2830,7 +2841,7 @@ module BABYLON {
             return this._useAlternateCameraConfiguration ? this._alternateTransformMatrix : this._transformMatrix;
         }
 
-        /** 
+        /**
          * Sets the current transform matrix
          * @param view defines the View matrix to use
          * @param projection defines the Projection matrix to use
@@ -2903,7 +2914,7 @@ module BABYLON {
             return this._useAlternateCameraConfiguration ? this._alternateSceneUbo : this._sceneUbo;
         }
 
-        /** 
+        /**
          * Gets an unique (relatively to the current scene) Id
          * @returns an unique number for the scene
          */
@@ -3129,7 +3140,7 @@ module BABYLON {
                 this.materials.splice(index, 1);
             }
             this.onMaterialRemovedObservable.notifyObservers(toRemove);
-            
+
             return index;
         }
 
@@ -3157,7 +3168,7 @@ module BABYLON {
                 this.textures.splice(index, 1);
             }
             this.onTextureRemovedObservable.notifyObservers(toRemove);
-            
+
             return index;
         }
 
@@ -3180,7 +3191,7 @@ module BABYLON {
             this.onNewLightAddedObservable.notifyObservers(newLight);
         }
 
-        /** 
+        /**
          * Sorts the list list based on light priorities
          */
         public sortLightsByPriority(): void {
@@ -3580,7 +3591,7 @@ module BABYLON {
             return false;
         }
 
-        /** 
+        /**
          * Gets the list of geometries attached to the scene
          * @returns an array of Geometry
          */
@@ -4064,7 +4075,7 @@ module BABYLON {
 
             // Determine mesh candidates
             const meshes = this.getActiveMeshCandidates();
-            
+
             // Check each mesh
             const len = meshes.length;
             for (let i = 0; i < len; i++) {
@@ -4366,7 +4377,7 @@ module BABYLON {
             return 1000.0 / 60.0; // frame time in ms
         }
 
-        /** 
+        /**
          * Render the scene
          * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
          */
@@ -4579,7 +4590,7 @@ module BABYLON {
             this._activeParticles.addCount(0, true);
         }
 
-        /** 
+        /**
          * Freeze all materials
          * A frozen material will not be updatable but should be faster to render
          */
@@ -4589,7 +4600,7 @@ module BABYLON {
             }
         }
 
-        /** 
+        /**
          * Unfreeze all materials
          * A frozen material will not be updatable but should be faster to render
          */
@@ -4599,7 +4610,7 @@ module BABYLON {
             }
         }
 
-        /** 
+        /**
          * Releases all held ressources
          */
         public dispose(): void {
@@ -4831,7 +4842,7 @@ module BABYLON {
 
         /**
          * Get the world extend vectors with an optional filter
-         * 
+         *
          * @param filterPredicate the predicate - which meshes should be included when calculating the world size
          * @returns {{ min: Vector3; max: Vector3 }} min and max vectors
          */
@@ -5132,14 +5143,14 @@ module BABYLON {
             }
         }
 
-        /** 
+        /**
          * Gets the mesh under the pointer
          * @returns a Mesh or null if no mesh is under the pointer
          */
         public getPointerOverMesh(): Nullable<AbstractMesh> {
             return this._pointerOverMesh;
         }
-     
+
         // Misc.
         /** @hidden */
         public _rebuildGeometries(): void {

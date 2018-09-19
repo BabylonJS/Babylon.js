@@ -3,12 +3,33 @@
     const _identityMatrix = Matrix.Identity();
     const _tempRadiusVector = new Vector3(0, 0, 0);
 
+    /**
+     * Class used to store bounding sphere information
+     */
     export class BoundingSphere {
+        /**
+         * Gets the center of the bounding sphere in local space
+         */
         public center: Vector3;
+        /**
+         * Radius of the bounding sphere in local space
+         */
         public radius: number;
+        /**
+         * Gets the center of the bounding sphere in world space
+         */
         public centerWorld: Vector3;
+        /**
+         * Radius of the bounding sphere in world space
+         */
         public radiusWorld: number;
+        /**
+         * Gets the minimum vector in local space
+         */
         public minimum: Vector3;
+        /**
+         * Gets the maximum vector in local space
+         */
         public maximum: Vector3;
 
         /**
@@ -65,6 +86,11 @@
             this.radiusWorld = Math.max(Math.abs(_tempRadiusVector.x), Math.abs(_tempRadiusVector.y), Math.abs(_tempRadiusVector.z)) * this.radius;
         }
 
+        /**
+         * Tests if the bounding sphere is intersecting the frustum planes
+         * @param frustumPlanes defines the frustum planes to test
+         * @returns true if there is an intersection
+         */
         public isInFrustum(frustumPlanes: Plane[]): boolean {
             for (var i = 0; i < 6; i++) {
                 if (frustumPlanes[i].dotCoordinate(this.centerWorld) <= -this.radiusWorld)
@@ -74,6 +100,11 @@
             return true;
         }
 
+        /**
+         * Tests if a point is inside the bounding sphere
+         * @param point defines the point to test
+         * @returns true if the point is inside the bounding sphere
+         */
         public intersectsPoint(point: Vector3): boolean {
             var x = this.centerWorld.x - point.x;
             var y = this.centerWorld.y - point.y;
@@ -88,6 +119,12 @@
         }
 
         // Statics
+        /**
+         * Checks if two sphere intersct
+         * @param sphere0 sphere 0
+         * @param sphere1 sphere 1
+         * @returns true if the speres intersect
+         */
         public static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean {
             var x = sphere0.centerWorld.x - sphere1.centerWorld.x;
             var y = sphere0.centerWorld.y - sphere1.centerWorld.y;

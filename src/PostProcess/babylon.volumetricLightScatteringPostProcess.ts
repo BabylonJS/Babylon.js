@@ -1,5 +1,7 @@
 ﻿module BABYLON {
-    // Inspired by http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html
+    /**
+     *  Inspired by http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html
+     */
     export class VolumetricLightScatteringPostProcess extends PostProcess {
         // Members
         private _volumetricLightScatteringPass: Effect;
@@ -37,7 +39,10 @@
         @serializeAsMeshReference()
         public mesh: Mesh;
 
-
+        /**
+         * @hidden
+         * VolumetricLightScatteringPostProcess.useDiffuseColor is no longer used, use the mesh material directly instead
+         */
         public get useDiffuseColor(): boolean {
             Tools.Warn("VolumetricLightScatteringPostProcess.useDiffuseColor is no longer used, use the mesh material directly instead");
             return false;
@@ -122,6 +127,10 @@
             });
         }
 
+        /**
+         * Returns the string "VolumetricLightScatteringPostProcess"
+         * @returns "VolumetricLightScatteringPostProcess"
+         */
         public getClassName(): string {
             return "VolumetricLightScatteringPostProcess";
         }
@@ -190,7 +199,7 @@
 
         /**
          * Sets the new light position for light scattering effect
-         * @param {BABYLON.Vector3} The new custom light position
+         * @param position The new custom light position
          */
         public setCustomMeshPosition(position: Vector3): void {
             this.customMeshPosition = position;
@@ -423,8 +432,8 @@
         // Static methods
         /**
         * Creates a default mesh for the Volumeric Light Scattering post-process
-        * @param {string} The mesh name
-        * @param {BABYLON.Scene} The scene where to create the mesh
+        * @param name The mesh name
+        * @param scene The scene where to create the mesh
         * @return {BABYLON.Mesh} the default mesh
         */
         public static CreateDefaultMesh(name: string, scene: Scene): Mesh {

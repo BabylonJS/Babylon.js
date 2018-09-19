@@ -1480,9 +1480,7 @@
          * @returns the current mesh
          */
         public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
-
-            this._checkOcclusionQuery();
-            if (this._isOccluded) {
+            if (this._checkOcclusionQuery()) {
                 return this;
             }
 
