@@ -489,6 +489,7 @@
 
         /**
          * Clones, or makes a deep copy, of the BABYLON.CSG
+         * @returns A new BABYLON.CSG
          */
         public clone(): CSG {
             var csg = new CSG();
