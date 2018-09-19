@@ -375,41 +375,6 @@
         }
       }
     },
-    "ColorCorrectionPostProcess": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "ColorCurves": {
-      "Method": {
-        "getClassName": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "Bind": {
-          "Parameter": {
-            "positiveUniform": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "neutralUniform": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "negativeUniform": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
     "CubeTexture": {
       "Class": {
         "Comments": {
