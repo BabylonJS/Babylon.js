@@ -1,6 +1,7 @@
 ﻿module BABYLON {
     /**
-     * A simplifier interface for future simplification implementations.
+     * A simplifier interface for future simplification implementations
+     * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
      */
     export interface ISimplifier {
         /**
@@ -16,40 +17,102 @@
 
     /**
      * Expected simplification settings.
-     * Quality should be between 0 and 1 (1 being 100%, 0 being 0%);
+     * Quality should be between 0 and 1 (1 being 100%, 0 being 0%)
+     * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
      */
     export interface ISimplificationSettings {
+        /**
+         * Gets or sets the expected quality
+         */
         quality: number;
+        /**
+         * Gets or sets the distance when this optimized version should be used
+         */
         distance: number;
+        /**
+         * Gets an already optimized mesh
+         */
         optimizeMesh?: boolean;
     }
 
+    /**
+     * Class used to specify simplification options
+     * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+     */
     export class SimplificationSettings implements ISimplificationSettings {
-        constructor(public quality: number, public distance: number, public optimizeMesh?: boolean) {
+        /**
+         * Creates a SimplificationSettings
+         * @param quality expected quality
+         * @param distance distance when this optimized version should be used
+         * @param optimizeMesh already optimized mesh
+         */
+        constructor(
+            /** expected quality */
+            public quality: number, 
+            /** distance when this optimized version should be used */
+            public distance: number, 
+            /** already optimized mesh  */
+            public optimizeMesh?: boolean) {
         }
     }
 
+    /**
+     * Interface used to define a simplification task
+     */
     export interface ISimplificationTask {
+        /**
+         * Array of settings
+         */
         settings: Array<ISimplificationSettings>;
+        /**
+         * Simplification type
+         */
         simplificationType: SimplificationType;
+        /**
+         * Mesh to simplify
+         */
         mesh: Mesh;
+        /**
+         * Callback called on success
+         */
         successCallback?: () => void;
+        /**
+         * Defines if parallel processing can be used
+         */
         parallelProcessing: boolean;
     }
 
+    /**
+     * Queue used to order the simplification tasks
+     * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+     */
     export class SimplificationQueue {
         private _simplificationArray: Array<ISimplificationTask>;
+
+        /**
+         * Gets a boolean indicating that the process is still running
+         */
         public running: boolean;
 
+        /**
+         * Creates a new queue
+         */
         constructor() {
             this.running = false;
             this._simplificationArray = [];
         }
 
+        /**
+         * Adds a new simplification task
+         * @param task defines a task to add
+         */
         public addTask(task: ISimplificationTask) {
             this._simplificationArray.push(task);
         }
 
+        /**
+         * Execute next task
+         */
         public executeNext() {
             var task = this._simplificationArray.pop();
             if (task) {
@@ -60,6 +123,10 @@
             }
         }
 
+        /**
+         * Execute a simplification task
+         * @param task defines the task to run
+         */
         public runSimplification(task: ISimplificationTask) {
             if (task.parallelProcessing) {
                 //parallel simplifier
@@ -115,13 +182,14 @@
     /**
      * The implemented types of simplification
      * At the moment only Quadratic Error Decimation is implemented
+     * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
      */
     export enum SimplificationType {
         /** Quadratic error decimation */
         QUADRATIC
     }
 
-    export class DecimationTriangle {
+     class DecimationTriangle {
         public normal: Vector3;
         public error: Array<number>;
         public deleted: boolean;
@@ -140,7 +208,7 @@
         }
     }
 
-    export class DecimationVertex {
+    class DecimationVertex {
         public q: QuadraticMatrix;
         public isBorder: boolean;
 
@@ -162,7 +230,7 @@
         }
     }
 
-    export class QuadraticMatrix {
+    class QuadraticMatrix {
         public data: Array<number>;
 
         constructor(data?: Array<number>) {
@@ -213,7 +281,7 @@
         }
     }
 
-    export class Reference {
+    class Reference {
         constructor(public vertexId: number, public triangleId: number) { }
     }
 
@@ -222,8 +290,9 @@
      * Original paper : http://www1.cs.columbia.edu/~cs4162/html05s/garland97.pdf
      * Ported mostly from QSlim and http://voxels.blogspot.de/2014/05/quadric-mesh-simplification-with-source.html to babylon JS
      * @author RaananW
+     * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
      */
-    export class QuadraticErrorSimplification implements ISimplifier {
+    class QuadraticErrorSimplification implements ISimplifier {
 
         private triangles: Array<DecimationTriangle>;
         private vertices: Array<DecimationVertex>;
