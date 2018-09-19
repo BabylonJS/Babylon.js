@@ -1,17 +1,4 @@
 ﻿module BABYLON {
-<<<<<<< HEAD
-
-    /** @hidden */
-    class _OcclusionDataStorage {
-        /** @hidden */
-        public occlusionInternalRetryCounter = 0;
-
-        /** @hidden */
-        public isOccluded = false;
-
-        /** @hidden */
-        public isOcclusionQueryInProgress = false;
-=======
     /** @hidden */
     class _FacetDataStorage {
         // facetData private properties
@@ -40,7 +27,6 @@
         public facetDepthSortOrigin: Vector3;                             // same as facetDepthSortFrom but expressed in the mesh local space
         
         public invertedMatrix: Matrix; // Inverted world matrix.
->>>>>>> master
     }
 
     /**
@@ -209,53 +195,6 @@
          * Gets or sets the orientation for POV movement & rotation
          */
         public definedFacingForward = true; 
-
-        /**
-        * This property determines the type of occlusion query algorithm to run in WebGl, you can use:
-        * * AbstractMesh.OCCLUSION_ALGORITHM_TYPE_ACCURATE which is mapped to GL_ANY_SAMPLES_PASSED.
-        * * AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE (Default Value) which is mapped to GL_ANY_SAMPLES_PASSED_CONSERVATIVE which is a false positive algorithm that is faster than GL_ANY_SAMPLES_PASSED but less accurate.
-        * @see http://doc.babylonjs.com/features/occlusionquery
-        */
-        public occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
-
-        /**
-         * This property is responsible for starting the occlusion query within the Mesh or not, this property is also used to determine what should happen when the occlusionRetryCount is reached. It has supports 3 values:
-         * * OCCLUSION_TYPE_NONE (Default Value): this option means no occlusion query whith the Mesh.
-         * * OCCLUSION_TYPE_OPTIMISTIC: this option is means use occlusion query and if occlusionRetryCount is reached and the query is broken show the mesh.
-         * * OCCLUSION_TYPE_STRICT: this option is means use occlusion query and if occlusionRetryCount is reached and the query is broken restore the last state of the mesh occlusion if the mesh was visible then show the mesh if was hidden then hide don't show.
-         * @see http://doc.babylonjs.com/features/occlusionquery
-         */
-        public occlusionType = AbstractMesh.OCCLUSION_TYPE_NONE;
-
-        /**
-        * This number indicates the number of allowed retries before stop the occlusion query, this is useful if the occlusion query is taking long time before to the query result is retireved, the query result indicates if the object is visible within the scene or not and based on that Babylon.Js engine decideds to show or hide the object.
-        * The default value is -1 which means don't break the query and wait till the result
-        * @see http://doc.babylonjs.com/features/occlusionquery
-        */
-        public occlusionRetryCount = -1;
-
-        /** @hidden */
-        public _occlusionDataStorage: _OcclusionDataStorage;
-
-        /**
-        * Gets or sets whether the mesh is occluded or not, it is used also to set the intial state of the mesh to be occluded or not
-        * @see http://doc.babylonjs.com/features/occlusionquery
-        */
-        public get isOccluded(): boolean {
-            return this._occlusionDataStorage.isOccluded;
-        }
-
-        public set isOccluded(value: boolean) {
-            this._occlusionDataStorage.isOccluded = value;
-        }
-
-        /**
-         * Flag to check the progress status of the query
-         * @see http://doc.babylonjs.com/features/occlusionquery
-         */
-        public get isOcclusionQueryInProgress(): boolean {
-            return this._occlusionDataStorage.isOcclusionQueryInProgress;
-        }
 
         /** @hidden */
         public _occlusionQuery: Nullable<WebGLQuery>;
@@ -1498,7 +1437,7 @@
             // Query
             let engine = this.getScene().getEngine();
             if (this._occlusionQuery) {
-                this._occlusionDataStorage.isOcclusionQueryInProgress = false;
+                this.isOcclusionQueryInProgress = false;
                 engine.deleteQuery(this._occlusionQuery);
                 this._occlusionQuery = null;
             }
@@ -1969,8 +1908,8 @@
         }
 
         /** @hidden */
-        public _checkOcclusionQuery() { // Will be replaced by correct code if Occlusion queries are referenced
-            this._occlusionDataStorage.isOccluded = false;
+        public _checkOcclusionQuery(): boolean { // Will be replaced by correct code if Occlusion queries are referenced
+            return false;
         }
     }
 }
