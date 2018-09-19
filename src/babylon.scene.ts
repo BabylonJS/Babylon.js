@@ -696,7 +696,7 @@ module BABYLON {
         /**
         * Gets or sets the fog color to use
         * @see http://doc.babylonjs.com/babylon101/environment#fog
-        * Default is Color3(0.2, 0.2, 0.3)
+        * (Default is Color3(0.2, 0.2, 0.3))
         */
         public fogColor = new Color3(0.2, 0.2, 0.3);
         /**
