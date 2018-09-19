@@ -314,6 +314,10 @@
             this._dirty = true;
         }
 
+        /**
+         * Returns the class name
+         * @returns The class name
+         */
         public getClassName(): string {
             return "ColorCurves";
         }
@@ -322,6 +326,9 @@
          * Binds the color curves to the shader.
          * @param colorCurves The color curve to bind
          * @param effect The effect to bind to
+         * @param positiveUniform The positive uniform shader parameter
+         * @param neutralUniform The neutral uniform shader parameter
+         * @param negativeUniform The negative uniform shader parameter
          */
         public static Bind(colorCurves: ColorCurves, effect: Effect, positiveUniform = "vCameraColorCurvePositive", neutralUniform = "vCameraColorCurveNeutral", negativeUniform = "vCameraColorCurveNegative"): void {
             if (colorCurves._dirty) {
