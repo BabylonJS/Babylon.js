@@ -1,7 +1,7 @@
 {
-  "errors": 2163,
+  "errors": 2046,
   "babylon.typedoc.json": {
-    "errors": 2163,
+    "errors": 2046,
     "BaseSubMesh": {
       "Class": {
         "Comments": {
@@ -11496,30 +11496,6 @@
       },
       "Property": {
         "cylinder": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "SpringJointData": {
-      "Interface": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "damping": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "length": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "stiffness": {
           "Comments": {
             "MissingText": true
           }
