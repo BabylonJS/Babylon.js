@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     /** @hidden */
-    class FacetData {
+    class _FacetDataStorage {
         // facetData private properties
         public facetPositions: Vector3[];             // facet local positions
         public facetNormals: Vector3[];               // facet local normals
@@ -76,7 +76,7 @@
             return TransformNode.BILLBOARDMODE_ALL;
         }
 
-        private _facetData = new FacetData();
+        private _facetData = new _FacetDataStorage();
 
         /** Gets ot sets the culling strategy to use to find visible meshes */
         public cullingStrategy = AbstractMesh.CULLINGSTRATEGY_STANDARD;
