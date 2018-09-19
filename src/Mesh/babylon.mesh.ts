@@ -1482,7 +1482,7 @@
         public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
 
             this._checkOcclusionQuery();
-            if (this._isOccluded) {
+            if (this._occlusionDataStorage.isOccluded) {
                 return this;
             }
 
