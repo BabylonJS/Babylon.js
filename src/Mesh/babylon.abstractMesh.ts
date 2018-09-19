@@ -1,4 +1,17 @@
 ﻿module BABYLON {
+
+    /** @hidden */
+    class _OcclusionDataStorage {
+        /** @hidden */
+        public occlusionInternalRetryCounter = 0;
+
+        /** @hidden */
+        public isOccluded = false;
+
+        /** @hidden */
+        public isOcclusionQueryInProgress = false;
+    }
+
     /**
      * Class used to store all common mesh properties
      */
@@ -213,33 +226,28 @@
         * @see http://doc.babylonjs.com/features/occlusionquery
         */
         public occlusionRetryCount = -1;
-        /** @hidden */
-        public _occlusionInternalRetryCounter = 0;
 
         /** @hidden */
-        public _isOccluded = false;
+        public _occlusionDataStorage: _OcclusionDataStorage;
 
         /**
         * Gets or sets whether the mesh is occluded or not, it is used also to set the intial state of the mesh to be occluded or not
         * @see http://doc.babylonjs.com/features/occlusionquery
         */
         public get isOccluded(): boolean {
-            return this._isOccluded;
+            return this._occlusionDataStorage.isOccluded;
         }
 
         public set isOccluded(value: boolean) {
-            this._isOccluded = value;
+            this._occlusionDataStorage.isOccluded = value;
         }
-
-        /** @hidden */
-        public _isOcclusionQueryInProgress = false;
 
         /**
          * Flag to check the progress status of the query
          * @see http://doc.babylonjs.com/features/occlusionquery
          */
         public get isOcclusionQueryInProgress(): boolean {
-            return this._isOcclusionQueryInProgress;
+            return this._occlusionDataStorage.isOcclusionQueryInProgress;
         }
 
         /** @hidden */
@@ -1483,7 +1491,7 @@
             // Query
             let engine = this.getScene().getEngine();
             if (this._occlusionQuery) {
-                this._isOcclusionQueryInProgress = false;
+                this._occlusionDataStorage.isOcclusionQueryInProgress = false;
                 engine.deleteQuery(this._occlusionQuery);
                 this._occlusionQuery = null;
             }
@@ -1952,7 +1960,7 @@
 
         /** @hidden */
         public _checkOcclusionQuery() { // Will be replaced by correct code if Occlusion queries are referenced
-            this._isOccluded = false;
+            this._occlusionDataStorage.isOccluded = false;
         }
     }
 }

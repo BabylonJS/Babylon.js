@@ -250,20 +250,22 @@ module BABYLON {
 
     // We also need to update AbstractMesh as there is a portion of the code there
     AbstractMesh.prototype._checkOcclusionQuery = function() {
+        let dataStorage = this._occlusionDataStorage;
+
         if (this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
-            this._isOccluded = false;
+            dataStorage.isOccluded = false;
             return;
         }
 
         var engine = this.getEngine();
 
         if (engine.webGLVersion < 2) {
-            this._isOccluded = false;
+            dataStorage.isOccluded = false;
             return;
         }
 
         if (!engine.isQueryResultAvailable) { // Occlusion query where not referenced
-            this._isOccluded = false;
+            dataStorage.isOccluded = false;
             return;
         }
 
@@ -273,21 +275,21 @@ module BABYLON {
             if (isOcclusionQueryAvailable) {
                 var occlusionQueryResult = engine.getQueryResult(this._occlusionQuery);
 
-                this._isOcclusionQueryInProgress = false;
-                this._occlusionInternalRetryCounter = 0;
-                this._isOccluded = occlusionQueryResult === 1 ? false : true;
+                dataStorage.isOcclusionQueryInProgress = false;
+                dataStorage.occlusionInternalRetryCounter = 0;
+                dataStorage.isOccluded = occlusionQueryResult === 1 ? false : true;
             }
             else {
 
-                this._occlusionInternalRetryCounter++;
+                dataStorage.occlusionInternalRetryCounter++;
 
-                if (this.occlusionRetryCount !== -1 && this._occlusionInternalRetryCounter > this.occlusionRetryCount) {
-                    this._isOcclusionQueryInProgress = false;
-                    this._occlusionInternalRetryCounter = 0;
+                if (this.occlusionRetryCount !== -1 && dataStorage.occlusionInternalRetryCounter > this.occlusionRetryCount) {
+                    dataStorage.isOcclusionQueryInProgress = false;
+                    dataStorage.occlusionInternalRetryCounter = 0;
 
                     // if optimistic set isOccluded to false regardless of the status of isOccluded. (Render in the current render loop)
                     // if strict continue the last state of the object.
-                    this._isOccluded = this.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC ? false : this._isOccluded;
+                    dataStorage.isOccluded = this.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC ? false : dataStorage.isOccluded;
                 }
                 else {
                     return;
@@ -307,7 +309,7 @@ module BABYLON {
             engine.beginOcclusionQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
             occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
             engine.endOcclusionQuery(this.occlusionQueryAlgorithmType);
-            this._isOcclusionQueryInProgress = true;
+            this._occlusionDataStorage.isOcclusionQueryInProgress = true;
         }
     } 
 }
