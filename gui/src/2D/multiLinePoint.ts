@@ -114,6 +114,12 @@ export class MultiLinePoint {
         this._multiLine._markAsDirty();
     }
 
+    /** Resets links */
+    public resetLinks(): void {
+        this.control = null;
+        this.mesh = null;
+    }
+
     /** 
      * Gets a translation vector
      * @returns the translation vector
@@ -143,8 +149,7 @@ export class MultiLinePoint {
 
     /** Release associated resources */
     public dispose(): void {
-        this.control = null;
-        this.mesh = null;
+        this.resetLinks();
     }
 
 }
