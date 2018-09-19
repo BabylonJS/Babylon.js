@@ -86,18 +86,58 @@
     // var off_caps4 = 30;
     var off_dxgiFormat = 32
 
+    /**
+     * Direct draw surface info
+     * @see https://docs.microsoft.com/en-us/windows/desktop/direct3ddds/dx-graphics-dds-pguide
+     */
     export interface DDSInfo {
+        /**
+         * Width of the texture
+         */
         width: number;
+        /**
+         * Width of the texture
+         */
         height: number;
+        /**
+         * Number of Mipmaps for the texture
+         * @see https://en.wikipedia.org/wiki/Mipmap
+         */
         mipmapCount: number;
+        /**
+         * If the textures format is a known fourCC format
+         * @see https://www.fourcc.org/
+         */
         isFourCC: boolean;
+        /**
+         * If the texture is an RGB format eg. DXGI_FORMAT_B8G8R8X8_UNORM format
+         */
         isRGB: boolean;
+        /**
+         * If the texture is a lumincance format
+         */
         isLuminance: boolean;
+        /**
+         * If this is a cube texture
+         * @see https://docs.microsoft.com/en-us/windows/desktop/direct3ddds/dds-file-layout-for-cubic-environment-maps
+         */
         isCube: boolean;
+        /**
+         * If the texture is a compressed format eg. FOURCC_DXT1
+         */
         isCompressed: boolean;
+        /**
+         * The dxgiFormat of the texture
+         * @see https://docs.microsoft.com/en-us/windows/desktop/api/dxgiformat/ne-dxgiformat-dxgi_format
+         */
         dxgiFormat: number;
+        /**
+         * Texture type eg. Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT
+         */
         textureType: number;
-        /** Sphericle polynomial created for the dds texture */
+        /** 
+         * Sphericle polynomial created for the dds texture
+         */
         sphericalPolynomial?: SphericalPolynomial;
     };
 

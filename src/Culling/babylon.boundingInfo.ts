@@ -22,22 +22,62 @@
         return extentsOverlap(result0.min, result0.max, result1.min, result1.max);
     }
 
+    /**
+     * Interface for cullable objects 
+     * @see https://doc.babylonjs.com/babylon101/materials#back-face-culling
+     */
     export interface ICullable {
+        /**
+         * Checks if the object or part of the object is in the frustum
+         * @param frustumPlanes Camera near/planes
+         * @returns true if the object is in frustum otherwise false
+         */
         isInFrustum(frustumPlanes: Plane[]): boolean;
+        /**
+         * Checks if a cullable object (mesh...) is in the camera frustum
+         * Unlike isInFrustum this cheks the full bounding box
+         * @param frustumPlanes Camera near/planes
+         * @returns true if the object is in frustum otherwise false
+         */
         isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
     }
 
+    /** 
+     * Info for a bounding data of a mesh
+     */
     export class BoundingInfo implements ICullable {
+        /**
+         * Bounding box for the mesh
+         */
         public boundingBox: BoundingBox;
+        /**
+         * Bounding sphere for the mesh
+         */
         public boundingSphere: BoundingSphere;
 
         private _isLocked = false;
-
-        constructor(public minimum: Vector3, public maximum: Vector3) {
+        /**
+         * Constructs bounding info
+         * @param minimum min vector of the bounding box/sphere
+         * @param maximum max vector of the bounding box/sphere
+         */
+        constructor(
+            /**
+             * min vector of the bounding box/sphere
+             */
+            public minimum: Vector3, 
+            /**
+             * max vector of the bounding box/sphere
+             */
+            public maximum: Vector3
+        ) {
             this.boundingBox = new BoundingBox(minimum, maximum);
             this.boundingSphere = new BoundingSphere(minimum, maximum);
         }
 
+        /**
+         * If the info is locked and won't be updated to avoid perf overhead
+         */
         public get isLocked(): boolean {
             return this._isLocked;
         }
@@ -47,6 +87,10 @@
         }
 
         // Methods
+        /**
+         * Updates the boudning sphere and box
+         * @param world world matrix to be used to update
+         */
         public update(world: Matrix) {
             if (this._isLocked) {
                 return;
@@ -59,6 +103,7 @@
          * Recreate the bounding info to be centered around a specific point given a specific extend.
          * @param center New center of the bounding info
          * @param extend New extend of the bounding info
+         * @returns the current bounding info
          */
         public centerOn(center: Vector3, extend: Vector3): BoundingInfo {
             this.minimum = center.subtract(extend);
@@ -108,6 +153,12 @@
             return size.length();
         }
 
+        /**
+         * Checks if a cullable object (mesh...) is in the camera frustum
+         * Unlike isInFrustum this cheks the full bounding box
+         * @param frustumPlanes Camera near/planes
+         * @returns true if the object is in frustum otherwise false
+         */
         public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
             return this.boundingBox.isCompletelyInFrustum(frustumPlanes);
         }
@@ -116,6 +167,12 @@
             return collider._canDoCollision(this.boundingSphere.centerWorld, this.boundingSphere.radiusWorld, this.boundingBox.minimumWorld, this.boundingBox.maximumWorld);
         }
 
+        /**
+         * Checks if a point is inside the bounding box and bounding sphere or the mesh 
+         * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
+         * @param point the point to check intersection with
+         * @returns if the point intersects
+         */
         public intersectsPoint(point: Vector3): boolean {
             if (!this.boundingSphere.centerWorld) {
                 return false;
@@ -132,6 +189,13 @@
             return true;
         }
 
+        /**
+         * Checks if another bounding info intersects the bounding box and bounding sphere or the mesh
+         * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
+         * @param boundingInfo the bounding info to check intersection with
+         * @param precise if the intersection should be done using OBB
+         * @returns if the bounding info intersects
+         */
         public intersects(boundingInfo: BoundingInfo, precise: boolean): boolean {
             if (!this.boundingSphere.centerWorld || !boundingInfo.boundingSphere.centerWorld) {
                 return false;
