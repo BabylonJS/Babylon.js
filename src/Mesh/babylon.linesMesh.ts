@@ -46,7 +46,7 @@
 
             var defines: String[] = [];
             var options = {
-                attributes: [VertexBuffer.PositionKind],
+                attributes: [VertexBuffer.PositionKind, "world0", "world1", "world2", "world3"],
                 uniforms: ["world", "viewProjection"],
                 needAlphaBlending: true,
                 defines: defines
@@ -95,10 +95,6 @@
             return false;
         }
 
-        public createInstance(name: string): InstancedMesh {
-            throw new Error("LinesMeshes do not support createInstance.");
-        }
-
         /** @hidden */
         public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): LinesMesh {
             if (!this._geometry) {
@@ -123,7 +119,7 @@
             var engine = this.getScene().getEngine();
 
             // Draw order
-            engine.drawElementsType(Material.LineListDrawMode, subMesh.indexStart, subMesh.indexCount);
+            engine.drawElementsType(Material.LineListDrawMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
             return this;
         }
 
