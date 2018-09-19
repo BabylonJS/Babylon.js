@@ -658,7 +658,7 @@ module BABYLON {
         /**
         * Gets or sets a boolean indicating if fog is enabled on this scene
         * @see http://doc.babylonjs.com/babylon101/environment#fog
-        * Default is true
+        * (Default is true)
         */
         public set fogEnabled(value: boolean) {
             if (this._fogEnabled === value) {
@@ -702,19 +702,19 @@ module BABYLON {
         /**
         * Gets or sets the fog density to use
         * @see http://doc.babylonjs.com/babylon101/environment#fog
-        * Default is 0.1
+        * (Default is 0.1)
         */
         public fogDensity = 0.1;
         /**
         * Gets or sets the fog start distance to use
         * @see http://doc.babylonjs.com/babylon101/environment#fog
-        * Default is 0
+        * (Default is 0)
         */
         public fogStart = 0;
         /**
         * Gets or sets the fog end distance to use
         * @see http://doc.babylonjs.com/babylon101/environment#fog
-        * Default is 1000
+        * (Default is 1000)
         */
         public fogEnd = 1000.0;
 
