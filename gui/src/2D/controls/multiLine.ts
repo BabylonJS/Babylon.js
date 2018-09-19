@@ -127,6 +127,18 @@ export class MultiLine extends Control {
         this._points.splice(index, 1);
     }
 
+    public reset(): void {
+        while (this._points.length > 0) {
+            this.remove(this._points.length - 1);
+        }
+    }
+
+    public resetLinks(): void {
+        this._points.forEach(point => {
+            if (point != null) point.resetLinks();
+        });
+    }
+
     /** Gets or sets line width */
     public get lineWidth(): number {
         return this._lineWidth;
@@ -239,9 +251,7 @@ export class MultiLine extends Control {
     }
 
     public dispose(): void {
-        while (this._points.length > 0) {
-            this.remove(this._points.length - 1);
-        }
+        this.reset();
 
         super.dispose();
     }
