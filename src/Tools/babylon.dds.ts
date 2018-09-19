@@ -88,7 +88,7 @@
 
     /**
      * Direct draw surface info
-     * See https://docs.microsoft.com/en-us/windows/desktop/direct3ddds/dx-graphics-dds-pguide
+     * @see https://docs.microsoft.com/en-us/windows/desktop/direct3ddds/dx-graphics-dds-pguide
      */
     export interface DDSInfo {
         /**
@@ -100,11 +100,13 @@
          */
         height: number;
         /**
-         * Number of Mipmaps for the texture, https://en.wikipedia.org/wiki/Mipmap
+         * Number of Mipmaps for the texture
+         * @see https://en.wikipedia.org/wiki/Mipmap
          */
         mipmapCount: number;
         /**
-         * If the textures format is a known fourCC format, https://www.fourcc.org/
+         * If the textures format is a known fourCC format
+         * @see https://www.fourcc.org/
          */
         isFourCC: boolean;
         /**
@@ -116,7 +118,8 @@
          */
         isLuminance: boolean;
         /**
-         * If this is a cube texture, See https://docs.microsoft.com/en-us/windows/desktop/direct3ddds/dds-file-layout-for-cubic-environment-maps
+         * If this is a cube texture
+         * @see https://docs.microsoft.com/en-us/windows/desktop/direct3ddds/dds-file-layout-for-cubic-environment-maps
          */
         isCube: boolean;
         /**
@@ -124,7 +127,8 @@
          */
         isCompressed: boolean;
         /**
-         * The dxgiFormat of the texture, https://docs.microsoft.com/en-us/windows/desktop/api/dxgiformat/ne-dxgiformat-dxgi_format
+         * The dxgiFormat of the texture
+         * @see https://docs.microsoft.com/en-us/windows/desktop/api/dxgiformat/ne-dxgiformat-dxgi_format
          */
         dxgiFormat: number;
         /**

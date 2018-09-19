@@ -23,7 +23,8 @@
     }
 
     /**
-     * Interface for cullable objects see https://doc.babylonjs.com/babylon101/materials#back-face-culling
+     * Interface for cullable objects 
+     * @see https://doc.babylonjs.com/babylon101/materials#back-face-culling
      */
     export interface ICullable {
         /**
@@ -167,7 +168,8 @@
         }
 
         /**
-         * Checks if a point is inside the bounding box and bounding sphere or the mesh https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
+         * Checks if a point is inside the bounding box and bounding sphere or the mesh 
+         * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
          * @param point the point to check intersection with
          * @returns if the point intersects
          */
@@ -189,8 +191,9 @@
 
         /**
          * Checks if another bounding info intersects the bounding box and bounding sphere or the mesh
+         * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
          * @param boundingInfo the bounding info to check intersection with
-         * @param precise if the intersection should be done using OBB see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
+         * @param precise if the intersection should be done using OBB
          * @returns if the bounding info intersects
          */
         public intersects(boundingInfo: BoundingInfo, precise: boolean): boolean {
