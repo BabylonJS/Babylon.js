@@ -1,34 +1,65 @@
 ﻿module BABYLON {
-    // Unique ID when we import meshes from Babylon to CSG
+    /**
+     * Unique ID when we import meshes from Babylon to CSG
+     */
     var currentCSGMeshId = 0;
 
-    // # class Vertex
-
-    // Represents a vertex of a polygon. Use your own vertex class instead of this
-    // one to provide additional features like texture coordinates and vertex
-    // colors. Custom vertex classes need to provide a `pos` property and `clone()`,
-    // `flip()`, and `interpolate()` methods that behave analogous to the ones
-    // defined by `BABYLON.CSG.Vertex`. This class provides `normal` so convenience
-    // functions like `BABYLON.CSG.sphere()` can return a smooth vertex normal, but `normal`
-    // is not used anywhere else. 
-    // Same goes for uv, it allows to keep the original vertex uv coordinates of the 2 meshes
+    /**
+     * Represents a vertex of a polygon. Use your own vertex class instead of this
+     * one to provide additional features like texture coordinates and vertex
+     * colors. Custom vertex classes need to provide a `pos` property and `clone()`,
+     * `flip()`, and `interpolate()` methods that behave analogous to the ones
+     * defined by `BABYLON.CSG.Vertex`. This class provides `normal` so convenience
+     * functions like `BABYLON.CSG.sphere()` can return a smooth vertex normal, but `normal`
+     * is not used anywhere else. 
+     * Same goes for uv, it allows to keep the original vertex uv coordinates of the 2 meshes
+     */
     class Vertex {
-        constructor(public pos: Vector3, public normal: Vector3, public uv: Vector2) {
+        /**
+         * Initializes the vertex
+         * @param pos The position of the vertex
+         * @param normal The normal of the vertex
+         * @param uv The texture coordinate of the vertex
+         */
+        constructor(
+            /**
+             * The position of the vertex
+             */
+            public pos: Vector3, 
+            /**
+             * The normal of the vertex
+             */
+            public normal: Vector3, 
+            /**
+             * The texture coordinate of the vertex
+             */
+            public uv: Vector2) {
         }
 
+        /**
+         * Make a clone, or deep copy, of the vertex
+         */
         public clone(): Vertex {
             return new Vertex(this.pos.clone(), this.normal.clone(), this.uv.clone());
         }
 
-        // Invert all orientation-specific data (e.g. vertex normal). Called when the
-        // orientation of a polygon is flipped.
+        
+        /**
+         * Invert all orientation-specific data (e.g. vertex normal). Called when the
+         * orientation of a polygon is flipped.
+         */
         public flip(): void {
             this.normal = this.normal.scale(-1);
         }
 
-        // Create a new vertex between this vertex and `other` by linearly
-        // interpolating all properties using a parameter of `t`. Subclasses should
-        // override this to interpolate additional properties.
+        
+        /**
+         * Create a new vertex between this vertex and `other` by linearly
+         * interpolating all properties using a parameter of `t`. Subclasses should
+         * override this to interpolate additional properties.
+         * @param other the vertex to interpolate against
+         * @param t The factor used to linearly interpolate between the vertices
+         */
         public interpolate(other: Vertex, t: number): Vertex {
             return new Vertex(Vector3.Lerp(this.pos, other.pos, t),
                 Vector3.Lerp(this.normal, other.normal, t),
@@ -36,10 +67,10 @@
             );
         }
     }
-
-    // # class Plane
-
-    // Represents a plane in 3D space.
+    
+    /**
+     * Represents a plane in 3D space.
+     */
     class Plane {
         constructor(public normal: Vector3, public w: number) {
         }
