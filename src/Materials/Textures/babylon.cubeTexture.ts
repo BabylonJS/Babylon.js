@@ -1,5 +1,11 @@
 ﻿module BABYLON {
+    /**
+     * Class for creating a cube texture
+     */
     export class CubeTexture extends BaseTexture {
+        /**
+         * The url of the texture
+         */
         public url: string;
 
         /**
@@ -26,6 +32,9 @@
                 scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
             }
         }
+        /**
+         * Returns the bounding box size
+         */
         public get boundingBoxSize(): Vector3 {
             return this._boundingBoxSize;
         }
@@ -57,7 +66,14 @@
         /** @hidden */
         public readonly _prefiltered: boolean = false;
 
-        public static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean) {
+        /**
+         * Creates a cube texture from an array of image urls
+         * @param files Array of image urls
+         * @param scene Babylon.js scene
+         * @param noMipmap Specifies if mip maps are not used
+         * @returns A cube texture
+         */
+        public static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean): CubeTexture {
             let rootUrlKey = "";
 
             files.forEach(url => rootUrlKey += url);
@@ -171,7 +187,9 @@
             }
         }
 
-        // Methods
+        /**
+         * Delays loading of the cube texture
+         */
         public delayLoad(): void {
             if (this.delayLoadState !== Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
@@ -195,14 +213,29 @@
             }
         }
 
+        /**
+         * Returns the reflection texture matrix
+         * @returns Reflection texture matrix
+         */
         public getReflectionTextureMatrix(): Matrix {
             return this._textureMatrix;
         }
 
+        /**
+         * Sets the reflection texture matrix
+         * @param value Reflection texture matrix
+         */
         public setReflectionTextureMatrix(value: Matrix): void {
             this._textureMatrix = value;
         }
 
+        /**
+         * Parses text to create a cube texture
+         * @param parsedTexture Serialized text to create a cube texture
+         * @param scene BABYLON.Scene 
+         * @param rootUrl The root url of the cube texture
+         * @returns A cube texture
+         */
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture {
             var texture = SerializationHelper.Parse(() => {
                 var prefiltered:boolean = false;
@@ -232,6 +265,10 @@
             return texture;
         }
 
+        /**
+         * Makes a clone, or deep copy, of the cube texture
+         * @returns A cube texture
+         */
         public clone(): CubeTexture {
             return SerializationHelper.Clone(() => {
                 let scene = this.getScene();
