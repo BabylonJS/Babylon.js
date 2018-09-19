@@ -1,4 +1,34 @@
 ﻿module BABYLON {
+    /** @hidden */
+    class _FacetDataStorage {
+        // facetData private properties
+        public facetPositions: Vector3[];             // facet local positions
+        public facetNormals: Vector3[];               // facet local normals
+        public facetPartitioning: number[][];         // partitioning array of facet index arrays
+        public facetNb: number = 0;                   // facet number
+        public partitioningSubdivisions: number = 10; // number of subdivisions per axis in the partioning space  
+        public partitioningBBoxRatio: number = 1.01;  // the partioning array space is by default 1% bigger than the bounding box
+        public facetDataEnabled: boolean = false;     // is the facet data feature enabled on this mesh ?
+        public facetParameters: any = {};             // keep a reference to the object parameters to avoid memory re-allocation
+        public bbSize: Vector3 = Vector3.Zero();      // bbox size approximated for facet data
+        public subDiv = {                             // actual number of subdivisions per axis for ComputeNormals()
+            max: 1,
+            X: 1,
+            Y: 1,
+            Z: 1
+        };
+
+        public facetDepthSort: boolean = false;                           // is the facet depth sort to be computed
+        public facetDepthSortEnabled: boolean = false;                    // is the facet depth sort initialized
+        public depthSortedIndices: IndicesArray;                          // copy of the indices array to store them once sorted
+        public depthSortedFacets: { ind: number, sqDistance: number }[];    // array of depth sorted facets
+        public facetDepthSortFunction: (f1: { ind: number, sqDistance: number }, f2: { ind: number, sqDistance: number }) => number;  // facet depth sort function
+        public facetDepthSortFrom: Vector3;                               // location where to depth sort from
+        public facetDepthSortOrigin: Vector3;                             // same as facetDepthSortFrom but expressed in the mesh local space
+        
+        public invertedMatrix: Matrix; // Inverted world matrix.
+    }
+
     /**
      * Class used to store all common mesh properties
      */
@@ -46,31 +76,7 @@
             return TransformNode.BILLBOARDMODE_ALL;
         }
 
-        // facetData private properties
-        private _facetPositions: Vector3[];             // facet local positions
-        private _facetNormals: Vector3[];               // facet local normals
-        private _facetPartitioning: number[][];         // partitioning array of facet index arrays
-        private _facetNb: number = 0;                   // facet number
-        private _partitioningSubdivisions: number = 10; // number of subdivisions per axis in the partioning space  
-        private _partitioningBBoxRatio: number = 1.01;  // the partioning array space is by default 1% bigger than the bounding box
-        private _facetDataEnabled: boolean = false;     // is the facet data feature enabled on this mesh ?
-        private _facetParameters: any = {};             // keep a reference to the object parameters to avoid memory re-allocation
-        private _bbSize: Vector3 = Vector3.Zero();      // bbox size approximated for facet data
-        private _subDiv = {                             // actual number of subdivisions per axis for ComputeNormals()
-            max: 1,
-            X: 1,
-            Y: 1,
-            Z: 1
-        };
-
-        private _facetDepthSort: boolean = false;                           // is the facet depth sort to be computed
-        private _facetDepthSortEnabled: boolean = false;                    // is the facet depth sort initialized
-        private _depthSortedIndices: IndicesArray;                          // copy of the indices array to store them once sorted
-        private _depthSortedFacets: { ind: number, sqDistance: number }[];    // array of depth sorted facets
-        private _facetDepthSortFunction: (f1: { ind: number, sqDistance: number }, f2: { ind: number, sqDistance: number }) => number;  // facet depth sort function
-        private _facetDepthSortFrom: Vector3;                               // location where to depth sort from
-        private _facetDepthSortOrigin: Vector3;                             // same as facetDepthSortFrom but expressed in the mesh local space
-        private _invertedMatrix: Matrix;                                    // Mesh inverted World Matrix
+        private _facetData = new _FacetDataStorage();
 
         /** Gets ot sets the culling strategy to use to find visible meshes */
         public cullingStrategy = AbstractMesh.CULLINGSTRATEGY_STANDARD;
@@ -80,17 +86,17 @@
          * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#what-is-a-mesh-facet
          */
         public get facetNb(): number {
-            return this._facetNb;
+            return this._facetData.facetNb;
         }
         /**
          * Gets or set the number (integer) of subdivisions per axis in the partioning space
          * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#tweaking-the-partitioning
          */
         public get partitioningSubdivisions(): number {
-            return this._partitioningSubdivisions;
+            return this._facetData.partitioningSubdivisions;
         }
         public set partitioningSubdivisions(nb: number) {
-            this._partitioningSubdivisions = nb;
+            this._facetData.partitioningSubdivisions = nb;
         }
         /**
          * The ratio (float) to apply to the bouding box size to set to the partioning space.  
@@ -98,10 +104,10 @@
          * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#tweaking-the-partitioning
          */
         public get partitioningBBoxRatio(): number {
-            return this._partitioningBBoxRatio;
+            return this._facetData.partitioningBBoxRatio;
         }
         public set partitioningBBoxRatio(ratio: number) {
-            this._partitioningBBoxRatio = ratio;
+            this._facetData.partitioningBBoxRatio = ratio;
         }
 
         /**
@@ -111,10 +117,10 @@
          * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#facet-depth-sort
          */
         public get mustDepthSortFacets(): boolean {
-            return this._facetDepthSort;
+            return this._facetData.facetDepthSort;
         }
         public set mustDepthSortFacets(sort: boolean) {
-            this._facetDepthSort = sort;
+            this._facetData.facetDepthSort = sort;
         }
 
         /**
@@ -124,10 +130,10 @@
          * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#facet-depth-sort
          */
         public get facetDepthSortFrom(): Vector3 {
-            return this._facetDepthSortFrom;
+            return this._facetData.facetDepthSortFrom;
         }
         public set facetDepthSortFrom(location: Vector3) {
-            this._facetDepthSortFrom = location;
+            this._facetData.facetDepthSortFrom = location;
         }
 
         /**
@@ -135,7 +141,7 @@
          * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#what-is-a-mesh-facet
          */
         public get isFacetDataEnabled(): boolean {
-            return this._facetDataEnabled;
+            return this._facetData.facetDataEnabled;
         }
 
         /** @hidden */
@@ -1511,7 +1517,7 @@
             }
 
             // facet data
-            if (this._facetDataEnabled) {
+            if (this._facetData.facetDataEnabled) {
                 this.disableFacetData();
             }
 
@@ -1546,23 +1552,24 @@
         // Facet data
         /** @hidden */
         private _initFacetData(): AbstractMesh {
-            if (!this._facetNormals) {
-                this._facetNormals = new Array<Vector3>();
+            const data = this._facetData;
+            if (!data.facetNormals) {
+                data.facetNormals = new Array<Vector3>();
             }
-            if (!this._facetPositions) {
-                this._facetPositions = new Array<Vector3>();
+            if (!data.facetPositions) {
+                data.facetPositions = new Array<Vector3>();
             }
-            if (!this._facetPartitioning) {
-                this._facetPartitioning = new Array<number[]>();
+            if (!data.facetPartitioning) {
+                data.facetPartitioning = new Array<number[]>();
             }
-            this._facetNb = ((<IndicesArray>this.getIndices()).length / 3) | 0;
-            this._partitioningSubdivisions = (this._partitioningSubdivisions) ? this._partitioningSubdivisions : 10;   // default nb of partitioning subdivisions = 10
-            this._partitioningBBoxRatio = (this._partitioningBBoxRatio) ? this._partitioningBBoxRatio : 1.01;          // default ratio 1.01 = the partitioning is 1% bigger than the bounding box
-            for (var f = 0; f < this._facetNb; f++) {
-                this._facetNormals[f] = Vector3.Zero();
-                this._facetPositions[f] = Vector3.Zero();
+            data.facetNb = ((<IndicesArray>this.getIndices()).length / 3) | 0;
+            data.partitioningSubdivisions = (data.partitioningSubdivisions) ? data.partitioningSubdivisions : 10;   // default nb of partitioning subdivisions = 10
+            data.partitioningBBoxRatio = (data.partitioningBBoxRatio) ? data.partitioningBBoxRatio : 1.01;          // default ratio 1.01 = the partitioning is 1% bigger than the bounding box
+            for (var f = 0; f < data.facetNb; f++) {
+                data.facetNormals[f] = Vector3.Zero();
+                data.facetPositions[f] = Vector3.Zero();
             }
-            this._facetDataEnabled = true;
+            data.facetDataEnabled = true;
             return this;
         }
 
@@ -1574,7 +1581,8 @@
          * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
          */
         public updateFacetData(): AbstractMesh {
-            if (!this._facetDataEnabled) {
+            const data = this._facetData;
+            if (!data.facetDataEnabled) {
                 this._initFacetData();
             }
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
@@ -1582,14 +1590,14 @@
             var normals = this.getVerticesData(VertexBuffer.NormalKind);
             var bInfo = this.getBoundingInfo();
 
-            if (this._facetDepthSort && !this._facetDepthSortEnabled) {
+            if (data.facetDepthSort && !data.facetDepthSortEnabled) {
                 // init arrays, matrix and sort function on first call
-                this._facetDepthSortEnabled = true;
+                data.facetDepthSortEnabled = true;
                 if (indices instanceof Uint16Array) {
-                    this._depthSortedIndices = new Uint16Array(indices!);
+                    data.depthSortedIndices = new Uint16Array(indices!);
                 }
                 else if (indices instanceof Uint32Array) {
-                    this._depthSortedIndices = new Uint32Array(indices!);
+                    data.depthSortedIndices = new Uint32Array(indices!);
                 }
                 else {
                     var needs32bits = false;
@@ -1600,68 +1608,68 @@
                         }
                     }
                     if (needs32bits) {
-                        this._depthSortedIndices = new Uint32Array(indices!);
+                        data.depthSortedIndices = new Uint32Array(indices!);
                     }
                     else {
-                        this._depthSortedIndices = new Uint16Array(indices!);
+                        data.depthSortedIndices = new Uint16Array(indices!);
                     }
                 }
-                this._facetDepthSortFunction = function (f1, f2) {
+                data.facetDepthSortFunction = function (f1, f2) {
                     return (f2.sqDistance - f1.sqDistance);
                 };
-                if (!this._facetDepthSortFrom) {
+                if (!data.facetDepthSortFrom) {
                     var camera = this.getScene().activeCamera;
-                    this._facetDepthSortFrom = (camera) ? camera.position : Vector3.Zero();
+                    data.facetDepthSortFrom = (camera) ? camera.position : Vector3.Zero();
                 }
-                this._depthSortedFacets = [];
-                for (var f = 0; f < this._facetNb; f++) {
+                data.depthSortedFacets = [];
+                for (var f = 0; f < data.facetNb; f++) {
                     var depthSortedFacet = { ind: f * 3, sqDistance: 0.0 };
-                    this._depthSortedFacets.push(depthSortedFacet);
+                    data.depthSortedFacets.push(depthSortedFacet);
                 }
-                this._invertedMatrix = Matrix.Identity();
-                this._facetDepthSortOrigin = Vector3.Zero();
+                data.invertedMatrix = Matrix.Identity();
+                data.facetDepthSortOrigin = Vector3.Zero();
             }
 
-            this._bbSize.x = (bInfo.maximum.x - bInfo.minimum.x > Epsilon) ? bInfo.maximum.x - bInfo.minimum.x : Epsilon;
-            this._bbSize.y = (bInfo.maximum.y - bInfo.minimum.y > Epsilon) ? bInfo.maximum.y - bInfo.minimum.y : Epsilon;
-            this._bbSize.z = (bInfo.maximum.z - bInfo.minimum.z > Epsilon) ? bInfo.maximum.z - bInfo.minimum.z : Epsilon;
-            var bbSizeMax = (this._bbSize.x > this._bbSize.y) ? this._bbSize.x : this._bbSize.y;
-            bbSizeMax = (bbSizeMax > this._bbSize.z) ? bbSizeMax : this._bbSize.z;
-            this._subDiv.max = this._partitioningSubdivisions;
-            this._subDiv.X = Math.floor(this._subDiv.max * this._bbSize.x / bbSizeMax);   // adjust the number of subdivisions per axis
-            this._subDiv.Y = Math.floor(this._subDiv.max * this._bbSize.y / bbSizeMax);   // according to each bbox size per axis
-            this._subDiv.Z = Math.floor(this._subDiv.max * this._bbSize.z / bbSizeMax);
-            this._subDiv.X = this._subDiv.X < 1 ? 1 : this._subDiv.X;                     // at least one subdivision
-            this._subDiv.Y = this._subDiv.Y < 1 ? 1 : this._subDiv.Y;
-            this._subDiv.Z = this._subDiv.Z < 1 ? 1 : this._subDiv.Z;
+            data.bbSize.x = (bInfo.maximum.x - bInfo.minimum.x > Epsilon) ? bInfo.maximum.x - bInfo.minimum.x : Epsilon;
+            data.bbSize.y = (bInfo.maximum.y - bInfo.minimum.y > Epsilon) ? bInfo.maximum.y - bInfo.minimum.y : Epsilon;
+            data.bbSize.z = (bInfo.maximum.z - bInfo.minimum.z > Epsilon) ? bInfo.maximum.z - bInfo.minimum.z : Epsilon;
+            var bbSizeMax = (data.bbSize.x > data.bbSize.y) ? data.bbSize.x : data.bbSize.y;
+            bbSizeMax = (bbSizeMax > data.bbSize.z) ? bbSizeMax : data.bbSize.z;
+            data.subDiv.max = data.partitioningSubdivisions;
+            data.subDiv.X = Math.floor(data.subDiv.max * data.bbSize.x / bbSizeMax);   // adjust the number of subdivisions per axis
+            data.subDiv.Y = Math.floor(data.subDiv.max * data.bbSize.y / bbSizeMax);   // according to each bbox size per axis
+            data.subDiv.Z = Math.floor(data.subDiv.max * data.bbSize.z / bbSizeMax);
+            data.subDiv.X = data.subDiv.X < 1 ? 1 : data.subDiv.X;                     // at least one subdivision
+            data.subDiv.Y = data.subDiv.Y < 1 ? 1 : data.subDiv.Y;
+            data.subDiv.Z = data.subDiv.Z < 1 ? 1 : data.subDiv.Z;
             // set the parameters for ComputeNormals()
-            this._facetParameters.facetNormals = this.getFacetLocalNormals();
-            this._facetParameters.facetPositions = this.getFacetLocalPositions();
-            this._facetParameters.facetPartitioning = this.getFacetLocalPartitioning();
-            this._facetParameters.bInfo = bInfo;
-            this._facetParameters.bbSize = this._bbSize;
-            this._facetParameters.subDiv = this._subDiv;
-            this._facetParameters.ratio = this.partitioningBBoxRatio;
-            this._facetParameters.depthSort = this._facetDepthSort;
-            if (this._facetDepthSort && this._facetDepthSortEnabled) {
+            data.facetParameters.facetNormals = this.getFacetLocalNormals();
+            data.facetParameters.facetPositions = this.getFacetLocalPositions();
+            data.facetParameters.facetPartitioning = this.getFacetLocalPartitioning();
+            data.facetParameters.bInfo = bInfo;
+            data.facetParameters.bbSize = data.bbSize;
+            data.facetParameters.subDiv = data.subDiv;
+            data.facetParameters.ratio = this.partitioningBBoxRatio;
+            data.facetParameters.depthSort = data.facetDepthSort;
+            if (data.facetDepthSort && data.facetDepthSortEnabled) {
                 this.computeWorldMatrix(true);
-                this._worldMatrix.invertToRef(this._invertedMatrix);
-                Vector3.TransformCoordinatesToRef(this._facetDepthSortFrom, this._invertedMatrix, this._facetDepthSortOrigin);
-                this._facetParameters.distanceTo = this._facetDepthSortOrigin;
+                this._worldMatrix.invertToRef(data.invertedMatrix);
+                Vector3.TransformCoordinatesToRef(data.facetDepthSortFrom, data.invertedMatrix, data.facetDepthSortOrigin);
+                data.facetParameters.distanceTo = data.facetDepthSortOrigin;
             }
-            this._facetParameters.depthSortedFacets = this._depthSortedFacets;
-            VertexData.ComputeNormals(positions, indices, normals, this._facetParameters);
+            data.facetParameters.depthSortedFacets = data.depthSortedFacets;
+            VertexData.ComputeNormals(positions, indices, normals, data.facetParameters);
 
-            if (this._facetDepthSort && this._facetDepthSortEnabled) {
-                this._depthSortedFacets.sort(this._facetDepthSortFunction);
-                var l = (this._depthSortedIndices.length / 3) | 0;
+            if (data.facetDepthSort && data.facetDepthSortEnabled) {
+                data.depthSortedFacets.sort(data.facetDepthSortFunction);
+                var l = (data.depthSortedIndices.length / 3) | 0;
                 for (var f = 0; f < l; f++) {
-                    var sind = this._depthSortedFacets[f].ind;
-                    this._depthSortedIndices[f * 3] = indices![sind];
-                    this._depthSortedIndices[f * 3 + 1] = indices![sind + 1];
-                    this._depthSortedIndices[f * 3 + 2] = indices![sind + 2];
+                    var sind = data.depthSortedFacets[f].ind;
+                    data.depthSortedIndices[f * 3] = indices![sind];
+                    data.depthSortedIndices[f * 3 + 1] = indices![sind + 1];
+                    data.depthSortedIndices[f * 3 + 2] = indices![sind + 2];
                 }
-                this.updateIndices(this._depthSortedIndices);
+                this.updateIndices(data.depthSortedIndices);
             }
 
             return this;
@@ -1674,10 +1682,10 @@
          * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
          */
         public getFacetLocalNormals(): Vector3[] {
-            if (!this._facetNormals) {
+            if (!this._facetData.facetNormals) {
                 this.updateFacetData();
             }
-            return this._facetNormals;
+            return this._facetData.facetNormals;
         }
 
         /**
@@ -1687,10 +1695,10 @@
          * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata 
          */
         public getFacetLocalPositions(): Vector3[] {
-            if (!this._facetPositions) {
+            if (!this._facetData.facetPositions) {
                 this.updateFacetData();
             }
-            return this._facetPositions;
+            return this._facetData.facetPositions;
         }
 
         /**
@@ -1699,10 +1707,10 @@
          * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata 
          */
         public getFacetLocalPartitioning(): number[][] {
-            if (!this._facetPartitioning) {
+            if (!this._facetData.facetPartitioning) {
                 this.updateFacetData();
             }
-            return this._facetPartitioning;
+            return this._facetData.facetPartitioning;
         }
 
         /**
@@ -1768,14 +1776,15 @@
          */
         public getFacetsAtLocalCoordinates(x: number, y: number, z: number): Nullable<number[]> {
             var bInfo = this.getBoundingInfo();
+            const data = this._facetData;
 
-            var ox = Math.floor((x - bInfo.minimum.x * this._partitioningBBoxRatio) * this._subDiv.X * this._partitioningBBoxRatio / this._bbSize.x);
-            var oy = Math.floor((y - bInfo.minimum.y * this._partitioningBBoxRatio) * this._subDiv.Y * this._partitioningBBoxRatio / this._bbSize.y);
-            var oz = Math.floor((z - bInfo.minimum.z * this._partitioningBBoxRatio) * this._subDiv.Z * this._partitioningBBoxRatio / this._bbSize.z);
-            if (ox < 0 || ox > this._subDiv.max || oy < 0 || oy > this._subDiv.max || oz < 0 || oz > this._subDiv.max) {
+            var ox = Math.floor((x - bInfo.minimum.x * data.partitioningBBoxRatio) * data.subDiv.X * data.partitioningBBoxRatio / data.bbSize.x);
+            var oy = Math.floor((y - bInfo.minimum.y * data.partitioningBBoxRatio) * data.subDiv.Y * data.partitioningBBoxRatio / data.bbSize.y);
+            var oz = Math.floor((z - bInfo.minimum.z * data.partitioningBBoxRatio) * data.subDiv.Z * data.partitioningBBoxRatio / data.bbSize.z);
+            if (ox < 0 || ox > data.subDiv.max || oy < 0 || oy > data.subDiv.max || oz < 0 || oz > data.subDiv.max) {
                 return null;
             }
-            return this._facetPartitioning[ox + this._subDiv.max * oy + this._subDiv.max * this._subDiv.max * oz];
+            return data.facetPartitioning[ox + data.subDiv.max * oy + data.subDiv.max * data.subDiv.max * oz];
         }
 
         /** 
@@ -1876,7 +1885,7 @@
          * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata 
          */
         public getFacetDataParameters(): any {
-            return this._facetParameters;
+            return this._facetData.facetParameters;
         }
 
         /** 
@@ -1885,13 +1894,13 @@
          * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata 
          */
         public disableFacetData(): AbstractMesh {
-            if (this._facetDataEnabled) {
-                this._facetDataEnabled = false;
-                this._facetPositions = new Array<Vector3>();
-                this._facetNormals = new Array<Vector3>();
-                this._facetPartitioning = new Array<number[]>();
-                this._facetParameters = null;
-                this._depthSortedIndices = new Uint32Array(0);
+            if (this._facetData.facetDataEnabled) {
+                this._facetData.facetDataEnabled = false;
+                this._facetData.facetPositions = new Array<Vector3>();
+                this._facetData.facetNormals = new Array<Vector3>();
+                this._facetData.facetPartitioning = new Array<number[]>();
+                this._facetData.facetParameters = null;
+                this._facetData.depthSortedIndices = new Uint32Array(0);
             }
             return this;
         }
