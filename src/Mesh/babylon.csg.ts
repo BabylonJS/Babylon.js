@@ -38,6 +38,7 @@
 
         /**
          * Make a clone, or deep copy, of the vertex
+         * @returns A new Vertex
          */
         public clone(): Vertex {
             return new Vertex(this.pos.clone(), this.normal.clone(), this.uv.clone());
@@ -107,6 +108,7 @@
 
         /**
          * Clone, or make a deep copy of the plane
+         * @returns a new Plane
          */
         public clone(): Plane {
             return new Plane(this.normal.clone(), this.w);
@@ -407,6 +409,7 @@
         /**
          * Convert the BABYLON.Mesh to BABYLON.CSG
          * @param mesh The BABYLON.Mesh to convert to BABYLON.CSG
+         * @returns A new BABYLON.CSG from the BABYLON.Mesh
          */
         public static FromMesh(mesh: Mesh): CSG {
             var vertex: Vertex, normal: Vector3, uv: Vector2, position: Vector3,
@@ -532,6 +535,7 @@
         /**
          * Subtracts this CSG with another CSG
          * @param csg The CSG to subtract against this CSG
+         * @returns A new BABYLON.CSG
          */
         public subtract(csg: CSG): CSG {
             var a = new Node(this.clone().polygons);
@@ -570,6 +574,7 @@
         /**
          * Intersect this CSG with another CSG
          * @param csg The CSG to intersect against this CSG
+         * @returns A new BABYLON.CSG
          */
         public intersect(csg: CSG): CSG {
             var a = new Node(this.clone().polygons);
@@ -615,6 +620,9 @@
             return csg;
         }
 
+        /**
+         * Inverses the BABYLON.CSG in place
+         */
         public inverseInPlace(): void {
             this.polygons.map(p => { p.flip(); });
         }
