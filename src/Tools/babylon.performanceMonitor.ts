@@ -34,7 +34,6 @@ module BABYLON {
 
 		/**
 		 * Returns the average frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
-		 * @return Average frame time in milliseconds
 		 */
         public get averageFrameTime(): number {
             return this._rollingFrameTime.average;
@@ -42,7 +41,6 @@ module BABYLON {
 
 		/**
 		 * Returns the variance frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
-		 * @return Frame time variance in milliseconds squared
 		 */
         public get averageFrameTimeVariance(): number {
             return this._rollingFrameTime.variance;
@@ -50,7 +48,6 @@ module BABYLON {
 
 		/**
 		 * Returns the frame time of the most recent frame
-		 * @return Frame time in milliseconds
 		 */
         public get instantaneousFrameTime(): number {
             return this._rollingFrameTime.history(0);
@@ -58,7 +55,6 @@ module BABYLON {
 
 		/**
 		 * Returns the average framerate in frames per second over the sliding window (or the subset of frames sampled so far)
-		 * @return Framerate in frames per second
 		 */
         public get averageFPS(): number {
             return 1000.0 / this._rollingFrameTime.average;
@@ -66,7 +62,6 @@ module BABYLON {
 
 		/**
 		 * Returns the average framerate in frames per second using the most recent frame time
-		 * @return Framerate in frames per second
 		 */
         public get instantaneousFPS(): number {
             let history = this._rollingFrameTime.history(0);
@@ -80,7 +75,6 @@ module BABYLON {
 
 		/**
 		 * Returns true if enough samples have been taken to completely fill the sliding window
-		 * @return true if saturated
 		 */
         public get isSaturated(): boolean {
             return this._rollingFrameTime.isSaturated();
@@ -105,7 +99,6 @@ module BABYLON {
 
 		/**
 		 * Returns true if sampling is enabled
-		 * @return true if enabled
 		 */
         public get isEnabled(): boolean {
             return this._enabled;

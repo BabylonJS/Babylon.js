@@ -115,11 +115,22 @@
         }
     }
 
+    /**
+     * Class used to serialize a scene into a string
+     */
     export class SceneSerializer {
+        /**
+         * Clear cache used by a previous serialization
+         */
         public static ClearCache(): void {
             serializedGeometries = [];
         }
 
+        /**
+         * Serialize a scene into a JSON compatible object
+         * @param scene defines the scene to serialize
+         * @returns a JSON compatible object
+         */
         public static Serialize(scene: Scene): any {
             var serializationObject: any = {};
 
@@ -292,6 +303,13 @@
             return serializationObject;
         }
 
+        /**
+         * Serialize a mesh into a JSON compatible object
+         * @param toSerialize defines the mesh to serialize
+         * @param withParents defines if parents must be serialized as well
+         * @param withChildren defines if children must be serialized as well
+         * @returns a JSON compatible object
+         */
         public static SerializeMesh(toSerialize: any /* Mesh || Mesh[] */, withParents: boolean = false, withChildren: boolean = false): any {
             var serializationObject: any = {};
 

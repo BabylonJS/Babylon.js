@@ -1,11 +1,15 @@
 ﻿module BABYLON {
+    /**
+     * Class used to host texture specific utilities
+     */
     export class TextureTools {
 		/**
 		 * Uses the GPU to create a copy texture rescaled at a given size
 		 * @param texture Texture to copy from
-		 * @param width Desired width
-		 * @param height Desired height
-		 * @return Generated texture
+		 * @param width defines the desired width
+		 * @param height defines the desired height
+         * @param useBilinearMode defines if bilinear mode has to be used
+		 * @return the generated texture
 		 */
         public static CreateResizedCopy(texture: Texture, width: number, height: number, useBilinearMode: boolean = true): Texture {
 
@@ -63,6 +67,11 @@
             return rtt;
         }
 
+        /**
+         * Gets an environment BRDF texture for a given scene
+         * @param scene defines the hosting scene
+         * @returns the environment BRDF texture
+         */
         public static GetEnvironmentBRDFTexture(scene: Scene): BaseTexture {
             if (!scene._environmentBRDFTexture) {
                 var texture = Texture.CreateFromBase64String(this._environmentBRDFBase64Texture, "EnvironmentBRDFTexture", scene, true, false, Texture.BILINEAR_SAMPLINGMODE);
