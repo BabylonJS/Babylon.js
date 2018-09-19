@@ -379,6 +379,8 @@ declare module BABYLON.GUI {
             control: BABYLON.Nullable<Control>;
             /** Gets or sets the mesh associated with this point */
             mesh: BABYLON.Nullable<BABYLON.AbstractMesh>;
+            /** Resets links */
+            resetLinks(): void;
             /**
                 * Gets a translation vector
                 * @returns the translation vector
@@ -1543,6 +1545,14 @@ declare module BABYLON.GUI {
                 * @param value defines the value or point to remove
                 */
             remove(value: number | MultiLinePoint): void;
+            /**
+                * Resets this object to initial state (no point)
+                */
+            reset(): void;
+            /**
+                * Resets all links
+                */
+            resetLinks(): void;
             /** Gets or sets line width */
             lineWidth: number;
             horizontalAlignment: number;
