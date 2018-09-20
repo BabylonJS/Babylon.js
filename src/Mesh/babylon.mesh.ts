@@ -223,6 +223,10 @@
 
             scene = this.getScene();
 
+            if (parent || (source && source.parent)) {
+                this.popFromSceneRootNodes();
+            }
+
             if (source) {
                 // Geometry
                 if (source._geometry) {
@@ -280,9 +284,6 @@
                 if (Tags && Tags.HasTags(source)) {
                     Tags.AddTagsTo(this, Tags.GetTags(source, true));
                 }
-
-                // Parent
-                this.parent = source.parent;
 
                 // Pivot
                 this.setPivotMatrix(source.getPivotMatrix());
