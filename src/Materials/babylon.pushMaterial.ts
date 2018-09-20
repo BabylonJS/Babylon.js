@@ -1,4 +1,8 @@
 ﻿module BABYLON {
+    /**
+     * Base class of materials working in push mode in babylon JS
+     * @hidden
+     */
     export class PushMaterial extends Material {
 
         protected _activeEffect: Effect;
