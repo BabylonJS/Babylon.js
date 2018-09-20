@@ -6,7 +6,7 @@
     export type NodeConstructor = (name: string, scene: Scene, options?: any) => () => Node;
 
     /**
-     * Node is the basic class for all scene objects (Mesh, Light Camera).
+     * Node is the basic class for all scene objects (Mesh, Light, Camera.)
      */
     export class Node implements IBehaviorAware<Node> {
         private static _NodeConstructors: {[key: string]: any} = {};

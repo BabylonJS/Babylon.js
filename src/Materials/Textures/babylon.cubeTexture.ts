@@ -1,10 +1,17 @@
 ﻿module BABYLON {
+    /**
+     * Class for creating a cube texture
+     */
     export class CubeTexture extends BaseTexture {
+        /**
+         * The url of the texture
+         */
         public url: string;
 
         /**
-         * Gets or sets the center of the bounding box associated with the cube texture
+         * Gets or sets the center of the bounding box associated with the cube texture.
          * It must define where the camera used to render the texture was set
+         * @see http://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode
          */
         public boundingBoxPosition = Vector3.Zero();
 
@@ -26,6 +33,10 @@
                 scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
             }
         }
+        /**
+         * Returns the bounding box size
+         * @see http://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode
+         */
         public get boundingBoxSize(): Vector3 {
             return this._boundingBoxSize;
         }
@@ -57,7 +68,14 @@
         /** @hidden */
         public readonly _prefiltered: boolean = false;
 
-        public static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean) {
+        /**
+         * Creates a cube texture from an array of image urls
+         * @param files defines an array of image urls
+         * @param scene defines the hosting scene
+         * @param noMipmap specifies if mip maps are not used
+         * @returns a cube texture
+         */
+        public static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean): CubeTexture {
             let rootUrlKey = "";
 
             files.forEach(url => rootUrlKey += url);
@@ -171,7 +189,9 @@
             }
         }
 
-        // Methods
+        /**
+         * Delays loading of the cube texture
+         */
         public delayLoad(): void {
             if (this.delayLoadState !== Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
@@ -195,14 +215,29 @@
             }
         }
 
+        /**
+         * Returns the reflection texture matrix
+         * @returns the reflection texture matrix
+         */
         public getReflectionTextureMatrix(): Matrix {
             return this._textureMatrix;
         }
 
+        /**
+         * Sets the reflection texture matrix
+         * @param value Reflection texture matrix
+         */
         public setReflectionTextureMatrix(value: Matrix): void {
             this._textureMatrix = value;
         }
 
+        /**
+         * Parses text to create a cube texture
+         * @param parsedTexture define the serialized text to read from
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root url of the cube texture
+         * @returns a cube texture
+         */
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture {
             var texture = SerializationHelper.Parse(() => {
                 var prefiltered:boolean = false;
@@ -232,6 +267,10 @@
             return texture;
         }
 
+        /**
+         * Makes a clone, or deep copy, of the cube texture
+         * @returns a new cube texture
+         */
         public clone(): CubeTexture {
             return SerializationHelper.Clone(() => {
                 let scene = this.getScene();
