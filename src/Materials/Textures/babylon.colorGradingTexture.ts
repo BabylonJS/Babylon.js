@@ -4,9 +4,9 @@ module BABYLON {
      * This represents a color grading texture. This acts as a lookup table LUT, useful during post process
      * It can help converting any input color in a desired output one. This can then be used to create effects
      * from sepia, black and white to sixties or futuristic rendering...
-     * 
+     *
      * The only supported format is currently 3dl.
-     * More information on LUT: https://en.wikipedia.org/wiki/3D_lookup_table/
+     * More information on LUT: https://en.wikipedia.org/wiki/3D_lookup_table
      */
     export class ColorGradingTexture extends BaseTexture {
         /**
@@ -28,7 +28,7 @@ module BABYLON {
 
         /**
          * Instantiates a ColorGradingTexture from the following parameters.
-         * 
+         *
          * @param url The location of the color gradind data (currently only supporting 3dl)
          * @param scene The scene the texture will be used in
          */
