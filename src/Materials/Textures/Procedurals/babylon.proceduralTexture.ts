@@ -25,7 +25,7 @@
         @serialize()
         public _generateMipMaps: boolean;
 
-        /** @hiddden **/
+        /** @hidden **/
         public _effect: Effect;
 
         /** @hidden */
