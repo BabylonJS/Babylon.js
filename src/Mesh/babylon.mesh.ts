@@ -1238,7 +1238,7 @@
                         indexToBind = null;
                         break;
                     case Material.WireFrameFillMode:
-                        indexToBind = subMesh.getLinesIndexBuffer(<IndicesArray>this.getIndices(), engine);
+                        indexToBind = subMesh._getLinesIndexBuffer(<IndicesArray>this.getIndices(), engine);
                         break;
                     default:
                     case Material.TriangleFillMode:
@@ -1270,7 +1270,7 @@
                 engine.drawArraysType(fillMode, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
             } else if (fillMode == Material.WireFrameFillMode) {
                 // Triangles as wireframe
-                engine.drawElementsType(fillMode, 0, subMesh.linesIndexCount, instancesCount);
+                engine.drawElementsType(fillMode, 0, subMesh._linesIndexCount, instancesCount);
             } else {
                 engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
             }
