@@ -169,7 +169,7 @@
             }
         }
 
-        protected removeFromSceneRootNodes() {
+        private removeFromSceneRootNodes() {
             if (this._sceneRootNodsIndex !== -1) {
                 const rootNodes = this._scene.rootNodes;
                 const lastIdx = rootNodes.length - 1;
