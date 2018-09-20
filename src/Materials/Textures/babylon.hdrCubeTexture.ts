@@ -257,14 +257,29 @@ module BABYLON {
             }
         }
 
+        /**
+         * Get the texture reflection matrix used to rotate/transform the reflection.
+         * @returns the reflection matrix
+         */
         public getReflectionTextureMatrix(): Matrix {
             return this._textureMatrix;
         }
 
+        /**
+         * Set the texture reflection matrix used to rotate/transform the reflection.
+         * @param value Define the reflection matrix to set
+         */
         public setReflectionTextureMatrix(value: Matrix): void {
             this._textureMatrix = value;
         }
 
+        /**
+         * Parses a JSON representation of an HDR Texture in order to create the texture
+         * @param parsedTexture Define the JSON representation
+         * @param scene Define the scene the texture should be created in
+         * @param rootUrl Define the root url in case we need to load relative dependencies
+         * @returns the newly created texture after parsing
+         */
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): Nullable<HDRCubeTexture> {
             var texture = null;
             if (parsedTexture.name && !parsedTexture.isRenderTarget) {
