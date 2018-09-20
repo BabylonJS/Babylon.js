@@ -1672,13 +1672,13 @@
             }
         }
 
-        /*
-            Renormalize the mesh and patch it up if there are no weights
-            Similar to normalization by adding the weights comptue the reciprical and multiply all elements. this wil ensure that everything adds to 1. 
-            However in the case of 0 weights then we set just a single influence to 1. 
-            We check in the function for extra's present and if so we use the normalizeSkinWeightsWithExtras rather than the FourWeights version. 
+        /**
+         *   Renormalize the mesh and patch it up if there are no weights
+         *   Similar to normalization by adding the weights comptue the reciprical and multiply all elements. this wil ensure that everything adds to 1. 
+         *   However in the case of 0 weights then we set just a single influence to 1. 
+         *   We check in the function for extra's present and if so we use the normalizeSkinWeightsWithExtras rather than the FourWeights version. 
          */
-        public normalizeSkinWeights():void {
+        public normalizeSkinWeights(): void {
             if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
                 if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsExtraKind)) {
                     this.normalizeSkinWeightsAndExtra();
@@ -1688,8 +1688,8 @@
                 }
             }    
         }
-
-        private normalizeSkinFourWeights():void {
+        // faster 4 weight version. 
+        private normalizeSkinFourWeights(): void {
             let matricesWeights = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsKind));
             let numWeights = matricesWeights.length;
             for (var a=0; a<numWeights; a+=4){
@@ -1697,7 +1697,7 @@
                 // check for invalid weight and just set it to 1.
                 if (t===0) matricesWeights[a] = 1;
                 else{
-                    // renormalize so everything adds to 1
+                    // renormalize so everything adds to 1 use reciprical
                     let recip = 1 / t;
                     matricesWeights[a]*=recip;
                     matricesWeights[a+1]*=recip;
@@ -1708,8 +1708,8 @@
             }
             this.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeights);
         }
-
-        private normalizeSkinWeightsAndExtra():void {
+        // handle special case of extra verts.  (in theory gltf can handle 12 influences)
+        private normalizeSkinWeightsAndExtra(): void {
             let matricesWeightsExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind));
             let matricesWeights = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsKind));
             let numWeights = matricesWeights.length;
@@ -1719,12 +1719,13 @@
                 // check for invalid weight and just set it to 1.
                 if (t===0) matricesWeights[a] = 1;
                 else{
-                    // renormalize so everything adds to 1
+                    // renormalize so everything adds to 1 use reciprical 
                     let recip = 1 / t;
                     matricesWeights[a]*=recip;
                     matricesWeights[a+1]*=recip;
                     matricesWeights[a+2]*=recip;
                     matricesWeights[a+3]*=recip;
+                    // same goes for extras
                     matricesWeightsExtra[a]*=recip;
                     matricesWeightsExtra[a+1]*=recip;
                     matricesWeightsExtra[a+2]*=recip;
