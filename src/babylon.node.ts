@@ -110,6 +110,9 @@
         /** @hidden */
         public _worldMatrixDeterminant = 0;        
 
+        /** @hidden */
+        private _isInSceneRootNodes = false;
+
         /**
          * Gets a boolean indicating if the node has been disposed
          * @returns true if the node was disposed
@@ -135,10 +138,7 @@
                     this._parentNode._children.splice(index, 1);
                 }
 
-                if (!parent) {
-                    // Need to add this node to the rootNodes
-                    this._scene.rootNodes.push(this);
-                }
+                if (!parent) this.pushToSceneRootNodes();
             }
 
             // Store new parent
@@ -151,14 +151,7 @@
                 }
                 this._parentNode._children.push(this);
 
-                if (!previousParentNode) {
-                    // Need to remove from rootNodes
-                    const rootNodeIndex = this._scene.rootNodes.indexOf(this);
-
-                    if (rootNodeIndex > -1) {
-                        this._scene.rootNodes.splice(rootNodeIndex, 1);
-                    }
-                }
+                if (!previousParentNode) this.removeFromSceneRootNodes();
             }
 
             // Enabled state
@@ -168,7 +161,35 @@
         public get parent(): Nullable<Node> {
             return this._parentNode;
         }
-        
+
+        private pushToSceneRootNodes() {
+            if (this._isInSceneRootNodes) return;
+
+            this._isInSceneRootNodes = true;
+            this._scene.rootNodes.push(this);
+        }
+
+        protected popFromSceneRootNodes() {
+            if (!this._isInSceneRootNodes) return;
+
+            this._isInSceneRootNodes = false;
+            if (this._scene.rootNodes.length && this._scene.rootNodes[this._scene.rootNodes.length - 1] === this)
+              this._scene.rootNodes.pop();
+        }
+
+        private removeFromSceneRootNodes() {
+            if (this._isInSceneRootNodes) {
+              const rootNodes = this._scene.rootNodes;
+              const rootNodeIndex = rootNodes.indexOf(this);
+              const lastIdx = rootNodes.length - 1;
+              if (rootNodeIndex > -1 && rootNodeIndex !== lastIdx) {
+                // put the last element at the current position to be able to safely pop
+                rootNodes[rootNodeIndex] = rootNodes[lastIdx];
+              }
+              this.popFromSceneRootNodes();
+            }
+        }
+
         private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
         /**
@@ -221,7 +242,7 @@
             this.uniqueId = this._scene.getUniqueId();
             this._initCache();
 
-            this._scene.rootNodes.push(this);
+            this.pushToSceneRootNodes();
         }
 
         /**
@@ -684,11 +705,7 @@
             }
 
             if (!this.parent) {
-                const rootNodeIndex = this._scene.rootNodes.indexOf(this);
-
-                if (rootNodeIndex > -1) {
-                    this._scene.rootNodes.splice(rootNodeIndex, 1);
-                }
+                this.removeFromSceneRootNodes();
             } else {
                 this.parent = null;
             }
