@@ -366,13 +366,17 @@ module BABYLON {
             this.onUpdateParameters.notifyObservers(this);
         }
 
+        /**
+         * Gets the current class name.
+         * @return "ImageProcessingConfiguration"
+         */
         public getClassName(): string {
             return "ImageProcessingConfiguration";
         }
 
         /**
          * Prepare the list of uniforms associated with the Image Processing effects.
-         * @param uniformsList The list of uniforms used in the effect
+         * @param uniforms The list of uniforms used in the effect
          * @param defines the list of defines currently in use
          */
         public static PrepareUniforms(uniforms: string[], defines: IImageProcessingConfigurationDefines): void {
@@ -397,7 +401,7 @@ module BABYLON {
 
         /**
          * Prepare the list of samplers associated with the Image Processing effects.
-         * @param uniformsList The list of uniforms used in the effect
+         * @param samplersList The list of uniforms used in the effect
          * @param defines the list of defines currently in use
          */
         public static PrepareSamplers(samplersList: string[], defines: IImageProcessingConfigurationDefines): void {
@@ -409,6 +413,7 @@ module BABYLON {
         /**
          * Prepare the list of defines associated to the shader.
          * @param defines the list of defines to complete
+         * @param forPostProcess Define if we are currently in post process mode or not
          */
         public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess: boolean = false): void {
             if (forPostProcess !== this.applyByPostProcess || !this._isEnabled) {
@@ -453,6 +458,7 @@ module BABYLON {
 
         /**
          * Returns true if all the image processing information are ready.
+         * @returns True if ready, otherwise, false
          */
         public isReady() {
             // Color Grading texure can not be none blocking.
@@ -462,6 +468,7 @@ module BABYLON {
         /**
          * Binds the image processing to the shader.
          * @param effect The effect to bind to
+         * @param aspectRatio Define the current aspect ratio of the effect
          */
         public bind(effect: Effect, aspectRatio = 1): void {
             // Color Curves
