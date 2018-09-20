@@ -1674,6 +1674,69 @@
             }
         }
 
+        /*
+            Renormalize the mesh and patch it up if there are no weights
+            Similar to normalization by adding the weights comptue the reciprical and multiply all elements. this wil ensure that everything adds to 1. 
+            However in the case of 0 weights then we set just a single influence to 1. 
+            We check in the function for extra's present and if so we use the normalizeSkinWeightsWithExtras rather than the FourWeights version. 
+         */
+        public normalizeSkinWeights():void {
+            if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
+                if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsExtraKind)) {
+                    this.normalizeSkinWeightsAndExtra();
+                }
+                else {
+                    this.normalizeSkinFourWeights();
+                }
+            }    
+        }
+
+        private normalizeSkinFourWeights():void {
+            let matricesWeights = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsKind));
+            let numWeights = matricesWeights.length;
+            for (var a=0; a<numWeights; a+=4){
+                var t = matricesWeights[a] + matricesWeights[a+1] +matricesWeights[a+2] +matricesWeights[a+3];
+                // check for invalid weight and just set it to 1.
+                if (t===0) matricesWeights[a] = 1;
+                else{
+                    // renormalize so everything adds to 1
+                    let recip = 1 / t;
+                    matricesWeights[a]*=recip;
+                    matricesWeights[a+1]*=recip;
+                    matricesWeights[a+2]*=recip;
+                    matricesWeights[a+3]*=recip;
+                }
+                
+            }
+            this.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeights);
+        }
+
+        private normalizeSkinWeightsAndExtra():void {
+            let matricesWeightsExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind));
+            let matricesWeights = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsKind));
+            let numWeights = matricesWeights.length;
+            for (var a=0; a<numWeights; a+=4){
+                var t = matricesWeights[a] + matricesWeights[a+1] +matricesWeights[a+2] +matricesWeights[a+3];
+                t += matricesWeightsExtra[a] + matricesWeightsExtra[a+1] +matricesWeightsExtra[a+2] +matricesWeightsExtra[a+3];
+                // check for invalid weight and just set it to 1.
+                if (t===0) matricesWeights[a] = 1;
+                else{
+                    // renormalize so everything adds to 1
+                    let recip = 1 / t;
+                    matricesWeights[a]*=recip;
+                    matricesWeights[a+1]*=recip;
+                    matricesWeights[a+2]*=recip;
+                    matricesWeights[a+3]*=recip;
+                    matricesWeightsExtra[a]*=recip;
+                    matricesWeightsExtra[a+1]*=recip;
+                    matricesWeightsExtra[a+2]*=recip;
+                    matricesWeightsExtra[a+3]*=recip;
+                }
+                
+            }
+            this.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeights);
+            this.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeightsExtra);
+        }
 
         /** @hidden */
         public _checkDelayState(): Mesh {
