@@ -1679,6 +1679,7 @@
          *   We check in the function for extra's present and if so we use the normalizeSkinWeightsWithExtras rather than the FourWeights version. 
          */
         public normalizeSkinWeights(): void {
+
             if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
                 if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsExtraKind)) {
                     this.normalizeSkinWeightsAndExtra();
@@ -1688,8 +1689,10 @@
                 }
             }    
         }
+
         // faster 4 weight version. 
         private normalizeSkinFourWeights(): void {
+
             let matricesWeights = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsKind));
             let numWeights = matricesWeights.length;
             for (var a=0; a<numWeights; a+=4){
