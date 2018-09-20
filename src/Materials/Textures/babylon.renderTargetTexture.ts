@@ -324,15 +324,21 @@
             this._samples = scene.getEngine().updateRenderTargetTextureSampleCount(this._texture, value);
         }
 
+        /**
+         * Resets the refresh counter of the texture and start bak from scratch.
+         * Could be usefull to regenerate the texture if it is setup to render only once.
+         */
         public resetRefreshCounter(): void {
             this._currentRefreshId = -1;
         }
 
+        /**
+         * Define the refresh rate of the texture or the rendering frequency.
+         * Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
+         */
         public get refreshRate(): number {
             return this._refreshRate;
         }
-
-        // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
         public set refreshRate(value: number) {
             this._refreshRate = value;
             this.resetRefreshCounter();
