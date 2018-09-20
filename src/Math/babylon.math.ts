@@ -2659,15 +2659,31 @@
     }
 
 
-    //Vector4 class created for EulerAngle class conversion to Quaternion
+    /**
+     * Vector4 class created for EulerAngle class conversion to Quaternion
+     */
     export class Vector4 {
         /**
          * Creates a Vector4 object from the given floats.  
+         * @param x x value of the vector
+         * @param y y value of the vector
+         * @param z z value of the vector
+         * @param w w value of the vector
          */
-        constructor(public x: number, public y: number, public z: number, public w: number) { }
+        constructor(
+            /** x value of the vector */
+            public x: number,
+            /** y value of the vector */
+            public y: number,
+            /** z value of the vector */
+            public z: number,
+            /** w value of the vector */
+            public w: number
+        ) { }
 
         /**
          * Returns the string with the Vector4 coordinates.  
+         * @returns a string containing all the vector values
          */
         public toString(): string {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + " W:" + this.w + "}";
@@ -2675,6 +2691,7 @@
 
         /**
          * Returns the string "Vector4".  
+         * @returns "Vector4"
          */
         public getClassName(): string {
             return "Vector4";
@@ -2682,6 +2699,7 @@
 
         /**
          * Returns the Vector4 hash code.  
+         * @returns a unique hash code
          */
         public getHashCode(): number {
             let hash = this.x || 0;
@@ -2694,6 +2712,7 @@
         // Operators
         /**
          * Returns a new array populated with 4 elements : the Vector4 coordinates.  
+         * @returns the resulting array
          */
         public asArray(): number[] {
             var result = new Array<number>();
@@ -2704,8 +2723,10 @@
         }
 
         /**
-         * Populates the given array from the given index with the Vector4 coordinates.  
-         * Returns the Vector4.  
+         * Populates the given array from the given index with the Vector4 coordinates. 
+         * @param array array to populate
+         * @param index index of the array to start at (default: 0)
+         * @returns the Vector4.
          */
         public toArray(array: FloatArray, index?: number): Vector4 {
             if (index === undefined) {
@@ -2719,8 +2740,9 @@
         }
 
         /**
-         * Adds the given vector to the current Vector4.   
-         * Returns the updated Vector4.  
+         * Adds the given vector to the current Vector4.  
+         * @param otherVector the vector to add 
+         * @returns the updated Vector4.  
          */
         public addInPlace(otherVector: Vector4): Vector4 {
             this.x += otherVector.x;
@@ -2731,7 +2753,9 @@
         }
 
         /**
-         * Returns a new Vector4 as the result of the addition of the current Vector4 and the given one.  
+         * Returns a new Vector4 as the result of the addition of the current Vector4 and the given one. 
+         * @param otherVector the vector to add  
+         * @returns the resulting vector
          */
         public add(otherVector: Vector4): Vector4 {
             return new Vector4(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z, this.w + otherVector.w);
@@ -2739,7 +2763,9 @@
 
         /**
          * Updates the given vector "result" with the result of the addition of the current Vector4 and the given one.  
-         * Returns the current Vector4.  
+         * @param otherVector the vector to add 
+         * @param result the vector to store the result 
+         * @returns the current Vector4.  
          */
         public addToRef(otherVector: Vector4, result: Vector4): Vector4 {
             result.x = this.x + otherVector.x;
@@ -2750,8 +2776,9 @@
         }
 
         /**
-         * Subtract in place the given vector from the current Vector4.  
-         * Returns the updated Vector4.  
+         * Subtract in place the given vector from the current Vector4. 
+         * @param otherVector the vector to subtract
+         * @returns the updated Vector4.  
          */
         public subtractInPlace(otherVector: Vector4): Vector4 {
             this.x -= otherVector.x;
@@ -2762,7 +2789,9 @@
         }
 
         /**
-         * Returns a new Vector4 with the result of the subtraction of the given vector from the current Vector4.  
+         * Returns a new Vector4 with the result of the subtraction of the given vector from the current Vector4. 
+         * @param otherVector the vector to add 
+         * @returns the new vector with the result
          */
         public subtract(otherVector: Vector4): Vector4 {
             return new Vector4(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w);
@@ -2770,7 +2799,9 @@
 
         /**
          * Sets the given vector "result" with the result of the subtraction of the given vector from the current Vector4. 
-         * Returns the current Vector4.  
+         * @param otherVector the vector to subtract 
+         * @param result the vector to store the result 
+         * @returns the current Vector4.  
          */
         public subtractToRef(otherVector: Vector4, result: Vector4): Vector4 {
             result.x = this.x - otherVector.x;
@@ -2783,13 +2814,26 @@
         /**
          * Returns a new Vector4 set with the result of the subtraction of the given floats from the current Vector4 coordinates.
          */
+        /**
+         * Returns a new Vector4 set with the result of the subtraction of the given floats from the current Vector4 coordinates.
+         * @param x value to subtract
+         * @param y value to subtract
+         * @param z value to subtract
+         * @param w value to subtract
+         * @returns new vector containing the result
+         */
         public subtractFromFloats(x: number, y: number, z: number, w: number): Vector4 {
             return new Vector4(this.x - x, this.y - y, this.z - z, this.w - w);
         }
 
         /**
          * Sets the given vector "result" set with the result of the subtraction of the given floats from the current Vector4 coordinates.  
-         * Returns the current Vector4.  
+         * @param x value to subtract
+         * @param y value to subtract
+         * @param z value to subtract
+         * @param w value to subtract
+         * @param result the vector to store the result in
+         * @returns the current Vector4.  
          */
         public subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): Vector4 {
             result.x = this.x - x;
@@ -2801,6 +2845,7 @@
 
         /**
          * Returns a new Vector4 set with the current Vector4 negated coordinates.  
+         * @returns a new vector with the negated values
          */
         public negate(): Vector4 {
             return new Vector4(-this.x, -this.y, -this.z, -this.w);
@@ -2808,7 +2853,8 @@
 
         /**
          * Multiplies the current Vector4 coordinates by scale (float).  
-         * Returns the updated Vector4.  
+         * @param scale the number to scale with
+         * @returns the updated Vector4.  
          */
         public scaleInPlace(scale: number): Vector4 {
             this.x *= scale;
@@ -2820,6 +2866,8 @@
 
         /**
          * Returns a new Vector4 set with the current Vector4 coordinates multiplied by scale (float).  
+         * @param scale the number to scale with
+         * @returns a new vector with the result
          */
         public scale(scale: number): Vector4 {
             return new Vector4(this.x * scale, this.y * scale, this.z * scale, this.w * scale);
@@ -2827,7 +2875,9 @@
 
         /**
          * Sets the given vector "result" with the current Vector4 coordinates multiplied by scale (float).  
-         * Returns the current Vector4.  
+         * @param scale the number to scale with
+         * @param result a vector to store the result in
+         * @returns the current Vector4.  
          */
         public scaleToRef(scale: number, result: Vector4): Vector4 {
             result.x = this.x * scale;
@@ -2852,7 +2902,9 @@
         }         
 
         /**
-         * Boolean : True if the current Vector4 coordinates are stricly equal to the given ones.  
+         * Boolean : True if the current Vector4 coordinates are stricly equal to the given ones.
+         * @param otherVector the vector to compare against
+         * @returns true if they are equal
          */
         public equals(otherVector: Vector4): boolean {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z && this.w === otherVector.w;
@@ -2860,6 +2912,9 @@
 
         /**
          * Boolean : True if the current Vector4 coordinates are each beneath the distance "epsilon" from the given vector ones.  
+         * @param otherVector vector to compare against
+         * @param epsilon (Default: very small number) 
+         * @returns true if they are equal
          */
         public equalsWithEpsilon(otherVector: Vector4, epsilon: number = Epsilon): boolean {
             return otherVector
@@ -2871,6 +2926,11 @@
 
         /**
          * Boolean : True if the given floats are strictly equal to the current Vector4 coordinates.  
+         * @param x x value to compare against
+         * @param y y value to compare against
+         * @param z z value to compare against
+         * @param w w value to compare against
+         * @returns true if equal
          */
         public equalsToFloats(x: number, y: number, z: number, w: number): boolean {
             return this.x === x && this.y === y && this.z === z && this.w === w;
@@ -2878,7 +2938,8 @@
 
         /**
          * Multiplies in place the current Vector4 by the given one.  
-         * Returns the updated Vector4.  
+         * @param otherVector vector to multiple with
+         * @returns the updated Vector4.  
          */
         public multiplyInPlace(otherVector: Vector4): Vector4 {
             this.x *= otherVector.x;
@@ -2889,14 +2950,18 @@
         }
 
         /**
-         * Returns a new Vector4 set with the multiplication result of the current Vector4 and the given one.  
+         * Returns a new Vector4 set with the multiplication result of the current Vector4 and the given one. 
+         * @param otherVector vector to multiple with 
+         * @returns resulting new vector
          */
         public multiply(otherVector: Vector4): Vector4 {
             return new Vector4(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w);
         }
         /**
          * Updates the given vector "result" with the multiplication result of the current Vector4 and the given one.  
-         * Returns the current Vector4.  
+         * @param otherVector vector to multiple with
+         * @param result vector to store the result
+         * @returns the current Vector4.  
          */
         public multiplyToRef(otherVector: Vector4, result: Vector4): Vector4 {
             result.x = this.x * otherVector.x;
@@ -2907,19 +2972,28 @@
         }
         /**
          * Returns a new Vector4 set with the multiplication result of the given floats and the current Vector4 coordinates.  
+         * @param x x value multiply with
+         * @param y y value multiply with
+         * @param z z value multiply with
+         * @param w w value multiply with
+         * @returns resulting new vector
          */
         public multiplyByFloats(x: number, y: number, z: number, w: number): Vector4 {
             return new Vector4(this.x * x, this.y * y, this.z * z, this.w * w);
         }
         /**
          * Returns a new Vector4 set with the division result of the current Vector4 by the given one.  
+         * @param otherVector vector to devide with
+         * @returns resulting new vector
          */
         public divide(otherVector: Vector4): Vector4 {
             return new Vector4(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z, this.w / otherVector.w);
         }
         /**
-         * Updates the given vector "result" with the division result of the current Vector4 by the given one.  
-         * Returns the current Vector4.  
+         * Updates the given vector "result" with the division result of the current Vector4 by the given one.
+         * @param otherVector vector to devide with  
+         * @param result vector to store the result
+         * @returns the current Vector4.  
          */
         public divideToRef(otherVector: Vector4, result: Vector4): Vector4 {
             result.x = this.x / otherVector.x;
@@ -2931,6 +3005,7 @@
 
         /**
          * Divides the current Vector3 coordinates by the given ones. 
+         * @param otherVector vector to devide with  
          * @returns the updated Vector3.  
          */
         public divideInPlace(otherVector: Vector4): Vector4 {
@@ -2980,13 +3055,15 @@
 
         // Properties
         /**
-         * Returns the Vector4 length (float).  
+         * Returns the Vector4 length (float). 
+         * @returns the length 
          */
         public length(): number {
             return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
         }
         /**
          * Returns the Vector4 squared length (float).  
+         * @returns the length squared
          */
         public lengthSquared(): number {
             return (this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
@@ -2995,7 +3072,7 @@
         // Methods
         /**
          * Normalizes in place the Vector4.  
-         * Returns the updated Vector4.  
+         * @returns the updated Vector4.  
          */
         public normalize(): Vector4 {
             var len = this.length();
@@ -3015,19 +3092,22 @@
 
         /**
          * Returns a new Vector3 from the Vector4 (x, y, z) coordinates.  
+         * @returns this converted to a new vector3
          */
         public toVector3(): Vector3 {
             return new Vector3(this.x, this.y, this.z);
         }
         /**
          * Returns a new Vector4 copied from the current one.  
+         * @returns the new cloned vector
          */
         public clone(): Vector4 {
             return new Vector4(this.x, this.y, this.z, this.w);
         }
         /**
-         * Updates the current Vector4 with the given one coordinates.  
-         * Returns the updated Vector4.  
+         * Updates the current Vector4 with the given one coordinates.
+         * @param source the source vector to copy from  
+         * @returns the updated Vector4.  
          */
         public copyFrom(source: Vector4): Vector4 {
             this.x = source.x;
@@ -3038,7 +3118,11 @@
         }
         /**
          * Updates the current Vector4 coordinates with the given floats.  
-         * Returns the updated Vector4.  
+         * @param x float to copy from
+         * @param y float to copy from
+         * @param z float to copy from
+         * @param w float to copy from
+         * @returns the updated Vector4.  
          */
         public copyFromFloats(x: number, y: number, z: number, w: number): Vector4 {
             this.x = x;
@@ -3049,7 +3133,11 @@
         }
         /**
          * Updates the current Vector4 coordinates with the given floats.  
-         * Returns the updated Vector4.  
+         * @param x float to set from
+         * @param y float to set from
+         * @param z float to set from
+         * @param w float to set from
+         * @returns the updated Vector4.  
          */
         public set(x: number, y: number, z: number, w: number): Vector4 {
             return this.copyFromFloats(x, y, z, w);
@@ -3058,6 +3146,9 @@
         // Statics
         /**
          * Returns a new Vector4 set from the starting index of the given array.
+         * @param array the array to pull values from
+         * @param offset the offset into the array to start at
+         * @returns the new vector
          */
         public static FromArray(array: ArrayLike<number>, offset?: number): Vector4 {
             if (!offset) {
@@ -3067,6 +3158,9 @@
         }
         /**
          * Updates the given vector "result" from the starting index of the given array.
+         * @param array the array to pull values from
+         * @param offset the offset into the array to start at
+         * @param result the vector to store the result in
          */
         public static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector4): void {
             result.x = array[offset];
@@ -3076,12 +3170,20 @@
         }
         /**
          * Updates the given vector "result" from the starting index of the given Float32Array.
+         * @param array the array to pull values from
+         * @param offset the offset into the array to start at
+         * @param result the vector to store the result in
          */
         public static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector4): void {
             Vector4.FromArrayToRef(array, offset, result);
         }
         /**
-         * Updates the given vector "result" coordinates from the given floats.  
+         * Updates the given vector "result" coordinates from the given floats. 
+         * @param x float to set from
+         * @param y float to set from
+         * @param z float to set from
+         * @param w float to set from
+         * @param result the vector to the floats in 
          */
         public static FromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void {
             result.x = x;
@@ -3091,18 +3193,22 @@
         }
         /**
          * Returns a new Vector4 set to (0.0, 0.0, 0.0, 0.0)
+         * @returns the new vector
          */
         public static Zero(): Vector4 {
             return new Vector4(0.0, 0.0, 0.0, 0.0);
         }
         /**
          * Returns a new Vector4 set to (1.0, 1.0, 1.0, 1.0)
+         * @returns the new vector
          */
         public static One(): Vector4 {
             return new Vector4(1.0, 1.0, 1.0, 1.0);
         }
         /**
          * Returns a new normalized Vector4 from the given one.  
+         * @param vector the vector to normalize
+         * @returns the vector
          */
         public static Normalize(vector: Vector4): Vector4 {
             var result = Vector4.Zero();
@@ -3111,18 +3217,32 @@
         }
         /**
          * Updates the given vector "result" from the normalization of the given one.
+         * @param vector the vector to normalize
+         * @param result the vector to store the result in
          */
         public static NormalizeToRef(vector: Vector4, result: Vector4): void {
             result.copyFrom(vector);
             result.normalize();
         }
 
+        /**
+         * Returns a vector with the minimum values from the left and right vectors
+         * @param left left vector to minimize
+         * @param right right vector to minimize
+         * @returns a new vector with the minimum of the left and right vector values
+         */
         public static Minimize(left: Vector4, right: Vector4): Vector4 {
             var min = left.clone();
             min.minimizeInPlace(right);
             return min;
         }
 
+        /**
+         * Returns a vector with the maximum values from the left and right vectors
+         * @param left left vector to maximize
+         * @param right right vector to maximize
+         * @returns a new vector with the maximum of the left and right vector values
+         */
         public static Maximize(left: Vector4, right: Vector4): Vector4 {
             var max = left.clone();
             max.maximizeInPlace(right);
@@ -3130,12 +3250,18 @@
         }
         /**
          * Returns the distance (float) between the vectors "value1" and "value2".  
+         * @param value1 value to calulate the distance between
+         * @param value2 value to calulate the distance between
+         * @return the distance between the two vectors
          */
         public static Distance(value1: Vector4, value2: Vector4): number {
             return Math.sqrt(Vector4.DistanceSquared(value1, value2));
         }
         /**
          * Returns the squared distance (float) between the vectors "value1" and "value2".  
+         * @param value1 value to calulate the distance between
+         * @param value2 value to calulate the distance between
+         * @return the distance between the two vectors squared
          */
         public static DistanceSquared(value1: Vector4, value2: Vector4): number {
             var x = value1.x - value2.x;
@@ -3147,6 +3273,9 @@
         }
         /**
          * Returns a new Vector4 located at the center between the vectors "value1" and "value2".  
+         * @param value1 value to calulate the center between
+         * @param value2 value to calulate the center between
+         * @return the center between the two vectors
          */
         public static Center(value1: Vector4, value2: Vector4): Vector4 {
             var center = value1.add(value2);
@@ -3157,6 +3286,9 @@
         /**
          * Returns a new Vector4 set with the result of the normal transformation by the given matrix of the given vector.  
          * This methods computes transformed normalized direction vectors only.  
+         * @param vector the vector to transform
+         * @param transformation the transformation matrix to apply
+         * @returns the new vector
          */
         public static TransformNormal(vector: Vector4, transformation: Matrix): Vector4 {
             var result = Vector4.Zero();
@@ -3167,6 +3299,9 @@
         /**
          * Sets the given vector "result" with the result of the normal transformation by the given matrix of the given vector.  
          * This methods computes transformed normalized direction vectors only. 
+         * @param vector the vector to transform
+         * @param transformation the transformation matrix to apply
+         * @param result the vector to store the result in
          */
         public static TransformNormalToRef(vector: Vector4, transformation: Matrix, result: Vector4): void {
             var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + (vector.z * transformation.m[8]);
@@ -3181,6 +3316,12 @@
         /**
          * Sets the given vector "result" with the result of the normal transformation by the given matrix of the given floats (x, y, z, w).  
          * This methods computes transformed normalized direction vectors only. 
+         * @param x value to transform
+         * @param y value to transform
+         * @param z value to transform
+         * @param w value to transform
+         * @param transformation the transformation matrix to apply
+         * @param result the vector to store the results in
          */
         public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: Matrix, result: Vector4): void {
             result.x = (x * transformation.m[0]) + (y * transformation.m[4]) + (z * transformation.m[8]);
@@ -3190,33 +3331,60 @@
         }
     }
 
+    /**
+     * Interface for the size containing width and height
+     */
     export interface ISize {
+        /**
+         * Width
+         */
         width: number;
+        /**
+         * Heighht
+         */
         height: number;
     }
 
+    /**
+     * Size containing widht and height
+     */
     export class Size implements ISize {
-        width: number;
-        height: number;
+        /**
+         * Width
+         */
+        public width: number;
+        /**
+         * Height
+         */
+        public height: number;
+
         /**
          * Creates a Size object from the given width and height (floats).  
+         * @param width width of the new size
+         * @param height height of the new size
          */
         public constructor(width: number, height: number) {
             this.width = width;
             this.height = height;
         }
-        // Returns a string with the Size width and height.  
+
+        /**
+         * Returns a string with the Size width and height
+         * @returns a string with the Size width and height
+         */
         public toString(): string {
             return `{W: ${this.width}, H: ${this.height}}`;
         }
         /** 
-         * Returns the string "Size"
+         * "Size"
+         * @returns the string "Size"
          */
         public getClassName(): string {
             return "Size";
         }
         /** 
          * Returns the Size hash code.  
+         * @returns a hash code for a unique width and height
          */
         public getHashCode(): number {
             let hash = this.width || 0;
@@ -3225,7 +3393,7 @@
         }
         /**
          * Updates the current size from the given one.  
-         * Returns the updated Size.  
+         * @param src the given size
          */
         public copyFrom(src: Size) {
             this.width = src.width;
@@ -3233,7 +3401,9 @@
         }
         /**
          * Updates in place the current Size from the given floats.  
-         * Returns the updated Size.   
+         * @param width width of the new size
+         * @param height height of the new size
+         * @returns the updated Size.   
          */
         public copyFromFloats(width: number, height: number): Size {
             this.width = width;
@@ -3241,26 +3411,34 @@
             return this;
         }
         /**
-         * Updates in place the current Size from the given floats.  
-         * Returns the updated Size.   
+         * Updates in place the current Size from the given floats. 
+         * @param width width to set
+         * @param height height to set
+         * @returns the updated Size.   
          */
         public set(width: number, height: number): Size {
             return this.copyFromFloats(width, height);
         }
         /**
-         * Returns a new Size set with the multiplication result of the current Size and the given floats.  
+         * Multiplies the width and height by numbers
+         * @param w factor to multiple the width by
+         * @param h factor to multiple the height by
+         * @returns a new Size set with the multiplication result of the current Size and the given floats.  
          */
         public multiplyByFloats(w: number, h: number): Size {
             return new Size(this.width * w, this.height * h);
         }
         /**
-         * Returns a new Size copied from the given one.  
+         * Clones the size
+         * @returns a new Size copied from the given one.  
          */
         public clone(): Size {
             return new Size(this.width, this.height);
         }
         /**
-         * Boolean : True if the current Size and the given one width and height are strictly equal.  
+         * True if the current Size and the given one width and height are strictly equal.  
+         * @param other the other size to compare against
+         * @returns True if the current Size and the given one width and height are strictly equal.  
          */
         public equals(other: Size): boolean {
             if (!other) {
@@ -3269,33 +3447,42 @@
             return (this.width === other.width) && (this.height === other.height);
         }
         /**
-         * Returns the surface of the Size : width * height (float).  
+         * The surface of the Size : width * height (float).  
          */
         public get surface(): number {
             return this.width * this.height;
         }
         /**
-         * Returns a new Size set to (0.0, 0.0)
+         * Create a new size of zero
+         * @returns a new Size set to (0.0, 0.0)
          */
         public static Zero(): Size {
             return new Size(0.0, 0.0);
         }
         /**
-         * Returns a new Size set as the addition result of the current Size and the given one.  
+         * Sums the width and height of two sizes
+         * @param otherSize size to add to this size
+         * @returns a new Size set as the addition result of the current Size and the given one.  
          */
         public add(otherSize: Size): Size {
             let r = new Size(this.width + otherSize.width, this.height + otherSize.height);
             return r;
         }
         /**
-         * Returns a new Size set as the subtraction result of  the given one from the current Size.
+         * Subtracts the width and height of two 
+         * @param otherSize size to subtract to this size
+         * @returns a new Size set as the subtraction result of  the given one from the current Size.
          */
         public subtract(otherSize: Size): Size {
             let r = new Size(this.width - otherSize.width, this.height - otherSize.height);
             return r;
         }
         /**
-         * Returns a new Size set at the linear interpolation "amount" between "start" and "end".  
+         * Creates a new Size set at the linear interpolation "amount" between "start" and "end"
+         * @param start starting size to lerp between
+         * @param end end size to lerp between
+         * @param amount amount to lerp between the start and end values
+         * @returns a new Size set at the linear interpolation "amount" between "start" and "end"
          */
         public static Lerp(start: Size, end: Size, amount: number): Size {
             var w = start.width + ((end.width - start.width) * amount);
@@ -5821,11 +6008,24 @@
         }
     }
 
+    /**
+     * Represens a plane by the equation ax + by + cz + d = 0
+     */
     export class Plane {
+        /**
+         * Normal of the plane (a,b,c)
+         */
         public normal: Vector3;
+        /**
+         * d component of the plane
+         */
         public d: number;
         /**
          * Creates a Plane object according to the given floats a, b, c, d and the plane equation : ax + by + cz + d = 0
+         * @param a a component of the plane 
+         * @param b b component of the plane 
+         * @param c c component of the plane 
+         * @param d d component of the plane 
          */
         constructor(a: number, b: number, c: number, d: number) {
             this.normal = new Vector3(a, b, c);
@@ -5833,7 +6033,7 @@
         }
 
         /**
-         * Returns the plane coordinates as a new array of 4 elements [a, b, c, d].  
+         * @returns the plane coordinates as a new array of 4 elements [a, b, c, d].  
          */
         public asArray(): number[] {
             return [this.normal.x, this.normal.y, this.normal.z, this.d];
@@ -5841,19 +6041,19 @@
 
         // Methods
         /**
-         * Returns a new plane copied from the current Plane.  
+         * @returns a new plane copied from the current Plane.  
          */
         public clone(): Plane {
             return new Plane(this.normal.x, this.normal.y, this.normal.z, this.d);
         }
         /**
-         * Returns the string "Plane".  
+         * @returns the string "Plane".  
          */
         public getClassName(): string {
             return "Plane";
         }
         /**
-         * Returns the Plane hash code.  
+         * @returns the Plane hash code.  
          */
         public getHashCode(): number {
             let hash = this.normal.getHashCode();
@@ -5862,7 +6062,7 @@
         }
         /**
          * Normalize the current Plane in place.  
-         * Returns the updated Plane.  
+         * @returns the updated Plane.  
          */
         public normalize(): Plane {
             var norm = (Math.sqrt((this.normal.x * this.normal.x) + (this.normal.y * this.normal.y) + (this.normal.z * this.normal.z)));
@@ -5878,7 +6078,9 @@
             return this;
         }
         /**
-         * Returns a new Plane as the result of the transformation of the current Plane by the given matrix.  
+         * Applies a transformation the plane and returns the result
+         * @param transformation the transformation matrix to be applied to the plane
+         * @returns a new Plane as the result of the transformation of the current Plane by the given matrix.  
          */
         public transform(transformation: Matrix): Plane {
             var transposedMatrix = Matrix.Transpose(transformation);
@@ -5896,7 +6098,9 @@
         }
 
         /**
-         * Returns the dot product (float) of the point coordinates and the plane normal.  
+         * Calcualtte the dot product between the point and the plane normal
+         * @param point point to calculate the dot product with
+         * @returns the dot product (float) of the point coordinates and the plane normal.  
          */
         public dotCoordinate(point: Vector3): number {
             return ((((this.normal.x * point.x) + (this.normal.y * point.y)) + (this.normal.z * point.z)) + this.d);
@@ -5904,7 +6108,10 @@
 
         /**
          * Updates the current Plane from the plane defined by the three given points.  
-         * Returns the updated Plane.  
+         * @param point1 one of the points used to contruct the plane
+         * @param point2 one of the points used to contruct the plane
+         * @param point3 one of the points used to contruct the plane
+         * @returns the updated Plane.  
          */
         public copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane {
             var x1 = point2.x - point1.x;
@@ -5935,7 +6142,10 @@
         }
 
         /**
-         * Boolean : True is the vector "direction"  is the same side than the plane normal.  
+         * Checks if the plane is facing a given direction
+         * @param direction the direction to check if the plane is facing
+         * @param epsilon value the dot product is compared against (returns true if dot <= epsilon)
+         * @returns True is the vector "direction"  is the same side than the plane normal.  
          */
         public isFrontFacingTo(direction: Vector3, epsilon: number): boolean {
             var dot = Vector3.Dot(this.normal, direction);
@@ -5943,7 +6153,9 @@
         }
 
         /** 
-         * Returns the signed distance (float) from the given point to the Plane.  
+         * Calculates the distance to a point
+         * @param point point to calculate distance to
+         * @returns the signed distance (float) from the given point to the Plane.  
          */
         public signedDistanceTo(point: Vector3): number {
             return Vector3.Dot(point, this.normal) + this.d;
@@ -5951,13 +6163,19 @@
 
         // Statics
         /**
-         * Returns a new Plane from the given array.  
+         * Creates a plane from an  array
+         * @param array the array to create a plane from
+         * @returns a new Plane from the given array.  
          */
         static FromArray(array: ArrayLike<number>): Plane {
             return new Plane(array[0], array[1], array[2], array[3]);
         }
         /**
-         * Returns a new Plane defined by the three given points.  
+         * Creates a plane from three points
+         * @param point1 point used to create the plane 
+         * @param point2 point used to create the plane 
+         * @param point3 point used to create the plane 
+         * @returns a new Plane defined by the three given points.
          */
         static FromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane {
             var result = new Plane(0.0, 0.0, 0.0, 0.0);
@@ -5965,7 +6183,10 @@
             return result;
         }
         /**
-         * Returns a new Plane the normal vector to this plane at the given origin point.  
+         * Creates a plane from an origin point and a normal
+         * @param origin origin of the plane to be constructed
+         * @param normal normal of the plane to be constructed
+         * @returns a new Plane the normal vector to this plane at the given origin point.  
          * Note : the vector "normal" is updated because normalized.  
          */
         static FromPositionAndNormal(origin: Vector3, normal: Vector3): Plane {
@@ -5977,7 +6198,11 @@
         }
 
         /**
-         * Returns the signed distance between the plane defined by the normal vector at the "origin"" point and the given other point.  
+         * Calculates the distance from a plane and a point
+         * @param origin origin of the plane to be constructed
+         * @param normal normal of the plane to be constructed
+         * @param point point to calculate distance to
+         * @returns the signed distance between the plane defined by the normal vector at the "origin"" point and the given other point.  
          */
         static SignedDistanceToPlaneFromPositionAndNormal(origin: Vector3, normal: Vector3, point: Vector3): number {
             var d = -(normal.x * origin.x + normal.y * origin.y + normal.z * origin.z);
@@ -6031,9 +6256,14 @@
         }
     }
 
+    /**
+     * Reprasents a camera frustum
+     */
     export class Frustum {
         /**
-         * Returns a new array of 6 Frustum planes computed by the given transformation matrix.  
+         * Gets the planes representing the frustum
+         * @param transform matrix to be applied to the returned planes
+         * @returns a new array of 6 Frustum planes computed by the given transformation matrix.  
          */
         public static GetPlanes(transform: Matrix): Plane[] {
             var frustumPlanes = [];
@@ -6044,6 +6274,11 @@
             return frustumPlanes;
         }
 
+        /**
+         * Gets the near frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
         public static GetNearPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
             frustumPlane.normal.x = transform.m[3] + transform.m[2];
             frustumPlane.normal.y = transform.m[7] + transform.m[6];
@@ -6052,6 +6287,11 @@
             frustumPlane.normalize();
         }
 
+        /**
+         * Gets the far frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
         public static GetFarPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
             frustumPlane.normal.x = transform.m[3] - transform.m[2];
             frustumPlane.normal.y = transform.m[7] - transform.m[6];
@@ -6060,6 +6300,11 @@
             frustumPlane.normalize();
         }
 
+        /**
+         * Gets the left frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
         public static GetLeftPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
             frustumPlane.normal.x = transform.m[3] + transform.m[0];
             frustumPlane.normal.y = transform.m[7] + transform.m[4];
@@ -6068,6 +6313,11 @@
             frustumPlane.normalize();
         }
 
+        /**
+         * Gets the right frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
         public static GetRightPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
             frustumPlane.normal.x = transform.m[3] - transform.m[0];
             frustumPlane.normal.y = transform.m[7] - transform.m[4];
@@ -6076,6 +6326,11 @@
             frustumPlane.normalize();
         }
 
+        /**
+         * Gets the top frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
         public static GetTopPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
             frustumPlane.normal.x = transform.m[3] - transform.m[1];
             frustumPlane.normal.y = transform.m[7] - transform.m[5];
@@ -6084,6 +6339,11 @@
             frustumPlane.normalize();
         }
 
+        /**
+         * Gets the bottom frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
         public static GetBottomPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
             frustumPlane.normal.x = transform.m[3] + transform.m[1];
             frustumPlane.normal.y = transform.m[7] + transform.m[5];
@@ -6094,6 +6354,8 @@
 
         /**
          * Sets the given array "frustumPlanes" with the 6 Frustum planes computed by the given transformation matrix.  
+         * @param transform transformation matrix to be applied to the resulting frustum planes
+         * @param frustumPlanes the resuling frustum planes
          */
         public static GetPlanesToRef(transform: Matrix, frustumPlanes: Plane[]): void {
             // Near
@@ -6313,14 +6575,22 @@
         }
     }
 
+    /**
+     * Represents a 2D path made up of multiple 2D points
+     */
     export class Path2 {
         private _points = new Array<Vector2>();
         private _length = 0.0;
 
+        /**
+         * If the path start and end point are the same
+         */
         public closed = false;
 
         /**
          * Creates a Path2 object from the starting 2D coordinates x and y.  
+         * @param x the starting points x value
+         * @param y the starting points y value
          */
         constructor(x: number, y: number) {
             this._points.push(new Vector2(x, y));
@@ -6328,7 +6598,9 @@
 
         /**
          * Adds a new segment until the given coordinates (x, y) to the current Path2.  
-         * Returns the updated Path2.   
+         * @param x the added points x value
+         * @param y the added points y value
+         * @returns the updated Path2.   
          */
         public addLineTo(x: number, y: number): Path2 {
             if (this.closed) {
@@ -6343,7 +6615,12 @@
 
         /**
          * Adds _numberOfSegments_ segments according to the arc definition (middle point coordinates, end point coordinates, the arc start point being the current Path2 last point) to the current Path2.  
-         * Returns the updated Path2.  
+         * @param midX middle point x value
+         * @param midY middle point y value
+         * @param endX end point x value
+         * @param endY end point y value
+         * @param numberOfSegments (default: 36)
+         * @returns the updated Path2.  
          */
         public addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
             if (this.closed) {
@@ -6369,14 +6646,15 @@
         }
         /**
          * Closes the Path2.     
-         * Returns the Path2.  
+         * @returns the Path2.  
          */
         public close(): Path2 {
             this.closed = true;
             return this;
         }
         /**
-         * Returns the Path2 total length (float).  
+         * Gets the sum of the distance between each sequential point in the path
+         * @returns the Path2 total length (float).  
          */
         public length(): number {
             var result = this._length;
@@ -6390,14 +6668,17 @@
         }
 
         /**
-         * Returns the Path2 internal array of points.  
+         * Gets the points which construct the path
+         * @returns the Path2 internal array of points.  
          */
         public getPoints(): Vector2[] {
             return this._points;
         }
 
         /**
-         * Returns a new Vector2 located at a percentage of the Path2 total length on this path.  
+         * Retreives the point at the distance aways from the starting point
+         * @param normalizedLengthPosition the length along the path to retreive the point from
+         * @returns a new Vector2 located at a percentage of the Path2 total length on this path.  
          */
         public getPointAtLengthPosition(normalizedLengthPosition: number): Vector2 {
             if (normalizedLengthPosition < 0 || normalizedLengthPosition > 1) {
@@ -6431,13 +6712,19 @@
         }
 
         /**
-         * Returns a new Path2 starting at the coordinates (x, y).  
+         * Creates a new path starting from an x and y position
+         * @param x starting x value
+         * @param y starting y value
+         * @returns a new Path2 starting at the coordinates (x, y).  
          */
         public static StartingAt(x: number, y: number): Path2 {
             return new Path2(x, y);
         }
     }
 
+    /**
+     * Represents a 3D path made up of multiple 3D points
+     */
     export class Path3D {
         private _curve = new Array<Vector3>();
         private _distances = new Array<number>();
@@ -6450,11 +6737,18 @@
         * new Path3D(path, normal, raw)
         * Creates a Path3D. A Path3D is a logical math object, so not a mesh.  
         * please read the description in the tutorial :  http://doc.babylonjs.com/tutorials/How_to_use_Path3D  
-        * path : an array of Vector3, the curve axis of the Path3D
-        * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
-        * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
+        * @param path an array of Vector3, the curve axis of the Path3D
+        * @param normal (options) Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
+        * @param raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
         */
-        constructor(public path: Vector3[], firstNormal: Nullable<Vector3> = null, raw?: boolean) {
+        constructor(
+            /**
+             * an array of Vector3, the curve axis of the Path3D
+             */
+            public path: Vector3[],
+            firstNormal: Nullable<Vector3> = null,
+            raw?: boolean
+        ){
             for (var p = 0; p < path.length; p++) {
                 this._curve[p] = path[p].clone(); // hard copy
             }
@@ -6464,6 +6758,7 @@
 
         /**
          * Returns the Path3D array of successive Vector3 designing its curve.  
+         * @returns the Path3D array of successive Vector3 designing its curve.  
          */
         public getCurve(): Vector3[] {
             return this._curve;
@@ -6471,6 +6766,7 @@
 
         /**
          * Returns an array populated with tangent vectors on each Path3D curve point.
+         * @returns an array populated with tangent vectors on each Path3D curve point.
          */
         public getTangents(): Vector3[] {
             return this._tangents;
@@ -6479,6 +6775,7 @@
 
         /**
          * Returns an array populated with normal vectors on each Path3D curve point.
+         * @returns an array populated with normal vectors on each Path3D curve point.
          */
         public getNormals(): Vector3[] {
             return this._normals;
@@ -6487,6 +6784,7 @@
 
         /**
          * Returns an array populated with binormal vectors on each Path3D curve point.
+         * @returns an array populated with binormal vectors on each Path3D curve point.
          */
         public getBinormals(): Vector3[] {
             return this._binormals;
@@ -6495,6 +6793,7 @@
 
         /**
          * Returns an array populated with distances (float) of the i-th point from the first curve point.
+         * @returns an array populated with distances (float) of the i-th point from the first curve point.
          */
         public getDistances(): number[] {
             return this._distances;
@@ -6503,7 +6802,9 @@
 
         /**
          * Forces the Path3D tangent, normal, binormal and distance recomputation.
-         * Returns the same object updated.  
+         * @param path path which all values are copied into the curves points
+         * @param firstNormal which should be projected onto the curve
+         * @returns the same object updated.  
          */
         public update(path: Vector3[], firstNormal: Nullable<Vector3> = null): Path3D {
             for (var p = 0; p < path.length; p++) {
@@ -6633,6 +6934,11 @@
         }
     }
 
+    /**
+     * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.  
+     * A Curve3 is designed from a series of successive Vector3.  
+     * @see https://doc.babylonjs.com/how_to/how_to_use_curve3
+     */
     export class Curve3 {
         private _points: Vector3[];
         private _length: number = 0.0;
@@ -6643,6 +6949,7 @@
          * @param v1 (Vector3) the control point
          * @param v2 (Vector3) the end point of the Quadratic Bezier
          * @param nbPoints (integer) the wanted number of points in the curve
+         * @returns the created Curve3
          */
         public static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3 {
             nbPoints = nbPoints > 2 ? nbPoints : 3;
@@ -6664,6 +6971,7 @@
          * @param v2 (Vector3) the second control point
          * @param v3 (Vector3) the end point of the Cubic Bezier
          * @param nbPoints (integer) the wanted number of points in the curve
+         * @returns the created Curve3
          */
         public static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3 {
             nbPoints = nbPoints > 3 ? nbPoints : 4;
@@ -6685,6 +6993,7 @@
          * @param p2 (Vector3) the end point of the Hermite Spline
          * @param t2 (Vector3) the tangent vector at the end point
          * @param nbPoints (integer) the wanted number of points in the curve
+         * @returns the created Curve3
          */
         public static CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: number): Curve3 {
             var hermite = new Array<Vector3>();
@@ -6700,6 +7009,7 @@
          * @param points (array of Vector3) the points the spline must pass through. At least, four points required  
          * @param nbPoints (integer) the wanted number of points between each curve control points
          * @param closed (boolean) optional with default false, when true forms a closed loop from the points
+         * @returns the created Curve3
          */
         public static CreateCatmullRomSpline(points: Vector3[], nbPoints: number, closed?: boolean): Curve3 {
             var catmullRom = new Array<Vector3>();
@@ -6738,6 +7048,7 @@
          * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.  
          * A Curve3 is designed from a series of successive Vector3.  
          * Tuto : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#curve3-object
+         * @param points points which make up the curve
          */
         constructor(points: Vector3[]) {
             this._points = points;
@@ -6745,14 +7056,14 @@
         }
 
         /**
-         * Returns the Curve3 stored array of successive Vector3
+         * @returns the Curve3 stored array of successive Vector3
          */
         public getPoints() {
             return this._points;
         }
 
         /**
-         * Returns the computed length (float) of the curve.
+         * @returns the computed length (float) of the curve.
          */
         public length() {
             return this._length;
@@ -6761,7 +7072,9 @@
         /**
          * Returns a new instance of Curve3 object : var curve = curveA.continue(curveB);  
          * This new Curve3 is built by translating and sticking the curveB at the end of the curveA.  
-         * curveA and curveB keep unchanged.  
+         * curveA and curveB keep unchanged. 
+         * @param curve the curve to continue from this curve
+         * @returns the newly constructed curve
          */
         public continue(curve: Curve3): Curve3 {
             var lastPoint = this._points[this._points.length - 1];
@@ -6784,21 +7097,57 @@
     }
 
     // Vertex formats
+    /**
+     * Contains position and normal vectors for a vertex
+     */
     export class PositionNormalVertex {
-        constructor(public position: Vector3 = Vector3.Zero(), public normal: Vector3 = Vector3.Up()) {
+        /**
+         * Creates a PositionNormalVertex
+         * @param position the position of the vertex (defaut: 0,0,0)
+         * @param normal the normal of the vertex (defaut: 0,1,0)
+         */
+        constructor(
+            /** the position of the vertex (defaut: 0,0,0) */
+            public position: Vector3 = Vector3.Zero(),
+            /** the normal of the vertex (defaut: 0,1,0) */
+            public normal: Vector3 = Vector3.Up()
+        ) {
 
         }
 
+        /**
+         * Clones the PositionNormalVertex
+         * @returns the cloned PositionNormalVertex
+         */
         public clone(): PositionNormalVertex {
             return new PositionNormalVertex(this.position.clone(), this.normal.clone());
         }
     }
 
+    /**
+     * Contains position, normal and uv vectors for a vertex
+     */
     export class PositionNormalTextureVertex {
-        constructor(public position: Vector3 = Vector3.Zero(), public normal: Vector3 = Vector3.Up(), public uv: Vector2 = Vector2.Zero()) {
+        /**
+         * Creates a PositionNormalTextureVertex
+         * @param position the position of the vertex (defaut: 0,0,0)
+         * @param normal the normal of the vertex (defaut: 0,1,0)
+         * @param uv the uv of the vertex (default: 0,0)
+         */
+        constructor(
+            /** the position of the vertex (defaut: 0,0,0) */
+            public position: Vector3 = Vector3.Zero(), 
+            /** the normal of the vertex (defaut: 0,1,0) */
+            public normal: Vector3 = Vector3.Up(), 
+            /** the uv of the vertex (default: 0,0) */
+            public uv: Vector2 = Vector2.Zero()
+        ) {
 
         }
-
+        /**
+         * Clones the PositionNormalTextureVertex
+         * @returns the cloned PositionNormalTextureVertex
+         */
         public clone(): PositionNormalTextureVertex {
             return new PositionNormalTextureVertex(this.position.clone(), this.normal.clone(), this.uv.clone());
         }
@@ -6808,6 +7157,9 @@
     // usage in any internal function :
     // var tmp = Tmp.Vector3[0];   <= gets access to the first pre-created Vector3
     // There's a Tmp array per object type : int, float, Vector2, Vector3, Vector4, Quaternion, Matrix
+    /**
+     * @hidden
+     */
     export class Tmp {
         public static Color3: Color3[] = [Color3.Black(), Color3.Black(), Color3.Black()];
         public static Color4: Color4[] = [new Color4(0, 0, 0, 0), new Color4(0, 0, 0, 0)];
@@ -6821,7 +7173,10 @@
         Matrix.Zero(), Matrix.Zero(),
         Matrix.Zero(), Matrix.Zero()];                      // 6 temp Matrices at once should be enough
     }
-    // Same as Tmp but not exported to keep it only for math functions to avoid conflicts
+    /**
+     * @hidden
+     * Same as Tmp but not exported to keep it only for math functions to avoid conflicts
+     */
     class MathTmp {
         public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
         public static Matrix: Matrix[] = [Matrix.Zero(), Matrix.Zero()];
