@@ -81,6 +81,7 @@
 
         /** @hidden */
         public _initialStartSpriteCellID: number;
+        /** @hidden */
         public _initialEndSpriteCellID: number;
 
         /** @hidden */
