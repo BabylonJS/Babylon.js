@@ -43,8 +43,8 @@
 
         createTexture(): WebGLTexture;
         loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | Blob, mipMap: boolean): void;
-        getTexureWidth(texture: WebGLTexture): number;
-        getTexureHeight(texture: WebGLTexture): number;
+        getTextureWidth(texture: WebGLTexture): number;
+        getTextureHeight(texture: WebGLTexture): number;
         setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
         setTextureWrapMode(texture: WebGLTexture, addressModeU: number, addressModeV: number, addressModeW: number): void; // addressModes are NativeAddressMode.XXXX values.
         setTextureAnisotropicLevel(texture: WebGLTexture, value: number): void;
@@ -759,9 +759,17 @@
          * @param forcedExtension defines the extension to use to pick the right loader
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
-            onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
-            buffer: Nullable<string | ArrayBuffer | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
+        public createTexture(
+            urlArg: Nullable<string>,
+            noMipmap: boolean,
+            invertY: boolean,
+            scene: Nullable<Scene>,
+            samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
+            onLoad: Nullable<() => void> = null,
+            onError: Nullable<(message: string, exception: any) => void> = null,
+            buffer: Nullable<string | ArrayBuffer | Blob> = null,
+            fallback: Nullable<InternalTexture> = null,
+            format: Nullable<number> = null,
             forcedExtension: Nullable<string> = null): InternalTexture {
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
             var fromData = url.substr(0, 5) === "data:";
@@ -888,8 +896,8 @@
                     }
                     //this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
-                    texture.baseWidth = this._interop.getTexureWidth(webGLTexture);
-                    texture.baseHeight = this._interop.getTexureHeight(webGLTexture);
+                    texture.baseWidth = this._interop.getTextureWidth(webGLTexture);
+                    texture.baseHeight = this._interop.getTextureHeight(webGLTexture);
                     texture.width = texture.baseWidth;
                     texture.height = texture.baseHeight;
                     texture.isReady = true;
