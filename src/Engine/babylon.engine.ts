@@ -475,7 +475,7 @@
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "3.3.0-rc.1";
+            return "3.3.0-rc.2";
         }
 
         // Updatable statics so stick with vars here

@@ -1,4 +1,7 @@
 ﻿module BABYLON {
+    /**
+     * Class used to store data that will be store in GPU memory
+     */
     export class Buffer {
         private _engine: Engine;
         private _buffer: Nullable<WebGLBuffer>;
@@ -61,14 +64,27 @@
         }
 
         // Properties
+
+        /**
+         * Gets a boolean indicating if the Buffer is updatable?
+         * @returns true if the buffer is updatable
+         */
         public isUpdatable(): boolean {
             return this._updatable;
         }
 
+        /**
+         * Gets current buffer's data
+         * @returns a DataArray or null
+         */
         public getData(): Nullable<DataArray> {
             return this._data;
         }
 
+        /**
+         * Gets underlying native buffer
+         * @returns underlying native buffer
+         */
         public getBuffer(): Nullable<WebGLBuffer> {
             return this._buffer;
         }
@@ -84,6 +100,11 @@
         }
 
         // Methods
+
+        /**
+         * Store data into the buffer. If the buffer was already used it will be either recreated or updated depending on isUpdatable property
+         * @param data defines the data to store
+         */
         public create(data: Nullable<DataArray> = null): void {
             if (!data && this._buffer) {
                 return; // nothing to do
@@ -114,6 +135,10 @@
             this.create(this._data);
         }
 
+        /**
+         * Update current buffer data
+         * @param data defines the data to store
+         */
         public update(data: DataArray): void {
             this.create(data);
         }
@@ -136,6 +161,9 @@
             }
         }
 
+        /**
+         * Release all resources
+         */
         public dispose(): void {
             if (!this._buffer) {
                 return;

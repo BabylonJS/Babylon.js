@@ -2043,7 +2043,10 @@ var BABYLON;
                     var attribute = technique.attributes[attr];
                     var attributeParameter = technique.parameters[attribute];
                     if (attributeParameter.semantic) {
-                        attributes.push(getAttribute(attributeParameter));
+                        var name_1 = getAttribute(attributeParameter);
+                        if (name_1) {
+                            attributes.push(name_1);
+                        }
                     }
                 }
                 // Configure vertex shader
