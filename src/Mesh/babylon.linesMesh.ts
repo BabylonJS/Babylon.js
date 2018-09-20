@@ -44,7 +44,7 @@
 
             this._intersectionThreshold = 0.1;
 
-            var defines: String[] = [];
+            var defines: string[] = [];
             var options = {
                 attributes: [VertexBuffer.PositionKind, "world0", "world1", "world2", "world3"],
                 uniforms: ["world", "viewProjection"],
