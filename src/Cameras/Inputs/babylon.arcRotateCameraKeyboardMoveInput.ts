@@ -61,6 +61,12 @@ module BABYLON {
         @serialize()
         public useAltToZoom: boolean = true;
 
+        /**
+         * Rotation speed of the camera
+         */
+        @serialize()
+        public angularSpeed = 0.01;
+
         private _keys = new Array<number>();
         private _ctrlPressed: boolean;
         private _altPressed: boolean;
@@ -166,7 +172,7 @@ module BABYLON {
                         if (this._ctrlPressed && this.camera._useCtrlForPanning) {
                             camera.inertialPanningX -= 1 / this.panningSensibility;
                         } else {
-                            camera.inertialAlphaOffset -= 0.01;
+                            camera.inertialAlphaOffset -= this.angularSpeed;
                         }
                     } else if (this.keysUp.indexOf(keyCode) !== -1) {
                         if (this._ctrlPressed && this.camera._useCtrlForPanning) {
@@ -176,13 +182,13 @@ module BABYLON {
                             camera.inertialRadiusOffset += 1 / this.zoomingSensibility;
                         }
                         else {
-                            camera.inertialBetaOffset -= 0.01;
+                            camera.inertialBetaOffset -= this.angularSpeed;
                         }
                     } else if (this.keysRight.indexOf(keyCode) !== -1) {
                         if (this._ctrlPressed && this.camera._useCtrlForPanning) {
                             camera.inertialPanningX += 1 / this.panningSensibility;
                         } else {
-                            camera.inertialAlphaOffset += 0.01;
+                            camera.inertialAlphaOffset += this.angularSpeed;
                         }
                     } else if (this.keysDown.indexOf(keyCode) !== -1) {
                         if (this._ctrlPressed && this.camera._useCtrlForPanning) {
@@ -192,7 +198,7 @@ module BABYLON {
                             camera.inertialRadiusOffset -= 1 / this.zoomingSensibility;
                         }
                         else {
-                            camera.inertialBetaOffset += 0.01;
+                            camera.inertialBetaOffset += this.angularSpeed;
                         }
                     } else if (this.keysReset.indexOf(keyCode) !== -1) {
                         if (camera.useInputToRestoreState) {
