@@ -224,7 +224,7 @@
             scene = this.getScene();
 
             if (parent || (source && source.parent)) {
-                this.popFromSceneRootNodes();
+                this.removeFromSceneRootNodes();
             }
 
             if (source) {
