@@ -24,6 +24,11 @@
         poster?: string;
     }
 
+    /**
+     * If you want to display a video in your scene, this is the special texture for that. 
+     * This special texture works similar to other textures, with the exception of a few parameters.
+     * @see https://doc.babylonjs.com/how_to/video_texture
+     */
     export class VideoTexture extends Texture {
         /**
          * Tells whether textures will be updated automatically or user is required to call `updateTexture` manually
@@ -37,6 +42,10 @@
 
         private _onUserActionRequestedObservable: Nullable<Observable<Texture>> = null;
 
+        /**
+         * Event triggerd when a dom action is required by the user to play the video.
+         * This happens due to recent changes in browser policies preventing video to auto start.
+         */
         public get onUserActionRequestedObservable(): Observable<Texture> {
             if (!this._onUserActionRequestedObservable) {
                 this._onUserActionRequestedObservable = new Observable<Texture>();
@@ -51,7 +60,9 @@
 
         /**
          * Creates a video texture.
-         * Sample : https://doc.babylonjs.com/how_to/video_texture
+         * If you want to display a video in your scene, this is the special texture for that. 
+         * This special texture works similar to other textures, with the exception of a few parameters.
+         * @see https://doc.babylonjs.com/how_to/video_texture
          * @param {string | null} name optional name, will detect from video source, if not defined
          * @param {(string | string[] | HTMLVideoElement)} src can be used to provide an url, array of urls or an already setup HTML video element.
          * @param {BABYLON.Scene} scene is obviously the current scene.
@@ -279,6 +290,9 @@
             this.video.src = url;
         }
 
+        /**
+         * Dispose the texture and release its associated resources.
+         */
         public dispose(): void {
             super.dispose();
 
@@ -294,6 +308,12 @@
             this.video.pause();
         }
 
+        /**
+         * Creates a video texture straight from your WebCam video feed.
+         * @param scene Define the scene the texture should be created in
+         * @param onReady Define a callback to triggered once the texture will be ready
+         * @param constraints Define the constraints to use to create the web cam feed from WebRTC
+         */
         public static CreateFromWebCam(
             scene: Scene,
             onReady: (videoTexture: VideoTexture) => void,
