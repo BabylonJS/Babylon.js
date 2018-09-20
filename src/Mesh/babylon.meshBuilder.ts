@@ -1,4 +1,5 @@
 ﻿module BABYLON {
+
     /**
      * Class containing static functions to help procedurally build meshes
      */
@@ -165,8 +166,9 @@
                 Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, Tmp.Vector3[1]);
                 var positionFunction = (positions: FloatArray) => {
                     var minlg = pathArray[0].length;
+                    var mesh = (<Mesh>instance);
                     var i = 0;
-                    var ns = ((<Mesh>instance)._originalBuilderSideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
+                    var ns = (mesh._originalBuilderSideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
                     for (var si = 1; si <= ns; si++) {
                         for (var p = 0; p < pathArray.length; p++) {
                             var path = pathArray[p];
@@ -198,7 +200,7 @@
                                 j++;
                                 i += 3;
                             }
-                            if ((<any>instance)._closePath) {
+                            if (mesh._creationDataStorage && mesh._creationDataStorage.closePath) {
                                 positions[i] = path[0].x;
                                 positions[i + 1] = path[0].y;
                                 positions[i + 2] = path[0].z;
@@ -236,13 +238,13 @@
                     var params = instance.isFacetDataEnabled ? instance.getFacetDataParameters() : null;
                     VertexData.ComputeNormals(positions, indices, normals, params);
 
-                    if ((<any>instance)._closePath) {
+                    if (instance._creationDataStorage && instance._creationDataStorage.closePath) {
                         var indexFirst: number = 0;
                         var indexLast: number = 0;
                         for (var p = 0; p < pathArray.length; p++) {
-                            indexFirst = (<any>instance)._idx[p] * 3;
+                            indexFirst = instance._creationDataStorage!.idx[p] * 3;
                             if (p + 1 < pathArray.length) {
-                                indexLast = ((<any>instance)._idx[p + 1] - 1) * 3;
+                                indexLast = (instance._creationDataStorage!.idx[p + 1] - 1) * 3;
                             }
                             else {
                                 indexLast = normals.length - 3;
@@ -266,12 +268,13 @@
 
                 var ribbon = new Mesh(name, scene);
                 ribbon._originalBuilderSideOrientation = sideOrientation;
+                ribbon._creationDataStorage = new _CreationDataStorage();
 
                 var vertexData = VertexData.CreateRibbon(options);
                 if (closePath) {
-                    (<any>ribbon)._idx = (<any>vertexData)._idx;
+                    ribbon._creationDataStorage.idx = (<any>vertexData)._idx;
                 }
-                (<any>ribbon)._closePath = closePath;
+                ribbon._creationDataStorage.closePath = closePath;
                 (<any>ribbon)._closeArray = closeArray;
 
                 vertexData.applyToMesh(ribbon, updatable);
@@ -500,7 +503,9 @@
                         lg += curvect.length();
                     }
                     shft = lg / nbSeg;
-                    dashshft = (<any>instance).dashSize * shft / ((<any>instance).dashSize + (<any>instance).gapSize);
+                    let dashSize = instance!._creationDataStorage!.dashSize;
+                    let gapSize = instance!._creationDataStorage!.gapSize;
+                    dashshft = dashSize * shft / (dashSize + gapSize);
                     for (i = 0; i < points.length - 1; i++) {
                         points[i + 1].subtractToRef(points[i], curvect);
                         nb = Math.floor(curvect.length() / shft);
@@ -532,8 +537,10 @@
             var dashedLines = new LinesMesh(name, scene);
             var vertexData = VertexData.CreateDashedLines(options);
             vertexData.applyToMesh(dashedLines, options.updatable);
-            (<any>dashedLines).dashSize = dashSize;
-            (<any>dashedLines).gapSize = gapSize;
+
+            dashedLines._creationDataStorage = new _CreationDataStorage();
+            dashedLines._creationDataStorage.dashSize = dashSize;
+            dashedLines._creationDataStorage.gapSize = gapSize;
             return dashedLines;
         }
 
@@ -940,12 +947,13 @@
             var path = options.path;
             var instance = options.instance;
             var radius = 1.0;
-            if (instance) {
-                radius = (<any>instance).radius;
-            }
+            
             if (options.radius !== undefined) {
                 radius = options.radius;
-            };
+            } else if (instance) {
+                radius = instance._creationDataStorage!.radius;
+            }
+
             var tessellation = options.tessellation || 64 | 0;
             var radiusFunction = options.radiusFunction || null;
             var cap = options.cap || Mesh.NO_CAP;
@@ -1020,13 +1028,15 @@
             var pathArray;
             if (instance) { // tube update
                 var arc = options.arc || (<any>instance).arc;
-                path3D = ((<any>instance).path3D).update(path);
-                pathArray = tubePathArray(path, path3D, (<any>instance).pathArray, radius, (<any>instance).tessellation, radiusFunction, (<any>instance).cap, arc);
+                let storage = instance._creationDataStorage!;
+                path3D =  storage.path3D.update(path);
+                pathArray = tubePathArray(path, path3D, storage.pathArray, radius, storage.tessellation, radiusFunction, storage.cap, arc);
                 instance = MeshBuilder.CreateRibbon("", { pathArray: pathArray, instance: instance });
-                (<any>instance).path3D = path3D;
-                (<any>instance).pathArray = pathArray;
-                (<any>instance).arc = arc;
-                (<any>instance).radius = radius;
+                instance._creationDataStorage = new _CreationDataStorage();
+                instance._creationDataStorage.path3D = path3D;
+                instance._creationDataStorage.pathArray = pathArray;
+                instance._creationDataStorage.arc = arc;
+                instance._creationDataStorage.radius = radius;
 
                 return instance;
             }
@@ -1037,12 +1047,13 @@
             cap = (cap < 0 || cap > 3) ? 0 : cap;
             pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap, options.arc);
             var tube = MeshBuilder.CreateRibbon(name, { pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation, invertUV: invertUV, frontUVs: options.frontUVs, backUVs: options.backUVs }, scene);
-            (<any>tube).pathArray = pathArray;
-            (<any>tube).path3D = path3D;
-            (<any>tube).tessellation = tessellation;
-            (<any>tube).cap = cap;
-            (<any>tube).arc = options.arc;
-            (<any>tube).radius = radius;
+            tube._creationDataStorage = new _CreationDataStorage();
+            tube._creationDataStorage.pathArray = pathArray;
+            tube._creationDataStorage.path3D = path3D;
+            tube._creationDataStorage.tessellation = tessellation;
+            tube._creationDataStorage.cap = cap;
+            tube._creationDataStorage.arc = options.arc;
+            tube._creationDataStorage.radius = radius;
 
             return tube;
         }
@@ -1383,8 +1394,9 @@
             var path3D;
             var pathArray;
             if (instance) { // instance update
-                path3D = ((<any>instance).path3D).update(curve);
-                pathArray = extrusionPathArray(shape, curve, (<any>instance).path3D, (<any>instance).pathArray, scale, rotation, scaleFunction, rotateFunction, (<any>instance).cap, custom);
+                let storage = instance._creationDataStorage!;
+                path3D =  storage.path3D.update(curve);
+                pathArray = extrusionPathArray(shape, curve, storage.path3D, storage.pathArray, scale, rotation, scaleFunction, rotateFunction, storage.cap, custom);
                 instance = Mesh.CreateRibbon("", pathArray, false, false, 0, scene || undefined, false, 0, instance);
 
                 return instance;
@@ -1395,9 +1407,10 @@
             cap = (cap < 0 || cap > 3) ? 0 : cap;
             pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom);
             var extrudedGeneric = MeshBuilder.CreateRibbon(name, { pathArray: pathArray, closeArray: rbCA, closePath: rbCP, updatable: updtbl, sideOrientation: side, invertUV: invertUV, frontUVs: frontUVs || undefined, backUVs: backUVs || undefined }, scene);
-            (<any>extrudedGeneric).pathArray = pathArray;
-            (<any>extrudedGeneric).path3D = path3D;
-            (<any>extrudedGeneric).cap = cap;
+            extrudedGeneric._creationDataStorage = new _CreationDataStorage();
+            extrudedGeneric._creationDataStorage.pathArray = pathArray;
+            extrudedGeneric._creationDataStorage.path3D = path3D;
+            extrudedGeneric._creationDataStorage.cap = cap;
 
             return extrudedGeneric;
         }
