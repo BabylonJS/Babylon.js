@@ -223,10 +223,6 @@
 
             scene = this.getScene();
 
-            if (parent || (source && source.parent)) {
-                this.removeFromSceneRootNodes();
-            }
-
             if (source) {
                 // Geometry
                 if (source._geometry) {
