@@ -141,9 +141,20 @@
         sphericalPolynomial?: SphericalPolynomial;
     };
 
+    /**
+     * Class used to provide DDS decompression tools
+     */
     export class DDSTools {
+        /**
+         * Gets or sets a boolean indicating that LOD info is stored in alpha channel (false by default)
+         */
         public static StoreLODInAlphaChannel = false;
 
+        /**
+         * Gets DDS information from an array buffer
+         * @param arrayBuffer defines the array buffer to read data from
+         * @returns the DDS information
+         */
         public static GetDDSInfo(arrayBuffer: any): DDSInfo {
             var header = new Int32Array(arrayBuffer, 0, headerLengthInt);
             var extendedHeader = new Int32Array(arrayBuffer, 0, headerLengthInt + 4);
