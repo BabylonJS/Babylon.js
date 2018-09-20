@@ -1416,9 +1416,9 @@ module BABYLON.GLTF1 {
             var pixelTokenizer = new Tokenizer(pixelShader);
 
             var unTreatedUniforms: { [key: string]: IGLTFTechniqueParameter } = {};
-            var uniforms = [];
-            var attributes = [];
-            var samplers = [];
+            var uniforms: string[] = [];
+            var attributes: string[] = [];
+            var samplers: string[] = [];
 
             // Fill uniform, sampler2D and attributes
             for (var unif in technique.uniforms) {
@@ -1450,7 +1450,10 @@ module BABYLON.GLTF1 {
                 var attributeParameter: IGLTFTechniqueParameter = technique.parameters[attribute];
 
                 if (attributeParameter.semantic) {
-                    attributes.push(getAttribute(attributeParameter));
+                    let name = getAttribute(attributeParameter);
+                    if (name) {
+                        attributes.push(name);
+                    }
                 }
             }
 
