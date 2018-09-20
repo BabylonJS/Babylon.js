@@ -487,7 +487,7 @@
         }
 
         /**
-         * Gets the post process rig
+         * Gets the post process used by the rig cameras
          */
         public get rigPostProcess(): Nullable<PostProcess> {
             return this._rigPostProcess;
