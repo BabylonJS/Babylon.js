@@ -5,6 +5,10 @@ module BABYLON {
         private _scene: Scene;
         private _physicsEngine: Nullable<IPhysicsEngine>;
 
+        /**
+         * Initializes the Physics helper
+         * @param scene Babylon.js scene
+         */
         constructor(scene: Scene) {
             this._scene = scene;
             this._physicsEngine = this._scene.getPhysicsEngine();
@@ -15,10 +19,12 @@ module BABYLON {
         }
 
         /**
+         * Applies a radial explosion impulse
          * @param {Vector3} origin the origin of the explosion
          * @param {number} radius the explosion radius
          * @param {number} strength the explosion strength
          * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
+         * @returns A physics radial explosion event, or null
          */
         public applyRadialExplosionImpulse(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff = PhysicsRadialImpulseFalloff.Constant): Nullable<PhysicsRadialExplosionEvent> {
             if (!this._physicsEngine) {
@@ -48,10 +54,12 @@ module BABYLON {
         }
 
         /**
+         * Applies a radial explosion force
          * @param {Vector3} origin the origin of the explosion
          * @param {number} radius the explosion radius
          * @param {number} strength the explosion strength
          * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
+         * @returns A physics radial explosion event, or null
          */
         public applyRadialExplosionForce(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff = PhysicsRadialImpulseFalloff.Constant): Nullable<PhysicsRadialExplosionEvent> {
             if (!this._physicsEngine) {
@@ -105,11 +113,13 @@ module BABYLON {
         }
 
         /**
+         * Creates a physics updraft event
          * @param {Vector3} origin the origin of the updraft
          * @param {number} radius the radius of the updraft
          * @param {number} strength the strength of the updraft
          * @param {number} height the height of the updraft
          * @param {PhysicsUpdraftMode} updraftMode possible options: Center & Perpendicular. Defaults to Center
+         * @returns A physics updraft event, or null
          */
         public updraft(origin: Vector3, radius: number, strength: number, height: number, updraftMode: PhysicsUpdraftMode = PhysicsUpdraftMode.Center): Nullable<PhysicsUpdraftEvent> {
             if (!this._physicsEngine) {
@@ -129,10 +139,12 @@ module BABYLON {
         }
 
         /**
+         * Creates a physics vortex event
          * @param {Vector3} origin the of the vortex
          * @param {number} radius the radius of the vortex
          * @param {number} strength the strength of the vortex
          * @param {number} height   the height of the vortex
+         * A physics vortex event or null
          */
         public vortex(origin: Vector3, radius: number, strength: number, height: number): Nullable<PhysicsVortexEvent> {
             if (!this._physicsEngine) {
@@ -155,6 +167,9 @@ module BABYLON {
 
     /***** Radial explosion *****/
 
+    /**
+     * Represents a physics radial explosion event
+     */
     export class PhysicsRadialExplosionEvent {
 
         private _scene: Scene;
@@ -163,13 +178,17 @@ module BABYLON {
         private _rays: Array<Ray> = [];
         private _dataFetched: boolean = false; // check if the data has been fetched. If not, do cleanup
 
+        /**
+         * Initializes a radial explosioin event
+         * @param scene BabylonJS scene
+         */
         constructor(scene: Scene) {
             this._scene = scene;
         }
 
         /**
          * Returns the data related to the radial explosion event (sphere & rays).
-         * @returns {PhysicsRadialExplosionEventData}
+         * @returns {PhysicsRadialExplosionEventData} The radial explosion event data
          */
         public getData(): PhysicsRadialExplosionEventData {
             this._dataFetched = true;
@@ -187,7 +206,7 @@ module BABYLON {
          * @param {number} radius the explosion radius
          * @param {number} strength the explosion strength
          * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear
-         * @returns {Nullable<PhysicsForceAndContactPoint>}
+         * @returns {Nullable<PhysicsForceAndContactPoint>} A physics force and contact point, or null
          */
         public getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff): Nullable<PhysicsForceAndContactPoint> {
             if (impostor.mass === 0) {
@@ -230,7 +249,7 @@ module BABYLON {
 
         /**
          * Disposes the sphere.
-         * @param {bolean} force
+         * @param {bolean} force Specifies if the sphere should be disposed by force
          */
         public dispose(force: boolean = true) {
             if (force) {
@@ -268,9 +287,9 @@ module BABYLON {
 
     }
 
-
-    /***** Gravitational Field *****/
-
+    /**
+     * Represents a gravitational field event
+     */
     export class PhysicsGravitationalFieldEvent {
 
         private _physicsHelper: PhysicsHelper;
@@ -283,6 +302,15 @@ module BABYLON {
         private _sphere: Mesh;
         private _dataFetched: boolean = false; // check if the has been fetched the data. If not, do cleanup
 
+        /**
+         * Initializes the physics gravitational field event
+         * @param physicsHelper A physics helper
+         * @param scene BabylonJS scene
+         * @param origin The origin position of the gravitational field event
+         * @param radius The radius of the gravitational field event
+         * @param strength The strength of the gravitational field event
+         * @param falloff The falloff for the gravitational field event
+         */
         constructor(physicsHelper: PhysicsHelper, scene: Scene, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff = PhysicsRadialImpulseFalloff.Constant) {
             this._physicsHelper = physicsHelper;
             this._scene = scene;
@@ -295,7 +323,7 @@ module BABYLON {
 
         /**
          * Returns the data related to the gravitational field event (sphere).
-         * @returns {PhysicsGravitationalFieldEventData}
+         * @returns {PhysicsGravitationalFieldEventData} A gravitational field event
          */
         public getData(): PhysicsGravitationalFieldEventData {
             this._dataFetched = true;
@@ -322,7 +350,7 @@ module BABYLON {
 
         /**
          * Disposes the sphere.
-         * @param {bolean} force
+         * @param {bolean} force The force to dispose from the gravitational field event
          */
         public dispose(force: boolean = true) {
             if (force) {
@@ -350,9 +378,9 @@ module BABYLON {
 
     }
 
-
-    /***** Updraft *****/
-
+    /**
+     * Represents a physics updraft event
+     */
     export class PhysicsUpdraftEvent {
 
         private _physicsEngine: PhysicsEngine;
@@ -363,6 +391,15 @@ module BABYLON {
         private _cylinderPosition: Vector3 = Vector3.Zero(); // to keep the cylinders position, because normally the origin is in the center and not on the bottom
         private _dataFetched: boolean = false; // check if the has been fetched the data. If not, do cleanup
  
+        /**
+         * Initializes the physics updraft event
+         * @param _scene BabylonJS scene
+         * @param _origin The origin position of the updraft
+         * @param _radius The radius of the updraft
+         * @param _strength The strength of the updraft
+         * @param _height The height of the updraft
+         * @param _updraftMode The mode of the updraft
+         */
         constructor(private _scene: Scene, private _origin: Vector3, private _radius: number, private _strength: number, private _height: number, private _updraftMode: PhysicsUpdraftMode) {
             this._physicsEngine = <PhysicsEngine>this._scene.getPhysicsEngine();
 
@@ -378,7 +415,7 @@ module BABYLON {
 
         /**
          * Returns the data related to the updraft event (cylinder).
-         * @returns {PhysicsUpdraftEventData}
+         * @returns {PhysicsUpdraftEventData} A physics updraft event
          */
         public getData(): PhysicsUpdraftEventData {
             this._dataFetched = true;
@@ -405,7 +442,7 @@ module BABYLON {
 
         /**
          * Disposes the sphere.
-         * @param {bolean} force
+         * @param {bolean} force Specifies if the updraft should be disposed by force
          */
         public dispose(force: boolean = true) {
             if (force) {
@@ -478,9 +515,9 @@ module BABYLON {
 
     }
 
-
-    /***** Vortex *****/
-
+    /**
+     * Represents a physics vortex event
+     */
     export class PhysicsVortexEvent {
 
         private _physicsEngine: PhysicsEngine;
@@ -492,6 +529,14 @@ module BABYLON {
         private _cylinderPosition: Vector3 = Vector3.Zero(); // to keep the cylinders position, because normally the origin is in the center and not on the bottom
         private _dataFetched: boolean = false; // check if the has been fetched the data. If not, do cleanup
 
+        /**
+         * Initializes the physics vortex event
+         * @param _scene The BabylonJS scene
+         * @param _origin The origin position of the vortex
+         * @param _radius The radius of the vortex
+         * @param _strength The strength of the vortex
+         * @param _height The height of the vortex
+         */
         constructor(private _scene: Scene, private _origin: Vector3, private _radius: number, private _strength: number, private _height: number) {
             this._physicsEngine = <PhysicsEngine>this._scene.getPhysicsEngine();
 
@@ -503,7 +548,7 @@ module BABYLON {
 
         /**
          * Returns the data related to the vortex event (cylinder).
-         * @returns {PhysicsVortexEventData}
+         * @returns {PhysicsVortexEventData} The physics vortex event data
          */
         public getData(): PhysicsVortexEventData {
             this._dataFetched = true;
@@ -641,7 +686,7 @@ module BABYLON {
     }
 
     /**
-     * The strenght of the force in correspondence to the distance of the affected object
+     * The strength of the force in correspondence to the distance of the affected object
      */
     export enum PhysicsUpdraftMode {
         /** Defines that the upstream forces will pull towards the top center of the cylinder */
@@ -653,24 +698,39 @@ module BABYLON {
 
     /***** Data interfaces *****/
 
+    /**
+     * Interface for a physics force and contact point
+     */
     export interface PhysicsForceAndContactPoint {
         force: Vector3;
         contactPoint: Vector3;
     }
 
+    /**
+     * Interface for radial explosion event data
+     */
     export interface PhysicsRadialExplosionEventData {
         sphere: Mesh;
         rays: Array<Ray>;
     }
 
+    /**
+     * Interface for gravitational field event data
+     */
     export interface PhysicsGravitationalFieldEventData {
         sphere: Mesh;
     }
 
+    /**
+     * Interface for updraft event data
+     */
     export interface PhysicsUpdraftEventData {
         cylinder: Mesh;
     }
 
+    /**
+     * Interface for vortex event data
+     */
     export interface PhysicsVortexEventData {
         cylinder: Mesh;
     }
