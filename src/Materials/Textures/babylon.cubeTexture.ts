@@ -9,8 +9,9 @@
         public url: string;
 
         /**
-         * Gets or sets the center of the bounding box associated with the cube texture
+         * Gets or sets the center of the bounding box associated with the cube texture.
          * It must define where the camera used to render the texture was set
+         * @see http://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode
          */
         public boundingBoxPosition = Vector3.Zero();
 
@@ -34,6 +35,7 @@
         }
         /**
          * Returns the bounding box size
+         * @see http://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode
          */
         public get boundingBoxSize(): Vector3 {
             return this._boundingBoxSize;
@@ -68,10 +70,10 @@
 
         /**
          * Creates a cube texture from an array of image urls
-         * @param files Array of image urls
-         * @param scene Babylon.js scene
-         * @param noMipmap Specifies if mip maps are not used
-         * @returns A cube texture
+         * @param files defines an array of image urls
+         * @param scene defines the hosting scene
+         * @param noMipmap specifies if mip maps are not used
+         * @returns a cube texture
          */
         public static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean): CubeTexture {
             let rootUrlKey = "";
@@ -215,7 +217,7 @@
 
         /**
          * Returns the reflection texture matrix
-         * @returns Reflection texture matrix
+         * @returns the reflection texture matrix
          */
         public getReflectionTextureMatrix(): Matrix {
             return this._textureMatrix;
@@ -231,10 +233,10 @@
 
         /**
          * Parses text to create a cube texture
-         * @param parsedTexture Serialized text to create a cube texture
-         * @param scene BABYLON.Scene 
-         * @param rootUrl The root url of the cube texture
-         * @returns A cube texture
+         * @param parsedTexture define the serialized text to read from
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root url of the cube texture
+         * @returns a cube texture
          */
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture {
             var texture = SerializationHelper.Parse(() => {
@@ -267,7 +269,7 @@
 
         /**
          * Makes a clone, or deep copy, of the cube texture
-         * @returns A cube texture
+         * @returns a new cube texture
          */
         public clone(): CubeTexture {
             return SerializationHelper.Clone(() => {
