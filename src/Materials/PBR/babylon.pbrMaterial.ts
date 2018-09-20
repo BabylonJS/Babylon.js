@@ -155,7 +155,7 @@
         public roughness: Nullable<number>;
 
         /**
-         * Used to enable roughness/glossiness fetch from a separate chanel depending on the current mode.
+         * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
          * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
          */
         @serializeAsTexture()
@@ -247,6 +247,9 @@
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public linkRefractionWithTransparency = false;
 
+        /**
+         * If true, the light map contains occlusion information instead of lighting info.
+         */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useLightmapAsShadowmap = false;
@@ -273,7 +276,7 @@
         public alphaCutOff = 0.4;
 
         /**
-         * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
+         * Specifies that the material will keep the specular highlights over a transparent surface (only the most limunous ones).
          * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
          */
         @serialize()

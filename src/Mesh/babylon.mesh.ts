@@ -1,4 +1,34 @@
 ﻿module BABYLON {
+
+    /**
+     * @hidden
+     **/
+    export class _CreationDataStorage {
+        public closePath?: boolean;
+        public idx: number[];
+        public dashSize: number;
+        public gapSize: number;
+        public path3D: Path3D;
+        public pathArray: Vector3[][];
+        public arc: number;
+        public radius: number;   
+        public cap: number;
+        public tessellation: number
+    }
+
+    /**
+     * @hidden
+     **/
+    class _InstanceDataStorage {
+        public visibleInstances: any = {};
+        public renderIdForInstances = new Array<number>();
+        public batchCache = new _InstancesBatch();
+        public instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
+        public instancesBuffer: Nullable<Buffer>;
+        public instancesData: Float32Array;
+        public overridenInstanceCount: number;
+    }
+
     /**
      * @hidden
      **/
@@ -148,6 +178,9 @@
 
         // Private
         /** @hidden */
+        public _creationDataStorage: Nullable<_CreationDataStorage>;
+
+        /** @hidden */
         public _geometry: Nullable<Geometry>;
         /** @hidden */
         public _delayInfo: Array<string>;
@@ -155,13 +188,7 @@
         public _delayLoadingFunction: (any: any, mesh: Mesh) => void;
 
         /** @hidden */
-        public _visibleInstances: any = {};
-        private _renderIdForInstances = new Array<number>();
-        private _batchCache = new _InstancesBatch();
-        private _instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
-        private _instancesBuffer: Nullable<Buffer>;
-        private _instancesData: Float32Array;
-        private _overridenInstanceCount: number;
+        public _instanceDataStorage = new _InstanceDataStorage();
 
         private _effectiveMaterial: Material;
 
@@ -242,16 +269,7 @@
                 // Construction Params
                 // Clone parameters allowing mesh to be updated in case of parametric shapes.
                 this._originalBuilderSideOrientation = source._originalBuilderSideOrientation;
-                const myAnyThis = this as any;
-                const myAnySource = source as any;
-                myAnyThis._closePath = myAnySource._closePath;
-                myAnyThis._idx = myAnySource._idx;
-                myAnyThis.dashSize = myAnySource.dashSize;
-                myAnyThis.gapSize = myAnySource.gapSize;
-                myAnyThis.path3D = myAnySource.path3D;
-                myAnyThis.pathArray = myAnySource.pathArray;
-                myAnyThis.arc = myAnySource.arc;
-                myAnyThis.radius = myAnySource.radius;
+                this._creationDataStorage = source._creationDataStorage;
 
                 // Animation ranges
                 if (this._source._ranges) {
@@ -816,7 +834,7 @@
          * Sets a value overriding the instance count. Only applicable when custom instanced InterleavedVertexBuffer are used rather than InstancedMeshs
          */
         public set overridenInstanceCount(count: number) {
-            this._overridenInstanceCount = count;
+            this._instanceDataStorage.overridenInstanceCount = count;
         }
 
         // Methods
@@ -828,31 +846,31 @@
             }
 
             this._preActivateId = sceneRenderId;
-            this._visibleInstances = null;
+            this._instanceDataStorage.visibleInstances = null;
             return this;
         }
 
         /** @hidden */
         public _preActivateForIntermediateRendering(renderId: number): Mesh {
-            if (this._visibleInstances) {
-                this._visibleInstances.intermediateDefaultRenderId = renderId;
+            if (this._instanceDataStorage.visibleInstances) {
+                this._instanceDataStorage.visibleInstances.intermediateDefaultRenderId = renderId;
             }
             return this;
         }
 
         /** @hidden */
         public _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): Mesh {
-            if (!this._visibleInstances) {
-                this._visibleInstances = {};
-                this._visibleInstances.defaultRenderId = renderId;
-                this._visibleInstances.selfDefaultRenderId = this._renderId;
+            if (!this._instanceDataStorage.visibleInstances) {
+                this._instanceDataStorage.visibleInstances = {};
+                this._instanceDataStorage.visibleInstances.defaultRenderId = renderId;
+                this._instanceDataStorage.visibleInstances.selfDefaultRenderId = this._renderId;
             }
 
-            if (!this._visibleInstances[renderId]) {
-                this._visibleInstances[renderId] = new Array<InstancedMesh>();
+            if (!this._instanceDataStorage.visibleInstances[renderId]) {
+                this._instanceDataStorage.visibleInstances[renderId] = new Array<InstancedMesh>();
             }
 
-            this._visibleInstances[renderId].push(instance);
+            this._instanceDataStorage.visibleInstances[renderId].push(instance);
             return this;
         }
 
@@ -1338,38 +1356,40 @@
         /** @hidden */
         public _getInstancesRenderList(subMeshId: number): _InstancesBatch {
             var scene = this.getScene();
-            this._batchCache.mustReturn = false;
-            this._batchCache.renderSelf[subMeshId] = this.isEnabled() && this.isVisible;
-            this._batchCache.visibleInstances[subMeshId] = null;
+            let batchCache = this._instanceDataStorage.batchCache;
+            batchCache.mustReturn = false;
+            batchCache.renderSelf[subMeshId] = this.isEnabled() && this.isVisible;
+            batchCache.visibleInstances[subMeshId] = null;
 
-            if (this._visibleInstances) {
+            if (this._instanceDataStorage.visibleInstances) {
+                let visibleInstances = this._instanceDataStorage.visibleInstances;
                 var currentRenderId = scene.getRenderId();
-                var defaultRenderId = (scene._isInIntermediateRendering() ? this._visibleInstances.intermediateDefaultRenderId : this._visibleInstances.defaultRenderId);
-                this._batchCache.visibleInstances[subMeshId] = this._visibleInstances[currentRenderId];
+                var defaultRenderId = (scene._isInIntermediateRendering() ? visibleInstances.intermediateDefaultRenderId : visibleInstances.defaultRenderId);
+                batchCache.visibleInstances[subMeshId] = visibleInstances[currentRenderId];
                 var selfRenderId = this._renderId;
 
-                if (!this._batchCache.visibleInstances[subMeshId] && defaultRenderId) {
-                    this._batchCache.visibleInstances[subMeshId] = this._visibleInstances[defaultRenderId];
+                if (!batchCache.visibleInstances[subMeshId] && defaultRenderId) {
+                    batchCache.visibleInstances[subMeshId] = visibleInstances[defaultRenderId];
                     currentRenderId = Math.max(defaultRenderId, currentRenderId);
-                    selfRenderId = Math.max(this._visibleInstances.selfDefaultRenderId, currentRenderId);
+                    selfRenderId = Math.max(visibleInstances.selfDefaultRenderId, currentRenderId);
                 }
 
-                let visibleInstancesForSubMesh = this._batchCache.visibleInstances[subMeshId];
+                let visibleInstancesForSubMesh = batchCache.visibleInstances[subMeshId];
                 if (visibleInstancesForSubMesh && visibleInstancesForSubMesh.length) {
-                    if (this._renderIdForInstances[subMeshId] === currentRenderId) {
-                        this._batchCache.mustReturn = true;
-                        return this._batchCache;
+                    if (this._instanceDataStorage.renderIdForInstances[subMeshId] === currentRenderId) {
+                        batchCache.mustReturn = true;
+                        return batchCache;
                     }
 
                     if (currentRenderId !== selfRenderId) {
-                        this._batchCache.renderSelf[subMeshId] = false;
+                        batchCache.renderSelf[subMeshId] = false;
                     }
 
                 }
-                this._renderIdForInstances[subMeshId] = currentRenderId;
+                this._instanceDataStorage.renderIdForInstances[subMeshId] = currentRenderId;
             }
 
-            return this._batchCache;
+            return batchCache;
         }
 
         /** @hidden */
@@ -1382,15 +1402,16 @@
             var matricesCount = visibleInstances.length + 1;
             var bufferSize = matricesCount * 16 * 4;
 
-            var currentInstancesBufferSize = this._instancesBufferSize;
-            var instancesBuffer = this._instancesBuffer;
+            let instanceStorage = this._instanceDataStorage;
+            var currentInstancesBufferSize = instanceStorage.instancesBufferSize;
+            var instancesBuffer = instanceStorage.instancesBuffer;
 
-            while (this._instancesBufferSize < bufferSize) {
-                this._instancesBufferSize *= 2;
+            while (instanceStorage.instancesBufferSize < bufferSize) {
+                instanceStorage.instancesBufferSize *= 2;
             }
 
-            if (!this._instancesData || currentInstancesBufferSize != this._instancesBufferSize) {
-                this._instancesData = new Float32Array(this._instancesBufferSize / 4);
+            if (!instanceStorage.instancesData || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
+                instanceStorage.instancesData = new Float32Array(instanceStorage.instancesBufferSize / 4);
             }
 
             var offset = 0;
@@ -1398,7 +1419,7 @@
 
             var world = this.getWorldMatrix();
             if (batch.renderSelf[subMesh._id]) {
-                world.copyToArray(this._instancesData, offset);
+                world.copyToArray(instanceStorage.instancesData, offset);
                 offset += 16;
                 instancesCount++;
             }
@@ -1406,26 +1427,26 @@
             if (visibleInstances) {
                 for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
                     var instance = visibleInstances[instanceIndex];
-                    instance.getWorldMatrix().copyToArray(this._instancesData, offset);
+                    instance.getWorldMatrix().copyToArray(instanceStorage.instancesData, offset);
                     offset += 16;
                     instancesCount++;
                 }
             }
 
-            if (!instancesBuffer || currentInstancesBufferSize != this._instancesBufferSize) {
+            if (!instancesBuffer || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
                 if (instancesBuffer) {
                     instancesBuffer.dispose();
                 }
 
-                instancesBuffer = new Buffer(engine, this._instancesData, true, 16, false, true);
-                this._instancesBuffer = instancesBuffer;
+                instancesBuffer = new Buffer(engine, instanceStorage.instancesData, true, 16, false, true);
+                instanceStorage.instancesBuffer = instancesBuffer;
 
                 this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world0", 0, 4));
                 this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world1", 4, 4));
                 this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world2", 8, 4));
                 this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world3", 12, 4));
             } else {
-                instancesBuffer.updateDirectly(this._instancesData, 0, instancesCount);
+                instancesBuffer.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
             }
 
             this._bind(subMesh, effect, fillMode);
@@ -1450,7 +1471,7 @@
                         onBeforeDraw(false, this.getWorldMatrix(), effectiveMaterial);
                     }
 
-                    this._draw(subMesh, fillMode, this._overridenInstanceCount);
+                    this._draw(subMesh, fillMode, this._instanceDataStorage.overridenInstanceCount);
                 }
 
                 let visibleInstancesForSubMesh = batch.visibleInstances[subMesh._id];
@@ -1920,9 +1941,9 @@
             this._source = null;
 
             // Instances
-            if (this._instancesBuffer) {
-                this._instancesBuffer.dispose();
-                this._instancesBuffer = null;
+            if (this._instanceDataStorage.instancesBuffer) {
+                this._instanceDataStorage.instancesBuffer.dispose();
+                this._instanceDataStorage.instancesBuffer = null;
             }
 
             while (this.instances.length) {

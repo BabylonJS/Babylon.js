@@ -103,10 +103,16 @@
             this._markAllSubMeshesAsTexturesDirty();
         }
 
+        /**
+         * Stores the pre-calculated light information of a mesh in a texture.
+         */
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty", null)
         public lightmapTexture: BaseTexture;
 
+        /**
+         * If true, the light map contains occlusion information instead of lighting info.
+         */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useLightmapAsShadowmap = false;
