@@ -1,5 +1,8 @@
 module BABYLON {
 
+    /**
+     * A helper for physics simulations
+     */
     export class PhysicsHelper {
 
         private _scene: Scene;
@@ -93,6 +96,7 @@ module BABYLON {
          * @param {number} radius the explosion radius
          * @param {number} strength the explosion strength
          * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
+         * @returns A physics gravitational field event, or null
          */
         public gravitationalField(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff = PhysicsRadialImpulseFalloff.Constant): Nullable<PhysicsGravitationalFieldEvent> {
             if (!this._physicsEngine) {
@@ -144,6 +148,7 @@ module BABYLON {
          * @param {number} radius the radius of the vortex
          * @param {number} strength the strength of the vortex
          * @param {number} height   the height of the vortex
+         * @returns a Physics vortex event, or null
          * A physics vortex event or null
          */
         public vortex(origin: Vector3, radius: number, strength: number, height: number): Nullable<PhysicsVortexEvent> {
@@ -163,9 +168,6 @@ module BABYLON {
             return event;
         }
     }
-
-
-    /***** Radial explosion *****/
 
     /**
      * Represents a physics radial explosion event
@@ -201,7 +203,7 @@ module BABYLON {
 
         /**
          * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
-         * @param impostor 
+         * @param impostor A physics imposter
          * @param {Vector3} origin the origin of the explosion
          * @param {number} radius the explosion radius
          * @param {number} strength the explosion strength
