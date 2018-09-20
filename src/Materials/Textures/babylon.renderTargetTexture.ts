@@ -41,11 +41,15 @@
         private _hookArray(array: AbstractMesh[]): void {
             var oldPush = array.push;
             array.push = (...items: AbstractMesh[]) => {
+                let wasEmpty = array.length === 0;
+
                 var result = oldPush.apply(array, items);
 
-                this.getScene()!.meshes.forEach(mesh => {
-                    mesh._markSubMeshesAsLightDirty();
-                })
+                if (wasEmpty) {
+                    this.getScene()!.meshes.forEach(mesh => {
+                        mesh._markSubMeshesAsLightDirty();
+                    });
+                }
 
                 return result;
             }
@@ -54,9 +58,11 @@
             array.splice = (index: number, deleteCount?: number) => {
                 var deleted = oldSplice.apply(array, [index, deleteCount]);
 
-                this.getScene()!.meshes.forEach(mesh => {
-                    mesh._markSubMeshesAsLightDirty();
-                })
+                if (array.length === 0) {
+                    this.getScene()!.meshes.forEach(mesh => {
+                        mesh._markSubMeshesAsLightDirty();
+                    });
+                }
 
                 return deleted;
             }
