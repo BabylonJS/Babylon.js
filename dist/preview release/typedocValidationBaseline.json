@@ -1,15 +1,344 @@
 {
-  "errors": 878,
+  "errors": 1251,
   "babylon.typedoc.json": {
-    "errors": 878,
-    "BlackAndWhitePostProcess": {
+    "errors": 1251,
+    "BaseTexture": {
+      "Class": {
+        "Comments": {
+          "MissingText": true
+        }
+      },
+      "Constructor": {
+        "new BaseTexture": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "scene": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        }
+      },
+      "Property": {
+        "_lodTextureHigh": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "_lodTextureLow": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "_lodTextureMid": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "animations": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "anisotropicFilteringLevel": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "canRescale": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "coordinatesIndex": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "delayLoadState": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "gammaSpace": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "getAlphaFromRGB": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "hasAlpha": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "invertZ": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "is3D": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "isBlocking": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "isCube": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "isRenderTarget": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "level": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "lodGenerationOffset": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "lodGenerationScale": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "lodLevelInAlpha": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "name": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "onDispose": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "sphericalPolynomial": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "textureFormat": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "textureType": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "uid": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "DEFAULT_ANISOTROPIC_FILTERING_LEVEL": {
+          "Comments": {
+            "MissingText": true
+          }
+        }
+      },
+      "Method": {
+        "clone": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "delayLoad": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "dispose": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "getBaseSize": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "getClassName": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "getInternalTexture": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "getReflectionTextureMatrix": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "getScene": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "getSize": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "getTextureMatrix": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "isReady": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "isReadyOrNotBlocking": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "releaseInternalTexture": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "scale": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "ratio": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "serialize": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "ToString": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "WhenAllReady": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "textures": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "callback": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "Buffer": {
+      "Class": {
+        "Comments": {
+          "MissingText": true
+        }
+      },
+      "Method": {
+        "create": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "data": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "dispose": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "getBuffer": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "getData": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "isUpdatable": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "update": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "data": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "CustomProceduralTexture": {
       "Class": {
         "Comments": {
           "MissingText": true
         }
       },
       "Property": {
-        "degree": {
+        "animate": {
+          "Comments": {
+            "MissingText": true
+          }
+        }
+      },
+      "Method": {
+        "updateShaderUniforms": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "updateTextures": {
           "Comments": {
             "MissingText": true
           }
@@ -80,27 +409,6 @@
         }
       }
     },
-    "DefaultRenderingPipeline": {
-      "Property": {
-        "FxaaPostProcessId": {
-          "Naming": {
-            "NotCamelCase": true
-          }
-        },
-        "ImageProcessingPostProcessId": {
-          "Naming": {
-            "NotCamelCase": true
-          }
-        }
-      }
-    },
-    "DisplayPassPostProcess": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
     "DistanceJoint": {
       "Method": {
         "updateDistance": {
@@ -119,20 +427,6 @@
         }
       }
     },
-    "FilterPostProcess": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "kernelMatrix": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "FreeCameraInputsManager": {
       "Method": {
         "addGamepad": {
@@ -143,6 +437,64 @@
         "addMouse": {
           "Parameter": {
             "touchEnabled": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "FresnelParameters": {
+      "Class": {
+        "Comments": {
+          "MissingText": true
+        }
+      },
+      "Property": {
+        "bias": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "isEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "leftColor": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "power": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "rightColor": {
+          "Comments": {
+            "MissingText": true
+          }
+        }
+      },
+      "Method": {
+        "clone": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "serialize": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "Parse": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "parsedFresnelParameters": {
               "Comments": {
                 "MissingText": true
               }
@@ -279,23 +631,40 @@
         }
       }
     },
-    "HighlightsPostProcess": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "ImageProcessingPostProcess": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
+    "HDRCubeTexture": {
       "Method": {
-        "getClassName": {
+        "setReflectionTextureMatrix": {
           "Comments": {
             "MissingText": true
+          },
+          "Parameter": {
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "Parse": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "parsedTexture": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "scene": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "rootUrl": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
           }
         }
       }
@@ -548,6 +917,45 @@
         }
       }
     },
+    "MirrorTexture": {
+      "Class": {
+        "Comments": {
+          "MissingText": true
+        }
+      },
+      "Property": {
+        "adaptiveBlurKernel": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "blurKernel": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "blurKernelX": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "blurKernelY": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "blurRatio": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "mirrorPlane": {
+          "Comments": {
+            "MissingText": true
+          }
+        }
+      }
+    },
     "MotorEnabledJoint": {
       "Class": {
         "Comments": {
@@ -567,6 +975,65 @@
                 "MissingText": true
               }
             }
+          }
+        }
+      }
+    },
+    "MultiMaterial": {
+      "Class": {
+        "Comments": {
+          "MissingText": true
+        }
+      },
+      "Property": {
+        "subMaterials": {
+          "Comments": {
+            "MissingText": true
+          }
+        }
+      },
+      "Method": {
+        "getSubMaterial": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "index": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "MultiRenderTarget": {
+      "Class": {
+        "Comments": {
+          "MissingText": true
+        }
+      },
+      "Property": {
+        "depthTexture": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "isSupported": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "textures": {
+          "Comments": {
+            "MissingText": true
+          }
+        }
+      },
+      "Method": {
+        "releaseInternalTextures": {
+          "Comments": {
+            "MissingText": true
           }
         }
       }
@@ -605,194 +1072,25 @@
         }
       }
     },
-    "Octree": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new Octree": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "creationFunc": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "maxBlockCapacity": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "maxDepth": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
+    "PBRBaseSimpleMaterial": {
       "Property": {
-        "blocks": {
+        "lightmapTexture": {
           "Comments": {
             "MissingText": true
           }
         },
-        "dynamicContent": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "maxDepth": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "CreationFuncForMeshes": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "CreationFuncForSubMeshes": {
+        "useLightmapAsShadowmap": {
           "Comments": {
             "MissingText": true
           }
         }
-      },
-      "Method": {
-        "addMesh": {
+      }
+    },
+    "PBRMaterial": {
+      "Property": {
+        "useLightmapAsShadowmap": {
           "Comments": {
             "MissingText": true
-          },
-          "Parameter": {
-            "entry": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "intersects": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "sphereCenter": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "sphereRadius": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "allowDuplicate": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "intersectsRay": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "ray": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "select": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "frustumPlanes": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "allowDuplicate": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "update": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "worldMin": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "worldMax": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "entries": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "_CreateBlocks": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "worldMin": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "worldMax": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "entries": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "maxBlockCapacity": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "currentDepth": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "maxDepth": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "target": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "creationFunc": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         }
       }
@@ -802,57 +1100,6 @@
         "ConvertPanoramaToCubemap": {
           "Parameter": {
             "inputHeight": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
-    "Particle": {
-      "Property": {
-        "_initialEndSpriteCellID": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "ParticleHelper": {
-      "Method": {
-        "ExportSet": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "systems": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
-    "ParticleSystem": {
-      "Method": {
-        "addColorGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeColorGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "_GetEffectCreationOptions": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "isAnimationSheetEnabled": {
               "Comments": {
                 "MissingText": true
               }
@@ -1821,202 +2068,232 @@
         }
       }
     },
-    "PostProcessRenderPipeline": {
+    "ProceduralTexture": {
       "Class": {
         "Comments": {
           "MissingText": true
         }
       },
-      "Constructor": {
-        "new PostProcessRenderPipeline": {
+      "Property": {
+        "isEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "refreshRate": {
+          "Comments": {
+            "MissingText": true
+          }
+        }
+      },
+      "Method": {
+        "getRenderSize": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "render": {
           "Comments": {
             "MissingText": true
           },
           "Parameter": {
-            "engine": {
+            "useCameraPostProcess": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "reset": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "resetRefreshCounter": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "resize": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "size": {
               "Comments": {
                 "MissingText": true
               }
             },
+            "generateMipMaps": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setColor3": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
             "name": {
               "Comments": {
                 "MissingText": true
               }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
             }
           }
-        }
-      },
-      "Property": {
-        "isSupported": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "_disableEffect": {
+        },
+        "setColor4": {
           "Comments": {
             "MissingText": true
           },
           "Parameter": {
-            "renderEffectName": {
+            "name": {
               "Comments": {
                 "MissingText": true
               }
             },
-            "cameras": {
+            "value": {
               "Comments": {
                 "MissingText": true
               }
             }
           }
         },
-        "addEffect": {
+        "setFloat": {
           "Comments": {
             "MissingText": true
           },
           "Parameter": {
-            "renderEffect": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
               "Comments": {
                 "MissingText": true
               }
             }
           }
         },
-        "dispose": {
+        "setFloats": {
           "Comments": {
             "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
           }
         },
-        "getClassName": {
+        "setFragment": {
           "Comments": {
             "MissingText": true
+          },
+          "Parameter": {
+            "fragment": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setMatrix": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setTexture": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "texture": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setVector2": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setVector3": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
           }
         }
       }
     },
-    "PostProcessRenderPipelineManager": {
+    "PushMaterial": {
+      "Class": {
+        "Comments": {
+          "MissingText": true
+        }
+      }
+    },
+    "RawTexture": {
       "Class": {
         "Comments": {
           "MissingText": true
         }
       },
-      "Constructor": {
-        "new PostProcessRenderPipelineManager": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "addPipeline": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "renderPipeline": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "attachCamerasToRenderPipeline": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "renderPipelineName": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "cameras": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "unique": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "detachCamerasFromRenderPipeline": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "renderPipelineName": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "cameras": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "disableEffectInPipeline": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "renderPipelineName": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "renderEffectName": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "cameras": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "dispose": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "enableEffectInPipeline": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "renderPipelineName": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "renderEffectName": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "cameras": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "update": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "RawTexture": {
       "Property": {
         "format": {
           "Comments": {
@@ -2025,8 +2302,184 @@
         }
       },
       "Method": {
-        "CreateRGBATexture": {
+        "update": {
+          "Comments": {
+            "MissingText": true
+          },
           "Parameter": {
+            "data": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "CreateAlphaTexture": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "data": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "width": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "height": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "scene": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "generateMipMaps": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "invertY": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "samplingMode": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "CreateLuminanceAlphaTexture": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "data": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "width": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "height": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "scene": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "generateMipMaps": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "invertY": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "samplingMode": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "CreateLuminanceTexture": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "data": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "width": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "height": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "scene": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "generateMipMaps": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "invertY": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "samplingMode": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "CreateRGBATexture": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "data": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "width": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "height": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "scene": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "generateMipMaps": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "invertY": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "samplingMode": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
             "type": {
               "Comments": {
                 "MissingText": true
@@ -2035,7 +2488,45 @@
           }
         },
         "CreateRGBTexture": {
+          "Comments": {
+            "MissingText": true
+          },
           "Parameter": {
+            "data": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "width": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "height": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "scene": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "generateMipMaps": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "invertY": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "samplingMode": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
             "type": {
               "Comments": {
                 "MissingText": true
@@ -2044,7 +2535,45 @@
           }
         },
         "CreateRTexture": {
+          "Comments": {
+            "MissingText": true
+          },
           "Parameter": {
+            "data": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "width": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "height": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "scene": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "generateMipMaps": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "invertY": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "samplingMode": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
             "type": {
               "Comments": {
                 "MissingText": true
@@ -2351,24 +2880,14 @@
         }
       }
     },
-    "RefractionPostProcess": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
+    "RefractionTexture": {
       "Property": {
-        "color": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "colorLevel": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "depth": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "refractionPlane": {
           "Comments": {
             "MissingText": true
           }
@@ -2418,6 +2937,11 @@
           }
         },
         "onClear": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "refreshRate": {
           "Comments": {
             "MissingText": true
           }
@@ -2550,6 +3074,11 @@
                 "MissingText": true
               }
             }
+          }
+        },
+        "resetRefreshCounter": {
+          "Comments": {
+            "MissingText": true
           }
         },
         "resize": {
@@ -3292,6 +3821,287 @@
         }
       }
     },
+    "ShaderMaterial": {
+      "Class": {
+        "Comments": {
+          "MissingText": true
+        }
+      },
+      "Method": {
+        "setArray2": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setArray3": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setColor3": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setColor3Array": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setColor4": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setFloat": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setFloats": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setInt": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setMatrix": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setMatrix2x2": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setMatrix3x3": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setTexture": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "texture": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setTextureArray": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "textures": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setVector2": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setVector3": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "setVector4": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "name": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "value": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        }
+      }
+    },
     "Sprite": {
       "Class": {
         "Comments": {
@@ -3576,6 +4386,337 @@
         }
       }
     },
+    "StandardMaterial": {
+      "Class": {
+        "Comments": {
+          "MissingText": true
+        }
+      },
+      "Property": {
+        "ambientColor": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "ambientTexture": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "bumpTexture": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "customShaderNameResolve": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "diffuseColor": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "diffuseFresnelParameters": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "diffuseTexture": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "disableLighting": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "emissiveColor": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "emissiveFresnelParameters": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "emissiveTexture": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "indexOfRefraction": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "invertNormalMapX": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "invertNormalMapY": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "invertRefractionY": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "lightmapTexture": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "linkEmissiveWithDiffuse": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "maxSimultaneousLights": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "opacityFresnelParameters": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "opacityTexture": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "parallaxScaleBias": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "reflectionFresnelParameters": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "reflectionTexture": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "refractionFresnelParameters": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "refractionTexture": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "roughness": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "specularColor": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "specularPower": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "specularTexture": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "twoSidedLighting": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "useAlphaFromDiffuseTexture": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "useEmissiveAsIllumination": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "useGlossinessFromSpecularMapAlpha": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "useLightmapAsShadowmap": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "useLogarithmicDepth": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "useParallax": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "useParallaxOcclusion": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "useReflectionFresnelFromSpecular": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "useReflectionOverAlpha": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "useSpecularOverAlpha": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "AmbientTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "BumpTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "ColorGradingTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "DiffuseTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "EmissiveTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "FresnelEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "LightmapTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "OpacityTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "ReflectionTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "RefractionTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "SpecularTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "_AmbientTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "_BumpTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "_ColorGradingTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "_DiffuseTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "_EmissiveTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "_FresnelEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "_LightmapTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "_OpacityTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "_ReflectionTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "_RefractionTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "_SpecularTextureEnabled": {
+          "Comments": {
+            "MissingText": true
+          }
+        }
+      },
+      "Method": {
+        "buildUniformLayout": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "getAnimatables": {
+          "Comments": {
+            "MissingText": true
+          }
+        }
+      }
+    },
     "StandardRenderingPipeline": {
       "Class": {
         "Comments": {
@@ -3626,13 +4767,6 @@
           "Comments": {
             "MissingText": true
           }
-        }
-      }
-    },
-    "StereoscopicInterlacePostProcess": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
         }
       }
     },
@@ -4411,10 +5545,307 @@
         }
       }
     },
-    "VRDistortionCorrectionPostProcess": {
+    "UniformBuffer": {
       "Class": {
         "Comments": {
           "MissingText": true
+        }
+      },
+      "Property": {
+        "updateColor3": {
+          "Tags": {
+            "param,param,param": true
+          }
+        },
+        "updateColor4": {
+          "Tags": {
+            "param,param,param,param": true
+          }
+        },
+        "updateFloat": {
+          "Tags": {
+            "param,param": true
+          }
+        },
+        "updateFloat2": {
+          "Tags": {
+            "param,param,param,param": true
+          }
+        },
+        "updateFloat3": {
+          "Tags": {
+            "param,param,param,param,param": true
+          }
+        },
+        "updateFloat4": {
+          "Tags": {
+            "param,param,param,param,param,param": true
+          }
+        },
+        "updateMatrix": {
+          "Tags": {
+            "param,param": true
+          }
+        },
+        "updateMatrix2x2": {
+          "Tags": {
+            "param,param": true
+          }
+        },
+        "updateMatrix3x3": {
+          "Tags": {
+            "method,param,param": true
+          }
+        },
+        "updateVector3": {
+          "Tags": {
+            "param,param": true
+          }
+        },
+        "updateVector4": {
+          "Tags": {
+            "param,param": true
+          }
+        }
+      },
+      "Method": {
+        "addColor4": {
+          "Parameter": {
+            "color": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "addFloat2": {
+          "Parameter": {
+            "x": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "addFloat3": {
+          "Parameter": {
+            "x": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "y": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "bindToEffect": {
+          "Parameter": {
+            "effect": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "getBuffer": {
+          "Comments": {
+            "MissingReturn": true
+          }
+        },
+        "getData": {
+          "Comments": {
+            "MissingReturn": true
+          }
+        },
+        "isDynamic": {
+          "Comments": {
+            "MissingReturn": true
+          }
+        }
+      }
+    },
+    "VertexBuffer": {
+      "Class": {
+        "Comments": {
+          "MissingText": true
+        }
+      },
+      "Property": {
+        "ColorKind": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "MatricesIndicesExtraKind": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "MatricesIndicesKind": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "MatricesWeightsExtraKind": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "MatricesWeightsKind": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "NormalKind": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "PositionKind": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "TangentKind": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "UV2Kind": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "UV3Kind": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "UV4Kind": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "UV5Kind": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "UV6Kind": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "UVKind": {
+          "Comments": {
+            "MissingText": true
+          }
+        }
+      },
+      "Method": {
+        "create": {
+          "Parameter": {
+            "data": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "getBuffer": {
+          "Comments": {
+            "MissingReturn": true
+          }
+        },
+        "getData": {
+          "Comments": {
+            "MissingReturn": true
+          }
+        },
+        "getInstanceDivisor": {
+          "Comments": {
+            "MissingReturn": true
+          }
+        },
+        "getIsInstanced": {
+          "Comments": {
+            "MissingReturn": true
+          }
+        },
+        "getKind": {
+          "Comments": {
+            "MissingReturn": true
+          }
+        },
+        "getOffset": {
+          "Comments": {
+            "MissingReturn": true
+          }
+        },
+        "getSize": {
+          "Comments": {
+            "MissingReturn": true
+          }
+        },
+        "getStrideSize": {
+          "Comments": {
+            "MissingReturn": true
+          }
+        },
+        "isUpdatable": {
+          "Comments": {
+            "MissingReturn": true
+          }
+        },
+        "update": {
+          "Parameter": {
+            "data": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "VideoTexture": {
+      "Class": {
+        "Comments": {
+          "MissingText": true
+        }
+      },
+      "Property": {
+        "onUserActionRequestedObservable": {
+          "Comments": {
+            "MissingText": true
+          }
+        }
+      },
+      "Method": {
+        "CreateFromWebCam": {
+          "Comments": {
+            "MissingText": true
+          },
+          "Parameter": {
+            "scene": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "onReady": {
+              "Comments": {
+                "MissingText": true
+              }
+            },
+            "constraints": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
         }
       }
     },
@@ -4503,6 +5934,60 @@
                 "MissingText": true
               }
             }
+          }
+        }
+      }
+    },
+    "IMultiRenderTargetOptions": {
+      "Interface": {
+        "Comments": {
+          "MissingText": true
+        }
+      },
+      "Property": {
+        "defaultType": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "doNotChangeAspectRatio": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "generateDepthBuffer": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "generateDepthTexture": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "generateMipMaps": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "generateStencilBuffer": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "samplingModes": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "textureCount": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "types": {
+          "Comments": {
+            "MissingText": true
           }
         }
       }
@@ -4881,13 +6366,6 @@
           "Comments": {
             "MissingText": true
           }
-        }
-      }
-    },
-    "PostProcessOptions": {
-      "Type alias": {
-        "Comments": {
-          "MissingText": true
         }
       }
     },
