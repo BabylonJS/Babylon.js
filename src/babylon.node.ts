@@ -111,7 +111,7 @@
         public _worldMatrixDeterminant = 0;        
 
         /** @hidden */
-        private _sceneRootNodsIndex = -1;
+        private _sceneRootNodesIndex = -1;
 
         /**
          * Gets a boolean indicating if the node has been disposed
@@ -129,8 +129,6 @@
                 return;
             }
 
-            const previousParentNode = this._parentNode;
-
             // Remove self from list of children of parent
             if (this._parentNode && this._parentNode._children !== undefined && this._parentNode._children !== null) {
                 var index = this._parentNode._children.indexOf(this);
@@ -138,7 +136,7 @@
                     this._parentNode._children.splice(index, 1);
                 }
 
-                if (!parent) this.addToSceneRootNodes();
+                this.addToSceneRootNodes();
             }
 
             // Store new parent
@@ -151,7 +149,7 @@
                 }
                 this._parentNode._children.push(this);
 
-                if (!previousParentNode) this.removeFromSceneRootNodes();
+                this.removeFromSceneRootNodes();
             }
 
             // Enabled state
@@ -163,20 +161,20 @@
         }
 
         private addToSceneRootNodes() {
-            if (this._sceneRootNodsIndex === -1) {
-                this._sceneRootNodsIndex = this._scene.rootNodes.length;
+            if (this._sceneRootNodesIndex === -1) {
+                this._sceneRootNodesIndex = this._scene.rootNodes.length;
                 this._scene.rootNodes.push(this);
             }
         }
 
         private removeFromSceneRootNodes() {
-            if (this._sceneRootNodsIndex !== -1) {
+            if (this._sceneRootNodesIndex !== -1) {
                 const rootNodes = this._scene.rootNodes;
                 const lastIdx = rootNodes.length - 1;
-                rootNodes[this._sceneRootNodsIndex] = rootNodes[lastIdx];
-                rootNodes[this._sceneRootNodsIndex]._sceneRootNodsIndex = this._sceneRootNodsIndex;
+                rootNodes[this._sceneRootNodesIndex] = rootNodes[lastIdx];
+                rootNodes[this._sceneRootNodesIndex]._sceneRootNodesIndex = this._sceneRootNodesIndex;
                 this._scene.rootNodes.pop();
-                this._sceneRootNodsIndex = -1;
+                this._sceneRootNodesIndex = -1;
             }
         }
 
