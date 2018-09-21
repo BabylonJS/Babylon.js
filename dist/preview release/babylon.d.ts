@@ -25860,11 +25860,11 @@ declare module BABYLON {
          *   We check in the function for extra's present and if so we use the normalizeSkinWeightsWithExtras rather than the FourWeights version. 
          */
         public normalizeSkinWeights(): void;
-                /**
+        /**
          * ValidateSkinning is used to determin that a mesh has valid skinning data along with skin metrics, if missing weights, 
          * or not normalized it is returned as invalid mesh the string can be used for console logs, or on screen messages to let
          * the user know there was an issue with importing the mesh
-         * returns a validation object with skinned, valid and report string
+         * @returns a validation object with skinned, valid and report string
          */
         public validateSkinning() : {skinned:boolean, valid:boolean, report:string};
         /** @hidden */

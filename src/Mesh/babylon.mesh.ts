@@ -1762,8 +1762,10 @@
         }
 
         /**
-         * ValidateSkinning returns a validation report along with skin metrics, if missing weights, or not normalized it is returned as invalid mesh
-         *    the string can be used for console logs, or on screen messages to let the user know there was an issue with importing the mesh
+         * ValidateSkinning is used to determin that a mesh has valid skinning data along with skin metrics, if missing weights, 
+         * or not normalized it is returned as invalid mesh the string can be used for console logs, or on screen messages to let
+         * the user know there was an issue with importing the mesh
+         * @returns a validation object with skinned, valid and report string
          */
         public validateSkinning() : {skinned:boolean, valid:boolean, report:string} {
             let matricesWeightsExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind));
