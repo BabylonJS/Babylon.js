@@ -252,7 +252,7 @@
             if (!boundingInfo) {
                 return false;
             }
-            return boundingInfo.isInFrustum(frustumPlanes);
+            return boundingInfo.isInFrustum(frustumPlanes, this._mesh.cullingStrategy);
         }
 
         /**

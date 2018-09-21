@@ -6,47 +6,47 @@
         /**
          * Gets the 8 vectors representing the bounding box in local space
          */
-        public vectors: Vector3[];
+        public vectors: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
         /**
          * Gets the center of the bounding box in local space
          */
-        public center: Vector3;
+        public center: Vector3 = Vector3.Zero();
         /**
          * Gets the center of the bounding box in world space
          */
-        public centerWorld: Vector3;
+        public centerWorld: Vector3 = Vector3.Zero();
         /**
          * Gets the extend size in local space
          */
-        public extendSize: Vector3;
+        public extendSize: Vector3 = Vector3.Zero();
         /**
          * Gets the extend size in world space
          */
-        public extendSizeWorld: Vector3;
+        public extendSizeWorld: Vector3 = Vector3.Zero();
         /**
          * Gets the OBB (object bounding box) directions
          */
-        public directions: Vector3[];
+        public directions: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
         /**
          * Gets the 8 vectors representing the bounding box in world space
-         */        
-        public vectorsWorld: Vector3[] = new Array<Vector3>();
+         */
+        public vectorsWorld: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];;
         /**
          * Gets the minimum vector in world space
          */
-        public minimumWorld: Vector3;
+        public minimumWorld: Vector3 = Vector3.Zero();
         /**
          * Gets the maximum vector in world space
          */
-        public maximumWorld: Vector3;
+        public maximumWorld: Vector3 = Vector3.Zero();
         /**
          * Gets the minimum vector in local space
          */
-        public minimum: Vector3;
+        public minimum: Vector3 = Vector3.Zero();
         /**
          * Gets the maximum vector in local space
          */
-        public maximum: Vector3;
+        public maximum: Vector3 = Vector3.Zero();
 
         private _worldMatrix: Matrix;
 
@@ -72,20 +72,18 @@
          * @param max defines the new maximum vector (in local space) 
          */
         public reConstruct(min: Vector3, max: Vector3) {
-            this.minimum = min.clone();
-            this.maximum = max.clone()
+            this.minimum.copyFrom(min);
+            this.maximum.copyFrom(max);
 
             // Bounding vectors
-            this.vectors = [
-                this.minimum.clone(),
-                this.maximum.clone(),
-                this.minimum.clone(),
-                this.minimum.clone(),
-                this.minimum.clone(),
-                this.maximum.clone(),
-                this.maximum.clone(),
-                this.maximum.clone()
-            ];
+            this.vectors[0].copyFrom(this.minimum);
+            this.vectors[1].copyFrom(this.maximum);
+            this.vectors[2].copyFrom(this.minimum);
+            this.vectors[3].copyFrom(this.minimum);
+            this.vectors[4].copyFrom(this.minimum);
+            this.vectors[5].copyFrom(this.maximum);
+            this.vectors[6].copyFrom(this.maximum);
+            this.vectors[7].copyFrom(this.maximum);
 
             this.vectors[2].x = this.maximum.x;
             this.vectors[3].y = this.maximum.y;
@@ -95,19 +93,21 @@
             this.vectors[7].y = this.minimum.y;
 
             // OBB
-            this.center = this.maximum.add(this.minimum).scale(0.5);
-            this.extendSize = this.maximum.subtract(this.minimum).scale(0.5);
-            this.directions = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
-
-            // World
-            for (var index = 0; index < this.vectors.length; index++) {
-                this.vectorsWorld[index] = Vector3.Zero();
+            this.center.copyFrom(this.maximum).addInPlace(this.minimum).scaleInPlace(0.5);
+            this.extendSize.copyFrom(this.maximum).subtractInPlace(this.minimum).scaleInPlace(0.5);
+            for (var index = 0; index < 3; index++) {
+                this.directions[index].copyFromFloats(0,0,0);
             }
 
-            this.minimumWorld = Vector3.Zero();
-            this.maximumWorld = Vector3.Zero();
-            this.centerWorld = Vector3.Zero();
-            this.extendSizeWorld = Vector3.Zero();
+            // World
+            for (var index = 0; index < 8; index++) {
+                this.vectorsWorld[index].copyFromFloats(0,0,0);
+            }
+
+            this.minimumWorld.copyFromFloats(0,0,0);
+            this.maximumWorld.copyFromFloats(0,0,0);
+            this.centerWorld.copyFromFloats(0,0,0);
+            this.extendSizeWorld.copyFromFloats(0,0,0);
 
             this._update(this._worldMatrix || Matrix.Identity());
         }
@@ -118,13 +118,13 @@
          * @returns the current bounding box
          */
         public scale(factor: number): BoundingBox {
-            let diff = this.maximum.subtract(this.minimum);
+            const diff = Tmp.Vector3[0].copyFrom(this.maximum).subtractInPlace(this.minimum);
             let distance = diff.length() * factor;
             diff.normalize();
-            let newRadius = diff.scale(distance / 2);
+            let newRadius = diff.scaleInPlace(distance * 0.5);
 
-            let min = this.center.subtract(newRadius);
-            let max = this.center.add(newRadius);
+            const min = Tmp.Vector3[1].copyFrom(this.center).subtractInPlace(newRadius);
+            const max = Tmp.Vector3[2].copyFrom(this.center).addInPlace(newRadius);
 
             this.reConstruct(min, max);
 
@@ -154,23 +154,11 @@
             Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this.minimumWorld);
             Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this.maximumWorld);
 
-            for (var index = 0; index < this.vectors.length; index++) {
+            for (var index = 0; index < 8; index++) {
                 var v = this.vectorsWorld[index];
                 Vector3.TransformCoordinatesToRef(this.vectors[index], world, v);
-
-                if (v.x < this.minimumWorld.x)
-                    this.minimumWorld.x = v.x;
-                if (v.y < this.minimumWorld.y)
-                    this.minimumWorld.y = v.y;
-                if (v.z < this.minimumWorld.z)
-                    this.minimumWorld.z = v.z;
-
-                if (v.x > this.maximumWorld.x)
-                    this.maximumWorld.x = v.x;
-                if (v.y > this.maximumWorld.y)
-                    this.maximumWorld.y = v.y;
-                if (v.z > this.maximumWorld.z)
-                    this.maximumWorld.z = v.z;
+                this.minimumWorld.minimizeInPlace(v);
+                this.maximumWorld.maximizeInPlace(v);
             }
 
             // Extend
