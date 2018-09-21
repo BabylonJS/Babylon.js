@@ -62,8 +62,9 @@
          */
         public set boundingBias(value: Vector2) {
             if (this._boundingBias) {
-                if (this._boundingBias.equals(value))
+                if (this._boundingBias.equals(value)) {
                     return;
+                }
                 this._boundingBias.copyFrom(value);
             }
             else {
