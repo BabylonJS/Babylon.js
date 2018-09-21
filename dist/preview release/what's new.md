@@ -128,7 +128,8 @@
 - Added FXAA and MSAA support to the StandardRenderingPipeline ([julien-moreau](https://github.com/julien-moreau))
 - Make teleportCamera public in VR experience helper ([TrevorDev](https://github.com/TrevorDev))
 - Added optional alphaFilter parameter to ```CreateGroundFromHeightMap``` to allow for heightmaps to be created that ignore any transparent data ([Postman-nz](https://github.com/Postman-nz))
-- Added renormalization of mesh weights to babylon.mesh. This is used automatically by GLTFLoader but can be called manually as well.  ([Bolloxim](https://github.com/Bolloxim))
+- Added renormalization of mesh weights to babylon.mesh. Also added a validationSkin function to report out any errors on skinned meshes. ([Bolloxim](https://github.com/Bolloxim))
+
 
 ### glTF Loader
 
