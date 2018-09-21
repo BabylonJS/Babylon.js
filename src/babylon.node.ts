@@ -129,6 +129,8 @@
                 return;
             }
 
+            const previousParentNode = this._parentNode;
+
             // Remove self from list of children of parent
             if (this._parentNode && this._parentNode._children !== undefined && this._parentNode._children !== null) {
                 var index = this._parentNode._children.indexOf(this);
@@ -136,7 +138,9 @@
                     this._parentNode._children.splice(index, 1);
                 }
 
-                this.addToSceneRootNodes();
+                if (!parent) {
+                    this.addToSceneRootNodes();
+                }
             }
 
             // Store new parent
@@ -149,7 +153,9 @@
                 }
                 this._parentNode._children.push(this);
 
-                this.removeFromSceneRootNodes();
+                if (previousParentNode) {
+                    this.removeFromSceneRootNodes();
+                }
             }
 
             // Enabled state
