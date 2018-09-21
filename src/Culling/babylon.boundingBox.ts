@@ -6,47 +6,47 @@
         /**
          * Gets the 8 vectors representing the bounding box in local space
          */
-        public vectors: Vector3[];
+        public vectors: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
         /**
          * Gets the center of the bounding box in local space
          */
-        public center: Vector3;
+        public center: Vector3 = Vector3.Zero();
         /**
          * Gets the center of the bounding box in world space
          */
-        public centerWorld: Vector3;
+        public centerWorld: Vector3 = Vector3.Zero();
         /**
          * Gets the extend size in local space
          */
-        public extendSize: Vector3;
+        public extendSize: Vector3 = Vector3.Zero();
         /**
          * Gets the extend size in world space
          */
-        public extendSizeWorld: Vector3;
+        public extendSizeWorld: Vector3 = Vector3.Zero();
         /**
          * Gets the OBB (object bounding box) directions
          */
-        public directions: Vector3[];
+        public directions: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
         /**
          * Gets the 8 vectors representing the bounding box in world space
-         */        
-        public vectorsWorld: Vector3[];
+         */
+        public vectorsWorld: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];;
         /**
          * Gets the minimum vector in world space
          */
-        public minimumWorld: Vector3;
+        public minimumWorld: Vector3 = Vector3.Zero();
         /**
          * Gets the maximum vector in world space
          */
-        public maximumWorld: Vector3;
+        public maximumWorld: Vector3 = Vector3.Zero();
         /**
          * Gets the minimum vector in local space
          */
-        public minimum: Vector3;
+        public minimum: Vector3 = Vector3.Zero();
         /**
          * Gets the maximum vector in local space
          */
-        public maximum: Vector3;
+        public maximum: Vector3 = Vector3.Zero();
 
         private _worldMatrix: Matrix;
 
@@ -61,22 +61,6 @@
          * @param max defines the maximum vector (in local space)
          */
         constructor(min: Vector3, max: Vector3) {
-            this.minimum = Vector3.Zero();
-            this.maximum = Vector3.Zero();
-            this.center = Vector3.Zero();
-            this.extendSize = Vector3.Zero();
-            this.minimumWorld =  Vector3.Zero();
-            this.maximumWorld =  Vector3.Zero();
-            this.centerWorld =  Vector3.Zero();
-            this.extendSizeWorld =  Vector3.Zero();
-            this.vectors = new Array(8);
-            this.vectorsWorld = new Array(8);
-            for (var index = 0; index < 8; index++) {
-                this.vectors[index] = Vector3.Zero();
-                this.vectorsWorld[index] = Vector3.Zero();
-            }
-            this.directions = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
-
             this.reConstruct(min, max);
         }
 
