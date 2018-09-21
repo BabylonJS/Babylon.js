@@ -61,18 +61,23 @@
          * @param minimum min vector of the bounding box/sphere
          * @param maximum max vector of the bounding box/sphere
          */
-        constructor(
-            /**
-             * min vector of the bounding box/sphere
-             */
-            public minimum: Vector3, 
-            /**
-             * max vector of the bounding box/sphere
-             */
-            public maximum: Vector3
-        ) {
+        constructor(minimum: Vector3, maximum: Vector3) {
             this.boundingBox = new BoundingBox(minimum, maximum);
             this.boundingSphere = new BoundingSphere(minimum, maximum);
+        }
+
+        /**
+         * min vector of the bounding box/sphere
+         */
+        public get minimum(): Vector3 {
+            return this.boundingBox.minimum;
+        }
+
+        /**
+         * max vector of the bounding box/sphere
+         */
+        public get maximum(): Vector3 {
+           return this.boundingBox.minimum;
         }
 
         /**
@@ -106,11 +111,12 @@
          * @returns the current bounding info
          */
         public centerOn(center: Vector3, extend: Vector3): BoundingInfo {
-            this.minimum = center.subtract(extend);
-            this.maximum = center.add(extend);
 
-            this.boundingBox = new BoundingBox(this.minimum, this.maximum);
-            this.boundingSphere = new BoundingSphere(this.minimum, this.maximum);
+            const minimum = Tmp.Vector3[0].copyFrom(center).subtractInPlace(extend);
+            const maximum = Tmp.Vector3[1].copyFrom(center).addInPlace(extend);
+
+            this.boundingBox.reConstruct(minimum, maximum);
+            this.boundingSphere.reConstruct(minimum, maximum);
 
             return this;
         }
@@ -123,7 +129,6 @@
         public scale(factor: number): BoundingInfo {
             this.boundingBox.scale(factor);
             this.boundingSphere.scale(factor);
-
             return this;
         }
 
