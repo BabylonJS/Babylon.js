@@ -129,6 +129,7 @@
         public scale(factor: number): BoundingInfo {
             this.boundingBox.scale(factor);
             this.boundingSphere.scale(factor);
+
             return this;
         }
 
