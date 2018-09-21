@@ -201,6 +201,7 @@
 - trackPosition:false not working in webVRCamera/controllers ([TrevorDev](https://github.com/TrevorDev))
 - Spring Joint could not be removed ([TrevorDev](https://github.com/TrevorDev))
 - Sometimes duplicate controller models are loaded in VR ([TrevorDev](https://github.com/TrevorDev))
+- Particle emit rate over time does not reset on every particle system start ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 
