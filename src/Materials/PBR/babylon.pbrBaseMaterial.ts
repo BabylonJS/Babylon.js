@@ -286,7 +286,7 @@
         protected _roughness: Nullable<number>;
 
         /**
-         * Used to enable roughness/glossiness fetch from a separate chanel depending on the current mode.
+         * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
          * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
          */
         protected _microSurfaceTexture: BaseTexture;

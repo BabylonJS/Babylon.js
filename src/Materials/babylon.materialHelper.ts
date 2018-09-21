@@ -24,10 +24,10 @@ module BABYLON {
 
         /**
          * Helps preparing the defines values about the UVs in used in the effect.
-         * UVs are shared as much as we can accross chanels in the shaders.
+         * UVs are shared as much as we can accross channels in the shaders.
          * @param texture The texture we are preparing the UVs for
          * @param defines The defines to update
-         * @param key The chanel key "diffuse", "specular"... used in the shader
+         * @param key The channel key "diffuse", "specular"... used in the shader
          */
         public static PrepareDefinesForMergedUV(texture: BaseTexture, defines: any, key: string): void {
             defines._needUVs = true;
@@ -48,7 +48,7 @@ module BABYLON {
          * Binds a texture matrix value to its corrsponding uniform
          * @param texture The texture to bind the matrix for 
          * @param uniformBuffer The uniform buffer receivin the data
-         * @param key The chanel key "diffuse", "specular"... used in the shader
+         * @param key The channel key "diffuse", "specular"... used in the shader
          */
         public static BindTextureMatrix(texture: BaseTexture, uniformBuffer: UniformBuffer, key: string): void {
             var matrix = texture.getTextureMatrix();
