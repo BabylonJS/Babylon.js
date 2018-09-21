@@ -82,8 +82,9 @@
         /** @hidden */
         public _update(world: Matrix): void {
             Vector3.TransformCoordinatesToRef(this.center, world, this.centerWorld);
-            Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, world, _tempRadiusVector);
-            this.radiusWorld = Math.max(Math.abs(_tempRadiusVector.x), Math.abs(_tempRadiusVector.y), Math.abs(_tempRadiusVector.z)) * this.radius;
+            const tempVector = Tmp.Vector3[0];
+            Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, world, tempVector);
+            this.radiusWorld = Math.max(Math.abs(tempVector.x), Math.abs(tempVector.y), Math.abs(tempVector.z)) * this.radius;
         }
 
         /**
