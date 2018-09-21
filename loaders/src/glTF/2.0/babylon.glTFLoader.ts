@@ -639,7 +639,6 @@ module BABYLON.GLTF2 {
             promises.push(this._loadVertexDataAsync(context, primitive, babylonMesh).then(babylonGeometry => {
                 return this._loadMorphTargetsAsync(context, primitive, babylonMesh, babylonGeometry).then(() => {
                     babylonGeometry.applyToMesh(babylonMesh);
-                    babylonMesh.normalizeSkinWeights();
                 });
             }));
 
