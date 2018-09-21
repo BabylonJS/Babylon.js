@@ -11,10 +11,12 @@
 		 */
         private readonly SharpenPostProcessId: string = "SharpenPostProcessEffect";
         /**
+         * @ignore
 		 * ID of the image processing post process;
 		 */
         readonly ImageProcessingPostProcessId: string = "ImageProcessingPostProcessEffect";
         /**
+         * @ignore
 		 * ID of the Fast Approximate Anti-Aliasing post process;
 		 */
         readonly FxaaPostProcessId: string = "FxaaPostProcessEffect";
