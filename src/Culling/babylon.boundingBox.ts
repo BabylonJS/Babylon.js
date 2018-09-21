@@ -1,13 +1,5 @@
 ﻿module BABYLON {
 
-    
-    /**
-     * @hidden
-     */
-    const tempVector3Diff = new Vector3();
-    const tempVector3Min = new Vector3();
-    const tempVector3Max = new Vector3();
-
     /**
      * Class used to store bounding box information
      */
@@ -143,15 +135,15 @@
          * @returns the current bounding box
          */
         public scale(factor: number): BoundingBox {
-            tempVector3Diff.copyFrom(this.maximum).subtractInPlace(this.minimum);
-            let distance = tempVector3Diff.length() * factor;
-            tempVector3Diff.normalize();
-            let newRadius = tempVector3Diff.scaleInPlace(distance * 0.5);
+            const diff = Tmp.Vector3[0].copyFrom(this.maximum).subtractInPlace(this.minimum);
+            let distance = diff.length() * factor;
+            diff.normalize();
+            let newRadius = diff.scaleInPlace(distance * 0.5);
 
-            tempVector3Min.copyFrom(this.center).subtractInPlace(newRadius);
-            tempVector3Max.copyFrom(this.center).addInPlace(newRadius);
+            const min = Tmp.Vector3[1].copyFrom(this.center).subtractInPlace(newRadius);
+            const max = Tmp.Vector3[2].copyFrom(this.center).addInPlace(newRadius);
 
-            this.reConstruct(tempVector3Min, tempVector3Max);
+            this.reConstruct(min, max);
 
             return this;
         }
