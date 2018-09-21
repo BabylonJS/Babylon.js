@@ -541,12 +541,13 @@
                 stride = 3;
             }
 
-            for (var index = start; index < start + count; index++) {
-                var current = new Vector3(positions[index * stride], positions[index * stride + 1], positions[index * stride + 2]);
-
-                minimum = Vector3.Minimize(current, minimum);
-                maximum = Vector3.Maximize(current, maximum);
-            }
+            for (var index = start, offset = start*stride; index < start + count; index++, offset+=stride) {
+                const x = positions[offset];
+                const y = positions[offset + 1];
+                const z = positions[offset + 2];
+                minimum.minimizeInPlaceFromFloats(x, y, z);
+                maximum.maximizeInPlaceFromFloats(x, y, z);
+              }
 
             if (bias) {
                 minimum.x -= minimum.x * bias.x + bias.y;
