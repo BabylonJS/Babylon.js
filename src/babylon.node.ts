@@ -153,7 +153,7 @@
                 }
                 this._parentNode._children.push(this);
 
-                if (previousParentNode) {
+                if (!previousParentNode) {
                     this.removeFromSceneRootNodes();
                 }
             }
