@@ -655,17 +655,6 @@
             }
 
             this._addFactorGradient(this._emitRateGradients, gradient, factor, factor2);
-
-            if (!this._currentEmitRateGradient) {
-                this._currentEmitRateGradient = this._emitRateGradients[0];
-                this._currentEmitRate1 = this._currentEmitRateGradient.getFactor();
-                this._currentEmitRate2 = this._currentEmitRate1;
-            }
-
-            if (this._emitRateGradients.length === 2) {
-                this._currentEmitRate2 = this._emitRateGradients[1].getFactor();
-            }
-
             return this;
         }
 
@@ -1033,6 +1022,18 @@
             this._actualFrame = 0;
             if (this._subEmitters && this._subEmitters.length != 0) {
                 this.activeSubSystems = new Array<ParticleSystem>();
+            }
+
+            // Reset emit gradient so it acts the same on every start
+            if(this._emitRateGradients){
+                if(this._emitRateGradients.length > 0){
+                    this._currentEmitRateGradient = this._emitRateGradients[0];
+                    this._currentEmitRate1 = this._currentEmitRateGradient.getFactor();
+                    this._currentEmitRate2 = this._currentEmitRate1;
+                }
+                if(this._emitRateGradients.length > 1){
+                    this._currentEmitRate2 = this._emitRateGradients[1].getFactor();
+                }
             }
 
             if (this.preWarmCycles) {
