@@ -1,4 +1,8 @@
 ﻿module BABYLON {
+    /**
+     * ImageProcessingPostProcess
+     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#imageprocessing
+     */
     export class ImageProcessingPostProcess extends PostProcess {
 
         /**
@@ -337,7 +341,10 @@
                 this.imageProcessingConfiguration.bind(effect, this.aspectRatio);
             };
         }
-
+        /**
+         *  "ImageProcessingPostProcess"
+         * @returns "ImageProcessingPostProcess"
+         */
         public getClassName(): string {
             return "ImageProcessingPostProcess";
         }

@@ -809,6 +809,7 @@
          * @param gradient defines the gradient to use (between 0 and 1)
          * @param color1 defines the color to affect to the specified gradient
          * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
+         * @returns this particle system
          */
         public addColorGradient(gradient: number, color1: Color4, color2?: Color4): IParticleSystem {
             if (!this._colorGradients) {
@@ -837,6 +838,7 @@
         /**
          * Remove a specific color gradient
          * @param gradient defines the gradient to remove
+         * @returns this particle system
          */
         public removeColorGradient(gradient: number): IParticleSystem {
             if (!this._colorGradients) {
@@ -1451,6 +1453,7 @@
             return attributeNamesOrOptions;
         }
 
+        /** @hidden */
         public static _GetEffectCreationOptions(isAnimationSheetEnabled = false): string[] {
             var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "textureMask", "translationPivot", "eyePosition"];
 
@@ -1461,6 +1464,7 @@
             return effectCreationOption;
         }
 
+        /** @hidden */
         private _getEffect(blendMode: number): Effect {
             if (this._customEffect) {
                 return this._customEffect;
