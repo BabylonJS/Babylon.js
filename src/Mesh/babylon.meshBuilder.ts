@@ -1032,11 +1032,11 @@
                 path3D =  storage.path3D.update(path);
                 pathArray = tubePathArray(path, path3D, storage.pathArray, radius, storage.tessellation, radiusFunction, storage.cap, arc);
                 instance = MeshBuilder.CreateRibbon("", { pathArray: pathArray, instance: instance });
-                instance._creationDataStorage = new _CreationDataStorage();
-                instance._creationDataStorage.path3D = path3D;
-                instance._creationDataStorage.pathArray = pathArray;
-                instance._creationDataStorage.arc = arc;
-                instance._creationDataStorage.radius = radius;
+                // Update mode, no need to recreate the storage.
+                storage.path3D = path3D;
+                storage.pathArray = pathArray;
+                storage.arc = arc;
+                storage.radius = radius;
 
                 return instance;
             }
