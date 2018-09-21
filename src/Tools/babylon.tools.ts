@@ -503,7 +503,7 @@
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
             for (var index = indexStart; index < indexStart + indexCount; index++) {
-                const offset = indices[index];
+                const offset = indices[index] * 3;
                 const x = positions[offset];
                 const y = positions[offset + 1];
                 const z = positions[offset + 2];
