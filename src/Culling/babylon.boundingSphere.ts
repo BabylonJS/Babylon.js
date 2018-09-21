@@ -9,7 +9,7 @@
         /**
          * Gets the center of the bounding sphere in local space
          */
-        public center: Vector3;
+        public center = Vector3.Zero();
         /**
          * Radius of the bounding sphere in local space
          */
@@ -17,7 +17,7 @@
         /**
          * Gets the center of the bounding sphere in world space
          */
-        public centerWorld: Vector3;
+        public centerWorld = Vector3.Zero();
         /**
          * Radius of the bounding sphere in world space
          */
@@ -25,11 +25,11 @@
         /**
          * Gets the minimum vector in local space
          */
-        public minimum: Vector3;
+        public minimum = Vector3.Zero();
         /**
          * Gets the maximum vector in local space
          */
-        public maximum: Vector3;
+        public maximum = Vector3.Zero();
 
         /**
          * Creates a new bounding sphere
@@ -37,10 +37,6 @@
          * @param max defines the maximum vector (in local space)
          */
         constructor(min: Vector3, max: Vector3) {
-            this.center = Vector3.Zero();
-            this.centerWorld = Vector3.Zero();
-            this.minimum = Vector3.Zero();
-            this.maximum = Vector3.Zero();
             this.reConstruct(min, max);
         }
 
