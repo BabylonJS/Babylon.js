@@ -1042,9 +1042,10 @@
             if (!this.subMeshes) {
                 return this;
             }
-            for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
+            let count = this.subMeshes.length;
+            for (var subIndex = 0; subIndex < count; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
-                if (!subMesh.IsGlobal) {
+                if (count > 1 || !subMesh.IsGlobal) {
                     subMesh.updateBoundingInfo(matrix);
                 }
             }
