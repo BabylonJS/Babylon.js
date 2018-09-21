@@ -281,6 +281,9 @@
                     Tags.AddTagsTo(this, Tags.GetTags(source, true));
                 }
 
+                // Parent
+                this.parent = source.parent;
+
                 // Pivot
                 this.setPivotMatrix(source.getPivotMatrix());
 
