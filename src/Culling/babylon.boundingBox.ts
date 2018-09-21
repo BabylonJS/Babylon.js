@@ -70,21 +70,21 @@
          * @param max defines the maximum vector (in local space)
          */
         constructor(min: Vector3, max: Vector3) {
-            this.minimum = new Vector3();
-            this.maximum = new Vector3();
-            this.center = new Vector3();
-            this.extendSize = new Vector3();
-            this.minimumWorld =  new Vector3();
-            this.maximumWorld =  new Vector3();
-            this.centerWorld =  new Vector3();
-            this.extendSizeWorld =  new Vector3();
+            this.minimum = Vector3.Zero();
+            this.maximum = Vector3.Zero();
+            this.center = Vector3.Zero();
+            this.extendSize = Vector3.Zero();
+            this.minimumWorld =  Vector3.Zero();
+            this.maximumWorld =  Vector3.Zero();
+            this.centerWorld =  Vector3.Zero();
+            this.extendSizeWorld =  Vector3.Zero();
             this.vectors = new Array(8);
             this.vectorsWorld = new Array(8);
             for (var index = 0; index < 8; index++) {
-                this.vectors[index] = new Vector3();
-                this.vectorsWorld[index] = new Vector3();
+                this.vectors[index] = Vector3.Zero();
+                this.vectorsWorld[index] = Vector3.Zero();
             }
-            this.directions = [new Vector3(), new Vector3(), new Vector3()];
+            this.directions = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
 
             this.reConstruct(min, max);
         }
