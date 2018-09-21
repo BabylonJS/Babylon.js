@@ -1880,10 +1880,7 @@
          * @returns the current updated Vector3  
          */
         public minimizeInPlace(other: Vector3): Vector3 {
-            if (other.x < this.x) this.x = other.x;
-            if (other.y < this.y) this.y = other.y;
-            if (other.z < this.z) this.z = other.z;
-            return this;
+            return this.minimizeInPlaceFromFloats(other.x, other.y, other.z);
         }
 
         /**
@@ -1892,9 +1889,34 @@
          * @returns the current updated Vector3
          */
         public maximizeInPlace(other: Vector3): Vector3 {
-            if (other.x > this.x) this.x = other.x;
-            if (other.y > this.y) this.y = other.y;
-            if (other.z > this.z) this.z = other.z;
+            return this.maximizeInPlaceFromFloats(other.x, other.y, other.z);
+        }
+
+        /**
+         * Updates the current Vector3 with the minimal coordinate values between its and the given coordinates
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns the current updated Vector3  
+         */
+        public minimizeInPlaceFromFloats(x: number, y: number, z: number): Vector3 {
+            this.x = Math.min(this.x, x);
+            this.y = Math.min(this.y, y);
+            this.z = Math.min(this.z, z);
+            return this;
+        }
+
+        /**
+         * Updates the current Vector3 with the maximal coordinate values between its and the given coordinates.
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns the current updated Vector3
+         */
+        public maximizeInPlaceFromFloats(x: number, y: number, z: number): Vector3 {
+            this.x = Math.max(this.x, x);
+            this.y = Math.max(this.y, y);
+            this.z = Math.max(this.z, z);
             return this;
         }
 
