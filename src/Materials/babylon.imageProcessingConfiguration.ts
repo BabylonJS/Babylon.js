@@ -90,11 +90,25 @@ module BABYLON {
             this._updateParameters();
         }
 
+        @serializeAsTexture("colorGradingTexture")
+        private _colorGradingTexture: Nullable<BaseTexture>;
         /**
          * Color grading LUT texture used in the effect if colorGradingEnabled is set to true 
          */
-        @serializeAsTexture()
-        public colorGradingTexture: Nullable<BaseTexture>;
+        public get colorGradingTexture(): Nullable<BaseTexture> {
+            return this._colorGradingTexture;
+        }
+        /**
+         * Color grading LUT texture used in the effect if colorGradingEnabled is set to true 
+         */
+        public set colorGradingTexture(value: Nullable<BaseTexture>) {
+            if (this._colorGradingTexture === value) {
+                return;
+            }
+
+            this._colorGradingTexture = value;
+            this._updateParameters();
+        }
 
         @serialize()
         private _colorGradingEnabled = false;
