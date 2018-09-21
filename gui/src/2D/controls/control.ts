@@ -503,12 +503,19 @@ export class Control {
         }
 
         this._isVisible = value;
-        this._markAsDirty();
+        this._markAsDirty(true);
     }
 
     /** Gets a boolean indicating that the control needs to update its rendering */
     public get isDirty(): boolean {
         return this._isDirty;
+    }
+
+    /**
+     * Gets the current linked mesh (or null if none)
+     */
+    public get linkedMesh(): Nullable<AbstractMesh> {
+        return this._linkedMesh;
     }
 
     /**
@@ -890,8 +897,8 @@ export class Control {
     }
 
     /** @hidden */
-    public _markAsDirty(): void {
-        if (!this._isVisible) {
+    public _markAsDirty(force = false): void {
+        if (!this._isVisible && !force) {
             return;
         }
 
