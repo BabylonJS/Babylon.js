@@ -1,4 +1,13 @@
 ﻿module BABYLON {
+
+    
+    /**
+     * @hidden
+     */
+    const tempVector3Diff = new Vector3();
+    const tempVector3Min = new Vector3();
+    const tempVector3Max = new Vector3();
+
     /**
      * Class used to store bounding box information
      */
@@ -30,7 +39,7 @@
         /**
          * Gets the 8 vectors representing the bounding box in world space
          */        
-        public vectorsWorld: Vector3[] = new Array<Vector3>();
+        public vectorsWorld: Vector3[];
         /**
          * Gets the minimum vector in world space
          */
@@ -61,6 +70,22 @@
          * @param max defines the maximum vector (in local space)
          */
         constructor(min: Vector3, max: Vector3) {
+            this.minimum = new Vector3();
+            this.maximum = new Vector3();
+            this.center = new Vector3();
+            this.extendSize = new Vector3();
+            this.minimumWorld =  new Vector3();
+            this.maximumWorld =  new Vector3();
+            this.centerWorld =  new Vector3();
+            this.extendSizeWorld =  new Vector3();
+            this.vectors = new Array(8);
+            this.vectorsWorld = new Array(8);
+            for (var index = 0; index < 8; index++) {
+                this.vectors[index] = new Vector3();
+                this.vectorsWorld[index] = new Vector3();
+            }
+            this.directions = [new Vector3(), new Vector3(), new Vector3()];
+
             this.reConstruct(min, max);
         }
 
@@ -72,20 +97,18 @@
          * @param max defines the new maximum vector (in local space) 
          */
         public reConstruct(min: Vector3, max: Vector3) {
-            this.minimum = min.clone();
-            this.maximum = max.clone()
+            this.minimum.copyFrom(min);
+            this.maximum.copyFrom(max);
 
             // Bounding vectors
-            this.vectors = [
-                this.minimum.clone(),
-                this.maximum.clone(),
-                this.minimum.clone(),
-                this.minimum.clone(),
-                this.minimum.clone(),
-                this.maximum.clone(),
-                this.maximum.clone(),
-                this.maximum.clone()
-            ];
+            this.vectors[0].copyFrom(this.minimum);
+            this.vectors[1].copyFrom(this.maximum);
+            this.vectors[2].copyFrom(this.minimum);
+            this.vectors[3].copyFrom(this.minimum);
+            this.vectors[4].copyFrom(this.minimum);
+            this.vectors[5].copyFrom(this.maximum);
+            this.vectors[6].copyFrom(this.maximum);
+            this.vectors[7].copyFrom(this.maximum);
 
             this.vectors[2].x = this.maximum.x;
             this.vectors[3].y = this.maximum.y;
@@ -95,19 +118,21 @@
             this.vectors[7].y = this.minimum.y;
 
             // OBB
-            this.center = this.maximum.add(this.minimum).scale(0.5);
-            this.extendSize = this.maximum.subtract(this.minimum).scale(0.5);
-            this.directions = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
-
-            // World
-            for (var index = 0; index < this.vectors.length; index++) {
-                this.vectorsWorld[index] = Vector3.Zero();
+            this.center.copyFrom(this.maximum).addInPlace(this.minimum).scaleInPlace(0.5);
+            this.extendSize.copyFrom(this.maximum).subtractInPlace(this.minimum).scaleInPlace(0.5);
+            for (var index = 0; index < 3; index++) {
+                this.directions[index].copyFromFloats(0,0,0);
             }
 
-            this.minimumWorld = Vector3.Zero();
-            this.maximumWorld = Vector3.Zero();
-            this.centerWorld = Vector3.Zero();
-            this.extendSizeWorld = Vector3.Zero();
+            // World
+            for (var index = 0; index < 8; index++) {
+                this.vectorsWorld[index].copyFromFloats(0,0,0);
+            }
+
+            this.minimumWorld.copyFromFloats(0,0,0);
+            this.maximumWorld.copyFromFloats(0,0,0);
+            this.centerWorld.copyFromFloats(0,0,0);
+            this.extendSizeWorld.copyFromFloats(0,0,0);
 
             this._update(this._worldMatrix || Matrix.Identity());
         }
@@ -118,15 +143,15 @@
          * @returns the current bounding box
          */
         public scale(factor: number): BoundingBox {
-            let diff = this.maximum.subtract(this.minimum);
-            let distance = diff.length() * factor;
-            diff.normalize();
-            let newRadius = diff.scale(distance / 2);
+            tempVector3Diff.copyFrom(this.maximum).subtractInPlace(this.minimum);
+            let distance = tempVector3Diff.length() * factor;
+            tempVector3Diff.normalize();
+            let newRadius = tempVector3Diff.scaleInPlace(distance * 0.5);
 
-            let min = this.center.subtract(newRadius);
-            let max = this.center.add(newRadius);
+            tempVector3Min.copyFrom(this.center).subtractInPlace(newRadius);
+            tempVector3Max.copyFrom(this.center).addInPlace(newRadius);
 
-            this.reConstruct(min, max);
+            this.reConstruct(tempVector3Min, tempVector3Max);
 
             return this;
         }
@@ -154,23 +179,11 @@
             Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this.minimumWorld);
             Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this.maximumWorld);
 
-            for (var index = 0; index < this.vectors.length; index++) {
+            for (var index = 0; index < 8; index++) {
                 var v = this.vectorsWorld[index];
                 Vector3.TransformCoordinatesToRef(this.vectors[index], world, v);
-
-                if (v.x < this.minimumWorld.x)
-                    this.minimumWorld.x = v.x;
-                if (v.y < this.minimumWorld.y)
-                    this.minimumWorld.y = v.y;
-                if (v.z < this.minimumWorld.z)
-                    this.minimumWorld.z = v.z;
-
-                if (v.x > this.maximumWorld.x)
-                    this.maximumWorld.x = v.x;
-                if (v.y > this.maximumWorld.y)
-                    this.maximumWorld.y = v.y;
-                if (v.z > this.maximumWorld.z)
-                    this.maximumWorld.z = v.z;
+                this.minimumWorld.minimizeInPlace(v);
+                this.maximumWorld.maximizeInPlace(v);
             }
 
             // Extend
