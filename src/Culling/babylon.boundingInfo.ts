@@ -77,7 +77,7 @@
          * max vector of the bounding box/sphere
          */
         public get maximum(): Vector3 {
-           return this.boundingBox.minimum;
+           return this.boundingBox.maximum;
         }
 
         /**
