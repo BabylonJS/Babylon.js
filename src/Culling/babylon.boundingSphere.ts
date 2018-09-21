@@ -1,7 +1,6 @@
 ﻿module BABYLON {
     // This matrix is used as a value to reset the bounding box.
     const _identityMatrix = Matrix.Identity();
-    const _tempRadiusVector = new Vector3(0, 0, 0);
 
     /**
      * Class used to store bounding sphere information
@@ -40,6 +39,8 @@
         constructor(min: Vector3, max: Vector3) {
             this.center = Vector3.Zero();
             this.centerWorld = Vector3.Zero();
+            this.minimum = Vector3.Zero();
+            this.maximum = Vector3.Zero();
             this.reConstruct(min, max);
         }
 
@@ -49,8 +50,8 @@
          * @param max defines the new maximum vector (in local space) 
          */
         public reConstruct(min: Vector3, max: Vector3) {
-            this.minimum = min.clone();
-            this.maximum = max.clone()
+            this.minimum.copyFrom(min);
+            this.maximum.copyFrom(max);
 
             var distance = Vector3.Distance(min, max);
 
@@ -68,10 +69,9 @@
          */
         public scale(factor: number): BoundingSphere {
             let newRadius = this.radius * factor;
-            _tempRadiusVector.set(newRadius, newRadius, newRadius)
-
-            let min = this.center.subtract(_tempRadiusVector);
-            let max = this.center.add(_tempRadiusVector);
+            const tempRadiusVector = Tmp.Vector3[0].set(newRadius, newRadius, newRadius);
+            let min = Tmp.Vector3[1].copyFrom(this.center).subtractInPlace(tempRadiusVector);
+            let max = Tmp.Vector3[2].copyFrom(this.center).addInPlace(tempRadiusVector);
 
             this.reConstruct(min, max);
 
