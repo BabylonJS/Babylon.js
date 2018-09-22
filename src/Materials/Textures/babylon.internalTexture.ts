@@ -87,11 +87,11 @@ module BABYLON {
          */
         public samples: number;
         /**
-         * Gets the type of the texture
+         * Gets the type of the texture (int, float...)
          */
         public type: number;
         /**
-         * Gets the format of the texture 
+         * Gets the format of the texture (RGB, RGBA...)
          */
         public format: number;
         /**

@@ -1,4 +1,9 @@
 ﻿module BABYLON {
+    /**
+     * Standard rendering pipeline
+     * Default pipeline should be used going forward but the standard pipeline will be kept for backwards compatibility.
+     * @see https://doc.babylonjs.com/how_to/using_standard_rendering_pipeline
+     */
     export class StandardRenderingPipeline extends PostProcessRenderPipeline implements IDisposable, IAnimatable {
         /**
         * Public members
@@ -433,6 +438,7 @@
         }
 
         /**
+         * Default pipeline should be used going forward but the standard pipeline will be kept for backwards compatibility.
          * @constructor
          * @param {string} name - The rendering pipeline name
          * @param {BABYLON.Scene} scene - The scene linked to this pipeline

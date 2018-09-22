@@ -211,7 +211,7 @@
                 };
                 var positions = <FloatArray>instance.getVerticesData(VertexBuffer.PositionKind);
                 positionFunction(positions);
-                instance._boundingInfo = new BoundingInfo(Tmp.Vector3[0], Tmp.Vector3[1]);
+                instance._boundingInfo = new BoundingInfo(Tmp.Vector3[2], Tmp.Vector3[3]);
                 instance._boundingInfo.update(instance._worldMatrix);
                 instance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
                 if (options.colors) {
@@ -275,7 +275,7 @@
                     ribbon._creationDataStorage.idx = (<any>vertexData)._idx;
                 }
                 ribbon._creationDataStorage.closePath = closePath;
-                (<any>ribbon)._closeArray = closeArray;
+                ribbon._creationDataStorage.closeArray = closeArray;
 
                 vertexData.applyToMesh(ribbon, updatable);
 
@@ -1027,16 +1027,16 @@
             var path3D;
             var pathArray;
             if (instance) { // tube update
-                var arc = options.arc || (<any>instance).arc;
                 let storage = instance._creationDataStorage!;
+                var arc = options.arc || storage.arc;
                 path3D =  storage.path3D.update(path);
                 pathArray = tubePathArray(path, path3D, storage.pathArray, radius, storage.tessellation, radiusFunction, storage.cap, arc);
                 instance = MeshBuilder.CreateRibbon("", { pathArray: pathArray, instance: instance });
-                instance._creationDataStorage = new _CreationDataStorage();
-                instance._creationDataStorage.path3D = path3D;
-                instance._creationDataStorage.pathArray = pathArray;
-                instance._creationDataStorage.arc = arc;
-                instance._creationDataStorage.radius = radius;
+                // Update mode, no need to recreate the storage.
+                storage.path3D = path3D;
+                storage.pathArray = pathArray;
+                storage.arc = arc;
+                storage.radius = radius;
 
                 return instance;
             }
@@ -1047,13 +1047,12 @@
             cap = (cap < 0 || cap > 3) ? 0 : cap;
             pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap, options.arc);
             var tube = MeshBuilder.CreateRibbon(name, { pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation, invertUV: invertUV, frontUVs: options.frontUVs, backUVs: options.backUVs }, scene);
-            tube._creationDataStorage = new _CreationDataStorage();
-            tube._creationDataStorage.pathArray = pathArray;
-            tube._creationDataStorage.path3D = path3D;
-            tube._creationDataStorage.tessellation = tessellation;
-            tube._creationDataStorage.cap = cap;
-            tube._creationDataStorage.arc = options.arc;
-            tube._creationDataStorage.radius = radius;
+            tube._creationDataStorage!.pathArray = pathArray;
+            tube._creationDataStorage!.path3D = path3D;
+            tube._creationDataStorage!.tessellation = tessellation;
+            tube._creationDataStorage!.cap = cap;
+            tube._creationDataStorage!.arc = options.arc;
+            tube._creationDataStorage!.radius = radius;
 
             return tube;
         }
@@ -1407,10 +1406,9 @@
             cap = (cap < 0 || cap > 3) ? 0 : cap;
             pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom);
             var extrudedGeneric = MeshBuilder.CreateRibbon(name, { pathArray: pathArray, closeArray: rbCA, closePath: rbCP, updatable: updtbl, sideOrientation: side, invertUV: invertUV, frontUVs: frontUVs || undefined, backUVs: backUVs || undefined }, scene);
-            extrudedGeneric._creationDataStorage = new _CreationDataStorage();
-            extrudedGeneric._creationDataStorage.pathArray = pathArray;
-            extrudedGeneric._creationDataStorage.path3D = path3D;
-            extrudedGeneric._creationDataStorage.cap = cap;
+            extrudedGeneric._creationDataStorage!.pathArray = pathArray;
+            extrudedGeneric._creationDataStorage!.path3D = path3D;
+            extrudedGeneric._creationDataStorage!.cap = cap;
 
             return extrudedGeneric;
         }
