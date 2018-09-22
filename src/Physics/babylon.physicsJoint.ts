@@ -2,6 +2,7 @@ module BABYLON {
 
     /**
      * Interface for Physics-Joint data
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export interface PhysicsJointData {
         //Important for some engines, optional!
@@ -32,8 +33,9 @@ module BABYLON {
     }
 
     /**
-     * This is a holder class for the physics joint created by the physics plugin.
-     * It holds a set of functions to control the underlying joint.
+     * This is a holder class for the physics joint created by the physics plugin
+     * It holds a set of functions to control the underlying joint
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export class PhysicsJoint {
 
@@ -86,7 +88,7 @@ module BABYLON {
         /**
          * Execute a function that is physics-plugin specific.
          * @param {Function} func the function that will be executed. 
-         *                        It accepts two parameters: the physics world and the physics joint.
+         *                        It accepts two parameters: the physics world and the physics joint
          */
         public executeNativeFunction(func: (world: any, physicsJoint: any) => void) {
             func(this._physicsPlugin.world, this._physicsJoint)
@@ -148,7 +150,8 @@ module BABYLON {
     }
 
     /**
-     * A class representing a physics distance joint.
+     * A class representing a physics distance joint
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export class DistanceJoint extends PhysicsJoint {
         /**
@@ -171,6 +174,7 @@ module BABYLON {
 
     /**
      * Represents a Motor-Enabled Joint
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
 
@@ -206,6 +210,7 @@ module BABYLON {
 
     /**
      * This class represents a single physics Hinge-Joint
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export class HingeJoint extends MotorEnabledJoint {
 
@@ -240,6 +245,7 @@ module BABYLON {
 
     /**
      * This class represents a dual hinge physics joint (same as wheel joint)
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export class Hinge2Joint extends MotorEnabledJoint {
 
@@ -276,6 +282,7 @@ module BABYLON {
 
     /**
      * Interface for a motor enabled joint
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export interface IMotorEnabledJoint {
         physicsJoint: any;
@@ -285,6 +292,7 @@ module BABYLON {
 
     /**
      * Joint data for a Distance-Joint
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export interface DistanceJointData extends PhysicsJointData {
         /**
@@ -297,6 +305,7 @@ module BABYLON {
 
     /**
      * Joint data from a spring joint
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export interface SpringJointData extends PhysicsJointData {
         /**

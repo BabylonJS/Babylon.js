@@ -2,6 +2,7 @@ module BABYLON {
 
     /**
      * The interface for the physics imposter parameters
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export interface PhysicsImpostorParameters {
         /**
@@ -32,6 +33,7 @@ module BABYLON {
 
     /**
      * Interface for a physics-enabled object
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export interface IPhysicsEnabledObject {
         /**
@@ -133,6 +135,7 @@ module BABYLON {
 
     /**
      * Represents a physics imposter
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export class PhysicsImpostor {
 
