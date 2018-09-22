@@ -61,11 +61,15 @@
          *  Gets or sets the Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
          */
         public set boundingBias(value: Vector2) {
-            if (this._boundingBias && this._boundingBias.equals(value)) {
-                return;
+            if (this._boundingBias) {
+                if (this._boundingBias.equals(value)) {
+                    return;
+                }
+                this._boundingBias.copyFrom(value);
             }
-
-            this._boundingBias = value.clone();
+            else {
+                this._boundingBias = value.clone();
+            }
 
             this._updateBoundingInfo(true, null);
         }

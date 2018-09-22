@@ -2,6 +2,12 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
+      "title": "Ribbon morphing",
+      "playgroundId": "#ACKC2#1",
+      "renderCount": 50,
+      "referenceImage": "ribbon morphing.png"
+    },    
+    {
       "title": "Clip planes",
       "playgroundId": "#Y6W087#0",
       "referenceImage": "clipplanes.png"

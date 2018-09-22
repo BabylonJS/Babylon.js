@@ -128,7 +128,8 @@
 - Added FXAA and MSAA support to the StandardRenderingPipeline ([julien-moreau](https://github.com/julien-moreau))
 - Make teleportCamera public in VR experience helper ([TrevorDev](https://github.com/TrevorDev))
 - Added optional alphaFilter parameter to ```CreateGroundFromHeightMap``` to allow for heightmaps to be created that ignore any transparent data ([Postman-nz](https://github.com/Postman-nz))
-- Added renormalization of mesh weights to babylon.mesh. Also added a validationSkin function to report out any errors on skinned meshes. ([Bolloxim](https://github.com/Bolloxim))
+- Fixed renormalization of mesh weights to in cleanMatrixWeights function. ([Bolloxim](https://github.com/Bolloxim))
+- Added a validationSkin function to report out any errors on skinned meshes. ([Bolloxim](https://github.com/Bolloxim))
 
 
 ### glTF Loader
@@ -203,6 +204,7 @@
 - trackPosition:false not working in webVRCamera/controllers ([TrevorDev](https://github.com/TrevorDev))
 - Spring Joint could not be removed ([TrevorDev](https://github.com/TrevorDev))
 - Sometimes duplicate controller models are loaded in VR ([TrevorDev](https://github.com/TrevorDev))
+- Particle emit rate over time does not reset on every particle system start ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 

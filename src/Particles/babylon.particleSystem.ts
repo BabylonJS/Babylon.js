@@ -655,17 +655,6 @@
             }
 
             this._addFactorGradient(this._emitRateGradients, gradient, factor, factor2);
-
-            if (!this._currentEmitRateGradient) {
-                this._currentEmitRateGradient = this._emitRateGradients[0];
-                this._currentEmitRate1 = this._currentEmitRateGradient.getFactor();
-                this._currentEmitRate2 = this._currentEmitRate1;
-            }
-
-            if (this._emitRateGradients.length === 2) {
-                this._currentEmitRate2 = this._emitRateGradients[1].getFactor();
-            }
-
             return this;
         }
 
@@ -809,6 +798,7 @@
          * @param gradient defines the gradient to use (between 0 and 1)
          * @param color1 defines the color to affect to the specified gradient
          * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
+         * @returns this particle system
          */
         public addColorGradient(gradient: number, color1: Color4, color2?: Color4): IParticleSystem {
             if (!this._colorGradients) {
@@ -837,6 +827,7 @@
         /**
          * Remove a specific color gradient
          * @param gradient defines the gradient to remove
+         * @returns this particle system
          */
         public removeColorGradient(gradient: number): IParticleSystem {
             if (!this._colorGradients) {
@@ -1031,6 +1022,18 @@
             this._actualFrame = 0;
             if (this._subEmitters && this._subEmitters.length != 0) {
                 this.activeSubSystems = new Array<ParticleSystem>();
+            }
+
+            // Reset emit gradient so it acts the same on every start
+            if(this._emitRateGradients){
+                if(this._emitRateGradients.length > 0){
+                    this._currentEmitRateGradient = this._emitRateGradients[0];
+                    this._currentEmitRate1 = this._currentEmitRateGradient.getFactor();
+                    this._currentEmitRate2 = this._currentEmitRate1;
+                }
+                if(this._emitRateGradients.length > 1){
+                    this._currentEmitRate2 = this._emitRateGradients[1].getFactor();
+                }
             }
 
             if (this.preWarmCycles) {
@@ -1451,6 +1454,7 @@
             return attributeNamesOrOptions;
         }
 
+        /** @hidden */
         public static _GetEffectCreationOptions(isAnimationSheetEnabled = false): string[] {
             var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "textureMask", "translationPivot", "eyePosition"];
 
@@ -1461,6 +1465,7 @@
             return effectCreationOption;
         }
 
+        /** @hidden */
         private _getEffect(blendMode: number): Effect {
             if (this._customEffect) {
                 return this._customEffect;

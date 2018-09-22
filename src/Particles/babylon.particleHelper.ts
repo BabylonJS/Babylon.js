@@ -88,7 +88,8 @@ module BABYLON {
         /**
          * Static function used to export a particle system to a ParticleSystemSet variable.
          * Please note that the emitter shape is not exported
-         * @param system defines the particle systems to export
+         * @param systems defines the particle systems to export
+         * @returns the created particle system set
          */
         public static ExportSet(systems: IParticleSystem[]): ParticleSystemSet {
             var set = new ParticleSystemSet();
