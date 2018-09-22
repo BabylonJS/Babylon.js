@@ -25850,16 +25850,12 @@ declare module BABYLON {
         render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh;
         private _onBeforeDraw;
         /**
-         * Normalize matrix weights so that all vertices have a total weight set to 1
-         */
-        cleanMatrixWeights(): void;
-        /**
          *   Renormalize the mesh and patch it up if there are no weights
          *   Similar to normalization by adding the weights comptue the reciprical and multiply all elements. this wil ensure that everything adds to 1. 
          *   However in the case of 0 weights then we set just a single influence to 1. 
          *   We check in the function for extra's present and if so we use the normalizeSkinWeightsWithExtras rather than the FourWeights version. 
          */
-        public normalizeSkinWeights(): void;
+        public cleanMatrixWeights(): void;
         /**
          * ValidateSkinning is used to determin that a mesh has valid skinning data along with skin metrics, if missing weights, 
          * or not normalized it is returned as invalid mesh the string can be used for console logs, or on screen messages to let

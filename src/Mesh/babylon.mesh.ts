@@ -1620,86 +1620,12 @@
         }
 
         /**
-         * Normalize matrix weights so that all vertices have a total weight set to 1
-         */
-        public cleanMatrixWeights(): void {
-            const epsilon: number = 1e-3;
-
-            let noInfluenceBoneIndex = 0.0;
-            if (this.skeleton) {
-                noInfluenceBoneIndex = this.skeleton.bones.length;
-            } else {
-                return;
-            }
-
-            let matricesIndices = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesKind));
-            let matricesIndicesExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind));
-            let matricesWeights = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsKind));
-            let matricesWeightsExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind));
-            let influencers = this.numBoneInfluencers;
-            let size = matricesWeights.length;
-
-            for (var i = 0; i < size; i += 4) {
-                let weight = 0.0;
-                let firstZeroWeight = -1;
-                for (var j = 0; j < 4; j++) {
-                    let w = matricesWeights[i + j];
-                    weight += w;
-                    if (w < epsilon && firstZeroWeight < 0) {
-                        firstZeroWeight = j;
-                    }
-                }
-                if (matricesWeightsExtra) {
-                    for (var j = 0; j < 4; j++) {
-                        let w = matricesWeightsExtra[i + j];
-                        weight += w;
-                        if (w < epsilon && firstZeroWeight < 0) {
-                            firstZeroWeight = j + 4;
-                        }
-                    }
-                }
-                if (firstZeroWeight < 0 || firstZeroWeight > (influencers - 1)) {
-                    firstZeroWeight = influencers - 1;
-                }
-                if (weight > epsilon) {
-                    let mweight = 1.0 / weight;
-                    for (var j = 0; j < 4; j++) {
-                        matricesWeights[i + j] *= mweight;
-                    }
-                    if (matricesWeightsExtra) {
-                        for (var j = 0; j < 4; j++) {
-                            matricesWeightsExtra[i + j] *= mweight;
-                        }
-                    }
-                } else {
-                    if (firstZeroWeight >= 4) {
-                        matricesWeightsExtra[i + firstZeroWeight - 4] = 1.0 - weight;
-                        matricesIndicesExtra[i + firstZeroWeight - 4] = noInfluenceBoneIndex;
-                    } else {
-                        matricesWeights[i + firstZeroWeight] = 1.0 - weight;
-                        matricesIndices[i + firstZeroWeight] = noInfluenceBoneIndex;
-                    }
-                }
-            }
-
-            this.setVerticesData(VertexBuffer.MatricesIndicesKind, matricesIndices);
-            if (matricesIndicesExtra) {
-                this.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, matricesIndicesExtra);
-            }
-
-            this.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeights);
-            if (matricesWeightsExtra) {
-                this.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, matricesWeightsExtra);
-            }
-        }
-
-        /**
          *   Renormalize the mesh and patch it up if there are no weights
          *   Similar to normalization by adding the weights comptue the reciprical and multiply all elements. this wil ensure that everything adds to 1. 
          *   However in the case of 0 weights then we set just a single influence to 1. 
          *   We check in the function for extra's present and if so we use the normalizeSkinWeightsWithExtras rather than the FourWeights version. 
          */
-        public normalizeSkinWeights(): void {
+        public cleanMatrixWeights(): void {
 
             if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
                 if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsExtraKind)) {
