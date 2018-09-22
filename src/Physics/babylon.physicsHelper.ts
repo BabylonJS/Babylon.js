@@ -707,7 +707,13 @@ module BABYLON {
      * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export interface PhysicsForceAndContactPoint {
+        /**
+         * The force applied at the contact point
+         */
         force: Vector3;
+        /**
+         * The contact point
+         */
         contactPoint: Vector3;
     }
 
@@ -716,7 +722,13 @@ module BABYLON {
      * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export interface PhysicsRadialExplosionEventData {
+        /**
+         * A sphere used for the radial explosion event
+         */
         sphere: Mesh;
+        /**
+         * An array of rays for the radial explosion event
+         */
         rays: Array<Ray>;
     }
 
@@ -725,6 +737,9 @@ module BABYLON {
      * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export interface PhysicsGravitationalFieldEventData {
+        /**
+         * A sphere mesh used for the gravitational field event
+         */
         sphere: Mesh;
     }
 
@@ -733,6 +748,9 @@ module BABYLON {
      * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export interface PhysicsUpdraftEventData {
+        /**
+         * A cylinder used for the updraft event
+         */
         cylinder: Mesh;
     }
 
@@ -741,6 +759,9 @@ module BABYLON {
      * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export interface PhysicsVortexEventData {
+        /**
+         * A cylinder used for the vortex event
+         */
         cylinder: Mesh;
     }
 
