@@ -682,17 +682,6 @@
             }
 
             this._addFactorGradient(this._startSizeGradients, gradient, factor, factor2);
-
-            if (!this._currentStartSizeGradient) {
-                this._currentStartSizeGradient = this._startSizeGradients[0];
-                this._currentStartSize1 = this._currentStartSizeGradient.getFactor();
-                this._currentStartSize2 = this._currentStartSize1;
-            }
-
-            if (this._startSizeGradients.length === 2) {
-                this._currentStartSize2 = this._startSizeGradients[1].getFactor();
-            }
-
             return this;
         }
 
@@ -1033,6 +1022,17 @@
                 }
                 if(this._emitRateGradients.length > 1){
                     this._currentEmitRate2 = this._emitRateGradients[1].getFactor();
+                }
+            }
+            // Reset start size gradient so it acts the same on every start
+            if(this._startSizeGradients){
+                if(this._startSizeGradients.length > 0){
+                    this._currentStartSizeGradient = this._startSizeGradients[0];
+                    this._currentStartSize1 = this._currentStartSizeGradient.getFactor();
+                    this._currentStartSize2 = this._currentStartSize1;
+                }
+                if(this._startSizeGradients.length > 1){
+                    this._currentStartSize2 = this._startSizeGradients[1].getFactor();
                 }
             }
 
