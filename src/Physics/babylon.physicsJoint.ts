@@ -190,8 +190,8 @@ module BABYLON {
         /**
          * Set the motor values.
          * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
+         * @param force the force to apply
+         * @param maxForce max force for this motor.
          */
         public setMotor(force?: number, maxForce?: number) {
             this._physicsPlugin.setMotor(this, force || 0, maxForce);
@@ -285,8 +285,23 @@ module BABYLON {
      * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
     export interface IMotorEnabledJoint {
+        /**
+         * Physics joint
+         */
         physicsJoint: any;
+        /**
+         * Sets the motor of the motor-enabled joint
+         * @param force The force of the motor
+         * @param maxForce The maximum force of the motor
+         * @param motorIndex The index of the motor
+         */
         setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
+        /**
+         * Sets the limit of the motor
+         * @param upperLimit The upper limit of the motor
+         * @param lowerLimit The lower limit of the motor
+         * @param motorIndex The index of the motor
+         */
         setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
     }
 
