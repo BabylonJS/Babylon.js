@@ -1,4 +1,7 @@
 ﻿module BABYLON {
+    /**
+     * Size options for a post process
+     */
     export type PostProcessOptions = { width: number, height: number };
 
     /**

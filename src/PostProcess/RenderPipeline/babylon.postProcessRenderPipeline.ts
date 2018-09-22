@@ -1,15 +1,27 @@
 module BABYLON {
+    /**
+     * PostProcessRenderPipeline
+     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
+     */
     export class PostProcessRenderPipeline {
 
         private _renderEffects: { [key: string]: PostProcessRenderEffect };
         private _renderEffectsForIsolatedPass: PostProcessRenderEffect[];
 
+        /**
+         * @hidden
+         */
         protected _cameras: Camera[];
 
         /** @hidden */
         @serialize()
         public _name: string;
 
+        /**
+         * Initializes a PostProcessRenderPipeline
+         * @param engine engine to add the pipeline to
+         * @param name name of the pipeline
+         */
         constructor(private engine: Engine, name: string) {
             this._name = name;
 
@@ -19,10 +31,17 @@ module BABYLON {
             this._cameras = [];
         }
 
+        /**
+         * "PostProcessRenderPipeline"
+         * @returns "PostProcessRenderPipeline"
+         */
         public getClassName(): string {
             return "PostProcessRenderPipeline";
         }
 
+        /**
+         * If all the render effects in the pipeline are support
+         */
         public get isSupported(): boolean {
             for (var renderEffectName in this._renderEffects) {
                 if (this._renderEffects.hasOwnProperty(renderEffectName)) {
@@ -35,6 +54,10 @@ module BABYLON {
             return true;
         }
 
+        /**
+         * Adds an effect to the pipeline
+         * @param renderEffect the effect to add
+         */
         public addEffect(renderEffect: PostProcessRenderEffect): void {
             (<any>this._renderEffects)[renderEffect._name] = renderEffect;
         }
@@ -61,8 +84,11 @@ module BABYLON {
             renderEffects._enable(Tools.MakeArray(cameras || this._cameras));
         }
 
+        /** @hidden */
         public _disableEffect(renderEffectName: string, cameras: Nullable<Camera[]>): void;
+        /** @hidden */
         public _disableEffect(renderEffectName: string, cameras: Nullable<Camera[]>): void;
+        /** @hidden */
         public _disableEffect(renderEffectName: string, cameras: Nullable<Camera[]>): void {
             var renderEffects: PostProcessRenderEffect = (<any>this._renderEffects)[renderEffectName];
 
@@ -168,6 +194,9 @@ module BABYLON {
             return false;
         }
 
+        /**
+         * Disposes of the pipeline
+         */
         public dispose() {
             // Must be implemented by children 
         }

@@ -5,6 +5,7 @@
      **/
     export class _CreationDataStorage {
         public closePath?: boolean;
+        public closeArray?: boolean;
         public idx: number[];
         public dashSize: number;
         public gapSize: number;

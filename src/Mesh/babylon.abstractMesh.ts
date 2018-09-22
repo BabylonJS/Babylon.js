@@ -474,9 +474,6 @@
         /** @hidden */
         public _edgesRenderer: Nullable<IEdgesRenderer>;
 
-        // Cache
-        private _collisionsTransformMatrix = Matrix.Zero();
-        private _collisionsScalingMatrix = Matrix.Zero();
         /** @hidden */
         public _masterMesh: Nullable<AbstractMesh>;
         /** @hidden */
@@ -1045,9 +1042,10 @@
             if (!this.subMeshes) {
                 return this;
             }
-            for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
+            let count = this.subMeshes.length;
+            for (var subIndex = 0; subIndex < count; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
-                if (!subMesh.IsGlobal) {
+                if (count > 1 || !subMesh.IsGlobal) {
                     subMesh.updateBoundingInfo(matrix);
                 }
             }
@@ -1261,9 +1259,11 @@
                 return this;
 
             // Transformation matrix
-            Matrix.ScalingToRef(1.0 / collider._radius.x, 1.0 / collider._radius.y, 1.0 / collider._radius.z, this._collisionsScalingMatrix);
-            this.worldMatrixFromCache.multiplyToRef(this._collisionsScalingMatrix, this._collisionsTransformMatrix);
-            this._processCollisionsForSubMeshes(collider, this._collisionsTransformMatrix);
+            const collisionsScalingMatrix = Tmp.Matrix[0];
+            const collisionsTransformMatrix = Tmp.Matrix[1];
+            Matrix.ScalingToRef(1.0 / collider._radius.x, 1.0 / collider._radius.y, 1.0 / collider._radius.z, collisionsScalingMatrix);
+            this.worldMatrixFromCache.multiplyToRef(collisionsScalingMatrix, collisionsTransformMatrix);
+            this._processCollisionsForSubMeshes(collider, collisionsTransformMatrix);
             return this;
         }
 
