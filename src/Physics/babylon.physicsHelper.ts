@@ -92,6 +92,7 @@ module BABYLON {
         }
 
         /**
+         * Creates a gravitational field
          * @param {Vector3} origin the origin of the explosion
          * @param {number} radius the explosion radius
          * @param {number} strength the explosion strength
