@@ -1,39 +1,152 @@
 module BABYLON {
 
+    /**
+     * The interface for the physics imposter parameters
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     */
     export interface PhysicsImpostorParameters {
+        /**
+         * The mass of the physics imposter
+         */
         mass: number;
+        /**
+         * The friction of the physics imposter
+         */
         friction?: number;
+        /**
+         * The coefficient of restitution of the physics imposter
+         */
         restitution?: number;
+        /**
+         * The native options of the physics imposter
+         */
         nativeOptions?: any;
+        /**
+         * Specifies if the parent should be ignored
+         */
         ignoreParent?: boolean;
+        /**
+         * Specifies if bi-directional transformations should be disabled
+         */
         disableBidirectionalTransformation?: boolean;
     }
 
+    /**
+     * Interface for a physics-enabled object
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     */
     export interface IPhysicsEnabledObject {
+        /**
+         * The position of the physics-enabled object
+         */
         position: Vector3;
+        /**
+         * The rotation of the physics-enabled object
+         */
         rotationQuaternion: Nullable<Quaternion>;
+        /**
+         * The scale of the physics-enabled object
+         */
         scaling: Vector3;
+        /**
+         * The rotation of the physics-enabled object
+         */
         rotation?: Vector3;
+        /**
+         * The parent of the physics-enabled object
+         */
         parent?: any;
+        /**
+         * The bounding info of the physics-enabled object
+         * @returns The bounding info of the physics-enabled object
+         */
         getBoundingInfo(): BoundingInfo;
+        /**
+         * Computes the world matrix
+         * @param force Specifies if the world matrix should be computed by force
+         * @returns A world matrix
+         */
         computeWorldMatrix(force: boolean): Matrix;
+        /**
+         * Gets the world matrix
+         * @returns A world matrix
+         */
         getWorldMatrix?(): Matrix;
+        /**
+         * Gets the child meshes
+         * @param directDescendantsOnly Specifies if only direct-descendants should be obtained
+         * @returns An array of abstract meshes
+         */
         getChildMeshes?(directDescendantsOnly?: boolean): Array<AbstractMesh>;
+        /**
+         * Gets the vertex data
+         * @param kind The type of vertex data
+         * @returns A nullable array of numbers, or a float32 array
+         */
         getVerticesData(kind: string): Nullable<Array<number> | Float32Array>;
+        /**
+         * Gets the indices from the mesh
+         * @returns A nullable array of index arrays
+         */
         getIndices?(): Nullable<IndicesArray>;
+        /**
+         * Gets the scene from the mesh
+         * @returns the indices array or null
+         */
         getScene?(): Scene;
+        /**
+         * Gets the absolute position from the mesh
+         * @returns the absolute position
+         */
         getAbsolutePosition(): Vector3;
+        /**
+         * Gets the absolute pivot point from the mesh
+         * @returns the absolute pivot point
+         */
         getAbsolutePivotPoint(): Vector3;
+        /**
+         * Rotates the mesh
+         * @param axis The axis of rotation
+         * @param amount The amount of rotation
+         * @param space The space of the rotation
+         * @returns The rotation transform node
+         */
         rotate(axis: Vector3, amount: number, space?: Space): TransformNode;
+        /**
+         * Translates the mesh
+         * @param axis The axis of translation
+         * @param distance The distance of translation
+         * @param space The space of the translation
+         * @returns The transform node
+         */
         translate(axis: Vector3, distance: number, space?: Space): TransformNode;
+        /**
+         * Sets the absolute position of the mesh
+         * @param absolutePosition The absolute position of the mesh
+         * @returns The transform node
+         */
         setAbsolutePosition(absolutePosition: Vector3): TransformNode;
+        /**
+         * Gets the class name of the mesh
+         * @returns The class name
+         */
         getClassName(): string;
     }
 
+    /**
+     * Represents a physics imposter
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     */
     export class PhysicsImpostor {
 
+        /**
+         * The default object size of the imposter
+         */
         public static DEFAULT_OBJECT_SIZE: Vector3 = new Vector3(1, 1, 1);
 
+        /**
+         * The identity quaternion of the imposter
+         */
         public static IDENTITY_QUATERNION = Quaternion.Identity();
 
         private _physicsEngine: Nullable<IPhysicsEngine>;
@@ -57,10 +170,16 @@ module BABYLON {
         private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
         private static _tmpQuat: Quaternion = Quaternion.Identity();
 
+        /**
+         * Specifies if the physics imposter is disposed
+         */
         get isDisposed(): boolean {
             return this._isDisposed;
         }
 
+        /**
+         * Gets the mass of the physics imposter
+         */
         get mass(): number {
             return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getBodyMass(this) : 0;
         }
@@ -69,10 +188,16 @@ module BABYLON {
             this.setMass(value);
         }
 
+        /**
+         * Gets the coefficient of friction
+         */
         get friction(): number {
             return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getBodyFriction(this) : 0;
         }
 
+        /**
+         * Sets the coefficient of friction
+         */
         set friction(value: number) {
             if (!this._physicsEngine) {
                 return;
@@ -80,10 +205,16 @@ module BABYLON {
             this._physicsEngine.getPhysicsPlugin().setBodyFriction(this, value);
         }
 
+        /**
+         * Gets the coefficient of restitution
+         */
         get restitution(): number {
             return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getBodyRestitution(this) : 0;
         }
 
+        /**
+         * Sets the coefficient of restitution
+         */
         set restitution(value: number) {
             if (!this._physicsEngine) {
                 return;
@@ -91,7 +222,10 @@ module BABYLON {
             this._physicsEngine.getPhysicsPlugin().setBodyRestitution(this, value);
         }
 
-        //set by the physics engine when adding this impostor to the array.
+        /**
+         * The unique id of the physics imposter
+         * set by the physics engine when adding this impostor to the array
+         */
         public uniqueId: number;
 
         private _joints: Array<{
@@ -99,7 +233,22 @@ module BABYLON {
             otherImpostor: PhysicsImpostor
         }>;
 
-        constructor(public object: IPhysicsEnabledObject, public type: number, private _options: PhysicsImpostorParameters = { mass: 0 }, private _scene?: Scene) {
+        /**
+         * Initializes the physics imposter
+         * @param object The physics-enabled object used as the physics imposter
+         * @param type The type of the physics imposter
+         * @param _options The options for the physics imposter
+         * @param _scene The Babylon scene
+         */
+        constructor(
+            /**
+             * The physics-enabled object used as the physics imposter
+             */
+            public object: IPhysicsEnabledObject, 
+            /**
+             * The type of the physics imposter
+             */
+            public type: number, private _options: PhysicsImpostorParameters = { mass: 0 }, private _scene?: Scene) {
 
             //sanity check!
             if (!this.object) {
@@ -174,11 +323,16 @@ module BABYLON {
 
         /**
          * Should a new body be generated.
+         * @returns boolean specifying if body initialization is required
          */
         public isBodyInitRequired(): boolean {
             return this._bodyUpdateRequired || (!this._physicsBody && !this._parent);
         }
 
+        /**
+         * Sets the updated scaling
+         * @param updated Specifies if the scaling is updated
+         */
         public setScalingUpdated(updated: boolean) {
             this.forceUpdate();
         }
@@ -205,10 +359,17 @@ module BABYLON {
             return (this._parent && !this._options.ignoreParent) ? this._parent.physicsBody : this._physicsBody;
         }
 
+        /**
+         * Get the parent of the physics imposter
+         * @returns Physics imposter or null
+         */
         public get parent(): Nullable<PhysicsImpostor> {
             return !this._options.ignoreParent && this._parent ? this._parent : null;
         }
 
+        /**
+         * Sets the parent of the physics imposter
+         */
         public set parent(value: Nullable<PhysicsImpostor>) {
             this._parent = value;
         }
@@ -224,10 +385,17 @@ module BABYLON {
             this.resetUpdateFlags();
         }
 
+        /**
+         * Resets the update flags
+         */
         public resetUpdateFlags() {
             this._bodyUpdateRequired = false;
         }
 
+        /**
+         * Gets the object extend size
+         * @returns the object extend size
+         */
         public getObjectExtendSize(): Vector3 {
             if (this.object.getBoundingInfo) {
                 let q = this.object.rotationQuaternion;
@@ -249,6 +417,10 @@ module BABYLON {
             }
         }
 
+        /**
+         * Gets the object center
+         * @returns The object center
+         */
         public getObjectCenter(): Vector3 {
             if (this.object.getBoundingInfo) {
                 let boundingInfo = this.object.getBoundingInfo();
@@ -259,14 +431,18 @@ module BABYLON {
         }
 
         /**
-         * Get a specific parametes from the options parameter.
+         * Get a specific parametes from the options parameter
+         * @param paramName The object parameter name
+         * @returns The object parameter
          */
-        public getParam(paramName: string) {
+        public getParam(paramName: string): any {
             return (<any>this._options)[paramName];
         }
 
         /**
          * Sets a specific parameter in the options given to the physics plugin
+         * @param paramName The parameter name
+         * @param value The value of the parameter
          */
         public setParam(paramName: string, value: number) {
             (<any>this._options)[paramName] = value;
@@ -275,6 +451,7 @@ module BABYLON {
 
         /**
          * Specifically change the body's mass option. Won't recreate the physics body object
+         * @param mass The mass of the physics imposter
          */
         public setMass(mass: number) {
             if (this.getParam("mass") !== mass) {
@@ -285,20 +462,36 @@ module BABYLON {
             }
         }
 
+        /**
+         * Gets the linear velocity
+         * @returns  linear velocity or null
+         */
         public getLinearVelocity(): Nullable<Vector3> {
             return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getLinearVelocity(this) : Vector3.Zero();
         }
 
+        /**
+         * Sets the linear velocity
+         * @param velocity  linear velocity or null
+         */
         public setLinearVelocity(velocity: Nullable<Vector3>) {
             if (this._physicsEngine) {
                 this._physicsEngine.getPhysicsPlugin().setLinearVelocity(this, velocity);
             }
         }
 
+        /**
+         * Gets the angular velocity
+         * @returns angular velocity or null 
+         */
         public getAngularVelocity(): Nullable<Vector3> {
             return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getAngularVelocity(this) : Vector3.Zero();
         }
 
+        /**
+         * Sets the angular velocity
+         * @param velocity The velocity or null
+         */
         public setAngularVelocity(velocity: Nullable<Vector3>) {
             if (this._physicsEngine) {
                 this._physicsEngine.getPhysicsPlugin().setAngularVelocity(this, velocity);
@@ -306,9 +499,11 @@ module BABYLON {
         }
 
         /**
-         * Execute a function with the physics plugin native code.
-         * Provide a function the will have two variables - the world object and the physics body object.
+         * Execute a function with the physics plugin native code
+         * Provide a function the will have two variables - the world object and the physics body object
+         * @param func The function to execute with the physics plugin native code
          */
+
         public executeNativeFunction(func: (world: any, physicsBody: any) => void) {
             if (this._physicsEngine) {
                 func(this._physicsEngine.getPhysicsPlugin().world, this.physicsBody);
@@ -316,12 +511,17 @@ module BABYLON {
         }
 
         /**
-         * Register a function that will be executed before the physics world is stepping forward.
+         * Register a function that will be executed before the physics world is stepping forward
+         * @param func The function to execute before the physics world is stepped forward
          */
         public registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void {
             this._onBeforePhysicsStepCallbacks.push(func);
         }
 
+        /**
+         * Unregister a function that will be executed before the physics world is stepping forward
+         * @param func The function to execute before the physics world is stepped forward
+         */
         public unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void {
             var index = this._onBeforePhysicsStepCallbacks.indexOf(func);
 
@@ -334,11 +534,16 @@ module BABYLON {
 
         /**
          * Register a function that will be executed after the physics step
+         * @param func The function to execute after physics step
          */
         public registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void {
             this._onAfterPhysicsStepCallbacks.push(func);
         }
 
+        /**
+         * Unregisters a function that will be executed after the physics step
+         * @param func The function to execute after physics step
+         */
         public unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void {
             var index = this._onAfterPhysicsStepCallbacks.indexOf(func);
 
@@ -350,13 +555,20 @@ module BABYLON {
         }
 
         /**
-         * register a function that will be executed when this impostor collides against a different body.
+         * register a function that will be executed when this impostor collides against a different body
+         * @param collideAgainst Physics imposter, or array of physics imposters to collide against
+         * @param func Callback that is executed on collision
          */
         public registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void {
             var collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst]
             this._onPhysicsCollideCallbacks.push({ callback: func, otherImpostors: collidedAgainstList });
         }
 
+        /**
+         * Unregisters the physics imposter on contact
+         * @param collideAgainst The physics object to collide against
+         * @param func Callback to execute on collision
+         */
         public unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void {
             var collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst]
             var index = -1;
@@ -386,7 +598,11 @@ module BABYLON {
         private _tmpQuat: Quaternion = new Quaternion();
         private _tmpQuat2: Quaternion = new Quaternion();
 
-        public getParentsRotation() {
+        /**
+         * Get the parent rotation
+         * @returns The parent rotation
+         */
+        public getParentsRotation(): Quaternion {
             let parent = this.object.parent;
             this._tmpQuat.copyFromFloats(0, 0, 0, 1);
             while (parent) {
@@ -428,7 +644,7 @@ module BABYLON {
         }
 
         /**
-         * this function is executed by the physics engine.
+         * this function is executed by the physics engine
          */
         public afterStep = () => {
             if (!this._physicsEngine) {
@@ -457,7 +673,9 @@ module BABYLON {
          */
         public onCollideEvent: Nullable<(collider: PhysicsImpostor, collidedWith: PhysicsImpostor) => void> = null;
 
-        //event and body object due to cannon's event-based architecture.
+        /**
+         * event and body object due to cannon's event-based architecture.
+         */
         public onCollide = (e: { body: any }) => {
             if (!this._onPhysicsCollideCallbacks.length && !this.onCollideEvent) {
                 return;
@@ -483,6 +701,9 @@ module BABYLON {
 
         /**
          * Apply a force 
+         * @param force The force to apply
+         * @param contactPoint The contact point for the force
+         * @returns The physics imposter
          */
         public applyForce(force: Vector3, contactPoint: Vector3): PhysicsImpostor {
             if (this._physicsEngine) {
@@ -493,6 +714,9 @@ module BABYLON {
 
         /**
          * Apply an impulse
+         * @param force The impulse force
+         * @param contactPoint The contact point for the impulse force
+         * @returns The physics imposter
          */
         public applyImpulse(force: Vector3, contactPoint: Vector3): PhysicsImpostor {
             if (this._physicsEngine) {
@@ -503,7 +727,11 @@ module BABYLON {
         }
 
         /**
-         * A help function to create a joint.
+         * A help function to create a joint
+         * @param otherImpostor A physics imposter used to create a joint
+         * @param jointType The type of joint
+         * @param jointData The data for the joint
+         * @returns The physics imposter
          */
         public createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): PhysicsImpostor {
             var joint = new PhysicsJoint(jointType, jointData);
@@ -513,7 +741,10 @@ module BABYLON {
         }
 
         /**
-         * Add a joint to this impostor with a different impostor.
+         * Add a joint to this impostor with a different impostor
+         * @param otherImpostor A physics imposter used to add a joint
+         * @param joint The joint to add
+         * @returns The physics imposter
          */
         public addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): PhysicsImpostor {
             this._joints.push({
@@ -530,6 +761,7 @@ module BABYLON {
 
         /**
          * Will keep this body still, in a sleep mode.
+         * @returns the physics imposter
          */
         public sleep(): PhysicsImpostor {
             if (this._physicsEngine) {
@@ -541,6 +773,7 @@ module BABYLON {
 
         /**
          * Wake the body up.
+         * @returns The physics imposter
          */
         public wakeUp(): PhysicsImpostor {
             if (this._physicsEngine) {
@@ -550,11 +783,19 @@ module BABYLON {
             return this;
         }
 
+        /**
+         * Clones the physics imposter
+         * @param newObject The physics imposter clones to this physics-enabled object
+         * @returns A nullable physics imposter
+         */
         public clone(newObject: IPhysicsEnabledObject): Nullable<PhysicsImpostor> {
             if (!newObject) return null;
             return new PhysicsImpostor(newObject, this.type, this._options, this._scene);
         }
 
+        /**
+         * Disposes the physics imposter
+         */
         public dispose(/*disposeChildren: boolean = true*/) {
             //no dispose if no physics engine is available.
             if (!this._physicsEngine) {
@@ -584,10 +825,18 @@ module BABYLON {
             this._isDisposed = true;
         }
 
+        /**
+         * Sets the delta position
+         * @param position The delta position amount
+         */
         public setDeltaPosition(position: Vector3) {
             this._deltaPosition.copyFrom(position);
         }
 
+        /**
+         * Sets the delta rotation
+         * @param rotation The delta rotation amount
+         */
         public setDeltaRotation(rotation: Quaternion) {
             if (!this._deltaRotation) {
                 this._deltaRotation = new Quaternion();
@@ -596,6 +845,11 @@ module BABYLON {
             this._deltaRotationConjugated = this._deltaRotation.conjugate();
         }
 
+        /**
+         * Gets the box size of the physics imposter and stores the result in the input parameter
+         * @param result Stores the box size
+         * @returns The physics imposter
+         */
         public getBoxSizeToRef(result: Vector3): PhysicsImpostor {
             if (this._physicsEngine) {
                 this._physicsEngine.getPhysicsPlugin().getBoxSizeToRef(this, result);
@@ -604,6 +858,10 @@ module BABYLON {
             return this;
         }
 
+        /**
+         * Gets the radius of the physics imposter
+         * @returns Radius of the physics imposter
+         */
         public getRadius(): number {
             return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getRadius(this) : 0;
         }
@@ -714,13 +972,37 @@ module BABYLON {
         }
 
         //Impostor types
+        /**
+         * No-Imposter type
+         */
         public static NoImpostor = 0;
+        /**
+         * Sphere-Imposter type
+         */
         public static SphereImpostor = 1;
+        /**
+         * Box-Imposter type
+         */
         public static BoxImpostor = 2;
+        /**
+         * Plane-Imposter type
+         */
         public static PlaneImpostor = 3;
+        /**
+         * Mesh-imposter type
+         */
         public static MeshImpostor = 4;
+        /**
+         * Cylinder-Imposter type
+         */
         public static CylinderImpostor = 7;
+        /**
+         * Particle-Imposter type
+         */
         public static ParticleImpostor = 8;
+        /**
+         * Heightmap-Imposter type
+         */
         public static HeightmapImpostor = 9;
     }
 }
