@@ -780,7 +780,7 @@
             if (!origin) {
                 origin = this.position;
             }
-            var forward = new Vector3(0, 0, 1);
+            var forward = this._scene.useRightHandedSystem ? new Vector3(0, 0, -1) : new Vector3(0, 0, 1);
             var forwardWorld = Vector3.TransformNormal(forward, transform);
 
             var direction = Vector3.Normalize(forwardWorld);
