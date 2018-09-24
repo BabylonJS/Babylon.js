@@ -1,5 +1,6 @@
 module BABYLON {
     /**
+     * @ignore
      * This is a list of all the different input types that are available in the application.
      * Fo instance: ArcRotateCameraGamepadInput...
      */
