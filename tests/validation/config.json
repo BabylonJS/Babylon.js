@@ -2,6 +2,11 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
+      "title": "Color Grading",
+      "playgroundId": "#8EDB5N#2",
+      "referenceImage": "colorGrading.png"
+    },
+    {
       "title": "Ribbon morphing",
       "playgroundId": "#ACKC2#1",
       "renderCount": 50,
