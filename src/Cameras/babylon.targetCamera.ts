@@ -350,6 +350,7 @@
         }
 
         private _cachedRotationZ = 0;
+        private _cachedQuaternionRotationZ = 0;
         /** @hidden */
         public _getViewMatrix(): Matrix {
             if (this.lockedTarget) {
@@ -359,8 +360,11 @@
             // Compute
             this._updateCameraRotationMatrix();
 
-            // Apply the changed rotation to the upVector.
-            if (this._cachedRotationZ != this.rotation.z) {
+            // Apply the changed rotation to the upVector
+            if (this.rotationQuaternion && this._cachedQuaternionRotationZ != this.rotationQuaternion.z) {
+                this._rotateUpVectorWithCameraRotationMatrix();
+                this._cachedQuaternionRotationZ = this.rotationQuaternion.z;
+            } else if (this._cachedRotationZ != this.rotation.z) {
                 this._rotateUpVectorWithCameraRotationMatrix();
                 this._cachedRotationZ = this.rotation.z;
             }
