@@ -111,7 +111,7 @@
          * @returns a boolean specifying if alpha blending is needed
          */
         public needAlphaBlending(): boolean {
-            return (this.alpha < 1.0);
+            return (this.alpha < 1.0) || this._options.needAlphaBlending;
         }
 
         /**

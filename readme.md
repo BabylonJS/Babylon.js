@@ -124,3 +124,7 @@ If you want to contribute, please read our [contribution guidelines](https://git
 ## Features
 
 To get a complete list of supported features, please visit our [website](https://www.babylonjs.com/#specifications).
+
+## Build
+
+Babylon.js is automatically built using [Gulp](https://gulpjs.com/). For further instructions see the readme at [/Tools/Gulp](https://github.com/BabylonJS/Babylon.js/tree/master/Tools/Gulp).
