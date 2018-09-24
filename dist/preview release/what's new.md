@@ -128,6 +128,8 @@
 - Added FXAA and MSAA support to the StandardRenderingPipeline ([julien-moreau](https://github.com/julien-moreau))
 - Make teleportCamera public in VR experience helper ([TrevorDev](https://github.com/TrevorDev))
 - Added optional alphaFilter parameter to ```CreateGroundFromHeightMap``` to allow for heightmaps to be created that ignore any transparent data ([Postman-nz](https://github.com/Postman-nz))
+- Fixed renormalization of mesh weights to in cleanMatrixWeights function. ([Bolloxim](https://github.com/Bolloxim))
+- Added a validationSkin function to report out any errors on skinned meshes. ([Bolloxim](https://github.com/Bolloxim))
 
 
 ### glTF Loader
@@ -140,6 +142,7 @@
 - Added support for MSFT_audio_emitter ([najadojo](http://www.github.com/najadojo))
 - Added support for custom loader extensions ([bghgary](http://www.github.com/bghgary))
 - Added support for validating assets using [glTF-Validator](https://github.com/KhronosGroup/glTF-Validator) ([bghgary](http://www.github.com/bghgary))
+- Added automatically renormalizes skinweights when loading geometry. Calls core mesh functions to do this ([Bolloxim](https://github.com/Bolloxim))
 
 ### glTF Serializer
 - Added support for exporting the scale, rotation and offset texture properties ([kcoley](http://www.github.com/kcoley))
@@ -201,7 +204,7 @@
 - trackPosition:false not working in webVRCamera/controllers ([TrevorDev](https://github.com/TrevorDev))
 - Spring Joint could not be removed ([TrevorDev](https://github.com/TrevorDev))
 - Sometimes duplicate controller models are loaded in VR ([TrevorDev](https://github.com/TrevorDev))
-- Particle emit rate over time does not reset on every particle system start ([TrevorDev](https://github.com/TrevorDev))
+- Particle emit rate and start size over time do not reset on every particle system start ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 

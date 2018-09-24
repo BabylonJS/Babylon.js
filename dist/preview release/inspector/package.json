@@ -27,8 +27,10 @@
         "inspector"
     ],
     "license": "Apache-2.0",
-    "peerDependencies": {
-        "babylonjs": ">=3.2.0-alpha"
+    "dependencies": {
+        "babylonjs": ">3.2.0",
+        "babylonjs-gui": ">3.2.0",
+        "babylonjs-loaders": ">3.2.0"
     },
     "engines": {
         "node": "*"

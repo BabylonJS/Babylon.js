@@ -1621,79 +1621,163 @@
         }
 
         /**
-         * Normalize matrix weights so that all vertices have a total weight set to 1
+         *   Renormalize the mesh and patch it up if there are no weights
+         *   Similar to normalization by adding the weights compute the reciprocal and multiply all elements, this wil ensure that everything adds to 1. 
+         *   However in the case of zero weights then we set just a single influence to 1. 
+         *   We check in the function for extra's present and if so we use the normalizeSkinWeightsWithExtras rather than the FourWeights version. 
          */
         public cleanMatrixWeights(): void {
-            const epsilon: number = 1e-3;
 
-            let noInfluenceBoneIndex = 0.0;
-            if (this.skeleton) {
-                noInfluenceBoneIndex = this.skeleton.bones.length;
-            } else {
-                return;
-            }
-
-            let matricesIndices = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesKind));
-            let matricesIndicesExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind));
-            let matricesWeights = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsKind));
-            let matricesWeightsExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind));
-            let influencers = this.numBoneInfluencers;
-            let size = matricesWeights.length;
-
-            for (var i = 0; i < size; i += 4) {
-                let weight = 0.0;
-                let firstZeroWeight = -1;
-                for (var j = 0; j < 4; j++) {
-                    let w = matricesWeights[i + j];
-                    weight += w;
-                    if (w < epsilon && firstZeroWeight < 0) {
-                        firstZeroWeight = j;
-                    }
+            if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
+                if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsExtraKind)) {
+                    this.normalizeSkinWeightsAndExtra();
                 }
-                if (matricesWeightsExtra) {
-                    for (var j = 0; j < 4; j++) {
-                        let w = matricesWeightsExtra[i + j];
-                        weight += w;
-                        if (w < epsilon && firstZeroWeight < 0) {
-                            firstZeroWeight = j + 4;
-                        }
-                    }
+                else {
+                    this.normalizeSkinFourWeights();
                 }
-                if (firstZeroWeight < 0 || firstZeroWeight > (influencers - 1)) {
-                    firstZeroWeight = influencers - 1;
-                }
-                if (weight > epsilon) {
-                    let mweight = 1.0 / weight;
-                    for (var j = 0; j < 4; j++) {
-                        matricesWeights[i + j] *= mweight;
-                    }
-                    if (matricesWeightsExtra) {
-                        for (var j = 0; j < 4; j++) {
-                            matricesWeightsExtra[i + j] *= mweight;
-                        }
-                    }
-                } else {
-                    if (firstZeroWeight >= 4) {
-                        matricesWeightsExtra[i + firstZeroWeight - 4] = 1.0 - weight;
-                        matricesIndicesExtra[i + firstZeroWeight - 4] = noInfluenceBoneIndex;
-                    } else {
-                        matricesWeights[i + firstZeroWeight] = 1.0 - weight;
-                        matricesIndices[i + firstZeroWeight] = noInfluenceBoneIndex;
-                    }
-                }
-            }
-
-            this.setVerticesData(VertexBuffer.MatricesIndicesKind, matricesIndices);
-            if (matricesIndicesExtra) {
-                this.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, matricesIndicesExtra);
-            }
-
-            this.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeights);
-            if (matricesWeightsExtra) {
-                this.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, matricesWeightsExtra);
-            }
+            }    
         }
 
+        // faster 4 weight version. 
+        private normalizeSkinFourWeights(): void {
+
+            let matricesWeights = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsKind));
+            let numWeights = matricesWeights.length;
+
+            for (var a = 0; a < numWeights; a += 4) {
+                // accumulate weights
+                var t = matricesWeights[a] + matricesWeights[a+1] +matricesWeights[a+2] +matricesWeights[a+3];
+                // check for invalid weight and just set it to 1.
+                if (t === 0) matricesWeights[a] = 1;
+                else{
+                    // renormalize so everything adds to 1 use reciprical
+                    let recip = 1 / t;
+                    matricesWeights[a] *= recip;
+                    matricesWeights[a+1] *= recip;
+                    matricesWeights[a+2] *= recip;
+                    matricesWeights[a+3] *= recip;
+                }
+                
+            }
+            this.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeights);
+        }
+        // handle special case of extra verts.  (in theory gltf can handle 12 influences)
+        private normalizeSkinWeightsAndExtra(): void {
+            
+            let matricesWeightsExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind));
+            let matricesWeights = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsKind));
+            let numWeights = matricesWeights.length;
+
+            for (var a = 0; a  < numWeights; a += 4){
+                // accumulate weights
+                var t = matricesWeights[a] + matricesWeights[a+1] +matricesWeights[a+2] +matricesWeights[a+3];
+                t += matricesWeightsExtra[a] + matricesWeightsExtra[a+1] +matricesWeightsExtra[a+2] +matricesWeightsExtra[a+3];
+                // check for invalid weight and just set it to 1.
+                if (t === 0) matricesWeights[a] = 1;
+                else {
+                    // renormalize so everything adds to 1 use reciprical 
+                    let recip = 1 / t;
+                    matricesWeights[a] *= recip;
+                    matricesWeights[a+1] *= recip;
+                    matricesWeights[a+2] *= recip;
+                    matricesWeights[a+3] *= recip;
+                    // same goes for extras
+                    matricesWeightsExtra[a] *= recip;
+                    matricesWeightsExtra[a+1] *= recip;
+                    matricesWeightsExtra[a+2] *= recip;
+                    matricesWeightsExtra[a+3] *= recip;
+                }
+                
+            }
+            this.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeights);
+            this.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeightsExtra);
+        }
+
+        /**
+         * ValidateSkinning is used to determine that a mesh has valid skinning data along with skin metrics, if missing weights, 
+         * or not normalized it is returned as invalid mesh the string can be used for console logs, or on screen messages to let
+         * the user know there was an issue with importing the mesh
+         * @returns a validation object with skinned, valid and report string
+         */
+        public validateSkinning() : {skinned:boolean, valid:boolean, report:string} {
+
+            let matricesWeightsExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind));
+            let matricesWeights = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsKind));
+            if (matricesWeights === null || this.skeleton == null) {
+                return {skinned:false, valid: true, report:"not skinned"}
+            }
+
+            let numWeights = matricesWeights.length;
+            let numberNotSorted : number = 0;
+            let missingWeights : number  = 0;
+            let maxUsedWeights : number  = 0;
+            let numberNotNormalized :number  = 0;
+            let numInfluences : number  = matricesWeightsExtra === null ? 4 : 8;
+            var usedWeightCounts = new Array<number>();
+            for (var a = 0; a <= numInfluences; a++) { 
+                usedWeightCounts[a] = 0;
+            }
+            const toleranceEpsilon : number = 0.001;
+
+            for (var a = 0; a < numWeights; a += 4) {
+
+                let lastWeight : number = matricesWeights[a];
+                var t = lastWeight;
+                let usedWeights : number = t===0 ? 0 : 1;
+
+                for (var b = 1; b < numInfluences; b++) {
+                    var d = b < 4 ? matricesWeights[a + b] : matricesWeightsExtra[a + b-4];
+                    if (d > lastWeight) numberNotSorted++;
+                    if (d !== 0) usedWeights++;
+                    t += d;
+                    lastWeight = d;
+                }
+                // count the buffer weights usage
+                usedWeightCounts[usedWeights]++;
+
+                // max influences
+                if (usedWeights > maxUsedWeights) maxUsedWeights = usedWeights;
+
+                // check for invalid weight and just set it to 1.
+                if (t === 0) {
+                    missingWeights++;
+                } 
+                else {
+                    // renormalize so everything adds to 1 use reciprical 
+                    let recip = 1 / t;
+                    let tolerance = 0;
+                    for (b = 0; b < numInfluences; b++) {
+                        if (b < 4)
+                            tolerance += Math.abs(matricesWeights[a + b] - (matricesWeights[a + b] * recip));
+                        else
+                            tolerance += Math.abs(matricesWeightsExtra[a + b-4] - (matricesWeightsExtra[a + b-4] * recip));
+                    }
+                    // arbitary epsilon value for dicdating not normalized
+                    if (tolerance > toleranceEpsilon) numberNotNormalized++;
+                }   
+            }
+
+            // validate bone indices are in range of the skeleton
+            let numBones:number = this.skeleton.bones.length;
+            let matricesIndices = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesKind));
+            let matricesIndicesExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind));
+            let numBadBoneIndices : number = 0;
+            for (var a = 0; a < numWeights; a++) {
+                for (var b = 0; b < numInfluences; b++) {
+                    let index = b < 4 ? matricesIndices[b] : matricesIndicesExtra[b-4];
+                    if (index >= numBones || index < 0) numBadBoneIndices++;
+                }
+            }
+
+            
+            // log mesh stats
+            var output = "Number of Weights = " + numWeights/4 + "\nMaximum influences = " + maxUsedWeights + 
+                         "\nMissing Weights = " + missingWeights + "\nNot Sorted = " + numberNotSorted +
+                         "\nNot Normalized = " + numberNotNormalized + "\nWeightCounts = [" + usedWeightCounts + "]" +
+                         "\nNumber of bones = " + numBones + "\nBad Bone Indices = " + numBadBoneIndices ;
+            
+            return {skinned:true, valid: missingWeights===0 && numberNotNormalized===0 && numBadBoneIndices===0, report: output};
+        }
 
         /** @hidden */
         public _checkDelayState(): Mesh {
