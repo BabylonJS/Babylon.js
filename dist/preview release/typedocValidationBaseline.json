@@ -1651,53 +1651,6 @@
         }
       }
     },
-    "StateCondition": {
-      "Property": {
-        "value": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "StringDictionary": {
-      "Property": {
-        "count": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "first": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "getAndRemove": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "set": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "key": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "value": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
     "TargetedAnimation": {
       "Property": {
         "animation": {
