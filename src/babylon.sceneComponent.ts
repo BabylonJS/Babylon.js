@@ -205,9 +205,12 @@
         public registerStep(index: number, component: ISceneComponent, action: T): void {
             let i = 0;
             let maxIndex = Number.MAX_VALUE;
-            for (; i < this.length && i < maxIndex; i++) {
+            for (; i < this.length; i++) {
                 let step = this[i];
                 maxIndex = step.index;
+                if (index < maxIndex) {
+                    break;
+                }
             }
             this.splice(i, 0, { index, component, action: action.bind(component) });
         }
