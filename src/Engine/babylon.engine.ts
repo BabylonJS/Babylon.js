@@ -705,7 +705,7 @@
         protected _caps: EngineCapabilities;
         private _pointerLockRequested: boolean;
         private _isStencilEnable: boolean;
-        private _colorWrite = true;
+        protected _colorWrite = true;
 
         private _loadingScreen: ILoadingScreen;
 
@@ -5561,19 +5561,6 @@
                 }
             }
 
-            let onInternalError = (request?: XMLHttpRequest, exception?: any) => {
-                if (loader) {
-                    const fallbackUrl = loader.getFallbackTextureUrl(rootUrl, this._textureFormatInUse);
-                    if (fallbackUrl) {
-                        this.createCubeTexture(fallbackUrl, scene, files, noMipmap, onLoad, onError, format, extension, createPolynomials, lodScale, lodOffset, texture);
-                    }
-                }
-
-                if (onError && request) {
-                    onError(request.status + " " + request.statusText, exception);
-                }
-            }
-
             if (loader) {
                 rootUrl = loader.transformUrl(rootUrl, this._textureFormatInUse);
 
@@ -5590,6 +5577,19 @@
                     }
                 }
                 else {
+                    let onInternalError = (request?: XMLHttpRequest, exception?: any) => {
+                        if (loader) {
+                            const fallbackUrl = loader.getFallbackTextureUrl(rootUrl, this._textureFormatInUse);
+                            if (fallbackUrl) {
+                                this.createCubeTexture(fallbackUrl, scene, files, noMipmap, onLoad, onError, format, extension, createPolynomials, lodScale, lodOffset, texture);
+                            }
+                        }
+        
+                        if (onError && request) {
+                            onError(request.status + " " + request.statusText, exception);
+                        }
+                    }
+
                     this._loadFile(rootUrl, onloaddata, undefined, undefined, true, onInternalError);
                 }
             }
@@ -6567,8 +6567,7 @@
             }
         }
 
-        /** @hidden */
-        public _setAnisotropicLevel(target: number, texture: BaseTexture) {
+        private _setAnisotropicLevel(target: number, texture: BaseTexture) {
             var internalTexture = texture.getInternalTexture();
 
             if (!internalTexture) {
@@ -7388,7 +7387,7 @@
             this._loadFile(url, onload, undefined, undefined, true, onerror);
         }
 
-        private _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null): void {
+        protected _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null): void {
             var loadedFiles: (string | ArrayBuffer)[] = [];
             (<any>loadedFiles)._internalCount = 0;
 
