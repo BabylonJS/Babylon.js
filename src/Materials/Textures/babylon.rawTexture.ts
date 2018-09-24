@@ -22,7 +22,12 @@
          * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
          * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
          */
-        constructor(data: ArrayBufferView, width: number, height: number, public format: number, scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, type: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+        constructor(data: ArrayBufferView, width: number, height: number, 
+            /**
+             * Define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
+             */
+            public format: number, 
+            scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, type: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             super(null, scene, !generateMipMaps, invertY);
             this._engine = scene.getEngine();
             this._texture = scene.getEngine().createRawTexture(data, width, height, format, generateMipMaps, invertY, samplingMode, null, type);
@@ -93,6 +98,7 @@
          * @param generateMipMaps Define whether or not to create mip maps for the texture
          * @param invertY define if the data should be flipped on Y when uploaded to the GPU
          * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
+         * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
          * @returns the RGB alpha texture
          */
         public static CreateRGBTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, type: number = Engine.TEXTURETYPE_UNSIGNED_INT): RawTexture {
@@ -108,6 +114,7 @@
          * @param generateMipMaps Define whether or not to create mip maps for the texture
          * @param invertY define if the data should be flipped on Y when uploaded to the GPU
          * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
+         * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
          * @returns the RGBA texture
          */
         public static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, type: number = Engine.TEXTURETYPE_UNSIGNED_INT): RawTexture {
@@ -123,6 +130,7 @@
          * @param generateMipMaps Define whether or not to create mip maps for the texture
          * @param invertY define if the data should be flipped on Y when uploaded to the GPU
          * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
+         * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
          * @returns the R texture
          */
         public static CreateRTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, type: number = Engine.TEXTURETYPE_FLOAT): RawTexture {
