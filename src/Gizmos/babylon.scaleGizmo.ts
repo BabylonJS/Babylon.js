@@ -35,8 +35,8 @@ module BABYLON {
          */
         constructor(gizmoLayer:UtilityLayerRenderer=UtilityLayerRenderer.DefaultUtilityLayer){
             super(gizmoLayer);
-            this.xGizmo = new AxisScaleGizmo(new Vector3(1,0,0), BABYLON.Color3.Green().scale(0.5), gizmoLayer);
-            this.yGizmo = new AxisScaleGizmo(new Vector3(0,1,0), BABYLON.Color3.Red().scale(0.5), gizmoLayer);
+            this.xGizmo = new AxisScaleGizmo(new Vector3(1,0,0), BABYLON.Color3.Red().scale(0.5), gizmoLayer);
+            this.yGizmo = new AxisScaleGizmo(new Vector3(0,1,0), BABYLON.Color3.Green().scale(0.5), gizmoLayer);
             this.zGizmo = new AxisScaleGizmo(new Vector3(0,0,1), BABYLON.Color3.Blue().scale(0.5), gizmoLayer);
 
             // Create uniform scale gizmo
