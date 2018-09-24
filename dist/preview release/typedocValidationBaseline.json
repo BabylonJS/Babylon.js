@@ -1,7 +1,7 @@
 {
-  "errors": 766,
+  "errors": 550,
   "babylon.typedoc.json": {
-    "errors": 766,
+    "errors": 550,
     "DefaultLoadingScreen": {
       "Class": {
         "Comments": {
