@@ -1,24 +1,32 @@
 ﻿module BABYLON {
+    /**
+     * Render pipeline to produce ssao effect
+     */
     export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         // Members
 
         /**
+         * @ignore
         * The PassPostProcess id in the pipeline that contains the original scene color
         */
         public SSAOOriginalSceneColorEffect: string = "SSAOOriginalSceneColorEffect";
         /**
+         * @ignore
         * The SSAO PostProcess id in the pipeline
         */
         public SSAORenderEffect: string = "SSAORenderEffect";
         /**
+         * @ignore
         * The horizontal blur PostProcess id in the pipeline
         */
         public SSAOBlurHRenderEffect: string = "SSAOBlurHRenderEffect";
         /**
+         * @ignore
         * The vertical blur PostProcess id in the pipeline
         */
         public SSAOBlurVRenderEffect: string = "SSAOBlurVRenderEffect";
         /**
+         * @ignore
         * The PostProcess id in the pipeline that combines the SSAO-Blur output with the original scene color (SSAOOriginalSceneColorEffect)
         */
         public SSAOCombineRenderEffect: string = "SSAOCombineRenderEffect";
@@ -91,11 +99,12 @@
         */
         private _samplerOffsets: number[];
 
-        /**
-        * Are we using bilateral blur ?
-        */
+        
         @serialize("expensiveBlur")
         private _expensiveBlur: boolean = true;
+        /**
+        * If bilateral blur should be used
+        */
         public set expensiveBlur(b: boolean) {
             this._blurHPostProcess.updateEffect("#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (b ? "1" : "0") + "\n",
                 null, ["textureSampler", "depthSampler"]);

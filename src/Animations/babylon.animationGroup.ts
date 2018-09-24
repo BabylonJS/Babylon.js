@@ -3,7 +3,13 @@ module BABYLON {
      * This class defines the direct association between an animation and a target
      */
     export class TargetedAnimation {
+        /**
+         * Animation to perform
+         */
         public animation: Animation;
+        /**
+         * Target to animate
+         */
         public target: any;
     }
 

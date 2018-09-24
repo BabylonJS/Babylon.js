@@ -1,6 +1,16 @@
 ﻿module BABYLON {
+    /**
+     * Line mesh
+     * @see https://doc.babylonjs.com/babylon101/parametric_shapes
+     */
     export class LinesMesh extends Mesh {
+        /**
+         * Color of the line (Default: White)
+         */
         public color = new Color3(1, 1, 1);
+        /**
+         * Alpha of the line (Default: 1)
+         */
         public alpha = 1;
 
         /**
@@ -16,7 +26,6 @@
         /**
          * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
          * This margin is expressed in world space coordinates, so its value may vary.
-         * @param value the new threshold to apply
          */
         public set intersectionThreshold(value: number) {
             if (this._intersectionThreshold === value) {
@@ -32,7 +41,21 @@
         private _intersectionThreshold: number;
         private _colorShader: ShaderMaterial;
 
-        constructor(name: string, scene: Nullable<Scene> = null, parent: Nullable<Node> = null, source?: LinesMesh, doNotCloneChildren?: boolean, public useVertexColor?: boolean, public useVertexAlpha?: boolean) {
+        constructor(
+            name: string, 
+            scene: Nullable<Scene> = null, 
+            parent: Nullable<Node> = null, 
+            source?: LinesMesh, 
+            doNotCloneChildren?: boolean, 
+            /**
+             * If vertex color should be applied to the mesh
+             */
+            public useVertexColor?: boolean, 
+            /**
+             * If vertex alpha should be applied to the mesh
+             */
+            public useVertexAlpha?: boolean
+        ) {
             super(name, scene, parent, source, doNotCloneChildren);
 
             if (source) {
@@ -123,6 +146,10 @@
             return this;
         }
 
+        /**
+         * Disposes of the line mesh
+         * @param doNotRecurse If children should be disposed
+         */
         public dispose(doNotRecurse?: boolean): void {
             this._colorShader.dispose();
 

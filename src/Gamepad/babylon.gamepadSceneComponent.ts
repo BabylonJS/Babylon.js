@@ -31,6 +31,10 @@ module BABYLON {
      * Interface representing a free camera inputs manager
      */
     export interface FreeCameraInputsManager {
+        /**
+         * Adds gamepad input support to the FreeCameraInputsManager.
+         * @returns the FreeCameraInputsManager
+         */
         addGamepad(): FreeCameraInputsManager;
     }
     
