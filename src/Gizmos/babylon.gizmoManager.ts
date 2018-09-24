@@ -96,7 +96,6 @@ module BABYLON {
             if(value){
                 if(!this.gizmos.positionGizmo){
                     this.gizmos.positionGizmo = new PositionGizmo();
-                    this.gizmos.positionGizmo.updateGizmoRotationToMatchAttachedMesh = false;
                 }
                 this.gizmos.positionGizmo.attachedMesh = this._attachedMesh;
             }else if(this.gizmos.positionGizmo){
@@ -114,7 +113,6 @@ module BABYLON {
             if(value){
                 if(!this.gizmos.rotationGizmo){
                     this.gizmos.rotationGizmo = new RotationGizmo();
-                    this.gizmos.rotationGizmo.updateGizmoRotationToMatchAttachedMesh = false;
                 }
                 this.gizmos.rotationGizmo.attachedMesh = this._attachedMesh;
             }else if(this.gizmos.rotationGizmo){
