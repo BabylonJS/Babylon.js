@@ -1622,7 +1622,7 @@
 
         /**
          *   Renormalize the mesh and patch it up if there are no weights
-         *   Similar to normalization by adding the weights compute the reciprical and multiply all elements, this wil ensure that everything adds to 1. 
+         *   Similar to normalization by adding the weights compute the reciprocal and multiply all elements, this wil ensure that everything adds to 1. 
          *   However in the case of zero weights then we set just a single influence to 1. 
          *   We check in the function for extra's present and if so we use the normalizeSkinWeightsWithExtras rather than the FourWeights version. 
          */
