@@ -3,11 +3,13 @@
     export interface INativeEngineInterop {
         requestAnimationFrame(callback: () => void): void;
 
-        createIndexBuffer(indices: DataView, is32Bits: boolean): WebGLBuffer;
-        bindIndexBuffer(buffer: WebGLBuffer): void;
-        createVertexBuffer(vertices: Float32Array): WebGLBuffer;
-        bindVertexBuffer(buffer: WebGLBuffer, index: number, stride: number, offset: number): void;
-        deleteBuffer(buffer: WebGLBuffer): void;
+        createIndexBuffer(data: ArrayBufferView): any;
+        bindIndexBuffer(buffer: any): void;
+        deleteIndexBuffer(buffer: any): void;
+
+        createVertexBuffer(data: ArrayBufferView, elementCount: number): any;
+        bindVertexBuffer(buffer: any, location: number, byteOffset: number, byteStride: number): void;
+        deleteVertexBuffer(buffer: any): void;
 
         createProgram(vertexShader: string, fragmentShader: string): WebGLProgram;
         getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[];
@@ -49,6 +51,18 @@
 
         getRenderWidth(): number;
         getRenderHeight(): number;
+    }
+
+    interface VertexBufferInfo extends VertexBuffer {
+        _nativeBuffer?: any;
+    }
+
+    interface WebGLBufferInfo extends WebGLBuffer {
+        _nativeIndexBuffer?: any;
+        _nativeVertexBuffer?: any;
+
+        // Vertex buffers that are holding native vertex buffers that required conversion to float
+        _vertexBuffers?: VertexBufferInfo[];
     }
 
     class NativeFilter {
@@ -195,84 +209,65 @@
             this._interop.clear(color.r, color.g, color.b, color.a, backBuffer, depth, stencil);
         }
 
-        // TODO: Share more of this logic with the base Engine class implementation.
-        public createIndexBuffer(indices: IndicesArray): WebGLBuffer {
-            var dataView: DataView;
-            var is32Bits = false;
-            if (indices instanceof Uint16Array) {
-                dataView = new DataView(indices.buffer, indices.byteOffset, indices.byteLength);
-            } else if (indices instanceof Uint32Array) {
-                dataView = new DataView(indices.buffer, indices.byteOffset, indices.byteLength);
-                is32Bits = true;
-            } else {
-                //number[] or Int32Array, check if 32 bit is necessary
-                for (var index = 0; index < indices.length; index++) {
-                    if (indices[index] > 65535) {
-                        is32Bits = true;
-                        break;
-                    }
-                }
-
-                if (is32Bits) {
-                    let array = new Uint32Array(indices);
-                    dataView = new DataView(array.buffer, array.byteOffset, array.byteLength);
-                } else {
-                    let array = new Uint16Array(indices);
-                    dataView = new DataView(array.buffer, array.byteOffset, array.byteLength);
-                }
-            }
-
-            const buffer = this._interop.createIndexBuffer(dataView, is32Bits);
-            buffer.capacity = indices.length;
-            buffer.references = 1;
-            buffer.is32Bits = is32Bits;
-
-            return buffer;
+        public createIndexBuffer(indices: IndicesArray): WebGLBufferInfo {
+            const data = this._normalizeIndexData(indices);
+            return {
+                references: 1,
+                is32Bits: (data.BYTES_PER_ELEMENT === 4),
+                _nativeIndexBuffer: this._interop.createIndexBuffer(data),
+            } as WebGLBufferInfo;
         }
 
-        public createVertexBuffer(data: DataArray): WebGLBuffer {
-            let floatArray: Float32Array;
-            if (data instanceof Array) {
-                floatArray = new Float32Array(data);
-            } else if (data instanceof ArrayBuffer) {
-                floatArray = new Float32Array(data);
-            } else {
-                floatArray = new Float32Array(data.buffer, data.byteOffset, data.byteLength / 4);
-            }
-
-            const buffer = this._interop.createVertexBuffer(floatArray);
-            buffer.capacity = floatArray.length;
-            buffer.references = 1;
-            buffer.is32Bits = true;
-
-            return buffer;
+        public createVertexBuffer(data: DataArray): WebGLBufferInfo {
+            return {
+                references: 1
+            } as WebGLBufferInfo;
         }
 
-        // BUFFERS.
-        public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): void {
+        public bindBuffers(vertexBuffers: { [key: string]: VertexBufferInfo }, indexBuffer: WebGLBufferInfo, effect: Effect): void {
             // Index
             if (indexBuffer) {
-                this._interop.bindIndexBuffer(indexBuffer);
+                this._interop.bindIndexBuffer(indexBuffer._nativeIndexBuffer);
             }
 
             // Vertex
             var attributes = effect.getAttributesNames();
             for (var index = 0; index < attributes.length; index++) {
-                var order = effect.getAttributeLocation(index);
-                if (order >= 0) {
+                var location = effect.getAttributeLocation(index);
+                if (location >= 0) {
                     var vertexBuffer = vertexBuffers[attributes[index]];
                     if (!vertexBuffer) {
                         continue;
                     }
 
-                    var buffer = vertexBuffer.getBuffer();
+                    var buffer = vertexBuffer.getBuffer() as Nullable<WebGLBufferInfo>;
                     if (buffer) {
-                        this._interop.bindVertexBuffer(buffer, order, vertexBuffer.byteStride, vertexBuffer.byteOffset);
+                        const data = vertexBuffer.getData();
+                        if (data) {
+                            if (vertexBuffer.type === VertexBuffer.FLOAT && ArrayBuffer.isView(data)) {
+                                buffer._nativeVertexBuffer = buffer._nativeVertexBuffer || this._interop.createVertexBuffer(new Uint8Array(data.buffer, data.byteOffset, data.byteLength), vertexBuffer.count * vertexBuffer.getSize());
+                                this._interop.bindVertexBuffer(buffer._nativeVertexBuffer, location, vertexBuffer.byteOffset, vertexBuffer.byteStride);
+                            }
+                            else {
+                                // TODO: do this only for implementations that require it.
+                                // Convert to float as WebGL auto converts types but DirectX native implementations do not.
+                                let nativeBuffer = vertexBuffer._nativeBuffer;
+                                if (!nativeBuffer) {
+                                    const floatData = new Float32Array(vertexBuffer.count * vertexBuffer.getSize());
+                                    vertexBuffer.forEach(floatData.length, (value, index) => floatData[index] = value);
+                                    nativeBuffer = this._interop.createVertexBuffer(new Uint8Array(floatData.buffer), floatData.length);
+                                    vertexBuffer._nativeBuffer = nativeBuffer;
+                                    buffer._vertexBuffers = buffer._vertexBuffers || [];
+                                    buffer._vertexBuffers.push(vertexBuffer);
+                                }
+                                this._interop.bindVertexBuffer(nativeBuffer, location, 0, vertexBuffer.getSize() * Float32Array.BYTES_PER_ELEMENT);
+                            }
+                        }
                     }
                 }
             }
         }
-        
+
         public getAttributes(shaderProgram: WebGLProgram, attributesNames: string[]): number[] {
             return this._interop.getAttributes(shaderProgram, attributesNames);
         }
@@ -872,7 +867,7 @@
             throw new Error("unBindFramebuffer not yet implemented.")
         }
 
-        public createDynamicVertexBuffer(vertices: FloatArray): WebGLBuffer {
+        public createDynamicVertexBuffer(data: DataArray): WebGLBuffer {
             throw new Error("createDynamicVertexBuffer not yet implemented.")
         }
 
@@ -887,7 +882,7 @@
          * @param byteOffset the byte offset of the data (optional)
          * @param byteLength the byte length of the data (optional)
          */
-        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, byteOffset?: number, byteLength?: number): void {
+        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
             throw new Error("updateDynamicVertexBuffer not yet implemented.")
         }
 
@@ -967,8 +962,26 @@
             throw new Error("_bindTexture not implemented.");
         }
 
-        protected _deleteBuffer(buffer: WebGLBuffer): void {
-            this._interop.deleteBuffer(buffer);
+        protected _deleteBuffer(buffer: WebGLBufferInfo): void {
+            if (buffer._nativeIndexBuffer) {
+                this._interop.deleteIndexBuffer(buffer._nativeIndexBuffer);
+                delete buffer._nativeIndexBuffer;
+            }
+
+            if (buffer._nativeVertexBuffer) {
+                this._interop.deleteVertexBuffer(buffer._nativeVertexBuffer);
+                delete buffer._nativeVertexBuffer;
+            }
+
+            if (buffer._vertexBuffers) {
+                for (const vertexBuffer of buffer._vertexBuffers) {
+                    const nativeBuffer = vertexBuffer._nativeBuffer;
+                    if (nativeBuffer) {
+                        this._interop.deleteVertexBuffer(nativeBuffer);
+                        delete vertexBuffer._nativeBuffer;
+                    }
+                }
+            }
         }
 
         public releaseEffects() {

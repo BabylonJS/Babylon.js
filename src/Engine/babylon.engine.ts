@@ -2637,40 +2637,38 @@
 
             this.bindIndexBuffer(vbo);
 
-            // Check for 32 bits indices
-            var arrayBuffer;
-            var need32Bits = false;
+            const data = this._normalizeIndexData(indices);
+            this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, data, updatable ? this._gl.DYNAMIC_DRAW : this._gl.STATIC_DRAW);
+            this._resetIndexBufferBinding();
+            vbo.references = 1;
+            vbo.is32Bits = (data.BYTES_PER_ELEMENT === 4);
+            return vbo;
+        }
 
+        protected _normalizeIndexData(indices: IndicesArray): Uint16Array | Uint32Array
+        {
             if (indices instanceof Uint16Array) {
-                arrayBuffer = indices;
-            } else {
-                //check 32 bit support
-                if (this._caps.uintIndices) {
-                    if (indices instanceof Uint32Array) {
-                        arrayBuffer = indices;
-                        need32Bits = true;
-                    } else {
-                        //number[] or Int32Array, check if 32 bit is necessary
-                        for (var index = 0; index < indices.length; index++) {
-                            if (indices[index] > 65535) {
-                                need32Bits = true;
-                                break;
-                            }
-                        }
+                return indices;
+            }
 
-                        arrayBuffer = need32Bits ? new Uint32Array(indices) : new Uint16Array(indices);
-                    }
+            // Check 32 bit support
+            if (this._caps.uintIndices) {
+                if (indices instanceof Uint32Array) {
+                    return indices;
                 } else {
-                    //no 32 bit support, force conversion to 16 bit (values greater 16 bit are lost)
-                    arrayBuffer = new Uint16Array(indices);
+                    // number[] or Int32Array, check if 32 bit is necessary
+                    for (var index = 0; index < indices.length; index++) {
+                        if (indices[index] > 65535) {
+                            return new Uint32Array(indices);
+                        }
+                    }
+
+                    return new Uint16Array(indices);
                 }
             }
 
-            this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, updatable ? this._gl.DYNAMIC_DRAW : this._gl.STATIC_DRAW);
-            this._resetIndexBufferBinding();
-            vbo.references = 1;
-            vbo.is32Bits = need32Bits;
-            return vbo;
+            // No 32 bit support, force conversion to 16 bit (values greater 16 bit are lost)
+            return new Uint16Array(indices);
         }
 
         /**
@@ -2956,7 +2954,7 @@
             buffer.references--;
 
             if (buffer.references === 0) {
-                this._gl.deleteBuffer(buffer);
+                this._deleteBuffer(buffer);
                 return true;
             }
 
