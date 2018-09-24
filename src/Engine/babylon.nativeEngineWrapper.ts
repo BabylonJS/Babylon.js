@@ -15,7 +15,15 @@
         getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[];
         getAttributes(shaderProgram: WebGLProgram, attributeNames: string[]): number[];
         setProgram(program: WebGLProgram): void;
+
         setState(culling: boolean, zOffset: number, reverseSide: boolean): void;
+        setZOffset(zOffset: number): void;
+        getZOffset(): number;
+        setDepthTest(enable: boolean): void;
+        getDepthWrite(): boolean;
+        setDepthWrite(enable: boolean): void;
+        setColorWrite(enable: boolean): void;
+        setBlendMode(blendMode: number): void;
 
         setMatrix(uniform: WebGLUniformLocation, matrix: Float32Array): void;
         setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
@@ -37,10 +45,11 @@
 
         createTexture(): WebGLTexture;
         loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | Blob, mipMap: boolean): void;
-        getTexureWidth(texture: WebGLTexture): number;
-        getTexureHeight(texture: WebGLTexture): number;
+        getTextureWidth(texture: WebGLTexture): number;
+        getTextureHeight(texture: WebGLTexture): number;
         setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
         setTextureWrapMode(texture: WebGLTexture, addressModeU: number, addressModeV: number, addressModeW: number): void; // addressModes are NativeAddressMode.XXXX values.
+        setTextureAnisotropicLevel(texture: WebGLTexture, value: number): void;
         setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
         deleteTexture(texture: Nullable<WebGLTexture>): void;
 
@@ -65,32 +74,65 @@
         _vertexBuffers?: VertexBufferInfo[];
     }
 
+    // Must match Filter enum in SpectreEngine.h.
     class NativeFilter {
-        // Must match Filter enum in SpectreEngine.h.
         public static readonly POINT = 0;
-        public static readonly MINPOINT_MAGPOINT_MIPPOINT = 0;
+        public static readonly MINPOINT_MAGPOINT_MIPPOINT = NativeFilter.POINT;
         public static readonly BILINEAR = 1;
-        public static readonly MINLINEAR_MAGLINEAR_MIPPOINT = 1;
+        public static readonly MINLINEAR_MAGLINEAR_MIPPOINT = NativeFilter.BILINEAR;
         public static readonly TRILINEAR = 2;
-        public static readonly MINLINEAR_MAGLINEAR_MIPLINEAR = 2;
+        public static readonly MINLINEAR_MAGLINEAR_MIPLINEAR = NativeFilter.TRILINEAR;
         public static readonly ANISOTROPIC = 3;
         public static readonly POINT_COMPARE = 4;
         public static readonly TRILINEAR_COMPARE = 5;
         public static readonly MINBILINEAR_MAGPOINT = 6;
-        public static readonly MINLINEAR_MAGPOINT_MIPLINEAR = 6;
+        public static readonly MINLINEAR_MAGPOINT_MIPLINEAR = NativeFilter.MINBILINEAR_MAGPOINT;
         public static readonly MINPOINT_MAGPOINT_MIPLINEAR = 7;
         public static readonly MINPOINT_MAGLINEAR_MIPPOINT = 8;
         public static readonly MINPOINT_MAGLINEAR_MIPLINEAR = 9;
         public static readonly MINLINEAR_MAGPOINT_MIPPOINT = 10;
     }
 
+    // Must match AddressMode enum in SpectreEngine.h.
     class NativeAddressMode {
-        // Must match AddressMode enum in SpectreEngine.h.
         public static readonly WRAP = 0;
         public static readonly MIRROR = 1;
         public static readonly CLAMP = 2;
         public static readonly BORDER = 3;
         public static readonly MIRROR_ONCE = 4;
+    }
+
+    // Must match BlendMode in SpectreEngine.h.
+    class NativeBlendMode {
+        public static readonly REPLACE = 0;
+        public static readonly OVER = 1;
+        public static readonly UNDER = 2;
+        public static readonly INSIDE = 3;
+        public static readonly ERASE = 4;
+        public static readonly NULL = 5;
+        public static readonly CLEAR = 6;
+        public static readonly STRAIGHT_REPLACE = 7;
+        public static readonly STRAIGHT_OVER = 8;
+        public static readonly STRAIGHT_ADD = 9;
+        public static readonly ADD = 10;
+        public static readonly SCREEN = 11;
+        public static readonly MULTIPLY = 12;
+        public static readonly MULTIPLY2X = 13;
+        public static readonly INTERPOLATE = 14;
+        public static readonly MINIMUM = 15;
+        public static readonly MAXIMUM = 16;
+        public static readonly MAXIMUM_ALPHA = 17;
+        public static readonly ADD_ALPHA = 18;
+        public static readonly BLACK_REPLACE = 19;
+        public static readonly BLACK_OVER = 20;
+        public static readonly BLACK_UNDER = 21;
+        public static readonly BLACK_INSIDE = 22;
+        public static readonly ALPHA_COVERAGE_MASK = 23;
+        public static readonly DUAL_COLOR_MULTIPLY_ADD = 24;
+        public static readonly COMBINE = 25;
+        public static readonly BLEND_OPAQUE = NativeBlendMode.REPLACE;
+        public static readonly BLEND_ALPHA_PREMULTIPLIED = NativeBlendMode.OVER;
+        public static readonly BLEND_ALPHA_STRAIGHT = NativeBlendMode.STRAIGHT_OVER;
     }
 
     /** @hidden */
@@ -159,8 +201,7 @@
             this._caps.etc1 = null;
             this._caps.etc2 = null;
 
-            this._caps.textureAnisotropicFilterExtension = null;
-            this._caps.maxAnisotropy = 0;
+            this._caps.maxAnisotropy = 16;  // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
             this._caps.uintIndices = false;
             this._caps.fragmentDepthSupported = false;
             this._caps.highPrecisionShaderSupported = true;
@@ -281,15 +322,13 @@
          */
         public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {
             // Apply states
-            // this.applyStates();
-
             this._drawCalls.addCount(1, false);
 
             // TODO: Make this implementation more robust like core Engine version.
 
             // Render
             //var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
-            
+
             //var mult = this._uintIndicesCurrentlySet ? 4 : 2;
             // if (instancesCount) {
             //     this._gl.drawElementsInstanced(drawMode, indexCount, indexFormat, indexStart * mult, instancesCount);
@@ -307,7 +346,6 @@
          */
         public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
             // Apply states
-            // this.applyStates();
             this._drawCalls.addCount(1, false);
 
             // TODO: Make this implementation more robust like core Engine version.
@@ -343,6 +381,7 @@
         public createShaderProgram(vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
             this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
+            // TODO: Share this shader version logic with base class.
             var shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n#define WEBGL2 \n" : "";
             var vertexCodeConcat = Engine._concatenateShader(vertexCode, defines, shaderVersion);
             var fragmentCodeConcat = Engine._concatenateShader(fragmentCode, defines, shaderVersion);
@@ -391,11 +430,126 @@
         }
 
         public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
+            // TODO: Implement.
             this._cachedViewport = viewport;
         }
 
         public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
             this._interop.setState(culling, zOffset, reverseSide);
+        }
+
+        /**
+         * Set the z offset to apply to current rendering
+         * @param value defines the offset to apply
+         */
+        public setZOffset(value: number): void {
+            this._interop.setZOffset(value);
+        }
+
+        /**
+         * Gets the current value of the zOffset
+         * @returns the current zOffset state
+         */
+        public getZOffset(): number {
+            return this._interop.getZOffset();
+        }
+
+        /**
+         * Enable or disable depth buffering
+         * @param enable defines the state to set
+         */
+        public setDepthBuffer(enable: boolean): void {
+            this._interop.setDepthTest(enable);
+        }
+
+        /**
+         * Gets a boolean indicating if depth writing is enabled
+         * @returns the current depth writing state
+         */
+        public getDepthWrite(): boolean {
+            return this._interop.getDepthWrite();
+        }
+
+        /**
+         * Enable or disable depth writing
+         * @param enable defines the state to set
+         */
+        public setDepthWrite(enable: boolean): void {
+            this._interop.setDepthWrite(enable);
+        }
+
+        /**
+         * Enable or disable color writing
+         * @param enable defines the state to set
+         */
+        public setColorWrite(enable: boolean): void {
+            this._interop.setColorWrite(enable);
+            this._colorWrite = enable;
+        }
+
+        /**
+         * Gets a boolean indicating if color writing is enabled
+         * @returns the current color writing state
+         */
+        public getColorWrite(): boolean {
+            return this._colorWrite;
+        }
+
+        /**
+         * Sets alpha constants used by some alpha blending modes
+         * @param r defines the red component
+         * @param g defines the green component
+         * @param b defines the blue component
+         * @param a defines the alpha component
+         */
+        public setAlphaConstants(r: number, g: number, b: number, a: number) {
+            throw new Error("Setting alpha blend constant color not yet implemented.");
+        }
+
+        /**
+         * Sets the current alpha mode
+         * @param mode defines the mode to use (one of the BABYLON.Engine.ALPHA_XXX)
+         * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
+         * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+         */
+        public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
+            if (this._alphaMode === mode) {
+                return;
+            }
+
+            this._interop.setBlendMode(this._getBlendMode(mode));
+
+            if (!noDepthWriteChange) {
+                this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
+            }
+
+            this._alphaMode = mode;
+        }
+
+        // Returns a NativeBlendMode.XXXX value.
+        // Note: Many blend modes intentionally not implemented. If more are needed, they should be added.
+        private _getBlendMode(mode: number): number {
+            switch (mode) {
+                case Engine.ALPHA_DISABLE:
+                    return NativeBlendMode.REPLACE;
+                case Engine.ALPHA_PREMULTIPLIED_PORTERDUFF:
+                    return NativeBlendMode.OVER;
+                case Engine.ALPHA_COMBINE:
+                    return NativeBlendMode.COMBINE;
+                case Engine.ALPHA_SCREENMODE:
+                    return NativeBlendMode.SCREEN;
+                default:
+                    throw new Error("Unexpected alpha mode: " + mode + ".");
+            }
+        }
+
+        /**
+         * Gets the current alpha mode
+         * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+         * @returns the current alpha mode
+         */
+        public getAlphaMode(): number {
+            return this._alphaMode;
         }
 
         public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
@@ -552,19 +706,6 @@
             this._interop.setFloat4(uniform, color3.r, color3.g, color3.b, alpha);
         }
 
-        public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
-            if (this._alphaMode === mode) {
-                return;
-            }
-
-            this._alphaState.alphaBlend = (mode !== Engine.ALPHA_DISABLE);
-
-            if (!noDepthWriteChange) {
-                this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
-            }
-            this._alphaMode = mode;
-        }
-
         public wipeCaches(bruteForce?: boolean): void {
             if (this.preventCacheWipeBetweenFrames) {
                 return;
@@ -613,9 +754,17 @@
          * @param forcedExtension defines the extension to use to pick the right loader
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
-            onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
-            buffer: Nullable<string | ArrayBuffer | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
+        public createTexture(
+            urlArg: Nullable<string>,
+            noMipmap: boolean,
+            invertY: boolean,
+            scene: Nullable<Scene>,
+            samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
+            onLoad: Nullable<() => void> = null,
+            onError: Nullable<(message: string, exception: any) => void> = null,
+            buffer: Nullable<string | ArrayBuffer | Blob> = null,
+            fallback: Nullable<InternalTexture> = null,
+            format: Nullable<number> = null,
             forcedExtension: Nullable<string> = null): InternalTexture {
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
             var fromData = url.substr(0, 5) === "data:";
@@ -714,7 +863,7 @@
                 // }
             } else {
                 var onload = (data: string | ArrayBuffer | Blob, responseURL?: string) => {
-                    if (typeof(data) === "string") {
+                    if (typeof (data) === "string") {
                         throw new Error("Loading textures from string data not yet implemented.");
                     }
 
@@ -737,18 +886,17 @@
 
                     this._interop.loadTexture(webGLTexture, data, !noMipmap);
 
-                    if (invertY)
-                    {
+                    if (invertY) {
                         throw new Error("Support for textures with inverted Y coordinates not yet implemented.");
                     }
                     //this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
-                    texture.baseWidth = this._interop.getTexureWidth(webGLTexture);
-                    texture.baseHeight = this._interop.getTexureHeight(webGLTexture);
+                    texture.baseWidth = this._interop.getTextureWidth(webGLTexture);
+                    texture.baseHeight = this._interop.getTextureHeight(webGLTexture);
                     texture.width = texture.baseWidth;
                     texture.height = texture.baseHeight;
                     texture.isReady = true;
-        
+
                     var filter = this._getSamplingFilter(samplingMode);
 
                     this._interop.setTextureSampling(webGLTexture, filter);
@@ -926,7 +1074,8 @@
 
             this._activeChannel = channel;
 
-            if (!internalTexture._webGLTexture) {
+            if (!internalTexture ||
+                !internalTexture._webGLTexture) {
                 return false;
             }
 
@@ -935,12 +1084,27 @@
                 this._getAddressMode(texture.wrapU),
                 this._getAddressMode(texture.wrapV),
                 this._getAddressMode(texture.wrapR));
-            // TODO: Implement setting anisotropic filtering level.
-            //this._interop.setTextureAnisotropicLevel(internalTexture._webGLTexture, ???);
+            this._updateAnisotropicLevel(texture);
 
             this._interop.setTexture(uniform, internalTexture._webGLTexture);
 
             return true;
+        }
+
+        // TODO: Share more of this logic with the base implementation.
+        // TODO: Rename to match naming in base implementation once refactoring allows different parameters.
+        private _updateAnisotropicLevel(texture: BaseTexture) {
+            var internalTexture = texture.getInternalTexture();
+            var value = texture.anisotropicFilteringLevel;
+
+            if (!internalTexture || !internalTexture._webGLTexture) {
+                return;
+            }
+
+            if (internalTexture._cachedAnisotropicFilteringLevel !== value) {
+                this._interop.setTextureAnisotropicLevel(internalTexture._webGLTexture, value);
+                internalTexture._cachedAnisotropicFilteringLevel = value;
+            }
         }
 
         // Returns a NativeAddressMode.XXX value.
@@ -956,7 +1120,7 @@
                     throw new Error("Unexpected wrap mode: " + wrapMode + ".");
             }
         }
-        
+
         /** @hidden */
         public _bindTexture(channel: number, texture: InternalTexture): void {
             throw new Error("_bindTexture not implemented.");
