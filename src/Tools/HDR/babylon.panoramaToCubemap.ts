@@ -113,7 +113,7 @@ module BABYLON {
          * 
          * @param float32Array The source data.
          * @param inputWidth The width of the input panorama.
-         * @param inputhHeight The height of the input panorama.
+         * @param inputHeight The height of the input panorama.
          * @param size The willing size of the generated cubemap (each faces will be size * size pixels)
          * @return The cubemap data 
          */

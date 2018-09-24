@@ -90,6 +90,7 @@
     }  
 
     /**
+     * @ignore
      * Application error to support additional information when loading a file
      */
     export class LoadFileError extends Error {
@@ -105,7 +106,11 @@
          * @param message defines the message of the error
          * @param request defines the optional XHR request
          */
-        constructor(message: string, public request?: XMLHttpRequest) {
+        constructor(
+            message: string, 
+            /** defines the optional XHR request */
+            public request?: XMLHttpRequest
+        ) {
             super(message);
             this.name = "LoadFileError";
 

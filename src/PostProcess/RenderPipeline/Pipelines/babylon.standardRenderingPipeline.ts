@@ -260,6 +260,7 @@
         private _samples: number = 1;
 
         /**
+         * @ignore
          * Specifies if the bloom pipeline is enabled
          */
         @serialize()
@@ -277,6 +278,7 @@
         }
 
         /**
+         * @ignore
          * Specifies if the depth of field pipeline is enabed
          */
         @serialize()
@@ -294,6 +296,7 @@
         }
 
         /**
+         * @ignore
          * Specifies if the lens flare pipeline is enabed
          */
         @serialize()
@@ -311,6 +314,7 @@
         }
 
         /**
+         * @ignore
          * Specifies if the HDR pipeline is enabled
          */
         @serialize()
@@ -328,6 +332,7 @@
         }
 
         /**
+         * @ignore
          * Specifies if the volumetric lights scattering effect is enabled
          */
         @serialize()
@@ -353,6 +358,7 @@
         }
 
         /**
+         * @ignore
          * Specifies if the motion blur effect is enabled
          */
         @serialize()
@@ -1077,7 +1083,9 @@
             return p;
         }
 
-        // Luminance steps
+        /**
+         * Luminance steps
+         */
         public static LuminanceSteps: number = 6;
     }
 }
