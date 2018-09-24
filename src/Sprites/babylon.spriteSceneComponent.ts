@@ -173,7 +173,10 @@
             this.scene.onBeforeSpritesRenderingObservable = new Observable<Scene>();
             this.scene.onAfterSpritesRenderingObservable = new Observable<Scene>();
             this._spritePredicate = (sprite: Sprite): boolean => {
-                return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPointerTriggers;
+                if (!sprite.actionManager) {
+                    return false;
+                }
+                return sprite.isPickable && sprite.actionManager.hasPointerTriggers;
             };
         }
 
