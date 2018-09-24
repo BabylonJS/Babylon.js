@@ -135,13 +135,24 @@ module BABYLON {
                             tempData[pixelStorageIndex + 2] = b;
                         }
 
-                        pixelIndexSlice++;
-                        if (pixelIndexSlice % size == 0) {
-                            pixelIndexH++;
-                            pixelIndexSlice = 0;
-                            if (pixelIndexH % size == 0) {
+                        // Keep for reference in case of back compat problems.
+                        // pixelIndexSlice++;
+                        // if (pixelIndexSlice % size == 0) {
+                        //     pixelIndexH++;
+                        //     pixelIndexSlice = 0;
+                        //     if (pixelIndexH % size == 0) {
+                        //         pixelIndexW++;
+                        //         pixelIndexH = 0;
+                        //     }
+                        // }
+
+                        pixelIndexH++
+                        if (pixelIndexH % size == 0) {
+                            pixelIndexSlice++;
+                            pixelIndexH = 0;
+                            if (pixelIndexSlice % size == 0) {
                                 pixelIndexW++;
-                                pixelIndexH = 0;
+                                pixelIndexSlice = 0;
                             }
                         }
                     }
