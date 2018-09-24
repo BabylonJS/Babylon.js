@@ -70,6 +70,13 @@
         public readonly byteOffset: number;
 
         /**
+         * Gets the byte length.
+         */
+        public get byteLength(): number {
+            return this._buffer.byteLength - this.byteOffset;
+        }
+
+        /**
          * Gets whether integer data values should be normalized into a certain range when being casted to a float.
          */
         public readonly normalized: boolean;
@@ -78,6 +85,11 @@
          * Gets the data type of each component in the array.
          */
         public readonly type: number;
+
+        /**
+         * Gets the number of attributes.
+         */
+        public readonly count: number;
 
         /**
          * Constructor
@@ -89,12 +101,13 @@
          * @param stride the stride (optional)
          * @param instanced whether the buffer is instanced (optional)
          * @param offset the offset of the data (optional)
-         * @param size the number of components (optional)
+         * @param size the number of components per attribute (optional)
          * @param type the type of the component (optional)
          * @param normalized whether the data contains normalized data (optional)
          * @param useBytes set to true if stride and offset are in bytes (optional)
+         * @param count the number of attributes (optional)
          */
-        constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized = false, useBytes = false) {
+        constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized = false, useBytes = false, count = 0) {
             if (data instanceof Buffer) {
                 this._buffer = data;
                 this._ownsBuffer = false;
@@ -136,6 +149,8 @@
 
             this._instanced = instanced !== undefined ? instanced : false;
             this._instanceDivisor = instanced ? 1 : 0;
+
+            this.count = count || (this.byteLength / this.byteStride);
         }
 
         /** @hidden */
@@ -390,7 +405,7 @@
          * @param byteStride the byte stride of the data
          * @param componentCount the number of components per element
          * @param componentType the type of the component
-         * @param count the total number of components
+         * @param count the total number of components to enumerate
          * @param normalized whether the data is normalized
          * @param callback the callback function called for each value
          */

@@ -1357,7 +1357,7 @@ module BABYLON.GLTF2 {
                 accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync(bufferView, kind).then(buffer => {
                     const size = GLTFLoader._GetNumComponents(context, accessor.type);
                     return new VertexBuffer(this.babylonScene.getEngine(), buffer, kind, false, false, bufferView.byteStride,
-                        false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true);
+                        false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true, accessor.count);
                 });
             }
 
