@@ -41,13 +41,24 @@
         render(): void;
     }
 
+    /**
+     * Class used to manage multiple sprites on the same spritesheet
+     * @see http://doc.babylonjs.com/babylon101/sprites
+     */
     export class SpriteManager implements ISpriteManager {
+        /** Gets the list of sprites */
         public sprites = new Array<Sprite>();
+        /** Gets or sets the rendering group id (0 by default) */
         public renderingGroupId = 0;
+        /** Gets or sets camera layer mask */
         public layerMask: number = 0x0FFFFFFF;
+        /** Gets or sets a boolean indicating if the manager must consider scene fog when rendering */
         public fogEnabled = true;
+        /** Gets or sets a boolean indicating if the sprites are pickable */
         public isPickable = false;
+        /** Defines the default width of a cell in the spritesheet */
         public cellWidth: number;
+        /** Defines the default height of a cell in the spritesheet */
         public cellHeight: number;
 
         /**
@@ -56,6 +67,10 @@
         public onDisposeObservable = new Observable<SpriteManager>();
 
         private _onDisposeObserver: Nullable<Observer<SpriteManager>>;
+
+        /**
+         * Callback called when the manager is disposed
+         */
         public set onDispose(callback: () => void) {
             if (this._onDisposeObserver) {
                 this.onDisposeObservable.remove(this._onDisposeObserver);
@@ -76,6 +91,9 @@
         private _effectBase: Effect;
         private _effectFog: Effect;
 
+        /**
+         * Gets or sets the spritesheet texture
+         */
         public get texture(): Texture {
             return this._spriteTexture;
         }
@@ -84,7 +102,20 @@
             this._spriteTexture = value;
         }
 
-        constructor(public name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+        /**
+         * Creates a new sprite manager
+         * @param name defines the manager's name
+         * @param imgUrl defines the sprite sheet url
+         * @param capacity defines the maximum allowed number of sprites
+         * @param cellSize defines the size of a sprite cell
+         * @param scene defines the hosting scene
+         * @param epsilon defines the epsilon value to align texture (0.01 by default)
+         * @param samplingMode defines the smapling mode to use with spritesheet
+         */
+        constructor(
+                /** defines the manager's name */
+                public name: string, 
+                imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             if (!scene._getComponent(SceneComponentConstants.NAME_SPRITE)) {
                 scene._addComponent(new SpriteSceneComponent(scene));
             }
@@ -181,6 +212,14 @@
             this._vertexData[arrayOffset + 15] = sprite.color.a;
         }
 
+        /**
+         * Intersects the sprites with a ray
+         * @param ray defines the ray to intersect with
+         * @param camera defines the current active camera
+         * @param predicate defines a predicate used to select candidate sprites
+         * @param fastCheck defines if a fast check only must be done (the first potential sprite is will be used and not the closer)
+         * @returns null if no hit or a PickingInfo
+         */
         public intersects(ray: Ray, camera:Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
             var count = Math.min(this._capacity, this.sprites.length);
             var min = Vector3.Zero();
@@ -236,6 +275,9 @@
             return null;
         } 
 
+        /**
+         * Render all child sprites
+         */
         public render(): void {
             // Check
             if (!this._effectBase.isReady() || !this._effectFog.isReady() || !this._spriteTexture || !this._spriteTexture.isReady())
@@ -303,6 +345,9 @@
             engine.setAlphaMode(Engine.ALPHA_DISABLE);
         }
 
+        /**
+         * Release associated resources
+         */
         public dispose(): void {
             if (this._buffer) {
                 this._buffer.dispose();
