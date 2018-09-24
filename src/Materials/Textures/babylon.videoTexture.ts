@@ -191,7 +191,7 @@
                     if (!error) {
                         this.video.pause();
                     }
-                    if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
+                    if (this.onLoadObservable.hasObservers()) {
                         this.onLoadObservable.notifyObservers(this);
                     }
                 };
@@ -212,7 +212,7 @@
                     this.video.onplaying = oldHandler;
                     this._texture.isReady = true;
                     this._updateInternalTexture();
-                    if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
+                    if (this.onLoadObservable.hasObservers()) {
                         this.onLoadObservable.notifyObservers(this);
                     }
                 }
@@ -220,7 +220,7 @@
             else {
                 this._texture.isReady = true;
                 this._updateInternalTexture();
-                if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
+                if (this.onLoadObservable.hasObservers()) {
                     this.onLoadObservable.notifyObservers(this);
                 }
             }

@@ -1,38 +1,69 @@
 ﻿module BABYLON {
+    /**
+     * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
+     * @see http://doc.babylonjs.com/babylon101/materials#texture
+     */
     export class Texture extends BaseTexture {
-        // Constants
-        public static NEAREST_SAMPLINGMODE = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
-        public static NEAREST_NEAREST_MIPLINEAR = Engine.TEXTURE_NEAREST_NEAREST_MIPLINEAR; // nearest is mag = nearest and min = nearest and mip = linear
+        /** nearest is mag = nearest and min = nearest and mip = linear */
+        public static readonly NEAREST_SAMPLINGMODE = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+        /** nearest is mag = nearest and min = nearest and mip = linear */
+        public static readonly NEAREST_NEAREST_MIPLINEAR = Engine.TEXTURE_NEAREST_NEAREST_MIPLINEAR; // nearest is mag = nearest and min = nearest and mip = linear
 
-        public static BILINEAR_SAMPLINGMODE = Engine.TEXTURE_BILINEAR_SAMPLINGMODE;
-        public static LINEAR_LINEAR_MIPNEAREST = Engine.TEXTURE_LINEAR_LINEAR_MIPNEAREST; // Bilinear is mag = linear and min = linear and mip = nearest
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        public static readonly BILINEAR_SAMPLINGMODE = Engine.TEXTURE_BILINEAR_SAMPLINGMODE;
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        public static readonly LINEAR_LINEAR_MIPNEAREST = Engine.TEXTURE_LINEAR_LINEAR_MIPNEAREST; // Bilinear is mag = linear and min = linear and mip = nearest
 
-        public static TRILINEAR_SAMPLINGMODE = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE;
-        public static LINEAR_LINEAR_MIPLINEAR = Engine.TEXTURE_LINEAR_LINEAR_MIPLINEAR; // Trilinear is mag = linear and min = linear and mip = linear
+        /** Trilinear is mag = linear and min = linear and mip = linear */
+        public static readonly TRILINEAR_SAMPLINGMODE = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE;
+        /** Trilinear is mag = linear and min = linear and mip = linear */
+        public static readonly LINEAR_LINEAR_MIPLINEAR = Engine.TEXTURE_LINEAR_LINEAR_MIPLINEAR; // Trilinear is mag = linear and min = linear and mip = linear
 
-        public static NEAREST_NEAREST_MIPNEAREST = Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST;
-        public static NEAREST_LINEAR_MIPNEAREST = Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST;
-        public static NEAREST_LINEAR_MIPLINEAR = Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR;
-        public static NEAREST_LINEAR = Engine.TEXTURE_NEAREST_LINEAR;
-        public static NEAREST_NEAREST = Engine.TEXTURE_NEAREST_NEAREST;
-        public static LINEAR_NEAREST_MIPNEAREST = Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST;
-        public static LINEAR_NEAREST_MIPLINEAR = Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
-        public static LINEAR_LINEAR = Engine.TEXTURE_LINEAR_LINEAR;
-        public static LINEAR_NEAREST = Engine.TEXTURE_LINEAR_NEAREST;
+        /** mag = nearest and min = nearest and mip = nearest */
+        public static readonly NEAREST_NEAREST_MIPNEAREST = Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST;
+        /** mag = nearest and min = linear and mip = nearest */
+        public static readonly NEAREST_LINEAR_MIPNEAREST = Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST;
+        /** mag = nearest and min = linear and mip = linear */
+        public static readonly NEAREST_LINEAR_MIPLINEAR = Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR;
+        /** mag = nearest and min = linear and mip = none */
+        public static readonly NEAREST_LINEAR = Engine.TEXTURE_NEAREST_LINEAR;
+        /** mag = nearest and min = nearest and mip = none */
+        public static readonly NEAREST_NEAREST = Engine.TEXTURE_NEAREST_NEAREST;
+        /** mag = linear and min = nearest and mip = nearest */
+        public static readonly LINEAR_NEAREST_MIPNEAREST = Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST;
+        /** mag = linear and min = nearest and mip = linear */
+        public static readonly LINEAR_NEAREST_MIPLINEAR = Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
+        /** mag = linear and min = linear and mip = none */
+        public static readonly LINEAR_LINEAR = Engine.TEXTURE_LINEAR_LINEAR;
+        /** mag = linear and min = nearest and mip = none */
+        public static readonly LINEAR_NEAREST = Engine.TEXTURE_LINEAR_NEAREST;
 
-        public static EXPLICIT_MODE = Engine.TEXTURE_EXPLICIT_MODE;
-        public static SPHERICAL_MODE = Engine.TEXTURE_SPHERICAL_MODE;
-        public static PLANAR_MODE = Engine.TEXTURE_PLANAR_MODE;
-        public static CUBIC_MODE = Engine.TEXTURE_CUBIC_MODE;
-        public static PROJECTION_MODE = Engine.TEXTURE_PROJECTION_MODE;
-        public static SKYBOX_MODE = Engine.TEXTURE_SKYBOX_MODE;
-        public static INVCUBIC_MODE = Engine.TEXTURE_INVCUBIC_MODE;
-        public static EQUIRECTANGULAR_MODE = Engine.TEXTURE_EQUIRECTANGULAR_MODE;
-        public static FIXED_EQUIRECTANGULAR_MODE = Engine.TEXTURE_FIXED_EQUIRECTANGULAR_MODE;
-        public static FIXED_EQUIRECTANGULAR_MIRRORED_MODE = Engine.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE;
+        /** Explicit coordinates mode */
+        public static readonly EXPLICIT_MODE = Engine.TEXTURE_EXPLICIT_MODE;
+        /** Spherical coordinates mode */
+        public static readonly SPHERICAL_MODE = Engine.TEXTURE_SPHERICAL_MODE;
+        /** Planar coordinates mode */
+        public static readonly PLANAR_MODE = Engine.TEXTURE_PLANAR_MODE;
+        /** Cubic coordinates mode */
+        public static readonly CUBIC_MODE = Engine.TEXTURE_CUBIC_MODE;
+        /** Projection coordinates mode */
+        public static readonly PROJECTION_MODE = Engine.TEXTURE_PROJECTION_MODE;
+        /** Inverse Cubic coordinates mode */
+        public static readonly SKYBOX_MODE = Engine.TEXTURE_SKYBOX_MODE;
+        /** Inverse Cubic coordinates mode */
+        public static readonly INVCUBIC_MODE = Engine.TEXTURE_INVCUBIC_MODE;
+        /** Equirectangular coordinates mode */
+        public static readonly EQUIRECTANGULAR_MODE = Engine.TEXTURE_EQUIRECTANGULAR_MODE;
+        /** Equirectangular Fixed coordinates mode */
+        public static readonly FIXED_EQUIRECTANGULAR_MODE = Engine.TEXTURE_FIXED_EQUIRECTANGULAR_MODE;
+        /** Equirectangular Fixed Mirrored coordinates mode */
+        public static readonly FIXED_EQUIRECTANGULAR_MIRRORED_MODE = Engine.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE;
 
+        /** Texture is not repeating outside of 0..1 UVs */
         public static readonly CLAMP_ADDRESSMODE = Engine.TEXTURE_CLAMP_ADDRESSMODE;
+        /** Texture is repeating outside of 0..1 UVs */
         public static readonly WRAP_ADDRESSMODE = Engine.TEXTURE_WRAP_ADDRESSMODE;
+        /** Texture is repeating and mirrored */
         public static readonly MIRROR_ADDRESSMODE = Engine.TEXTURE_MIRROR_ADDRESSMODE;
 
         /**
@@ -40,28 +71,58 @@
          */
         public static UseSerializedUrlIfAny = false;
 
-        // Members
+        /**
+         * Define the url of the texture.
+         */
         @serialize()
         public url: Nullable<string>;
 
+        /**
+         * Define an offset on the texture to offset the u coordinates of the UVs
+         * @see http://doc.babylonjs.com/how_to/more_materials#offsetting
+         */
         @serialize()
         public uOffset = 0;
 
+        /**
+         * Define an offset on the texture to offset the v coordinates of the UVs
+         * @see http://doc.babylonjs.com/how_to/more_materials#offsetting
+         */
         @serialize()
         public vOffset = 0;
 
+        /**
+         * Define an offset on the texture to scale the u coordinates of the UVs
+         * @see http://doc.babylonjs.com/how_to/more_materials#tiling
+         */
         @serialize()
         public uScale = 1.0;
 
+        /**
+         * Define an offset on the texture to scale the v coordinates of the UVs
+         * @see http://doc.babylonjs.com/how_to/more_materials#tiling
+         */
         @serialize()
         public vScale = 1.0;
 
+        /**
+         * Define an offset on the texture to rotate around the u coordinates of the UVs
+         * @see http://doc.babylonjs.com/how_to/more_materials
+         */
         @serialize()
         public uAng = 0;
 
+        /**
+         * Define an offset on the texture to rotate around the v coordinates of the UVs
+         * @see http://doc.babylonjs.com/how_to/more_materials
+         */
         @serialize()
         public vAng = 0;
 
+        /**
+         * Define an offset on the texture to rotate around the w coordinates of the UVs (in case of 3d texture)
+         * @see http://doc.babylonjs.com/how_to/more_materials
+         */
         @serialize()
         public wAng = 0;
 
@@ -83,6 +144,9 @@
         @serialize()
         public wRotationCenter = 0.5;
 
+        /**
+         * Are mip maps generated for this texture or not.
+         */
         get noMipmap(): boolean {
             return this._noMipmap;
         }
@@ -114,9 +178,17 @@
         protected _format: Nullable<number>;
         private _delayedOnLoad: Nullable<() => void>;
         private _delayedOnError: Nullable<() => void>;
-        protected _onLoadObservable: Nullable<Observable<Texture>>;
+
+        /**
+         * Observable triggered once the texture has been loaded.
+         */
+        public onLoadObservable: Observable<Texture> = new Observable<Texture>();
 
         protected _isBlocking: boolean = true;
+        /**
+         * Is the texture preventing material to render while loading.
+         * If false, a default texture will be used instead of the loading one during the preparation step.
+         */
         public set isBlocking(value: boolean) {
             this._isBlocking = value;
         }
@@ -125,10 +197,28 @@
             return this._isBlocking;
         }
 
+        /**
+         * Get the current sampling mode associated with the texture.
+         */
         public get samplingMode(): number {
             return this._samplingMode;
         }
 
+        /**
+         * Instantiates a new texture.
+         * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
+         * @see http://doc.babylonjs.com/babylon101/materials#texture
+         * @param url define the url of the picture to load as a texture
+         * @param scene define the scene the texture will belong to
+         * @param noMipmap define if the texture will require mip maps or not
+         * @param invertY define if the texture needs to be inverted on the y axis during loading
+         * @param samplingMode define the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
+         * @param onLoad define a callback triggered when the texture has been loaded
+         * @param onError define a callback triggered when an error occurred during the loading session
+         * @param buffer define the buffer to load the texture from in case the texture is loaded from a buffer representation
+         * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
+         * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
+         */
         constructor(url: Nullable<string>, scene: Nullable<Scene>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, deleteBuffer: boolean = false, format?: number) {
             super(scene);
 
@@ -151,7 +241,7 @@
             scene.getEngine().onBeforeTextureInitObservable.notifyObservers(this);
 
             let load = () => {
-                if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
+                if (this.onLoadObservable.hasObservers()) {
                     this.onLoadObservable.notifyObservers(this);
                 }
                 if (onLoad) {
@@ -208,6 +298,10 @@
             this.delayLoad();
         }
 
+        /**
+         * Finish the loading sequence of a texture flagged as delayed load.
+         * @hidden
+         */
         public delayLoad(): void {
             if (this.delayLoadState !== Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
@@ -242,29 +336,29 @@
         }
 
         /**
-        * Default is Trilinear mode.
-        *
-        * | Value | Type               | Description |
-        * | ----- | ------------------ | ----------- |
-        * | 1     | NEAREST_SAMPLINGMODE or NEAREST_NEAREST_MIPLINEAR  | Nearest is: mag = nearest, min = nearest, mip = linear |
-        * | 2     | BILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPNEAREST | Bilinear is: mag = linear, min = linear, mip = nearest |
-        * | 3     | TRILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPLINEAR | Trilinear is: mag = linear, min = linear, mip = linear |
-        * | 4     | NEAREST_NEAREST_MIPNEAREST |             |
-        * | 5    | NEAREST_LINEAR_MIPNEAREST |             |
-        * | 6    | NEAREST_LINEAR_MIPLINEAR |             |
-        * | 7    | NEAREST_LINEAR |             |
-        * | 8    | NEAREST_NEAREST |             |
-        * | 9   | LINEAR_NEAREST_MIPNEAREST |             |
-        * | 10   | LINEAR_NEAREST_MIPLINEAR |             |
-        * | 11   | LINEAR_LINEAR |             |
-        * | 12   | LINEAR_NEAREST |             |
-        *
-        *    > _mag_: magnification filter (close to the viewer)
-        *    > _min_: minification filter (far from the viewer)
-        *    > _mip_: filter used between mip map levels
-        *
-        */
-
+          * Update the sampling mode of the texture.
+         * Default is Trilinear mode.
+         *
+         * | Value | Type               | Description |
+         * | ----- | ------------------ | ----------- |
+         * | 1     | NEAREST_SAMPLINGMODE or NEAREST_NEAREST_MIPLINEAR  | Nearest is: mag = nearest, min = nearest, mip = linear |
+         * | 2     | BILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPNEAREST | Bilinear is: mag = linear, min = linear, mip = nearest |
+         * | 3     | TRILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPLINEAR | Trilinear is: mag = linear, min = linear, mip = linear |
+         * | 4     | NEAREST_NEAREST_MIPNEAREST |             |
+         * | 5    | NEAREST_LINEAR_MIPNEAREST |             |
+         * | 6    | NEAREST_LINEAR_MIPLINEAR |             |
+         * | 7    | NEAREST_LINEAR |             |
+         * | 8    | NEAREST_NEAREST |             |
+         * | 9   | LINEAR_NEAREST_MIPNEAREST |             |
+         * | 10   | LINEAR_NEAREST_MIPLINEAR |             |
+         * | 11   | LINEAR_LINEAR |             |
+         * | 12   | LINEAR_NEAREST |             |
+         *
+         *    > _mag_: magnification filter (close to the viewer)
+         *    > _min_: minification filter (far from the viewer)
+         *    > _mip_: filter used between mip map levels
+         *@param samplingMode Define the new sampling mode of the texture
+         */
         public updateSamplingMode(samplingMode: number): void {
             if (!this._texture) {
                 return;
@@ -295,6 +389,10 @@
             t.z += this.wRotationCenter;
         }
 
+        /**
+         * Get the current texture matrix which includes the requested offsetting, tiling and rotation components.
+         * @returns the transform matrix of the texture.
+         */
         public getTextureMatrix(): Matrix {
             if (
                 this.uOffset === this._cachedUOffset &&
@@ -350,6 +448,10 @@
             return this._cachedTextureMatrix;
         }
 
+        /**
+         * Get the current matrix used to apply reflection. This is useful to rotate an environment texture for instance.
+         * @returns The reflection texture transform
+         */
         public getReflectionTextureMatrix(): Matrix {
             let scene = this.getScene();
 
@@ -421,19 +523,20 @@
             return this._cachedTextureMatrix;
         }
 
+        /**
+         * Clones the texture.
+         * @returns the cloned texture
+         */
         public clone(): Texture {
             return SerializationHelper.Clone(() => {
                 return new Texture(this._texture ? this._texture.url : null, this.getScene(), this._noMipmap, this._invertY, this._samplingMode);
             }, this);
         }
 
-        public get onLoadObservable(): Observable<Texture> {
-            if (!this._onLoadObservable) {
-                this._onLoadObservable = new Observable<Texture>();
-            }
-            return this._onLoadObservable;
-        }
-
+        /**
+         * Serialize the texture to a JSON representation we can easily use in the resepective Parse function.
+         * @returns The JSON representation of the texture
+         */
         public serialize(): any {
             var serializationObject = super.serialize();
 
@@ -448,28 +551,33 @@
             return serializationObject;
         }
 
+        /**
+         * Get the current class name of the texture usefull for serialization or dynamic coding.
+         * @returns "Texture"
+         */
         public getClassName(): string {
             return "Texture";
         }
 
+        /**
+         * Dispose the texture and release its associated resources.
+         */
         public dispose(): void {
             super.dispose();
 
-            if (this._onLoadObservable) {
-                this._onLoadObservable.clear();
-                this._onLoadObservable = null;
-            }
+            this.onLoadObservable.clear();
 
             this._delayedOnLoad = null;
             this._delayedOnError = null;
         }
 
-        // Statics
-        public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-            onLoad: Nullable<() => void> = null, onError: Nullable<() => void> = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
-            return new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data, false, format);
-        }
-
+        /**
+         * Parse the JSON representation of a texture in order to recreate the texture in the given scene.
+         * @param parsedTexture Define the JSON representation of the texture
+         * @param scene Define the scene the parsed texture should be instantiated in
+         * @param rootUrl Define the root url of the parsing sequence in the case of relative dependencies
+         * @returns The parsed texture if successful
+         */
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> {
             if (parsedTexture.customType) {
                 var customTexture = Tools.Instantiate(parsedTexture.customType);
@@ -544,6 +652,39 @@
             return texture;
         }
 
+        /**
+         * Creates a texture from its base 64 representation.
+         * @param data Define the base64 payload without the data: prefix
+         * @param name Define the name of the texture in the scene useful fo caching purpose for instance
+         * @param scene Define the scene the texture should belong to
+         * @param noMipmap Forces the texture to not create mip map information if true
+         * @param invertY define if the texture needs to be inverted on the y axis during loading
+         * @param samplingMode define the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
+         * @param onLoad define a callback triggered when the texture has been loaded
+         * @param onError define a callback triggered when an error occurred during the loading session
+         * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
+         * @returns the created texture
+         */
+        public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+            onLoad: Nullable<() => void> = null, onError: Nullable<() => void> = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
+            return new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data, false, format);
+        }
+
+        /**
+         * Creates a texture from its data: representation. (data: will be added in case only the payload has been passed in)
+         * @param data Define the base64 payload without the data: prefix
+         * @param name Define the name of the texture in the scene useful fo caching purpose for instance
+         * @param buffer define the buffer to load the texture from in case the texture is loaded from a buffer representation
+         * @param scene Define the scene the texture should belong to
+         * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
+         * @param noMipmap Forces the texture to not create mip map information if true
+         * @param invertY define if the texture needs to be inverted on the y axis during loading
+         * @param samplingMode define the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
+         * @param onLoad define a callback triggered when the texture has been loaded
+         * @param onError define a callback triggered when an error occurred during the loading session
+         * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
+         * @returns the created texture
+         */
         public static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer: boolean = false, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
             onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
             if (name.substr(0, 5) !== "data:") {
