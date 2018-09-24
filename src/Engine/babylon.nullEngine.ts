@@ -1,12 +1,33 @@
 ﻿module BABYLON {
 
+    /**
+     * Options to create the null engine
+     */
     export class NullEngineOptions {
+        /**
+         * Render width (Default: 512)
+         */
         public renderWidth = 512;
+        /**
+         * Render height (Default: 256)
+         */
         public renderHeight = 256;
 
+        /**
+         * Texture size (Default: 512)
+         */
         public textureSize = 512;
 
+        /**
+         * If delta time between frames should be constant
+         * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         */
         public deterministicLockstep = false;
+
+        /**
+         * Maximum about of steps between frames (Default: 4)
+         * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         */
         public lockstepMaxSteps = 4;
     }
 
@@ -17,14 +38,22 @@
     export class NullEngine extends Engine {
         private _options: NullEngineOptions;
 
+        /**
+         * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         */
         public isDeterministicLockStep(): boolean {
             return this._options.deterministicLockstep;
         }
 
+        /** @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep */
         public getLockstepMaxSteps(): number {
             return this._options.lockstepMaxSteps;
         }
 
+        /**
+         * Sets hardware scaling, used to save performance if needed
+         * @see https://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+         */
         public getHardwareScalingLevel(): number {
             return 1.0;
         }

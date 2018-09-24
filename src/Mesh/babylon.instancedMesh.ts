@@ -38,22 +38,37 @@
         }
 
         // Methods      
+        /**
+         * If the source mesh receives shadows
+         */
         public get receiveShadows(): boolean {
             return this._sourceMesh.receiveShadows;
         }
 
+        /**
+         * The material of the source mesh
+         */
         public get material(): Nullable<Material> {
             return this._sourceMesh.material;
         }
 
+        /**
+         * Visibility of the source mesh
+         */
         public get visibility(): number {
             return this._sourceMesh.visibility;
         }
 
+        /**
+         * Skeleton of the source mesh
+         */
         public get skeleton(): Nullable<Skeleton> {
             return this._sourceMesh.skeleton;
         }
 
+        /**
+         * Rendering ground id of the source mesh
+         */
         public get renderingGroupId(): number {
             return this._sourceMesh.renderingGroupId;
         }
@@ -74,6 +89,9 @@
             return this._sourceMesh.getTotalVertices();
         }
 
+        /**
+         * The source mesh of the instance
+         */
         public get sourceMesh(): Mesh {
             return this._sourceMesh;
         }
@@ -88,7 +106,10 @@
         }
 
         /**
-         * Returns a float array or a Float32Array of the requested kind of data : positons, normals, uvs, etc.  
+         * Returns an array of integers or a typed array (Int32Array, Uint32Array, Uint16Array) populated with the mesh indices.  
+         * @param kind kind of verticies to retreive (eg. positons, normals, uvs, etc.)
+         * @param copyWhenShared If true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
+         * @returns a float array or a Float32Array of the requested kind of data : positons, normals, uvs, etc.  
          */
         public getVerticesData(kind: string, copyWhenShared?: boolean): Nullable<FloatArray> {
             return this._sourceMesh.getVerticesData(kind, copyWhenShared);
@@ -191,7 +212,7 @@
 
         /**
          * Sets a new updated BoundingInfo to the mesh.  
-         * Returns the mesh.  
+         * @returns the mesh.  
          */
         public refreshBoundingInfo(): InstancedMesh {
             var meshBB = this._sourceMesh.getBoundingInfo();

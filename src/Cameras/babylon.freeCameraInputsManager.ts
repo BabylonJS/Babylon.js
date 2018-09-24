@@ -24,6 +24,7 @@ module BABYLON {
 
         /**
          * Add mouse input support to the input manager.
+         * @param touchEnabled if the FreeCameraMouseInput should support touch (default: true)
          * @returns the current input manager
          */
         addMouse(touchEnabled = true): FreeCameraInputsManager {
