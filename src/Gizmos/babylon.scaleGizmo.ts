@@ -43,9 +43,13 @@ module BABYLON {
             this.uniformScaleGizmo = new AxisScaleGizmo(new Vector3(0,1,0), BABYLON.Color3.Yellow().scale(0.5), gizmoLayer);
             this.uniformScaleGizmo.updateGizmoRotationToMatchAttachedMesh = false;
             this.uniformScaleGizmo.uniformScaling = true
+            var uniformScalingMesh = BABYLON.Mesh.CreatePolyhedron("", {type: 1}, this.uniformScaleGizmo.gizmoLayer.utilityLayerScene);
+            uniformScalingMesh.scaling.scaleInPlace(0.02);
+            uniformScalingMesh.visibility = 0;
             var octahedron = BABYLON.Mesh.CreatePolyhedron("", {type: 1}, this.uniformScaleGizmo.gizmoLayer.utilityLayerScene);
             octahedron.scaling.scaleInPlace(0.007);
-            this.uniformScaleGizmo.setCustomMesh(octahedron, true);
+            uniformScalingMesh.addChild(octahedron);
+            this.uniformScaleGizmo.setCustomMesh(uniformScalingMesh, true);
             
             this.attachedMesh = null;
         }

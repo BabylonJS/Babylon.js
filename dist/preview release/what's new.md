@@ -14,7 +14,7 @@
   - Gizmo manager's internal gizmos are now public ([TrevorDev](https://github.com/TrevorDev))
   - Ability to customize meshes on gizmos ([TrevorDev](https://github.com/TrevorDev))
   - Added ignoreChildren field to bounding box to save performance when using heavily nested meshes ([TrevorDev](https://github.com/TrevorDev))
-  - Add uniform scaling drag support to scale gizmo ([TrevorDev](https://github.com/TrevorDev))
+  - Add uniform scaling drag support to the scale gizmo ([TrevorDev](https://github.com/TrevorDev))
   - Support interacting with child elements ([TrevorDev](https://github.com/TrevorDev))
   - BoundingBox gizmo support for including/excluding descendants when computing the bounding box ([TrevorDev](https://github.com/TrevorDev))
   - Drag start and stop events for bounding box drag and uniform scale drag ([TrevorDev](https://github.com/TrevorDev))
