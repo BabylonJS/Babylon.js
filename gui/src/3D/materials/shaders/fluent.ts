@@ -1,7 +1,7 @@
 import { Effect } from "babylonjs";
 
 import { shader as fShader } from './fluent.fragment';
-import { shader as vShader } from './fluent.fragment';
+import { shader as vShader } from './fluent.vertex';
 
 export function registerShader() {
     // register shaders

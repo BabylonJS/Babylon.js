@@ -6,7 +6,7 @@ let name = '';
 
 let registerShader = false;
 
-name = 'fluentPixelShader'; shader = `﻿precision highp float;
+name = 'fluentPixelShader'; shader = `precision highp float;
 varying vec2 vUV;
 uniform vec4 albedoColor;
 #ifdef INNERGLOW
@@ -65,5 +65,5 @@ if(registerShader && name && shader) {
     Effect.ShadersStore[name] = shader;
 }
 
-export { shader };
+export { shader, name };
 

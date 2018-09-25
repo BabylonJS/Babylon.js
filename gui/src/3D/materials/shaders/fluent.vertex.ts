@@ -6,7 +6,7 @@ let name = '';
 
 let registerShader = false;
 
-name = 'fluentVertexShader'; shader = `﻿precision highp float;
+name = 'fluentVertexShader'; shader = `precision highp float;
 
 attribute vec3 position;
 attribute vec3 normal;
@@ -82,5 +82,5 @@ if(registerShader && name && shader) {
     Effect.ShadersStore[name] = shader;
 }
 
-export { shader };
+export { shader, name };
 
