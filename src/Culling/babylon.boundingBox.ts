@@ -79,7 +79,7 @@
          * @returns array containing the vectors
          */
         public vectorsToRef(array: Vector3[]): Vector3[] {
-            return this.boudingVectorFromMinMax(array, this.minimumWorld, this.maximumWorld);
+            return this.boudingVectorFromMinMax(array, this.minimum, this.maximum);
         }
 
         /**
