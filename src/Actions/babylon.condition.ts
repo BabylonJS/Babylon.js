@@ -288,13 +288,16 @@
          * @param target of the condition
          * @param value to compare with target state 
          */
-        constructor(actionManager: ActionManager, target: any, public value: string) {
+        constructor(actionManager: ActionManager, target: any, 
+                /** Value to compare with target state  */
+                public value: string) {
             super(actionManager);
 
             this._target = target;
         }
 
         /**
+         * Gets a boolean indicating if the current condition is met
          * @returns the validity of the state
          */
         public isValid(): boolean {

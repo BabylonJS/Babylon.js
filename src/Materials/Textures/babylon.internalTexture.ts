@@ -245,7 +245,7 @@ module BABYLON {
         }
 
         /**
-         * Increments the number of references (ie. the number of {BABYLON.Texture} that point to it)
+         * Increments the number of references (ie. the number of Texture that point to it)
          */
         public incrementReferences(): void {
             this._references++;

@@ -191,8 +191,17 @@
         return generateSerializableMember(11, sourceName); // camera reference member
     }
 
+    /**
+     * Class used to help serialization objects
+     */
     export class SerializationHelper {
 
+        /**
+         * Static function used to serialized a specific entity
+         * @param entity defines the entity to serialize
+         * @param serializationObject defines the optional target obecjt where serialization data will be stored
+         * @returns a JSON compatible object representing the serialization of the entity
+         */
         public static Serialize<T>(entity: T, serializationObject?: any): any {
             if (!serializationObject) {
                 serializationObject = {};
@@ -257,6 +266,14 @@
             return serializationObject;
         }
 
+        /**
+         * Creates a new entity from a serialization data object
+         * @param creationFunction defines a function used to instanciated the new entity
+         * @param source defines the source serialization data
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root url for resources
+         * @returns a new entity
+         */
         public static Parse<T>(creationFunction: () => T, source: any, scene: Nullable<Scene>, rootUrl: Nullable<string> = null): T {
             var destination = creationFunction();
 
@@ -329,10 +346,22 @@
             return destination;
         }
 
+        /**
+         * Clones an object
+         * @param creationFunction defines the function used to instanciate the new object
+         * @param source defines the source object
+         * @returns the cloned object
+         */
         public static Clone<T>(creationFunction: () => T, source: T): T {
             return _copySource(creationFunction, source, false);
         }
 
+        /**
+         * Instanciates a new object based on a source one (some data will be shared between both object)
+         * @param creationFunction defines the function used to instanciate the new object
+         * @param source defines the source object
+         * @returns the new object
+         */
         public static Instanciate<T>(creationFunction: () => T, source: T): T {
             return _copySource(creationFunction, source, true);
         }

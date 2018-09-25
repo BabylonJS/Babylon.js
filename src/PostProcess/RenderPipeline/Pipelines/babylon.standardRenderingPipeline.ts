@@ -260,6 +260,7 @@
         private _samples: number = 1;
 
         /**
+         * @ignore
          * Specifies if the bloom pipeline is enabled
          */
         @serialize()
@@ -277,6 +278,7 @@
         }
 
         /**
+         * @ignore
          * Specifies if the depth of field pipeline is enabed
          */
         @serialize()
@@ -294,6 +296,7 @@
         }
 
         /**
+         * @ignore
          * Specifies if the lens flare pipeline is enabed
          */
         @serialize()
@@ -311,6 +314,7 @@
         }
 
         /**
+         * @ignore
          * Specifies if the HDR pipeline is enabled
          */
         @serialize()
@@ -328,6 +332,7 @@
         }
 
         /**
+         * @ignore
          * Specifies if the volumetric lights scattering effect is enabled
          */
         @serialize()
@@ -353,6 +358,7 @@
         }
 
         /**
+         * @ignore
          * Specifies if the motion blur effect is enabled
          */
         @serialize()
@@ -440,11 +446,11 @@
         /**
          * Default pipeline should be used going forward but the standard pipeline will be kept for backwards compatibility.
          * @constructor
-         * @param {string} name - The rendering pipeline name
-         * @param {BABYLON.Scene} scene - The scene linked to this pipeline
-         * @param {any} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
-         * @param {BABYLON.PostProcess} originalPostProcess - the custom original color post-process. Must be "reusable". Can be null.
-         * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
+         * @param name The rendering pipeline name
+         * @param scene The scene linked to this pipeline
+         * @param ratio The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param originalPostProcess the custom original color post-process. Must be "reusable". Can be null.
+         * @param cameras The array of cameras that the rendering pipeline will be attached to
          */
         constructor(name: string, scene: Scene, ratio: number, originalPostProcess: Nullable<PostProcess> = null, cameras?: Camera[]) {
             super(scene.getEngine(), name);
@@ -1077,7 +1083,9 @@
             return p;
         }
 
-        // Luminance steps
+        /**
+         * Luminance steps
+         */
         public static LuminanceSteps: number = 6;
     }
 }

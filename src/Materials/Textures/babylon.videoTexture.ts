@@ -63,13 +63,13 @@
          * If you want to display a video in your scene, this is the special texture for that. 
          * This special texture works similar to other textures, with the exception of a few parameters.
          * @see https://doc.babylonjs.com/how_to/video_texture
-         * @param {string | null} name optional name, will detect from video source, if not defined
-         * @param {(string | string[] | HTMLVideoElement)} src can be used to provide an url, array of urls or an already setup HTML video element.
-         * @param {BABYLON.Scene} scene is obviously the current scene.
-         * @param {boolean} generateMipMaps can be used to turn on mipmaps (Can be expensive for videoTextures because they are often updated).
-         * @param {boolean} invertY is false by default but can be used to invert video on Y axis
-         * @param {number} samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
-         * @param {VideoTextureSettings} [settings] allows finer control over video usage
+         * @param name optional name, will detect from video source, if not defined
+         * @param src can be used to provide an url, array of urls or an already setup HTML video element.
+         * @param scene is obviously the current scene.
+         * @param generateMipMaps can be used to turn on mipmaps (Can be expensive for videoTextures because they are often updated).
+         * @param invertY is false by default but can be used to invert video on Y axis
+         * @param samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
+         * @param settings allows finer control over video usage
          */
         constructor(
             name: Nullable<string>,
@@ -191,7 +191,7 @@
                     if (!error) {
                         this.video.pause();
                     }
-                    if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
+                    if (this.onLoadObservable.hasObservers()) {
                         this.onLoadObservable.notifyObservers(this);
                     }
                 };
@@ -212,7 +212,7 @@
                     this.video.onplaying = oldHandler;
                     this._texture.isReady = true;
                     this._updateInternalTexture();
-                    if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
+                    if (this.onLoadObservable.hasObservers()) {
                         this.onLoadObservable.notifyObservers(this);
                     }
                 }
@@ -220,7 +220,7 @@
             else {
                 this._texture.isReady = true;
                 this._updateInternalTexture();
-                if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
+                if (this.onLoadObservable.hasObservers()) {
                     this.onLoadObservable.notifyObservers(this);
                 }
             }
