@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     /**
-     * A class extending {BABYLON.Texture} allowing drawing on a texture
+     * A class extending Texture allowing drawing on a texture
      * @see http://doc.babylonjs.com/how_to/dynamictexture
      */
     export class DynamicTexture extends Texture {
@@ -10,7 +10,7 @@
         private _engine: Engine;
 
         /**
-         * Creates a {BABYLON.DynamicTexture}
+         * Creates a DynamicTexture
          * @param name defines the name of the texture
          * @param options provides 3 alternatives for width and height of texture, a canvas, object with width and height properties, number for both width and height
          * @param scene defines the scene where you want the texture
