@@ -2,6 +2,9 @@
 
 ## Major updates
 
+
+- Documentation
+  - Entire codebase is now documented. [API documentation](http://doc.babylonjs.com/api/)
 - GUI
   - New GUI 3D controls toolset. [Complete doc + demos](http://doc.babylonjs.com/how_to/gui3d) ([Deltakosh](https://github.com/deltakosh))
   - New GUI control: [Grid](http://doc.babylonjs.com/how_to/gui#grid) ([Deltakosh](https://github.com/deltakosh))
@@ -53,7 +56,7 @@
 - GUI and Inspector are now ES-Modules ([RaananW](https://github.com/RaananW))
 - Added support for noise procedural textures. [Doc](http://doc.babylonjs.com/how_to/how_to_use_procedural_textures#noise-procedural-texture) ([Deltakosh](https://github.com/deltakosh))
 - Added new `PhotoDome` object to display 360 photos. [Demo](https://www.babylonjs-playground.com/#14KRGG#0) ([SzeyinLee](https://github.com/SzeyinLee))
-- Added Video Recorder. [Documentation](https://doc.babylonjs.com/How_To/Render_Scene_on_a_Video) ([sebavan](http://www.github.com/sebavan))
+- Added Video Recorder. [Doc](https://doc.babylonjs.com/How_To/Render_Scene_on_a_Video) ([sebavan](http://www.github.com/sebavan))
 
 ## Updates
 
@@ -168,10 +171,6 @@
 ### Materials Library
 
 - Added ```unlit``` mode to lava material ([sebavan](http://www.github.com/sebavan))
-
-### Documentation
-
-- Added all code comments for GUI
 
 ## Bug fixes
 
