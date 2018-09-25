@@ -55,6 +55,9 @@ module BABYLON {
         }
 
         public set updateGizmoRotationToMatchAttachedMesh(value:boolean){
+            if(!value){
+                Tools.Warn("Setting updateGizmoRotationToMatchAttachedMesh = false on scaling gizmo is not supported.");
+            }
             if(this.xGizmo){
                 this.xGizmo.updateGizmoRotationToMatchAttachedMesh = value;
                 this.yGizmo.updateGizmoRotationToMatchAttachedMesh = value;
