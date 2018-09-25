@@ -501,7 +501,7 @@
                         var parameter = <any>{};
                         Tools.DeepCopy(triggerOptions.parameter, parameter, ["mesh"]);
 
-                        if (triggerOptions.parameter.mesh) {
+                        if (triggerOptions.parameter && triggerOptions.parameter.mesh) {
                             parameter._meshId = triggerOptions.parameter.mesh.id;
                         }
 
