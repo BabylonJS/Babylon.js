@@ -28,7 +28,7 @@ module BABYLON {
          */
         public static readonly POINTERTAP = 0x20;
         /**
-         * The pointertap event is fired when a the object has been touched and released twice without drag.
+         * The pointerdoubletap event is fired when a the object has been touched and released twice without drag.
          */
         public static readonly POINTERDOUBLETAP = 0x40;
     }

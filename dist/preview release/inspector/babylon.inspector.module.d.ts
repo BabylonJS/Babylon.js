@@ -1,6 +1,6 @@
 /*BabylonJS Inspector*/
 // Dependencies for this module:
-//   ../../../../Tools/Gulp/babylonjs
+//   ../../../../Tools/gulp/babylonjs
 
 declare module 'babylonjs-inspector' {
     export * from 'babylonjs-inspector/adapters';
@@ -1343,7 +1343,7 @@ declare module 'babylonjs-inspector/treetools/SoundInteractions' {
 
 /*BabylonJS Inspector*/
 // Dependencies for this module:
-//   ../../../../Tools/Gulp/babylonjs
+//   ../../../../Tools/gulp/babylonjs
 declare module INSPECTOR {
 }
 declare module INSPECTOR {

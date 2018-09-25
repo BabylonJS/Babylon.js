@@ -79,11 +79,11 @@ module BABYLON {
          * }
          * Note: if an effect parameter is unset, effect is disabled
          *
-         * @param {string} name - The rendering pipeline name
-         * @param {object} parameters - An object containing all parameters (see above)
-         * @param {BABYLON.Scene} scene - The scene linked to this pipeline
-         * @param {number} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
-         * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
+         * @param name The rendering pipeline name
+         * @param parameters - An object containing all parameters (see above)
+         * @param scene The scene linked to this pipeline
+         * @param ratio The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param cameras The array of cameras that the rendering pipeline will be attached to
          */
         constructor(name: string, parameters: any, scene: Scene, ratio: number = 1.0, cameras?: Camera[]) {
             super(scene.getEngine(), name);

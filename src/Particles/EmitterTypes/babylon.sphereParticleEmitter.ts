@@ -74,7 +74,7 @@ module BABYLON {
         }    
         
         /**
-         * Called by the {BABYLON.GPUParticleSystem} to setup the update shader
+         * Called by the GPUParticleSystem to setup the update shader
          * @param effect defines the update shader
          */        
         public applyToShader(effect: Effect): void {
