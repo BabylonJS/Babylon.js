@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "experimentalDecorators": true,
-        "module": "esnext",
+        "module": "commonjs",
         "target": "es5",
         "moduleResolution": "node",
         "noImplicitAny": true,
