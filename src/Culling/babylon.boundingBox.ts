@@ -4,10 +4,6 @@
      */
     export class BoundingBox implements ICullable {
         /**
-         * Gets the 8 vectors representing the bounding box in local space
-         */
-        public vectors: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
-        /**
          * Gets the center of the bounding box in local space
          */
         public center: Vector3 = Vector3.Zero();
@@ -27,10 +23,7 @@
          * Gets the OBB (object bounding box) directions
          */
         public directions: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
-        /**
-         * Gets the 8 vectors representing the bounding box in world space
-         */
-        public vectorsWorld: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];;
+
         /**
          * Gets the minimum vector in world space
          */
@@ -64,33 +57,68 @@
             this.reConstruct(min, max);
         }
 
+        /**
+         * Gets the 8 vectors representing the bounding box in local space
+         */
+        public get vectors(): Vector3[] {
+            const array = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
+            return this.vectorsToRef(array);
+        }
+
+        /**
+         * Gets the 8 vectors representing the bounding box in world space
+         */
+        public get vectorsWorld(): Vector3[] {
+            const array = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
+            return this.vectorsWorldToRef(array);
+        }
+
+        /**
+         * Gets the 8 vectors representing the bounding box in local space
+         * @param array an array of Vector3
+         * @returns array containing the vectors
+         */
+        public vectorsToRef(array: Vector3[]): Vector3[] {
+            return this.boudingVectorFromMinMax(array, this.minimumWorld, this.maximumWorld);
+        }
+
+        /**
+         * Gets the 8 vectors representing the bounding box in world space
+         * @param array  an array of Vector3
+         * @returns a new array containing the vectors
+         */
+        public vectorsWorldToRef(array: Vector3[]): Vector3[] {
+            return this.boudingVectorFromMinMax(array, this.minimumWorld, this.maximumWorld);
+        }
+
+        /**
+         * @hidden
+         */
+        private boudingVectorFromMinMax(array: Vector3[], min: Vector3, max: Vector3): Vector3[] {
+            if (array.length < 8)
+                array.length = 8;
+            array[0].copyFromFloats(min.x, min.y, min.z);
+            array[1].copyFromFloats(max.x, max.y, max.z);
+            array[2].copyFromFloats(max.x, min.y, min.z);
+            array[3].copyFromFloats(min.x, max.y, min.z);
+            array[4].copyFromFloats(min.x, min.y, max.z);
+            array[5].copyFromFloats(max.x, max.y, min.z);
+            array[6].copyFromFloats(min.x, max.y, max.z);
+            array[7].copyFromFloats(max.x, min.y, max.z);
+            return array
+        }
+
         // Methods
 
         /**
          * Recreates the entire bounding box from scratch
          * @param min defines the new minimum vector (in local space)
          * @param max defines the new maximum vector (in local space) 
+         * @param worldMatrix defines the new world matrix
          */
-        public reConstruct(min: Vector3, max: Vector3) {
+        public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
             this.minimum.copyFrom(min);
             this.maximum.copyFrom(max);
-
-            // Bounding vectors
-            this.vectors[0].copyFrom(this.minimum);
-            this.vectors[1].copyFrom(this.maximum);
-            this.vectors[2].copyFrom(this.minimum);
-            this.vectors[3].copyFrom(this.minimum);
-            this.vectors[4].copyFrom(this.minimum);
-            this.vectors[5].copyFrom(this.maximum);
-            this.vectors[6].copyFrom(this.maximum);
-            this.vectors[7].copyFrom(this.maximum);
-
-            this.vectors[2].x = this.maximum.x;
-            this.vectors[3].y = this.maximum.y;
-            this.vectors[4].z = this.maximum.z;
-            this.vectors[5].z = this.minimum.z;
-            this.vectors[6].x = this.minimum.x;
-            this.vectors[7].y = this.minimum.y;
 
             // OBB
             this.center.copyFrom(this.maximum).addInPlace(this.minimum).scaleInPlace(0.5);
@@ -99,17 +127,12 @@
                 this.directions[index].copyFromFloats(0,0,0);
             }
 
-            // World
-            for (var index = 0; index < 8; index++) {
-                this.vectorsWorld[index].copyFromFloats(0,0,0);
-            }
-
             this.minimumWorld.copyFromFloats(0,0,0);
             this.maximumWorld.copyFromFloats(0,0,0);
             this.centerWorld.copyFromFloats(0,0,0);
             this.extendSizeWorld.copyFromFloats(0,0,0);
 
-            this._update(this._worldMatrix || Matrix.Identity());
+            this._update(worldMatrix || this._worldMatrix || Matrix.Identity());
         }
 
         /**
@@ -154,9 +177,10 @@
             Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this.minimumWorld);
             Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this.maximumWorld);
 
+            const vectors = this.vectorsToRef(Tmp.Vector3);
+            const v = Tmp.Vector3[8];
             for (var index = 0; index < 8; index++) {
-                var v = this.vectorsWorld[index];
-                Vector3.TransformCoordinatesToRef(this.vectors[index], world, v);
+                Vector3.TransformCoordinatesToRef(vectors[index], world, v);
                 this.minimumWorld.minimizeInPlace(v);
                 this.maximumWorld.maximizeInPlace(v);
             }
@@ -182,7 +206,7 @@
          * @returns true if there is an intersection
          */
         public isInFrustum(frustumPlanes: Plane[]): boolean {
-            return BoundingBox.IsInFrustum(this.vectorsWorld, frustumPlanes);
+            return BoundingBox.IsInFrustum(this.vectorsWorldToRef(Tmp.Vector3), frustumPlanes);
         }
 
         /**
@@ -191,7 +215,7 @@
          * @returns true if there is an inclusion
          */        
         public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
-            return BoundingBox.IsCompletelyInFrustum(this.vectorsWorld, frustumPlanes);
+            return BoundingBox.IsCompletelyInFrustum(this.vectorsWorldToRef(Tmp.Vector3), frustumPlanes);
         }
 
         /**

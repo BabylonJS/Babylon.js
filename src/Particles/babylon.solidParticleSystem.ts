@@ -127,8 +127,6 @@
         private _mustUnrotateFixedNormals = false;
         private _minimum: Vector3 = Vector3.Zero();
         private _maximum: Vector3 = Vector3.Zero();
-        private _minBbox: Vector3 = Vector3.Zero();
-        private _maxBbox: Vector3 = Vector3.Zero();
         private _particlesIntersect: boolean = false;
         private _depthSortFunction: (p1: DepthSortedParticle, p2: DepthSortedParticle) => number =
             function (p1, p2) {
@@ -965,31 +963,45 @@
                     var bSphere = bInfo.boundingSphere;
                     if (!this._bSphereOnly) {
                         // place, scale and rotate the particle bbox within the SPS local system, then update it
-                        for (var b = 0; b < bBox.vectors.length; b++) {
-                            this._vertex.x = this._particle._modelBoundingInfo.boundingBox.vectors[b].x * this._particle.scaling.x;
-                            this._vertex.y = this._particle._modelBoundingInfo.boundingBox.vectors[b].y * this._particle.scaling.y;
-                            this._vertex.z = this._particle._modelBoundingInfo.boundingBox.vectors[b].z * this._particle.scaling.z;
+                        const modelBoundingInfoVectors = this._particle._modelBoundingInfo.boundingBox.vectorsToRef(Tmp.Vector3);
+                        const v = Tmp.Vector3[8];
+                        const min = Tmp.Vector3[9];
+                        const max = Tmp.Vector3[10];
+                        Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, min);
+                        Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, max);
+
+                        for (var b = 0; b < 8; b++) {
+                            this._vertex.x = modelBoundingInfoVectors[b].x * this._particle.scaling.x;
+                            this._vertex.y = modelBoundingInfoVectors[b].y * this._particle.scaling.y;
+                            this._vertex.z = modelBoundingInfoVectors[b].z * this._particle.scaling.z;
                             this._rotated.x = this._vertex.x * this._particle._rotationMatrix[0] + this._vertex.y * this._particle._rotationMatrix[3] + this._vertex.z * this._particle._rotationMatrix[6];
                             this._rotated.y = this._vertex.x * this._particle._rotationMatrix[1] + this._vertex.y * this._particle._rotationMatrix[4] + this._vertex.z * this._particle._rotationMatrix[7];
                             this._rotated.z = this._vertex.x * this._particle._rotationMatrix[2] + this._vertex.y * this._particle._rotationMatrix[5] + this._vertex.z * this._particle._rotationMatrix[8];
-                            bBox.vectors[b].x = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
-                            bBox.vectors[b].y = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
-                            bBox.vectors[b].z = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
+                            v.x = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
+                            v.y = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
+                            v.z = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
+                            min.minimizeInPlace(v);
+                            max.maximizeInPlace(v);
                         }
-                        bBox._update(this.mesh._worldMatrix);
+
+                        bBox.reConstruct(min, max, this.mesh._worldMatrix);
                     }
                     // place and scale the particle bouding sphere in the SPS local system, then update it
-                    this._minBbox.x = this._particle._modelBoundingInfo.minimum.x * this._particle.scaling.x;
-                    this._minBbox.y = this._particle._modelBoundingInfo.minimum.y * this._particle.scaling.y;
-                    this._minBbox.z = this._particle._modelBoundingInfo.minimum.z * this._particle.scaling.z;
-                    this._maxBbox.x = this._particle._modelBoundingInfo.maximum.x * this._particle.scaling.x;
-                    this._maxBbox.y = this._particle._modelBoundingInfo.maximum.y * this._particle.scaling.y;
-                    this._maxBbox.z = this._particle._modelBoundingInfo.maximum.z * this._particle.scaling.z;
-                    bSphere.center.x = this._particle._globalPosition.x + (this._minBbox.x + this._maxBbox.x) * 0.5;
-                    bSphere.center.y = this._particle._globalPosition.y + (this._minBbox.y + this._maxBbox.y) * 0.5;
-                    bSphere.center.z = this._particle._globalPosition.z + (this._minBbox.z + this._maxBbox.z) * 0.5;
-                    bSphere.radius = this._bSphereRadiusFactor * 0.5 * Math.sqrt((this._maxBbox.x - this._minBbox.x) * (this._maxBbox.x - this._minBbox.x) + (this._maxBbox.y - this._minBbox.y) * (this._maxBbox.y - this._minBbox.y) + (this._maxBbox.z - this._minBbox.z) * (this._maxBbox.z - this._minBbox.z));
-                    bSphere._update(this.mesh._worldMatrix);
+                    const minBbox = Tmp.Vector3[0].copyFromFloats(
+                        this._particle._modelBoundingInfo.minimum.x * this._particle.scaling.x, 
+                        this._particle._modelBoundingInfo.minimum.y * this._particle.scaling.y, 
+                        this._particle._modelBoundingInfo.minimum.z * this._particle.scaling.z);
+
+                    const maxBbox = Tmp.Vector3[1].copyFromFloats(
+                        this._particle._modelBoundingInfo.maximum.x * this._particle.scaling.x,
+                        this._particle._modelBoundingInfo.maximum.y * this._particle.scaling.y,
+                        this._particle._modelBoundingInfo.maximum.z * this._particle.scaling.z);
+
+                    const center = Tmp.Vector3[2].copyFrom(maxBbox).addInPlace(minBbox).scaleInPlace(0.5);
+                    const halfDiag  = Tmp.Vector3[3].copyFrom(maxBbox).subtractInPlace(minBbox).scaleInPlace(0.5).scale(this._bSphereRadiusFactor);
+                    const sphereMinBbox = Tmp.Vector3[4].copyFrom(center).subtractInPlace(halfDiag);
+                    const sphereMaxBbox = Tmp.Vector3[5].copyFrom(center).addInPlace(halfDiag);
+                    bSphere.reConstruct(sphereMinBbox, sphereMaxBbox, this.mesh._worldMatrix);
                 }
 
                 // increment indexes for the next particle

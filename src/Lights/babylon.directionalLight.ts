@@ -149,8 +149,9 @@
                     var boundingInfo = mesh.getBoundingInfo();
                     var boundingBox = boundingInfo.boundingBox;
 
-                    for (var index = 0; index < boundingBox.vectorsWorld.length; index++) {
-                        Vector3.TransformCoordinatesToRef(boundingBox.vectorsWorld[index], viewMatrix, tempVector3);
+                    const vectorsWorld = boundingBox.vectorsWorldToRef(Tmp.Vector3);
+                    for (var index = 0; index < vectorsWorld.length; index++) {
+                        Vector3.TransformCoordinatesToRef(vectorsWorld[index], viewMatrix, tempVector3);
 
                         if (tempVector3.x < this._orthoLeft)
                             this._orthoLeft = tempVector3.x;
