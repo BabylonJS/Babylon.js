@@ -372,6 +372,8 @@
             }
             return intersectInfo;
         }
+
+        /** @hidden */
         private _intersectTriangles(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo> {
             var intersectInfo: Nullable<IntersectionInfo> = null;
             // Triangles test
