@@ -1860,7 +1860,15 @@ declare module 'babylonjs-viewer/loader/plugins/applyMaterialConfig' {
 }
 
 declare module 'babylonjs-viewer/loader/plugins/extendedMaterialLoaderPlugin' {
-    
+    import { Material } from 'babylonjs';
+    import { ILoaderPlugin } from 'babylonjs-viewer/loader/plugins/loaderPlugin';
+    /**
+      * A (PBR) material will be extended using this function.
+      * This function will hold extra default configuration for the viewer, if not implemented in Babylon itself.
+      */
+    export class ExtendedMaterialLoaderPlugin implements ILoaderPlugin {
+        onMaterialLoaded(baseMaterial: Material): void;
+    }
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/cameraConfiguration' {

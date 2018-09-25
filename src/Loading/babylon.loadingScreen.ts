@@ -1,23 +1,51 @@
 module BABYLON {
 
+    /**
+     * Interface used to present a loading screen while loading a scene
+     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     */
     export interface ILoadingScreen {
+        /**
+         * Function called to display the loading screen
+         */
         displayLoadingUI: () => void;
+        /**
+         * Function called to hide the loading screen
+         */
         hideLoadingUI: () => void;
-        //default loader support
+        /**
+         * Gets or sets the color to use for the background
+         */
         loadingUIBackgroundColor: string;
+        /**
+         * Gets or sets the text to display while loading
+         */
         loadingUIText: string;
 
     }
 
+    /**
+     * Class used for the default loading screen
+     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     */
     export class DefaultLoadingScreen implements ILoadingScreen {
 
         private _loadingDiv: Nullable<HTMLDivElement>;
         private _loadingTextDiv: HTMLDivElement;
 
+        /**
+         * Creates a new default loading screen
+         * @param _renderingCanvas defines the canvas used to render the scene
+         * @param _loadingText defines the default text to display
+         * @param _loadingDivBackgroundColor defines the default background color
+         */
         constructor(private _renderingCanvas: HTMLCanvasElement, private _loadingText = "", private _loadingDivBackgroundColor = "black") {
 
         }
 
+        /**
+         * Function called to display the loading screen
+         */
         public displayLoadingUI(): void {
             if (this._loadingDiv) {
                 // Do not add a loading screen if there is already one  
@@ -91,6 +119,9 @@ module BABYLON {
             this._loadingDiv.style.opacity = "1";
         }
 
+        /**
+         * Function called to hide the loading screen
+         */        
         public hideLoadingUI(): void {
             if (!this._loadingDiv) {
                 return;
@@ -110,6 +141,9 @@ module BABYLON {
             this._loadingDiv.addEventListener("transitionend", onTransitionEnd);
         }
 
+        /**
+         * Gets or sets the text to display while loading
+         */
         public set loadingUIText(text: string) {
             this._loadingText = text;
 
@@ -118,6 +152,13 @@ module BABYLON {
             }
         }
 
+        public get loadingUIText(): string {
+            return this._loadingText;
+        }
+
+        /**
+         * Gets or sets the color to use for the background
+         */        
         public get loadingUIBackgroundColor(): string {
             return this._loadingDivBackgroundColor;
         }

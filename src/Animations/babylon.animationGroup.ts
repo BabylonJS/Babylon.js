@@ -3,7 +3,13 @@ module BABYLON {
      * This class defines the direct association between an animation and a target
      */
     export class TargetedAnimation {
+        /**
+         * Animation to perform
+         */
         public animation: Animation;
+        /**
+         * Target to animate
+         */
         public target: any;
     }
 
@@ -113,7 +119,7 @@ module BABYLON {
          * Add an animation (with its target) in the group
          * @param animation defines the animation we want to add
          * @param target defines the target of the animation
-         * @returns the {BABYLON.TargetedAnimation} object
+         * @returns the TargetedAnimation object
          */
         public addTargetedAnimation(animation: Animation, target: any): TargetedAnimation {
             let targetedAnimation = {

@@ -307,12 +307,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      */
     public markAsDirty() {
         this._isDirty = true;
-
-        this.executeOnAllControls((control) => {
-            if (control._isFontSizeInPercentage) {
-                control._resetFontCache();
-            }
-        });
     }
 
     /**

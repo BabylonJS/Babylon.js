@@ -1,11 +1,20 @@
 module BABYLON {
     declare var earcut: any;
+    /**
+     * Vector2 wth index property
+     */
     class IndexedVector2 extends Vector2 {
-        constructor(original: Vector2, public index: number) {
+        constructor(
+            original: Vector2,
+            /** Index of the vector2 */
+            public index: number) {
             super(original.x, original.y);
         }
     }
 
+    /**
+     * Defines points to create a polygon
+     */
     class PolygonPoints {
         elements = new Array<IndexedVector2>();
 
@@ -56,7 +65,19 @@ module BABYLON {
         }
     }
 
+    /**
+     * Polygon
+     * @see https://doc.babylonjs.com/how_to/parametric_shapes#non-regular-polygon
+     */
     export class Polygon {
+        /**
+         * Creates a rectangle
+         * @param xmin bottom X coord
+         * @param ymin bottom Y coord
+         * @param xmax top X coord
+         * @param ymax top Y coord
+         * @returns points that make the resulting rectation
+         */
         static Rectangle(xmin: number, ymin: number, xmax: number, ymax: number): Vector2[] {
             return [
                 new Vector2(xmin, ymin),
@@ -66,6 +87,14 @@ module BABYLON {
             ];
         }
 
+        /**
+         * Creates a circle
+         * @param radius radius of circle
+         * @param cx scale in x
+         * @param cy scale in y
+         * @param numberOfSides number of sides that make up the circle 
+         * @returns points that make the resulting circle
+         */
         static Circle(radius: number, cx: number = 0, cy: number = 0, numberOfSides: number = 32): Vector2[] {
             var result = new Array<Vector2>();
 
@@ -83,6 +112,11 @@ module BABYLON {
             return result;
         }
 
+        /**
+         * Creates a polygon from input string
+         * @param input Input polygon data
+         * @returns the parsed points
+         */
         static Parse(input: string): Vector2[] {
             var floats = input.split(/[^-+eE\.\d]+/).map(parseFloat).filter(val => (!isNaN(val)));
             var i: number, result = [];
@@ -92,11 +126,21 @@ module BABYLON {
             return result;
         }
 
+        /**
+         * Starts building a polygon from x and y coordinates
+         * @param x x coordinate
+         * @param y y coordinate
+         * @returns the started path2
+         */
         static StartingAt(x: number, y: number): Path2 {
             return Path2.StartingAt(x, y);
         }
     }
 
+    /**
+     * Builds a polygon
+     * @see https://doc.babylonjs.com/how_to/polygonmeshbuilder
+     */
     export class PolygonMeshBuilder {
 
         private _points = new PolygonPoints();
@@ -115,9 +159,14 @@ module BABYLON {
             }
         }
 
-        constructor(name: string, contours: Path2, scene: Scene)
-        constructor(name: string, contours: Vector2[], scene: Scene)
-        constructor(name: string, contours: any, scene: Scene) {
+
+        /**
+         * Creates a PolygonMeshBuilder
+         * @param name name of the builder
+         * @param contours Path of the polygon
+         * @param scene scene to add to
+         */
+        constructor(name: string, contours: Path2 | Vector2[] | any, scene: Scene) {
             this._name = name;
             this._scene = scene;
 
@@ -138,6 +187,11 @@ module BABYLON {
             }
         }
 
+        /**
+         * Adds a whole within the polygon
+         * @param hole Array of points defining the hole
+         * @returns this
+         */
         addHole(hole: Vector2[]): PolygonMeshBuilder {
             this._points.add(hole);
             var holepoints = new PolygonPoints();
@@ -150,6 +204,12 @@ module BABYLON {
             return this;
         }
 
+        /**
+         * Creates the polygon
+         * @param updatable If the mesh should be updatable
+         * @param depth The depth of the mesh created
+         * @returns the created mesh
+         */
         build(updatable: boolean = false, depth: number = 0): Mesh {
             var result = new Mesh(this._name, this._scene);
 
@@ -208,6 +268,17 @@ module BABYLON {
             return result;
         }
 
+        /**
+         * Adds a side to the polygon
+         * @param positions points that make the polygon
+         * @param normals normals of the polygon
+         * @param uvs uvs of the polygon
+         * @param indices indices of the polygon 
+         * @param bounds bounds of the polygon 
+         * @param points points of the polygon 
+         * @param depth depth of the polygon 
+         * @param flip flip of the polygon 
+         */
         private addSide(positions: any[], normals: any[], uvs: any[], indices: any[], bounds: any, points: PolygonPoints, depth: number, flip: boolean) {
             var StartIndex: number = positions.length / 3;
             var ulength: number = 0;

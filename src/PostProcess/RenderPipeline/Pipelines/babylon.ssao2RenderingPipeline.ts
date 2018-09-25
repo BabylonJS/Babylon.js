@@ -1,24 +1,32 @@
 ﻿module BABYLON {
+    /**
+     * Render pipeline to produce ssao effect
+     */
     export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         // Members
 
         /**
+         * @ignore
         * The PassPostProcess id in the pipeline that contains the original scene color
         */
         public SSAOOriginalSceneColorEffect: string = "SSAOOriginalSceneColorEffect";
         /**
+         * @ignore
         * The SSAO PostProcess id in the pipeline
         */
         public SSAORenderEffect: string = "SSAORenderEffect";
         /**
+         * @ignore
         * The horizontal blur PostProcess id in the pipeline
         */
         public SSAOBlurHRenderEffect: string = "SSAOBlurHRenderEffect";
         /**
+         * @ignore
         * The vertical blur PostProcess id in the pipeline
         */
         public SSAOBlurVRenderEffect: string = "SSAOBlurVRenderEffect";
         /**
+         * @ignore
         * The PostProcess id in the pipeline that combines the SSAO-Blur output with the original scene color (SSAOOriginalSceneColorEffect)
         */
         public SSAOCombineRenderEffect: string = "SSAOCombineRenderEffect";
@@ -91,11 +99,12 @@
         */
         private _samplerOffsets: number[];
 
-        /**
-        * Are we using bilateral blur ?
-        */
+        
         @serialize("expensiveBlur")
         private _expensiveBlur: boolean = true;
+        /**
+        * If bilateral blur should be used
+        */
         public set expensiveBlur(b: boolean) {
             this._blurHPostProcess.updateEffect("#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (b ? "1" : "0") + "\n",
                 null, ["textureSampler", "depthSampler"]);
@@ -148,10 +157,10 @@
 
         /**
          * @constructor
-         * @param {string} name - The rendering pipeline name
-         * @param {BABYLON.Scene} scene - The scene linked to this pipeline
-         * @param {any} ratio - The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, blurRatio: 1.0 }
-         * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
+         * @param name The rendering pipeline name
+         * @param scene The scene linked to this pipeline
+         * @param ratio The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, blurRatio: 1.0 }
+         * @param cameras The array of cameras that the rendering pipeline will be attached to
          */
         constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[]) {
             super(scene.getEngine(), name);

@@ -321,8 +321,6 @@
          * @returns intersection info or null if no intersection
          */
         public intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo> {
-            var intersectInfo: Nullable<IntersectionInfo> = null;
-
             const material = this.getMaterial();
             if (!material) {
                 return null;
@@ -339,21 +337,61 @@
             }
 
             // LineMesh first as it's also a Mesh...
-            if (LinesMesh && this._mesh instanceof LinesMesh) {
-                var lineMesh = <LinesMesh>this._mesh;
+            if (LinesMesh) {
+                const mesh = this._mesh instanceof InstancedMesh ? (<InstancedMesh>this._mesh).sourceMesh : this._mesh
+                if (mesh instanceof LinesMesh) {
+                    const linesMesh = <LinesMesh>mesh
+                    return this._intersectLines(ray, positions, indices, linesMesh.intersectionThreshold, fastCheck);
+                }
+            }
 
-                // Line test
-                for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 2) {
-                    var p0 = positions[indices[index]];
-                    var p1 = positions[indices[index + 1]];
+            return this._intersectTriangles(ray, positions, indices, fastCheck);
+        }
 
-                    var length = ray.intersectionSegment(p0, p1, lineMesh.intersectionThreshold);
-                    if (length < 0) {
+        /** @hidden */
+        private _intersectLines(ray: Ray, positions: Vector3[], indices: IndicesArray, intersectionThreshold:number, fastCheck?: boolean): Nullable<IntersectionInfo> {
+            var intersectInfo: Nullable<IntersectionInfo> = null;
+
+            // Line test
+            for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 2) {
+                var p0 = positions[indices[index]];
+                var p1 = positions[indices[index + 1]];
+
+                var length = ray.intersectionSegment(p0, p1, intersectionThreshold);
+                if (length < 0) {
+                    continue;
+                }
+
+                if (fastCheck || !intersectInfo || length < intersectInfo.distance) {
+                    intersectInfo = new IntersectionInfo(null, null, length);
+
+                    if (fastCheck) {
+                        break;
+                    }
+                }
+            }
+            return intersectInfo;
+        }
+
+        /** @hidden */
+        private _intersectTriangles(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo> {
+            var intersectInfo: Nullable<IntersectionInfo> = null;
+            // Triangles test
+            for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
+                var p0 = positions[indices[index]];
+                var p1 = positions[indices[index + 1]];
+                var p2 = positions[indices[index + 2]];
+
+                var currentIntersectInfo = ray.intersectsTriangle(p0, p1, p2);
+
+                if (currentIntersectInfo) {
+                    if (currentIntersectInfo.distance < 0) {
                         continue;
                     }
 
-                    if (fastCheck || !intersectInfo || length < intersectInfo.distance) {
-                        intersectInfo = new IntersectionInfo(null, null, length);
+                    if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
+                        intersectInfo = currentIntersectInfo;
+                        intersectInfo.faceId = index / 3;
 
                         if (fastCheck) {
                             break;
@@ -361,32 +399,6 @@
                     }
                 }
             }
-            else {
-                // Triangles test
-                for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
-                    var p0 = positions[indices[index]];
-                    var p1 = positions[indices[index + 1]];
-                    var p2 = positions[indices[index + 2]];
-
-                    var currentIntersectInfo = ray.intersectsTriangle(p0, p1, p2);
-
-                    if (currentIntersectInfo) {
-                        if (currentIntersectInfo.distance < 0) {
-                            continue;
-                        }
-
-                        if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
-                            intersectInfo = currentIntersectInfo;
-                            intersectInfo.faceId = index / 3;
-
-                            if (fastCheck) {
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
             return intersectInfo;
         }
 
