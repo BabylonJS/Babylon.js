@@ -22,7 +22,7 @@ if(registerShader && name && shader) {
     Effect.ShadersStore[name] = shader;
 }
 
-export { shader };
+export { shader, name };
 
 `;
 
