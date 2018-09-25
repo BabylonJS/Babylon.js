@@ -1011,6 +1011,11 @@
                         this._gl = <any>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
                         if (this._gl) {
                             this._webGLVersion = 2.0;
+
+                            // Prevent weird browsers to lie :-)
+                            if (!this._gl.deleteQuery) {
+                                this._webGLVersion = 1.0;
+                            }
                         }
                     } catch (e) {
                         // Do nothing
