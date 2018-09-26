@@ -500,9 +500,28 @@ module BABYLON.GLTF2.Exporter {
 
                     // Read data from WebGL
                     const canvas = engine.getRenderingCanvas();
+
                     if (canvas) {
-                        const dataURL = canvas.toDataURL();
-                        resolve(dataURL);
+                        if (!canvas.toBlob) { // fallback for browsers without "canvas.toBlob"
+                            const dataURL = canvas.toDataURL();
+                            resolve(dataURL);
+                        } 
+                        else {
+                            BABYLON.Tools.ToBlob(canvas, blob => {
+                                if (blob) {
+                                    let fileReader = new FileReader();
+                                    fileReader.onload = (event: any) => {
+                                        let base64String = event.target.result as string;
+                                        hostingScene.dispose();
+                                        resolve(base64String);
+                                    };
+                                    fileReader.readAsDataURL(blob);
+                                }
+                                else {
+                                    reject("gltfMaterialExporter: Failed to get blob from image canvas!");
+                                }
+                            });
+                        }
                     }
                     else {
                         reject("Engine is missing a canvas!");
