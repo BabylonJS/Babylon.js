@@ -549,14 +549,16 @@ var BABYLON;
              * @returns {boolean}
              */
             var isInArray = function (arr, obj) {
-                if (!arr[obj[0]])
+                if (!arr[obj[0]]) {
                     arr[obj[0]] = { normals: [], idx: [] };
+                }
                 var idx = arr[obj[0]].normals.indexOf(obj[1]);
                 return idx === -1 ? -1 : arr[obj[0]].idx[idx];
             };
             var isInArrayUV = function (arr, obj) {
-                if (!arr[obj[0]])
+                if (!arr[obj[0]]) {
                     arr[obj[0]] = { normals: [], idx: [], uv: [] };
+                }
                 var idx = arr[obj[0]].normals.indexOf(obj[1]);
                 if (idx != 1 && (obj[2] == arr[obj[0]].uv[idx])) {
                     return arr[obj[0]].idx[idx];
@@ -610,8 +612,9 @@ var BABYLON;
                     //Add the tuple in the comparison list
                     tuplePosNorm[indicePositionFromObj].normals.push(indiceNormalFromObj);
                     tuplePosNorm[indicePositionFromObj].idx.push(curPositionInIndices++);
-                    if (OBJFileLoader.OPTIMIZE_WITH_UV)
+                    if (OBJFileLoader.OPTIMIZE_WITH_UV) {
                         tuplePosNorm[indicePositionFromObj].uv.push(indiceUvsFromObj);
+                    }
                 }
                 else {
                     //The tuple already exists
@@ -1730,14 +1733,18 @@ var BABYLON;
             };
         };
         GLTFFileLoader._compareVersion = function (a, b) {
-            if (a.major > b.major)
+            if (a.major > b.major) {
                 return 1;
-            if (a.major < b.major)
+            }
+            if (a.major < b.major) {
                 return -1;
-            if (a.minor > b.minor)
+            }
+            if (a.minor > b.minor) {
                 return 1;
-            if (a.minor < b.minor)
+            }
+            if (a.minor < b.minor) {
                 return -1;
+            }
             return 0;
         };
         GLTFFileLoader._decodeBufferToText = function (buffer) {
@@ -1950,8 +1957,9 @@ var BABYLON;
                 this._maxPos = toParse.length;
             }
             Tokenizer.prototype.getNextToken = function () {
-                if (this.isEnd())
+                if (this.isEnd()) {
                     return ETokenType.END_OF_INPUT;
+                }
                 this.currentString = this.read();
                 this.currentToken = ETokenType.UNKNOWN;
                 if (this.currentString === "_" || this.isLetterOrDigitPattern.test(this.currentString)) {
@@ -3377,7 +3385,6 @@ var BABYLON;
                     onload();
                 }
             };
-            ;
             GLTFLoader.prototype._loadBuffersAsync = function (gltfRuntime, onLoad, onProgress) {
                 var hasBuffers = false;
                 var processBuffer = function (buf, buffer) {
@@ -3432,7 +3439,6 @@ var BABYLON;
             return GLTFLoader;
         }());
         GLTF1.GLTFLoader = GLTFLoader;
-        ;
         BABYLON.GLTFFileLoader._CreateGLTFLoaderV1 = function () { return new GLTFLoader(); };
     })(GLTF1 = BABYLON.GLTF1 || (BABYLON.GLTF1 = {}));
 })(BABYLON || (BABYLON = {}));

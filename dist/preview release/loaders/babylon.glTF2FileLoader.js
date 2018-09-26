@@ -647,14 +647,18 @@ var BABYLON;
             };
         };
         GLTFFileLoader._compareVersion = function (a, b) {
-            if (a.major > b.major)
+            if (a.major > b.major) {
                 return 1;
-            if (a.major < b.major)
+            }
+            if (a.major < b.major) {
                 return -1;
-            if (a.minor > b.minor)
+            }
+            if (a.minor > b.minor) {
                 return 1;
-            if (a.minor < b.minor)
+            }
+            if (a.minor < b.minor) {
                 return -1;
+            }
             return 0;
         };
         GLTFFileLoader._decodeBufferToText = function (buffer) {
@@ -1446,12 +1450,15 @@ var BABYLON;
                     matrix.decompose(scaling, rotation, position);
                 }
                 else {
-                    if (node.translation)
+                    if (node.translation) {
                         position = BABYLON.Vector3.FromArray(node.translation);
-                    if (node.rotation)
+                    }
+                    if (node.rotation) {
                         rotation = BABYLON.Quaternion.FromArray(node.rotation);
-                    if (node.scale)
+                    }
+                    if (node.scale) {
                         scaling = BABYLON.Vector3.FromArray(node.scale);
+                    }
                 }
                 babylonNode.position = position;
                 babylonNode.rotationQuaternion = rotation;
@@ -2192,7 +2199,6 @@ var BABYLON;
                         wrapV: GLTFLoader._GetTextureWrapMode(context + "/wrapT", sampler.wrapT)
                     };
                 }
-                ;
                 return sampler._data;
             };
             /**
@@ -3093,12 +3099,15 @@ var BABYLON;
                             var promise = Promise.all(clipPromises).then(function () {
                                 var weights = emitter.clips.map(function (clip) { return clip.weight || 1; });
                                 var weightedSound = new BABYLON.WeightedSound(emitter.loop || false, emitter._babylonSounds, weights);
-                                if (emitter.innerAngle)
+                                if (emitter.innerAngle) {
                                     weightedSound.directionalConeInnerAngle = 2 * BABYLON.Tools.ToDegrees(emitter.innerAngle);
-                                if (emitter.outerAngle)
+                                }
+                                if (emitter.outerAngle) {
                                     weightedSound.directionalConeOuterAngle = 2 * BABYLON.Tools.ToDegrees(emitter.outerAngle);
-                                if (emitter.volume)
+                                }
+                                if (emitter.volume) {
                                     weightedSound.volume = emitter.volume;
+                                }
                                 emitter._babylonData.sound = weightedSound;
                             });
                             emitter._babylonData = {
