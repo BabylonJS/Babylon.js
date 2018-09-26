@@ -1887,20 +1887,26 @@ var BABYLON;
                             // Read data from WebGL
                             var canvas = engine.getRenderingCanvas();
                             if (canvas) {
-                                BABYLON.Tools.ToBlob(canvas, function (blob) {
-                                    if (blob) {
-                                        var fileReader = new FileReader();
-                                        fileReader.onload = function (event) {
-                                            var base64String = event.target.result;
-                                            hostingScene.dispose();
-                                            resolve(base64String);
-                                        };
-                                        fileReader.readAsDataURL(blob);
-                                    }
-                                    else {
-                                        reject("gltfMaterialExporter: Failed to get blob from image canvas!");
-                                    }
-                                });
+                                if (!canvas.toBlob) { // fallback for browsers without "canvas.toBlob"
+                                    var dataURL = canvas.toDataURL();
+                                    resolve(dataURL);
+                                }
+                                else {
+                                    BABYLON.Tools.ToBlob(canvas, function (blob) {
+                                        if (blob) {
+                                            var fileReader = new FileReader();
+                                            fileReader.onload = function (event) {
+                                                var base64String = event.target.result;
+                                                hostingScene.dispose();
+                                                resolve(base64String);
+                                            };
+                                            fileReader.readAsDataURL(blob);
+                                        }
+                                        else {
+                                            reject("gltfMaterialExporter: Failed to get blob from image canvas!");
+                                        }
+                                    });
+                                }
                             }
                             else {
                                 reject("Engine is missing a canvas!");

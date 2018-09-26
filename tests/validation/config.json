@@ -2,7 +2,7 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
-      "title": "Simulat pointer",
+      "title": "Simulate pointer",
       "playgroundId": "#8MGKWK#66",
       "referenceImage": "simulatePointer.png"
     },
