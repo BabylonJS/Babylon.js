@@ -2,6 +2,16 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
+      "title": "Simulat pointer",
+      "playgroundId": "#8MGKWK#66",
+      "referenceImage": "simulatePointer.png"
+    },
+    {
+      "title": "Camera rig",
+      "playgroundId": "#ATL1CS#6",
+      "referenceImage": "cameraRig.png"
+    },
+    {
       "title": "Color Grading",
       "playgroundId": "#8EDB5N#2",
       "referenceImage": "colorGrading.png"
