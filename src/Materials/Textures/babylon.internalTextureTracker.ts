@@ -1,6 +1,6 @@
 module BABYLON {
     /**
-     * Internal interface used to track {BABYLON.InternalTexture} already bound to the GL context
+     * Internal interface used to track InternalTexture already bound to the GL context
      */
     export interface IInternalTextureTracker {
         /**
@@ -14,7 +14,7 @@ module BABYLON {
     }
 
     /**
-     * Internal class used by the engine to get list of {BABYLON.InternalTexture} already bound to the GL context
+     * Internal class used by the engine to get list of InternalTexture already bound to the GL context
      */
     export class DummyInternalTextureTracker {
         /**

@@ -46,7 +46,7 @@
         }
 
         /**
-         * Create a new {BABYLON.VertexBuffer} based on the current buffer
+         * Create a new VertexBuffer based on the current buffer
          * @param kind defines the vertex buffer kind (position, normal, etc.)
          * @param offset defines offset in the buffer (0 by default)
          * @param size defines the size in floats of attributes (position is 3 for instance)

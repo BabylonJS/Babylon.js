@@ -89,9 +89,9 @@
         }
 
         /**
-         * Returns a new {BABYLON.Color4} object from the current Color3 and the given alpha 
-         * @param alpha defines the alpha component on the new {BABYLON.Color4} object (default is 1)
-         * @returns a new {BABYLON.Color4} object
+         * Returns a new Color4 object from the current Color3 and the given alpha 
+         * @param alpha defines the alpha component on the new Color4 object (default is 1)
+         * @returns a new Color4 object
          */
         public toColor4(alpha = 1): Color4 {
             return new Color4(this.r, this.g, this.b, alpha);
@@ -1900,9 +1900,9 @@
          * @returns the current updated Vector3  
          */
         public minimizeInPlaceFromFloats(x: number, y: number, z: number): Vector3 {
-            this.x = Math.min(this.x, x);
-            this.y = Math.min(this.y, y);
-            this.z = Math.min(this.z, z);
+            if (x < this.x) this.x = x;
+            if (y < this.y) this.y = y;
+            if (z < this.z) this.z = z;
             return this;
         }
 
@@ -1914,9 +1914,9 @@
          * @returns the current updated Vector3
          */
         public maximizeInPlaceFromFloats(x: number, y: number, z: number): Vector3 {
-            this.x = Math.max(this.x, x);
-            this.y = Math.max(this.y, y);
-            this.z = Math.max(this.z, z);
+            if (x > this.x) this.x = x;
+            if (y > this.y) this.y = y;
+            if (z > this.z) this.z = z;
             return this;
         }
 
@@ -2091,10 +2091,11 @@
          * @return the angle between vector0 and vector1
          */
         public static GetAngleBetweenVectors(vector0: Vector3, vector1: Vector3, normal: Vector3): number {
-            var v0: Vector3 = vector0.clone().normalize();
-            var v1: Vector3 = vector1.clone().normalize();
-            var dot: number = Vector3.Dot(v0, v1);
-            var n = Vector3.Cross(v0, v1);
+            const v0: Vector3 = MathTmp.Vector3[1].copyFrom(vector0).normalize();
+            const v1: Vector3 = MathTmp.Vector3[2].copyFrom(vector1).normalize();
+            const dot: number = Vector3.Dot(v0, v1);
+            const n = MathTmp.Vector3[3];
+            Vector3.CrossToRef(v0, v1, n);
             if (Vector3.Dot(n, normal) > 0) {
                 return Math.acos(dot);
             }

@@ -157,10 +157,10 @@
 
         /**
          * @constructor
-         * @param {string} name - The rendering pipeline name
-         * @param {BABYLON.Scene} scene - The scene linked to this pipeline
-         * @param {any} ratio - The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, blurRatio: 1.0 }
-         * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
+         * @param name The rendering pipeline name
+         * @param scene The scene linked to this pipeline
+         * @param ratio The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, blurRatio: 1.0 }
+         * @param cameras The array of cameras that the rendering pipeline will be attached to
          */
         constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[]) {
             super(scene.getEngine(), name);

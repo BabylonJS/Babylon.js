@@ -35,22 +35,29 @@ module BABYLON {
          */
         constructor(gizmoLayer:UtilityLayerRenderer=UtilityLayerRenderer.DefaultUtilityLayer){
             super(gizmoLayer);
-            this.xGizmo = new AxisScaleGizmo(new Vector3(1,0,0), BABYLON.Color3.Green().scale(0.5), gizmoLayer);
-            this.yGizmo = new AxisScaleGizmo(new Vector3(0,1,0), BABYLON.Color3.Red().scale(0.5), gizmoLayer);
+            this.xGizmo = new AxisScaleGizmo(new Vector3(1,0,0), BABYLON.Color3.Red().scale(0.5), gizmoLayer);
+            this.yGizmo = new AxisScaleGizmo(new Vector3(0,1,0), BABYLON.Color3.Green().scale(0.5), gizmoLayer);
             this.zGizmo = new AxisScaleGizmo(new Vector3(0,0,1), BABYLON.Color3.Blue().scale(0.5), gizmoLayer);
 
             // Create uniform scale gizmo
             this.uniformScaleGizmo = new AxisScaleGizmo(new Vector3(0,1,0), BABYLON.Color3.Yellow().scale(0.5), gizmoLayer);
             this.uniformScaleGizmo.updateGizmoRotationToMatchAttachedMesh = false;
             this.uniformScaleGizmo.uniformScaling = true
+            var uniformScalingMesh = BABYLON.Mesh.CreatePolyhedron("", {type: 1}, this.uniformScaleGizmo.gizmoLayer.utilityLayerScene);
+            uniformScalingMesh.scaling.scaleInPlace(0.02);
+            uniformScalingMesh.visibility = 0;
             var octahedron = BABYLON.Mesh.CreatePolyhedron("", {type: 1}, this.uniformScaleGizmo.gizmoLayer.utilityLayerScene);
             octahedron.scaling.scaleInPlace(0.007);
-            this.uniformScaleGizmo.setCustomMesh(octahedron, true);
+            uniformScalingMesh.addChild(octahedron);
+            this.uniformScaleGizmo.setCustomMesh(uniformScalingMesh, true);
             
             this.attachedMesh = null;
         }
 
         public set updateGizmoRotationToMatchAttachedMesh(value:boolean){
+            if(!value){
+                Tools.Warn("Setting updateGizmoRotationToMatchAttachedMesh = false on scaling gizmo is not supported.");
+            }
             if(this.xGizmo){
                 this.xGizmo.updateGizmoRotationToMatchAttachedMesh = value;
                 this.yGizmo.updateGizmoRotationToMatchAttachedMesh = value;
