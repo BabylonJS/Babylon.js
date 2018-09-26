@@ -11,6 +11,8 @@ module BABYLON {
         private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
         private _attachedMesh:Nullable<AbstractMesh> = null;
         private _boundingBoxColor = BABYLON.Color3.FromHexString("#0984e3");
+        private _defaultUtilityLayer:UtilityLayerRenderer;
+        private _defaultKeepDepthUtilityLayer:UtilityLayerRenderer;
         /**
          * When bounding box gizmo is enabled, this can be used to track drag/end events
          */
@@ -29,6 +31,10 @@ module BABYLON {
          * @param scene the scene to overlay the gizmos on top of
          */
         constructor(private scene:Scene){
+            this._defaultKeepDepthUtilityLayer = new UtilityLayerRenderer(scene);
+            this._defaultKeepDepthUtilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
+            this._defaultUtilityLayer = new UtilityLayerRenderer(scene);
+            
             this.gizmos = {positionGizmo: null, rotationGizmo: null, scaleGizmo: null, boundingBoxGizmo: null};
 
             // Instatiate/dispose gizmos based on pointer actions
@@ -95,7 +101,7 @@ module BABYLON {
         public set positionGizmoEnabled(value:boolean){
             if(value){
                 if(!this.gizmos.positionGizmo){
-                    this.gizmos.positionGizmo = new PositionGizmo();
+                    this.gizmos.positionGizmo = new PositionGizmo(this._defaultUtilityLayer);
                 }
                 this.gizmos.positionGizmo.attachedMesh = this._attachedMesh;
             }else if(this.gizmos.positionGizmo){
@@ -112,7 +118,7 @@ module BABYLON {
         public set rotationGizmoEnabled(value:boolean){
             if(value){
                 if(!this.gizmos.rotationGizmo){
-                    this.gizmos.rotationGizmo = new RotationGizmo();
+                    this.gizmos.rotationGizmo = new RotationGizmo(this._defaultUtilityLayer);
                 }
                 this.gizmos.rotationGizmo.attachedMesh = this._attachedMesh;
             }else if(this.gizmos.rotationGizmo){
@@ -128,7 +134,7 @@ module BABYLON {
          */
         public set scaleGizmoEnabled(value:boolean){
             if(value){
-                this.gizmos.scaleGizmo = this.gizmos.scaleGizmo || new ScaleGizmo();
+                this.gizmos.scaleGizmo = this.gizmos.scaleGizmo || new ScaleGizmo(this._defaultUtilityLayer);
                 this.gizmos.scaleGizmo.attachedMesh = this._attachedMesh;
             }else if(this.gizmos.scaleGizmo){
                 this.gizmos.scaleGizmo.attachedMesh = null;
@@ -143,7 +149,7 @@ module BABYLON {
          */
         public set boundingBoxGizmoEnabled(value:boolean){
             if(value){
-                this.gizmos.boundingBoxGizmo = this.gizmos.boundingBoxGizmo || new BoundingBoxGizmo(this._boundingBoxColor);
+                this.gizmos.boundingBoxGizmo = this.gizmos.boundingBoxGizmo || new BoundingBoxGizmo(this._boundingBoxColor, this._defaultKeepDepthUtilityLayer);
                 this.gizmos.boundingBoxGizmo.attachedMesh = this._attachedMesh;
                 if(this._attachedMesh){
                     this._attachedMesh.removeBehavior(this.boundingBoxDragBehavior);
@@ -169,6 +175,8 @@ module BABYLON {
                     gizmo.dispose();
                 }
             }
+            this._defaultKeepDepthUtilityLayer.dispose();
+            this._defaultUtilityLayer.dispose();
             this.boundingBoxDragBehavior.detach();
         }
     }
