@@ -1625,9 +1625,20 @@ module BABYLON {
          * @returns the current updated Vector3
          */
         public addInPlace(otherVector: Vector3): Vector3 {
-            this.x += otherVector.x;
-            this.y += otherVector.y;
-            this.z += otherVector.z;
+            return this.addInPlaceFromFloats(otherVector.x, otherVector.y, otherVector.z);
+        }
+
+        /**
+         * Adds the given coordinates to the current Vector3 
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns the current updated Vector3
+         */
+        public addInPlaceFromFloats(x: number, y: number, z: number): Vector3 {
+            this.x += x;
+            this.y += y;
+            this.z += z;
             return this;
         }
 
@@ -2034,10 +2045,7 @@ module BABYLON {
          * @returns the current updated Vector3
          */
         public copyFrom(source: Vector3): Vector3 {
-            this.x = source.x;
-            this.y = source.y;
-            this.z = source.z;
-            return this;
+            return this.copyFromFloats(source.x, source.y, source.z);
         }
 
         /**
@@ -2694,13 +2702,13 @@ module BABYLON {
          */
         constructor(
             /** x value of the vector */
-            public x: number,
+            public x: number = 0,
             /** y value of the vector */
-            public y: number,
+            public y: number = 0,
             /** z value of the vector */
-            public z: number,
+            public z: number = 0,
             /** w value of the vector */
-            public w: number
+            public w: number = 0
         ) { }
 
         /**
@@ -7179,25 +7187,21 @@ module BABYLON {
      * @hidden
      */
     export class Tmp {
-        public static Color3: Color3[] = [Color3.Black(), Color3.Black(), Color3.Black()];
-        public static Color4: Color4[] = [new Color4(0, 0, 0, 0), new Color4(0, 0, 0, 0)];
-        public static Vector2: Vector2[] = [Vector2.Zero(), Vector2.Zero(), Vector2.Zero()];  // 3 temp Vector2 at once should be enough
-        public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),
-        Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];    // 9 temp Vector3 at once should be enough
-        public static Vector4: Vector4[] = [Vector4.Zero(), Vector4.Zero(), Vector4.Zero()];  // 3 temp Vector4 at once should be enough
-        public static Quaternion: Quaternion[] = [Quaternion.Zero(), Quaternion.Zero()];                // 2 temp Quaternion at once should be enough
-        public static Matrix: Matrix[] = [Matrix.Zero(), Matrix.Zero(),
-        Matrix.Zero(), Matrix.Zero(),
-        Matrix.Zero(), Matrix.Zero(),
-        Matrix.Zero(), Matrix.Zero()];                      // 6 temp Matrices at once should be enough
+        public static Color3: Color3[] = Tools.BuildArray(3, Color3);
+        public static Color4: Color4[] = Tools.BuildArray(3, Color4, 0, 0, 0, 0);
+        public static Vector2: Vector2[] = Tools.BuildArray(3, Vector2); // 3 temp Vector2 at once should be enough
+        public static Vector3: Vector3[] = Tools.BuildArray(9, Vector3); // 9 temp Vector3 at once should be enough
+        public static Vector4: Vector4[] = Tools.BuildArray(3, Vector4); // 3 temp Vector4 at once should be enough
+        public static Quaternion: Quaternion[] = Tools.BuildArray(2, Quaternion); // 2 temp Quaternion at once should be enough
+        public static Matrix: Matrix[] = Tools.BuildArray(6, Matrix); // 6 temp Matrices at once should be enough
     }
     /**
      * @hidden
      * Same as Tmp but not exported to keep it only for math functions to avoid conflicts
      */
     class MathTmp {
-        public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
-        public static Matrix: Matrix[] = [Matrix.Zero(), Matrix.Zero()];
-        public static Quaternion: Quaternion[] = [Quaternion.Zero(), Quaternion.Zero(), Quaternion.Zero()];
+        public static Vector3: Vector3[] = Tools.BuildArray(6, Vector3);;
+        public static Matrix: Matrix[] = Tools.BuildArray(2, Matrix);
+        public static Quaternion: Quaternion[] = Tools.BuildArray(3, Quaternion);
     }
 }

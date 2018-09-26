@@ -397,10 +397,8 @@ module BABYLON {
             const count = this._totalVertices * vertexBuffer.getSize();
 
             if (vertexBuffer.type !== VertexBuffer.FLOAT || vertexBuffer.byteStride !== tightlyPackedByteStride) {
-                const copy = new Array<number>(count);
-                vertexBuffer.forEach(count, (value, index) => {
-                    copy[index] = value;
-                });
+                const copy : number[] = [];
+                vertexBuffer.forEach(count, value => copy.push(value));
                 return copy;
             }
 

@@ -518,12 +518,8 @@ module BABYLON {
             }
 
             if (bias) {
-                minimum.x -= minimum.x * bias.x + bias.y;
-                minimum.y -= minimum.y * bias.x + bias.y;
-                minimum.z -= minimum.z * bias.x + bias.y;
-                maximum.x += maximum.x * bias.x + bias.y;
-                maximum.y += maximum.y * bias.x + bias.y;
-                maximum.z += maximum.z * bias.x + bias.y;
+                minimum.scaleInPlace(1-bias.x).addInPlaceFromFloats(-bias.y, -bias.y, -bias.y)
+                maximum.scaleInPlace(1+bias.x).addInPlaceFromFloats(bias.y, bias.y, bias.y)
             }
 
             return {
@@ -558,12 +554,8 @@ module BABYLON {
             }
 
             if (bias) {
-                minimum.x -= minimum.x * bias.x + bias.y;
-                minimum.y -= minimum.y * bias.x + bias.y;
-                minimum.z -= minimum.z * bias.x + bias.y;
-                maximum.x += maximum.x * bias.x + bias.y;
-                maximum.y += maximum.y * bias.x + bias.y;
-                maximum.z += maximum.z * bias.x + bias.y;
+                minimum.scaleInPlace(1-bias.x).addInPlaceFromFloats(-bias.y, -bias.y, -bias.y)
+                maximum.scaleInPlace(1+bias.x).addInPlaceFromFloats(bias.y, bias.y, bias.y)
             }
 
             return {
@@ -584,6 +576,20 @@ module BABYLON {
             }
 
             return Array.isArray(obj) ? obj : [obj];
+        }
+
+        /**
+         * Returns an array of the given size filled with element built from the given constructor and the paramters
+         * @param size the number of element to construct and put in the array
+         * @param konstructor the class name (or constructor function)
+         * @param kparams the arguments to pass to each call to the constructor
+         * @returns a new array filled with new objects
+         */
+        public static BuildArray = <T, P extends any[]>(size: number, konstructor: new (...p: P)=>T, ...kparams: P): Array<T> => {
+            const a: T[] = [];
+            for (let i = 0; i < size; ++i)
+                a.push(new konstructor(...kparams));
+            return a;
         }
 
         /**
