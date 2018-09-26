@@ -674,7 +674,7 @@
          * By default, this will create a BabylonJS Audio Engine if the workload
          * has been embedded.
          */
-        public static AudioEngineFactory: (engine: Engine) => IAudioEngine;
+        public static AudioEngineFactory: (hostElement: Nullable<HTMLElement>) => IAudioEngine;
 
         // Focus
         private _onFocus: () => void;
@@ -1190,7 +1190,7 @@
 
             // Create Audio Engine if needed.
             if (!Engine.audioEngine && options.audioEngine && Engine.AudioEngineFactory) {
-                Engine.audioEngine = Engine.AudioEngineFactory(this);
+                Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas());
             }
 
             // Prepare buffer pointers
