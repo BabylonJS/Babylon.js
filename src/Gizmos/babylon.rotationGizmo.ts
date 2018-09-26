@@ -26,12 +26,21 @@ module BABYLON {
         /**
          * Creates a RotationGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param tessellation Amount of tessellation to be used when creating rotation circles
          */
+<<<<<<< HEAD
         constructor(gizmoLayer: UtilityLayerRenderer= UtilityLayerRenderer.DefaultUtilityLayer) {
             super(gizmoLayer);
             this.xGizmo = new PlaneRotationGizmo(new Vector3(1, 0, 0), BABYLON.Color3.Red().scale(0.5), gizmoLayer);
             this.yGizmo = new PlaneRotationGizmo(new Vector3(0, 1, 0), BABYLON.Color3.Green().scale(0.5), gizmoLayer);
             this.zGizmo = new PlaneRotationGizmo(new Vector3(0, 0, 1), BABYLON.Color3.Blue().scale(0.5), gizmoLayer);
+=======
+        constructor(gizmoLayer:UtilityLayerRenderer=UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32){
+            super(gizmoLayer);
+            this.xGizmo = new PlaneRotationGizmo(new Vector3(1,0,0), BABYLON.Color3.Red().scale(0.5), gizmoLayer, tessellation);
+            this.yGizmo = new PlaneRotationGizmo(new Vector3(0,1,0), BABYLON.Color3.Green().scale(0.5), gizmoLayer, tessellation);
+            this.zGizmo = new PlaneRotationGizmo(new Vector3(0,0,1), BABYLON.Color3.Blue().scale(0.5), gizmoLayer, tessellation);
+>>>>>>> 747ca4d7ec7c52281e24f222de0c930976354dad
             this.attachedMesh = null;
         }
 
