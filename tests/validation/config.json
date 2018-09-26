@@ -3,7 +3,7 @@
   "tests": [
     {
       "title": "Simulate pointer",
-      "playgroundId": "#8MGKWK#66",
+      "playgroundId": "#8MGKWK#78",
       "referenceImage": "simulatePointer.png",
       "excludeFromAutomaticTesting": true
     },
