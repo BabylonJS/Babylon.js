@@ -41,7 +41,7 @@ module BABYLON {
             var parentMesh = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene);
 
             // Create circle out of lines
-            var tessellation = 20;
+            var tessellation = 64;
             var radius = 0.8;
             var points = new Array<Vector3>();
             for(var i = 0;i < tessellation;i++){
