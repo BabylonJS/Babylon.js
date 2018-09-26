@@ -38,7 +38,19 @@ module BABYLON {
             /**
              * the particle system to be used by the sub emitter
              */
-            public particleSystem: ParticleSystem) {
+            public particleSystem: ParticleSystem
+        ) {
+            // Create mesh as emitter to support rotation
+            if(!particleSystem.emitter || !(<AbstractMesh>particleSystem.emitter).dispose){
+                particleSystem.emitter = new BABYLON.AbstractMesh("SubemitterSystemEmitter", particleSystem.getScene());
+            }
+
+            // Automatically dispose of subemitter when system is disposed
+            particleSystem.onDisposeObservable.add(()=>{
+                if(particleSystem.emitter && (<AbstractMesh>particleSystem.emitter).dispose){
+                    (<AbstractMesh>particleSystem.emitter).dispose();
+                }
+            })
         }
         /**
          * Clones the sub emitter
