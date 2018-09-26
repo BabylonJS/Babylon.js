@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * @hidden
      */
@@ -7,8 +7,8 @@
         public subMeshId = 0;
 
         constructor(
-            public bu: Nullable<number>, 
-            public bv: Nullable<number>, 
+            public bu: Nullable<number>,
+            public bv: Nullable<number>,
             public distance: number) {
         }
     }
@@ -149,4 +149,3 @@
         }
     }
 }
-

@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Contains an array of blocks representing the octree
      */
@@ -24,7 +24,7 @@
         public dynamicContent = new Array<T>();
 
         private _maxBlockCapacity: number;
-        private _selectionContent: SmartArrayNoDuplicate<T>;       
+        private _selectionContent: SmartArrayNoDuplicate<T>;
         private _creationFunc: (entry: T, block: OctreeBlock<T>) => void;
 
         /**
@@ -37,7 +37,7 @@
         constructor(creationFunc: (
             entry: T,
             block: OctreeBlock<T>) => void,
-            maxBlockCapacity?: number, 
+            maxBlockCapacity?: number,
             /** Defines the maximum depth (sub-levels) for your octree. Default value is 2, which means 8 8 8 = 512 blocks :) (This parameter takes precedence over capacity.) */
             public maxDepth = 2
         ) {
@@ -85,7 +85,7 @@
             if (allowDuplicate) {
                 this._selectionContent.concat(this.dynamicContent);
             } else {
-                this._selectionContent.concatWithNoDuplicate(this.dynamicContent);                
+                this._selectionContent.concatWithNoDuplicate(this.dynamicContent);
             }
 
             return this._selectionContent;
@@ -175,4 +175,4 @@
             }
         }
     }
-} 
+}

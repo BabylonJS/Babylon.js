@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
 
     /**
      * ActionEvent is the event being sent when an action is triggered.
@@ -88,43 +88,43 @@
          */
         public static readonly NothingTrigger = 0;
 
-        /** 
-         * On pick 
+        /**
+         * On pick
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
         public static readonly OnPickTrigger = 1;
 
-        /** 
+        /**
          * On left pick
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
         public static readonly OnLeftPickTrigger  = 2;
 
-        /** 
+        /**
          * On right pick
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
         public static readonly OnRightPickTrigger = 3;
 
-        /** 
-         * On center pick 
+        /**
+         * On center pick
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
         public static readonly OnCenterPickTrigger = 4;
 
-        /** 
+        /**
          * On pick down
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
         public static readonly OnPickDownTrigger = 5;
 
-        /** 
+        /**
          * On double pick
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
         public static readonly OnDoublePickTrigger = 6;
 
-        /** 
+        /**
          * On pick up
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
@@ -136,36 +136,36 @@
          */
         public static readonly OnPickOutTrigger = 16;
 
-        /** 
+        /**
          * On long press
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
         public static readonly OnLongPressTrigger = 8;
 
-        /** 
+        /**
          * On pointer over
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
         public static readonly OnPointerOverTrigger = 9;
 
-        /** 
+        /**
          * On pointer out
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
         public static readonly OnPointerOutTrigger = 10;
 
-        /** 
+        /**
          * On every frame
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
         public static readonly OnEveryFrameTrigger = 11;
-        /** 
+        /**
          * On intersection enter
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
         public static readonly OnIntersectionEnterTrigger = 12;
 
-        /** 
+        /**
          * On intersection exit
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
@@ -217,7 +217,7 @@
                 var action = this.actions[i];
                 ActionManager.Triggers[action.trigger]--;
                 if (ActionManager.Triggers[action.trigger] === 0) {
-                    delete ActionManager.Triggers[action.trigger]
+                    delete ActionManager.Triggers[action.trigger];
                 }
             }
 
@@ -226,8 +226,8 @@
             }
         }
 
-        /** 
-         * Gets hosting scene 
+        /**
+         * Gets hosting scene
          * @returns the hosting scene
          */
         public getScene(): Scene {
@@ -237,7 +237,7 @@
         /**
          * Does this action manager handles actions of any of the given triggers
          * @param triggers defines the triggers to be tested
-         * @return a boolean indicating whether one (or more) of the triggers is handled 
+         * @return a boolean indicating whether one (or more) of the triggers is handled
          */
         public hasSpecificTriggers(triggers: number[]): boolean {
             for (var index = 0; index < this.actions.length; index++) {
@@ -252,11 +252,11 @@
         }
 
         /**
-         * Does this action manager handles actions of any of the given triggers. This function takes two arguments for 
+         * Does this action manager handles actions of any of the given triggers. This function takes two arguments for
          * speed.
          * @param triggerA defines the trigger to be tested
          * @param triggerB defines the trigger to be tested
-         * @return a boolean indicating whether one (or more) of the triggers is handled 
+         * @return a boolean indicating whether one (or more) of the triggers is handled
          */
         public hasSpecificTriggers2(triggerA: number, triggerB: number): boolean {
             for (var index = 0; index < this.actions.length; index++) {
@@ -274,7 +274,7 @@
          * Does this action manager handles actions of a given trigger
          * @param trigger defines the trigger to be tested
          * @param parameterPredicate defines an optional predicate to filter triggers by parameter
-         * @return whether the trigger is handled 
+         * @return whether the trigger is handled
          */
         public hasSpecificTrigger(trigger: number, parameterPredicate?: (parameter: any) => boolean): boolean {
             for (var index = 0; index < this.actions.length; index++) {
@@ -325,7 +325,7 @@
         }
 
         /**
-         * Does exist one action manager with at least one trigger 
+         * Does exist one action manager with at least one trigger
          **/
         public static get HasTriggers(): boolean {
             for (var t in ActionManager.Triggers) {
@@ -337,7 +337,7 @@
         }
 
         /**
-         * Does exist one action manager with at least one pick trigger 
+         * Does exist one action manager with at least one pick trigger
          **/
         public static get HasPickTriggers(): boolean {
             for (var t in ActionManager.Triggers) {
@@ -407,7 +407,7 @@
                 this.actions.splice(index, 1);
                 ActionManager.Triggers[action.trigger] -= 1;
                 if (ActionManager.Triggers[action.trigger] === 0) {
-                    delete ActionManager.Triggers[action.trigger]
+                    delete ActionManager.Triggers[action.trigger];
                 }
                 delete action._actionManager;
                 return true;
@@ -527,10 +527,12 @@
          */
         public static Parse(parsedActions: any, object: Nullable<AbstractMesh>, scene: Scene): void {
             var actionManager = new ActionManager(scene);
-            if (object === null)
+            if (object === null) {
                 scene.actionManager = actionManager;
-            else
+            }
+            else {
                 object.actionManager = actionManager;
+            }
 
             // instanciate a new object
             var instanciate = (name: string, params: Array<any>): any => {
@@ -545,10 +547,12 @@
                     // String, boolean or float
                     var floatValue = parseFloat(value);
 
-                    if (value === "true" || value === "false")
+                    if (value === "true" || value === "false") {
                         return value === "true";
-                    else
+                    }
+                    else {
                         return isNaN(floatValue) ? value : floatValue;
+                    }
                 }
 
                 var effectiveTarget = propertyPath.split(".");
@@ -560,36 +564,44 @@
                 }
 
                 // Return appropriate value with its type
-                if (typeof (target) === "boolean")
+                if (typeof (target) === "boolean") {
                     return values[0] === "true";
+                }
 
-                if (typeof (target) === "string")
+                if (typeof (target) === "string") {
                     return values[0];
+                }
 
                 // Parameters with multiple values such as Vector3 etc.
                 var split = new Array<number>();
-                for (var i = 0; i < values.length; i++)
+                for (var i = 0; i < values.length; i++) {
                     split.push(parseFloat(values[i]));
+                }
 
-                if (target instanceof Vector3)
+                if (target instanceof Vector3) {
                     return Vector3.FromArray(split);
+                }
 
-                if (target instanceof Vector4)
+                if (target instanceof Vector4) {
                     return Vector4.FromArray(split);
+                }
 
-                if (target instanceof Color3)
+                if (target instanceof Color3) {
                     return Color3.FromArray(split);
+                }
 
-                if (target instanceof Color4)
+                if (target instanceof Color4) {
                     return Color4.FromArray(split);
+                }
 
                 return parseFloat(values[0]);
             };
 
             // traverse graph per trigger
             var traverse = (parsedAction: any, trigger: any, condition: Nullable<Condition>, action: Nullable<Action>, combineArray: Nullable<Array<Action>> = null) => {
-                if (parsedAction.detached)
+                if (parsedAction.detached) {
                     return;
+                }
 
                 var parameters = new Array<any>();
                 var target: any = null;
@@ -597,10 +609,12 @@
                 var combine = parsedAction.combine && parsedAction.combine.length > 0;
 
                 // Parameters
-                if (parsedAction.type === 2)
+                if (parsedAction.type === 2) {
                     parameters.push(actionManager);
-                else
+                }
+                else {
                     parameters.push(trigger);
+                }
 
                 if (combine) {
                     var actions = new Array<Action>();
@@ -615,13 +629,17 @@
                         var name = parsedAction.properties[i].name;
                         var targetType = parsedAction.properties[i].targetType;
 
-                        if (name === "target")
-                            if (targetType !== null && targetType === "SceneProperties")
+                        if (name === "target") {
+                            if (targetType !== null && targetType === "SceneProperties") {
                                 value = target = scene;
-                            else
+                            }
+                            else {
                                 value = target = scene.getNodeByName(value);
-                        else if (name === "parent")
+                        }
+                            }
+                        else if (name === "parent") {
                             value = scene.getNodeByName(value);
+                             }
                         else if (name === "sound") {
                             // Can not externalize to component, so only checks for the presence off the API.
                             if (scene.getSoundByName) {
@@ -629,10 +647,12 @@
                             }
                         }
                         else if (name !== "propertyPath") {
-                            if (parsedAction.type === 2 && name === "operator")
+                            if (parsedAction.type === 2 && name === "operator") {
                                 value = (<any>ValueCondition)[value];
-                            else
+                            }
+                            else {
                                 value = parseParameter(name, value, target, name === "value" ? propertyPath : null);
+                            }
                         } else {
                             propertyPath = value;
                         }
@@ -661,10 +681,12 @@
                 if (newAction instanceof Condition && condition !== null) {
                     var nothing = new DoNothingAction(trigger, condition);
 
-                    if (action)
+                    if (action) {
                         action.then(nothing);
-                    else
+                    }
+                    else {
                         actionManager.registerAction(nothing);
+                    }
 
                     action = nothing;
                 }
@@ -675,18 +697,21 @@
                         newAction = action;
                     } else {
                         condition = null;
-                        if (action)
+                        if (action) {
                             action.then(newAction);
-                        else
+                        }
+                        else {
                             actionManager.registerAction(newAction);
+                        }
                     }
                 }
                 else {
                     combineArray.push(newAction);
                 }
 
-                for (var i = 0; i < parsedAction.children.length; i++)
+                for (var i = 0; i < parsedAction.children.length; i++) {
                     traverse(parsedAction.children[i], trigger, condition, newAction, null);
+                }
             };
 
             // triggers
@@ -704,12 +729,14 @@
 
                     triggerParams = { trigger: (<any>ActionManager)[trigger.name], parameter: value };
                 }
-                else
+                else {
                     triggerParams = (<any>ActionManager)[trigger.name];
+                }
 
                 for (var j = 0; j < trigger.children.length; j++) {
-                    if (!trigger.detached)
+                    if (!trigger.detached) {
                         traverse(trigger.children[j], triggerParams, null, null);
+                    }
                 }
             }
         }
@@ -741,4 +768,4 @@
             }
         }
     }
-} 
+}

@@ -15,7 +15,7 @@ module BABYLON {
          * @param attachCameraControls has default false, when true attaches camera controls to the canvas.
          */
         createDefaultCamera(createArcRotateCamera?: boolean, replace?: boolean, attachCameraControls?: boolean): void;
-    
+
         /**
          * Creates a default camera and a default light.
          * @see http://doc.babylonjs.com/how_to/Fast_Build#create-default-camera-or-light
@@ -24,12 +24,12 @@ module BABYLON {
          * @param attachCameraControls has the default false, when true attaches camera controls to the canvas.
          */
         createDefaultCameraOrLight(createArcRotateCamera?: boolean, replace?: boolean, attachCameraControls?: boolean): void;
-        
+
         /**
          * Creates a new sky box
          * @see http://doc.babylonjs.com/how_to/Fast_Build#create-default-skybox
          * @param environmentTexture defines the texture to use as environment texture
-         * @param pbr has default false which requires the StandardMaterial to be used, when true PBRMaterial must be used 
+         * @param pbr has default false which requires the StandardMaterial to be used, when true PBRMaterial must be used
          * @param scale defines the overall scale of the skybox
          * @param blur is only available when pbr is true, default is 0, no blur, maximum value is 1
          * @param setGlobalEnvTexture has default true indicating that scene.environmentTexture must match the current skybox texture
@@ -68,7 +68,7 @@ module BABYLON {
         if (this.lights.length === 0) {
             new HemisphericLight("default light", Vector3.Up(), this);
         }
-    }
+    };
 
     Scene.prototype.createDefaultCamera = function(createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
         // Dispose existing camera in replace mode.
@@ -113,12 +113,12 @@ module BABYLON {
                 camera.attachControl(canvas);
             }
         }
-    }
+    };
 
     Scene.prototype.createDefaultCameraOrLight = function(createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
         this.createDefaultLight(replace);
         this.createDefaultCamera(createArcRotateCamera, replace, attachCameraControls);
-    }
+    };
 
     Scene.prototype.createDefaultSkybox = function(environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0, setGlobalEnvTexture = true): Nullable<Mesh> {
 
@@ -161,16 +161,16 @@ module BABYLON {
         }
 
         return hdrSkybox;
-    }
+    };
 
     Scene.prototype.createDefaultEnvironment = function(options: Partial<IEnvironmentHelperOptions>): Nullable<EnvironmentHelper> {
         if (EnvironmentHelper) {
             return new EnvironmentHelper(options, this);
         }
         return null;
-    }
+    };
 
     Scene.prototype.createDefaultVRExperience = function(webVROptions: VRExperienceHelperOptions = {}): VRExperienceHelper {
         return new VRExperienceHelper(this, webVROptions);
-    }
+    };
 }

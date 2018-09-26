@@ -58,7 +58,7 @@ module BABYLON {
                 }
             } else {
                 // If the app or home buttons are ever made available
-                Tools.Warn(`Unrecognized Daydream button index: ${buttonIdx}`)
+                Tools.Warn(`Unrecognized Daydream button index: ${buttonIdx}`);
             }
         }
     }

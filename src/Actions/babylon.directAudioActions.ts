@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * This defines an action helpful to play a defined sound on a triggered action.
      */
@@ -24,8 +24,9 @@
          * Execute the action and play the sound.
          */
         public execute(): void {
-            if (this._sound !== undefined)
+            if (this._sound !== undefined) {
                 this._sound.play();
+            }
         }
 
         /**
@@ -66,8 +67,9 @@
          * Execute the action and stop the sound.
          */
         public execute(): void {
-            if (this._sound !== undefined)
+            if (this._sound !== undefined) {
                 this._sound.stop();
+            }
         }
 
         /**
@@ -82,4 +84,4 @@
             }, parent);
         }
     }
-} 
+}

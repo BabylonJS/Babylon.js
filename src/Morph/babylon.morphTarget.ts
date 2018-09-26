@@ -40,7 +40,6 @@ module BABYLON {
             }
         }
 
-        
         private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
         /**
@@ -55,7 +54,7 @@ module BABYLON {
 
         public set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>) {
             this._animationPropertiesOverride = value;
-        }        
+        }
 
         /**
          * Creates a new MorphTarget
@@ -85,7 +84,7 @@ module BABYLON {
 
         /**
          * Gets a boolean defining if the target contains tangent data
-         */        
+         */
         public get hasTangents(): boolean {
             return !!this._tangents;
         }
@@ -109,7 +108,7 @@ module BABYLON {
         /**
          * Affects normal data to this target
          * @param data defines the normal data to use
-         */        
+         */
         public setNormals(data: Nullable<FloatArray>) {
             this._normals = data;
         }
@@ -117,7 +116,7 @@ module BABYLON {
         /**
          * Gets the normal data stored in this target
          * @returns a FloatArray containing the normal data (or null if not present)
-         */        
+         */
         public getNormals(): Nullable<FloatArray> {
             return this._normals;
         }
@@ -125,7 +124,7 @@ module BABYLON {
         /**
          * Affects tangent data to this target
          * @param data defines the tangent data to use
-         */        
+         */
         public setTangents(data: Nullable<FloatArray>) {
             this._tangents = data;
         }
@@ -133,7 +132,7 @@ module BABYLON {
         /**
          * Gets the tangent data stored in this target
          * @returns a FloatArray containing the tangent data (or null if not present)
-         */   
+         */
         public getTangents(): Nullable<FloatArray> {
             return this._tangents;
         }
@@ -143,7 +142,7 @@ module BABYLON {
          * @returns the serialized object
          */
         public serialize(): any {
-            var serializationObject:any = {};
+            var serializationObject: any = {};
 
             serializationObject.name = this.name;
             serializationObject.influence = this.influence;

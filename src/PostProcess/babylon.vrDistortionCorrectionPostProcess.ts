@@ -1,6 +1,6 @@
-﻿module BABYLON {
+module BABYLON {
     /**
-     * VRDistortionCorrectionPostProcess used for mobile VR 
+     * VRDistortionCorrectionPostProcess used for mobile VR
      */
     export class VRDistortionCorrectionPostProcess extends PostProcess {
         private _isRightEye: boolean;

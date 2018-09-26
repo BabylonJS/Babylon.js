@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Class used to store a cell in an octree
      * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
@@ -25,7 +25,7 @@
         /**
          * Creates a new block
          * @param minPoint defines the minimum vector (in world space) of the block's bounding box
-         * @param maxPoint defines the maximum vector (in world space) of the block's bounding box 
+         * @param maxPoint defines the maximum vector (in world space) of the block's bounding box
          * @param capacity defines the maximum capacity of this block (if capacity is reached the block will be split into sub blocks)
          * @param depth defines the current depth of this block in the octree
          * @param maxDepth defines the maximal depth allowed (beyond this value, the capacity is ignored)
@@ -79,7 +79,7 @@
         }
 
         /**
-         * Gets the maximum vector (in world space) of the block's bounding box 
+         * Gets the maximum vector (in world space) of the block's bounding box
          */
         public get maxPoint(): Vector3 {
             return this._maxPoint;
@@ -192,4 +192,4 @@
             Octree._CreateBlocks(this._minPoint, this._maxPoint, this.entries, this._capacity, this._depth, this._maxDepth, this, this._creationFunc);
         }
     }
-} 
+}

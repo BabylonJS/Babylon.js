@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * A class extending Texture allowing drawing on a texture
      * @see http://doc.babylonjs.com/how_to/dynamictexture
@@ -122,11 +122,11 @@
          * @param text defines the text to be drawn
          * @param x defines the placement of the text from the left
          * @param y defines the placement of the text from the top when invertY is true and from the bottom when false
-         * @param font defines the font to be used with font-style, font-size, font-name 
+         * @param font defines the font to be used with font-style, font-size, font-name
          * @param color defines the color used for the text
-         * @param clearColor defines the color for the canvas, use null to not overwrite canvas 
+         * @param clearColor defines the color for the canvas, use null to not overwrite canvas
          * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
-         * @param update defines whether texture is immediately update (default is true)  
+         * @param update defines whether texture is immediately update (default is true)
          */
         public drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean, update = true) {
             var size = this.getSize();
@@ -202,4 +202,4 @@
             this.update();
         }
     }
-} 
+}

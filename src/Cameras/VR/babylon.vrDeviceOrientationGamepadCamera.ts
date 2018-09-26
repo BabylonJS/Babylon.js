@@ -19,7 +19,7 @@ module BABYLON {
          */
         constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()) {
             super(name, position, scene, compensateDistortion, vrCameraMetrics);
-            
+
             this.inputs.addGamepad();
         }
 

@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Class used to represent a sprite
      * @see http://doc.babylonjs.com/babylon101/sprites
@@ -65,7 +65,7 @@
          */
         constructor(
                 /** defines the name */
-                public name: string, 
+                public name: string,
                 manager: ISpriteManager) {
             this._manager = manager;
 
@@ -104,8 +104,9 @@
 
         /** @hidden */
         public _animate(deltaTime: number): void {
-            if (!this._animationStarted)
+            if (!this._animationStarted) {
                 return;
+            }
 
             this._time += deltaTime;
             if (this._time > this._delay) {
@@ -137,4 +138,4 @@
             }
         }
     }
-} 
+}

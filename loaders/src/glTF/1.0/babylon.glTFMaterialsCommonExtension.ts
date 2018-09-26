@@ -2,20 +2,20 @@
 
 module BABYLON.GLTF1 {
     interface IGLTFMaterialsCommonExtensionValues {
-        ambient?: number[] | string;
-        diffuse?: number[] | string;
+        ambient?: number[] | string;
+        diffuse?: number[] | string;
         emission?: number[] | string;
         specular?: number[] | string;
         shininess?: number;
         transparency?: number;
-    };
+    }
 
     interface IGLTFMaterialsCommonExtension {
         technique: string;
         transparent?: number;
         doubleSided?: boolean;
         values: IGLTFMaterialsCommonExtensionValues;
-    };
+    }
 
     interface IGLTFRuntimeCommonExtension {
         lights: {[key: string]: IGLTFLightCommonExtension};
@@ -29,7 +29,7 @@ module BABYLON.GLTF1 {
         point?: IGLTFPointLightCommonExtension;
         directional?: IGLTFDirectionalLightCommonExtension;
         spot?: IGLTFSpotLightCommonExtension;
-    };
+    }
 
     interface IGLTFPointLightCommonExtension {
         color: number[];
@@ -62,10 +62,10 @@ module BABYLON.GLTF1 {
         }
 
         public loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: (message: string) => void): boolean {
-            if (!gltfRuntime.extensions) return false;
+            if (!gltfRuntime.extensions) { return false; }
 
             var extension: IGLTFRuntimeCommonExtension = gltfRuntime.extensions[this.name];
-            if (!extension) return false;
+            if (!extension) { return false; }
 
             // Create lights
             var lights = extension.lights;
@@ -78,21 +78,21 @@ module BABYLON.GLTF1 {
                             var ambientLight = new HemisphericLight(light.name, new Vector3(0, 1, 0), gltfRuntime.scene);
                             var ambient = light.ambient;
                             if (ambient) {
-                                ambientLight.diffuse = Color3.FromArray(ambient.color || [1, 1, 1]);
+                                ambientLight.diffuse = Color3.FromArray(ambient.color || [1, 1, 1]);
                             }
                             break;
                         case "point":
                             var pointLight = new PointLight(light.name, new Vector3(10, 10, 10), gltfRuntime.scene);
                             var point = light.point;
                             if (point) {
-                                pointLight.diffuse = Color3.FromArray(point.color || [1, 1, 1]);
+                                pointLight.diffuse = Color3.FromArray(point.color || [1, 1, 1]);
                             }
                             break;
                         case "directional":
                             var dirLight = new DirectionalLight(light.name, new Vector3(0, -1, 0), gltfRuntime.scene);
                             var directional = light.directional;
                             if (directional) {
-                                dirLight.diffuse = Color3.FromArray(directional.color || [1, 1, 1]);
+                                dirLight.diffuse = Color3.FromArray(directional.color || [1, 1, 1]);
                             }
                             break;
                         case "spot":
@@ -102,7 +102,7 @@ module BABYLON.GLTF1 {
                                                             spot.fallOffAngle || Math.PI,
                                                             spot.fallOffExponent || 0.0,
                                                             gltfRuntime.scene);
-                                spotLight.diffuse = Color3.FromArray(spot.color || [1, 1, 1]);
+                                spotLight.diffuse = Color3.FromArray(spot.color || [1, 1, 1]);
                             }
                             break;
                         default: Tools.Warn("GLTF Material Common extension: light type \"" + light.type + "\” not supported"); break;
@@ -115,10 +115,10 @@ module BABYLON.GLTF1 {
 
         public loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): boolean {
             var material: IGLTFMaterial = gltfRuntime.materials[id];
-            if (!material || !material.extensions) return false;
+            if (!material || !material.extensions) { return false; }
 
             var extension: IGLTFMaterialsCommonExtension = material.extensions[this.name];
-            if (!extension) return false;
+            if (!extension) { return false; }
 
             var standardMaterial = new StandardMaterial(id, gltfRuntime.scene);
             standardMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
@@ -130,7 +130,7 @@ module BABYLON.GLTF1 {
             standardMaterial.backFaceCulling = extension.doubleSided === undefined ? false : !extension.doubleSided;
             standardMaterial.alpha = extension.values.transparency === undefined ? 1.0 : extension.values.transparency;
             standardMaterial.specularPower = extension.values.shininess === undefined ? 0.0 : extension.values.shininess;
-            
+
             // Ambient
             if (typeof extension.values.ambient === "string") {
                 this._loadTexture(gltfRuntime, extension.values.ambient, standardMaterial, "ambientTexture", onError);

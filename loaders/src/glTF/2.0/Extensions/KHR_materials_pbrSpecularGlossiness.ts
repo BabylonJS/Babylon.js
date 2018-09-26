@@ -66,14 +66,14 @@ module BABYLON.GLTF2.Loader.Extensions {
             babylonMaterial.microSurface = properties.glossinessFactor == undefined ? 1 : properties.glossinessFactor;
 
             if (properties.diffuseTexture) {
-                promises.push(this._loader.loadTextureInfoAsync(`${context}/diffuseTexture`, properties.diffuseTexture, texture => {
+                promises.push(this._loader.loadTextureInfoAsync(`${context}/diffuseTexture`, properties.diffuseTexture, (texture) => {
                     babylonMaterial.albedoTexture = texture;
                     return Promise.resolve();
                 }));
             }
 
             if (properties.specularGlossinessTexture) {
-                promises.push(this._loader.loadTextureInfoAsync(`${context}/specularGlossinessTexture`, properties.specularGlossinessTexture, texture => {
+                promises.push(this._loader.loadTextureInfoAsync(`${context}/specularGlossinessTexture`, properties.specularGlossinessTexture, (texture) => {
                     babylonMaterial.reflectivityTexture = texture;
                     return Promise.resolve();
                 }));
@@ -86,5 +86,5 @@ module BABYLON.GLTF2.Loader.Extensions {
         }
     }
 
-    GLTFLoader.RegisterExtension(NAME, loader => new KHR_materials_pbrSpecularGlossiness(loader));
+    GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_pbrSpecularGlossiness(loader));
 }

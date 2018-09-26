@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Keeps track of all the buffer info used in engine.
      */
@@ -161,34 +161,34 @@
 
     /** Interface defining initialization parameters for Engine class */
     export interface EngineOptions extends WebGLContextAttributes {
-        /** 
+        /**
          * Defines if the engine should no exceed a specified device ratio
          * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
          */
         limitDeviceRatio?: number;
-        /** 
-         * Defines if webvr should be enabled automatically 
+        /**
+         * Defines if webvr should be enabled automatically
          * @see http://doc.babylonjs.com/how_to/webvr_camera
          */
         autoEnableWebVR?: boolean;
-        /** 
-         * Defines if webgl2 should be turned off even if supported 
+        /**
+         * Defines if webgl2 should be turned off even if supported
          * @see http://doc.babylonjs.com/features/webgl2
          */
         disableWebGL2Support?: boolean;
-        /** 
+        /**
          * Defines if webaudio should be initialized as well
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         audioEngine?: boolean;
-        /** 
+        /**
          * Defines if animations should run using a deterministic lock step
          * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
          */
         deterministicLockstep?: boolean;
         /** Defines the maximum steps to use with deterministic lock step mode */
         lockstepMaxSteps?: number;
-        /** 
+        /**
          * Defines that engine should ignore context lost events
          * If this event happens when this parameter is true, you will have to reload the page to restore rendering
          */
@@ -286,15 +286,15 @@
         public static readonly ALPHA_ONEONE = 6;
         /** Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST */
         public static readonly ALPHA_PREMULTIPLIED = 7;
-        /** 
+        /**
          * Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST
          * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
          */
         public static readonly ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
         /** Defines that alpha blending to CST * SRC + (1 - CST) * DEST */
         public static readonly ALPHA_INTERPOLATE = 9;
-        /** 
-         * Defines that alpha blending to SRC + (1 - SRC) * DEST 
+        /**
+         * Defines that alpha blending to SRC + (1 - SRC) * DEST
          * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
          */
         public static readonly ALPHA_SCREENMODE = 10;
@@ -412,13 +412,13 @@
         public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = 15;
 
         /** nearest is mag = nearest and min = nearest and mip = linear */
-        public static readonly TEXTURE_NEAREST_SAMPLINGMODE = 1; 
+        public static readonly TEXTURE_NEAREST_SAMPLINGMODE = 1;
         /** Bilinear is mag = linear and min = linear and mip = nearest */
         public static readonly TEXTURE_BILINEAR_SAMPLINGMODE = 2;
         /** Trilinear is mag = linear and min = linear and mip = linear */
         public static readonly TEXTURE_TRILINEAR_SAMPLINGMODE = 3;
         /** nearest is mag = nearest and min = nearest and mip = linear */
-        public static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR = 1; 
+        public static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR = 1;
         /** Bilinear is mag = linear and min = linear and mip = nearest */
         public static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST = 2;
         /** Trilinear is mag = linear and min = linear and mip = linear */
@@ -526,15 +526,15 @@
          */
         public preventCacheWipeBetweenFrames = false;
 
-        /** 
+        /**
          * Gets or sets a boolean to enable/disable IndexedDB support and avoid XHR on .manifest
          **/
         public enableOfflineSupport = false;
 
-        /** 
+        /**
          * Gets or sets a boolean to enable/disable checking manifest if IndexedDB support is enabled (Babylon.js will always consider the database is up to date)
          **/
-        public disableManifestCheck = false;        
+        public disableManifestCheck = false;
 
         /**
          * Gets the list of created scenes
@@ -662,8 +662,8 @@
          */
         public disableTextureBindingOptimization = false;
 
-        /** 
-         * Gets the audio engine 
+        /**
+         * Gets the audio engine
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
          * @ignorenaming
          */
@@ -791,14 +791,14 @@
         protected _internalTexturesCache = new Array<InternalTexture>();
         /** @hidden */
         protected _activeChannel = 0;
-        private _currentTextureChannel = -1;    
+        private _currentTextureChannel = -1;
         /** @hidden */
         protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
         /** @hidden */
         protected _currentEffect: Nullable<Effect>;
         /** @hidden */
         protected _currentProgram: Nullable<WebGLProgram>;
-        private _compiledEffects: { [key: string]: Effect } = {}
+        private _compiledEffects: { [key: string]: Effect } = {};
         private _vertexAttribArraysEnabled: boolean[] = [];
         /** @hidden */
         protected _cachedViewport: Nullable<Viewport>;
@@ -883,7 +883,7 @@
 
         /**
          * Gets the default empty 3D texture
-         */        
+         */
         public get emptyTexture3D(): InternalTexture {
             if (!this._emptyTexture3D) {
                 this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Engine.TEXTURE_NEAREST_SAMPLINGMODE);
@@ -894,7 +894,7 @@
 
         /**
          * Gets the default empty cube texture
-         */        
+         */
         public get emptyCubeTexture(): InternalTexture {
             if (!this._emptyCubeTexture) {
                 var faceData = new Uint8Array(4);
@@ -1004,7 +1004,7 @@
                         }
                     }
                 }
-                
+
                 // GL
                 if (!options.disableWebGL2Support) {
                     try {
@@ -1039,11 +1039,11 @@
 
                 this._onCanvasFocus = () => {
                     this.onCanvasFocusObservable.notifyObservers(this);
-                }
+                };
 
                 this._onCanvasBlur = () => {
                     this.onCanvasBlurObservable.notifyObservers(this);
-                }
+                };
 
                 canvas.addEventListener("focus", this._onCanvasFocus);
                 canvas.addEventListener("blur", this._onCanvasBlur);
@@ -1112,7 +1112,7 @@
                 }
             } else {
                 this._gl = <WebGLRenderingContext>canvasOrContext;
-                this._renderingCanvas = this._gl.canvas
+                this._renderingCanvas = this._gl.canvas;
 
                 if (this._gl.renderbufferStorageMultisample) {
                     this._webGLVersion = 2.0;
@@ -1178,11 +1178,11 @@
                     if (canvas) {
                         canvas.requestPointerLock();
                     }
-                }
+                };
 
                 this._onVRDisplayPointerUnrestricted = () => {
                     document.exitPointerLock();
-                }
+                };
 
                 window.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
                 window.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);
@@ -1319,16 +1319,16 @@
 
             this._caps.textureFloat = (this._webGLVersion > 1 || this._gl.getExtension('OES_texture_float')) ? true : false;
             this._caps.textureFloatLinearFiltering = this._caps.textureFloat && this._gl.getExtension('OES_texture_float_linear') ? true : false;
-            this._caps.textureFloatRender = this._caps.textureFloat && this._canRenderToFloatFramebuffer() ? true: false;
+            this._caps.textureFloatRender = this._caps.textureFloat && this._canRenderToFloatFramebuffer() ? true : false;
 
-            this._caps.textureHalfFloat = (this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float')) ? true: false;
+            this._caps.textureHalfFloat = (this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float')) ? true : false;
             this._caps.textureHalfFloatLinearFiltering = (this._webGLVersion > 1 || (this._caps.textureHalfFloat && this._gl.getExtension('OES_texture_half_float_linear'))) ? true : false;
             if (this._webGLVersion > 1) {
                 this._gl.HALF_FLOAT_OES = 0x140B;
             }
             this._caps.textureHalfFloatRender = this._caps.textureHalfFloat && this._canRenderToHalfFloatFramebuffer();
 
-            this._caps.textureLOD = (this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod')) ? true: false;
+            this._caps.textureLOD = (this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod')) ? true : false;
 
             // Draw buffers
             if (this._webGLVersion > 1) {
@@ -1397,11 +1397,11 @@
             // Next PVRTC & DXT, which are probably superior to ETC1/2.
             // Likely no hardware which supports both PVR & DXT, so order matters little.
             // ETC2 is newer and handles ETC1 (no alpha capability), so check for first.
-            if (this._caps.astc) this.texturesSupported.push('-astc.ktx');
-            if (this._caps.s3tc) this.texturesSupported.push('-dxt.ktx');
-            if (this._caps.pvrtc) this.texturesSupported.push('-pvrtc.ktx');
-            if (this._caps.etc2) this.texturesSupported.push('-etc2.ktx');
-            if (this._caps.etc1) this.texturesSupported.push('-etc1.ktx');
+            if (this._caps.astc) { this.texturesSupported.push('-astc.ktx'); }
+            if (this._caps.s3tc) { this.texturesSupported.push('-dxt.ktx'); }
+            if (this._caps.pvrtc) { this.texturesSupported.push('-pvrtc.ktx'); }
+            if (this._caps.etc2) { this.texturesSupported.push('-etc2.ktx'); }
+            if (this._caps.etc1) { this.texturesSupported.push('-etc1.ktx'); }
 
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
@@ -1463,8 +1463,8 @@
                     this._removeDesignatedSlot(boundTexture);
                 }
                 this._boundTexturesCache[key] = null;
-            }       
-            
+            }
+
             if (!this.disableTextureBindingOptimization) {
                 this._nextFreeTextureSlots = [];
                 for (let slot = 0; slot < this._maxSimultaneousTextures; slot++) {
@@ -1502,7 +1502,7 @@
                 vendor: this._glVendor,
                 renderer: this._glRenderer,
                 version: this._glVersion
-            }
+            };
         }
 
         /**
@@ -1522,7 +1522,7 @@
          */
         public getScreenAspectRatio(): number {
             return (this.getRenderWidth(true)) / (this.getRenderHeight(true));
-        }        
+        }
 
         /**
          * Gets the current render width
@@ -1541,7 +1541,7 @@
          * Gets the current render height
          * @param useScreen defines if screen size must be used (or the current render target if any)
          * @returns a number defining the current render height
-         */        
+         */
         public getRenderHeight(useScreen = false): number {
             if (!useScreen && this._currentRenderTarget) {
                 return this._currentRenderTarget.height;
@@ -1585,7 +1585,7 @@
          * By default the hardware scaling level is computed from the window device ratio.
          * if level = 1 then the engine will render at the exact resolution of the canvas. If level = 0.5 then the engine will render at twice the size of the canvas.
          * @returns a number indicating the current hardware scaling level
-         */        
+         */
         public getHardwareScalingLevel(): number {
             return this._hardwareScalingLevel;
         }
@@ -1636,28 +1636,28 @@
 
         /**
          * Sets the current depth function to GREATER
-         */        
+         */
         public setDepthFunctionToGreater(): void {
             this._depthCullingState.depthFunc = this._gl.GREATER;
         }
 
         /**
          * Sets the current depth function to GEQUAL
-         */        
+         */
         public setDepthFunctionToGreaterOrEqual(): void {
             this._depthCullingState.depthFunc = this._gl.GEQUAL;
         }
 
         /**
          * Sets the current depth function to LESS
-         */          
+         */
         public setDepthFunctionToLess(): void {
             this._depthCullingState.depthFunc = this._gl.LESS;
         }
 
         /**
          * Sets the current depth function to LEQUAL
-         */                
+         */
         public setDepthFunctionToLessOrEqual(): void {
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
         }
@@ -1689,7 +1689,7 @@
         /**
          * Sets the current stencil mask
          * @param mask defines the new stencil mask to use
-         */        
+         */
         public setStencilMask(mask: number): void {
             this._stencilState.stencilMask = mask;
         }
@@ -1697,7 +1697,7 @@
         /**
          * Gets the current stencil function
          * @returns a number defining the stencil function to use
-         */        
+         */
         public getStencilFunction(): number {
             return this._stencilState.stencilFunc;
         }
@@ -1705,7 +1705,7 @@
         /**
          * Gets the current stencil reference value
          * @returns a number defining the stencil reference value to use
-         */             
+         */
         public getStencilFunctionReference(): number {
             return this._stencilState.stencilFuncRef;
         }
@@ -1713,7 +1713,7 @@
         /**
          * Gets the current stencil mask
          * @returns a number defining the stencil mask to use
-         */                 
+         */
         public getStencilFunctionMask(): number {
             return this._stencilState.stencilFuncMask;
         }
@@ -1721,7 +1721,7 @@
         /**
          * Sets the current stencil function
          * @param stencilFunc defines the new stencil function to use
-         */             
+         */
         public setStencilFunction(stencilFunc: number) {
             this._stencilState.stencilFunc = stencilFunc;
         }
@@ -1729,7 +1729,7 @@
         /**
          * Sets the current stencil reference
          * @param reference defines the new stencil reference to use
-         */            
+         */
         public setStencilFunctionReference(reference: number) {
             this._stencilState.stencilFuncRef = reference;
         }
@@ -1737,7 +1737,7 @@
         /**
          * Sets the current stencil mask
          * @param mask defines the new stencil mask to use
-         */            
+         */
         public setStencilFunctionMask(mask: number) {
             this._stencilState.stencilFuncMask = mask;
         }
@@ -1745,7 +1745,7 @@
         /**
          * Gets the current stencil operation when stencil fails
          * @returns a number defining stencil operation to use when stencil fails
-         */           
+         */
         public getStencilOperationFail(): number {
             return this._stencilState.stencilOpStencilFail;
         }
@@ -1753,7 +1753,7 @@
         /**
          * Gets the current stencil operation when depth fails
          * @returns a number defining stencil operation to use when depth fails
-         */           
+         */
         public getStencilOperationDepthFail(): number {
             return this._stencilState.stencilOpDepthFail;
         }
@@ -1761,7 +1761,7 @@
         /**
          * Gets the current stencil operation when stencil passes
          * @returns a number defining stencil operation to use when stencil passes
-         */         
+         */
         public getStencilOperationPass(): number {
             return this._stencilState.stencilOpStencilDepthPass;
         }
@@ -1769,7 +1769,7 @@
         /**
          * Sets the stencil operation to use when stencil fails
          * @param operation defines the stencil operation to use when stencil fails
-         */         
+         */
         public setStencilOperationFail(operation: number): void {
             this._stencilState.stencilOpStencilFail = operation;
         }
@@ -1777,7 +1777,7 @@
         /**
          * Sets the stencil operation to use when depth fails
          * @param operation defines the stencil operation to use when depth fails
-         */         
+         */
         public setStencilOperationDepthFail(operation: number): void {
             this._stencilState.stencilOpDepthFail = operation;
         }
@@ -1785,7 +1785,7 @@
         /**
          * Sets the stencil operation to use when stencil passes
          * @param operation defines the stencil operation to use when stencil passes
-         */        
+         */
         public setStencilOperationPass(operation: number): void {
             this._stencilState.stencilOpStencilDepthPass = operation;
         }
@@ -1805,7 +1805,7 @@
         /**
          * Sets a boolean indicating if the rasterizer state is enabled or disabled
          * @param value defines the rasterizer state
-         */        
+         */
         public setRasterizerState(value: boolean): void {
             if (value) {
                 this._gl.disable(this._gl.RASTERIZER_DISCARD);
@@ -1857,8 +1857,9 @@
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
                 var requester = null;
-                if (this._vrDisplay && this._vrDisplay.isPresenting)
+                if (this._vrDisplay && this._vrDisplay.isPresenting) {
                     requester = this._vrDisplay;
+                }
                 this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, requester);
             } else {
                 this._renderingQueueLaunched = false;
@@ -1900,7 +1901,7 @@
 
         /**
          * Clear the current render buffer or the current render target (if any is set up)
-         * @param color defines the color to use 
+         * @param color defines the color to use
          * @param backBuffer defines if the back buffer must be cleared
          * @param depth defines if the depth buffer must be cleared
          * @param stencil defines if the stencil buffer must be cleared
@@ -1927,7 +1928,7 @@
         /**
          * Executes a scissor clear (ie. a clear on a specific portion of the screen)
          * @param x defines the x-coordinate of the top left corner of the clear rectangle
-         * @param y defines the y-coordinate of the corner of the clear rectangle 
+         * @param y defines the y-coordinate of the corner of the clear rectangle
          * @param width defines the width of the clear rectangle
          * @param height defines the height of the clear rectangle
          * @param clearColor defines the clear color
@@ -1957,7 +1958,7 @@
         }
 
         private _viewportCached = new BABYLON.Vector4(0, 0, 0, 0);
-        
+
         /** @hidden */
         public _viewport(x: number, y: number, width: number, height: number): void {
             if (x !== this._viewportCached.x ||
@@ -2119,8 +2120,8 @@
                     vrSupported: this._vrSupported
                 };
                 this.onVRDisplayChangedObservable.notifyObservers(eventArgs);
-                this._webVRInitPromise = new Promise((res)=>{res(eventArgs)});
-            }
+                this._webVRInitPromise = new Promise((res) => {res(eventArgs); });
+            };
 
             if (!this._onVrDisplayConnect) {
                 this._onVrDisplayConnect = (event) => {
@@ -2135,7 +2136,7 @@
                 };
                 this._onVrDisplayPresentChange = () => {
                     this._vrExclusivePointerMode = this._vrDisplay && this._vrDisplay.isPresenting;
-                }
+                };
                 window.addEventListener('vrdisplayconnect', this._onVrDisplayConnect);
                 window.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
                 window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
@@ -2192,10 +2193,10 @@
             }
         }
 
-        private _getVRDisplaysAsync():Promise<IDisplayChangedEventArgs> {
-            return new Promise((res, rej)=>{    
+        private _getVRDisplaysAsync(): Promise<IDisplayChangedEventArgs> {
+            return new Promise((res, rej) => {
                 if (navigator.getVRDisplays) {
-                    navigator.getVRDisplays().then((devices: Array<any>)=>{
+                    navigator.getVRDisplays().then((devices: Array<any>) => {
                         this._vrSupported = true;
                         // note that devices may actually be an empty array. This is fine;
                         // we expect this._vrDisplay to be undefined in this case.
@@ -2321,13 +2322,12 @@
          * @param textures defines the render target textures to unbind
          * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
          * @param onBeforeUnbind defines a function which will be called before the effective unbind
-         */        
+         */
         public unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
             this._currentRenderTarget = null;
 
             // If MSAA, we need to bitblt back to main texture
             var gl = this._gl;
-
 
             if (textures[0]._MSAAFramebuffer) {
                 gl.bindFramebuffer(gl.READ_FRAMEBUFFER, textures[0]._MSAAFramebuffer);
@@ -2450,7 +2450,7 @@
          * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
          * @param elements defines the content of the uniform buffer
          * @returns the webGL uniform buffer
-         */        
+         */
         public createDynamicUniformBuffer(elements: FloatArray): WebGLBuffer {
             var ubo = this._gl.createBuffer();
 
@@ -2503,7 +2503,6 @@
 
             this.bindUniformBuffer(null);
         }
-
 
         // VBOs
         private _resetVertexBufferBinding(): void {
@@ -2700,7 +2699,7 @@
          * Bind a buffer to the current webGL context at a given location
          * @param buffer defines the buffer to bind
          * @param location defines the index where to bind the buffer
-         */        
+         */
         public bindUniformBufferBase(buffer: WebGLBuffer, location: number): void {
             this._gl.bindBufferBase(this._gl.UNIFORM_BUFFER, location, buffer);
         }
@@ -2715,7 +2714,7 @@
             var uniformLocation = this._gl.getUniformBlockIndex(shaderProgram, blockName);
 
             this._gl.uniformBlockBinding(shaderProgram, uniformLocation, index);
-        };
+        }
 
         private bindIndexBuffer(buffer: Nullable<WebGLBuffer>): void {
             if (!this._vaoRecordInProgress) {
@@ -3075,7 +3074,7 @@
         /**
          * Draw a list of unindexed primitives
          * @param useTriangles defines if triangles must be used to draw (else wireframe will be used)
-         * @param verticesStart defines the index of first vertex to draw 
+         * @param verticesStart defines the index of first vertex to draw
          * @param verticesCount defines the count of vertices to draw
          * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
          */
@@ -3110,7 +3109,7 @@
         /**
          * Draw a list of unindexed primitives
          * @param fillMode defines the primitive to use
-         * @param verticesStart defines the index of first vertex to draw 
+         * @param verticesStart defines the index of first vertex to draw
          * @param verticesCount defines the count of vertices to draw
          * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
          */
@@ -3138,15 +3137,15 @@
                     return this._gl.LINES;
                 // Draw modes
                 case Material.PointListDrawMode:
-                    return this._gl.POINTS
+                    return this._gl.POINTS;
                 case Material.LineListDrawMode:
                     return this._gl.LINES;
                 case Material.LineLoopDrawMode:
-                    return this._gl.LINE_LOOP
+                    return this._gl.LINE_LOOP;
                 case Material.LineStripDrawMode:
-                    return this._gl.LINE_STRIP
+                    return this._gl.LINE_STRIP;
                 case Material.TriangleStripDrawMode:
-                    return this._gl.TRIANGLE_STRIP
+                    return this._gl.TRIANGLE_STRIP;
                 case Material.TriangleFanDrawMode:
                     return this._gl.TRIANGLE_FAN;
                 default:
@@ -3155,7 +3154,7 @@
         }
 
         // Shaders
-        
+
         /** @hidden */
         public _releaseEffect(effect: Effect): void {
             if (this._compiledEffects[effect._key]) {
@@ -3178,7 +3177,6 @@
                 this._gl.deleteProgram(program);
             }
         }
-
 
         /**
          * Create a new effect (used to store vertex/fragment shaders)
@@ -3216,28 +3214,28 @@
 
         private _compileShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string): WebGLShader {
             return this._compileRawShader(shaderVersion + (defines ? defines + "\n" : "") + source, type);
-        };
-    
+        }
+
         private _compileRawShader(source: string, type: string): WebGLShader {
             var gl = this._gl;
             var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
-    
+
             gl.shaderSource(shader, source);
             gl.compileShader(shader);
-    
+
             if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
                 let log = gl.getShaderInfoLog(shader);
                 if (log) {
                     throw new Error(log);
                 }
             }
-    
+
             if (!shader) {
                 throw new Error("Something went wrong while compile the shader.");
             }
-    
+
             return shader;
-        };
+        }
 
         /**
          * Directly creates a webGL program
@@ -3318,7 +3316,7 @@
                 context.validateProgram(shaderProgram);
                 var validated = context.getProgramParameter(shaderProgram, context.VALIDATE_STATUS);
 
-                if(!validated) {
+                if (!validated) {
                     var error = context.getProgramInfoLog(shaderProgram);
                     if (error) {
                         throw new Error(error);
@@ -3336,7 +3334,7 @@
          * Gets the list of webGL uniform locations associated with a specific program based on a list of uniform names
          * @param shaderProgram defines the webGL program to use
          * @param uniformsNames defines the list of uniform names
-         * @returns an array of webGL uniform locations 
+         * @returns an array of webGL uniform locations
          */
         public getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): Nullable<WebGLUniformLocation>[] {
             var results = new Array<Nullable<WebGLUniformLocation>>();
@@ -3396,8 +3394,9 @@
          * @param array defines the array of int32 to store
          */
         public setIntArray(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform1iv(uniform, array);
         }
@@ -3406,10 +3405,11 @@
          * Set the value of an uniform to an array of int32 (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
-         */        
+         */
         public setIntArray2(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
-            if (!uniform || array.length % 2 !== 0)
+            if (!uniform || array.length % 2 !== 0) {
                 return;
+            }
 
             this._gl.uniform2iv(uniform, array);
         }
@@ -3418,10 +3418,11 @@
          * Set the value of an uniform to an array of int32 (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
-         */              
+         */
         public setIntArray3(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
-            if (!uniform || array.length % 3 !== 0)
+            if (!uniform || array.length % 3 !== 0) {
                 return;
+            }
 
             this._gl.uniform3iv(uniform, array);
         }
@@ -3430,10 +3431,11 @@
          * Set the value of an uniform to an array of int32 (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
-         */          
+         */
         public setIntArray4(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
-            if (!uniform || array.length % 4 !== 0)
+            if (!uniform || array.length % 4 !== 0) {
                 return;
+            }
 
             this._gl.uniform4iv(uniform, array);
         }
@@ -3442,10 +3444,11 @@
          * Set the value of an uniform to an array of float32
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of float32 to store
-         */         
+         */
         public setFloatArray(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform1fv(uniform, array);
         }
@@ -3454,10 +3457,11 @@
          * Set the value of an uniform to an array of float32 (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of float32 to store
-         */           
+         */
         public setFloatArray2(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
-            if (!uniform || array.length % 2 !== 0)
+            if (!uniform || array.length % 2 !== 0) {
                 return;
+            }
 
             this._gl.uniform2fv(uniform, array);
         }
@@ -3466,10 +3470,11 @@
          * Set the value of an uniform to an array of float32 (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of float32 to store
-         */                 
+         */
         public setFloatArray3(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
-            if (!uniform || array.length % 3 !== 0)
+            if (!uniform || array.length % 3 !== 0) {
                 return;
+            }
 
             this._gl.uniform3fv(uniform, array);
         }
@@ -3478,10 +3483,11 @@
          * Set the value of an uniform to an array of float32 (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of float32 to store
-         */                 
+         */
         public setFloatArray4(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
-            if (!uniform || array.length % 4 !== 0)
+            if (!uniform || array.length % 4 !== 0) {
                 return;
+            }
 
             this._gl.uniform4fv(uniform, array);
         }
@@ -3490,10 +3496,11 @@
          * Set the value of an uniform to an array of number
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
-         */             
+         */
         public setArray(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform1fv(uniform, <any>array);
         }
@@ -3502,10 +3509,11 @@
          * Set the value of an uniform to an array of number (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
-         */               
+         */
         public setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
-            if (!uniform || array.length % 2 !== 0)
+            if (!uniform || array.length % 2 !== 0) {
                 return;
+            }
 
             this._gl.uniform2fv(uniform, <any>array);
         }
@@ -3514,10 +3522,11 @@
          * Set the value of an uniform to an array of number (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
-         */              
+         */
         public setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
-            if (!uniform || array.length % 3 !== 0)
+            if (!uniform || array.length % 3 !== 0) {
                 return;
+            }
 
             this._gl.uniform3fv(uniform, <any>array);
         }
@@ -3526,10 +3535,11 @@
          * Set the value of an uniform to an array of number (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
-         */          
+         */
         public setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
-            if (!uniform || array.length % 4 !== 0)
+            if (!uniform || array.length % 4 !== 0) {
                 return;
+            }
 
             this._gl.uniform4fv(uniform, <any>array);
         }
@@ -3538,10 +3548,11 @@
          * Set the value of an uniform to an array of float32 (stored as matrices)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrices defines the array of float32 to store
-         */          
+         */
         public setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniformMatrix4fv(uniform, false, matrices);
         }
@@ -3550,10 +3561,11 @@
          * Set the value of an uniform to a matrix
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrix defines the matrix to store
-         */             
+         */
         public setMatrix(uniform: Nullable<WebGLUniformLocation>, matrix: Matrix): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniformMatrix4fv(uniform, false, matrix.toArray());
         }
@@ -3562,10 +3574,11 @@
          * Set the value of an uniform to a matrix (3x3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrix defines the Float32Array representing the 3x3 matrix to store
-         */           
+         */
         public setMatrix3x3(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniformMatrix3fv(uniform, false, matrix);
         }
@@ -3574,10 +3587,11 @@
          * Set the value of an uniform to a matrix (2x2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrix defines the Float32Array representing the 2x2 matrix to store
-         */    
+         */
         public setMatrix2x2(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniformMatrix2fv(uniform, false, matrix);
         }
@@ -3586,10 +3600,11 @@
          * Set the value of an uniform to a number (int)
          * @param uniform defines the webGL uniform location where to store the value
          * @param value defines the int number to store
-         */           
+         */
         public setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform1i(uniform, value);
         }
@@ -3598,10 +3613,11 @@
          * Set the value of an uniform to a number (float)
          * @param uniform defines the webGL uniform location where to store the value
          * @param value defines the float number to store
-         */           
+         */
         public setFloat(uniform: Nullable<WebGLUniformLocation>, value: number): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform1f(uniform, value);
         }
@@ -3613,8 +3629,9 @@
          * @param y defines the 2nd component of the value
          */
         public setFloat2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform2f(uniform, x, y);
         }
@@ -3625,10 +3642,11 @@
          * @param x defines the 1st component of the value
          * @param y defines the 2nd component of the value
          * @param z defines the 3rd component of the value
-         */        
+         */
         public setFloat3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform3f(uniform, x, y, z);
         }
@@ -3637,10 +3655,11 @@
          * Set the value of an uniform to a boolean
          * @param uniform defines the webGL uniform location where to store the value
          * @param bool defines the boolean to store
-         */          
+         */
         public setBool(uniform: Nullable<WebGLUniformLocation>, bool: number): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform1i(uniform, bool);
         }
@@ -3652,10 +3671,11 @@
          * @param y defines the 2nd component of the value
          * @param z defines the 3rd component of the value
          * @param w defines the 4th component of the value
-         */           
+         */
         public setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform4f(uniform, x, y, z, w);
         }
@@ -3664,10 +3684,11 @@
          * Set the value of an uniform to a Color3
          * @param uniform defines the webGL uniform location where to store the value
          * @param color3 defines the color to store
-         */            
+         */
         public setColor3(uniform: Nullable<WebGLUniformLocation>, color3: Color3): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform3f(uniform, color3.r, color3.g, color3.b);
         }
@@ -3677,10 +3698,11 @@
          * @param uniform defines the webGL uniform location where to store the value
          * @param color3 defines the color to store
          * @param alpha defines the alpha component to store
-         */         
+         */
         public setColor4(uniform: Nullable<WebGLUniformLocation>, color3: Color3, alpha: number): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform4f(uniform, color3.r, color3.g, color3.b, alpha);
         }
@@ -3691,11 +3713,12 @@
          * @param color4 defines the value to be set
          */
         public setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: Color4): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform4f(uniform, color4.r, color4.g, color4.b, color4.a);
-        }        
+        }
 
         // States
 
@@ -3767,7 +3790,7 @@
         public setDepthWrite(enable: boolean): void {
             this._depthCullingState.depthMask = enable;
         }
-        
+
         /**
          * Enable or disable color writing
          * @param enable defines the state to set
@@ -3780,7 +3803,7 @@
         /**
          * Gets a boolean indicating if color writing is enabled
          * @returns the current color writing state
-         */        
+         */
         public getColorWrite(): boolean {
             return this._colorWrite;
         }
@@ -3949,7 +3972,7 @@
             var gl = this._gl;
             var magFilter = gl.NEAREST;
             var minFilter = gl.NEAREST;
-    
+
             switch (samplingMode) {
                 case Engine.TEXTURE_BILINEAR_SAMPLINGMODE:
                     magFilter = gl.LINEAR;
@@ -4032,41 +4055,41 @@
                     minFilter = gl.NEAREST;
                     break;
             }
-    
+
             return {
                 min: minFilter,
                 mag: magFilter
-            }
+            };
         }
-    
+
         private _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>,
             onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null) {
-    
+
             var img: HTMLImageElement;
-    
+
             var onload = () => {
                 loadedImages[index] = img;
                 (<any>loadedImages)._internalCount++;
-    
+
                 if (scene) {
                     scene._removePendingData(img);
                 }
-    
+
                 if ((<any>loadedImages)._internalCount === 6) {
                     onfinish(loadedImages);
                 }
             };
-    
+
             var onerror = (message?: string, exception?: any) => {
                 if (scene) {
                     scene._removePendingData(img);
                 }
-    
+
                 if (onErrorCallBack) {
                     onErrorCallBack(message, exception);
                 }
             };
-    
+
             img = Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
             if (scene) {
                 scene._addPendingData(img);
@@ -4075,14 +4098,14 @@
 
         private _cascadeLoadImgs(rootUrl: string, scene: Nullable<Scene>,
             onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null) {
-    
+
             var loadedImages: HTMLImageElement[] = [];
             (<any>loadedImages)._internalCount = 0;
-    
+
             for (let index = 0; index < 6; index++) {
                 this._partialLoadImg(files[index], index, loadedImages, scene, onfinish, onError);
             }
-        };
+        }
 
         /** @hidden */
         public _createTexture(): WebGLTexture {
@@ -4159,7 +4182,7 @@
                 onLoadObserver = texture.onLoadedObservable.add(onLoad);
             }
 
-            if (!fallback) this._internalTexturesCache.push(texture);
+            if (!fallback) { this._internalTexturesCache.push(texture); }
 
             let onInternalError = (message?: string, exception?: any) => {
                 if (scene) {
@@ -4188,7 +4211,7 @@
                 if (onError) {
                     onError(message || "Unknown error", exception);
                 }
-            }
+            };
 
             // processing for non-image formats
             if (loader) {
@@ -4197,10 +4220,10 @@
                         this._prepareWebGLTexture(texture, scene, width, height, invertY, !loadMipmap, isCompressed, () => {
                                 done();
                                 return false;
-                            }, 
+                            },
                             samplingMode);
                     });
-                }
+                };
 
                 if (!buffer) {
                     this._loadFile(url, callback, undefined, scene ? scene.database : undefined, true, (request?: XMLHttpRequest, exception?: any) => {
@@ -4237,10 +4260,10 @@
 
                             this._workingCanvas.width = potWidth;
                             this._workingCanvas.height = potHeight;
-        
+
                             this._workingContext.drawImage(img, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
                             gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas);
-    
+
                             texture.width = potWidth;
                             texture.height = potHeight;
 
@@ -4304,9 +4327,9 @@
             }
 
             this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
-                this._rescalePostProcess.onApply = function (effect) {
+                this._rescalePostProcess.onApply = function(effect) {
                     effect._bindTexture("textureSampler", source);
-                }
+                };
 
                 let hostingScene = scene;
 
@@ -4358,7 +4381,7 @@
             if (texture.width % 4 !== 0) {
                 this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
             }
-            
+
             if (compression && data) {
                 this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, (<any>this.getCaps().s3tc)[compression], texture.width, texture.height, 0, <DataView>data);
             } else {
@@ -4418,7 +4441,6 @@
 
             this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
 
-
             this._internalTexturesCache.push(texture);
 
             return texture;
@@ -4427,8 +4449,8 @@
         private _unpackFlipYCached: Nullable<boolean> = null;
 
         /**
-         * In case you are sharing the context with other applications, it might 
-         * be interested to not cache the unpack flip y state to ensure a consistent 
+         * In case you are sharing the context with other applications, it might
+         * be interested to not cache the unpack flip y state to ensure a consistent
          * value would be set.
          */
         public enableUnpackFlipYCached = true;
@@ -4458,7 +4480,7 @@
          * @returns the dynamic texture inside an InternalTexture
          */
         public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
-            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_DYNAMIC)
+            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_DYNAMIC);
             texture.baseWidth = width;
             texture.baseHeight = height;
 
@@ -4578,7 +4600,7 @@
                     }
 
                     texture._workingContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, texture.width, texture.height);
-                    
+
                     this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, texture._workingCanvas);
                 } else {
                     this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
@@ -4662,7 +4684,7 @@
             internalTexture.samplingMode = bilinearFiltering ? Engine.TEXTURE_BILINEAR_SAMPLINGMODE : Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             internalTexture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
             internalTexture._comparisonFunction = comparisonFunction;
-            
+
             var gl = this._gl;
             var target = internalTexture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
             var samplingParameters = this._getSamplingParameters(internalTexture.samplingMode, false);
@@ -4718,7 +4740,7 @@
                 comparisonFunction: 0,
                 generateStencil: false,
                 ...options
-            }
+            };
 
             var gl = this._gl;
             this._bindTextureDirectly(gl.TEXTURE_2D, internalTexture, true);
@@ -4768,7 +4790,7 @@
                 comparisonFunction: 0,
                 generateStencil: false,
                 ...options
-            }
+            };
 
             var gl = this._gl;
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, internalTexture, true);
@@ -4938,10 +4960,10 @@
             var samplingModes = new Array<number>();
 
             if (options !== undefined) {
-                generateMipMaps = options.generateMipMaps === undefined ? false: options.generateMipMaps;
+                generateMipMaps = options.generateMipMaps === undefined ? false : options.generateMipMaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-                generateStencilBuffer = options.generateStencilBuffer === undefined ? false: options.generateStencilBuffer;
-                generateDepthTexture = options.generateDepthTexture === undefined ? false: options.generateDepthTexture;
+                generateStencilBuffer = options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
+                generateDepthTexture = options.generateDepthTexture === undefined ? false : options.generateDepthTexture;
                 textureCount = options.textureCount || 1;
 
                 if (options.types) {
@@ -4961,7 +4983,7 @@
             var height = size.height || size;
 
             var textures = [];
-            var attachments = []
+            var attachments = [];
 
             var depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, width, height);
 
@@ -5069,7 +5091,7 @@
                 depthTexture._generateDepthBuffer = generateDepthBuffer;
                 depthTexture._generateStencilBuffer = generateStencilBuffer;
 
-                textures.push(depthTexture)
+                textures.push(depthTexture);
                 this._internalTexturesCache.push(depthTexture);
             }
 
@@ -5364,7 +5386,7 @@
               // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
               fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             }
-            var gl = this._gl
+            var gl = this._gl;
 
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
@@ -5448,7 +5470,7 @@
                 if (!createPolynomials) {
                     texture._sphericalPolynomial = new BABYLON.SphericalPolynomial();
                 }
-                else if(loadData.info.sphericalPolynomial){
+                else if (loadData.info.sphericalPolynomial) {
                     texture._sphericalPolynomial = loadData.info.sphericalPolynomial;
                 }
                 texture._dataSource = InternalTexture.DATASOURCE_CUBEPREFILTERED;
@@ -5484,7 +5506,7 @@
                     var glTextureFromLod = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
                     glTextureFromLod.type = texture.type;
                     glTextureFromLod.format = texture.format;
-                    glTextureFromLod.width = Math.pow(2, Math.max( Scalar.Log2(width) - mipmapIndex, 0));
+                    glTextureFromLod.width = Math.pow(2, Math.max(Scalar.Log2(width) - mipmapIndex, 0));
                     glTextureFromLod.height = glTextureFromLod.width;
                     glTextureFromLod.isCube = true;
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, glTextureFromLod, true);
@@ -5502,7 +5524,7 @@
                         DDSTools.UploadDDSLevels(this, glTextureFromLod, data, info, true, 6, mipmapIndex);
                     }
                     else {
-                        Tools.Warn("DDS is the only prefiltered cube map supported so far.")
+                        Tools.Warn("DDS is the only prefiltered cube map supported so far.");
                     }
 
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
@@ -5581,7 +5603,7 @@
                 if (onError && request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
-            }
+            };
 
             if (loader) {
                 rootUrl = loader.transformUrl(rootUrl, this._textureFormatInUse);
@@ -5607,7 +5629,7 @@
                     throw new Error("Cannot load cubemap because files were not defined");
                 }
 
-                this._cascadeLoadImgs(rootUrl, scene, imgs => {
+                this._cascadeLoadImgs(rootUrl, scene, (imgs) => {
                     var width = this.needPOTTextures ? Tools.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
                     var height = width;
 
@@ -5837,7 +5859,7 @@
          * @param samplingMode defines the required sampling mode (like BABYLON.Texture.NEAREST_SAMPLINGMODE)
          * @param invertY defines if data must be stored with Y axis inverted
          * @returns the cube texture as an InternalTexture
-         */        
+         */
         public createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
             callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
             mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>,
@@ -5909,12 +5931,12 @@
                 }
             };
 
-            this._loadFile(url, data => {
+            this._loadFile(url, (data) => {
                 internalCallback(data);
             }, undefined, scene.database, true, onerror);
 
             return texture;
-        };
+        }
 
         /**
          * Update a raw 3D texture
@@ -6038,7 +6060,7 @@
 
         private _prepareWebGLTexture(texture: InternalTexture, scene: Nullable<Scene>, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
             processFunction: (width: number, height: number, continuationCallback: () => void) => boolean, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE): void {
-            var maxTextureSize = this.getCaps().maxTextureSize;    
+            var maxTextureSize = this.getCaps().maxTextureSize;
             var potWidth = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(width, maxTextureSize) : width);
             var potHeight = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(height, maxTextureSize) : height);
 
@@ -6157,22 +6179,22 @@
             }
 
             // Set output texture of post process to null if the texture has been released/disposed
-            this.scenes.forEach((scene)=>{
-                scene.postProcesses.forEach((postProcess)=>{
-                    if(postProcess._outputTexture == texture){
+            this.scenes.forEach((scene) => {
+                scene.postProcesses.forEach((postProcess) => {
+                    if (postProcess._outputTexture == texture) {
                         postProcess._outputTexture = null;
                     }
                 });
-                scene.cameras.forEach((camera)=>{
-                    camera._postProcesses.forEach((postProcess)=>{
-                        if(postProcess){
-                            if(postProcess._outputTexture == texture){
+                scene.cameras.forEach((camera) => {
+                    camera._postProcesses.forEach((postProcess) => {
+                        if (postProcess) {
+                            if (postProcess._outputTexture == texture) {
                                 postProcess._outputTexture = null;
                             }
                         }
                     });
                 });
-            })
+            });
         }
 
         private setProgram(program: WebGLProgram): void {
@@ -6424,7 +6446,7 @@
         }
 
         private _getTextureWrapMode(mode: number): number {
-            switch(mode) {
+            switch (mode) {
                 case Engine.TEXTURE_WRAP_ADDRESSMODE:
                     return this._gl.REPEAT;
                 case Engine.TEXTURE_CLAMP_ADDRESSMODE:
@@ -6485,7 +6507,7 @@
                 if (!isPartOfTextureArray) {
                     this._bindSamplerUniformToChannel(internalTexture._initialSlot, channel);
                 }
-                
+
                 needToBind = false;
             }
 
@@ -6516,7 +6538,7 @@
             else if (internalTexture && internalTexture.isCube) {
                 if (needToBind) {
                     this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture, isPartOfTextureArray);
-                }                
+                }
 
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
                     internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
@@ -6528,7 +6550,7 @@
 
                 this._setAnisotropicLevel(this._gl.TEXTURE_CUBE_MAP, texture);
             } else {
-                if (needToBind) {               
+                if (needToBind) {
                     this._bindTextureDirectly(this._gl.TEXTURE_2D, internalTexture, isPartOfTextureArray);
                 }
 
@@ -6705,7 +6727,7 @@
          */
         public releaseEffects() {
             for (var name in this._compiledEffects) {
-                this._deleteProgram(this._compiledEffects[name]._program)
+                this._deleteProgram(this._compiledEffects[name]._program);
             }
 
             this._compiledEffects = {};
@@ -6850,7 +6872,7 @@
         /**
          * Hide the loading screen
          * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-         */        
+         */
         public hideLoadingUI(): void {
             if (!Tools.IsWindowObjectExist()) {
                 return;
@@ -6866,8 +6888,9 @@
          * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
          */
         public get loadingScreen(): ILoadingScreen {
-            if (!this._loadingScreen && DefaultLoadingScreen && this._renderingCanvas)
-                this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
+            if (!this._loadingScreen && DefaultLoadingScreen && this._renderingCanvas) {
+                this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas);
+            }
             return this._loadingScreen;
         }
 
@@ -6882,7 +6905,7 @@
         /**
          * Sets the current loading screen text
          * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-         */        
+         */
         public set loadingUIText(text: string) {
             this.loadingScreen.loadingUIText = text;
         }
@@ -6890,7 +6913,7 @@
         /**
          * Sets the current loading screen background color
          * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-         */         
+         */
         public set loadingUIBackgroundColor(color: string) {
             this.loadingScreen.loadingUIBackgroundColor = color;
         }
@@ -6934,7 +6957,7 @@
          * Gets the source code of the fragment shader associated with a specific webGL program
          * @param program defines the program to use
          * @returns a string containing the source code of the fragment shader associated with the program
-         */        
+         */
         public getFragmentShaderSource(program: WebGLProgram): Nullable<string> {
             var shaders = this._gl.getAttachedShaders(program);
 
@@ -7136,7 +7159,7 @@
             }
 
             return this._gl.UNSIGNED_BYTE;
-        };
+        }
 
         private _getInternalFormat(format: number): number {
             var internalFormat = this._gl.RGBA;
@@ -7183,20 +7206,20 @@
             }
 
             return internalFormat;
-        }        
+        }
 
         /** @hidden */
         public _getRGBABufferInternalSizedFormat(type: number, format?: number): number {
             if (this._webGLVersion === 1) {
                 if (format !== undefined) {
-                    switch(format) {
+                    switch (format) {
                         case Engine.TEXTUREFORMAT_ALPHA:
-                            return this._gl.ALPHA; 
+                            return this._gl.ALPHA;
                         case Engine.TEXTUREFORMAT_LUMINANCE:
                             return this._gl.LUMINANCE;
                         case Engine.TEXTUREFORMAT_LUMINANCE_ALPHA:
                             return this._gl.LUMINANCE_ALPHA;
-                    }                    
+                    }
                 }
                 return this._gl.RGBA;
             }
@@ -7342,7 +7365,7 @@
             }
 
             return this._gl.RGBA8;
-        };
+        }
 
         /** @hidden */
         public _getRGBAMultiSampleBufferFormat(type: number): number {
@@ -7354,13 +7377,13 @@
             }
 
             return this._gl.RGBA8;
-        };
+        }
 
         /** @hidden */
         public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
             let request = Tools.LoadFile(url, onSuccess, onProgress, database, useArrayBuffer, onError);
             this._activeRequests.push(request);
-            request.onCompleteObservable.add(request => {
+            request.onCompleteObservable.add((request) => {
                 this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
             });
             return request;
@@ -7373,7 +7396,7 @@
                     resolve(data);
                 }, undefined, database, useArrayBuffer, (request, exception) => {
                     reject(exception);
-                })
+                });
             });
         }
 

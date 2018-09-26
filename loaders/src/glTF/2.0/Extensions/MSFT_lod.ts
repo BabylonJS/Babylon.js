@@ -126,7 +126,7 @@ module BABYLON.GLTF2.Loader.Extensions {
                         this._nodeSignalLODs[indexLOD] = this._nodeSignalLODs[indexLOD] || new Deferred();
                     }
 
-                    const promise = this._loader.loadNodeAsync(`#/nodes/${nodeLOD.index}`, nodeLOD).then(babylonMesh => {
+                    const promise = this._loader.loadNodeAsync(`#/nodes/${nodeLOD.index}`, nodeLOD).then((babylonMesh) => {
                         if (indexLOD !== 0) {
                             // TODO: should not rely on _babylonMesh
                             const previousNodeLOD = nodeLODs[indexLOD - 1];
@@ -176,11 +176,11 @@ module BABYLON.GLTF2.Loader.Extensions {
                         this._materialIndexLOD = indexLOD;
                     }
 
-                    const promise = this._loader._loadMaterialAsync(`#/materials/${materialLOD.index}`, materialLOD, babylonMesh, babylonDrawMode, babylonMaterial => {
+                    const promise = this._loader._loadMaterialAsync(`#/materials/${materialLOD.index}`, materialLOD, babylonMesh, babylonDrawMode, (babylonMaterial) => {
                         if (indexLOD === 0) {
                             assign(babylonMaterial);
                         }
-                    }).then(babylonMaterial => {
+                    }).then((babylonMaterial) => {
                         if (indexLOD !== 0) {
                             assign(babylonMaterial);
 
@@ -274,5 +274,5 @@ module BABYLON.GLTF2.Loader.Extensions {
         }
     }
 
-    GLTFLoader.RegisterExtension(NAME, loader => new MSFT_lod(loader));
+    GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_lod(loader));
 }
