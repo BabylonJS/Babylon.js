@@ -2,7 +2,7 @@ module BABYLON {
 
     /**
      * This represents a texture coming from an HDR input.
-     * 
+     *
      * The only supported format is currently panorama picture stored in RGBE format.
      * Example of such files can be found on HDRLib: http://hdrlib.com/
      */
@@ -62,7 +62,7 @@ module BABYLON {
         public get rotationY(): number {
             return this._rotationY;
         }
-        
+
         /**
          * Gets or sets the center of the bounding box associated with the cube texture
          * It must define where the camera used to render the texture was set
@@ -93,7 +93,7 @@ module BABYLON {
 
         /**
          * Instantiates an HDRTexture from the following parameters.
-         * 
+         *
          * @param url The location of the HDR raw data (Panorama stored in RGBE format)
          * @param scene The scene the texture will be used in
          * @param size The cubemap desired size (the more it increases the longer the generation will be)
@@ -211,7 +211,7 @@ module BABYLON {
                     }
                 }
                 return results;
-            }
+            };
 
             let scene = this.getScene();
             if (scene) {

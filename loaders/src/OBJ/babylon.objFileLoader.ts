@@ -126,7 +126,6 @@ module BABYLON {
                     // The dissolve of the material
                     material.opacityTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
 
-
                     //Options for illumination
                 } else if (key === "illum") {
                     //Illumination
@@ -165,10 +164,10 @@ module BABYLON {
 
         /**
          * Gets the texture for the material.
-         * 
+         *
          * If the material is imported from input file,
          * We sanitize the url to ensure it takes the textre from aside the material.
-         * 
+         *
          * @param rootUrl The root url to load from
          * @param value The value stored in the mtl
          * @return The Texture
@@ -229,7 +228,6 @@ module BABYLON {
         // f -vertex/-uvs/-normal -vertex/-uvs/-normal -vertex/-uvs/-normal ...
         public facePattern5 = /f\s+(((-[\d]{1,}\/-[\d]{1,}\/-[\d]{1,}[\s]?){3,})+)/;
 
-
         /**
          * Calls synchronously the MTL file attached to this obj.
          * Load function or importMesh function don't enable to load 2 files in the same time asynchronously.
@@ -266,13 +264,13 @@ module BABYLON {
          */
         public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
             //get the meshes from OBJ file
-            return this._parseSolid(meshesNames, scene, data, rootUrl).then(meshes => {
+            return this._parseSolid(meshesNames, scene, data, rootUrl).then((meshes) => {
                 return {
                     meshes,
                     particleSystems: [],
                     skeletons: [],
                     animationGroups: []
-                }
+                };
             });
         }
 
@@ -302,9 +300,9 @@ module BABYLON {
          * @returns The loaded asset container
          */
         public loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer> {
-            return this.importMeshAsync(null, scene, data, rootUrl).then(result => {
+            return this.importMeshAsync(null, scene, data, rootUrl).then((result) => {
                 var container = new AssetContainer(scene);
-                result.meshes.forEach(mesh => container.meshes.push(mesh));
+                result.meshes.forEach((mesh) => container.meshes.push(mesh));
                 container.removeAllFromScene();
                 return container;
             });
@@ -357,13 +355,13 @@ module BABYLON {
              * @returns {boolean}
              */
             var isInArray = (arr: Array<{ normals: Array<number>; idx: Array<number> }>, obj: Array<number>) => {
-                if (!arr[obj[0]]) arr[obj[0]] = { normals: [], idx: [] };
+                if (!arr[obj[0]]) { arr[obj[0]] = { normals: [], idx: [] }; }
                 var idx = arr[obj[0]].normals.indexOf(obj[1]);
 
                 return idx === -1 ? -1 : arr[obj[0]].idx[idx];
             };
             var isInArrayUV = (arr: Array<{ normals: Array<number>; idx: Array<number>; uv: Array<number> }>, obj: Array<number>) => {
-                if (!arr[obj[0]]) arr[obj[0]] = { normals: [], idx: [], uv: [] };
+                if (!arr[obj[0]]) { arr[obj[0]] = { normals: [], idx: [], uv: [] }; }
                 var idx = arr[obj[0]].normals.indexOf(obj[1]);
 
                 if (idx != 1 && (obj[2] == arr[obj[0]].uv[idx])) {
@@ -426,7 +424,7 @@ module BABYLON {
                     //Add the tuple in the comparison list
                     tuplePosNorm[indicePositionFromObj].normals.push(indiceNormalFromObj);
                     tuplePosNorm[indicePositionFromObj].idx.push(curPositionInIndices++);
-                    if (OBJFileLoader.OPTIMIZE_WITH_UV) tuplePosNorm[indicePositionFromObj].uv.push(indiceUvsFromObj);
+                    if (OBJFileLoader.OPTIMIZE_WITH_UV) { tuplePosNorm[indicePositionFromObj].uv.push(indiceUvsFromObj); }
                 } else {
                     //The tuple already exists
                     //Add the index of the already existing tuple
@@ -513,7 +511,6 @@ module BABYLON {
                 triangles = [];
             };
 
-
             /**
              * Create triangles and push the data for each polygon for the pattern 2
              * In this pattern we get vertice positions and uvsu
@@ -576,7 +573,6 @@ module BABYLON {
                 //Reset variable for the next line
                 triangles = [];
             };
-
 
             /**
              * Create triangles and push the data for each polygon for the pattern 4
@@ -712,7 +708,6 @@ module BABYLON {
                         parseFloat(result[2])
                     ));
 
-
                     //Identify patterns of faces
                     //Face could be defined in different type of pattern
                 } else if ((result = this.facePattern3.exec(line)) !== null) {
@@ -724,7 +719,6 @@ module BABYLON {
                         result[1].trim().split(" "), // ["1/1/1", "2/2/2", "3/3/3"]
                         1
                     );
-
 
                 } else if ((result = this.facePattern4.exec(line)) !== null) {
                     //Value of result:
@@ -745,7 +739,6 @@ module BABYLON {
                         result[1].trim().split(" "), // ["-1/-1/-1", "-2/-2/-2", "-3/-3/-3"]
                         1
                     );
-
 
                 } else if ((result = this.facePattern2.exec(line)) !== null) {
                     //Value of result:
@@ -938,7 +931,7 @@ module BABYLON {
             if (fileToLoad !== "") {
                 //Load the file synchronously
                 mtlPromises.push(new Promise((resolve, reject) => {
-                    this._loadMTL(fileToLoad, rootUrl, function (dataLoaded) {
+                    this._loadMTL(fileToLoad, rootUrl, function(dataLoaded) {
                         try {
                             //Create materials thanks MTLLoader function
                             materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl);

@@ -1,8 +1,8 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * The PBR material of BJS following the specular glossiness convention.
-     * 
-     * This fits to the PBR convention in the GLTF definition: 
+     *
+     * This fits to the PBR convention in the GLTF definition:
      * https://github.com/KhronosGroup/glTF/tree/2.0/extensions/Khronos/KHR_materials_pbrSpecularGlossiness
      */
     export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
@@ -45,7 +45,7 @@
 
         /**
          * Instantiates a new PBRSpecularGlossinessMaterial instance.
-         * 
+         *
          * @param name The material name
          * @param scene The scene the material will be use in.
          */

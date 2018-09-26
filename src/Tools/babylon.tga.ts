@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Based on jsTGALoader - Javascript loader for TGA file
      * By Vincent Thibault
@@ -332,4 +332,4 @@
         }
 
     }
-} 
+}

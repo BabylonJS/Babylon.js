@@ -2758,8 +2758,6 @@ var BABYLON;
     var GLTF1;
     (function (GLTF1) {
         var BinaryExtensionBufferName = "binary_glTF";
-        ;
-        ;
         var GLTFBinaryExtension = /** @class */ (function (_super) {
             __extends(GLTFBinaryExtension, _super);
             function GLTFBinaryExtension() {
@@ -2837,20 +2835,19 @@ var BABYLON;
 (function (BABYLON) {
     var GLTF1;
     (function (GLTF1) {
-        ;
-        ;
-        ;
         var GLTFMaterialsCommonExtension = /** @class */ (function (_super) {
             __extends(GLTFMaterialsCommonExtension, _super);
             function GLTFMaterialsCommonExtension() {
                 return _super.call(this, "KHR_materials_common") || this;
             }
             GLTFMaterialsCommonExtension.prototype.loadRuntimeExtensionsAsync = function (gltfRuntime, onSuccess, onError) {
-                if (!gltfRuntime.extensions)
+                if (!gltfRuntime.extensions) {
                     return false;
+                }
                 var extension = gltfRuntime.extensions[this.name];
-                if (!extension)
+                if (!extension) {
                     return false;
+                }
                 // Create lights
                 var lights = extension.lights;
                 if (lights) {
@@ -2895,11 +2892,13 @@ var BABYLON;
             };
             GLTFMaterialsCommonExtension.prototype.loadMaterialAsync = function (gltfRuntime, id, onSuccess, onError) {
                 var material = gltfRuntime.materials[id];
-                if (!material || !material.extensions)
+                if (!material || !material.extensions) {
                     return false;
+                }
                 var extension = material.extensions[this.name];
-                if (!extension)
+                if (!extension) {
                     return false;
+                }
                 var standardMaterial = new BABYLON.StandardMaterial(id, gltfRuntime.scene);
                 standardMaterial.sideOrientation = BABYLON.Material.CounterClockWiseSideOrientation;
                 if (extension.technique === "CONSTANT") {
@@ -3656,12 +3655,15 @@ var BABYLON;
                     matrix.decompose(scaling, rotation, position);
                 }
                 else {
-                    if (node.translation)
+                    if (node.translation) {
                         position = BABYLON.Vector3.FromArray(node.translation);
-                    if (node.rotation)
+                    }
+                    if (node.rotation) {
                         rotation = BABYLON.Quaternion.FromArray(node.rotation);
-                    if (node.scale)
+                    }
+                    if (node.scale) {
                         scaling = BABYLON.Vector3.FromArray(node.scale);
+                    }
                 }
                 babylonNode.position = position;
                 babylonNode.rotationQuaternion = rotation;
@@ -4402,7 +4404,6 @@ var BABYLON;
                         wrapV: GLTFLoader._GetTextureWrapMode(context + "/wrapT", sampler.wrapT)
                     };
                 }
-                ;
                 return sampler._data;
             };
             /**
@@ -5303,12 +5304,15 @@ var BABYLON;
                             var promise = Promise.all(clipPromises).then(function () {
                                 var weights = emitter.clips.map(function (clip) { return clip.weight || 1; });
                                 var weightedSound = new BABYLON.WeightedSound(emitter.loop || false, emitter._babylonSounds, weights);
-                                if (emitter.innerAngle)
+                                if (emitter.innerAngle) {
                                     weightedSound.directionalConeInnerAngle = 2 * BABYLON.Tools.ToDegrees(emitter.innerAngle);
-                                if (emitter.outerAngle)
+                                }
+                                if (emitter.outerAngle) {
                                     weightedSound.directionalConeOuterAngle = 2 * BABYLON.Tools.ToDegrees(emitter.outerAngle);
-                                if (emitter.volume)
+                                }
+                                if (emitter.volume) {
                                     weightedSound.volume = emitter.volume;
+                                }
                                 emitter._babylonData.sound = weightedSound;
                             });
                             emitter._babylonData = {

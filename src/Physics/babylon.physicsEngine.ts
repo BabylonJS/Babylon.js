@@ -1,5 +1,5 @@
-﻿module BABYLON {
-    
+module BABYLON {
+
     /**
      * Class used to control physics engine
      * @see http://doc.babylonjs.com/how_to/using_the_physics_engine
@@ -26,9 +26,9 @@
         constructor(gravity: Nullable<Vector3>, private _physicsPlugin: IPhysicsEnginePlugin = new CannonJSPlugin()) {
             if (!this._physicsPlugin.isSupported()) {
                 throw new Error("Physics Engine " + this._physicsPlugin.name + " cannot be found. "
-                    + "Please make sure it is included.")
+                    + "Please make sure it is included.");
             }
-            gravity = gravity || new Vector3(0, -9.807, 0)
+            gravity = gravity || new Vector3(0, -9.807, 0);
             this.setGravity(gravity);
             this.setTimeStep();
         }
@@ -65,16 +65,16 @@
          * Release all resources
          */
         public dispose(): void {
-            this._impostors.forEach(function (impostor) {
+            this._impostors.forEach(function(impostor) {
                 impostor.dispose();
-            })
+            });
             this._physicsPlugin.dispose();
         }
 
         /**
          * Gets the name of the current physics plugin
          * @returns the name of the plugin
-         */        
+         */
         public getPhysicsPluginName(): string {
             return this._physicsPlugin.name;
         }
@@ -120,7 +120,7 @@
                 mainImpostor: mainImpostor,
                 connectedImpostor: connectedImpostor,
                 joint: joint
-            }
+            };
             joint.physicsPlugin = this._physicsPlugin;
             this._joints.push(impostorJoint);
             this._physicsPlugin.generateJoint(impostorJoint);
@@ -133,10 +133,10 @@
          * @param joint defines the joint to remove
          */
         public removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint) {
-            var matchingJoints = this._joints.filter(function (impostorJoint) {
+            var matchingJoints = this._joints.filter(function(impostorJoint) {
                 return (impostorJoint.connectedImpostor === connectedImpostor
                     && impostorJoint.joint === joint
-                    && impostorJoint.mainImpostor === mainImpostor)
+                    && impostorJoint.mainImpostor === mainImpostor);
             });
             if (matchingJoints.length) {
                 this._physicsPlugin.removeJoint(matchingJoints[0]);
@@ -202,7 +202,7 @@
          * Gets the impostor for a physics body object
          * @param body defines physics body used by the impostor
          * @returns the PhysicsImpostor or null if not found
-         */        
+         */
         public getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor> {
             for (var i = 0; i < this._impostors.length; ++i) {
                 if (this._impostors[i].physicsBody === body) {

@@ -2,12 +2,12 @@ module BABYLON {
 
     /**
      * Uniform buffer objects.
-     * 
+     *
      * Handles blocks of uniform on the GPU.
      *
      * If WebGL 2 is not available, this class falls back on traditionnal setUniformXXX calls.
      *
-     * For more information, please refer to : 
+     * For more information, please refer to :
      * https://www.khronos.org/opengl/wiki/Uniform_Buffer_Object
      */
     export class UniformBuffer {
@@ -106,16 +106,16 @@ module BABYLON {
 
         /**
          * Instantiates a new Uniform buffer objects.
-         * 
+         *
          * Handles blocks of uniform on the GPU.
          *
          * If WebGL 2 is not available, this class falls back on traditionnal setUniformXXX calls.
          *
-         * For more information, please refer to : 
+         * For more information, please refer to :
          * @see https://www.khronos.org/opengl/wiki/Uniform_Buffer_Object
          * @param engine Define the engine the buffer is associated with
          * @param data Define the data contained in the buffer
-         * @param dynamic Define if the buffer is updatable 
+         * @param dynamic Define if the buffer is updatable
          */
         constructor(engine: Engine, data?: number[], dynamic?: boolean) {
             this._engine = engine;
@@ -177,7 +177,7 @@ module BABYLON {
 
         /**
          * Indicates if the WebGL underlying uniform buffer is dynamic.
-         * Also, a dynamic UniformBuffer will disable cache verification and always 
+         * Also, a dynamic UniformBuffer will disable cache verification and always
          * update the underlying WebGL uniform buffer to the GPU.
          * @returns if Dynamic, otherwise false
          */
@@ -261,12 +261,10 @@ module BABYLON {
                 }
             }
 
-
             this._fillAlignment(<number>size);
             this._uniformSizes[name] = <number>size;
             this._uniformLocations[name] = this._uniformLocationPointer;
             this._uniformLocationPointer += <number>size;
-
 
             for (var i = 0; i < size; i++) {
                 this._data.push(data[i]);
@@ -632,4 +630,4 @@ module BABYLON {
             }
         }
     }
-} 
+}

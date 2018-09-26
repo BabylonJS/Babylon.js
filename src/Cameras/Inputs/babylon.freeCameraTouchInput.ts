@@ -43,7 +43,7 @@ module BABYLON {
                 this._onLostFocus = (evt) => {
                     this._offsetX = null;
                     this._offsetY = null;
-                }
+                };
 
                 this._pointerInput = (p, s) => {
                     var evt = <PointerEvent>p.event;
@@ -108,7 +108,7 @@ module BABYLON {
                         this._offsetX = evt.clientX - previousPosition.x;
                         this._offsetY = -(evt.clientY - previousPosition.y);
                     }
-                }
+                };
             }
 
             this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);

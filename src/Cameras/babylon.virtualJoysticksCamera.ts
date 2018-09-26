@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     Node.AddNodeConstructor("VirtualJoysticksCamera", (name, scene) => {
         return () => new VirtualJoysticksCamera(name, Vector3.Zero(), scene);
     });
@@ -10,7 +10,7 @@
      * @see http://doc.babylonjs.com/features/cameras#virtual-joysticks-camera
      */
     export class VirtualJoysticksCamera extends FreeCamera {
-        
+
         /**
          * Intantiates a VirtualJoysticksCamera. It can be usefull in First Person Shooter game for instance.
          * It is identical to the Free Camera and simply adds by default a virtual joystick.

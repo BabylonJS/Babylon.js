@@ -1,10 +1,10 @@
 module BABYLON {
     /**
-     * "Static Class" containing the most commonly used helper while dealing with material for 
+     * "Static Class" containing the most commonly used helper while dealing with material for
      * rendering purpose.
-     * 
+     *
      * It contains the basic tools to help defining defines, binding uniform for the common part of the materials.
-     * 
+     *
      * This works by convention in BabylonJS but is meant to be use only with shader following the in place naming rules and conventions.
      */
     export class MaterialHelper {
@@ -46,7 +46,7 @@ module BABYLON {
 
         /**
          * Binds a texture matrix value to its corrsponding uniform
-         * @param texture The texture to bind the matrix for 
+         * @param texture The texture to bind the matrix for
          * @param uniformBuffer The uniform buffer receivin the data
          * @param key The channel key "diffuse", "specular"... used in the shader
          */
@@ -107,16 +107,16 @@ module BABYLON {
                 defines["CLIPPLANE2"] = useClipPlane2;
                 changed = true;
             }
-            
+
             if (defines["CLIPPLANE3"] !== useClipPlane3) {
                 defines["CLIPPLANE3"] = useClipPlane3;
                 changed = true;
             }
-            
+
             if (defines["CLIPPLANE4"] !== useClipPlane4) {
                 defines["CLIPPLANE4"] = useClipPlane4;
                 changed = true;
-            }            
+            }
 
             if (defines["DEPTHPREPASS"] !== !engine.getColorWrite()) {
                 defines["DEPTHPREPASS"] = !defines["DEPTHPREPASS"];
@@ -293,8 +293,9 @@ module BABYLON {
                     }
 
                     lightIndex++;
-                    if (lightIndex === maxSimultaneousLights)
+                    if (lightIndex === maxSimultaneousLights) {
                         break;
+                    }
                 }
             }
 
@@ -332,7 +333,7 @@ module BABYLON {
         }
 
         /**
-         * Prepares the uniforms and samplers list to be used in the effect. This can automatically remove from the list uniforms 
+         * Prepares the uniforms and samplers list to be used in the effect. This can automatically remove from the list uniforms
          * that won t be acctive due to defines being turned off.
          * @param uniformsListOrOptions The uniform names to prepare or an EffectCreationOptions containing the liist and extra information
          * @param samplersList The samplers list
@@ -381,8 +382,8 @@ module BABYLON {
                 samplersList.push("shadowSampler" + lightIndex);
                 samplersList.push("depthSampler" + lightIndex);
 
-                if (defines["PROJECTEDLIGHTTEXTURE" + lightIndex]){
-                    samplersList.push("projectionLightSampler" + lightIndex,);
+                if (defines["PROJECTEDLIGHTTEXTURE" + lightIndex]) {
+                    samplersList.push("projectionLightSampler" + lightIndex);
                     uniformsList.push(
                         "textureProjectionMatrix" + lightIndex,
                     );
@@ -509,7 +510,7 @@ module BABYLON {
          * Binds the light shadow information to the effect for the given mesh.
          * @param light The light containing the generator
          * @param scene The scene the lights belongs to
-         * @param mesh The mesh we are binding the information to render 
+         * @param mesh The mesh we are binding the information to render
          * @param lightIndex The light index in the effect used to render the mesh
          * @param effect The effect we are binding the data to
          */
@@ -535,7 +536,7 @@ module BABYLON {
         /**
          * Binds the lights information from the scene to the effect for the given mesh.
          * @param scene The scene the lights belongs to
-         * @param mesh The mesh we are binding the information to render 
+         * @param mesh The mesh we are binding the information to render
          * @param effect The effect we are binding the data to
          * @param defines The generated defines for the effect
          * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
@@ -573,7 +574,7 @@ module BABYLON {
         /**
          * Binds the fog information from the scene to the effect for the given mesh.
          * @param scene The scene the lights belongs to
-         * @param mesh The mesh we are binding the information to render 
+         * @param mesh The mesh we are binding the information to render
          * @param effect The effect we are binding the data to
          * @param linearSpace Defines if the fog effect is applied in linear space
          */
@@ -593,7 +594,7 @@ module BABYLON {
 
         /**
          * Binds the bones information from the mesh to the effect.
-         * @param mesh The mesh we are binding the information to render 
+         * @param mesh The mesh we are binding the information to render
          * @param effect The effect we are binding the data to
          */
         public static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect): void {
@@ -615,7 +616,7 @@ module BABYLON {
 
         /**
          * Binds the morph targets information from the mesh to the effect.
-         * @param abstractMesh The mesh we are binding the information to render 
+         * @param abstractMesh The mesh we are binding the information to render
          * @param effect The effect we are binding the data to
          */
         public static BindMorphTargetParameters(abstractMesh: AbstractMesh, effect: Effect): void {

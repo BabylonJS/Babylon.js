@@ -20,9 +20,9 @@
             "check-separator",
             "check-rest-spread",
             "check-type",
-            "check-typecast",
             "check-type-operator",
-            "check-preblock"],
+            "check-preblock"
+        ],
         "indent": [true, "spaces", 4]
     }
 }

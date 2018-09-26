@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Groups all the scene component constants in one place to ease maintenance.
      * @hidden
@@ -31,7 +31,7 @@
         public static readonly STEP_ACTIVEMESH_BOUNDINGBOXRENDERER = 0;
 
         public static readonly STEP_CAMERADRAWRENDERTARGET_EFFECTLAYER = 1;
-        
+
         public static readonly STEP_BEFORECAMERADRAW_EFFECTLAYER = 0;
         public static readonly STEP_BEFORECAMERADRAW_LAYER = 1;
 
@@ -68,7 +68,7 @@
 
     /**
      * This represents a scene component.
-     * 
+     *
      * This is used to decouple the dependency the scene is having on the different workloads like
      * layers, post processes...
      */
@@ -102,7 +102,7 @@
 
     /**
      * This represents a SERIALIZABLE scene component.
-     * 
+     *
      * This extends Scene Component to add Serialization methods on top.
      */
     export interface ISceneSerializableComponent extends ISceneComponent {
@@ -114,7 +114,7 @@
 
         /**
          * Removes all the elements in the container from the scene
-         * @param container contains the elements to remove 
+         * @param container contains the elements to remove
          */
         removeFromContainer(container: AbstractScene): void;
 
@@ -125,12 +125,12 @@
         serialize(serializationObject: any): void;
     }
 
-    /** 
-     * Strong typing of a Mesh related stage step action 
+    /**
+     * Strong typing of a Mesh related stage step action
      */
     export type MeshStageAction = (mesh: AbstractMesh, hardwareInstancedRendering: boolean) => boolean;
 
-    /** 
+    /**
      * Strong typing of a Evaluate Sub Mesh related stage step action
      */
     export type EvaluateSubMeshStageAction = (mesh: AbstractMesh, subMesh: SubMesh) => void;
@@ -140,43 +140,43 @@
      */
     export type ActiveMeshStageAction =  (sourceMesh: AbstractMesh, mesh: AbstractMesh) => void;
 
-    /** 
-     * Strong typing of a Camera related stage step action 
+    /**
+     * Strong typing of a Camera related stage step action
      */
     export type CameraStageAction = (camera: Camera) => void;
 
-    /** 
-     * Strong typing of a RenderingGroup related stage step action 
+    /**
+     * Strong typing of a RenderingGroup related stage step action
      */
     export type RenderingGroupStageAction = (renderingGroupId: number) => void;
 
-    /** 
-     * Strong typing of a Mesh Render related stage step action 
+    /**
+     * Strong typing of a Mesh Render related stage step action
      */
     export type RenderingMeshStageAction = (mesh: AbstractMesh, subMesh: SubMesh, batch: _InstancesBatch) => void;
 
-    /** 
-     * Strong typing of a simple stage step action 
+    /**
+     * Strong typing of a simple stage step action
      */
     export type SimpleStageAction = () => void;
 
-    /** 
+    /**
      * Strong typing of a render target action.
      */
     export type RenderTargetsStageAction = (renderTargets: SmartArrayNoDuplicate<RenderTargetTexture>) => void;
 
-    /** 
+    /**
      * Strong typing of a pointer move action.
      */
     export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, canvas: HTMLCanvasElement) => Nullable<PickingInfo>;
 
-    /** 
+    /**
      * Strong typing of a pointer up/down action.
      */
     export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent) => Nullable<PickingInfo>;
 
-    /** 
-     * Repressentation of a stage in the scene (Basically a list of ordered steps) 
+    /**
+     * Repressentation of a stage in the scene (Basically a list of ordered steps)
      * @hidden
      */
     export class Stage<T extends Function> extends Array<{ index: number, component: ISceneComponent, action: T }> {
@@ -185,7 +185,7 @@
          * @param items The items to add.
          */
         private constructor(items?: { index: number, component: ISceneComponent, action: T }[]) {
-            super(...<any>items)
+            super(...<any>items);
         }
 
         /**

@@ -47,12 +47,12 @@ module BABYLON {
                 }
             });
 
-            this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add((gamepad)=> {
+            this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add((gamepad) => {
                 if (this.gamepad === gamepad) {
                     this.gamepad = null;
                 }
             });
-            
+
             this.gamepad = manager.getGamepadByType(Gamepad.XBOX);
         }
 
@@ -61,7 +61,7 @@ module BABYLON {
          * @param element Defines the element to stop listening the inputs from
          */
         public detachControl(element: Nullable<HTMLElement>): void {
-            this.camera.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);            
+            this.camera.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
             this.camera.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
             this.gamepad = null;
         }
@@ -116,7 +116,7 @@ module BABYLON {
          */
         public getSimpleName(): string {
             return "gamepad";
-        }        
+        }
     }
 
     (<any>CameraInputTypes)["ArcRotateCameraGamepadInput"] = ArcRotateCameraGamepadInput;

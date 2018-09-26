@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Class used to store data that will be store in GPU memory
      */
@@ -173,4 +173,4 @@
             }
         }
     }
-} 
+}

@@ -6,7 +6,7 @@ module BABYLON {
     /**
      * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
      * @see http://doc.babylonjs.com/features/cameras
-     */      
+     */
     export class StereoscopicGamepadCamera extends GamepadCamera {
         /**
          * Creates a new StereoscopicGamepadCamera
@@ -15,7 +15,7 @@ module BABYLON {
          * @param interaxialDistance defines distance between each color axis
          * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
          * @param scene defines the hosting scene
-         */        
+         */
         constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene) {
             super(name, position, scene);
             this.interaxialDistance = interaxialDistance;
@@ -26,7 +26,7 @@ module BABYLON {
         /**
          * Gets camera class name
          * @returns StereoscopicGamepadCamera
-         */              
+         */
         public getClassName(): string {
             return "StereoscopicGamepadCamera";
         }

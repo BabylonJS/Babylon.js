@@ -28,7 +28,7 @@ module BABYLON {
             this._numberOfTilesHeight = value;
             this.updateShaderUniforms();
         }
-        
+
         @serialize()
         public get amplitude(): number {
             return this._amplitude;

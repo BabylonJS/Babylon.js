@@ -5,7 +5,7 @@ module BABYLON {
         public CLIPPLANE = false;
         public CLIPPLANE2 = false;
         public CLIPPLANE3 = false;
-        public CLIPPLANE4 = false;        
+        public CLIPPLANE4 = false;
         public POINTSIZE = false;
         public FOG = false;
         public VERTEXCOLOR = false;
@@ -16,43 +16,43 @@ module BABYLON {
             this.rebuild();
         }
     }
-    
+
     export class SkyMaterial extends PushMaterial {
         // Public members
         @serialize()
         public luminance: number = 1.0;
-        
+
         @serialize()
-		public turbidity: number = 10.0;
-        
+        public turbidity: number = 10.0;
+
         @serialize()
-		public rayleigh: number = 2.0;
-		
+        public rayleigh: number = 2.0;
+
         @serialize()
         public mieCoefficient: number = 0.005;
-		
+
         @serialize()
         public mieDirectionalG: number = 0.8;
-        
+
         @serialize()
         public distance: number = 500;
-        
+
         @serialize()
         public inclination: number = 0.49;
-		
+
         @serialize()
         public azimuth: number = 0.25;
-        
+
         @serializeAsVector3()
         public sunPosition: Vector3 = new Vector3(0, 100, 0);
-        
+
         @serialize()
         public useSunPosition: boolean = false;
-        
+
         // Private members
         private _cameraPosition: Vector3 = Vector3.Zero();
-        
-        private _renderId: number;        
+
+        private _renderId: number;
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -70,8 +70,8 @@ module BABYLON {
             return null;
         }
 
-        // Methods   
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {   
+        // Methods
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
@@ -92,22 +92,22 @@ module BABYLON {
             }
 
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, false, defines);
-            
+
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, false);
 
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
-                
+
                 scene.resetCachedMaterial();
-                
+
                 // Fallbacks
-                var fallbacks = new EffectFallbacks();             
+                var fallbacks = new EffectFallbacks();
                 if (defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
-                
+
                 //Attributes
                 var attribs = [VertexBuffer.PositionKind];
 
@@ -116,7 +116,7 @@ module BABYLON {
                 }
 
                 var shaderName = "sky";
-                
+
                 var join = defines.toString();
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                     attribs,
@@ -128,7 +128,7 @@ module BABYLON {
                     [],
                     join, fallbacks, this.onCompiled, this.onError), defines);
             }
-            
+
             if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
@@ -153,7 +153,7 @@ module BABYLON {
             }
             this._activeEffect = effect;
 
-            // Matrices        
+            // Matrices
             this.bindOnlyWorldMatrix(world);
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
@@ -164,17 +164,17 @@ module BABYLON {
                 // Point size
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
-                }               
+                }
             }
 
             // View
             if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
                 this._activeEffect.setMatrix("view", scene.getViewMatrix());
             }
-            
+
             // Fog
             MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
-            
+
             // Sky
             var camera = scene.activeCamera;
             if (camera) {
@@ -184,26 +184,26 @@ module BABYLON {
                 this._cameraPosition.z = cameraWorldMatrix.m[14];
                 this._activeEffect.setVector3("cameraPosition", this._cameraPosition);
             }
-            
+
             if (this.luminance > 0) {
                 this._activeEffect.setFloat("luminance", this.luminance);
             }
-            
-			this._activeEffect.setFloat("turbidity", this.turbidity);
-			this._activeEffect.setFloat("rayleigh", this.rayleigh);
-			this._activeEffect.setFloat("mieCoefficient", this.mieCoefficient);
-			this._activeEffect.setFloat("mieDirectionalG", this.mieDirectionalG);
-            
+
+            this._activeEffect.setFloat("turbidity", this.turbidity);
+            this._activeEffect.setFloat("rayleigh", this.rayleigh);
+            this._activeEffect.setFloat("mieCoefficient", this.mieCoefficient);
+            this._activeEffect.setFloat("mieDirectionalG", this.mieDirectionalG);
+
             if (!this.useSunPosition) {
                 var theta = Math.PI * (this.inclination - 0.5);
                 var phi = 2 * Math.PI * (this.azimuth - 0.5);
-                
+
                 this.sunPosition.x = this.distance * Math.cos(phi);
                 this.sunPosition.y = this.distance * Math.sin(phi) * Math.sin(theta);
                 this.sunPosition.z = this.distance * Math.sin(phi) * Math.cos(theta);
             }
-            
-			this._activeEffect.setVector3("sunPosition", this.sunPosition);
+
+            this._activeEffect.setVector3("sunPosition", this.sunPosition);
 
             this._afterBind(mesh, this._activeEffect);
         }
@@ -219,7 +219,7 @@ module BABYLON {
         public clone(name: string): SkyMaterial {
             return SerializationHelper.Clone<SkyMaterial>(() => new SkyMaterial(name, this.getScene()), this);
         }
-        
+
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType  = "BABYLON.SkyMaterial";
@@ -228,12 +228,11 @@ module BABYLON {
 
         public getClassName(): string {
             return "SkyMaterial";
-        }            
+        }
 
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): SkyMaterial {
             return SerializationHelper.Parse(() => new SkyMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
-} 
-
+}

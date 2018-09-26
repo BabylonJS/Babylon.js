@@ -21,7 +21,7 @@ module BABYLON {
         add(originalPoints: Array<Vector2>): Array<IndexedVector2> {
 
             var result = new Array<IndexedVector2>();
-            originalPoints.forEach(point => {
+            originalPoints.forEach((point) => {
                 if (result.length === 0 || !point.equalsWithEpsilon(result[0])) {
                     var newPoint = new IndexedVector2(point, this.elements.length);
                     result.push(newPoint);
@@ -36,7 +36,7 @@ module BABYLON {
             var lmin = new Vector2(this.elements[0].x, this.elements[0].y);
             var lmax = new Vector2(this.elements[0].x, this.elements[0].y);
 
-            this.elements.forEach(point => {
+            this.elements.forEach((point) => {
 
                 // x
                 if (point.x < lmin.x) {
@@ -92,7 +92,7 @@ module BABYLON {
          * @param radius radius of circle
          * @param cx scale in x
          * @param cy scale in y
-         * @param numberOfSides number of sides that make up the circle 
+         * @param numberOfSides number of sides that make up the circle
          * @returns points that make the resulting circle
          */
         static Circle(radius: number, cx: number = 0, cy: number = 0, numberOfSides: number = 32): Vector2[] {
@@ -118,7 +118,7 @@ module BABYLON {
          * @returns the parsed points
          */
         static Parse(input: string): Vector2[] {
-            var floats = input.split(/[^-+eE\.\d]+/).map(parseFloat).filter(val => (!isNaN(val)));
+            var floats = input.split(/[^-+eE\.\d]+/).map(parseFloat).filter((val) => (!isNaN(val)));
             var i: number, result = [];
             for (i = 0; i < (floats.length & 0x7FFFFFFE); i += 2) {
                 result.push(new Vector2(floats[i], floats[i + 1]));
@@ -159,7 +159,6 @@ module BABYLON {
             }
         }
 
-
         /**
          * Creates a PolygonMeshBuilder
          * @param name name of the builder
@@ -183,7 +182,7 @@ module BABYLON {
             this._outlinepoints.add(points);
 
             if (typeof earcut === 'undefined') {
-                Tools.Warn("Earcut was not found, the polygon will not be built.")
+                Tools.Warn("Earcut was not found, the polygon will not be built.");
             }
         }
 
@@ -273,18 +272,18 @@ module BABYLON {
          * @param positions points that make the polygon
          * @param normals normals of the polygon
          * @param uvs uvs of the polygon
-         * @param indices indices of the polygon 
-         * @param bounds bounds of the polygon 
-         * @param points points of the polygon 
-         * @param depth depth of the polygon 
-         * @param flip flip of the polygon 
+         * @param indices indices of the polygon
+         * @param bounds bounds of the polygon
+         * @param points points of the polygon
+         * @param depth depth of the polygon
+         * @param flip flip of the polygon
          */
         private addSide(positions: any[], normals: any[], uvs: any[], indices: any[], bounds: any, points: PolygonPoints, depth: number, flip: boolean) {
             var StartIndex: number = positions.length / 3;
             var ulength: number = 0;
             for (var i: number = 0; i < points.elements.length; i++) {
                 var p: IndexedVector2 = points.elements[i];
-                var p1: IndexedVector2
+                var p1: IndexedVector2;
                 if ((i + 1) > points.elements.length - 1) {
                     p1 = points.elements[0];
                 }
@@ -339,7 +338,7 @@ module BABYLON {
                     indices.push(StartIndex + 3);
                 }
                 StartIndex += 4;
-            };
+            }
         }
     }
 }

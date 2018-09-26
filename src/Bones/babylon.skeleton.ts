@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Class used to handle skinning animations
      * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
@@ -37,7 +37,7 @@
         /**
          * Specifies if the skeleton should be serialized
          */
-        public doNotSerialize = false;        
+        public doNotSerialize = false;
 
         private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
@@ -53,7 +53,7 @@
 
         public set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>) {
             this._animationPropertiesOverride = value;
-        }    
+        }
 
         // Events
 
@@ -70,7 +70,7 @@
          */
         constructor(
             /** defines the skeleton name */
-            public name: string, 
+            public name: string,
             /** defines the skeleton Id */
             public id: string, scene: Scene) {
             this.bones = [];
@@ -177,7 +177,7 @@
                     this.bones[i].animations[0].deleteRange(name, deleteFrames);
                 }
             }
-            this._ranges[name] = null; // said much faster than 'delete this._range[name]' 
+            this._ranges[name] = null; // said much faster than 'delete this._range[name]'
         }
 
         /**
@@ -204,8 +204,8 @@
             return animationRanges;
         }
 
-        /** 
-         * Copy animation range from a source skeleton. 
+        /**
+         * Copy animation range from a source skeleton.
          * This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
          * @param source defines the source skeleton
          * @param name defines the name of the range to copy
@@ -232,7 +232,7 @@
                 Tools.Warn(`copyAnimationRange: this rig has ${this.bones.length} bones, while source as ${sourceBones.length}`);
                 ret = false;
             }
-            
+
             var skelDimensionsRatio = (rescaleAsRequired && this.dimensionsAtRest && source.dimensionsAtRest) ? this.dimensionsAtRest.divide(source.dimensionsAtRest) : null;
 
             for (i = 0, nBones = this.bones.length; i < nBones; i++) {
@@ -502,7 +502,7 @@
                 };
 
                 serializationObject.bones.push(serializedBone);
-                
+
                 if (bone.length) {
                     serializedBone.length = bone.length;
                 }
@@ -510,7 +510,7 @@
                 if (bone.metadata) {
                     serializedBone.metadata = bone.metadata;
                 }
-                
+
                 if (bone.animations && bone.animations.length > 0) {
                     serializedBone.animation = bone.animations[0].serialize();
                 }
@@ -557,7 +557,7 @@
                 }
                 var rest: Nullable<Matrix> = parsedBone.rest ? Matrix.FromArray(parsedBone.rest) : null;
                 var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix), rest);
-                
+
                 if (parsedBone.id !== undefined && parsedBone.id !== null) {
                     bone.id = parsedBone.id;
                 }
@@ -589,25 +589,25 @@
          * Compute all node absolute transforms
          * @param forceUpdate defines if computation must be done even if cache is up to date
          */
-        public computeAbsoluteTransforms (forceUpdate = false): void {
+        public computeAbsoluteTransforms(forceUpdate = false): void {
 
             var renderId = this._scene.getRenderId();
-            
-            if (this._lastAbsoluteTransformsUpdateId != renderId || forceUpdate ) {
+
+            if (this._lastAbsoluteTransformsUpdateId != renderId || forceUpdate) {
                 this.bones[0].computeAbsoluteTransforms();
                 this._lastAbsoluteTransformsUpdateId = renderId;
             }
-            
+
         }
 
         /**
          * Gets the root pose matrix
          * @returns a matrix
          */
-        public getPoseMatrix(): Nullable<Matrix> {        
+        public getPoseMatrix(): Nullable<Matrix> {
             var poseMatrix: Nullable<Matrix> = null;
-            
-            if(this._meshesWithPoseMatrix.length > 0){
+
+            if (this._meshesWithPoseMatrix.length > 0) {
                 poseMatrix = this._meshesWithPoseMatrix[0].getPoseMatrix();
             }
 

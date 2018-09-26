@@ -1,4 +1,4 @@
-﻿// Mixins
+// Mixins
 interface Window {
     mozIndexedDB: IDBFactory;
     webkitIndexedDB: IDBFactory;
@@ -71,7 +71,6 @@ interface WebGLRenderingContext {
     /* Multiple Render Targets */
     drawBuffers(buffers: number[]): void;
     readBuffer(src: number): void;
-
 
     readonly COLOR_ATTACHMENT0: number;                             // 0x8CE1
     readonly COLOR_ATTACHMENT1: number;                             // 0x8CE2
