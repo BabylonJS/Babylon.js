@@ -8,7 +8,7 @@
         "new-parens": true,
         "no-consecutive-blank-lines": true,
         "no-irregular-whitespace": true,
-        "semicolon": true,
+        "semicolon": [true, "always"],
         "space-before-function-paren": [true, "never"],
         "space-within-parens": true,
         "curly": true,
@@ -22,6 +22,7 @@
             "check-type",
             "check-typecast",
             "check-type-operator",
-            "check-preblock"]
+            "check-preblock"],
+        "indent": [true, "spaces", 4]
     }
 }
