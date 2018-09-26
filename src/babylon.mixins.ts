@@ -21,6 +21,14 @@ interface Window {
     DracoDecoderModule: any;
 }
 
+interface WebGLProgram {
+    context?: WebGLRenderingContext;
+    vertexShader?: WebGLShader;
+    fragmentShader?: WebGLShader;
+    isParallelCompiled: boolean;
+    onCompiled?: () => void;
+}
+
 interface WebGLRenderingContext {
     drawArraysInstanced(mode: number, first: number, count: number, primcount: number): void;
     drawElementsInstanced(mode: number, count: number, type: number, offset: number, primcount: number): void;
