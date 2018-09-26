@@ -479,14 +479,14 @@ module BABYLON.GLTF2.Exporter {
             return new Promise<string>((resolve, reject) => {
                 let hostingScene: Scene;
 
-                let textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+                const textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
                 const engine = this._exporter._getLocalEngine();
 
                 hostingScene = new Scene(engine);
 
                 // Create a temporary texture with the texture buffer data
-                let tempTexture = engine.createRawTexture(buffer, width, height, Engine.TEXTUREFORMAT_RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
-                let postProcess = new PostProcess("pass", "pass", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, Engine.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
+                const tempTexture = engine.createRawTexture(buffer, width, height, Engine.TEXTUREFORMAT_RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
+                const postProcess = new PostProcess("pass", "pass", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, Engine.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
                 postProcess.getEffect().executeWhenCompiled(() => {
                     postProcess.onApply = (effect) => {
                         effect._bindTexture("textureSampler", tempTexture);
@@ -501,20 +501,8 @@ module BABYLON.GLTF2.Exporter {
                     // Read data from WebGL
                     const canvas = engine.getRenderingCanvas();
                     if (canvas) {
-                        BABYLON.Tools.ToBlob(canvas, blob => {
-                            if (blob) {
-                                let fileReader = new FileReader();
-                                fileReader.onload = (event: any) => {
-                                    let base64String = event.target.result as string;
-                                    hostingScene.dispose();
-                                    resolve(base64String);
-                                };
-                                fileReader.readAsDataURL(blob);
-                            }
-                            else {
-                                reject("gltfMaterialExporter: Failed to get blob from image canvas!");
-                            }
-                        });
+                        const dataURL = canvas.toDataURL();
+                        resolve(dataURL);
                     }
                     else {
                         reject("Engine is missing a canvas!");
