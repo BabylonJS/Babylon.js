@@ -11,8 +11,8 @@ module BABYLON {
         private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
         private _attachedMesh: Nullable<AbstractMesh> = null;
         private _boundingBoxColor = BABYLON.Color3.FromHexString("#0984e3");
-        private _defaultUtilityLayer:UtilityLayerRenderer;
-        private _defaultKeepDepthUtilityLayer:UtilityLayerRenderer;
+        private _defaultUtilityLayer: UtilityLayerRenderer;
+        private _defaultKeepDepthUtilityLayer: UtilityLayerRenderer;
         /**
          * When bounding box gizmo is enabled, this can be used to track drag/end events
          */
@@ -30,15 +30,11 @@ module BABYLON {
          * Instatiates a gizmo manager
          * @param scene the scene to overlay the gizmos on top of
          */
-<<<<<<< HEAD
         constructor(private scene: Scene) {
-=======
-        constructor(private scene:Scene){
             this._defaultKeepDepthUtilityLayer = new UtilityLayerRenderer(scene);
             this._defaultKeepDepthUtilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
             this._defaultUtilityLayer = new UtilityLayerRenderer(scene);
-            
->>>>>>> 747ca4d7ec7c52281e24f222de0c930976354dad
+
             this.gizmos = {positionGizmo: null, rotationGizmo: null, scaleGizmo: null, boundingBoxGizmo: null};
 
             // Instatiate/dispose gizmos based on pointer actions
@@ -102,17 +98,10 @@ module BABYLON {
         /**
          * If the position gizmo is enabled
          */
-<<<<<<< HEAD
         public set positionGizmoEnabled(value: boolean) {
             if (value) {
                 if (!this.gizmos.positionGizmo) {
-                    this.gizmos.positionGizmo = new PositionGizmo();
-=======
-        public set positionGizmoEnabled(value:boolean){
-            if(value){
-                if(!this.gizmos.positionGizmo){
                     this.gizmos.positionGizmo = new PositionGizmo(this._defaultUtilityLayer);
->>>>>>> 747ca4d7ec7c52281e24f222de0c930976354dad
                 }
                 this.gizmos.positionGizmo.attachedMesh = this._attachedMesh;
             }else if (this.gizmos.positionGizmo) {
@@ -126,17 +115,10 @@ module BABYLON {
         /**
          * If the rotation gizmo is enabled
          */
-<<<<<<< HEAD
         public set rotationGizmoEnabled(value: boolean) {
             if (value) {
                 if (!this.gizmos.rotationGizmo) {
-                    this.gizmos.rotationGizmo = new RotationGizmo();
-=======
-        public set rotationGizmoEnabled(value:boolean){
-            if(value){
-                if(!this.gizmos.rotationGizmo){
                     this.gizmos.rotationGizmo = new RotationGizmo(this._defaultUtilityLayer);
->>>>>>> 747ca4d7ec7c52281e24f222de0c930976354dad
                 }
                 this.gizmos.rotationGizmo.attachedMesh = this._attachedMesh;
             }else if (this.gizmos.rotationGizmo) {
@@ -150,15 +132,9 @@ module BABYLON {
         /**
          * If the scale gizmo is enabled
          */
-<<<<<<< HEAD
         public set scaleGizmoEnabled(value: boolean) {
             if (value) {
-                this.gizmos.scaleGizmo = this.gizmos.scaleGizmo || new ScaleGizmo();
-=======
-        public set scaleGizmoEnabled(value:boolean){
-            if(value){
                 this.gizmos.scaleGizmo = this.gizmos.scaleGizmo || new ScaleGizmo(this._defaultUtilityLayer);
->>>>>>> 747ca4d7ec7c52281e24f222de0c930976354dad
                 this.gizmos.scaleGizmo.attachedMesh = this._attachedMesh;
             }else if (this.gizmos.scaleGizmo) {
                 this.gizmos.scaleGizmo.attachedMesh = null;
@@ -171,15 +147,9 @@ module BABYLON {
         /**
          * If the boundingBox gizmo is enabled
          */
-<<<<<<< HEAD
         public set boundingBoxGizmoEnabled(value: boolean) {
             if (value) {
-                this.gizmos.boundingBoxGizmo = this.gizmos.boundingBoxGizmo || new BoundingBoxGizmo(this._boundingBoxColor);
-=======
-        public set boundingBoxGizmoEnabled(value:boolean){
-            if(value){
                 this.gizmos.boundingBoxGizmo = this.gizmos.boundingBoxGizmo || new BoundingBoxGizmo(this._boundingBoxColor, this._defaultKeepDepthUtilityLayer);
->>>>>>> 747ca4d7ec7c52281e24f222de0c930976354dad
                 this.gizmos.boundingBoxGizmo.attachedMesh = this._attachedMesh;
                 if (this._attachedMesh) {
                     this._attachedMesh.removeBehavior(this.boundingBoxDragBehavior);
