@@ -12,7 +12,7 @@ module BABYLON {
         private static TEX_2D = 2; // uses a gl.texImage2D()
         private static TEX_3D = 3; // uses a gl.texImage3D()
 
-        // elements of the header 
+        // elements of the header
         /**
          * Gets the openGL type
          */
@@ -65,7 +65,6 @@ module BABYLON {
          * Gets the load type
          */
         public loadType: number;
-
 
         /**
          * Creates a new KhronosTextureContainer
@@ -136,7 +135,7 @@ module BABYLON {
             this.loadType = KhronosTextureContainer.COMPRESSED_2D;
         }
 
-        // 
+        //
         /**
          * Revert the endianness of a value.
          * Not as fast hardware based, but will probably never need to use
@@ -176,7 +175,7 @@ module BABYLON {
             var mipmapCount = loadMipmaps ? this.numberOfMipmapLevels : 1;
             for (var level = 0; level < mipmapCount; level++) {
                 var imageSize = new Int32Array(this.arrayBuffer, dataOffset, 1)[0]; // size per face, since not supporting array cubemaps
-                dataOffset += 4;//image data starts from next multiple of 4 offset. Each face refers to same imagesize field above.
+                dataOffset += 4; //image data starts from next multiple of 4 offset. Each face refers to same imagesize field above.
                 for (var face = 0; face < this.numberOfFaces; face++) {
                     var byteArray = new Uint8Array(this.arrayBuffer, dataOffset, imageSize);
 
@@ -191,4 +190,4 @@ module BABYLON {
             }
         }
     }
-} 
+}

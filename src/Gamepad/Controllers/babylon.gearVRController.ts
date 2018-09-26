@@ -6,21 +6,21 @@ module BABYLON {
         /**
          * Base Url for the controller model.
          */
-        public static MODEL_BASE_URL:string = 'https://controllers.babylonjs.com/generic/';
+        public static MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/generic/';
         /**
          * File name for the controller model.
          */
-        public static MODEL_FILENAME:string = 'generic.babylon';
-        
+        public static MODEL_FILENAME: string = 'generic.babylon';
+
         /**
          * Gamepad Id prefix used to identify this controller.
          */
         public static readonly GAMEPAD_ID_PREFIX: string = 'Gear VR'; // id is 'Gear VR Controller'
-        
+
         private readonly _buttonIndexToObservableNameMap = [
             'onTrackpadChangedObservable', // Trackpad
             'onTriggerStateChangedObservable' // Trigger
-        ]
+        ];
 
         /**
          * Creates a new GearVRController from a gamepad
@@ -30,7 +30,7 @@ module BABYLON {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.GEAR_VR;
             // Initial starting position defaults to where hand would be (incase of only 3dof controller)
-            this._calculatedPosition = new Vector3(this.hand == "left" ? -0.15 : 0.15,-0.5, 0.25);
+            this._calculatedPosition = new Vector3(this.hand == "left" ? -0.15 : 0.15, -0.5, 0.25);
             this._disableTrackPosition(this._calculatedPosition);
         }
 
@@ -62,7 +62,7 @@ module BABYLON {
         protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
             if (buttonIdx < this._buttonIndexToObservableNameMap.length) {
                 const observableName : string = this._buttonIndexToObservableNameMap[buttonIdx];
-                
+
                 // Only emit events for buttons that we know how to map from index to observable
                 let observable = (<any>this)[observableName];
                 if (observable) {

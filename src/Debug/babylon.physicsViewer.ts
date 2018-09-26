@@ -94,7 +94,7 @@ module BABYLON.Debug {
         /**
          * Hides a specified physic impostor
          * @param impostor defines the impostor to hide
-         */        
+         */
         public hideImpostor(impostor: Nullable<PhysicsImpostor>) {
 
             if (!impostor || !this._scene) {

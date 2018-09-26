@@ -15,16 +15,18 @@ module BABYLON {
          */
         public get touchAngularSensibility(): number {
             var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
-            if (touch)
+            if (touch) {
                 return touch.touchAngularSensibility;
+            }
 
             return 0;
         }
 
         public set touchAngularSensibility(value: number) {
             var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
-            if (touch)
+            if (touch) {
                 touch.touchAngularSensibility = value;
+            }
         }
 
         /**
@@ -33,18 +35,20 @@ module BABYLON {
          */
         public get touchMoveSensibility(): number {
             var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
-            if (touch)
+            if (touch) {
                 return touch.touchMoveSensibility;
+            }
 
             return 0;
         }
 
         public set touchMoveSensibility(value: number) {
             var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
-            if (touch)
+            if (touch) {
                 touch.touchMoveSensibility = value;
+            }
         }
-        
+
         /**
          * Instantiates a new touch camera.
          * This represents a FPS type of camera controlled by touch.

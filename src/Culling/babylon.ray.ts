@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Class representing a ray with position and direction
      */
@@ -19,9 +19,9 @@
          */
         constructor(
             /** origin point */
-            public origin: Vector3, 
+            public origin: Vector3,
             /** direction */
-            public direction: Vector3, 
+            public direction: Vector3,
             /** length of the ray */
             public length: number = Number.MAX_VALUE) {
         }
@@ -244,15 +244,15 @@
          * @param fastCheck if only the bounding box should checked
          * @returns picking info of the intersecton
          */
-        public intersectsMesh(mesh:AbstractMesh, fastCheck?: boolean): PickingInfo {
+        public intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo {
 
             var tm = Tmp.Matrix[0];
 
             mesh.getWorldMatrix().invertToRef(tm);
 
-            if(this._tmpRay){
+            if (this._tmpRay) {
                 Ray.TransformToRef(this, tm, this._tmpRay);
-            }else{
+            }else {
                 this._tmpRay = Ray.Transform(this, tm);
             }
 
@@ -267,18 +267,18 @@
          * @param results array to store result in
          * @returns Array of picking infos
          */
-        public intersectsMeshes(meshes:Array<AbstractMesh>, fastCheck?: boolean, results?:Array<PickingInfo>): Array<PickingInfo> {
+        public intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo> {
 
-            if(results){
+            if (results) {
                 results.length = 0;
-            }else{
+            }else {
                 results = [];
             }
 
-            for(var i = 0; i < meshes.length; i++){
+            for (var i = 0; i < meshes.length; i++) {
                 var pickInfo = this.intersectsMesh(meshes[i], fastCheck);
 
-                if(pickInfo.hit){
+                if (pickInfo.hit) {
                     results.push(pickInfo);
                 }
             }
@@ -289,18 +289,17 @@
 
         }
 
-        private _comparePickingInfo(pickingInfoA:PickingInfo, pickingInfoB:PickingInfo): number{
+        private _comparePickingInfo(pickingInfoA: PickingInfo, pickingInfoB: PickingInfo): number {
 
-            if(pickingInfoA.distance < pickingInfoB.distance){
+            if (pickingInfoA.distance < pickingInfoB.distance) {
                 return -1;
-            }else if(pickingInfoA.distance > pickingInfoB.distance){
+            }else if (pickingInfoA.distance > pickingInfoB.distance) {
                 return 1;
-            }else{
+            }else {
                 return 0;
             }
 
         }
-
 
         private static smallnum = 0.00000001;
         private static rayl = 10e8;
@@ -353,8 +352,9 @@
                 // recompute sc for this edge
                 if (-d < 0.0) {
                     sN = 0.0;
-                } else if (-d > a)
+                } else if (-d > a) {
                     sN = sD;
+                       }
                 else {
                     sN = -d;
                     sD = a;
@@ -391,7 +391,7 @@
          * Update the ray from viewport position
          * @param x position
          * @param y y position
-         * @param viewportWidth viewport width 
+         * @param viewportWidth viewport width
          * @param viewportHeight viewport height
          * @param world world matrix
          * @param view view matrix
@@ -420,7 +420,7 @@
          * Creates a new ray from screen space and viewport
          * @param x position
          * @param y y position
-         * @param viewportWidth viewport width 
+         * @param viewportWidth viewport width
          * @param viewportHeight viewport height
          * @param world world matrix
          * @param view view matrix
@@ -432,7 +432,6 @@
 
             return result.update(x, y, viewportWidth, viewportHeight, world, view, projection);
         }
-        
 
         /**
         * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
@@ -457,9 +456,9 @@
          * @returns the resulting new ray
          */
         public static Transform(ray: Ray, matrix: Matrix): Ray {
-            var result = new Ray(new Vector3(0,0,0), new Vector3(0,0,0));
+            var result = new Ray(new Vector3(0, 0, 0), new Vector3(0, 0, 0));
             Ray.TransformToRef(ray, matrix, result);
-            
+
             return result;
         }
 
@@ -469,15 +468,15 @@
          * @param matrix matrix to apply
          * @param result ray to store result in
          */
-        public static TransformToRef(ray: Ray, matrix: Matrix, result:Ray): void {
+        public static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void {
             Vector3.TransformCoordinatesToRef(ray.origin, matrix, result.origin);
             Vector3.TransformNormalToRef(ray.direction, matrix, result.direction);
             result.length = ray.length;
-            
+
             var dir = result.direction;
             var len = dir.length();
 
-            if(!(len === 0 || len === 1)){
+            if (!(len === 0 || len === 1)) {
                 var num = 1.0 / len;
                 dir.x *= num;
                 dir.y *= num;

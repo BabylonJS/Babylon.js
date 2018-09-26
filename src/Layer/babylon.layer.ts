@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
 
     /**
      * This represents a full screen 2d layer.
@@ -30,7 +30,7 @@
          * Define an offset for the layer in order to shift the texture.
          */
         public offset = new Vector2(0, 0);
-        
+
         /**
          * Define the alpha blending mode used in the layer in case the texture or color has an alpha.
          */
@@ -47,7 +47,7 @@
          * Define a mask to restrict the layer to only some of the scene cameras.
          */
         public layerMask: number = 0x0FFFFFFF;
-        
+
         private _scene: Scene;
         private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
         private _indexBuffer: Nullable<WebGLBuffer>;
@@ -120,15 +120,15 @@
             /**
              * Define the name of the layer.
              */
-            public name: string, 
-            imgUrl: Nullable<string>, 
-            scene: Nullable<Scene>, 
+            public name: string,
+            imgUrl: Nullable<string>,
+            scene: Nullable<Scene>,
             isBackground?: boolean, color?: Color4) {
-            
+
             this.texture = imgUrl ? new Texture(imgUrl, scene, true) : null;
             this.isBackground = isBackground === undefined ? true : isBackground;
             this.color = color === undefined ? new Color4(1, 1, 1, 1) : color;
-            
+
             this._scene = <Scene>(scene || Engine.LastCreatedScene);
             let layerComponent = this._scene._getComponent(SceneComponentConstants.NAME_LAYER) as LayerSceneComponent;
             if (!layerComponent) {
@@ -197,8 +197,9 @@
             var currentEffect = this.alphaTest ? this._alphaTestEffect : this._effect;
 
             // Check
-            if (!currentEffect.isReady() || !this.texture || !this.texture.isReady())
+            if (!currentEffect.isReady() || !this.texture || !this.texture.isReady()) {
                 return;
+            }
 
             var engine = this._scene.getEngine();
 
@@ -267,4 +268,4 @@
             this.onBeforeRenderObservable.clear();
         }
     }
-} 
+}

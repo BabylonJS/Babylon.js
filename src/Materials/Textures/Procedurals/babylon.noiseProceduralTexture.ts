@@ -88,6 +88,6 @@ module BABYLON {
             texture.animationSpeedFactor = parsedTexture.animationSpeedFactor;
 
             return texture;
-        }        
+        }
     }
 }

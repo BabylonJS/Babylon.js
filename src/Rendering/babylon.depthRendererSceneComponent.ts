@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     export interface Scene {
         /** @hidden (Backing field) */
         _depthRenderer: { [id: string]: DepthRenderer };
@@ -39,7 +39,7 @@
         }
 
         return this._depthRenderer[camera.id];
-    }
+    };
 
     Scene.prototype.disableDepthRenderer = function(camera?: Nullable<Camera>): void {
         camera = camera || this.activeCamera;
@@ -49,7 +49,7 @@
 
         this._depthRenderer[camera.id].dispose();
         delete this._depthRenderer[camera.id];
-    }
+    };
 
     /**
      * Defines the Depth Renderer scene component responsible to manage a depth buffer usefull
@@ -121,4 +121,4 @@
             }
         }
     }
-} 
+}

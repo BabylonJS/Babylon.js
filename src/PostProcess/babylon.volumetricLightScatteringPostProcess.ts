@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      *  Inspired by http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html
      */
@@ -96,7 +96,7 @@
          */
         constructor(name: string, ratio: any, camera: Camera, mesh?: Mesh, samples: number = 100, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, scene?: Scene) {
             super(name, "volumetricLightScattering", ["decay", "exposure", "weight", "meshPositionOnScreen", "density"], ["lightScatteringSampler"], ratio.postProcessRatio || ratio, camera, samplingMode, engine, reusable, "#define NUM_SAMPLES " + samples);
-            scene = <Scene>((camera === null) ? scene : camera.getScene()) // parameter "scene" can be null.
+            scene = <Scene>((camera === null) ? scene : camera.getScene()); // parameter "scene" can be null.
 
             engine = scene.getEngine();
             this._viewPort = new Viewport(0, 0, 1, 1).toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
@@ -173,7 +173,6 @@
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
             }
 
-
             // Instances
             if (useInstances) {
                 defines.push("#define INSTANCES");
@@ -183,7 +182,7 @@
                 attribs.push("world3");
             }
 
-            // Get correct effect      
+            // Get correct effect
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
@@ -425,8 +424,9 @@
             this._screenCoordinates.x = pos.x / this._viewPort.width;
             this._screenCoordinates.y = pos.y / this._viewPort.height;
 
-            if (this.invert)
+            if (this.invert) {
                 this._screenCoordinates.y = 1.0 - this._screenCoordinates.y;
+            }
         }
 
         // Static methods
@@ -448,4 +448,4 @@
             return mesh;
         }
     }
-}  
+}

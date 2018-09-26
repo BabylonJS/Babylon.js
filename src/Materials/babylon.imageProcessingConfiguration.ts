@@ -48,7 +48,7 @@ module BABYLON {
 
     /**
      * This groups together the common properties used for image processing either in direct forward pass
-     * or through post processing effect depending on the use of the image processing pipeline in your scene 
+     * or through post processing effect depending on the use of the image processing pipeline in your scene
      * or not.
      */
     export class ImageProcessingConfiguration {
@@ -65,7 +65,7 @@ module BABYLON {
         public static readonly TONEMAPPING_ACES = 1;
 
         /**
-         * Color curves setup used in the effect if colorCurvesEnabled is set to true 
+         * Color curves setup used in the effect if colorCurvesEnabled is set to true
          */
         @serializeAsColorCurves()
         public colorCurves: Nullable<ColorCurves> = new ColorCurves();
@@ -93,13 +93,13 @@ module BABYLON {
         @serializeAsTexture("colorGradingTexture")
         private _colorGradingTexture: Nullable<BaseTexture>;
         /**
-         * Color grading LUT texture used in the effect if colorGradingEnabled is set to true 
+         * Color grading LUT texture used in the effect if colorGradingEnabled is set to true
          */
         public get colorGradingTexture(): Nullable<BaseTexture> {
             return this._colorGradingTexture;
         }
         /**
-         * Color grading LUT texture used in the effect if colorGradingEnabled is set to true 
+         * Color grading LUT texture used in the effect if colorGradingEnabled is set to true
          */
         public set colorGradingTexture(value: Nullable<BaseTexture>) {
             if (this._colorGradingTexture === value) {
@@ -572,4 +572,4 @@ module BABYLON {
             return this._VIGNETTEMODE_OPAQUE;
         }
     }
-} 
+}

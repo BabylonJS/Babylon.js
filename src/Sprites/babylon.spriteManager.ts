@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Defines the minimum interface to fullfil in order to be a sprite manager.
      */
@@ -14,8 +14,8 @@
          */
         isPickable: boolean;
 
-        /** 
-         * Specifies the rendering group id for this mesh (0 by default) 
+        /**
+         * Specifies the rendering group id for this mesh (0 by default)
          * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
          */
         renderingGroupId: number;
@@ -33,7 +33,7 @@
          * @param fastCheck Is the hit test done in a OOBB or AOBB fashion the faster, the less precise
          * @returns picking info or null.
          */
-        intersects(ray: Ray, camera:Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
+        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
 
         /**
          * Renders the list of sprites on screen.
@@ -114,7 +114,7 @@
          */
         constructor(
                 /** defines the manager's name */
-                public name: string, 
+                public name: string,
                 imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             if (!scene._getComponent(SceneComponentConstants.NAME_SPRITE)) {
                 scene._addComponent(new SpriteSceneComponent(scene));
@@ -127,11 +127,11 @@
             if (cellSize.width && cellSize.height) {
                 this.cellWidth = cellSize.width;
                 this.cellHeight = cellSize.height;
-            } else if(cellSize !== undefined) {
+            } else if (cellSize !== undefined) {
                 this.cellWidth = cellSize;
                 this.cellHeight = cellSize;
             } else {
-               return;   
+               return;
             }
 
             this._epsilon = epsilon;
@@ -182,15 +182,19 @@
         private _appendSpriteVertex(index: number, sprite: Sprite, offsetX: number, offsetY: number, rowSize: number): void {
             var arrayOffset = index * 16;
 
-            if (offsetX === 0)
+            if (offsetX === 0) {
                 offsetX = this._epsilon;
-            else if (offsetX === 1)
+            }
+            else if (offsetX === 1) {
                 offsetX = 1 - this._epsilon;
+                 }
 
-            if (offsetY === 0)
+            if (offsetY === 0) {
                 offsetY = this._epsilon;
-            else if (offsetY === 1)
+            }
+            else if (offsetY === 1) {
                 offsetY = 1 - this._epsilon;
+                 }
 
             this._vertexData[arrayOffset] = sprite.position.x;
             this._vertexData[arrayOffset + 1] = sprite.position.y;
@@ -220,7 +224,7 @@
          * @param fastCheck defines if a fast check only must be done (the first potential sprite is will be used and not the closer)
          * @returns null if no hit or a PickingInfo
          */
-        public intersects(ray: Ray, camera:Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
+        public intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
             var count = Math.min(this._capacity, this.sprites.length);
             var min = Vector3.Zero();
             var max = Vector3.Zero();
@@ -273,15 +277,16 @@
             }
 
             return null;
-        } 
+        }
 
         /**
          * Render all child sprites
          */
         public render(): void {
             // Check
-            if (!this._effectBase.isReady() || !this._effectFog.isReady() || !this._spriteTexture || !this._spriteTexture.isReady())
+            if (!this._effectBase.isReady() || !this._effectFog.isReady() || !this._spriteTexture || !this._spriteTexture.isReady()) {
                 return;
+            }
 
             var engine = this._scene.getEngine();
             var baseSize = this._spriteTexture.getBaseSize();
@@ -336,12 +341,12 @@
             engine.setDepthFunctionToLessOrEqual();
             effect.setBool("alphaTest", true);
             engine.setColorWrite(false);
-            engine.drawElementsType(Material.TriangleFillMode, 0, (offset/4) * 6);
+            engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
             engine.setColorWrite(true);
             effect.setBool("alphaTest", false);
 
             engine.setAlphaMode(Engine.ALPHA_COMBINE);
-            engine.drawElementsType(Material.TriangleFillMode, 0, (offset/4) * 6);
+            engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
             engine.setAlphaMode(Engine.ALPHA_DISABLE);
         }
 
@@ -373,4 +378,4 @@
             this.onDisposeObservable.clear();
         }
     }
-} 
+}

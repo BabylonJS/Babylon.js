@@ -1,6 +1,6 @@
-﻿module BABYLON {
+module BABYLON {
     /**
-     * Class used to store custom tags 
+     * Class used to store custom tags
      */
     export class Tags {
         /**
@@ -62,7 +62,7 @@
                 return null;
             }
             if (asString) {
-                var tagsArray = []
+                var tagsArray = [];
                 for (var tag in obj._tags) {
                     if (obj._tags.hasOwnProperty(tag) && obj._tags[tag] === true) {
                         tagsArray.push(tag);
@@ -91,7 +91,7 @@
             }
 
             var tags = tagsString.split(" ");
-            tags.forEach(function (tag, index, array) {
+            tags.forEach(function(tag, index, array) {
                 Tags._AddTagTo(obj, tag);
             });
         }
@@ -131,7 +131,7 @@
 
         /**
          * @hidden
-         */        
+         */
         public static _RemoveTagFrom(obj: any, tag: string): void {
             delete obj._tags[tag];
         }
@@ -151,7 +151,7 @@
                 return Tags.HasTags(obj);
             }
 
-            return AndOrNotEvaluator.Eval(tagsQuery, r => Tags.HasTags(obj) && obj._tags[r]);
+            return AndOrNotEvaluator.Eval(tagsQuery, (r) => Tags.HasTags(obj) && obj._tags[r]);
         }
     }
 }

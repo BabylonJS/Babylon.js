@@ -41,7 +41,7 @@ module BABYLON {
         public pivot: Vector3 = Vector3.Zero();
         /**
          * Must the particle be translated from its pivot point in its local space ?
-         * In this case, the pivot point is set at the origin of the particle local space and the particle is translated.  
+         * In this case, the pivot point is set at the origin of the particle local space and the particle is translated.
          * Default : false
          */
         public translateFromPivot: boolean = false;
@@ -107,10 +107,10 @@ module BABYLON {
         /**
          * Creates a Solid Particle object.
          * Don't create particles manually, use instead the Solid Particle System internal tools like _addParticle()
-         * @param particleIndex (integer) is the particle index in the Solid Particle System pool. It's also the particle identifier.  
+         * @param particleIndex (integer) is the particle index in the Solid Particle System pool. It's also the particle identifier.
          * @param positionIndex (integer) is the starting index of the particle vertices in the SPS "positions" array.
          * @param indiceIndex (integer) is the starting index of the particle indices in the SPS "indices" array.
-         * @param model (ModelShape) is a reference to the model shape on what the particle is designed.  
+         * @param model (ModelShape) is a reference to the model shape on what the particle is designed.
          * @param shapeId (integer) is the model shape identifier in the SPS.
          * @param idxInShape (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
          * @param modelBoundingInfo is the reference to the model BoundingInfo used for intersection computations.
@@ -181,12 +181,12 @@ module BABYLON {
     export class ModelShape {
         /**
          * The shape id
-         * @hidden 
+         * @hidden
          */
         public shapeID: number;
         /**
          * flat array of model positions (internal use)
-         * @hidden 
+         * @hidden
          */
         public _shape: Vector3[];
         /**

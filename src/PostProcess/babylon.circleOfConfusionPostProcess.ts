@@ -6,7 +6,7 @@ module BABYLON {
         /**
          * Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. (default: 50) The diamater of the resulting aperture can be computed by lensSize/fStop.
          */
-        public lensSize = 50
+        public lensSize = 50;
         /**
          * F-Stop of the effect's camera. The diamater of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
          */
@@ -19,8 +19,8 @@ module BABYLON {
          * Focal length of the effect's camera in scene units/1000 (eg. millimeter). (default: 50)
          */
         public focalLength = 50;
-        
-        private _depthTexture:Nullable<RenderTargetTexture> = null;
+
+        private _depthTexture: Nullable<RenderTargetTexture> = null;
         /**
          * Creates a new instance CircleOfConfusionPostProcess
          * @param name The name of the effect.
@@ -37,26 +37,26 @@ module BABYLON {
             super(name, "circleOfConfusion", ["cameraMinMaxZ", "focusDistance", "cocPrecalculation"], ["depthSampler"], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, blockCompilation);
             this._depthTexture = depthTexture;
             this.onApplyObservable.add((effect: Effect) => {
-                if(!this._depthTexture){
-                    BABYLON.Tools.Warn("No depth texture set on CircleOfConfusionPostProcess")
+                if (!this._depthTexture) {
+                    BABYLON.Tools.Warn("No depth texture set on CircleOfConfusionPostProcess");
                     return;
                 }
                 effect.setTexture("depthSampler", this._depthTexture);
-                
+
                 // Circle of confusion calculation, See https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch23.html
-                var aperture = this.lensSize/this.fStop;
-                var cocPrecalculation = ((aperture * this.focalLength)/((this.focusDistance - this.focalLength)));// * ((this.focusDistance - pixelDistance)/pixelDistance) [This part is done in shader]
-                
+                var aperture = this.lensSize / this.fStop;
+                var cocPrecalculation = ((aperture * this.focalLength) / ((this.focusDistance - this.focalLength))); // * ((this.focusDistance - pixelDistance)/pixelDistance) [This part is done in shader]
+
                 effect.setFloat('focusDistance', this.focusDistance);
                 effect.setFloat('cocPrecalculation', cocPrecalculation);
                 effect.setFloat2('cameraMinMaxZ', this._depthTexture.activeCamera!.minZ, this._depthTexture.activeCamera!.maxZ);
-            })
+            });
         }
 
         /**
          * Depth texture to be used to compute the circle of confusion. This must be set here or in the constructor in order for the post process to function.
          */
-        public set depthTexture(value: RenderTargetTexture){
+        public set depthTexture(value: RenderTargetTexture) {
             this._depthTexture = value;
         }
     }

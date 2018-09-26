@@ -1,19 +1,19 @@
 module BABYLON {
     /** Alias type for value that can be null */
     export type Nullable<T> = T | null;
-    /** 
+    /**
      * Alias type for number that are floats
      * @ignorenaming
      */
     export type float = number;
-    /** 
+    /**
      * Alias type for number that are doubles.
      * @ignorenaming
      */
     export type double = number;
-    /** 
+    /**
      * Alias type for number that are integer
-     * @ignorenaming 
+     * @ignorenaming
      */
     export type int = number;
 

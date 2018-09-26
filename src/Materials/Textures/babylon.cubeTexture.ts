@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Class for creating a cube texture
      */
@@ -56,7 +56,7 @@
          */
         public get rotationY(): number {
             return this._rotationY;
-        }        
+        }
 
         private _noMipmap: boolean;
         private _files: string[];
@@ -78,7 +78,7 @@
         public static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean): CubeTexture {
             let rootUrlKey = "";
 
-            files.forEach(url => rootUrlKey += url);
+            files.forEach((url) => rootUrlKey += url);
 
             return new CubeTexture(rootUrlKey, scene, null, noMipmap, files);
         }
@@ -114,7 +114,7 @@
          * @return the cube texture
          */
         constructor(rootUrl: string, scene: Scene, extensions: Nullable<string[]> = null, noMipmap: boolean = false, files: Nullable<string[]> = null,
-            onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format: number = Engine.TEXTUREFORMAT_RGBA, prefiltered = false, 
+            onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format: number = Engine.TEXTUREFORMAT_RGBA, prefiltered = false,
             forcedExtension: any = null, createPolynomials: boolean = false,
             lodScale: number = 0.8, lodOffset: number = 0) {
             super(scene);
@@ -144,7 +144,7 @@
             }
             else {
                 this._prefiltered = prefiltered;
-                
+
                 if (prefiltered) {
                     this.gammaSpace = false;
                 }
@@ -240,7 +240,7 @@
          */
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture {
             var texture = SerializationHelper.Parse(() => {
-                var prefiltered:boolean = false;
+                var prefiltered: boolean = false;
                 if (parsedTexture.prefiltered) {
                     prefiltered = parsedTexture.prefiltered;
                 }
@@ -282,4 +282,4 @@
             }, this);
         }
     }
-} 
+}
