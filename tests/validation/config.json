@@ -4,8 +4,7 @@
     {
       "title": "Simulate pointer",
       "playgroundId": "#8MGKWK#78",
-      "referenceImage": "simulatePointer.png",
-      "excludeFromAutomaticTesting": true
+      "referenceImage": "simulatePointer.png"
     },
     {
       "title": "Camera rig",
