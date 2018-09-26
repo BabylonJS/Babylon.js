@@ -71,7 +71,7 @@
     }
 
     // Sets the default audio engine to Babylon JS.
-    Engine.AudioEngineFactory = (engine: Engine) => { return new AudioEngine(engine); };
+    Engine.AudioEngineFactory = (hostElement: Nullable<HTMLElement>) => { return new AudioEngine(hostElement); };
 
     /**
      * This represents the default audio engine used in babylon.
@@ -82,7 +82,7 @@
         private _audioContext: Nullable<AudioContext> = null;
         private _audioContextInitialized = false;
         private _muteButton: Nullable<HTMLButtonElement> = null;
-        private _engine: Engine;
+        private _hostElement: Nullable<HTMLElement>;
 
         /**
          * Gets whether the current host supports Web Audio and thus could create AudioContexts.
@@ -109,8 +109,6 @@
          * Gets whether or not ogg are supported by your browser.
          */
         public isOGGsupported: boolean = false;
-
-        private _canvas: Nullable<HTMLCanvasElement>;
 
         /**
          * Gets whether audio has been unlocked on the device.
@@ -151,22 +149,22 @@
         }
 
         private _connectedAnalyser: Nullable<Analyser>;
-        
+
         /**
          * Instantiates a new audio engine.
          * 
          * There should be only one per page as some browsers restrict the number
          * of audio contexts you can create.
-         * @param engine defines the hosting engine
+         * @param hostElement defines the host element where to display the mute icon if necessary
          */
-        constructor(engine = Engine.LastCreatedEngine) {
+        constructor(hostElement: Nullable<HTMLElement> = null) {
             if (typeof window.AudioContext !== 'undefined' || typeof window.webkitAudioContext !== 'undefined') {
                 window.AudioContext = window.AudioContext || window.webkitAudioContext;
                 this.canUseWebAudio = true;
             }
 
             var audioElem = document.createElement('audio');
-            this._engine = engine!;
+            this._hostElement = hostElement;
 
             try {
                 if (audioElem && !!audioElem.canPlayType && audioElem.canPlayType('audio/mpeg; codecs="mp3"').replace(/^no$/, '')) {
@@ -224,17 +222,6 @@
                         // Do not wait for the promise to unlock.
                         this._triggerRunningState();
                     }
-                    else {
-                        if (this._audioContext && this._audioContext.resume) {
-                            this._resumeAudioContext().then(() => {
-                                    this._triggerRunningState();
-                                }).catch(() => {
-                                    // Can not resume automatically
-                                    // Needs user action
-                                    this.lock();
-                                });
-                        }
-                    }
                 }
             }
             catch (e) {
@@ -249,20 +236,21 @@
                 return;
             }
             this._tryToRun = true;
+            
             this._resumeAudioContext()
                 .then(() => {
                     this._tryToRun = false;
-                    this.unlocked = true;
                     if (this._muteButton) {
                         this._hideMuteButton(); 
                     }
-
-                    // Notify users that the audio stack is unlocked/unmuted
-                    this.onAudioUnlockedObservable.notifyObservers(this);
                 }).catch(() => {
                     this._tryToRun = false;
                     this.unlocked = false;
                 });
+            
+            // Notify users that the audio stack is unlocked/unmuted
+            this.unlocked = true;
+            this.onAudioUnlockedObservable.notifyObservers(this);
         }
 
         private _triggerSuspendedState() {
@@ -275,8 +263,6 @@
             if (this.useCustomUnlockedButton) {
                 return;
             }
-
-            this._canvas = this._engine.getRenderingCanvas();
 
             this._muteButton = <HTMLButtonElement>document.createElement("BUTTON");
             this._muteButton.className = "babylonUnmuteIcon";
@@ -292,9 +278,6 @@
 
             this._moveButtonToTopLeft();
 
-            this._muteButton.addEventListener('mousedown', () => { 
-                this._triggerRunningState();
-            }, true);
             this._muteButton.addEventListener('touchend', () => { 
                 this._triggerRunningState();
             }, true);
@@ -306,9 +289,9 @@
         }
 
         private _moveButtonToTopLeft() {
-            if (this._canvas && this._muteButton) {
-                this._muteButton.style.top = this._canvas.offsetTop + 20 + "px";
-                this._muteButton.style.left = this._canvas.offsetLeft + 20 + "px";
+            if (this._hostElement && this._muteButton) {
+                this._muteButton.style.top = this._hostElement.offsetTop + 20 + "px";
+                this._muteButton.style.left = this._hostElement.offsetLeft + 20 + "px";
             }
         }
 
@@ -386,5 +369,3 @@
         }
     }
 }
-
-
