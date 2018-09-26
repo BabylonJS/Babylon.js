@@ -24,8 +24,9 @@ module BABYLON {
          * @param gizmoLayer The utility layer the gizmo will be added to
          * @param planeNormal The normal of the plane which the gizmo will be able to rotate on
          * @param color The color of the gizmo
+         * @param tessellation Amount of tessellation to be used when creating rotation circles
          */
-        constructor(planeNormal:Vector3, color:Color3 = Color3.Gray(), gizmoLayer:UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer){
+        constructor(planeNormal:Vector3, color:Color3 = Color3.Gray(), gizmoLayer:UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32){
             super(gizmoLayer);
             
             // Create Material
@@ -41,7 +42,6 @@ module BABYLON {
             var parentMesh = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene);
 
             // Create circle out of lines
-            var tessellation = 64;
             var radius = 0.8;
             var points = new Array<Vector3>();
             for(var i = 0;i < tessellation;i++){
