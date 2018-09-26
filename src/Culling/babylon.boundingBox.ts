@@ -59,9 +59,10 @@
          * Creates a new bounding box
          * @param min defines the minimum vector (in local space)
          * @param max defines the maximum vector (in local space)
+         * @param worldMatrix defines the new world matrix
          */
-        constructor(min: Vector3, max: Vector3) {
-            this.reConstruct(min, max);
+        constructor(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
+            this.reConstruct(min, max, worldMatrix);
         }
 
         // Methods
@@ -70,8 +71,9 @@
          * Recreates the entire bounding box from scratch
          * @param min defines the new minimum vector (in local space)
          * @param max defines the new maximum vector (in local space) 
+         * @param worldMatrix defines the new world matrix
          */
-        public reConstruct(min: Vector3, max: Vector3) {
+        public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
             this.minimum.copyFrom(min);
             this.maximum.copyFrom(max);
 
@@ -109,7 +111,7 @@
             this.centerWorld.copyFromFloats(0,0,0);
             this.extendSizeWorld.copyFromFloats(0,0,0);
 
-            this._update(this._worldMatrix || Matrix.Identity());
+            this._update(worldMatrix || this._worldMatrix || Matrix.Identity());
         }
 
         /**

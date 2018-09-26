@@ -89,8 +89,6 @@
         private _depthSort: boolean = false;
         private _shapeCounter: number = 0;
         private _copy: SolidParticle = new SolidParticle(0, 0, 0, null, 0, 0, this);
-        private _shape: Vector3[];
-        private _shapeUV: number[];
         private _color: Color4 = new Color4(0, 0, 0, 0);
         private _computeParticleColor: boolean = true;
         private _computeParticleTexture: boolean = true;
@@ -98,37 +96,21 @@
         private _computeParticleVertex: boolean = false;
         private _computeBoundingBox: boolean = false;
         private _depthSortParticles: boolean = true;
-        private _cam_axisZ: Vector3 = Vector3.Zero();
-        private _cam_axisY: Vector3 = Vector3.Zero();
-        private _cam_axisX: Vector3 = Vector3.Zero();
+        private static _cam_axisX = Vector3.Zero();
+        private static _cam_axisY = Vector3.Zero();
+        private static _cam_axisZ = Vector3.Zero();
         private _axisZ: Vector3 = Axis.Z;
         private _camera: TargetCamera;
-        private _particle: SolidParticle;
         private _camDir: Vector3 = Vector3.Zero();
         private _camInvertedPosition: Vector3 = Vector3.Zero();
         private _rotMatrix: Matrix = new Matrix();
         private _invertMatrix: Matrix = new Matrix();
-        private _rotated: Vector3 = Vector3.Zero();
+        private static _rotated: Vector3 = Vector3.Zero();
         private _quaternion: Quaternion = new Quaternion();
-        private _vertex: Vector3 = Vector3.Zero();
-        private _normal: Vector3 = Vector3.Zero();
-        private _yaw: number = 0.0;
-        private _pitch: number = 0.0;
-        private _roll: number = 0.0;
-        private _halfroll: number = 0.0;
-        private _halfpitch: number = 0.0;
-        private _halfyaw: number = 0.0;
-        private _sinRoll: number = 0.0;
-        private _cosRoll: number = 0.0;
-        private _sinPitch: number = 0.0;
-        private _cosPitch: number = 0.0;
-        private _sinYaw: number = 0.0;
-        private _cosYaw: number = 0.0;
+        private static _vertex: Vector3 = Vector3.Zero();
         private _mustUnrotateFixedNormals = false;
-        private _minimum: Vector3 = Vector3.Zero();
-        private _maximum: Vector3 = Vector3.Zero();
-        private _minBbox: Vector3 = Vector3.Zero();
-        private _maxBbox: Vector3 = Vector3.Zero();
+        private static _minimum: Vector3 = Vector3.Zero();
+        private static _maximum: Vector3 = Vector3.Zero();
         private _particlesIntersect: boolean = false;
         private _depthSortFunction: (p1: DepthSortedParticle, p2: DepthSortedParticle) => number =
             function (p1, p2) {
@@ -137,8 +119,6 @@
         private _needs32Bits: boolean = false;
         private _pivotBackTranslation: Vector3 = Vector3.Zero();
         private _scaledPivot: Vector3 = Vector3.Zero();
-        private _particleHasParent: boolean = false;
-        private _parent: SolidParticle;
 
         /**
          * Creates a SPS (Solid Particle System) object.
@@ -337,27 +317,24 @@
         private _unrotateFixedNormals() {
             var index = 0;
             var idx = 0;
+            const tmpNormal = SolidParticleSystem._vertex;
             for (var p = 0; p < this.particles.length; p++) {
-                this._particle = this.particles[p];
-                this._shape = this._particle._model._shape;
-                if (this._particle.rotationQuaternion) {
-                    this._quaternion.copyFrom(this._particle.rotationQuaternion);
+                const particle = this.particles[p];
+                const shape = particle._model._shape;
+                if (particle.rotationQuaternion) {
+                    this._quaternion.copyFrom(particle.rotationQuaternion);
                 }
                 else {
-                    this._yaw = this._particle.rotation.y;
-                    this._pitch = this._particle.rotation.x;
-                    this._roll = this._particle.rotation.z;
-                    this._quaternionRotationYPR();
+                    const rotation = particle.rotation;
+                    this._quaternionRotationYPR(rotation.y, rotation.x, rotation.z);
                 }
                 this._quaternionToRotationMatrix();
                 this._rotMatrix.invertToRef(this._invertMatrix);
 
-                for (var pt = 0; pt < this._shape.length; pt++) {
+                for (var pt = 0; pt < shape.length; pt++) {
                     idx = index + pt * 3;
-                    Vector3.TransformNormalFromFloatsToRef(this._normals32[idx], this._normals32[idx + 1], this._normals32[idx + 2], this._invertMatrix, this._normal);
-                    this._fixedNormal32[idx] = this._normal.x;
-                    this._fixedNormal32[idx + 1] = this._normal.y;
-                    this._fixedNormal32[idx + 2] = this._normal.z;
+                    Vector3.TransformNormalFromFloatsToRef(this._normals32[idx], this._normals32[idx + 1], this._normals32[idx + 2], this._invertMatrix, tmpNormal);
+                    tmpNormal.toArray(this._fixedNormal32, idx);
                 }
                 index = idx + 3;
             }
@@ -365,22 +342,14 @@
 
         //reset copy
         private _resetCopy() {
-            this._copy.position.x = 0;
-            this._copy.position.y = 0;
-            this._copy.position.z = 0;
-            this._copy.rotation.x = 0;
-            this._copy.rotation.y = 0;
-            this._copy.rotation.z = 0;
-            this._copy.rotationQuaternion = null;
-            this._copy.scaling.x = 1.0;
-            this._copy.scaling.y = 1.0;
-            this._copy.scaling.z = 1.0;
-            this._copy.uvs.x = 0;
-            this._copy.uvs.y = 0;
-            this._copy.uvs.z = 1.0;
-            this._copy.uvs.w = 1.0;
-            this._copy.color = null;
-            this._copy.translateFromPivot = false;
+            const copy = this._copy;
+            copy.position.setAll(0);
+            copy.rotation.setAll(0);
+            copy.rotationQuaternion = null;
+            copy.scaling.setAll(1);
+            copy.uvs.copyFromFloats(0.0, 0.0, 1.0, 1.0);
+            copy.color = null;
+            copy.translateFromPivot = false;
         }
 
         // _meshBuilder : inserts the shape model in the global SPS mesh
@@ -391,80 +360,72 @@
             var n = 0;
 
             this._resetCopy();
+            const copy = this._copy;
             if (options && options.positionFunction) {        // call to custom positionFunction
-                options.positionFunction(this._copy, idx, idxInShape);
+                options.positionFunction(copy, idx, idxInShape);
                 this._mustUnrotateFixedNormals = true;
             }
 
-            if (this._copy.rotationQuaternion) {
-                this._quaternion.copyFrom(this._copy.rotationQuaternion);
+            if (copy.rotationQuaternion) {
+                this._quaternion.copyFrom(copy.rotationQuaternion);
             } else {
-                this._yaw = this._copy.rotation.y;
-                this._pitch = this._copy.rotation.x;
-                this._roll = this._copy.rotation.z;
-                this._quaternionRotationYPR();
+                const rotation = copy.rotation;
+                this._quaternionRotationYPR(rotation.y, rotation.x, rotation.z);
             }
             this._quaternionToRotationMatrix();
 
-            this._scaledPivot.x = this._copy.pivot.x * this._copy.scaling.x;
-            this._scaledPivot.y = this._copy.pivot.y * this._copy.scaling.y;
-            this._scaledPivot.z = this._copy.pivot.z * this._copy.scaling.z;
+            copy.pivot.multiplyToRef(copy.scaling, this._scaledPivot)
 
-            if (this._copy.translateFromPivot) {
+            if (copy.translateFromPivot) {
                 this._pivotBackTranslation.copyFromFloats(0.0, 0.0, 0.0);
             }
             else {
                 this._pivotBackTranslation.copyFrom(this._scaledPivot);
             }
 
+            const tmpVertex = SolidParticleSystem._vertex;
+            const tmpRotated = SolidParticleSystem._rotated;
             for (i = 0; i < shape.length; i++) {
-                this._vertex.x = shape[i].x;
-                this._vertex.y = shape[i].y;
-                this._vertex.z = shape[i].z;
-
+                tmpVertex.copyFrom(shape[i]);
                 if (options && options.vertexFunction) {
-                    options.vertexFunction(this._copy, this._vertex, i);
+                    options.vertexFunction(copy, tmpVertex, i);
                 }
 
-                this._vertex.x *= this._copy.scaling.x;
-                this._vertex.y *= this._copy.scaling.y;
-                this._vertex.z *= this._copy.scaling.z;
-
-                this._vertex.x -= this._scaledPivot.x;
-                this._vertex.y -= this._scaledPivot.y;
-                this._vertex.z -= this._scaledPivot.z;
-
-                Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
-
-                this._rotated.addInPlace(this._pivotBackTranslation);
-                positions.push(this._copy.position.x + this._rotated.x, this._copy.position.y + this._rotated.y, this._copy.position.z + this._rotated.z);
+                tmpVertex.multiplyInPlace(copy.scaling).subtractInPlace(this._scaledPivot);
+                Vector3.TransformCoordinatesToRef(tmpVertex, this._rotMatrix, tmpRotated);
+                tmpRotated.addInPlace(this._pivotBackTranslation).addInPlace(copy.position);
+                positions.push(tmpRotated.x, tmpRotated.y, tmpRotated.z);
                 if (meshUV) {
-                    uvs.push((this._copy.uvs.z - this._copy.uvs.x) * meshUV[u] + this._copy.uvs.x, (this._copy.uvs.w - this._copy.uvs.y) * meshUV[u + 1] + this._copy.uvs.y);
+                    const copyUvs = copy.uvs;
+                    uvs.push((copyUvs.z - copyUvs.x) * meshUV[u] + copyUvs.x, (copyUvs.w - copyUvs.y) * meshUV[u + 1] + copyUvs.y);
                     u += 2;
                 }
 
-                if (this._copy.color) {
-                    this._color = this._copy.color;
-                } else if (meshCol && meshCol[c] !== undefined) {
-                    this._color.r = meshCol[c];
-                    this._color.g = meshCol[c + 1];
-                    this._color.b = meshCol[c + 2];
-                    this._color.a = meshCol[c + 3];
+                if (copy.color) {
+                    this._color = copy.color;
                 } else {
-                    this._color.r = 1.0;
-                    this._color.g = 1.0;
-                    this._color.b = 1.0;
-                    this._color.a = 1.0;
+                    const color = this._color;
+                    if (meshCol && meshCol[c] !== undefined) {
+                        color.r = meshCol[c];
+                        color.g = meshCol[c + 1];
+                        color.b = meshCol[c + 2];
+                        color.a = meshCol[c + 3];
+                    } else {
+                        color.r = 1.0;
+                        color.g = 1.0;
+                        color.b = 1.0;
+                        color.a = 1.0;
+                    }
                 }
                 colors.push(this._color.r, this._color.g, this._color.b, this._color.a);
                 c += 4;
 
                 if (!this.recomputeNormals && meshNor) {
-                    this._normal.x = meshNor[n];
-                    this._normal.y = meshNor[n + 1];
-                    this._normal.z = meshNor[n + 2];
-                    Vector3.TransformNormalToRef(this._normal, this._rotMatrix, this._normal);
-                    normals.push(this._normal.x, this._normal.y, this._normal.z);
+                    tmpVertex.x = meshNor[n];
+                    tmpVertex.y = meshNor[n + 1];
+                    tmpVertex.z = meshNor[n + 2];
+                    Vector3.TransformNormalToRef(tmpVertex, this._rotMatrix, tmpVertex);
+                    normals.push(tmpVertex.x, tmpVertex.y, tmpVertex.z);
                     n += 3;
                 }
 
@@ -489,14 +450,14 @@
                 this.depthSortedParticles.push(new DepthSortedParticle());
             }
 
-            return this._copy;
+            return copy;
         }
 
         // returns a shape array from positions array
         private _posToShape(positions: number[] | Float32Array): Vector3[] {
             var shape = [];
             for (var i = 0; i < positions.length; i += 3) {
-                shape.push(new Vector3(positions[i], positions[i + 1], positions[i + 2]));
+                shape.push(Vector3.FromArray(positions, i));
             }
             return shape;
         }
@@ -578,73 +539,47 @@
         // rebuilds a particle back to its just built status : if needed, recomputes the custom positions and vertices
         private _rebuildParticle(particle: SolidParticle): void {
             this._resetCopy();
+            const copy = this._copy;
             if (particle._model._positionFunction) {        // recall to stored custom positionFunction
-                particle._model._positionFunction(this._copy, particle.idx, particle.idxInShape);
+                particle._model._positionFunction(copy, particle.idx, particle.idxInShape);
             }
 
-            if (this._copy.rotationQuaternion) {
-                this._quaternion.copyFrom(this._copy.rotationQuaternion);
+            if (copy.rotationQuaternion) {
+                this._quaternion.copyFrom(copy.rotationQuaternion);
             } else {
-                this._yaw = this._copy.rotation.y;
-                this._pitch = this._copy.rotation.x;
-                this._roll = this._copy.rotation.z;
-                this._quaternionRotationYPR();
+                const rotation = copy.rotation
+                this._quaternionRotationYPR(rotation.y, rotation.x, rotation.z);
             }
             this._quaternionToRotationMatrix();
 
-            this._scaledPivot.x = this._particle.pivot.x * this._particle.scaling.x;
-            this._scaledPivot.y = this._particle.pivot.y * this._particle.scaling.y;
-            this._scaledPivot.z = this._particle.pivot.z * this._particle.scaling.z;
+            particle.pivot.multiplyToRef(particle.scaling, this._scaledPivot);
 
-            if (this._copy.translateFromPivot) {
+            if (copy.translateFromPivot) {
                 this._pivotBackTranslation.copyFromFloats(0.0, 0.0, 0.0);
             }
             else {
                 this._pivotBackTranslation.copyFrom(this._scaledPivot);
             }
 
-            this._shape = particle._model._shape;
-            for (var pt = 0; pt < this._shape.length; pt++) {
-                this._vertex.x = this._shape[pt].x;
-                this._vertex.y = this._shape[pt].y;
-                this._vertex.z = this._shape[pt].z;
-
+            const shape = particle._model._shape;
+            const tmpVertex = SolidParticleSystem._vertex;
+            const tmpRotated = SolidParticleSystem._rotated;
+            for (var pt = 0; pt < shape.length; pt++) {
+                tmpVertex.copyFrom(shape[pt]);
                 if (particle._model._vertexFunction) {
-                    particle._model._vertexFunction(this._copy, this._vertex, pt); // recall to stored vertexFunction
+                    particle._model._vertexFunction(copy, tmpVertex, pt); // recall to stored vertexFunction
                 }
 
-                this._vertex.x *= this._copy.scaling.x;
-                this._vertex.y *= this._copy.scaling.y;
-                this._vertex.z *= this._copy.scaling.z;
-
-                this._vertex.x -= this._scaledPivot.x;
-                this._vertex.y -= this._scaledPivot.y;
-                this._vertex.z -= this._scaledPivot.z;
-
-                Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
-                this._rotated.addInPlace(this._pivotBackTranslation);
-
-                this._positions32[particle._pos + pt * 3] = this._copy.position.x + this._rotated.x;
-                this._positions32[particle._pos + pt * 3 + 1] = this._copy.position.y + this._rotated.y;
-                this._positions32[particle._pos + pt * 3 + 2] = this._copy.position.z + this._rotated.z;
+                tmpVertex.multiplyInPlace(copy.scaling).subtractInPlace(this._scaledPivot);
+                Vector3.TransformCoordinatesToRef(tmpVertex, this._rotMatrix, tmpRotated);
+                tmpRotated.addInPlace(this._pivotBackTranslation).addInPlace(copy.position).toArray(this._positions32, particle._pos + pt * 3);
             }
-            particle.position.x = 0.0;
-            particle.position.y = 0.0;
-            particle.position.z = 0.0;
-            particle.rotation.x = 0.0;
-            particle.rotation.y = 0.0;
-            particle.rotation.z = 0.0;
+            particle.position.setAll(0.0);
+            particle.rotation.setAll(0.0);
             particle.rotationQuaternion = null;
-            particle.scaling.x = 1.0;
-            particle.scaling.y = 1.0;
-            particle.scaling.z = 1.0;
-            particle.uvs.x = 0.0;
-            particle.uvs.y = 0.0;
-            particle.uvs.z = 1.0;
-            particle.uvs.w = 1.0;
-            particle.pivot.x = 0.0;
-            particle.pivot.y = 0.0;
-            particle.pivot.z = 0.0;
+            particle.scaling.setAll(1.0);
+            particle.uvs.setAll(0.0);
+            particle.pivot.setAll(0.0);
             particle.translateFromPivot = false;
             particle.parentId = null;
         }
@@ -678,17 +613,11 @@
             // custom beforeUpdate
             this.beforeUpdateParticles(start, end, update);
 
-            this._cam_axisX.x = 1.0;
-            this._cam_axisX.y = 0.0;
-            this._cam_axisX.z = 0.0;
-
-            this._cam_axisY.x = 0.0;
-            this._cam_axisY.y = 1.0;
-            this._cam_axisY.z = 0.0;
-
-            this._cam_axisZ.x = 0.0;
-            this._cam_axisZ.y = 0.0;
-            this._cam_axisZ.z = 1.0;
+            const camAxisX = SolidParticleSystem._cam_axisX.copyFromFloats(1.0, 0.0, 0.0);
+            const camAxisY = SolidParticleSystem._cam_axisY.copyFromFloats(0.0, 1.0, 0.0);
+            const camAxisZ = SolidParticleSystem._cam_axisZ.copyFromFloats(0.0, 0.0, 1.0);
+            const minimum = SolidParticleSystem._minimum;
+            const maximum = SolidParticleSystem._maximum;
 
             // cases when the World Matrix is to be computed first
             if (this.billboard || this._depthSort) {
@@ -699,14 +628,14 @@
             if (this.billboard) {
                 // compute the camera position and un-rotate it by the current mesh rotation
                 this._camera.getDirectionToRef(this._axisZ, this._camDir);
-                Vector3.TransformNormalToRef(this._camDir, this._invertMatrix, this._cam_axisZ);
-                this._cam_axisZ.normalize();
+                Vector3.TransformNormalToRef(this._camDir, this._invertMatrix, camAxisZ);
+                camAxisZ.normalize();
                 // same for camera up vector extracted from the cam view matrix
                 var view = this._camera.getViewMatrix(true);
-                Vector3.TransformNormalFromFloatsToRef(view.m[1], view.m[5], view.m[9], this._invertMatrix, this._cam_axisY);
-                Vector3.CrossToRef(this._cam_axisY, this._cam_axisZ, this._cam_axisX);
-                this._cam_axisY.normalize();
-                this._cam_axisX.normalize();
+                Vector3.TransformNormalFromFloatsToRef(view.m[1], view.m[5], view.m[9], this._invertMatrix, camAxisY);
+                Vector3.CrossToRef(camAxisY, camAxisZ, camAxisX);
+                camAxisY.normalize();
+                camAxisX.normalize();
             }
 
             // if depthSort, compute the camera global position in the mesh local system
@@ -730,13 +659,18 @@
             end = (end >= this.nbParticles) ? this.nbParticles - 1 : end;
             if (this._computeBoundingBox) {
                 if (start == 0 && end == this.nbParticles - 1) {        // all the particles are updated, then recompute the BBox from scratch
-                    Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this._minimum);
-                    Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this._maximum);
+                    minimum.setAll(Number.MAX_VALUE);
+                    maximum.setAll(-Number.MAX_VALUE);
                 }
                 else {      // only some particles are updated, then use the current existing BBox basis. Note : it can only increase.
-                    if (this.mesh._boundingInfo) {
-                        this._minimum.copyFrom(this.mesh._boundingInfo.boundingBox.minimum);
-                        this._maximum.copyFrom(this.mesh._boundingInfo.boundingBox.maximum);
+                    const boundingInfo = this.mesh._boundingInfo
+                    if (boundingInfo) {
+                        minimum.copyFrom(boundingInfo.minimum);
+                        maximum.copyFrom(boundingInfo.maximum);
+                    }
+                    else {
+                        minimum.setAll(Number.MAX_VALUE);
+                        maximum.setAll(-Number.MAX_VALUE);
                     }
                 }
             }
@@ -746,250 +680,253 @@
             var vpos = (index / 3) | 0;
             colorIndex = vpos * 4;
             uvIndex = vpos * 2;
+
+            const rotMatrixValues = this._rotMatrix.m;
+            const scaledPivot = this._scaledPivot;
+            const pivotBackTranslation = this._pivotBackTranslation;
+            const tmpVertex = SolidParticleSystem._vertex;
+            const mesh = this.mesh;
+            const colors32 = this._colors32;
+            const positions32 = this._positions32;
+            const normals32 = this._normals32;
+            const uvs32 = this._uvs32;
+            const indices32 = this._indices32;
+            const indices = this._indices;
+            const fixedNormal32 = this._fixedNormal32;
+            
+
             for (var p = start; p <= end; p++) {
-                this._particle = this.particles[p];
-                this._shape = this._particle._model._shape;
-                this._shapeUV = this._particle._model._shapeUV;
+                const particle = this.particles[p];
+                const shape = particle._model._shape;
+                const shapeUV = particle._model._shapeUV;
+                
+                const rotationMatrix = particle._rotationMatrix;
+                const position = particle.position;
+                const rotation = particle.rotation;
+                const globalPosition = particle._globalPosition;
+                const scaling = particle.scaling;
 
                 // call to custom user function to update the particle properties
-                this.updateParticle(this._particle);
+                this.updateParticle(particle);
 
                 // camera-particle distance for depth sorting
                 if (this._depthSort && this._depthSortParticles) {
                     var dsp = this.depthSortedParticles[p];
-                    dsp.ind = this._particle._ind;
-                    dsp.indicesLength = this._particle._model._indicesLength;
-                    dsp.sqDistance = Vector3.DistanceSquared(this._particle.position, this._camInvertedPosition);
+                    dsp.ind = particle._ind;
+                    dsp.indicesLength = particle._model._indicesLength;
+                    dsp.sqDistance = Vector3.DistanceSquared(particle.position, this._camInvertedPosition);
                 }
 
                 // skip the computations for inactive or already invisible particles
-                if (!this._particle.alive || (this._particle._stillInvisible && !this._particle.isVisible)) {
+                if (!particle.alive || (particle._stillInvisible && !particle.isVisible)) {
                     // increment indexes for the next particle
-                    pt = this._shape.length;
+                    pt = shape.length;
                     index += pt * 3;
                     colorIndex += pt * 4;
                     uvIndex += pt * 2;
                     continue;
                 }
 
-                if (this._particle.isVisible) {
-                    this._particle._stillInvisible = false; // un-mark permanent invisibility
-                    this._particleHasParent = (this._particle.parentId !== null);
+                if (particle.isVisible) {
+                    particle._stillInvisible = false; // un-mark permanent invisibility
 
-                    this._scaledPivot.x = this._particle.pivot.x * this._particle.scaling.x;
-                    this._scaledPivot.y = this._particle.pivot.y * this._particle.scaling.y;
-                    this._scaledPivot.z = this._particle.pivot.z * this._particle.scaling.z;
+                    particle.pivot.multiplyToRef(scaling, scaledPivot);
 
                     // particle rotation matrix
                     if (this.billboard) {
-                        this._particle.rotation.x = 0.0;
-                        this._particle.rotation.y = 0.0;
+                        rotation.x = 0.0;
+                        rotation.y = 0.0;
                     }
                     if (this._computeParticleRotation || this.billboard) {
-                        if (this._particle.rotationQuaternion) {
-                            this._quaternion.copyFrom(this._particle.rotationQuaternion);
+                        if (particle.rotationQuaternion) {
+                            this._quaternion.copyFrom(particle.rotationQuaternion);
                         } else {
-                            this._yaw = this._particle.rotation.y;
-                            this._pitch = this._particle.rotation.x;
-                            this._roll = this._particle.rotation.z;
-                            this._quaternionRotationYPR();
+                            this._quaternionRotationYPR(rotation.y, rotation.x, rotation.z);
                         }
                         this._quaternionToRotationMatrix();
                     }
 
-                    if (this._particleHasParent) {
-                        this._parent = this.particles[this._particle.parentId!];
-                        this._rotated.x = this._particle.position.x * this._parent._rotationMatrix[0] + this._particle.position.y * this._parent._rotationMatrix[3] + this._particle.position.z * this._parent._rotationMatrix[6];
-                        this._rotated.y = this._particle.position.x * this._parent._rotationMatrix[1] + this._particle.position.y * this._parent._rotationMatrix[4] + this._particle.position.z * this._parent._rotationMatrix[7];
-                        this._rotated.z = this._particle.position.x * this._parent._rotationMatrix[2] + this._particle.position.y * this._parent._rotationMatrix[5] + this._particle.position.z * this._parent._rotationMatrix[8];
+                    const particleHasParent = (particle.parentId !== null);
+                    if (particleHasParent) {
+                        const parent = this.particles[particle.parentId!];
+                        const parentRotMatrix = parent._rotationMatrix
+                        const parentGlobalPosition = parent._globalPosition;
 
-                        this._particle._globalPosition.x = this._parent._globalPosition.x + this._rotated.x;
-                        this._particle._globalPosition.y = this._parent._globalPosition.y + this._rotated.y;
-                        this._particle._globalPosition.z = this._parent._globalPosition.z + this._rotated.z;
+                        const rotatedY = position.x * parentRotMatrix[1] + position.y * parentRotMatrix[4] + position.z * parentRotMatrix[7];
+                        const rotatedX = position.x * parentRotMatrix[0] + position.y * parentRotMatrix[3] + position.z * parentRotMatrix[6];
+                        const rotatedZ = position.x * parentRotMatrix[2] + position.y * parentRotMatrix[5] + position.z * parentRotMatrix[8];
+
+                        globalPosition.x = parentGlobalPosition.x + rotatedX;
+                        globalPosition.y = parentGlobalPosition.y + rotatedY;
+                        globalPosition.z = parentGlobalPosition.z + rotatedZ;
 
                         if (this._computeParticleRotation || this.billboard) {
-                            this._particle._rotationMatrix[0] = this._rotMatrix.m[0] * this._parent._rotationMatrix[0] + this._rotMatrix.m[1] * this._parent._rotationMatrix[3] + this._rotMatrix.m[2] * this._parent._rotationMatrix[6];
-                            this._particle._rotationMatrix[1] = this._rotMatrix.m[0] * this._parent._rotationMatrix[1] + this._rotMatrix.m[1] * this._parent._rotationMatrix[4] + this._rotMatrix.m[2] * this._parent._rotationMatrix[7];
-                            this._particle._rotationMatrix[2] = this._rotMatrix.m[0] * this._parent._rotationMatrix[2] + this._rotMatrix.m[1] * this._parent._rotationMatrix[5] + this._rotMatrix.m[2] * this._parent._rotationMatrix[8];
-                            this._particle._rotationMatrix[3] = this._rotMatrix.m[4] * this._parent._rotationMatrix[0] + this._rotMatrix.m[5] * this._parent._rotationMatrix[3] + this._rotMatrix.m[6] * this._parent._rotationMatrix[6];
-                            this._particle._rotationMatrix[4] = this._rotMatrix.m[4] * this._parent._rotationMatrix[1] + this._rotMatrix.m[5] * this._parent._rotationMatrix[4] + this._rotMatrix.m[6] * this._parent._rotationMatrix[7];
-                            this._particle._rotationMatrix[5] = this._rotMatrix.m[4] * this._parent._rotationMatrix[2] + this._rotMatrix.m[5] * this._parent._rotationMatrix[5] + this._rotMatrix.m[6] * this._parent._rotationMatrix[8];
-                            this._particle._rotationMatrix[6] = this._rotMatrix.m[8] * this._parent._rotationMatrix[0] + this._rotMatrix.m[9] * this._parent._rotationMatrix[3] + this._rotMatrix.m[10] * this._parent._rotationMatrix[6];
-                            this._particle._rotationMatrix[7] = this._rotMatrix.m[8] * this._parent._rotationMatrix[1] + this._rotMatrix.m[9] * this._parent._rotationMatrix[4] + this._rotMatrix.m[10] * this._parent._rotationMatrix[7];
-                            this._particle._rotationMatrix[8] = this._rotMatrix.m[8] * this._parent._rotationMatrix[2] + this._rotMatrix.m[9] * this._parent._rotationMatrix[5] + this._rotMatrix.m[10] * this._parent._rotationMatrix[8];
+                            rotationMatrix[0] = rotMatrixValues[0] * parentRotMatrix[0] + rotMatrixValues[1] * parentRotMatrix[3] + rotMatrixValues[2] * parentRotMatrix[6];
+                            rotationMatrix[1] = rotMatrixValues[0] * parentRotMatrix[1] + rotMatrixValues[1] * parentRotMatrix[4] + rotMatrixValues[2] * parentRotMatrix[7];
+                            rotationMatrix[2] = rotMatrixValues[0] * parentRotMatrix[2] + rotMatrixValues[1] * parentRotMatrix[5] + rotMatrixValues[2] * parentRotMatrix[8];
+                            rotationMatrix[3] = rotMatrixValues[4] * parentRotMatrix[0] + rotMatrixValues[5] * parentRotMatrix[3] + rotMatrixValues[6] * parentRotMatrix[6];
+                            rotationMatrix[4] = rotMatrixValues[4] * parentRotMatrix[1] + rotMatrixValues[5] * parentRotMatrix[4] + rotMatrixValues[6] * parentRotMatrix[7];
+                            rotationMatrix[5] = rotMatrixValues[4] * parentRotMatrix[2] + rotMatrixValues[5] * parentRotMatrix[5] + rotMatrixValues[6] * parentRotMatrix[8];
+                            rotationMatrix[6] = rotMatrixValues[8] * parentRotMatrix[0] + rotMatrixValues[9] * parentRotMatrix[3] + rotMatrixValues[10] * parentRotMatrix[6];
+                            rotationMatrix[7] = rotMatrixValues[8] * parentRotMatrix[1] + rotMatrixValues[9] * parentRotMatrix[4] + rotMatrixValues[10] * parentRotMatrix[7];
+                            rotationMatrix[8] = rotMatrixValues[8] * parentRotMatrix[2] + rotMatrixValues[9] * parentRotMatrix[5] + rotMatrixValues[10] * parentRotMatrix[8];
                         }
                     }
                     else {
-                        this._particle._globalPosition.x = this._particle.position.x;
-                        this._particle._globalPosition.y = this._particle.position.y;
-                        this._particle._globalPosition.z = this._particle.position.z;
+                        globalPosition.x = position.x;
+                        globalPosition.y = position.y;
+                        globalPosition.z = position.z;
 
                         if (this._computeParticleRotation || this.billboard) {
-                            this._particle._rotationMatrix[0] = this._rotMatrix.m[0];
-                            this._particle._rotationMatrix[1] = this._rotMatrix.m[1];
-                            this._particle._rotationMatrix[2] = this._rotMatrix.m[2];
-                            this._particle._rotationMatrix[3] = this._rotMatrix.m[4];
-                            this._particle._rotationMatrix[4] = this._rotMatrix.m[5];
-                            this._particle._rotationMatrix[5] = this._rotMatrix.m[6];
-                            this._particle._rotationMatrix[6] = this._rotMatrix.m[8];
-                            this._particle._rotationMatrix[7] = this._rotMatrix.m[9];
-                            this._particle._rotationMatrix[8] = this._rotMatrix.m[10];
+                            rotationMatrix[0] = rotMatrixValues[0];
+                            rotationMatrix[1] = rotMatrixValues[1];
+                            rotationMatrix[2] = rotMatrixValues[2];
+                            rotationMatrix[3] = rotMatrixValues[4];
+                            rotationMatrix[4] = rotMatrixValues[5];
+                            rotationMatrix[5] = rotMatrixValues[6];
+                            rotationMatrix[6] = rotMatrixValues[8];
+                            rotationMatrix[7] = rotMatrixValues[9];
+                            rotationMatrix[8] = rotMatrixValues[10];
                         }
                     }
 
-                    if (this._particle.translateFromPivot) {
-                        this._pivotBackTranslation.x = 0.0;
-                        this._pivotBackTranslation.y = 0.0;
-                        this._pivotBackTranslation.z = 0.0;
+                    if (particle.translateFromPivot) {
+                        this._pivotBackTranslation.setAll(0.0);
                     }
                     else {
-                        this._pivotBackTranslation.x = this._scaledPivot.x;
-                        this._pivotBackTranslation.y = this._scaledPivot.y;
-                        this._pivotBackTranslation.z = this._scaledPivot.z;
+                        this._pivotBackTranslation.copyFrom(scaledPivot);
                     }
                     // particle vertex loop
-                    for (pt = 0; pt < this._shape.length; pt++) {
+                    for (pt = 0; pt < shape.length; pt++) {
                         idx = index + pt * 3;
                         colidx = colorIndex + pt * 4;
                         uvidx = uvIndex + pt * 2;
 
-                        this._vertex.x = this._shape[pt].x;
-                        this._vertex.y = this._shape[pt].y;
-                        this._vertex.z = this._shape[pt].z;
-
+                        tmpVertex.copyFrom(shape[pt]);
                         if (this._computeParticleVertex) {
-                            this.updateParticleVertex(this._particle, this._vertex, pt);
+                            this.updateParticleVertex(particle, tmpVertex, pt);
                         }
-
+                        
                         // positions
-                        this._vertex.x *= this._particle.scaling.x;
-                        this._vertex.y *= this._particle.scaling.y;
-                        this._vertex.z *= this._particle.scaling.z;
+                        const vertexX = tmpVertex.x * scaling.x - scaledPivot.x;
+                        const vertexY = tmpVertex.y * scaling.y - scaledPivot.y;
+                        const vertexZ = tmpVertex.z * scaling.z - scaledPivot.z;
 
-                        this._vertex.x -= this._scaledPivot.x;
-                        this._vertex.y -= this._scaledPivot.y;
-                        this._vertex.z -= this._scaledPivot.z;
+                        let rotatedX = vertexX * rotationMatrix[0] + vertexY * rotationMatrix[3] + vertexZ * rotationMatrix[6];
+                        let rotatedY = vertexX * rotationMatrix[1] + vertexY * rotationMatrix[4] + vertexZ * rotationMatrix[7];
+                        let rotatedZ = vertexX * rotationMatrix[2] + vertexY * rotationMatrix[5] + vertexZ * rotationMatrix[8];
 
-                        this._rotated.x = this._vertex.x * this._particle._rotationMatrix[0] + this._vertex.y * this._particle._rotationMatrix[3] + this._vertex.z * this._particle._rotationMatrix[6];
-                        this._rotated.y = this._vertex.x * this._particle._rotationMatrix[1] + this._vertex.y * this._particle._rotationMatrix[4] + this._vertex.z * this._particle._rotationMatrix[7];
-                        this._rotated.z = this._vertex.x * this._particle._rotationMatrix[2] + this._vertex.y * this._particle._rotationMatrix[5] + this._vertex.z * this._particle._rotationMatrix[8];
+                        rotatedX += pivotBackTranslation.x;
+                        rotatedY += pivotBackTranslation.y;
+                        rotatedZ += pivotBackTranslation.z;
 
-                        this._rotated.x += this._pivotBackTranslation.x;
-                        this._rotated.y += this._pivotBackTranslation.y;
-                        this._rotated.z += this._pivotBackTranslation.z;
-
-                        this._positions32[idx] = this._particle._globalPosition.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
-                        this._positions32[idx + 1] = this._particle._globalPosition.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
-                        this._positions32[idx + 2] = this._particle._globalPosition.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
+                        positions32[idx] = globalPosition.x + camAxisX.x * rotatedX + camAxisY.x * rotatedY + camAxisZ.x * rotatedZ;
+                        positions32[idx + 1] = globalPosition.y + camAxisX.y * rotatedX + camAxisY.y * rotatedY + camAxisZ.y * rotatedZ;
+                        positions32[idx + 2] = globalPosition.z + camAxisX.z * rotatedX + camAxisY.z * rotatedY + camAxisZ.z * rotatedZ;
 
                         if (this._computeBoundingBox) {
-                            if (this._positions32[idx] < this._minimum.x) {
-                                this._minimum.x = this._positions32[idx];
-                            }
-                            if (this._positions32[idx] > this._maximum.x) {
-                                this._maximum.x = this._positions32[idx];
-                            }
-                            if (this._positions32[idx + 1] < this._minimum.y) {
-                                this._minimum.y = this._positions32[idx + 1];
-                            }
-                            if (this._positions32[idx + 1] > this._maximum.y) {
-                                this._maximum.y = this._positions32[idx + 1];
-                            }
-                            if (this._positions32[idx + 2] < this._minimum.z) {
-                                this._minimum.z = this._positions32[idx + 2];
-                            }
-                            if (this._positions32[idx + 2] > this._maximum.z) {
-                                this._maximum.z = this._positions32[idx + 2];
-                            }
+                            minimum.minimizeInPlaceFromFloats(positions32[idx], positions32[idx+1], positions32[idx+1]);
+                            maximum.maximizeInPlaceFromFloats(positions32[idx], positions32[idx+1], positions32[idx+1]);
                         }
 
                         // normals : if the particles can't be morphed then just rotate the normals, what is much more faster than ComputeNormals()
                         if (!this._computeParticleVertex) {
-                            this._normal.x = this._fixedNormal32[idx];
-                            this._normal.y = this._fixedNormal32[idx + 1];
-                            this._normal.z = this._fixedNormal32[idx + 2];
+                            const normalx = fixedNormal32[idx];
+                            const normaly = fixedNormal32[idx + 1];
+                            const normalz = fixedNormal32[idx + 2];
 
-                            this._rotated.x = this._normal.x * this._particle._rotationMatrix[0] + this._normal.y * this._particle._rotationMatrix[3] + this._normal.z * this._particle._rotationMatrix[6];
-                            this._rotated.y = this._normal.x * this._particle._rotationMatrix[1] + this._normal.y * this._particle._rotationMatrix[4] + this._normal.z * this._particle._rotationMatrix[7];
-                            this._rotated.z = this._normal.x * this._particle._rotationMatrix[2] + this._normal.y * this._particle._rotationMatrix[5] + this._normal.z * this._particle._rotationMatrix[8];
+                            const rotatedx = normalx * rotationMatrix[0] + normaly * rotationMatrix[3] + normalz * rotationMatrix[6];
+                            const rotatedy = normalx * rotationMatrix[1] + normaly * rotationMatrix[4] + normalz * rotationMatrix[7];
+                            const rotatedz = normalx * rotationMatrix[2] + normaly * rotationMatrix[5] + normalz * rotationMatrix[8];
 
-                            this._normals32[idx] = this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
-                            this._normals32[idx + 1] = this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
-                            this._normals32[idx + 2] = this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
+                            normals32[idx] = camAxisX.x * rotatedx + camAxisY.x * rotatedy + camAxisZ.x * rotatedz;
+                            normals32[idx + 1] = camAxisX.y * rotatedx + camAxisY.y * rotatedy + camAxisZ.y * rotatedz;
+                            normals32[idx + 2] = camAxisX.z * rotatedx + camAxisY.z * rotatedy + camAxisZ.z * rotatedz;
                         }
 
-                        if (this._computeParticleColor && this._particle.color) {
-                            this._colors32[colidx] = this._particle.color.r;
-                            this._colors32[colidx + 1] = this._particle.color.g;
-                            this._colors32[colidx + 2] = this._particle.color.b;
-                            this._colors32[colidx + 3] = this._particle.color.a;
+                        if (this._computeParticleColor && particle.color) {
+                            const color = particle.color;
+                            const colors32 = this._colors32;
+                            colors32[colidx] = color.r;
+                            colors32[colidx + 1] = color.g;
+                            colors32[colidx + 2] = color.b;
+                            colors32[colidx + 3] = color.a;
                         }
 
                         if (this._computeParticleTexture) {
-                            this._uvs32[uvidx] = this._shapeUV[pt * 2] * (this._particle.uvs.z - this._particle.uvs.x) + this._particle.uvs.x;
-                            this._uvs32[uvidx + 1] = this._shapeUV[pt * 2 + 1] * (this._particle.uvs.w - this._particle.uvs.y) + this._particle.uvs.y;
+                            const uvs = particle.uvs;
+                            uvs32[uvidx] = shapeUV[pt * 2] * (uvs.z - uvs.x) + uvs.x;
+                            uvs32[uvidx + 1] = shapeUV[pt * 2 + 1] * (uvs.w - uvs.y) + uvs.y;
                         }
                     }
                 }
                 // particle just set invisible : scaled to zero and positioned at the origin
                 else {
-                    this._particle._stillInvisible = true;      // mark the particle as invisible
-                    for (pt = 0; pt < this._shape.length; pt++) {
+                    particle._stillInvisible = true;      // mark the particle as invisible
+                    for (pt = 0; pt < shape.length; pt++) {
                         idx = index + pt * 3;
                         colidx = colorIndex + pt * 4;
                         uvidx = uvIndex + pt * 2;
 
-                        this._positions32[idx] = 0.0;
-                        this._positions32[idx + 1] = 0.0;
-                        this._positions32[idx + 2] = 0.0;
-                        this._normals32[idx] = 0.0;
-                        this._normals32[idx + 1] = 0.0;
-                        this._normals32[idx + 2] = 0.0;
-                        if (this._computeParticleColor && this._particle.color) {
-                            this._colors32[colidx] = this._particle.color.r;
-                            this._colors32[colidx + 1] = this._particle.color.g;
-                            this._colors32[colidx + 2] = this._particle.color.b;
-                            this._colors32[colidx + 3] = this._particle.color.a;
+                        positions32[idx] = 0.0;
+                        positions32[idx + 1] = 0.0;
+                        positions32[idx + 2] = 0.0;
+                        normals32[idx] = 0.0;
+                        normals32[idx + 1] = 0.0;
+                        normals32[idx + 2] = 0.0;
+                        if (this._computeParticleColor && particle.color) {
+                            const color = particle.color;
+                            colors32[colidx] = color.r;
+                            colors32[colidx + 1] = color.g;
+                            colors32[colidx + 2] = color.b;
+                            colors32[colidx + 3] = color.a;
                         }
                         if (this._computeParticleTexture) {
-                            this._uvs32[uvidx] = this._shapeUV[pt * 2] * (this._particle.uvs.z - this._particle.uvs.x) + this._particle.uvs.x;
-                            this._uvs32[uvidx + 1] = this._shapeUV[pt * 2 + 1] * (this._particle.uvs.w - this._particle.uvs.y) + this._particle.uvs.y;
+                            const uvs = particle.uvs;
+                            uvs32[uvidx] = shapeUV[pt * 2] * (uvs.z - uvs.x) + uvs.x;
+                            uvs32[uvidx + 1] = shapeUV[pt * 2 + 1] * (uvs.w - uvs.y) + uvs.y;
                         }
                     }
                 }
 
                 // if the particle intersections must be computed : update the bbInfo
                 if (this._particlesIntersect) {
-                    var bInfo = this._particle._boundingInfo;
-                    var bBox = bInfo.boundingBox;
-                    var bSphere = bInfo.boundingSphere;
+                    const bInfo = particle._boundingInfo;
+                    const bBox = bInfo.boundingBox;
+                    const bSphere = bInfo.boundingSphere;
+                    const modelBoundingInfo = particle._modelBoundingInfo;
                     if (!this._bSphereOnly) {
                         // place, scale and rotate the particle bbox within the SPS local system, then update it
-                        for (var b = 0; b < bBox.vectors.length; b++) {
-                            this._vertex.x = this._particle._modelBoundingInfo.boundingBox.vectors[b].x * this._particle.scaling.x;
-                            this._vertex.y = this._particle._modelBoundingInfo.boundingBox.vectors[b].y * this._particle.scaling.y;
-                            this._vertex.z = this._particle._modelBoundingInfo.boundingBox.vectors[b].z * this._particle.scaling.z;
-                            this._rotated.x = this._vertex.x * this._particle._rotationMatrix[0] + this._vertex.y * this._particle._rotationMatrix[3] + this._vertex.z * this._particle._rotationMatrix[6];
-                            this._rotated.y = this._vertex.x * this._particle._rotationMatrix[1] + this._vertex.y * this._particle._rotationMatrix[4] + this._vertex.z * this._particle._rotationMatrix[7];
-                            this._rotated.z = this._vertex.x * this._particle._rotationMatrix[2] + this._vertex.y * this._particle._rotationMatrix[5] + this._vertex.z * this._particle._rotationMatrix[8];
-                            bBox.vectors[b].x = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
-                            bBox.vectors[b].y = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
-                            bBox.vectors[b].z = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
+                        const modelBoundingInfoVectors = modelBoundingInfo.boundingBox.vectors;
+                        const min = Tmp.Vector3[0];
+                        const max = Tmp.Vector3[1];
+                        min.setAll(Number.MAX_VALUE);
+                        max.setAll(-Number.MAX_VALUE);
+                        for (var b = 0; b < 8; b++) {
+                            const vertexX = modelBoundingInfoVectors[b].x * scaling.x;
+                            const vertexY = modelBoundingInfoVectors[b].y * scaling.y;
+                            const vertexZ = modelBoundingInfoVectors[b].z * scaling.z;
+                            const rotatedX = vertexX * rotationMatrix[0] + vertexY * rotationMatrix[3] + vertexZ * rotationMatrix[6];
+                            const rotatedY = vertexX * rotationMatrix[1] + vertexY * rotationMatrix[4] + vertexZ * rotationMatrix[7];
+                            const rotatedZ = vertexX * rotationMatrix[2] + vertexY * rotationMatrix[5] + vertexZ * rotationMatrix[8];
+                            const x = position.x + camAxisX.x * rotatedX + camAxisY.x * rotatedY + camAxisZ.x * rotatedZ;
+                            const y = position.y + camAxisX.y * rotatedX + camAxisY.y * rotatedY + camAxisZ.y * rotatedZ;
+                            const z = position.z + camAxisX.z * rotatedX + camAxisY.z * rotatedY + camAxisZ.z * rotatedZ;
+                            min.minimizeInPlaceFromFloats(x, y, z);
+                            max.maximizeInPlaceFromFloats(x, y, z);
                         }
-                        bBox._update(this.mesh._worldMatrix);
+
+                        bBox.reConstruct(min, max, mesh._worldMatrix);
                     }
                     // place and scale the particle bouding sphere in the SPS local system, then update it
-                    this._minBbox.x = this._particle._modelBoundingInfo.minimum.x * this._particle.scaling.x;
-                    this._minBbox.y = this._particle._modelBoundingInfo.minimum.y * this._particle.scaling.y;
-                    this._minBbox.z = this._particle._modelBoundingInfo.minimum.z * this._particle.scaling.z;
-                    this._maxBbox.x = this._particle._modelBoundingInfo.maximum.x * this._particle.scaling.x;
-                    this._maxBbox.y = this._particle._modelBoundingInfo.maximum.y * this._particle.scaling.y;
-                    this._maxBbox.z = this._particle._modelBoundingInfo.maximum.z * this._particle.scaling.z;
-                    bSphere.center.x = this._particle._globalPosition.x + (this._minBbox.x + this._maxBbox.x) * 0.5;
-                    bSphere.center.y = this._particle._globalPosition.y + (this._minBbox.y + this._maxBbox.y) * 0.5;
-                    bSphere.center.z = this._particle._globalPosition.z + (this._minBbox.z + this._maxBbox.z) * 0.5;
-                    bSphere.radius = this._bSphereRadiusFactor * 0.5 * Math.sqrt((this._maxBbox.x - this._minBbox.x) * (this._maxBbox.x - this._minBbox.x) + (this._maxBbox.y - this._minBbox.y) * (this._maxBbox.y - this._minBbox.y) + (this._maxBbox.z - this._minBbox.z) * (this._maxBbox.z - this._minBbox.z));
-                    bSphere._update(this.mesh._worldMatrix);
+                    const minBbox = modelBoundingInfo.minimum.multiplyToRef(scaling, Tmp.Vector3[0]);
+                    const maxBbox = modelBoundingInfo.maximum.multiplyToRef(scaling, Tmp.Vector3[1]);
+
+                    const center = maxBbox.addToRef(minBbox, Tmp.Vector3[2]).scaleInPlace(0.5);
+                    const halfDiag  = maxBbox.subtractToRef(minBbox, Tmp.Vector3[3]).scaleInPlace(0.5 * this._bSphereRadiusFactor);
+                    const sphereMinBbox = center.subtractToRef(halfDiag, Tmp.Vector3[4]);
+                    const sphereMaxBbox = center.addToRef(halfDiag, Tmp.Vector3[5]);
+                    bSphere.reConstruct(sphereMinBbox, sphereMaxBbox, mesh._worldMatrix);
                 }
 
                 // increment indexes for the next particle
@@ -1001,84 +938,91 @@
             // if the VBO must be updated
             if (update) {
                 if (this._computeParticleColor) {
-                    this.mesh.updateVerticesData(VertexBuffer.ColorKind, this._colors32, false, false);
+                    mesh.updateVerticesData(VertexBuffer.ColorKind, colors32, false, false);
                 }
                 if (this._computeParticleTexture) {
-                    this.mesh.updateVerticesData(VertexBuffer.UVKind, this._uvs32, false, false);
+                    mesh.updateVerticesData(VertexBuffer.UVKind, uvs32, false, false);
                 }
-                this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions32, false, false);
-                if (!this.mesh.areNormalsFrozen || this.mesh.isFacetDataEnabled) {
-                    if (this._computeParticleVertex || this.mesh.isFacetDataEnabled) {
+                mesh.updateVerticesData(VertexBuffer.PositionKind, positions32, false, false);
+                if (!mesh.areNormalsFrozen || mesh.isFacetDataEnabled) {
+                    if (this._computeParticleVertex || mesh.isFacetDataEnabled) {
                         // recompute the normals only if the particles can be morphed, update then also the normal reference array _fixedNormal32[]
-                        var params = this.mesh.isFacetDataEnabled ? this.mesh.getFacetDataParameters() : null;
-                        VertexData.ComputeNormals(this._positions32, this._indices32, this._normals32, params);
-                        for (var i = 0; i < this._normals32.length; i++) {
-                            this._fixedNormal32[i] = this._normals32[i];
+                        var params = mesh.isFacetDataEnabled ? mesh.getFacetDataParameters() : null;
+                        VertexData.ComputeNormals(positions32, indices32, normals32, params);
+                        for (var i = 0; i < normals32.length; i++) {
+                            fixedNormal32[i] = normals32[i];
                         }
                     }
-                    if (!this.mesh.areNormalsFrozen) {
-                        this.mesh.updateVerticesData(VertexBuffer.NormalKind, this._normals32, false, false);
+                    if (!mesh.areNormalsFrozen) {
+                        mesh.updateVerticesData(VertexBuffer.NormalKind, normals32, false, false);
                     }
                 }
                 if (this._depthSort && this._depthSortParticles) {
-                    this.depthSortedParticles.sort(this._depthSortFunction);
-                    var dspl = this.depthSortedParticles.length;
+                    const depthSortedParticles = this.depthSortedParticles;
+                    depthSortedParticles.sort(this._depthSortFunction);
+                    var dspl = depthSortedParticles.length;
                     var sorted = 0;
                     var lind = 0;
                     var sind = 0;
                     var sid = 0;
                     for (sorted = 0; sorted < dspl; sorted++) {
-                        lind = this.depthSortedParticles[sorted].indicesLength;
-                        sind = this.depthSortedParticles[sorted].ind;
+                        lind = depthSortedParticles[sorted].indicesLength;
+                        sind = depthSortedParticles[sorted].ind;
                         for (var i = 0; i < lind; i++) {
-                            this._indices32[sid] = this._indices[sind + i];
+                            indices32[sid] = indices[sind + i];
                             sid++;
                         }
                     }
-                    this.mesh.updateIndices(this._indices32);
+                    mesh.updateIndices(indices32);
                 }
             }
             if (this._computeBoundingBox) {
-                this.mesh._boundingInfo = new BoundingInfo(this._minimum, this._maximum);
-                this.mesh._boundingInfo.update(this.mesh._worldMatrix);
+                if (mesh._boundingInfo) {
+                    mesh._boundingInfo.reConstruct(minimum, maximum, mesh._worldMatrix);
+                }
+                else {
+                    mesh._boundingInfo = new BoundingInfo(minimum, maximum, mesh._worldMatrix);
+                }
             }
             this.afterUpdateParticles(start, end, update);
             return this;
         }
 
-        private _quaternionRotationYPR(): void {
-            this._halfroll = this._roll * 0.5;
-            this._halfpitch = this._pitch * 0.5;
-            this._halfyaw = this._yaw * 0.5;
-            this._sinRoll = Math.sin(this._halfroll);
-            this._cosRoll = Math.cos(this._halfroll);
-            this._sinPitch = Math.sin(this._halfpitch);
-            this._cosPitch = Math.cos(this._halfpitch);
-            this._sinYaw = Math.sin(this._halfyaw);
-            this._cosYaw = Math.cos(this._halfyaw);
-            this._quaternion.x = this._cosYaw * this._sinPitch * this._cosRoll + this._sinYaw * this._cosPitch * this._sinRoll;
-            this._quaternion.y = this._sinYaw * this._cosPitch * this._cosRoll - this._cosYaw * this._sinPitch * this._sinRoll;
-            this._quaternion.z = this._cosYaw * this._cosPitch * this._sinRoll - this._sinYaw * this._sinPitch * this._cosRoll;
-            this._quaternion.w = this._cosYaw * this._cosPitch * this._cosRoll + this._sinYaw * this._sinPitch * this._sinRoll;
+        private _quaternionRotationYPR(yaw:number, pitch:number, roll:number): void {
+            const halfroll = roll * 0.5;
+            const halfpitch = pitch * 0.5;
+            const halfyaw = yaw * 0.5;
+            const sinRoll = Math.sin(halfroll);
+            const cosRoll = Math.cos(halfroll);
+            const sinPitch = Math.sin(halfpitch);
+            const cosPitch = Math.cos(halfpitch);
+            const sinYaw = Math.sin(halfyaw);
+            const cosYaw = Math.cos(halfyaw);
+            this._quaternion.x = cosYaw * sinPitch * cosRoll + sinYaw * cosPitch * sinRoll;
+            this._quaternion.y = sinYaw * cosPitch * cosRoll - cosYaw * sinPitch * sinRoll;
+            this._quaternion.z = cosYaw * cosPitch * sinRoll - sinYaw * sinPitch * cosRoll;
+            this._quaternion.w = cosYaw * cosPitch * cosRoll + sinYaw * sinPitch * sinRoll;
         }
 
         private _quaternionToRotationMatrix(): void {
-            this._rotMatrix.m[0] = 1.0 - (2.0 * (this._quaternion.y * this._quaternion.y + this._quaternion.z * this._quaternion.z));
-            this._rotMatrix.m[1] = 2.0 * (this._quaternion.x * this._quaternion.y + this._quaternion.z * this._quaternion.w);
-            this._rotMatrix.m[2] = 2.0 * (this._quaternion.z * this._quaternion.x - this._quaternion.y * this._quaternion.w);
-            this._rotMatrix.m[3] = 0;
-            this._rotMatrix.m[4] = 2.0 * (this._quaternion.x * this._quaternion.y - this._quaternion.z * this._quaternion.w);
-            this._rotMatrix.m[5] = 1.0 - (2.0 * (this._quaternion.z * this._quaternion.z + this._quaternion.x * this._quaternion.x));
-            this._rotMatrix.m[6] = 2.0 * (this._quaternion.y * this._quaternion.z + this._quaternion.x * this._quaternion.w);
-            this._rotMatrix.m[7] = 0;
-            this._rotMatrix.m[8] = 2.0 * (this._quaternion.z * this._quaternion.x + this._quaternion.y * this._quaternion.w);
-            this._rotMatrix.m[9] = 2.0 * (this._quaternion.y * this._quaternion.z - this._quaternion.x * this._quaternion.w);
-            this._rotMatrix.m[10] = 1.0 - (2.0 * (this._quaternion.y * this._quaternion.y + this._quaternion.x * this._quaternion.x));
-            this._rotMatrix.m[11] = 0;
-            this._rotMatrix.m[12] = 0;
-            this._rotMatrix.m[13] = 0;
-            this._rotMatrix.m[14] = 0;
-            this._rotMatrix.m[15] = 1.0;
+            const rotMatrixValues = this._rotMatrix.m;
+            const x = this._quaternion.x, y = this._quaternion.y, z = this._quaternion.z, w = this._quaternion.w;
+            rotMatrixValues[0] = 1.0 - (2.0 * (y * y + z * z));
+            rotMatrixValues[1] = 2.0 * (x * y + z * w);
+            rotMatrixValues[2] = 2.0 * (z * x - y * w);
+            rotMatrixValues[3] = 0;
+            rotMatrixValues[4] = 2.0 * (x * y - z * w);
+            rotMatrixValues[5] = 1.0 - (2.0 * (z * z + x * x));
+            rotMatrixValues[6] = 2.0 * (y * z + x * w);
+            rotMatrixValues[7] = 0;
+            rotMatrixValues[8] = 2.0 * (z * x + y * w);
+            rotMatrixValues[9] = 2.0 * (y * z - x * w);
+            rotMatrixValues[10] = 1.0 - (2.0 * (y * y + x * x));
+            rotMatrixValues[11] = 0;
+            rotMatrixValues[12] = 0;
+            rotMatrixValues[13] = 0;
+            rotMatrixValues[14] = 0;
+            rotMatrixValues[15] = 1.0;
         }
 
         /**

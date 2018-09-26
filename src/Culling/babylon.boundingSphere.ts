@@ -35,17 +35,19 @@
          * Creates a new bounding sphere
          * @param min defines the minimum vector (in local space)
          * @param max defines the maximum vector (in local space)
+         * @param worldMatrix defines the new world matrix
          */
-        constructor(min: Vector3, max: Vector3) {
-            this.reConstruct(min, max);
+        constructor(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
+            this.reConstruct(min, max, worldMatrix);
         }
 
         /**
          * Recreates the entire bounding sphere from scratch
          * @param min defines the new minimum vector (in local space)
          * @param max defines the new maximum vector (in local space) 
+         * @param worldMatrix defines the new world matrix
          */
-        public reConstruct(min: Vector3, max: Vector3) {
+        public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
             this.minimum.copyFrom(min);
             this.maximum.copyFrom(max);
 
@@ -55,7 +57,7 @@
             this.radius = distance * 0.5;
 
             this.centerWorld.set(0, 0, 0);
-            this._update(_identityMatrix);
+            this._update(worldMatrix || _identityMatrix);
         }
 
         /**
