@@ -30,6 +30,8 @@ var fs = require("fs");
 var dtsBundle = require('dts-bundle');
 const through = require('through2');
 var karmaServer = require('karma').Server;
+var gulpTslint = require("gulp-tslint");
+var tslint = require("tslint");
 
 //viewer declaration
 var processDeclaration = require('./processViewerDeclaration');
@@ -268,9 +270,19 @@ gulp.task("build", gulp.series("shaders", function build() {
 * Compiles all typescript files and creating a js and a declaration file.
 */
 gulp.task("typescript-compile", function () {
+    var program = tslint.Linter.createProgram("../../src/tsconfig.json");
+
     var tsResult = gulp.src(config.typescript)
+        .pipe(gulpTslint({
+            formatter: "stylish",
+            configuration: "../../tslint.json",
+            program
+        }))
+        .pipe(gulpTslint.report())
         .pipe(sourcemaps.init())
-        .pipe(tsProject());
+        .pipe(tsProject({
+            summarizeFailureOutput: true
+        }));
 
     //If this gulp task is running on travis, file the build!
     if (process.env.TRAVIS) {
