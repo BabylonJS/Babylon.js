@@ -6,7 +6,7 @@ module BABYLON {
         /**
          * Gets the 8 vectors representing the bounding box in local space
          */
-        public vectors: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
+        public vectors: Vector3[] = Tools.BuildArray(8, Vector3);
         /**
          * Gets the center of the bounding box in local space
          */
@@ -26,11 +26,11 @@ module BABYLON {
         /**
          * Gets the OBB (object bounding box) directions
          */
-        public directions: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
+        public directions: Vector3[] = Tools.BuildArray(3, Vector3);
         /**
          * Gets the 8 vectors representing the bounding box in world space
          */
-        public vectorsWorld: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
+        public vectorsWorld: Vector3[] = Tools.BuildArray(8, Vector3);
         /**
          * Gets the minimum vector in world space
          */
