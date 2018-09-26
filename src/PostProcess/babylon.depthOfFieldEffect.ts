@@ -15,7 +15,7 @@ module BABYLON {
          * Large blur
          */
         High
-    };
+    }
     /**
      * The depth of field effect applies a blur to objects that are closer or further from where the camera is focusing.
      */
@@ -85,10 +85,10 @@ module BABYLON {
             this._circleOfConfusion = new BABYLON.CircleOfConfusionPostProcess("circleOfConfusion", depthTexture, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
 
             // Create a pyramid of blurred images (eg. fullSize 1/4 blur, half size 1/2 blur, quarter size 3/4 blur, eith size 4/4 blur)
-            // Blur the image but do not blur on sharp far to near distance changes to avoid bleeding artifacts 
+            // Blur the image but do not blur on sharp far to near distance changes to avoid bleeding artifacts
             // See section 2.6.2 http://fileadmin.cs.lth.se/cs/education/edan35/lectures/12dof.pdf
-            this._depthOfFieldBlurY = []
-            this._depthOfFieldBlurX = []
+            this._depthOfFieldBlurY = [];
+            this._depthOfFieldBlurX = [];
             var blurCount = 1;
             var kernelSize = 15;
             switch (blurLevel) {

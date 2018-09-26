@@ -14,8 +14,8 @@ module BABYLON {
         private _zoomStopsAnimation = false;
         private _idleRotationSpeed = 0.05;
         private _idleRotationWaitTime = 2000;
-        private _idleRotationSpinupTime = 2000;  
-       
+        private _idleRotationSpinupTime = 2000;
+
         /**
         * Sets the flag that indicates if user zooming should stop animation.
         */
@@ -28,8 +28,8 @@ module BABYLON {
         */
         public get zoomStopsAnimation(): boolean {
             return this._zoomStopsAnimation;
-        }       
-        
+        }
+
         /**
         * Sets the default speed at which the camera rotates around the model.
         */
@@ -78,7 +78,7 @@ module BABYLON {
         public get rotationInProgress(): boolean {
             return Math.abs(this._cameraRotationSpeed) > 0;
         }
-        
+
         // Default behavior functions
         private _onPrePointerObservableObserver: Nullable<Observer<PointerInfoPre>>;
         private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;
@@ -106,7 +106,7 @@ module BABYLON {
             this._onPrePointerObservableObserver = scene.onPrePointerObservable.add((pointerInfoPre) => {
                 if (pointerInfoPre.type === PointerEventTypes.POINTERDOWN) {
                     this._isPointerDown = true;
-                    return
+                    return;
                 }
 
                 if (pointerInfoPre.type === PointerEventTypes.POINTERUP) {
@@ -114,7 +114,7 @@ module BABYLON {
                 }
             });
 
-            this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(() => {      
+            this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(() => {
                 let now = Tools.Now;
                 let dt = 0;
                 if (this._lastFrameTime != null) {
@@ -124,11 +124,11 @@ module BABYLON {
 
                 // Stop the animation if there is user interaction and the animation should stop for this interaction
                 this._applyUserInteraction();
-    
+
                 let timeToRotation = now - this._lastInteractionTime - this._idleRotationWaitTime;
                 let scale = Math.max(Math.min(timeToRotation / (this._idleRotationSpinupTime), 1), 0);
                 this._cameraRotationSpeed = this._idleRotationSpeed * scale;
-    
+
                 // Step camera rotation by rotation speed
                 if (this._attachedCamera) {
                     this._attachedCamera.alpha -= this._cameraRotationSpeed * (dt / 1000);
@@ -144,31 +144,31 @@ module BABYLON {
                 return;
             }
             let scene = this._attachedCamera.getScene();
-            
+
             if (this._onPrePointerObservableObserver) {
                 scene.onPrePointerObservable.remove(this._onPrePointerObservableObserver);
             }
-            
+
             this._attachedCamera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
             this._attachedCamera = null;
         }
 
         /**
-         * Returns true if user is scrolling. 
+         * Returns true if user is scrolling.
          * @return true if user is scrolling.
          */
         private _userIsZooming(): boolean {
             if (!this._attachedCamera) {
                 return false;
-            }			
+            }
             return this._attachedCamera.inertialRadiusOffset !== 0;
-        }   		
-        
+        }
+
         private _lastFrameRadius = 0;
         private _shouldAnimationStopForInteraction(): boolean {
             if (!this._attachedCamera) {
                 return false;
-            }	
+            }
 
             var zoomHasHitLimit = false;
             if (this._lastFrameRadius === this._attachedCamera.radius && this._attachedCamera.inertialRadiusOffset !== 0) {
@@ -178,23 +178,23 @@ module BABYLON {
             // Update the record of previous radius - works as an approx. indicator of hitting radius limits
             this._lastFrameRadius = this._attachedCamera.radius;
             return this._zoomStopsAnimation ? zoomHasHitLimit : this._userIsZooming();
-        }   		
+        }
 
         /**
          *  Applies any current user interaction to the camera. Takes into account maximum alpha rotation.
-         */          
+         */
         private _applyUserInteraction(): void {
             if (this._userIsMoving() && !this._shouldAnimationStopForInteraction()) {
                 this._lastInteractionTime = Tools.Now;
             }
-        }                
-   
+        }
+
         // Tools
         private _userIsMoving(): boolean {
             if (!this._attachedCamera) {
                 return false;
-            }	
-            
+            }
+
             return this._attachedCamera.inertialAlphaOffset !== 0 ||
                 this._attachedCamera.inertialBetaOffset !== 0 ||
                 this._attachedCamera.inertialRadiusOffset !== 0 ||

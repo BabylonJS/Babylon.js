@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
 
     /**
      * Defines how a node can be built from a string name.
@@ -72,9 +72,9 @@
          * Gets or sets a boolean used to define if the node must be serialized
          */
         public doNotSerialize = false;
-        
+
         /** @hidden */
-        public _isDisposed = false;        
+        public _isDisposed = false;
 
         /**
          * Gets a list of Animations associated with the node
@@ -108,7 +108,7 @@
         /** @hidden */
         public _worldMatrix = Matrix.Identity();
         /** @hidden */
-        public _worldMatrixDeterminant = 0;        
+        public _worldMatrixDeterminant = 0;
 
         /** @hidden */
         private _sceneRootNodesIndex = -1;
@@ -119,7 +119,7 @@
          */
         public isDisposed(): boolean {
             return this._isDisposed;
-        }        
+        }
 
         /**
          * Gets or sets the parent of the node
@@ -329,7 +329,6 @@
             return null;
         }
 
-
         /**
          * Returns the latest update of the World matrix
          * @returns a Matrix
@@ -341,19 +340,18 @@
             return this._worldMatrix;
         }
 
-
         /** @hidden */
         public _getWorldMatrixDeterminant(): number {
             return this._worldMatrixDeterminant;
         }
 
         /**
-         * Returns directly the latest state of the mesh World matrix. 
-         * A Matrix is returned.    
+         * Returns directly the latest state of the mesh World matrix.
+         * A Matrix is returned.
          */
         public get worldMatrixFromCache(): Matrix {
             return this._worldMatrix;
-        }        
+        }
 
         // override it in derived class if you add new variables to the cache
         // and call the parent class method
@@ -365,8 +363,9 @@
 
         /** @hidden */
         public updateCache(force?: boolean): void {
-            if (!force && this.isSynchronized())
+            if (!force && this.isSynchronized()) {
                 return;
+            }
 
             this._cache.parent = this.parent;
 
@@ -451,10 +450,10 @@
             this._isParentEnabled = this._parentNode ? this._parentNode.isEnabled() : true;
 
             if (this._children) {
-                this._children.forEach(c => {
+                this._children.forEach((c) => {
                     c._syncParentEnabledState(); // Force children to update accordingly
                 });
-            }            
+            }
         }
 
         /**
@@ -617,7 +616,7 @@
                     this.animations[i].deleteRange(name, deleteFrames);
                 }
             }
-            this._ranges[name] = null; // said much faster than 'delete this._range[name]' 
+            this._ranges[name] = null; // said much faster than 'delete this._range[name]'
         }
 
         /**
@@ -732,4 +731,4 @@
             }
         }
     }
-} 
+}

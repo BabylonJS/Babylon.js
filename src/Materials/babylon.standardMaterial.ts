@@ -23,7 +23,7 @@ module BABYLON {
         public CLIPPLANE = false;
         public CLIPPLANE2 = false;
         public CLIPPLANE3 = false;
-        public CLIPPLANE4 = false;        
+        public CLIPPLANE4 = false;
         public ALPHATEST = false;
         public DEPTHPREPASS = false;
         public ALPHAFROMDIFFUSE = false;
@@ -184,7 +184,7 @@ module BABYLON {
         @serializeAsTexture("bumpTexture")
         private _bumpTexture: Nullable<BaseTexture>;
         /**
-         * Bump mapping is a technique to simulate bump and dents on a rendered surface. 
+         * Bump mapping is a technique to simulate bump and dents on a rendered surface.
          * These are made by creating a normal map from an image. The means to do this can be found on the web, a search for 'normal map generator' will bring up free and paid for methods of doing this.
          * @see http://doc.babylonjs.com/how_to/more_materials#bump-map
          */
@@ -194,7 +194,7 @@ module BABYLON {
         @serializeAsTexture("lightmapTexture")
         private _lightmapTexture: Nullable<BaseTexture>;
         /**
-         * Complex lighting can be computationally expensive to compute at runtime. 
+         * Complex lighting can be computationally expensive to compute at runtime.
          * To save on computation, lightmaps may be used to store calculated lighting in a texture which will be applied to a given mesh.
          * @see http://doc.babylonjs.com/babylon101/lights#lightmaps
          */
@@ -475,7 +475,7 @@ module BABYLON {
 
         /**
          * Sets the Default image processing configuration used either in the this material.
-         * 
+         *
          * If sets to null, the scene one is in use.
          */
         public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
@@ -492,7 +492,7 @@ module BABYLON {
 
         /**
          * Attaches a new image processing configuration to the Standard Material.
-         * @param configuration 
+         * @param configuration
          */
         protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
             if (configuration === this._imageProcessingConfiguration) {
@@ -514,7 +514,7 @@ module BABYLON {
 
             // Attaches observer.
             if (this._imageProcessingConfiguration) {
-                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
+                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add((conf) => {
                     this._markAllSubMeshesAsImageProcessingDirty();
                 });
             }
@@ -551,13 +551,13 @@ module BABYLON {
          */
         public get cameraToneMappingEnabled(): boolean {
             return this._imageProcessingConfiguration.toneMappingEnabled;
-        };
+        }
         /**
          * Sets wether tonemapping is enabled or not
          */
         public set cameraToneMappingEnabled(value: boolean) {
             this._imageProcessingConfiguration.toneMappingEnabled = value;
-        };
+        }
 
         /**
          * The camera exposure used on this material.
@@ -566,7 +566,7 @@ module BABYLON {
          */
         public get cameraExposure(): number {
             return this._imageProcessingConfiguration.exposure;
-        };
+        }
         /**
          * The camera exposure used on this material.
          * This property is here and not in the camera to allow controlling exposure without full screen post process.
@@ -574,7 +574,7 @@ module BABYLON {
          */
         public set cameraExposure(value: number) {
             this._imageProcessingConfiguration.exposure = value;
-        };
+        }
 
         /**
          * Gets The camera contrast used on this material.
@@ -604,18 +604,18 @@ module BABYLON {
         }
 
         /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
          * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         public get cameraColorCurves(): Nullable<ColorCurves> {
             return this._imageProcessingConfiguration.colorCurves;
         }
         /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
          * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         public set cameraColorCurves(value: Nullable<ColorCurves>) {
@@ -658,7 +658,7 @@ module BABYLON {
                 }
 
                 return this._renderTargets;
-            }
+            };
         }
 
         /**
@@ -980,7 +980,7 @@ module BABYLON {
             // Values that need to be evaluated on every frame
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
 
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
                 scene.resetCachedMaterial();
@@ -1084,7 +1084,7 @@ module BABYLON {
                     "logarithmicDepthConstant", "vTangentSpaceParams", "alphaCutOff"
                 ];
 
-                var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"]
+                var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
 
                 var uniformBuffers = ["Material", "Scene"];
 
@@ -1221,14 +1221,14 @@ module BABYLON {
             }
             this._activeEffect = effect;
 
-            // Matrices        
+            // Matrices
             this.bindOnlyWorldMatrix(world);
 
             // Normal Matrix
             if (defines.OBJECTSPACE_NORMALMAP)
             {
                 world.toNormalMatrix(this._normalMatrix);
-                this.bindOnlyNormalMatrix(this._normalMatrix);               
+                this.bindOnlyNormalMatrix(this._normalMatrix);
             }
 
             let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
@@ -1269,7 +1269,7 @@ module BABYLON {
                         }
                     }
 
-                    // Textures     
+                    // Textures
                     if (scene.texturesEnabled) {
                         if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
@@ -1355,7 +1355,7 @@ module BABYLON {
                     this._uniformBuffer.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
                 }
 
-                // Textures     
+                // Textures
                 if (scene.texturesEnabled) {
                     if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                         effect.setTexture("diffuseSampler", this._diffuseTexture);
@@ -1422,7 +1422,7 @@ module BABYLON {
                 // View
                 if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this._reflectionTexture || this._refractionTexture) {
                     this.bindView(effect);
-                }              
+                }
 
                 // Fog
                 MaterialHelper.BindFogParameters(scene, mesh, effect);
@@ -1847,4 +1847,4 @@ module BABYLON {
             Engine.MarkAllMaterialsAsDirty(Material.FresnelDirtyFlag);
         }
     }
-} 
+}

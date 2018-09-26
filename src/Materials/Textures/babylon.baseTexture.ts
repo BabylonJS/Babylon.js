@@ -1,7 +1,7 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Base class of all the textures in babylon.
-     * It groups all the common properties the materials, post process, lights... might need 
+     * It groups all the common properties the materials, post process, lights... might need
      * in order to make a correct use of the texture.
      */
     export class BaseTexture {
@@ -170,12 +170,12 @@
          */
         @serialize()
         public get lodGenerationOffset(): number {
-            if (this._texture) return this._texture._lodGenerationOffset;
+            if (this._texture) { return this._texture._lodGenerationOffset; }
 
             return 0.0;
         }
         public set lodGenerationOffset(value: number) {
-            if (this._texture) this._texture._lodGenerationOffset = value;
+            if (this._texture) { this._texture._lodGenerationOffset = value; }
         }
 
         /**
@@ -183,12 +183,12 @@
          */
         @serialize()
         public get lodGenerationScale(): number {
-            if (this._texture) return this._texture._lodGenerationScale;
+            if (this._texture) { return this._texture._lodGenerationScale; }
 
             return 0.0;
         }
         public set lodGenerationScale(value: number) {
-            if (this._texture) this._texture._lodGenerationScale = value;
+            if (this._texture) { this._texture._lodGenerationScale = value; }
         }
 
         /**
@@ -267,7 +267,7 @@
         /**
          * Instantiates a new BaseTexture.
          * Base class of all the textures in babylon.
-         * It groups all the common properties the materials, post process, lights... might need 
+         * It groups all the common properties the materials, post process, lights... might need
          * in order to make a correct use of the texture.
          * @param scene Define the scene the texture blongs to
          */
@@ -366,8 +366,9 @@
          * @returns the base size
          */
         public getBaseSize(): ISize {
-            if (!this.isReady() || !this._texture)
+            if (!this.isReady() || !this._texture) {
                 return Size.Zero();
+            }
 
             if (this._texture._size) {
                 return new Size(this._texture._size, this._texture._size);
@@ -393,7 +394,7 @@
         /** @hidden */
         public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number): Nullable<InternalTexture> {
             if (!this._scene) {
-                return null
+                return null;
             }
 
             var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
@@ -634,4 +635,4 @@
             }
         }
     }
-} 
+}

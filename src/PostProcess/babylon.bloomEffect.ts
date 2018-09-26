@@ -17,7 +17,7 @@ module BABYLON {
         private _merge: BloomMergePostProcess;
 
         /**
-         * The luminance threshold to find bright areas of the image to bloom. 
+         * The luminance threshold to find bright areas of the image to bloom.
          */
         public get threshold(): number {
             return this._downscale.threshold;

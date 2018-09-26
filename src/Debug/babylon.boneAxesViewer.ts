@@ -41,7 +41,7 @@ module BABYLON.Debug {
         }
 
         /**
-         * Force the viewer to update 
+         * Force the viewer to update
          */
         public update(): void {
 

@@ -151,7 +151,7 @@ module BABYLON {
         private _runningUpdated: number;
         private _worker: Worker;
 
-        private _addUpdateMeshesList: { [n: number]: SerializedMesh; }
+        private _addUpdateMeshesList: { [n: number]: SerializedMesh; };
         private _addUpdateGeometriesList: { [s: string]: SerializedGeometry; };
         private _toRemoveMeshesArray: Array<number>;
         private _toRemoveGeometryArray: Array<string>;
@@ -167,10 +167,10 @@ module BABYLON {
             this._toRemoveMeshesArray = [];
         }
 
-        public static SerializeMesh = function (mesh: AbstractMesh): SerializedMesh {
+        public static SerializeMesh = function(mesh: AbstractMesh): SerializedMesh {
             var submeshes: Array<SerializedSubMesh> = [];
             if (mesh.subMeshes) {
-                submeshes = mesh.subMeshes.map(function (sm, idx) {
+                submeshes = mesh.subMeshes.map(function(sm, idx) {
                     let boundingInfo = sm.getBoundingInfo();
 
                     return {
@@ -184,7 +184,7 @@ module BABYLON {
                         sphereRadius: boundingInfo.boundingSphere.radiusWorld,
                         boxMinimum: boundingInfo.boundingBox.minimumWorld.asArray(),
                         boxMaximum: boundingInfo.boundingBox.maximumWorld.asArray()
-                    }
+                    };
                 });
             }
 
@@ -211,22 +211,22 @@ module BABYLON {
                 worldMatrixFromCache: mesh.worldMatrixFromCache.asArray(),
                 subMeshes: submeshes,
                 checkCollisions: mesh.checkCollisions
-            }
-        }
+            };
+        };
 
-        public static SerializeGeometry = function (geometry: Geometry): SerializedGeometry {
+        public static SerializeGeometry = function(geometry: Geometry): SerializedGeometry {
             return {
                 id: geometry.id,
                 positions: new Float32Array(geometry.getVerticesData(VertexBuffer.PositionKind) || []),
                 normals: new Float32Array(geometry.getVerticesData(VertexBuffer.NormalKind) || []),
                 indices: new Uint32Array(geometry.getIndices() || []),
                 //uvs: new Float32Array(geometry.getVerticesData(VertexBuffer.UVKind) || [])
-            }
-        }
+            };
+        };
 
         public getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void {
-            if (!this._init) return;
-            if (this._collisionsCallbackArray[collisionIndex] || this._collisionsCallbackArray[collisionIndex + 100000]) return;
+            if (!this._init) { return; }
+            if (this._collisionsCallbackArray[collisionIndex] || this._collisionsCallbackArray[collisionIndex + 100000]) { return; }
 
             position.divideToRef(collider._radius, this._scaledPosition);
             displacement.divideToRef(collider._radius, this._scaledVelocity);
@@ -246,7 +246,7 @@ module BABYLON {
             var message: BabylonMessage = {
                 payload: payload,
                 taskType: WorkerTaskType.COLLIDE
-            }
+            };
             this._worker.postMessage(message);
 
         }
@@ -260,7 +260,7 @@ module BABYLON {
             var message: BabylonMessage = {
                 payload: {},
                 taskType: WorkerTaskType.INIT
-            }
+            };
             this._worker.postMessage(message);
         }
 
@@ -298,7 +298,7 @@ module BABYLON {
 
         private _afterRender = () => {
 
-            if (!this._init) return;
+            if (!this._init) { return; }
 
             if (this._toRemoveGeometryArray.length == 0 && this._toRemoveMeshesArray.length == 0 && Object.keys(this._addUpdateGeometriesList).length == 0 && Object.keys(this._addUpdateMeshesList).length == 0) {
                 return;
@@ -321,7 +321,7 @@ module BABYLON {
             var message: BabylonMessage = {
                 payload: payload,
                 taskType: WorkerTaskType.UPDATE
-            }
+            };
             var serializable = [];
             for (var id in payload.updatedGeometries) {
                 if (payload.updatedGeometries.hasOwnProperty(id)) {
@@ -365,7 +365,7 @@ module BABYLON {
                     break;
                 case WorkerTaskType.COLLIDE:
                     var returnPayload: CollisionReplyPayload = returnData.payload;
-                    if (!this._collisionsCallbackArray[returnPayload.collisionId]) return;
+                    if (!this._collisionsCallbackArray[returnPayload.collisionId]) { return; }
 
                     let callback = this._collisionsCallbackArray[returnPayload.collisionId];
 
@@ -464,5 +464,3 @@ module BABYLON {
         }
     }
 }
-
-

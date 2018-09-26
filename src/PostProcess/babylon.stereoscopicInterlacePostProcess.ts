@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * StereoscopicInterlacePostProcess used to render stereo views from a rigged camera
      */
@@ -17,7 +17,7 @@
          */
         constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean) {
             super(name, "stereoscopicInterlace", ['stepSize'], ['camASampler'], 1, rigCameras[1], samplingMode, engine, reusable, isStereoscopicHoriz ? "#define IS_STEREOSCOPIC_HORIZ 1" : undefined);
-            
+
             this._passedProcess = rigCameras[0]._rigPostProcess;
             this._stepSize = new Vector2(1 / this.width, 1 / this.height);
 

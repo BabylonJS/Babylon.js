@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     export interface AbstractScene {
         /**
          * The list of layers (background and foreground) of the scene
@@ -64,7 +64,7 @@
             }
         }
 
-        private _draw(camera: Camera, isBackground: boolean): void {            
+        private _draw(camera: Camera, isBackground: boolean): void {
             let layers = this.scene.layers;
 
             if (layers.length) {
@@ -87,4 +87,4 @@
             this._draw(camera, false);
         }
     }
-} 
+}
