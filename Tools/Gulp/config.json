@@ -139,6 +139,13 @@
             "picking",
             "backgroundMaterial",
             "videoDome"
+        ],
+        "glTFViewer": [
+            "arcRotateCamera",
+            "imageProcessing",
+            "backgroundMaterial",
+            "pbrMaterial",
+            "hdr"        
         ]
     },
     "workloads": {
