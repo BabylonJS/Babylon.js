@@ -96,8 +96,10 @@ var externalTsConfig = {
 
 var minimist = require("minimist");
 var commandLineOptions = minimist(process.argv.slice(2), {
-    boolean: "public"
+    boolean: ["public", "tsLintFix"]
 });
+
+var tsLintFix = commandLineOptions.tsLintFix
 
 function processDependency(kind, dependency, filesToLoad, firstLevelOnly) {
     if (!firstLevelOnly && dependency.dependUpon) {
@@ -270,13 +272,11 @@ gulp.task("build", gulp.series("shaders", function build() {
 * Compiles all typescript files and creating a js and a declaration file.
 */
 gulp.task("typescript-compile", function () {
-    var program = tslint.Linter.createProgram("../../src/tsconfig.json");
-
     var tsResult = gulp.src(config.typescript)
         .pipe(gulpTslint({
             formatter: "stylish",
             configuration: "../../tslint.json",
-            program
+            fix: tsLintFix
         }))
         .pipe(gulpTslint.report())
         .pipe(sourcemaps.init())
@@ -370,6 +370,12 @@ var buildExternalLibrary = function (library, settings, watch) {
     var tsProcess;
     if (library.files && library.files.length) {
         tsProcess = gulp.src(library.files, { base: settings.build.srcOutputDirectory })
+            .pipe(gulpTslint({
+                formatter: "stylish",
+                configuration: "../../tslint.json",
+                fix: tsLintFix
+            }))
+            .pipe(gulpTslint.report())
             .pipe(sourcemaps.init())
             .pipe(typescript(externalTsConfig));
     }
