@@ -21,6 +21,11 @@ module BABYLON {
          */
         public uniformScaleGizmo: AxisScaleGizmo;
 
+        /** Fires an event when any of it's sub gizmos are dragged */
+        public onDragStartObservable = new Observable();
+        /** Fires an event when any of it's sub gizmos are released from dragging */
+        public onDragEndObservable = new Observable();
+
         public set attachedMesh(mesh: Nullable<AbstractMesh>) {
             if (this.xGizmo) {
                 this.xGizmo.attachedMesh = mesh;
@@ -50,6 +55,16 @@ module BABYLON {
             octahedron.scaling.scaleInPlace(0.007);
             uniformScalingMesh.addChild(octahedron);
             this.uniformScaleGizmo.setCustomMesh(uniformScalingMesh, true);
+
+            // Relay drag events
+            [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo)=>{
+                gizmo.dragBehavior.onDragStartObservable.add(()=>{
+                    this.onDragStartObservable.notifyObservers({});
+                });
+                gizmo.dragBehavior.onDragEndObservable.add(()=>{
+                    this.onDragEndObservable.notifyObservers({});
+                });
+            });
 
             this.attachedMesh = null;
         }
@@ -106,6 +121,8 @@ module BABYLON {
             this.yGizmo.dispose();
             this.zGizmo.dispose();
             this.uniformScaleGizmo.dispose();
+            this.onDragStartObservable.clear();
+            this.onDragEndObservable.clear();
         }
     }
 }
