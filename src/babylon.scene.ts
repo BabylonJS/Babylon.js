@@ -63,6 +63,7 @@ module BABYLON {
         renderingGroupId: number;
     }
 
+    /** Interface defining initialization parameters for Scene class */
     export interface SceneOptions {
         /**
          * Defines that scene should keep up-to-date a map of geometry to enable fast look-up by Id
