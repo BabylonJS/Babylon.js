@@ -16,6 +16,11 @@ module BABYLON {
          */
         public zGizmo: PlaneRotationGizmo;
 
+        /** Fires an event when any of it's sub gizmos are dragged */
+        public onDragStartObservable = new Observable();
+        /** Fires an event when any of it's sub gizmos are released from dragging */
+        public onDragEndObservable = new Observable();
+
         public set attachedMesh(mesh: Nullable<AbstractMesh>) {
             if (this.xGizmo) {
                 this.xGizmo.attachedMesh = mesh;
@@ -33,6 +38,17 @@ module BABYLON {
             this.xGizmo = new PlaneRotationGizmo(new Vector3(1, 0, 0), BABYLON.Color3.Red().scale(0.5), gizmoLayer, tessellation);
             this.yGizmo = new PlaneRotationGizmo(new Vector3(0, 1, 0), BABYLON.Color3.Green().scale(0.5), gizmoLayer, tessellation);
             this.zGizmo = new PlaneRotationGizmo(new Vector3(0, 0, 1), BABYLON.Color3.Blue().scale(0.5), gizmoLayer, tessellation);
+
+            // Relay drag events
+            [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+                gizmo.dragBehavior.onDragStartObservable.add(() => {
+                    this.onDragStartObservable.notifyObservers({});
+                });
+                gizmo.dragBehavior.onDragEndObservable.add(() => {
+                    this.onDragEndObservable.notifyObservers({});
+                });
+            });
+
             this.attachedMesh = null;
         }
 
@@ -82,6 +98,8 @@ module BABYLON {
             this.xGizmo.dispose();
             this.yGizmo.dispose();
             this.zGizmo.dispose();
+            this.onDragStartObservable.clear();
+            this.onDragEndObservable.clear();
         }
 
         /**

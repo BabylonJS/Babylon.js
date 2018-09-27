@@ -71,7 +71,7 @@ module BABYLON {
         private _onGesture: Nullable<(e: MSGestureEvent) => void>;
         private _MSGestureHandler: Nullable<MSGesture>;
         private _onLostFocus: Nullable<(e: FocusEvent) => any>;
-        private _onContextMenu: Nullable<(e: PointerEvent) => void>;
+        private _onContextMenu: Nullable<(e: Event) => void>;
 
         /**
          * Attach the input controls to a specific dom element to get the input from.

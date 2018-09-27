@@ -5,7 +5,6 @@ import { Container } from "./container";
 import { TextBlock } from "./textBlock";
 import { InputText } from "./inputText";
 
-
 /**
  * Class used to store key control properties
  */
@@ -32,7 +31,7 @@ type ConnectedInputText = {
     input: InputText,
     onFocusObserver: Nullable<Observer<InputText>>,
     onBlurObserver: Nullable<Observer<InputText>>
-}
+};
 
 /**
  * Class used to create virtual keyboard
@@ -168,11 +167,11 @@ export class VirtualKeyboard extends StackPanel {
 
     /**
      * Connects the keyboard with an input text control
-     * 
+     *
      * @param input defines the target control
      */
     public connect(input: InputText): void {
-        const inputTextAlreadyConnected = this._connectedInputTexts.some(a => a.input === input);
+        const inputTextAlreadyConnected = this._connectedInputTexts.some((a) => a.input === input);
         if (inputTextAlreadyConnected) {
             return;
         }
@@ -201,7 +200,7 @@ export class VirtualKeyboard extends StackPanel {
                         return;
                 }
                 this._currentlyConnectedInputText.processKey(-1, (this.shiftState ? key.toUpperCase() : key));
-    
+
                 if (this.shiftState === 1) {
                     this.shiftState = 0;
                     this.applyShiftState(this.shiftState);
@@ -212,7 +211,7 @@ export class VirtualKeyboard extends StackPanel {
         this.isVisible = false;
         this._currentlyConnectedInputText = input;
         input._connectedVirtualKeyboard = this;
-        
+
         // Events hooking
         const onFocusObserver: Nullable<Observer<InputText>> = input.onFocusObservable.add(() => {
             this._currentlyConnectedInputText = input;
@@ -230,31 +229,31 @@ export class VirtualKeyboard extends StackPanel {
             input,
             onBlurObserver,
             onFocusObserver
-        })
+        });
     }
 
     /**
      * Disconnects the keyboard from connected InputText controls
-     * 
+     *
      * @param input optionally defines a target control, otherwise all are disconnected
      */
     public disconnect(input?: InputText): void {
         if (input) {
             // .find not available on IE
-            let filtered = this._connectedInputTexts.filter(a => a.input === input);
+            let filtered = this._connectedInputTexts.filter((a) => a.input === input);
             if (filtered.length === 1) {
                 this._removeConnectedInputObservables(filtered[0]);
-                
-                this._connectedInputTexts = this._connectedInputTexts.filter(a => a.input !== input);
+
+                this._connectedInputTexts = this._connectedInputTexts.filter((a) => a.input !== input);
                 if (this._currentlyConnectedInputText === input) {
                     this._currentlyConnectedInputText = null;
                 }
             }
         } else {
             this._connectedInputTexts.forEach((connectedInputText: ConnectedInputText) => {
-                this._removeConnectedInputObservables(connectedInputText)
+                this._removeConnectedInputObservables(connectedInputText);
             });
-            this._connectedInputTexts = []
+            this._connectedInputTexts = [];
         }
 
         if (this._connectedInputTexts.length === 0) {

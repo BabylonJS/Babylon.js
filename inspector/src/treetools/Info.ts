@@ -1,7 +1,7 @@
 import { AbstractTreeTool } from "./AbstractTreeTool";
 import { Tooltip } from "../gui/Tooltip";
 
-/** Any object implementing this interface should 
+/** Any object implementing this interface should
  * provide methods to retrieve its info
  */
 export interface IToolInfo {

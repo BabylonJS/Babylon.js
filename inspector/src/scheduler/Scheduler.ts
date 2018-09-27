@@ -1,6 +1,5 @@
 import { PropertyLine } from "../details/PropertyLine";
 
-
 export class Scheduler {
 
     private static _instance: Scheduler;
@@ -17,7 +16,7 @@ export class Scheduler {
     private interval: number;
 
     constructor() {
-        this.interval = setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
+        this.interval = window.setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
     }
 
     public static getInstance(): Scheduler {
@@ -41,7 +40,7 @@ export class Scheduler {
     }
 
     private _update() {
-        // If not in pause, update 
+        // If not in pause, update
         if (!this.pause) {
             for (let prop of this._updatableProperties) {
                 prop.update();

@@ -1,6 +1,6 @@
 import { AbstractTreeTool } from "./AbstractTreeTool";
 
-/** Any object implementing this interface should 
+/** Any object implementing this interface should
  * provide methods to toggle a debug area
  */
 export interface IToolDebug {

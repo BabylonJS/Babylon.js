@@ -26,28 +26,28 @@ export class MeshButton3D extends Button3D {
                 return;
             }
             this.mesh.scaling.scaleInPlace(1.1);
-        }
+        };
 
         this.pointerOutAnimation = () => {
             if (!this.mesh) {
                 return;
             }
             this.mesh.scaling.scaleInPlace(1.0 / 1.1);
-        }
+        };
 
         this.pointerDownAnimation = () => {
             if (!this.mesh) {
                 return;
             }
             this.mesh.scaling.scaleInPlace(0.95);
-        }
+        };
 
         this.pointerUpAnimation = () => {
             if (!this.mesh) {
                 return;
             }
             this.mesh.scaling.scaleInPlace(1.0 / 0.95);
-        }
+        };
     }
 
     protected _getTypeName(): string {

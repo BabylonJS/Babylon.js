@@ -16,7 +16,7 @@ export class MaterialAdapter
         let str = '';
         if (this._obj.name) {
             str = this._obj.name;
-        } // otherwise nothing displayed        
+        } // otherwise nothing displayed
         return str;
     }
 
