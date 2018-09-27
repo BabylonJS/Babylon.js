@@ -212,7 +212,7 @@ export class Line extends Control {
         var globalViewport = this._host._getGlobalViewport(scene);
         var projectedPosition = Vector3.Project(position, Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
 
-        this._moveToProjectedPosition(projectedPosition, end)
+        this._moveToProjectedPosition(projectedPosition, end);
 
         if (projectedPosition.z < 0 || projectedPosition.z > 1) {
             this.notRenderable = true;
@@ -242,4 +242,4 @@ export class Line extends Control {
             this._y1.ignoreAdaptiveScaling = true;
         }
     }
-}   
+}

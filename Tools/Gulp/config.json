@@ -145,7 +145,7 @@
             "imageProcessing",
             "backgroundMaterial",
             "pbrMaterial",
-            "hdr"        
+            "hdr"
         ]
     },
     "workloads": {
@@ -1443,7 +1443,6 @@
                 "core"
             ]
         }
-
     },
     "typescript": [
         "../../src/**/*.ts",
@@ -1999,6 +1998,7 @@
             }
         ],
         "build": {
+            "srcDirectory": "../../Viewer/src/",
             "srcOutputDirectory": "../../Viewer/",
             "distOutputDirectory": "/viewer/",
             "dtsBundle": {
@@ -2071,6 +2071,7 @@
             }
         ],
         "build": {
+            "srcDirectory": "../../Viewer/src/",
             "srcOutputDirectory": "../../Viewer/",
             "distOutputDirectory": "/viewer/",
             "dtsBundle": {

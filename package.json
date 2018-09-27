@@ -41,6 +41,6 @@
     "dependencies": {},
     "devDependencies": {
         "base64-font-loader": "0.0.4",
-        "typescript": "^3.0.1"
+        "typescript": "~3.0.1"
     }
 }

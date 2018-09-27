@@ -250,7 +250,7 @@ export class InputText extends Control implements IFocusableControl {
 
     /** @hidden */
     public onFocus(): void {
-        if(!this._isEnabled) {
+        if (!this._isEnabled) {
             return;
         }
         this._scrollLeft = null;
@@ -533,7 +533,7 @@ export class InputText extends Control implements IFocusableControl {
             this._markAsDirty();
             return true;
         }
-        if(!this._isEnabled) {
+        if (!this._isEnabled) {
             return false;
         }
         this._host.focusedControl = this;

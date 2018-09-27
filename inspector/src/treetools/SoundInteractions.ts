@@ -1,12 +1,11 @@
 import { AbstractTreeTool } from "./AbstractTreeTool";
 
-
 export interface ISoundInteractions {
     setPlaying: (callback: Function) => void;
 }
 
 /**
- * 
+ *
  */
 export class SoundInteractions extends AbstractTreeTool {
     private playSound: ISoundInteractions;

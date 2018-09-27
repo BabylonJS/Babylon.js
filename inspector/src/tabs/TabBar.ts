@@ -18,7 +18,6 @@ import { Tab } from "./Tab";
 import { TextureTab } from "./TextureTab";
 import { ToolsTab } from "./ToolsTab";
 
-
 /**
  * A tab bar will contains each view the inspector can have : Canvas2D, Meshes...
  * The default active tab is the first one of the list.
@@ -97,13 +96,12 @@ export class TabBar extends BasicElement {
             this._div.appendChild(tab.toHtml());
         }
 
-
         this._moreTabsIcon = Helpers.CreateElement('i', 'fa fa-angle-double-right more-tabs');
 
         this._moreTabsPanel = Helpers.CreateDiv('more-tabs-panel');
 
         this._moreTabsIcon.addEventListener('click', () => {
-            // Hide the 'more-tabs-panel' if already displayed 
+            // Hide the 'more-tabs-panel' if already displayed
             if (this._moreTabsPanel.style.display == 'flex') {
                 this._moreTabsPanel.style.display = 'none';
             } else {
@@ -124,8 +122,8 @@ export class TabBar extends BasicElement {
         });
     }
 
-    /** 
-     * Add a tab to the 'more-tabs' panel, displayed by clicking on the 
+    /**
+     * Add a tab to the 'more-tabs' panel, displayed by clicking on the
      * 'more-tabs' icon
      */
     private _addInvisibleTabToPanel(tab: Tab) {
@@ -203,8 +201,8 @@ export class TabBar extends BasicElement {
         return this._inspector;
     }
 
-    /** 
-     * Returns the total width in pixel of the tabbar, 
+    /**
+     * Returns the total width in pixel of the tabbar,
      * that corresponds to the sum of the width of each visible tab + toolbar width
     */
     public getPixelWidth(): number {

@@ -29,7 +29,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
             return;
         }
 
-        this._node.position = value;;
+        this._node.position = value;
     }
 
     /** Gets or sets the control scaling  in world space */
@@ -46,7 +46,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
             return;
         }
 
-        this._node.scaling = value;;
+        this._node.scaling = value;
     }
 
     /** Callback used to start pointer enter animation */

@@ -226,7 +226,7 @@ export class TextBlock extends Control {
         var x = 0;
         switch (this._textHorizontalAlignment) {
             case Control.HORIZONTAL_ALIGNMENT_LEFT:
-                x = 0
+                x = 0;
                 break;
             case Control.HORIZONTAL_ALIGNMENT_RIGHT:
                 x = width - textWidth;
@@ -378,7 +378,7 @@ export class TextBlock extends Control {
             this._drawText(line.text, line.width, rootY, context);
             rootY += this._fontOffset.height;
 
-            if (line.width > maxLineWidth) maxLineWidth = line.width;
+            if (line.width > maxLineWidth) { maxLineWidth = line.width; }
         }
 
         if (this._resizeToFit) {

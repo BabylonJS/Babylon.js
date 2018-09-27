@@ -13,7 +13,7 @@ export interface ISceneOptimizerConfiguration {
         particles?: ISceneOptimizerParameters;
         renderTarget?: ISceneOptimizerParameters;
         mergeMeshes?: ISceneOptimizerParameters;
-    }
+    };
     custom?: string;
 }
 
