@@ -350,14 +350,16 @@ var BABYLON;
              * @returns {boolean}
              */
             var isInArray = function (arr, obj) {
-                if (!arr[obj[0]])
+                if (!arr[obj[0]]) {
                     arr[obj[0]] = { normals: [], idx: [] };
+                }
                 var idx = arr[obj[0]].normals.indexOf(obj[1]);
                 return idx === -1 ? -1 : arr[obj[0]].idx[idx];
             };
             var isInArrayUV = function (arr, obj) {
-                if (!arr[obj[0]])
+                if (!arr[obj[0]]) {
                     arr[obj[0]] = { normals: [], idx: [], uv: [] };
+                }
                 var idx = arr[obj[0]].normals.indexOf(obj[1]);
                 if (idx != 1 && (obj[2] == arr[obj[0]].uv[idx])) {
                     return arr[obj[0]].idx[idx];
@@ -411,8 +413,9 @@ var BABYLON;
                     //Add the tuple in the comparison list
                     tuplePosNorm[indicePositionFromObj].normals.push(indiceNormalFromObj);
                     tuplePosNorm[indicePositionFromObj].idx.push(curPositionInIndices++);
-                    if (OBJFileLoader.OPTIMIZE_WITH_UV)
+                    if (OBJFileLoader.OPTIMIZE_WITH_UV) {
                         tuplePosNorm[indicePositionFromObj].uv.push(indiceUvsFromObj);
+                    }
                 }
                 else {
                     //The tuple already exists

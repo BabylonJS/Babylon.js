@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Render pipeline to produce ssao effect
      */
@@ -99,7 +99,6 @@
         */
         private _samplerOffsets: number[];
 
-        
         @serialize("expensiveBlur")
         private _expensiveBlur: boolean = true;
         /**
@@ -197,8 +196,9 @@
 
             // Finish
             scene.postProcessRenderPipelineManager.addPipeline(this);
-            if (cameras)
+            if (cameras) {
                 scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
+            }
 
         }
 
@@ -220,8 +220,9 @@
 
             this._randomTexture.dispose();
 
-            if (disableGeometryBufferRenderer)
+            if (disableGeometryBufferRenderer) {
                 this._scene.disableGeometryBufferRenderer();
+            }
 
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
 
@@ -303,9 +304,9 @@
         private _hemisphereSample_uniform(u: number, v: number): Vector3 {
             var phi = v * 2.0 * Math.PI;
             // rejecting samples that are close to tangent plane to avoid z-fighting artifacts
-            var cosTheta = 1.0 - (u * 0.85 + 0.15); 
+            var cosTheta = 1.0 - (u * 0.85 + 0.15);
             var sinTheta = Math.sqrt(1.0 - cosTheta * cosTheta);
-            return new Vector3(Math.cos(phi) * sinTheta, Math.sin(phi) * sinTheta, cosTheta );
+            return new Vector3(Math.cos(phi) * sinTheta, Math.sin(phi) * sinTheta, cosTheta);
         }
 
         private _generateHemisphere(): number[] {
@@ -399,7 +400,7 @@
 
             var rand = (min: number, max: number) => {
                 return Math.random() * (max - min) + min;
-            }
+            };
 
             var randVector = Vector3.Zero();
 

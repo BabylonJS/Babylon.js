@@ -34,7 +34,7 @@ module BABYLON {
         public pinchPrecision = 12.0;
 
         /**
-         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0. 
+         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
          * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
          */
         @serialize()
@@ -91,7 +91,7 @@ module BABYLON {
             this._pointerInput = (p, s) => {
                 var evt = <PointerEvent>p.event;
                 let isTouch = (<any>p.event).pointerType === "touch";
-                
+
                 if (engine.isInVRExclusivePointerMode) {
                     return;
                 }
@@ -148,15 +148,15 @@ module BABYLON {
                         pointB = null; // Mouse and pen are mono pointer
                     }
 
-                    //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
-                    //but emptying completly pointers collection is required to fix a bug on iPhone : 
-                    //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
+                    //would be better to use pointers.remove(evt.pointerId) for multitouch gestures,
+                    //but emptying completly pointers collection is required to fix a bug on iPhone :
+                    //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers
                     //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
                     if (engine._badOS) {
                         pointA = pointB = null;
                     }
                     else {
-                        //only remove the impacted pointer in case of multitouch allowing on most 
+                        //only remove the impacted pointer in case of multitouch allowing on most
                         //platforms switching from rotate to zoom and pan seamlessly.
                         if (pointB && pointA && pointA.pointerId == evt.pointerId) {
                             pointA = pointB;
@@ -279,11 +279,11 @@ module BABYLON {
                         previousPinchSquaredDistance = pinchSquaredDistance;
                     }
                 }
-            }
+            };
 
             this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE | PointerEventTypes.POINTERDOUBLETAP);
 
-            this._onContextMenu = evt => {
+            this._onContextMenu = (evt) => {
                 evt.preventDefault();
             };
 
@@ -302,7 +302,7 @@ module BABYLON {
                 initialDistance = 0;
             };
 
-            this._onMouseMove = evt => {
+            this._onMouseMove = (evt) => {
                 if (!engine.isPointerLock) {
                     return;
                 }
@@ -318,7 +318,7 @@ module BABYLON {
                 }
             };
 
-            this._onGestureStart = e => {
+            this._onGestureStart = (e) => {
                 if (window.MSGesture === undefined) {
                     return;
                 }
@@ -331,9 +331,8 @@ module BABYLON {
                 this._MSGestureHandler.addPointer(e.pointerId);
             };
 
-            this._onGesture = e => {
+            this._onGesture = (e) => {
                 this.camera.radius *= e.scale;
-
 
                 if (e.preventDefault) {
                     if (!noPreventDefault) {

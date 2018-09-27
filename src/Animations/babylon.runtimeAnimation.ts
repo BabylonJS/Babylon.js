@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
 
     // Static values to help the garbage collector
 
@@ -277,7 +277,7 @@
             var path: any;
             var destination: any;
 
-            let targetPropertyPath = this._animation.targetPropertyPath
+            let targetPropertyPath = this._animation.targetPropertyPath;
 
             if (targetPropertyPath.length > 1) {
                 var property = target[targetPropertyPath[0]];
@@ -411,7 +411,7 @@
          * @returns a boolean indicating if the animation is running
          */
         public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight = -1.0): boolean {
-            let targetPropertyPath = this._animation.targetPropertyPath
+            let targetPropertyPath = this._animation.targetPropertyPath;
             if (!targetPropertyPath || targetPropertyPath.length < 1) {
                 this._stopped = true;
                 return false;
@@ -589,5 +589,3 @@
         }
     }
 }
-
-

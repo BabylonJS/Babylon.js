@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Class used to represent a specific level of detail of a mesh
      * @see http://doc.babylonjs.com/how_to/how_to_use_lod
@@ -11,9 +11,9 @@
          */
         constructor(
             /** Defines the distance where this level should star being displayed */
-            public distance: number, 
+            public distance: number,
             /** Defines the mesh to use to render this level */
             public mesh: Nullable<Mesh>) {
         }
     }
-} 
+}

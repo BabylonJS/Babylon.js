@@ -1,18 +1,18 @@
-﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF1 {
     const BinaryExtensionBufferName = "binary_glTF";
 
     interface IGLTFBinaryExtensionShader {
         bufferView: string;
-    };
+    }
 
     interface IGLTFBinaryExtensionImage {
         bufferView: string;
         mimeType: string;
         height: number;
         width: number;
-    };
+    }
 
     export class GLTFBinaryExtension extends GLTFLoaderExtension {
         private _bin : ArrayBufferView;

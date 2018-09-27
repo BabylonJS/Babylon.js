@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Specialized buffer used to store vertex data
      */
@@ -111,12 +111,12 @@
             if (type == undefined) {
                 const data = this.getData();
                 this.type = VertexBuffer.FLOAT;
-                if (data instanceof Int8Array) this.type = VertexBuffer.BYTE;
-                else if (data instanceof Uint8Array) this.type = VertexBuffer.UNSIGNED_BYTE;
-                else if (data instanceof Int16Array) this.type = VertexBuffer.SHORT;
-                else if (data instanceof Uint16Array) this.type = VertexBuffer.UNSIGNED_SHORT;
-                else if (data instanceof Int32Array) this.type = VertexBuffer.INT;
-                else if (data instanceof Uint32Array) this.type = VertexBuffer.UNSIGNED_INT;
+                if (data instanceof Int8Array) { this.type = VertexBuffer.BYTE; }
+                else if (data instanceof Uint8Array) { this.type = VertexBuffer.UNSIGNED_BYTE; }
+                else if (data instanceof Int16Array) { this.type = VertexBuffer.SHORT; }
+                else if (data instanceof Uint16Array) { this.type = VertexBuffer.UNSIGNED_SHORT; }
+                else if (data instanceof Int32Array) { this.type = VertexBuffer.INT; }
+                else if (data instanceof Uint32Array) { this.type = VertexBuffer.UNSIGNED_INT; }
             }
             else {
                 this.type = type;
@@ -205,7 +205,7 @@
 
         /**
          * Returns the number of components per vertex attribute (integer)
-         * @returns the size in float 
+         * @returns the size in float
          */
         public getSize(): number {
             return this._size;
@@ -220,7 +220,7 @@
         }
 
         /**
-         * Returns the instancing divisor, zero for non-instanced (integer).  
+         * Returns the instancing divisor, zero for non-instanced (integer).
          * @returns a number
          */
         public getInstanceDivisor(): number {
@@ -238,16 +238,16 @@
         }
 
         /**
-         * Updates the underlying buffer according to the passed numeric array or Float32Array.  
+         * Updates the underlying buffer according to the passed numeric array or Float32Array.
          * This function will create a new buffer if the current one is not updatable
-         * @param data defines the data to store 
+         * @param data defines the data to store
          */
         public update(data: DataArray): void {
             this._buffer.update(data);
         }
 
         /**
-         * Updates directly the underlying WebGLBuffer according to the passed numeric array or Float32Array.  
+         * Updates directly the underlying WebGLBuffer according to the passed numeric array or Float32Array.
          * Returns the directly updated WebGLBuffer.
          * @param data the new data
          * @param offset the new offset
@@ -257,8 +257,8 @@
             this._buffer.updateDirectly(data, offset, undefined, useBytes);
         }
 
-        /** 
-         * Disposes the VertexBuffer and the underlying WebGLBuffer.  
+        /**
+         * Disposes the VertexBuffer and the underlying WebGLBuffer.
          */
         public dispose(): void {
             if (this._ownsBuffer) {

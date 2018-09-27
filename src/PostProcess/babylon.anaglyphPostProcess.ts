@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Postprocess used to generate anaglyphic rendering
      */
@@ -23,4 +23,4 @@
             });
         }
     }
-} 
+}

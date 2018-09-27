@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     //declare var require: any;
     declare var CANNON: any;
 
@@ -101,7 +101,7 @@
                 //try to keep the body moving in the right direction by taking old properties.
                 //Should be tested!
                 if (oldBody) {
-                    ['force', 'torque', 'velocity', 'angularVelocity'].forEach(function (param) {
+                    ['force', 'torque', 'velocity', 'angularVelocity'].forEach(function(param) {
                         impostor.physicsBody[param].copy(oldBody[param]);
                     });
                 }
@@ -140,9 +140,9 @@
                         }
                     }
                     currentRotation.multiplyInPlace(mesh.rotationQuaternion);
-                    mesh.getChildMeshes(true).filter(m => !!m.physicsImpostor).forEach(processMesh.bind(this, mesh.getAbsolutePosition()));
-                }
-                meshChildren.filter(m => !!m.physicsImpostor).forEach(processMesh.bind(this, mainImpostor.object.getAbsolutePosition()));
+                    mesh.getChildMeshes(true).filter((m) => !!m.physicsImpostor).forEach(processMesh.bind(this, mesh.getAbsolutePosition()));
+                };
+                meshChildren.filter((m) => !!m.physicsImpostor).forEach(processMesh.bind(this, mainImpostor.object.getAbsolutePosition()));
             }
         }
 
@@ -176,7 +176,7 @@
                     constraint = new this.BJSCANNON.HingeConstraint(mainBody, connectedBody, constraintData);
                     break;
                 case PhysicsJoint.DistanceJoint:
-                    constraint = new this.BJSCANNON.DistanceConstraint(mainBody, connectedBody, (<DistanceJointData>jointData).maxDistance || 2)
+                    constraint = new this.BJSCANNON.DistanceConstraint(mainBody, connectedBody, (<DistanceJointData>jointData).maxDistance || 2);
                     break;
                 case PhysicsJoint.SpringJoint:
                     var springData = <SpringJointData>jointData;
@@ -198,13 +198,13 @@
                     break;
             }
             //set the collideConnected flag after the creation, since DistanceJoint ignores it.
-            constraint.collideConnected = !!jointData.collision
+            constraint.collideConnected = !!jointData.collision;
             impostorJoint.joint.physicsJoint = constraint;
             //don't add spring as constraint, as it is not one.
             if (impostorJoint.joint.type !== PhysicsJoint.SpringJoint) {
                 this.world.addConstraint(constraint);
             } else {
-                (<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback = (<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback || function () {
+                (<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback = (<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback || function() {
                     constraint.applyForce();
                 };
                 impostorJoint.mainImpostor.registerAfterPhysicsStep((<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback);
@@ -274,7 +274,7 @@
                     // should transform the vertex data to world coordinates!!
                     var rawVerts = object.getVerticesData ? object.getVerticesData(VertexBuffer.PositionKind) : [];
                     var rawFaces = object.getIndices ? object.getIndices() : [];
-                    if (!rawVerts) return;
+                    if (!rawVerts) { return; }
                     // get only scale! so the object could transform correctly.
                     let oldPosition = object.position.clone();
                     let oldRotation = object.rotation && object.rotation.clone();
@@ -358,7 +358,6 @@
                 matrix[x][z] = Math.max(y, matrix[x][z]);
             }
 
-
             for (var x = 0; x <= arraySize; ++x) {
                 if (!matrix[x]) {
                     var loc = 1;
@@ -403,7 +402,7 @@
             object.computeWorldMatrix && object.computeWorldMatrix(true);
             // The delta between the mesh position and the mesh bounding box center
             let bInfo = object.getBoundingInfo();
-            if (!bInfo) return;
+            if (!bInfo) { return; }
             var center = impostor.getObjectCenter();
             //m.getAbsolutePosition().subtract(m.getBoundingInfo().boundingBox.centerWorld)
             this._tmpDeltaPosition.copyFrom(object.getAbsolutePivotPoint().subtract(center));
@@ -495,14 +494,14 @@
             if (!v) {
                 return null;
             }
-            return new Vector3(v.x, v.y, v.z)
+            return new Vector3(v.x, v.y, v.z);
         }
         public getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
             var v = impostor.physicsBody.angularVelocity;
             if (!v) {
                 return null;
             }
-            return new Vector3(v.x, v.y, v.z)
+            return new Vector3(v.x, v.y, v.z);
         }
 
         public setBodyMass(impostor: PhysicsImpostor, mass: number) {
@@ -605,7 +604,7 @@
             //this will force cannon to execute at least one step when using interpolation
             let step_tmp1 = new this.BJSCANNON.Vec3();
             let Engine = this.BJSCANNON;
-            this.BJSCANNON.World.prototype.step = function (dt: number, timeSinceLastCalled: number, maxSubSteps: number) {
+            this.BJSCANNON.World.prototype.step = function(dt: number, timeSinceLastCalled: number, maxSubSteps: number) {
                 maxSubSteps = maxSubSteps || 10;
                 timeSinceLastCalled = timeSinceLastCalled || 0;
                 if (timeSinceLastCalled === 0) {

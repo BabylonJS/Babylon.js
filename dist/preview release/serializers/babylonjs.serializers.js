@@ -164,7 +164,6 @@ BABYLON.Effect.ShadersStore['textureTransformPixelShader'] = "precision highp fl
 
 var BABYLON;
 (function (BABYLON) {
-    ;
     /**
      * Class for generating glTF data from a Babylon scene.
      */
@@ -1314,7 +1313,6 @@ var BABYLON;
                                     }
                                 }
                             }
-                            ;
                             if (scene.nodes.length) {
                                 _this._scenes.push(scene);
                             }
@@ -1364,7 +1362,6 @@ var BABYLON;
                         var babylonTransformNode = nodes_2[_i];
                         _loop_1(babylonTransformNode);
                     }
-                    ;
                     return promiseChain.then(function () {
                         if (runtimeGLTFAnimation.channels.length && runtimeGLTFAnimation.samplers.length) {
                             _this._animations.push(runtimeGLTFAnimation);
@@ -2910,7 +2907,6 @@ var BABYLON;
                                 }
                             }
                         }
-                        ;
                     }
                 };
                 /**
@@ -2948,12 +2944,10 @@ var BABYLON;
                                     }
                                 }
                             }
-                            ;
                             if (glTFAnimation.channels.length && glTFAnimation.samplers.length) {
                                 glTFAnimations.push(glTFAnimation);
                             }
                         }
-                        ;
                     }
                 };
                 _GLTFAnimation.AddAnimation = function (name, glTFAnimation, babylonTransformNode, animation, dataAccessorType, animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, useQuaternion, animationSampleRate) {
@@ -3165,7 +3159,6 @@ var BABYLON;
                         inputs.push(keyFrame.frame / animation.framePerSecond); // keyframes in seconds.
                         _GLTFAnimation._AddKeyframeValue(keyFrame, animation, outputs, animationChannelTargetPath, babylonTransformNode, convertToRightHandedSystem, useQuaternion);
                     }
-                    ;
                 };
                 /**
                  * Creates cubic spline animation from the animation key frames

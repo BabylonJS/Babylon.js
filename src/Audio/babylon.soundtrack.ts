@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Options allowed during the creation of a sound track.
      */
@@ -14,7 +14,7 @@
     }
 
     /**
-     * It could be useful to isolate your music & sounds on several tracks to better manage volume on a grouped instance of sounds. 
+     * It could be useful to isolate your music & sounds on several tracks to better manage volume on a grouped instance of sounds.
      * It will be also used in a future release to apply effects on a specific track.
      * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
      */
@@ -39,7 +39,7 @@
          * Creates a new sound track.
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
          * @param scene Define the scene the sound track belongs to
-         * @param options 
+         * @param options
          */
         constructor(scene: Scene, options: ISoundTrackOptions = { }) {
             this._scene = scene;
@@ -87,7 +87,7 @@
         /**
          * Adds a sound to this sound track
          * @param sound define the cound to add
-         * @ignoreNaming 
+         * @ignoreNaming
          */
         public AddSound(sound: Sound): void {
             if (!this._isInitialized) {
@@ -112,7 +112,7 @@
         /**
          * Removes a sound to this sound track
          * @param sound define the cound to remove
-         * @ignoreNaming 
+         * @ignoreNaming
          */
         public RemoveSound(sound: Sound): void {
             var index = this.soundCollection.indexOf(sound);
@@ -158,7 +158,7 @@
         }
 
         /**
-         * Connect the sound track to an audio analyser allowing some amazing 
+         * Connect the sound track to an audio analyser allowing some amazing
          * synchornization between the sounds/music and your visualization (VuMeter for instance).
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
          * @param analyser The analyser to connect to the engine

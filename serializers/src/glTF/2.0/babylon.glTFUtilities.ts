@@ -39,7 +39,7 @@ module BABYLON.GLTF2.Exporter {
          * @param byteOffset The offset relative to the start of the bufferView in bytes
          * @param min Minimum value of each component in this attribute
          * @param max Maximum value of each component in this attribute
-         * @returns accessor for glTF 
+         * @returns accessor for glTF
          */
         public static _CreateAccessor(bufferviewIndex: number, name: string, type: AccessorType, componentType: AccessorComponentType, count: number, byteOffset: Nullable<number>, min: Nullable<number[]>, max: Nullable<number[]>): IAccessor {
             let accessor: IAccessor = { name: name, bufferView: bufferviewIndex, componentType: componentType, count: count, type: type };

@@ -23,7 +23,7 @@ module BABYLON {
                 }
                 effect.setFloat('threshold', Math.pow(this.threshold, BABYLON.ToGammaSpace));
                 effect.setFloat('exposure', this._exposure);
-            })
+            });
         }
     }
-} 
+}

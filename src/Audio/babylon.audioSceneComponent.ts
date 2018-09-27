@@ -9,7 +9,7 @@ module BABYLON {
             for (let index = 0, cache = parsedData.sounds.length; index < cache; index++) {
                 var parsedSound = parsedData.sounds[index];
                 if (Engine.audioEngine.canUseWebAudio) {
-                    if (!parsedSound.url) parsedSound.url = parsedSound.name;
+                    if (!parsedSound.url) { parsedSound.url = parsedSound.name; }
                     if (!loadedSounds[parsedSound.url]) {
                         loadedSound = Sound.Parse(parsedSound, scene, rootUrl);
                         loadedSounds[parsedSound.url] = loadedSound;
@@ -35,12 +35,12 @@ module BABYLON {
     }
 
     export interface Scene {
-        /** 
+        /**
          * @hidden
          * Backing field
          */
         _mainSoundTrack: SoundTrack;
-        /** 
+        /**
          * The main sound track played by the scene.
          * It cotains your primary collection of sounds.
          */
@@ -72,7 +72,7 @@ module BABYLON {
     }
 
     Object.defineProperty(Scene.prototype, "mainSoundTrack", {
-        get: function (this:Scene) {
+        get: function(this: Scene) {
             let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
             if (!compo) {
                 compo = new AudioSceneComponent(this);
@@ -108,10 +108,10 @@ module BABYLON {
         }
 
         return null;
-    }
+    };
 
     Object.defineProperty(Scene.prototype, "audioEnabled", {
-        get: function (this:Scene) {
+        get: function(this: Scene) {
             let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
             if (!compo) {
                 compo = new AudioSceneComponent(this);
@@ -120,7 +120,7 @@ module BABYLON {
 
             return compo.audioEnabled;
         },
-        set: function(this:Scene, value: boolean) {
+        set: function(this: Scene, value: boolean) {
             let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
             if (!compo) {
                 compo = new AudioSceneComponent(this);
@@ -139,7 +139,7 @@ module BABYLON {
     });
 
     Object.defineProperty(Scene.prototype, "headphone", {
-        get: function (this:Scene) {
+        get: function(this: Scene) {
             let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
             if (!compo) {
                 compo = new AudioSceneComponent(this);
@@ -148,13 +148,13 @@ module BABYLON {
 
             return compo.headphone;
         },
-        set: function(this:Scene, value: boolean) {
+        set: function(this: Scene, value: boolean) {
             let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
             if (!compo) {
                 compo = new AudioSceneComponent(this);
                 this._addComponent(compo);
             }
-            
+
             if (value) {
                 compo.switchAudioModeForHeadphones();
             }
@@ -260,7 +260,7 @@ module BABYLON {
 
         /**
          * Removes all the elements in the container from the scene
-         * @param container contains the elements to remove 
+         * @param container contains the elements to remove
          */
         public removeFromContainer(container: AbstractScene): void {
             if (!container.sounds) {
@@ -369,16 +369,16 @@ module BABYLON {
             if (!this._audioEnabled || !scene._mainSoundTrack || !scene.soundTracks || (scene._mainSoundTrack.soundCollection.length === 0 && scene.soundTracks.length === 1)) {
                 return;
             }
-    
+
             var listeningCamera: Nullable<Camera>;
             var audioEngine = Engine.audioEngine;
-    
+
             if (scene.activeCameras.length > 0) {
                 listeningCamera = scene.activeCameras[0];
             } else {
                 listeningCamera = scene.activeCamera;
             }
-    
+
             if (listeningCamera && audioEngine.audioContext) {
                 audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
                 // for VR cameras
@@ -392,7 +392,7 @@ module BABYLON {
                 if (!isNaN(cameraDirection.x) && !isNaN(cameraDirection.y) && !isNaN(cameraDirection.z)) {
                     audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
                 }
-    
+
                 var i: number;
                 for (i = 0; i < scene.mainSoundTrack.soundCollection.length; i++) {
                     var sound = scene.mainSoundTrack.soundCollection[i];
@@ -413,4 +413,4 @@ module BABYLON {
             }
         }
     }
-} 
+}

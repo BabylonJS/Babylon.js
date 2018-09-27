@@ -24,7 +24,7 @@ module BABYLON {
         /**
          * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
          */
-        isBillboardBased: boolean;        
+        isBillboardBased: boolean;
         /**
          * The rendering group used by the Particle system to chose when to render.
          */
@@ -37,23 +37,23 @@ module BABYLON {
          /**
          * The overall motion speed (0.01 is default update speed, faster updates = faster animation)
          */
-        updateSpeed: number;        
+        updateSpeed: number;
 
         /**
          * The amount of time the particle system is running (depends of the overall update speed).
          */
-        targetStopDuration: number;        
+        targetStopDuration: number;
 
         /**
          * The texture used to render each particle. (this can be a spritesheet)
          */
-        particleTexture: Nullable<Texture>;   
-        
+        particleTexture: Nullable<Texture>;
+
         /**
          * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE, ParticleSystem.BLENDMODE_STANDARD or ParticleSystem.BLENDMODE_ADD.
          */
-        blendMode: number;   
-        
+        blendMode: number;
+
         /**
          * Minimum life time of emitting particles.
          */
@@ -61,7 +61,7 @@ module BABYLON {
         /**
          * Maximum life time of emitting particles.
          */
-        maxLifeTime: number;    
+        maxLifeTime: number;
 
         /**
          * Minimum Size of emitting particles.
@@ -70,8 +70,8 @@ module BABYLON {
         /**
          * Maximum Size of emitting particles.
          */
-        maxSize: number;     
-        
+        maxSize: number;
+
         /**
          * Minimum scale of emitting particles on X axis.
          */
@@ -79,7 +79,7 @@ module BABYLON {
         /**
          * Maximum scale of emitting particles on X axis.
          */
-        maxScaleX: number;        
+        maxScaleX: number;
 
         /**
          * Minimum scale of emitting particles on Y axis.
@@ -88,8 +88,8 @@ module BABYLON {
         /**
          * Maximum scale of emitting particles on Y axis.
          */
-        maxScaleY: number;             
-        
+        maxScaleY: number;
+
         /**
          * Random color of each particle after it has been emitted, between color1 and color2 vectors.
          */
@@ -97,22 +97,22 @@ module BABYLON {
         /**
          * Random color of each particle after it has been emitted, between color1 and color2 vectors.
          */
-        color2: Color4;  
-        
+        color2: Color4;
+
         /**
          * Color the particle will have at the end of its lifetime.
          */
         colorDead: Color4;
-        
+
         /**
          * The maximum number of particles to emit per frame until we reach the activeParticleCount value
          */
         emitRate: number;
-        
+
         /**
          * You can use gravity if you want to give an orientation to your particles.
          */
-        gravity: Vector3;    
+        gravity: Vector3;
 
         /**
          * Minimum power of emitting particles.
@@ -121,7 +121,7 @@ module BABYLON {
         /**
          * Maximum power of emitting particles.
          */
-        maxEmitPower: number;        
+        maxEmitPower: number;
         /**
          * Minimum angular speed of emitting particles (Z-axis rotation for each particle).
          */
@@ -131,31 +131,31 @@ module BABYLON {
          */
         maxAngularSpeed: number;
         /**
-         * Gets or sets the minimal initial rotation in radians.         
+         * Gets or sets the minimal initial rotation in radians.
          */
         minInitialRotation: number;
         /**
-         * Gets or sets the maximal initial rotation in radians.         
+         * Gets or sets the maximal initial rotation in radians.
          */
-        maxInitialRotation: number;         
+        maxInitialRotation: number;
         /**
          * The particle emitter type defines the emitter used by the particle system.
          * It can be for example box, sphere, or cone...
          */
-        particleEmitterType: Nullable<IParticleEmitterType>;  
+        particleEmitterType: Nullable<IParticleEmitterType>;
         /**
          * Defines the delay in milliseconds before starting the system (0 by default)
          */
-        startDelay: number;        
-        /** 
-         * Gets or sets a value indicating how many cycles (or frames) must be executed before first rendering (this value has to be set before starting the system). Default is 0 
+        startDelay: number;
+        /**
+         * Gets or sets a value indicating how many cycles (or frames) must be executed before first rendering (this value has to be set before starting the system). Default is 0
          */
-        preWarmCycles: number;   
-        /** 
-         * Gets or sets a value indicating the time step multiplier to use in pre-warm mode (default is 1) 
+        preWarmCycles: number;
+        /**
+         * Gets or sets a value indicating the time step multiplier to use in pre-warm mode (default is 1)
          */
-        preWarmStepOffset: number;     
-        
+        preWarmStepOffset: number;
+
         /**
          * If using a spritesheet (isAnimationSheetEnabled) defines the speed of the sprite loop (default is 1 meaning the animation will play once during the entire particle lifetime)
          */
@@ -175,12 +175,12 @@ module BABYLON {
         /**
          * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use
          */
-        spriteCellHeight: number;           
+        spriteCellHeight: number;
         /**
          * This allows the system to random pick the start cell ID between startSpriteCellID and endSpriteCellID
          */
-        spriteRandomStartCell: boolean;        
-        
+        spriteRandomStartCell: boolean;
+
         /**
          * Gets or sets a boolean indicating if a spritesheet is used to animate the particles texture
          */
@@ -195,8 +195,8 @@ module BABYLON {
         noiseTexture: Nullable<BaseTexture>;
 
         /** Gets or sets the strength to apply to the noise value (default is (10, 10, 10)) */
-        noiseStrength: Vector3;        
-        
+        noiseStrength: Vector3;
+
         /**
          * Gets or sets the billboard mode to use when isBillboardBased = true.
          * Value can be: ParticleSystem.BILLBOARDMODE_ALL, ParticleSystem.BILLBOARDMODE_Y, ParticleSystem.BILLBOARDMODE_STRETCHED
@@ -218,18 +218,18 @@ module BABYLON {
 
         /**
          * Gets or sets the frame to end the animation on when beginAnimationOnStart is true
-         */        
+         */
         beginAnimationTo: number;
 
         /**
          * Gets or sets a boolean indicating if animations must loop when beginAnimationOnStart is true
          */
-        beginAnimationLoop: boolean;       
+        beginAnimationLoop: boolean;
 
         /**
          * Specifies whether the particle system will be disposed once it reaches the end of the animation.
          */
-        disposeOnStop: boolean;        
+        disposeOnStop: boolean;
 
         /**
          * Gets the maximum number of particles active at the same time.
@@ -294,7 +294,7 @@ module BABYLON {
          * Is this system ready to be used/rendered
          * @return true if the system is ready
          */
-        isReady(): boolean; 
+        isReady(): boolean;
         /**
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
@@ -302,7 +302,7 @@ module BABYLON {
          * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
          * @returns the current particle system
          */
-        addColorGradient(gradient: number, color1: Color4, color2?: Color4): IParticleSystem;   
+        addColorGradient(gradient: number, color1: Color4, color2?: Color4): IParticleSystem;
         /**
          * Remove a specific color gradient
          * @param gradient defines the gradient to remove
@@ -340,7 +340,7 @@ module BABYLON {
          * You must use addAngularSpeedGradient and removeAngularSpeedGradient to udpate this list
          * @returns the list of angular speed gradients
          */
-        getAngularSpeedGradients(): Nullable<Array<FactorGradient>>;   
+        getAngularSpeedGradients(): Nullable<Array<FactorGradient>>;
         /**
          * Adds a new angular speed gradient
          * @param gradient defines the gradient to use (between 0 and 1)
@@ -354,7 +354,7 @@ module BABYLON {
          * @param gradient defines the gradient to remove
          * @returns the current particle system
          */
-        removeAngularSpeedGradient(gradient: number): IParticleSystem;   
+        removeAngularSpeedGradient(gradient: number): IParticleSystem;
         /**
          * Gets the current list of velocity gradients.
          * You must use addVelocityGradient and removeVelocityGradient to udpate this list
@@ -364,7 +364,7 @@ module BABYLON {
         /**
          * Adds a new velocity gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the velocity to affect to the specified gradient         
+         * @param factor defines the velocity to affect to the specified gradient
          * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
          * @returns the current particle system
          */
@@ -384,7 +384,7 @@ module BABYLON {
         /**
          * Adds a new limit velocity gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the limit velocity to affect to the specified gradient         
+         * @param factor defines the limit velocity to affect to the specified gradient
          * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
          * @returns the current particle system
          */
@@ -394,11 +394,11 @@ module BABYLON {
          * @param gradient defines the gradient to remove
          * @returns the current particle system
          */
-        removeLimitVelocityGradient(gradient: number): IParticleSystem;        
+        removeLimitVelocityGradient(gradient: number): IParticleSystem;
         /**
          * Adds a new drag gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the drag to affect to the specified gradient         
+         * @param factor defines the drag to affect to the specified gradient
          * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
          * @returns the current particle system
          */
@@ -408,17 +408,17 @@ module BABYLON {
          * @param gradient defines the gradient to remove
          * @returns the current particle system
          */
-        removeDragGradient(gradient: number): IParticleSystem;   
+        removeDragGradient(gradient: number): IParticleSystem;
         /**
          * Gets the current list of drag gradients.
          * You must use addDragGradient and removeDragGradient to udpate this list
          * @returns the list of drag gradients
          */
-        getDragGradients(): Nullable<Array<FactorGradient>>;                    
+        getDragGradients(): Nullable<Array<FactorGradient>>;
         /**
          * Adds a new emit rate gradient (please note that this will only work if you set the targetStopDuration property)
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the emit rate to affect to the specified gradient         
+         * @param factor defines the emit rate to affect to the specified gradient
          * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
          * @returns the current particle system
          */
@@ -428,18 +428,18 @@ module BABYLON {
          * @param gradient defines the gradient to remove
          * @returns the current particle system
          */
-        removeEmitRateGradient(gradient: number): IParticleSystem;    
+        removeEmitRateGradient(gradient: number): IParticleSystem;
         /**
          * Gets the current list of emit rate gradients.
          * You must use addEmitRateGradient and removeEmitRateGradient to udpate this list
          * @returns the list of emit rate gradients
          */
-        getEmitRateGradients(): Nullable<Array<FactorGradient>>;   
-        
+        getEmitRateGradients(): Nullable<Array<FactorGradient>>;
+
         /**
          * Adds a new start size gradient (please note that this will only work if you set the targetStopDuration property)
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the start size to affect to the specified gradient         
+         * @param factor defines the start size to affect to the specified gradient
          * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
          * @returns the current particle system
          */
@@ -449,18 +449,18 @@ module BABYLON {
          * @param gradient defines the gradient to remove
          * @returns the current particle system
          */
-        removeStartSizeGradient(gradient: number): IParticleSystem;    
+        removeStartSizeGradient(gradient: number): IParticleSystem;
         /**
          * Gets the current list of start size gradients.
          * You must use addStartSizeGradient and removeStartSizeGradient to udpate this list
          * @returns the list of start size gradients
          */
-        getStartSizeGradients(): Nullable<Array<FactorGradient>>;  
+        getStartSizeGradients(): Nullable<Array<FactorGradient>>;
 
         /**
          * Adds a new life time gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the life time factor to affect to the specified gradient         
+         * @param factor defines the life time factor to affect to the specified gradient
          * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
          * @returns the current particle system
          */
@@ -470,69 +470,69 @@ module BABYLON {
          * @param gradient defines the gradient to remove
          * @returns the current particle system
          */
-        removeLifeTimeGradient(gradient: number): IParticleSystem;    
+        removeLifeTimeGradient(gradient: number): IParticleSystem;
         /**
          * Gets the current list of life time gradients.
          * You must use addLifeTimeGradient and removeLifeTimeGradient to udpate this list
          * @returns the list of life time gradients
          */
-        getLifeTimeGradients(): Nullable<Array<FactorGradient>>;          
+        getLifeTimeGradients(): Nullable<Array<FactorGradient>>;
 
         /**
          * Gets the current list of color gradients.
          * You must use addColorGradient and removeColorGradient to udpate this list
          * @returns the list of color gradients
          */
-        getColorGradients(): Nullable<Array<ColorGradient>>;      
-        
+        getColorGradients(): Nullable<Array<ColorGradient>>;
+
         /**
          * Adds a new ramp gradient used to remap particle colors
          * @param gradient defines the gradient to use (between 0 and 1)
          * @param color defines the color to affect to the specified gradient
          * @returns the current particle system
          */
-        addRampGradient(gradient: number, color: Color3): IParticleSystem;     
+        addRampGradient(gradient: number, color: Color3): IParticleSystem;
         /**
          * Gets the current list of ramp gradients.
          * You must use addRampGradient and removeRampGradient to udpate this list
          * @returns the list of ramp gradients
          */
         getRampGradients(): Nullable<Array<Color3Gradient>>;
-        
+
         /** Gets or sets a boolean indicating that ramp gradients must be used
          * @see http://doc.babylonjs.com/babylon101/particles#ramp-gradients
-         */        
+         */
         useRampGradients: boolean;
-        
+
         /**
          * Adds a new color remap gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param min defines the color remap minimal range        
-         * @param max defines the color remap maximal range        
+         * @param min defines the color remap minimal range
+         * @param max defines the color remap maximal range
          * @returns the current particle system
          */
-        addColorRemapGradient(gradient: number, min: number, max: number): IParticleSystem;    
+        addColorRemapGradient(gradient: number, min: number, max: number): IParticleSystem;
         /**
          * Gets the current list of color remap gradients.
          * You must use addColorRemapGradient and removeColorRemapGradient to udpate this list
          * @returns the list of color remap gradients
          */
         getColorRemapGradients(): Nullable<Array<FactorGradient>>;
-        
+
         /**
          * Adds a new alpha remap gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param min defines the alpha remap minimal range        
-         * @param max defines the alpha remap maximal range        
+         * @param min defines the alpha remap minimal range
+         * @param max defines the alpha remap maximal range
          * @returns the current particle system
          */
-        addAlphaRemapGradient(gradient: number, min: number, max: number): IParticleSystem; 
+        addAlphaRemapGradient(gradient: number, min: number, max: number): IParticleSystem;
         /**
          * Gets the current list of alpha remap gradients.
          * You must use addAlphaRemapGradient and removeAlphaRemapGradient to udpate this list
          * @returns the list of alpha remap gradients
          */
-        getAlphaRemapGradients(): Nullable<Array<FactorGradient>>;            
+        getAlphaRemapGradients(): Nullable<Array<FactorGradient>>;
 
         /**
          * Creates a Point Emitter for the particle system (emits directly from the emitter position)
@@ -565,7 +565,7 @@ module BABYLON {
          * @param direction2 Particles are emitted between the direction1 and direction2 from within the sphere
          * @returns the emitter
          */
-        createDirectedSphereEmitter(radius: number, direction1:Vector3, direction2: Vector3): SphereDirectedParticleEmitter;
+        createDirectedSphereEmitter(radius: number, direction1: Vector3, direction2: Vector3): SphereDirectedParticleEmitter;
 
         /**
          * Creates a Cylinder Emitter for the particle system (emits from the cylinder to the particle position)
@@ -581,12 +581,12 @@ module BABYLON {
          * Creates a Directed Cylinder Emitter for the particle system (emits between direction1 and direction2)
          * @param radius The radius of the cylinder to emit from
          * @param height The height of the emission cylinder
-         * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default) 
+         * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default)
          * @param direction1 Particles are emitted between the direction1 and direction2 from within the cylinder
          * @param direction2 Particles are emitted between the direction1 and direction2 from within the cylinder
          * @returns the emitter
          */
-        createDirectedCylinderEmitter(radius: number, height: number, radiusRange:number , direction1:Vector3, direction2: Vector3): SphereDirectedParticleEmitter;
+        createDirectedCylinderEmitter(radius: number, height: number, radiusRange: number , direction1: Vector3, direction2: Vector3): SphereDirectedParticleEmitter;
 
         /**
          * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
@@ -604,12 +604,12 @@ module BABYLON {
          * @param maxEmitBox  Particles are emitted from the box between minEmitBox and maxEmitBox
          * @returns the emitter
          */
-        createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter;   
-        
+        createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter;
+
         /**
          * Get hosting scene
          * @returns the scene
          */
         getScene(): Scene;
-    }  
+    }
 }

@@ -166,13 +166,13 @@ module BABYLON {
          * Adds all meshes in the asset container to a root mesh that can be used to position all the contained meshes. The root mesh is then added to the front of the meshes in the assetContainer.
          * @returns the root mesh
          */
-        public createRootMesh(){
+        public createRootMesh() {
             var rootMesh = new BABYLON.Mesh("assetContainerRootMesh", this.scene);
-            this.meshes.forEach((m)=>{
-                if(!m.parent){
+            this.meshes.forEach((m) => {
+                if (!m.parent) {
                     rootMesh.addChild(m);
                 }
-            })
+            });
             this.meshes.unshift(rootMesh);
             return rootMesh;
         }

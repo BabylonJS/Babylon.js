@@ -1,7 +1,7 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
-    
+
     export class CustomShaderStructure {
 
         public FragmentStore: string;
@@ -39,7 +39,7 @@ module BABYLON {
 
     export class CustomMaterial extends StandardMaterial {
         public static ShaderIndexer = 1;
-        public CustomParts: ShaderSpecialParts; 
+        public CustomParts: ShaderSpecialParts;
         _isCreatedShader: boolean;
         _createdShaderName: string;
         _customUniform: string[];
@@ -94,7 +94,7 @@ module BABYLON {
             }
             return arr;
         }
-        
+
         public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines): string {
 
             if (this._isCreatedShader) {
@@ -141,9 +141,9 @@ module BABYLON {
 
             this._isCreatedShader = true;
             this._createdShaderName = name;
-            
+
             return name;
-        }        
+        }
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -151,9 +151,9 @@ module BABYLON {
             this.customShaderNameResolve = this.Builder;
 
             this.FragmentShader = BABYLON.Effect.ShadersStore["defaultPixelShader"];
-            this.VertexShader = BABYLON.Effect.ShadersStore["defaultVertexShader"];             
+            this.VertexShader = BABYLON.Effect.ShadersStore["defaultVertexShader"];
         }
-        
+
         public AddUniform(name: string, kind: string, param: any): CustomMaterial {
             if (!this._customUniform) {
                 this._customUniform = new Array();
@@ -174,7 +174,7 @@ module BABYLON {
 
             return this;
         }
-        
+
         public Fragment_Begin(shaderPart: string): CustomMaterial {
             this.CustomParts.Fragment_Begin = shaderPart;
             return this;
@@ -189,37 +189,37 @@ module BABYLON {
             this.CustomParts.Fragment_MainBegin = shaderPart;
             return this;
         }
-        
+
         public Fragment_Custom_Diffuse(shaderPart: string): CustomMaterial {
             this.CustomParts.Fragment_Custom_Diffuse = shaderPart.replace("result", "diffuseColor");
             return this;
         }
-        
+
         public Fragment_Custom_Alpha(shaderPart: string): CustomMaterial {
             this.CustomParts.Fragment_Custom_Alpha = shaderPart.replace("result", "alpha");
             return this;
         }
-        
+
         public Fragment_Before_FragColor(shaderPart: string): CustomMaterial {
             this.CustomParts.Fragment_Before_FragColor = shaderPart.replace("result", "color");
             return this;
         }
-        
+
         public Vertex_Begin(shaderPart: string): CustomMaterial {
             this.CustomParts.Vertex_Begin = shaderPart;
             return this;
         }
-        
+
         public Vertex_Definitions(shaderPart: string): CustomMaterial {
             this.CustomParts.Vertex_Definitions = shaderPart;
             return this;
         }
-        
+
         public Vertex_MainBegin(shaderPart: string): CustomMaterial {
             this.CustomParts.Vertex_MainBegin = shaderPart;
             return this;
         }
-        
+
         public Vertex_Before_PositionUpdated(shaderPart: string): CustomMaterial {
             this.CustomParts.Vertex_Before_PositionUpdated = shaderPart.replace("result", "positionUpdated");
             return this;
@@ -228,7 +228,6 @@ module BABYLON {
         public Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial {
             this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result", "normalUpdated");
             return this;
-        }            
+        }
     }
 }
-

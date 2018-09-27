@@ -52,7 +52,7 @@ module BABYLON.GLTF2.Loader.Extensions {
                 }
 
                 if (properties.baseColorTexture) {
-                    promises.push(this._loader.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, texture => {
+                    promises.push(this._loader.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, (texture) => {
                         babylonMaterial.albedoTexture = texture;
                         return Promise.resolve();
                     }));
@@ -70,5 +70,5 @@ module BABYLON.GLTF2.Loader.Extensions {
         }
     }
 
-    GLTFLoader.RegisterExtension(NAME, loader => new KHR_materials_unlit(loader));
+    GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_unlit(loader));
 }
