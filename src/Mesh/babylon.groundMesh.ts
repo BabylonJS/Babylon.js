@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Mesh representing the gorund
      */
@@ -59,7 +59,7 @@
         }
 
         /**
-         * This function will update an octree to help to select the right submeshes for rendering, picking and collision computations.  
+         * This function will update an octree to help to select the right submeshes for rendering, picking and collision computations.
          * Please note that you must have a decent number of submeshes to get performance improvements when using an octree
          * @param chunksCount the number of subdivisions for x and y
          * @param octreeBlocksSize (Default: 32)
@@ -121,11 +121,11 @@
         /**
          * Updates the Vector3 passed a reference with a normalized vector orthogonal to the ground
          * at the ground coordinates (x, z) expressed in the World system.
-         * Doesn't uptade the reference Vector3 if (x, z) are outside the ground surface.  
+         * Doesn't uptade the reference Vector3 if (x, z) are outside the ground surface.
          * @param x x coordinate
          * @param z z coordinate
          * @param ref vector to store the result
-         * @returns the GroundMesh.  
+         * @returns the GroundMesh.
          */
         public getNormalAtCoordinatesToRef(x: number, z: number, ref: Vector3): GroundMesh {
             var world = this.getWorldMatrix();
@@ -150,8 +150,8 @@
         /**
         * Force the heights to be recomputed for getHeightAtCoordinates() or getNormalAtCoordinates()
         * if the ground has been updated.
-        * This can be used in the render loop.  
-        * @returns the GroundMesh.  
+        * This can be used in the render loop.
+        * @returns the GroundMesh.
         */
         public updateCoordinateHeights(): GroundMesh {
             if (!this._heightQuads || this._heightQuads.length == 0) {
@@ -180,8 +180,8 @@
         // a quad is two triangular facets separated by a slope, so a "facet" element is 1 slope + 2 facets
         // slope : Vector2(c, h) = 2D diagonal line equation setting appart two triangular facets in a quad : z = cx + h
         // facet1 : Vector4(a, b, c, d) = first facet 3D plane equation : ax + by + cz + d = 0
-        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0  
-        // Returns the GroundMesh.  
+        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
+        // Returns the GroundMesh.
         private _initHeightQuads(): GroundMesh {
             var subdivisionsX = this._subdivisionsX;
             var subdivisionsY = this._subdivisionsY;
@@ -198,8 +198,8 @@
         // Compute each quad element values and update the the heightMap array :
         // slope : Vector2(c, h) = 2D diagonal line equation setting appart two triangular facets in a quad : z = cx + h
         // facet1 : Vector4(a, b, c, d) = first facet 3D plane equation : ax + by + cz + d = 0
-        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0  
-        // Returns the GroundMesh.  
+        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
+        // Returns the GroundMesh.
         private _computeHeightQuads(): GroundMesh {
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
 

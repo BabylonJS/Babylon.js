@@ -81,16 +81,16 @@ module BABYLON.GLTF2.Loader.Extensions {
 
                 var bufferView = ArrayItem.Get(extensionContext, this._loader.gltf.bufferViews, extension.bufferView) as IBufferViewDraco;
                 if (!bufferView._dracoBabylonGeometry) {
-                    bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`#/bufferViews/${bufferView.index}`, bufferView).then(data => {
+                    bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`#/bufferViews/${bufferView.index}`, bufferView).then((data) => {
                         if (!this._dracoCompression) {
                             this._dracoCompression = new DracoCompression();
                         }
 
-                        return this._dracoCompression.decodeMeshAsync(data, attributes).then(babylonVertexData => {
+                        return this._dracoCompression.decodeMeshAsync(data, attributes).then((babylonVertexData) => {
                             const babylonGeometry = new Geometry(babylonMesh.name, this._loader.babylonScene);
                             babylonVertexData.applyToGeometry(babylonGeometry);
                             return babylonGeometry;
-                        }).catch(error => {
+                        }).catch((error) => {
                             throw new Error(`${context}: ${error.message}`);
                         });
                     });
@@ -101,5 +101,5 @@ module BABYLON.GLTF2.Loader.Extensions {
         }
     }
 
-    GLTFLoader.RegisterExtension(NAME, loader => new KHR_draco_mesh_compression(loader));
+    GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_draco_mesh_compression(loader));
 }

@@ -1,10 +1,10 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Applies a kernel filter to the image
      */
     export class FilterPostProcess extends PostProcess {
         /**
-         * 
+         *
          * @param name The name of the effect.
          * @param kernelMatrix The matrix to be applied to the image
          * @param options The required width/height ratio to downsize to before computing the render pass.
@@ -15,18 +15,18 @@
          */
         constructor(name: string,
             /** The matrix to be applied to the image */
-            public kernelMatrix: Matrix, 
-            options: number | PostProcessOptions, 
-            camera: Nullable<Camera>, 
-            samplingMode?: number, 
-            engine?: Engine, 
+            public kernelMatrix: Matrix,
+            options: number | PostProcessOptions,
+            camera: Nullable<Camera>,
+            samplingMode?: number,
+            engine?: Engine,
             reusable?: boolean
         ) {
             super(name, "filter", ["kernelMatrix"], null, options, camera, samplingMode, engine, reusable);
 
             this.onApply = (effect: Effect) => {
                 effect.setMatrix("kernelMatrix", this.kernelMatrix);
-            }
+            };
         }
     }
 }

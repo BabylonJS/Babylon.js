@@ -1,13 +1,13 @@
 module BABYLON {
     /**
      * Base class of all the lights in Babylon. It groups all the generic information about lights.
-     * Lights are used, as you would expect, to affect how meshes are seen, in terms of both illumination and colour. 
+     * Lights are used, as you would expect, to affect how meshes are seen, in terms of both illumination and colour.
      * All meshes allow light to pass through them unless shadow generation is activated. The default number of lights allowed is four but this can be increased.
      */
     export abstract class Light extends Node {
 
         /**
-         * Falloff Default: light is falling off following the material specification: 
+         * Falloff Default: light is falling off following the material specification:
          * standard material is using standard falloff whereas pbr material can request special falloff per materials.
          */
         public static readonly FALLOFF_DEFAULT = 0;
@@ -18,13 +18,13 @@ module BABYLON {
         public static readonly FALLOFF_PHYSICAL = 1;
 
         /**
-         * Falloff gltf: light is falling off as described in the gltf moving to PBR document 
+         * Falloff gltf: light is falling off as described in the gltf moving to PBR document
          * to enhance interoperability with other engines.
          */
         public static readonly FALLOFF_GLTF = 2;
 
         /**
-         * Falloff Standard: light is falling off like in the standard material 
+         * Falloff Standard: light is falling off like in the standard material
          * to enhance interoperability with other materials.
          */
         public static readonly FALLOFF_STANDARD = 3;
@@ -106,11 +106,11 @@ module BABYLON {
         public specular = new Color3(1.0, 1.0, 1.0);
 
         /**
-         * Defines the falloff type for this light. This lets overrriding how punctual light are 
+         * Defines the falloff type for this light. This lets overrriding how punctual light are
          * falling off base on range or angle.
          * This can be set to any values in Light.FALLOFF_x.
-         * 
-         * Note: This is only usefull for PBR Materials at the moment. This could be extended if required to 
+         *
+         * Note: This is only usefull for PBR Materials at the moment. This could be extended if required to
          * other types of materials.
          */
         @serialize()
@@ -133,7 +133,7 @@ module BABYLON {
          */
         @serialize()
         public get range(): number {
-            return this._range
+            return this._range;
         }
         /**
          * Defines how far from the source the light is impacting in scene units.
@@ -158,7 +158,7 @@ module BABYLON {
         @serialize()
         public get intensityMode(): number {
             return this._intensityMode;
-        };
+        }
         /**
          * Sets the photometric scale used to interpret the intensity.
          * This is only relevant with PBR Materials where the light intensity can be defined in a physical way.
@@ -166,7 +166,7 @@ module BABYLON {
         public set intensityMode(value: number) {
             this._intensityMode = value;
             this._computePhotometricScale();
-        };
+        }
 
         private _radius = 0.00001;
         /**
@@ -175,14 +175,14 @@ module BABYLON {
         @serialize()
         public get radius(): number {
             return this._radius;
-        };
+        }
         /**
          * sets the light radius used by PBR Materials to simulate soft area lights.
          */
         public set radius(value: number) {
             this._radius = value;
             this._computePhotometricScale();
-        };
+        }
 
         @serialize()
         private _renderPriority: number;
@@ -324,10 +324,10 @@ module BABYLON {
         public _uniformBuffer: UniformBuffer;
 
         /**
-         * Creates a Light object in the scene.  
-         * Documentation : http://doc.babylonjs.com/tutorials/lights  
+         * Creates a Light object in the scene.
+         * Documentation : http://doc.babylonjs.com/tutorials/lights
          * @param name The firendly name of the light
-         * @param scene The scene the light belongs too 
+         * @param scene The scene the light belongs too
          */
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -402,7 +402,7 @@ module BABYLON {
         }
 
         /**
-         * Returns a Vector3, the absolute light position in the World.  
+         * Returns a Vector3, the absolute light position in the World.
          * @returns the world space position of the light
          */
         public getAbsolutePosition(): Vector3 {
@@ -510,7 +510,7 @@ module BABYLON {
         }
 
         /**
-         * Serializes the current light into a Serialization object.  
+         * Serializes the current light into a Serialization object.
          * @returns the serialized object.
          */
         public serialize(): any {
@@ -539,7 +539,7 @@ module BABYLON {
                 });
             }
 
-            // Animations  
+            // Animations
             Animation.AppendSerializedAnimations(this, serializationObject);
             serializationObject.ranges = this.serializeAnimationRanges();
 
@@ -547,7 +547,7 @@ module BABYLON {
         }
 
         /**
-         * Creates a new typed light from the passed type (integer) : point light = 0, directional light = 1, spot light = 2, hemispheric light = 3.  
+         * Creates a new typed light from the passed type (integer) : point light = 0, directional light = 1, spot light = 2, hemispheric light = 3.
          * This new light is named "name" and added to the passed scene.
          * @param type Type according to the types available in Light.LIGHTTYPEID_x
          * @param name The friendly name of the light
@@ -621,7 +621,7 @@ module BABYLON {
                 }
 
                 return result;
-            }
+            };
 
             var oldSplice = array.splice;
             array.splice = (index: number, deleteCount?: number) => {
@@ -632,7 +632,7 @@ module BABYLON {
                 }
 
                 return deleted;
-            }
+            };
 
             for (var item of array) {
                 item._resyncLighSource(this);
@@ -647,7 +647,7 @@ module BABYLON {
                 this._resyncMeshes();
 
                 return result;
-            }
+            };
 
             var oldSplice = array.splice;
             array.splice = (index: number, deleteCount?: number) => {
@@ -656,7 +656,7 @@ module BABYLON {
                 this._resyncMeshes();
 
                 return deleted;
-            }
+            };
 
             this._resyncMeshes();
         }

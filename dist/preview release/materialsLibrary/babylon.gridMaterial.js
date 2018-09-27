@@ -114,7 +114,7 @@ var BABYLON;
                 defines.markAsUnprocessed();
             }
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, false, this.fogEnabled, false, defines);
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
                 scene.resetCachedMaterial();

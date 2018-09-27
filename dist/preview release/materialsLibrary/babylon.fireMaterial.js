@@ -63,7 +63,7 @@ var BABYLON;
         FireMaterial.prototype.getAlphaTestTexture = function () {
             return null;
         };
-        // Methods   
+        // Methods
         FireMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
@@ -104,7 +104,7 @@ var BABYLON;
             BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true);
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
                 scene.resetCachedMaterial();
@@ -177,7 +177,7 @@ var BABYLON;
             // Bones
             BABYLON.MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
             if (this._mustRebind(scene, effect)) {
-                // Textures        
+                // Textures
                 if (this._diffuseTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
                     this._activeEffect.setTexture("diffuseSampler", this._diffuseTexture);
                     this._activeEffect.setFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);

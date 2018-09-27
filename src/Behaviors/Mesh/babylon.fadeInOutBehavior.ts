@@ -12,17 +12,17 @@ module BABYLON {
          */
         public fadeInTime = 300;
 
-        private _millisecondsPerFrame = 1000/60;
+        private _millisecondsPerFrame = 1000 / 60;
         private _hovered = false;
         private _hoverValue = 0;
-        private _ownerNode:Nullable<Mesh> = null;
-        
+        private _ownerNode: Nullable<Mesh> = null;
+
         /**
          * Instatiates the FadeInOutBehavior
          */
-        constructor(){
+        constructor() {
         }
-        
+
         /**
          *  The name of the behavior
          */
@@ -55,37 +55,37 @@ module BABYLON {
          * Triggers the mesh to begin fading in or out
          * @param value if the object should fade in or out (true to fade in)
          */
-        public fadeIn(value:boolean){
+        public fadeIn(value: boolean) {
             this._hovered = value;
             this._update();
         }
 
-        private _update = ()=>{
-            if(this._ownerNode){
-                this._hoverValue += this._hovered ? this._millisecondsPerFrame : -this._millisecondsPerFrame
-            
-                this._setAllVisibility(this._ownerNode, (this._hoverValue - this.delay)/this.fadeInTime);
+        private _update = () => {
+            if (this._ownerNode) {
+                this._hoverValue += this._hovered ? this._millisecondsPerFrame : -this._millisecondsPerFrame;
 
-                if(this._ownerNode.visibility > 1){
+                this._setAllVisibility(this._ownerNode, (this._hoverValue - this.delay) / this.fadeInTime);
+
+                if (this._ownerNode.visibility > 1) {
                     this._setAllVisibility(this._ownerNode, 1);
-                    this._hoverValue = this.fadeInTime + this.delay
-                    return
-                }else if(this._ownerNode.visibility < 0){
+                    this._hoverValue = this.fadeInTime + this.delay;
+                    return;
+                }else if (this._ownerNode.visibility < 0) {
                     this._setAllVisibility(this._ownerNode, 0);
-                    if(this._hoverValue < 0){
-                        this._hoverValue = 0
-                        return
+                    if (this._hoverValue < 0) {
+                        this._hoverValue = 0;
+                        return;
                     }
                 }
-                setTimeout(this._update,this._millisecondsPerFrame)
+                setTimeout(this._update, this._millisecondsPerFrame);
             }
         }
 
-        private _setAllVisibility(mesh:AbstractMesh, value:number){
+        private _setAllVisibility(mesh: AbstractMesh, value: number) {
             mesh.visibility = value;
-            mesh.getChildMeshes().forEach((c)=>{
+            mesh.getChildMeshes().forEach((c) => {
                 this._setAllVisibility(c, value);
-            })
+            });
         }
 
     }

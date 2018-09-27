@@ -54,9 +54,8 @@ module BABYLON {
          * How big is the buffer related to the main canvas.
          */
         public get ratio(): number {
-            return this._ratio
+            return this._ratio;
         }
-
 
         /**
          * Creates a new G Buffer for the scene
@@ -138,7 +137,7 @@ module BABYLON {
                 attribs.push("world3");
             }
 
-            // Get correct effect      
+            // Get correct effect
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
@@ -230,7 +229,6 @@ module BABYLON {
                     engine.enableEffect(this._effect);
                     mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
 
-
                     this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
                     this._effect.setMatrix("view", scene.getViewMatrix());
 
@@ -276,4 +274,4 @@ module BABYLON {
             };
         }
     }
-} 
+}

@@ -269,7 +269,7 @@ var BABYLON;
                 }
                 this._waitingRenderList = null;
             }
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
                 scene.resetCachedMaterial();
@@ -356,13 +356,13 @@ var BABYLON;
                 return;
             }
             this._activeEffect = effect;
-            // Matrices        
+            // Matrices
             this.bindOnlyWorldMatrix(world);
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
             BABYLON.MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
             if (this._mustRebind(scene, effect)) {
-                // Textures        
+                // Textures
                 if (this.bumpTexture && BABYLON.StandardMaterial.BumpTextureEnabled) {
                     this._activeEffect.setTexture("normalSampler", this.bumpTexture);
                     this._activeEffect.setFloat2("vNormalInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);
@@ -446,7 +446,7 @@ var BABYLON;
                 if (_this._mesh) {
                     _this._mesh.isVisible = isVisible;
                 }
-                // Clip plane 
+                // Clip plane
                 scene.clipPlane = clipPlane;
             };
             this._reflectionRTT.onBeforeRender = function () {

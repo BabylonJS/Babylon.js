@@ -23,7 +23,6 @@ module BABYLON.GLTF2.Loader.Extensions {
             outerConeAngle?: number;
         };
     }
-    
 
     interface ILights {
         lights: ILight[];
@@ -63,9 +62,9 @@ module BABYLON.GLTF2.Loader.Extensions {
         }
 
         /** @hidden */
-        public loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> { 
+        public loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> {
             return GLTFLoader.LoadExtensionAsync<ILightReference, Mesh>(context, node, this.name, (extensionContext, extension) => {
-                return this._loader.loadNodeAsync(context, node, babylonMesh => {
+                return this._loader.loadNodeAsync(context, node, (babylonMesh) => {
                     let babylonLight: Light;
 
                     const light = ArrayItem.Get(extensionContext, this._lights, extension.light);
@@ -104,5 +103,5 @@ module BABYLON.GLTF2.Loader.Extensions {
         }
     }
 
-    GLTFLoader.RegisterExtension(NAME, loader => new KHR_lights(loader));
+    GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_lights(loader));
 }

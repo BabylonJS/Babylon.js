@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
      * It is usually composed of several `BABYLON.lensFlare`.
@@ -73,7 +73,7 @@
             this.id = name;
             scene.lensFlareSystems.push(this);
 
-            this.meshesSelectionPredicate = m => <boolean>(scene.activeCamera && m.material && m.isVisible && m.isEnabled() && m.isBlocker && ((m.layerMask & scene.activeCamera.layerMask) != 0));
+            this.meshesSelectionPredicate = (m) => <boolean>(scene.activeCamera && m.material && m.isVisible && m.isEnabled() && m.isBlocker && ((m.layerMask & scene.activeCamera.layerMask) != 0));
 
             var engine = scene.getEngine();
 
@@ -177,8 +177,9 @@
 
             if (position.z > 0) {
                 if ((this._positionX > globalViewport.x) && (this._positionX < globalViewport.x + globalViewport.width)) {
-                    if ((this._positionY > globalViewport.y) && (this._positionY < globalViewport.y + globalViewport.height))
+                    if ((this._positionY > globalViewport.y) && (this._positionY < globalViewport.y + globalViewport.height)) {
                         return true;
+                    }
                 }
                 return true;
             }
@@ -207,8 +208,9 @@
          * @hidden
          */
         public render(): boolean {
-            if (!this._effect.isReady() || !this._scene.activeCamera)
+            if (!this._effect.isReady() || !this._scene.activeCamera) {
                 return false;
+            }
 
             var engine = this._scene.getEngine();
             var viewport = this._scene.activeCamera.viewport;

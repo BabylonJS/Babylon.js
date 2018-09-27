@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Extracts highlights from the image
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses
@@ -6,7 +6,7 @@
     export class HighlightsPostProcess extends PostProcess {
         /**
          * Extracts highlights from the image
-         * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses 
+         * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses
          * @param name The name of the effect.
          * @param options The required width/height ratio to downsize to before computing the render pass.
          * @param camera The camera to apply the render pass to.
@@ -19,4 +19,4 @@
             super(name, "highlights", null, null, options, camera, samplingMode, engine, reusable, null, textureType);
         }
     }
-} 
+}

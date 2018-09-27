@@ -647,14 +647,18 @@ var BABYLON;
             };
         };
         GLTFFileLoader._compareVersion = function (a, b) {
-            if (a.major > b.major)
+            if (a.major > b.major) {
                 return 1;
-            if (a.major < b.major)
+            }
+            if (a.major < b.major) {
                 return -1;
-            if (a.minor > b.minor)
+            }
+            if (a.minor > b.minor) {
                 return 1;
-            if (a.minor < b.minor)
+            }
+            if (a.minor < b.minor) {
                 return -1;
+            }
             return 0;
         };
         GLTFFileLoader._decodeBufferToText = function (buffer) {
@@ -867,8 +871,9 @@ var BABYLON;
                 this._maxPos = toParse.length;
             }
             Tokenizer.prototype.getNextToken = function () {
-                if (this.isEnd())
+                if (this.isEnd()) {
                     return ETokenType.END_OF_INPUT;
+                }
                 this.currentString = this.read();
                 this.currentToken = ETokenType.UNKNOWN;
                 if (this.currentString === "_" || this.isLetterOrDigitPattern.test(this.currentString)) {
@@ -2294,7 +2299,6 @@ var BABYLON;
                     onload();
                 }
             };
-            ;
             GLTFLoader.prototype._loadBuffersAsync = function (gltfRuntime, onLoad, onProgress) {
                 var hasBuffers = false;
                 var processBuffer = function (buf, buffer) {
@@ -2349,7 +2353,6 @@ var BABYLON;
             return GLTFLoader;
         }());
         GLTF1.GLTFLoader = GLTFLoader;
-        ;
         BABYLON.GLTFFileLoader._CreateGLTFLoaderV1 = function () { return new GLTFLoader(); };
     })(GLTF1 = BABYLON.GLTF1 || (BABYLON.GLTF1 = {}));
 })(BABYLON || (BABYLON = {}));
@@ -2758,8 +2761,6 @@ var BABYLON;
     var GLTF1;
     (function (GLTF1) {
         var BinaryExtensionBufferName = "binary_glTF";
-        ;
-        ;
         var GLTFBinaryExtension = /** @class */ (function (_super) {
             __extends(GLTFBinaryExtension, _super);
             function GLTFBinaryExtension() {
@@ -2837,20 +2838,19 @@ var BABYLON;
 (function (BABYLON) {
     var GLTF1;
     (function (GLTF1) {
-        ;
-        ;
-        ;
         var GLTFMaterialsCommonExtension = /** @class */ (function (_super) {
             __extends(GLTFMaterialsCommonExtension, _super);
             function GLTFMaterialsCommonExtension() {
                 return _super.call(this, "KHR_materials_common") || this;
             }
             GLTFMaterialsCommonExtension.prototype.loadRuntimeExtensionsAsync = function (gltfRuntime, onSuccess, onError) {
-                if (!gltfRuntime.extensions)
+                if (!gltfRuntime.extensions) {
                     return false;
+                }
                 var extension = gltfRuntime.extensions[this.name];
-                if (!extension)
+                if (!extension) {
                     return false;
+                }
                 // Create lights
                 var lights = extension.lights;
                 if (lights) {
@@ -2895,11 +2895,13 @@ var BABYLON;
             };
             GLTFMaterialsCommonExtension.prototype.loadMaterialAsync = function (gltfRuntime, id, onSuccess, onError) {
                 var material = gltfRuntime.materials[id];
-                if (!material || !material.extensions)
+                if (!material || !material.extensions) {
                     return false;
+                }
                 var extension = material.extensions[this.name];
-                if (!extension)
+                if (!extension) {
                     return false;
+                }
                 var standardMaterial = new BABYLON.StandardMaterial(id, gltfRuntime.scene);
                 standardMaterial.sideOrientation = BABYLON.Material.CounterClockWiseSideOrientation;
                 if (extension.technique === "CONSTANT") {

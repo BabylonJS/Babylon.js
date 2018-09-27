@@ -43,5 +43,5 @@ module BABYLON.GLTF2.Loader.Extensions {
         }
     }
 
-    GLTFLoader.RegisterExtension(NAME, loader => new MSFT_minecraftMesh(loader));
+    GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_minecraftMesh(loader));
 }

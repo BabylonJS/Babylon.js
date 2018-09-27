@@ -17,9 +17,9 @@ module BABYLON {
          */
         debugLayer: DebugLayer;
     }
-    
+
     Object.defineProperty(Scene.prototype, "debugLayer", {
-        get: function (this: Scene) {
+        get: function(this: Scene) {
             if (!this._debugLayer) {
                 this._debugLayer = new DebugLayer(this);
             }
@@ -67,7 +67,7 @@ module BABYLON {
                 if (this._scene._debugLayer) {
                     this._scene._debugLayer.hide();
                 }
-            })
+            });
         }
 
         /** Creates the inspector window. */
@@ -91,7 +91,7 @@ module BABYLON {
             if (!this._inspector) {
                 this.BJSINSPECTOR = this.BJSINSPECTOR || typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
 
-                this._inspector = new this.BJSINSPECTOR.Inspector(this._scene, popup, initialTab, parentElement, config.newColors);               
+                this._inspector = new this.BJSINSPECTOR.Inspector(this._scene, popup, initialTab, parentElement, config.newColors);
             } // else nothing to do as instance is already created
         }
 
@@ -120,7 +120,7 @@ module BABYLON {
                 this._inspector = null;
             }
         }
-        
+
         /**
         *
         * Launch the debugLayer.
@@ -140,7 +140,7 @@ module BABYLON {
         * | 9 | Physics |
         * | 10 | Camera |
         * | 11 | Audio |
-        * 
+        *
         * @param config Define the configuration of the inspector
         */
         public show(config: {

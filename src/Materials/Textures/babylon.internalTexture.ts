@@ -130,11 +130,11 @@ module BABYLON {
         /**
          * Gets or set the previous tracker in the list
          */
-        public previous: Nullable<IInternalTextureTracker> = null
+        public previous: Nullable<IInternalTextureTracker> = null;
         /**
          * Gets or set the next tracker in the list
          */
-        public next: Nullable<IInternalTextureTracker> = null
+        public next: Nullable<IInternalTextureTracker> = null;
 
         // Private
         /** @hidden */
@@ -326,7 +326,7 @@ module BABYLON {
                         let size = {
                             width: this.width,
                             height: this.height
-                        }
+                        };
 
                         proxy = this._engine.createRenderTargetTexture(size, options);
                     }

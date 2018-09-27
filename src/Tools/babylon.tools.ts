@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Interface containing an array of animations
      */
@@ -9,12 +9,11 @@
         animations: Array<Animation>;
     }
 
-    
     /** Interface used by value gradients (color, factor, ...) */
     export interface IValueGradient {
         /**
          * Gets or sets the gradient value (between 0 and 1)
-         */        
+         */
         gradient: number;
     }
 
@@ -33,7 +32,7 @@
          */
         public color2?: Color4;
 
-        /** 
+        /**
          * Will get a color picked randomly between color1 and color2.
          * If color2 is undefined then color1 will be used
          * @param result defines the target Color4 to store the result in
@@ -58,7 +57,7 @@
          * Gets or sets the associated color
          */
         public color: Color3;
-    }    
+    }
 
     /** Class used to store factor gradient */
     export class FactorGradient implements IValueGradient {
@@ -68,14 +67,14 @@
         public gradient: number;
         /**
          * Gets or sets first associated factor
-         */        
+         */
         public factor1: number;
         /**
          * Gets or sets second associated factor
-         */        
-        public factor2?: number;    
-        
-        /** 
+         */
+        public factor2?: number;
+
+        /**
          * Will get a number picked randomly between factor1 and factor2.
          * If factor2 is undefined then factor1 will be used
          * @returns the picked number
@@ -86,8 +85,8 @@
             }
 
             return Scalar.Lerp(this.factor1, this.factor2, Math.random());
-        }        
-    }  
+        }
+    }
 
     /**
      * @ignore
@@ -107,7 +106,7 @@
          * @param request defines the optional XHR request
          */
         constructor(
-            message: string, 
+            message: string,
             /** defines the optional XHR request */
             public request?: XMLHttpRequest
         ) {
@@ -158,8 +157,9 @@
     var screenshotCanvas: HTMLCanvasElement;
 
     var cloneValue = (source: any, destinationObject: any) => {
-        if (!source)
+        if (!source) {
             return null;
+        }
 
         if (source instanceof Mesh) {
             return null;
@@ -201,7 +201,7 @@
         public static UseFallbackTexture = true;
 
         /**
-         * Use this object to register external classes like custom textures or material 
+         * Use this object to register external classes like custom textures or material
          * to allow the laoders to instantiate them
          */
         public static RegisteredExternalClasses: { [key: string]: Object } = {};
@@ -215,7 +215,7 @@
         /**
          * Read the content of a byte array at a specified coordinates (taking in account wrapping)
          * @param u defines the coordinate on X axis
-         * @param v defines the coordinate on Y axis 
+         * @param v defines the coordinate on Y axis
          * @param width defines the width of the source data
          * @param height defines the height of the source data
          * @param pixels defines the source byte array
@@ -230,7 +230,7 @@
             color.g = pixels[position + 1] / 255;
             color.b = pixels[position + 2] / 255;
             color.a = pixels[position + 3] / 255;
-        }       
+        }
 
         /**
 		 * Interpolates between a and b via alpha
@@ -325,7 +325,7 @@
             return (Tools._tmpFloatArray[0] = value);
         }
 
-		/**
+        /**
 		 * Find the next highest power of two.
 		 * @param x Number to start search from.
 		 * @return Next highest power of two.
@@ -341,7 +341,7 @@
             return x;
         }
 
-		/**
+        /**
 		 * Find the next lowest power of two.
 		 * @param x Number to start search from.
 		 * @return Next lowest power of two.
@@ -355,7 +355,7 @@
             return x - (x >> 1);
         }
 
-		/**
+        /**
 		 * Find the nearest power of two.
 		 * @param x Number to start search from.
 		 * @return Next nearest power of two.
@@ -399,8 +399,9 @@
          */
         public static GetFilename(path: string): string {
             var index = path.lastIndexOf("/");
-            if (index < 0)
+            if (index < 0) {
                 return path;
+            }
 
             return path.substring(index + 1);
         }
@@ -474,7 +475,7 @@
 
             while (i < bytes.length) {
                 chr1 = bytes[i++];
-                chr2 = i < bytes.length ? bytes[i++] : Number.NaN; // Not sure if the index 
+                chr2 = i < bytes.length ? bytes[i++] : Number.NaN; // Not sure if the index
                 chr3 = i < bytes.length ? bytes[i++] : Number.NaN; // checks are needed here
 
                 enc1 = chr1 >> 2;
@@ -548,7 +549,7 @@
                 stride = 3;
             }
 
-            for (var index = start, offset = start*stride; index < start + count; index++, offset+=stride) {
+            for (var index = start, offset = start * stride; index < start + count; index++, offset += stride) {
                 const x = positions[offset];
                 const y = positions[offset + 1];
                 const z = positions[offset + 2];
@@ -578,8 +579,9 @@
          * @returns either obj directly if obj is an array or a new array containing obj
          */
         public static MakeArray(obj: any, allowsNullUndefined?: boolean): Nullable<Array<any>> {
-            if (allowsNullUndefined !== true && (obj === undefined || obj == null))
+            if (allowsNullUndefined !== true && (obj === undefined || obj == null)) {
                 return null;
+            }
 
             return Array.isArray(obj) ? obj : [obj];
         }
@@ -640,7 +642,7 @@
          */
         public static RequestFullscreen(element: HTMLElement): void {
             var requestFunction = element.requestFullscreen || (<any>element).msRequestFullscreen || element.webkitRequestFullscreen || (<any>element).mozRequestFullScreen;
-            if (!requestFunction) return;
+            if (!requestFunction) { return; }
             requestFunction.call(element);
         }
 
@@ -664,7 +666,7 @@
 
         /**
          * Sets the cors behavior on a dom element. This will add the required Tools.CorsBehavior to the element.
-         * @param url define the url we are trying 
+         * @param url define the url we are trying
          * @param element define the dom element where to configure the cors policy
          */
         public static SetCorsBehavior(url: string | string[], element: { crossOrigin: string | null }): void {
@@ -917,8 +919,8 @@
             // Caching all files
             if (database && database.enableSceneOffline) {
                 const noIndexedDB = (request?: any) => {
-                    if(request && request.status > 400){
-                        if(onError){
+                    if (request && request.status > 400) {
+                        if (onError) {
                             onError(request);
                         }
                     } else {
@@ -935,13 +937,13 @@
                     }
 
                     if (database) {
-                        database.loadFileFromDB(url, data => {
+                        database.loadFileFromDB(url, (data) => {
                             if (!aborted) {
                                 onSuccess(data);
                             }
 
                             fileRequest.onCompleteObservable.notifyObservers(fileRequest);
-                        }, onProgress ? event => {
+                        }, onProgress ? (event) => {
                             if (!aborted) {
                                 onProgress(event);
                             }
@@ -959,7 +961,7 @@
         }
 
          /**
-          * Load a script (identified by an url). When the url returns, the 
+          * Load a script (identified by an url). When the url returns, the
           * content of this file is added into a new script element, attached to the DOM (body element)
           * @param scriptUrl defines the url of the script to laod
           * @param onSuccess defines the callback called when the script is loaded
@@ -1004,11 +1006,11 @@
                 abort: () => reader.abort(),
             };
 
-            reader.onloadend = e => {
+            reader.onloadend = (e) => {
                 request.onCompleteObservable.notifyObservers(request);
             };
 
-            reader.onload = e => {
+            reader.onload = (e) => {
                 //target doesn't have result from ts 1.3
                 callback((<any>e.target)['result']);
             };
@@ -1035,12 +1037,12 @@
                 abort: () => reader.abort(),
             };
 
-            reader.onloadend = e => request.onCompleteObservable.notifyObservers(request);
-            reader.onerror = e => {
+            reader.onloadend = (e) => request.onCompleteObservable.notifyObservers(request);
+            reader.onerror = (e) => {
                 Tools.Log("Error while reading file: " + fileToLoad.name);
                 callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: [] }));
             };
-            reader.onload = e => {
+            reader.onload = (e) => {
                 //target doesn't have result from ts 1.3
                 callback((<any>e.target)['result']);
             };
@@ -1083,23 +1085,29 @@
         /**
          * Checks if a given vector is inside a specific range
          * @param v defines the vector to test
-         * @param min defines the minimum range 
-         * @param max defines the maximum range 
+         * @param min defines the minimum range
+         * @param max defines the maximum range
          */
         public static CheckExtends(v: Vector3, min: Vector3, max: Vector3): void {
-            if (v.x < min.x)
+            if (v.x < min.x) {
                 min.x = v.x;
-            if (v.y < min.y)
+            }
+            if (v.y < min.y) {
                 min.y = v.y;
-            if (v.z < min.z)
+            }
+            if (v.z < min.z) {
                 min.z = v.z;
+            }
 
-            if (v.x > max.x)
+            if (v.x > max.x) {
                 max.x = v.x;
-            if (v.y > max.y)
+            }
+            if (v.y > max.y) {
                 max.y = v.y;
-            if (v.z > max.z)
+            }
+            if (v.z > max.z) {
                 max.z = v.z;
+            }
         }
 
         /**
@@ -1211,7 +1219,7 @@
         }
 
         /**
-         * Dumps the current bound framebuffer 
+         * Dumps the current bound framebuffer
          * @param width defines the rendering width
          * @param height defines the rendering height
          * @param engine defines the hosting engine
@@ -1270,7 +1278,7 @@
             // We need HTMLCanvasElement.toBlob for HD screenshots
             if (!canvas.toBlob) {
                 //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
-                canvas.toBlob = function (callback, type, quality) {
+                canvas.toBlob = function(callback, type, quality) {
                     setTimeout(() => {
                         var binStr = atob(this.toDataURL(type, quality).split(',')[1]),
                             len = binStr.length,
@@ -1281,9 +1289,9 @@
                         }
                         callback(new Blob([arr]));
                     });
-                }
+                };
             }
-            canvas.toBlob(function (blob) {
+            canvas.toBlob(function(blob) {
                 successCallback(blob);
             }, mimeType);
         }
@@ -1300,7 +1308,7 @@
                 successCallback(base64Image);
             }
             else {
-                this.ToBlob(screenshotCanvas, function (blob) {
+                this.ToBlob(screenshotCanvas, function(blob) {
                     //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
                     if (("download" in document.createElement("a"))) {
                         if (!fileName) {
@@ -1312,11 +1320,11 @@
                     }
                     else {
                         var url = URL.createObjectURL(blob);
-                    
+
                         var newWindow = window.open("");
-                        if (!newWindow) return;
+                        if (!newWindow) { return; }
                         var img = newWindow.document.createElement("img");
-                        img.onload = function () {
+                        img.onload = function() {
                             // no longer need to read the blob so it's revoked
                             URL.revokeObjectURL(url);
                         };
@@ -1570,7 +1578,7 @@
          * @returns a pseudo random id
          */
         public static RandomId(): string {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
                 var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
@@ -1636,7 +1644,6 @@
          * Callback called when a new log is added
          */
         public static OnNewCacheEntry: (entry: string) => void;
-
 
         private static _AddLogEntry(entry: string) {
             Tools._LogCache = entry + Tools._LogCache;
@@ -1742,8 +1749,8 @@
                 Tools.Error = Tools._ErrorDisabled;
             }
         }
-	
-        /** 
+
+        /**
          * Checks if the loaded document was accessed via `file:`-Protocol.
          * @returns boolean
          */
@@ -1912,7 +1919,7 @@
         /**
          * This method will return the name of the full name of the class, including its owning module (if any).
          * It will works only on Javascript basic data types (number, string, ...) and instance of class declared with the @className decorator or implementing a method getClassName():string (in which case the module won't be specified).
-         * @param object the object to get the class name from 
+         * @param object the object to get the class name from
          * @param isType defines if the object is actually a type
          * @return a string that can have two forms: "moduleName.className" if module was specified when the class' Name was registered or "className" if there was not module specified.
          * @ignorenaming
@@ -1947,13 +1954,12 @@
          * @returns Promise that resolves after the given amount of time
          */
         public static DelayAsync(delay: number): Promise<void> {
-            return new Promise(resolve => {
+            return new Promise((resolve) => {
                 setTimeout(() => {
                     resolve();
                 }, delay);
             });
         }
-
 
         /**
          * Gets the current gradient from an array of IValueGradient
@@ -1982,7 +1988,7 @@
     /**
      * This class is used to track a performance counter which is number based.
      * The user has access to many properties which give statistics of different nature.
-     * 
+     *
      * The implementer can track two kinds of Performance Counter: time and count.
      * For time you can optionally call fetchNewFrame() to notify the start of a new frame to monitor, then call beginMonitoring() to start and endMonitoring() to record the lapsed time. endMonitoring takes a newFrame parameter for you to specify if the monitored time should be set for a new frame or accumulated to the current frame being monitored.
      * For count you first have to call fetchNewFrame() to notify the start of a new frame to monitor, then call addCount() how many time required to increment the count value you monitor.
@@ -2158,7 +2164,7 @@
         return (target: Object) => {
             (<any>target)["__bjsclassName__"] = name;
             (<any>target)["__bjsmoduleName__"] = (module != null) ? module : null;
-        }
+        };
     }
 
     /**
@@ -2184,9 +2190,9 @@
             /**
              * Defines the number of iterations for the loop
              */
-            public iterations: number, 
-            func: (asyncLoop: AsyncLoop) => void, 
-            successCallback: () => void, 
+            public iterations: number,
+            func: (asyncLoop: AsyncLoop) => void,
+            successCallback: () => void,
             offset: number = 0) {
 
             this.index = offset - 1;
@@ -2245,12 +2251,12 @@
          */
         public static SyncAsyncForLoop(iterations: number, syncedIterations: number, fn: (iteration: number) => void, callback: () => void, breakFunction?: () => boolean, timeout: number = 0): AsyncLoop {
             return AsyncLoop.Run(Math.ceil(iterations / syncedIterations), (loop: AsyncLoop) => {
-                if (breakFunction && breakFunction()) loop.breakLoop();
+                if (breakFunction && breakFunction()) { loop.breakLoop(); }
                 else {
                     setTimeout(() => {
                         for (var i = 0; i < syncedIterations; ++i) {
                             var iteration = (loop.index * syncedIterations) + i;
-                            if (iteration >= iterations) break;
+                            if (iteration >= iterations) { break; }
                             fn(iteration);
                             if (breakFunction && breakFunction()) {
                                 loop.breakLoop();
@@ -2263,4 +2269,4 @@
             }, callback);
         }
     }
-} 
+}

@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
 
     /**
      * Defines supported buttons for XBox360 compatible gamepads
@@ -56,11 +56,11 @@
         /** Observable raised when a button is pressed */
         public onButtonDownObservable = new Observable<Xbox360Button>();
         /** Observable raised when a button is released */
-        public onButtonUpObservable = new Observable<Xbox360Button>();        
+        public onButtonUpObservable = new Observable<Xbox360Button>();
         /** Observable raised when a pad is pressed */
         public onPadDownObservable = new Observable<Xbox360Dpad>();
         /** Observable raised when a pad is released */
-        public onPadUpObservable = new Observable<Xbox360Dpad>();        
+        public onPadUpObservable = new Observable<Xbox360Dpad>();
 
         private _buttonA: number = 0;
         private _buttonB: number = 0;
@@ -104,11 +104,11 @@
         /**
          * Defines the callback to call when right trigger is pressed
          * @param callback defines the callback to use
-         */        
+         */
         public onrighttriggerchanged(callback: (value: number) => void) {
             this._onrighttriggerchanged = callback;
         }
- 
+
         /**
          * Gets the left trigger value
          */
@@ -127,7 +127,7 @@
 
         /**
          * Gets the right trigger value
-         */        
+         */
         public get rightTrigger(): number {
             return this._rightTrigger;
         }
@@ -152,7 +152,7 @@
         /**
          * Defines the callback to call when a button is released
          * @param callback defines the callback to use
-         */        
+         */
         public onbuttonup(callback: (buttonReleased: Xbox360Button) => void) {
             this._onbuttonup = callback;
         }
@@ -160,7 +160,7 @@
         /**
          * Defines the callback to call when a pad is pressed
          * @param callback defines the callback to use
-         */             
+         */
         public ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void) {
             this._ondpaddown = callback;
         }
@@ -168,7 +168,7 @@
         /**
          * Defines the callback to call when a pad is released
          * @param callback defines the callback to use
-         */             
+         */
         public ondpadup(callback: (dPadReleased: Xbox360Dpad) => void) {
             this._ondpadup = callback;
         }
@@ -187,7 +187,7 @@
                     if (this._onbuttonup) {
                         this._onbuttonup(buttonType);
                     }
-                    
+
                     this.onButtonUpObservable.notifyObservers(buttonType);
                 }
             }
@@ -200,7 +200,7 @@
                     if (this._ondpaddown) {
                         this._ondpaddown(buttonType);
                     }
-                    
+
                     this.onPadDownObservable.notifyObservers(buttonType);
                 }
                 if (newValue === 0) {
@@ -214,8 +214,8 @@
             return newValue;
         }
 
-        /** 
-         * Gets the value of the `A` button 
+        /**
+         * Gets the value of the `A` button
          */
         public get buttonA(): number {
             return this._buttonA;
@@ -227,170 +227,170 @@
             this._buttonA = this._setButtonValue(value, this._buttonA, Xbox360Button.A);
         }
 
-        /** 
-         * Gets the value of the `B` button 
+        /**
+         * Gets the value of the `B` button
          */
         public get buttonB(): number {
             return this._buttonB;
         }
-        /** 
-         * Sets the value of the `B` button 
+        /**
+         * Sets the value of the `B` button
          */
         public set buttonB(value) {
             this._buttonB = this._setButtonValue(value, this._buttonB, Xbox360Button.B);
         }
 
-        /** 
-         * Gets the value of the `X` button 
-         */      
+        /**
+         * Gets the value of the `X` button
+         */
         public get buttonX(): number {
             return this._buttonX;
         }
-        /** 
-         * Sets the value of the `X` button 
+        /**
+         * Sets the value of the `X` button
          */
         public set buttonX(value) {
             this._buttonX = this._setButtonValue(value, this._buttonX, Xbox360Button.X);
         }
 
-        /** 
-         * Gets the value of the `Y` button 
-         */      
+        /**
+         * Gets the value of the `Y` button
+         */
         public get buttonY(): number {
             return this._buttonY;
         }
-        /** 
-         * Sets the value of the `Y` button 
+        /**
+         * Sets the value of the `Y` button
          */
         public set buttonY(value) {
             this._buttonY = this._setButtonValue(value, this._buttonY, Xbox360Button.Y);
-        }        
-        
-        /** 
-         * Gets the value of the `Start` button 
+        }
+
+        /**
+         * Gets the value of the `Start` button
          */
         public get buttonStart(): number {
             return this._buttonStart;
         }
-        /** 
-         * Sets the value of the `Start` button 
+        /**
+         * Sets the value of the `Start` button
          */
         public set buttonStart(value) {
             this._buttonStart = this._setButtonValue(value, this._buttonStart, Xbox360Button.Start);
         }
 
-        /** 
-         * Gets the value of the `Back` button 
-         */ 
+        /**
+         * Gets the value of the `Back` button
+         */
         public get buttonBack(): number {
             return this._buttonBack;
         }
-        /** 
-         * Sets the value of the `Back` button 
+        /**
+         * Sets the value of the `Back` button
          */
         public set buttonBack(value) {
             this._buttonBack = this._setButtonValue(value, this._buttonBack, Xbox360Button.Back);
         }
 
-        /** 
-         * Gets the value of the `Left` button 
-         */     
+        /**
+         * Gets the value of the `Left` button
+         */
         public get buttonLB(): number {
             return this._buttonLB;
         }
-        /** 
-         * Sets the value of the `Left` button 
+        /**
+         * Sets the value of the `Left` button
          */
         public set buttonLB(value) {
             this._buttonLB = this._setButtonValue(value, this._buttonLB, Xbox360Button.LB);
         }
 
-        /** 
-         * Gets the value of the `Right` button 
-         */     
+        /**
+         * Gets the value of the `Right` button
+         */
         public get buttonRB(): number {
             return this._buttonRB;
         }
-        /** 
-         * Sets the value of the `Right` button 
+        /**
+         * Sets the value of the `Right` button
          */
         public set buttonRB(value) {
             this._buttonRB = this._setButtonValue(value, this._buttonRB, Xbox360Button.RB);
         }
 
-        /** 
-         * Gets the value of the Left joystick 
-         */ 
+        /**
+         * Gets the value of the Left joystick
+         */
         public get buttonLeftStick(): number {
             return this._buttonLeftStick;
         }
-        /** 
-         * Sets the value of the Left joystick 
-         */ 
+        /**
+         * Sets the value of the Left joystick
+         */
         public set buttonLeftStick(value) {
             this._buttonLeftStick = this._setButtonValue(value, this._buttonLeftStick, Xbox360Button.LeftStick);
         }
 
-        /** 
-         * Gets the value of the Right joystick 
-         */ 
+        /**
+         * Gets the value of the Right joystick
+         */
         public get buttonRightStick(): number {
             return this._buttonRightStick;
         }
-        /** 
-         * Sets the value of the Right joystick 
-         */ 
+        /**
+         * Sets the value of the Right joystick
+         */
         public set buttonRightStick(value) {
             this._buttonRightStick = this._setButtonValue(value, this._buttonRightStick, Xbox360Button.RightStick);
         }
 
-        /** 
-         * Gets the value of D-pad up 
-         */  
+        /**
+         * Gets the value of D-pad up
+         */
         public get dPadUp(): number {
             return this._dPadUp;
         }
-        /** 
-         * Sets the value of D-pad up 
+        /**
+         * Sets the value of D-pad up
          */
         public set dPadUp(value) {
             this._dPadUp = this._setDPadValue(value, this._dPadUp, Xbox360Dpad.Up);
         }
 
-        /** 
-         * Gets the value of D-pad down 
+        /**
+         * Gets the value of D-pad down
          */
         public get dPadDown(): number {
             return this._dPadDown;
         }
-        /** 
-         * Sets the value of D-pad down 
+        /**
+         * Sets the value of D-pad down
          */
         public set dPadDown(value) {
             this._dPadDown = this._setDPadValue(value, this._dPadDown, Xbox360Dpad.Down);
         }
 
-        /** 
-         * Gets the value of D-pad left 
-         */ 
+        /**
+         * Gets the value of D-pad left
+         */
         public get dPadLeft(): number {
             return this._dPadLeft;
         }
-        /** 
-         * Sets the value of D-pad left 
+        /**
+         * Sets the value of D-pad left
          */
         public set dPadLeft(value) {
             this._dPadLeft = this._setDPadValue(value, this._dPadLeft, Xbox360Dpad.Left);
         }
 
-        /** 
-         * Gets the value of D-pad right 
+        /**
+         * Gets the value of D-pad right
          */
         public get dPadRight(): number {
             return this._dPadRight;
         }
-        /** 
-         * Sets the value of D-pad right 
+        /**
+         * Sets the value of D-pad right
          */
         public set dPadRight(value) {
             this._dPadRight = this._setDPadValue(value, this._dPadRight, Xbox360Dpad.Right);
@@ -441,7 +441,7 @@
         /**
          * Disposes the gamepad
          */
-        public dispose(){
+        public dispose() {
             super.dispose();
             this.onButtonDownObservable.clear();
             this.onButtonUpObservable.clear();

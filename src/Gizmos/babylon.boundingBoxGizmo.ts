@@ -21,7 +21,7 @@ module BABYLON {
         /**
          * Returns true if a descendant should be included when computing the bounding box. When null, all descendants are included. If ignoreChildren is set this will be ignored. (Default: null)
          */
-        public includeChildPredicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null
+        public includeChildPredicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null;
 
         /**
          * The size of the rotation spheres attached to the bounding box (Default: 0.1)
@@ -63,7 +63,7 @@ module BABYLON {
         /**
          * Relative bounding box pivot used when scaling the attached mesh. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
          */
-        public scalePivot:Nullable<Vector3> = null;
+        public scalePivot: Nullable<Vector3> = null;
         private _anchorMesh: AbstractMesh;
         private _existingMeshScale = new Vector3();
 
@@ -74,14 +74,14 @@ module BABYLON {
         private static _PivotTranslation = new Vector3();
         private static _PivotTmpVector = new Vector3();
         /** @hidden */
-        public static _RemoveAndStorePivotPoint(mesh:AbstractMesh){
-            if(mesh && BoundingBoxGizmo._PivotCached === 0){
+        public static _RemoveAndStorePivotPoint(mesh: AbstractMesh) {
+            if (mesh && BoundingBoxGizmo._PivotCached === 0) {
                 // Save old pivot and set pivot to 0,0,0
                 mesh.getPivotPointToRef(BoundingBoxGizmo._OldPivotPoint);
-                if(!BoundingBoxGizmo._OldPivotPoint.equalsToFloats(0,0,0)){
+                if (!BoundingBoxGizmo._OldPivotPoint.equalsToFloats(0, 0, 0)) {
                     mesh.setPivotMatrix(Matrix.IdentityReadOnly);
                     BoundingBoxGizmo._OldPivotPoint.subtractToRef(mesh.getPivotPoint(), BoundingBoxGizmo._PivotTranslation);
-                    BoundingBoxGizmo._PivotTmpVector.copyFromFloats(1,1,1);
+                    BoundingBoxGizmo._PivotTmpVector.copyFromFloats(1, 1, 1);
                     BoundingBoxGizmo._PivotTmpVector.subtractInPlace(mesh.scaling);
                     BoundingBoxGizmo._PivotTmpVector.multiplyInPlace(BoundingBoxGizmo._PivotTranslation);
                     mesh.position.addInPlace(BoundingBoxGizmo._PivotTmpVector);
@@ -90,10 +90,10 @@ module BABYLON {
             BoundingBoxGizmo._PivotCached++;
         }
         /** @hidden */
-        public static _RestorePivotPoint(mesh:AbstractMesh){
-            if(mesh && !BoundingBoxGizmo._OldPivotPoint.equalsToFloats(0,0,0) && BoundingBoxGizmo._PivotCached === 1){
+        public static _RestorePivotPoint(mesh: AbstractMesh) {
+            if (mesh && !BoundingBoxGizmo._OldPivotPoint.equalsToFloats(0, 0, 0) && BoundingBoxGizmo._PivotCached === 1) {
                 mesh.setPivotPoint(BoundingBoxGizmo._OldPivotPoint);
-                BoundingBoxGizmo._PivotTmpVector.copyFromFloats(1,1,1);
+                BoundingBoxGizmo._PivotTmpVector.copyFromFloats(1, 1, 1);
                 BoundingBoxGizmo._PivotTmpVector.subtractInPlace(mesh.scaling);
                 BoundingBoxGizmo._PivotTmpVector.multiplyInPlace(BoundingBoxGizmo._PivotTranslation);
                 mesh.position.subtractInPlace(BoundingBoxGizmo._PivotTmpVector);
@@ -124,7 +124,7 @@ module BABYLON {
             // Build bounding box out of lines
             this._lineBoundingBox = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene);
             this._lineBoundingBox.rotationQuaternion = new BABYLON.Quaternion();
-            var lines = []
+            var lines = [];
             lines.push(BABYLON.MeshBuilder.CreateLines("lines", { points: [new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(this._boundingDimensions.x, 0, 0)] }, gizmoLayer.utilityLayerScene));
             lines.push(BABYLON.MeshBuilder.CreateLines("lines", { points: [new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(0, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
             lines.push(BABYLON.MeshBuilder.CreateLines("lines", { points: [new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(0, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
@@ -138,11 +138,11 @@ module BABYLON {
             lines.push(BABYLON.MeshBuilder.CreateLines("lines", { points: [new BABYLON.Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z), new BABYLON.Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
             lines.push(BABYLON.MeshBuilder.CreateLines("lines", { points: [new BABYLON.Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z), new BABYLON.Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
             lines.forEach((l) => {
-                l.color = color
-                l.position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2))
+                l.color = color;
+                l.position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
                 l.isPickable = false;
-                this._lineBoundingBox.addChild(l)
-            })
+                this._lineBoundingBox.addChild(l);
+            });
             this._rootMesh.addChild(this._lineBoundingBox);
 
             // Create rotation spheres
@@ -163,7 +163,7 @@ module BABYLON {
                 _dragBehavior.onDragStartObservable.add((event) => {
                     startingTurnDirection.copyFrom(sphere.forward);
                     totalTurnAmountOfDrag = 0;
-                })
+                });
                 _dragBehavior.onDragObservable.add((event) => {
                     this.onRotationSphereDragObservable.notifyObservers({});
                     if (this.attachedMesh) {
@@ -177,9 +177,9 @@ module BABYLON {
 
                         // project drag delta on to the resulting drag axis and rotate based on that
                         var projectDist = -Vector3.Dot(dragAxis, event.delta);
-                        
+
                         // Make rotation relative to size of mesh.
-                        projectDist = (projectDist / this._boundingDimensions.length())*this._anchorMesh.scaling.length();
+                        projectDist = (projectDist / this._boundingDimensions.length()) * this._anchorMesh.scaling.length();
 
                         // Rotate based on axis
                         if (!this.attachedMesh.rotationQuaternion) {
@@ -214,12 +214,12 @@ module BABYLON {
                 // Selection/deselection
                 _dragBehavior.onDragStartObservable.add(() => {
                     this.onDragStartObservable.notifyObservers({});
-                    this._selectNode(sphere)
-                })
+                    this._selectNode(sphere);
+                });
                 _dragBehavior.onDragEndObservable.add(() => {
                     this.onRotationSphereDragEndObservable.notifyObservers({});
-                    this._selectNode(null)
-                })
+                    this._selectNode(null);
+                });
 
                 this._rotateSpheresParent.addChild(sphere);
             }
@@ -241,13 +241,13 @@ module BABYLON {
                         box.addBehavior(_dragBehavior);
                         _dragBehavior.onDragObservable.add((event) => {
                             this.onScaleBoxDragObservable.notifyObservers({});
-                            if(this.attachedMesh){
+                            if (this.attachedMesh) {
                                 BoundingBoxGizmo._RemoveAndStorePivotPoint(this.attachedMesh);
-                                var relativeDragDistance = (event.dragDistance / this._boundingDimensions.length())*this._anchorMesh.scaling.length();
-                                var deltaScale = new Vector3(relativeDragDistance,relativeDragDistance,relativeDragDistance);
+                                var relativeDragDistance = (event.dragDistance / this._boundingDimensions.length()) * this._anchorMesh.scaling.length();
+                                var deltaScale = new Vector3(relativeDragDistance, relativeDragDistance, relativeDragDistance);
                                 deltaScale.scaleInPlace(this._scaleDragSpeed);
                                 this.updateBoundingBox();
-                                if(this.scalePivot){
+                                if (this.scalePivot) {
                                     this.attachedMesh.getWorldMatrix().getRotationMatrixToRef(this._tmpRotationMatrix);
                                     // Move anchor to desired pivot point (Bottom left corner + dimension/2)
                                     this._boundingDimensions.scaleToRef(0.5, this._tmpVector);
@@ -256,8 +256,8 @@ module BABYLON {
                                     this._boundingDimensions.multiplyToRef(this.scalePivot, this._tmpVector);
                                     Vector3.TransformCoordinatesToRef(this._tmpVector, this._tmpRotationMatrix, this._tmpVector);
                                     this._anchorMesh.position.addInPlace(this._tmpVector);
-                                }else{
-                                    // Scale from the position of the opposite corner                   
+                                }else {
+                                    // Scale from the position of the opposite corner
                                     box.absolutePosition.subtractToRef(this._anchorMesh.position, this._tmpVector);
                                     this._anchorMesh.position.subtractInPlace(this._tmpVector);
                                 }
@@ -271,17 +271,17 @@ module BABYLON {
 
                                 BoundingBoxGizmo._RestorePivotPoint(this.attachedMesh);
                             }
-                        })
+                        });
 
                         // Selection/deselection
                         _dragBehavior.onDragStartObservable.add(() => {
                             this.onDragStartObservable.notifyObservers({});
-                            this._selectNode(box)
-                        })
+                            this._selectNode(box);
+                        });
                         _dragBehavior.onDragEndObservable.add(() => {
                             this.onScaleBoxDragEndObservable.notifyObservers({});
-                            this._selectNode(null)
-                        })
+                            this._selectNode(null);
+                        });
 
                         this._scaleBoxesParent.addChild(box);
                     }
@@ -313,7 +313,7 @@ module BABYLON {
                 if (this.attachedMesh && !this._existingMeshScale.equals(this.attachedMesh.scaling)) {
                     this.updateBoundingBox();
                 }
-            })
+            });
             this.updateBoundingBox();
         }
 
@@ -333,14 +333,14 @@ module BABYLON {
             this._rotateSpheresParent.getChildMeshes()
                 .concat(this._scaleBoxesParent.getChildMeshes()).forEach((m, i) => {
                     m.isVisible = (!selectedMesh || m == selectedMesh);
-                })
+                });
         }
 
         /**
          * Updates the bounding box information for the Gizmo
          */
-        public updateBoundingBox(){
-            if(this.attachedMesh){
+        public updateBoundingBox() {
+            if (this.attachedMesh) {
                 BoundingBoxGizmo._RemoveAndStorePivotPoint(this.attachedMesh);
                 this._update();
                 // Rotate based on axis
@@ -358,7 +358,7 @@ module BABYLON {
                 this.attachedMesh.rotationQuaternion.set(0, 0, 0, 1);
                 this.attachedMesh.position.set(0, 0, 0);
 
-                // Update bounding dimensions/positions   
+                // Update bounding dimensions/positions
                 var boundingMinMax = this.attachedMesh.getHierarchyBoundingVectors(!this.ignoreChildren, this.includeChildPredicate);
                 boundingMinMax.max.subtractToRef(boundingMinMax.min, this._boundingDimensions);
 
@@ -374,13 +374,13 @@ module BABYLON {
                 this.attachedMesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
                 this.attachedMesh.position.copyFrom(this._tmpVector);
             }
-            
+
             // Update rotation sphere locations
             var rotateSpheres = this._rotateSpheresParent.getChildMeshes();
             for (var i = 0; i < 3; i++) {
                 for (var j = 0; j < 2; j++) {
                     for (var k = 0; k < 2; k++) {
-                        var index = ((i * 4) + (j * 2)) + k
+                        var index = ((i * 4) + (j * 2)) + k;
                         if (i == 0) {
                             rotateSpheres[index].position.set(this._boundingDimensions.x / 2, this._boundingDimensions.y * j, this._boundingDimensions.z * k);
                             rotateSpheres[index].position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
@@ -396,7 +396,7 @@ module BABYLON {
                             rotateSpheres[index].position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
                             rotateSpheres[index].lookAt(Vector3.Cross(Vector3.Forward(), rotateSpheres[index].position.normalizeToNew()).normalizeToNew().add(rotateSpheres[index].position));
                         }
-                        if(this.fixedDragMeshScreenSize){
+                        if (this.fixedDragMeshScreenSize) {
                             this._rootMesh.computeWorldMatrix();
                             this._rotateSpheresParent.computeWorldMatrix();
                             rotateSpheres[index].computeWorldMatrix();
@@ -409,17 +409,17 @@ module BABYLON {
                     }
                 }
             }
-            
+
             // Update scale box locations
             var scaleBoxes = this._scaleBoxesParent.getChildMeshes();
-            for(var i=0;i<2;i++){
-                for(var j=0;j<2;j++){
-                    for(var k=0;k<2;k++){
-                        var index= ((i*4)+(j*2))+k;
-                        if(scaleBoxes[index]){
-                            scaleBoxes[index].position.set(this._boundingDimensions.x*i,this._boundingDimensions.y*j,this._boundingDimensions.z*k);
-                            scaleBoxes[index].position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x/2,-this._boundingDimensions.y/2,-this._boundingDimensions.z/2));
-                            if(this.fixedDragMeshScreenSize){
+            for (var i = 0; i < 2; i++) {
+                for (var j = 0; j < 2; j++) {
+                    for (var k = 0; k < 2; k++) {
+                        var index = ((i * 4) + (j * 2)) + k;
+                        if (scaleBoxes[index]) {
+                            scaleBoxes[index].position.set(this._boundingDimensions.x * i, this._boundingDimensions.y * j, this._boundingDimensions.z * k);
+                            scaleBoxes[index].position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
+                            if (this.fixedDragMeshScreenSize) {
                                 this._rootMesh.computeWorldMatrix();
                                 this._scaleBoxesParent.computeWorldMatrix();
                                 scaleBoxes[index].computeWorldMatrix();
@@ -434,7 +434,7 @@ module BABYLON {
                 }
             }
             if (this.attachedMesh) {
-                this._existingMeshScale.copyFrom(this.attachedMesh.scaling);   
+                this._existingMeshScale.copyFrom(this.attachedMesh.scaling);
                 BoundingBoxGizmo._RestorePivotPoint(this.attachedMesh);
             }
         }
@@ -452,7 +452,7 @@ module BABYLON {
                 } else {
                     m.setEnabled(axis.indexOf("z") != -1);
                 }
-            })
+            });
         }
 
         /**
@@ -478,19 +478,19 @@ module BABYLON {
                 root.getChildMeshes().forEach((c) => {
                     makeNotPickable(c);
                 });
-            }
+            };
             makeNotPickable(mesh);
 
             // Reset position to get boudning box from origin with no rotation
             if (!mesh.rotationQuaternion) {
                 mesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(mesh.rotation.y, mesh.rotation.x, mesh.rotation.z);
             }
-            var oldPos = mesh.position.clone()
+            var oldPos = mesh.position.clone();
             var oldRot = mesh.rotationQuaternion.clone();
             mesh.rotationQuaternion.set(0, 0, 0, 1);
-            mesh.position.set(0, 0, 0)
+            mesh.position.set(0, 0, 0);
 
-            // Update bounding dimensions/positions   
+            // Update bounding dimensions/positions
             var box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, mesh.getScene());
             var boundingMinMax = mesh.getHierarchyBoundingVectors();
             boundingMinMax.max.subtractToRef(boundingMinMax.min, box.scaling);

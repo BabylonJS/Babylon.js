@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     // Adds the parser to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_LENSFLARESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
         // Lens flares
@@ -19,20 +19,20 @@
         /**
          * The list of lens flare system added to the scene
          * @see http://doc.babylonjs.com/how_to/how_to_use_lens_flares
-         */         
+         */
         lensFlareSystems: Array<LensFlareSystem>;
 
         /**
          * Removes the given lens flare system from this scene.
          * @param toRemove The lens flare system to remove
          * @returns The index of the removed lens flare system
-         */          
+         */
         removeLensFlareSystem(toRemove: LensFlareSystem): number;
 
         /**
          * Adds the given lens flare system to this scene
          * @param newLensFlareSystem The lens flare system to add
-         */          
+         */
         addLensFlareSystem(newLensFlareSystem: LensFlareSystem): void;
 
         /**
@@ -58,7 +58,7 @@
         }
 
         return null;
-    }
+    };
 
     AbstractScene.prototype.getLensFlareSystemByID = function(id: string): Nullable<LensFlareSystem> {
         for (var index = 0; index < this.lensFlareSystems.length; index++) {
@@ -68,7 +68,7 @@
         }
 
         return null;
-    }
+    };
 
     AbstractScene.prototype.removeLensFlareSystem = function(toRemove: LensFlareSystem): number {
         var index = this.lensFlareSystems.indexOf(toRemove);
@@ -76,11 +76,11 @@
             this.lensFlareSystems.splice(index, 1);
         }
         return index;
-    }
+    };
 
     AbstractScene.prototype.addLensFlareSystem = function(newLensFlareSystem: LensFlareSystem): void {
         this.lensFlareSystems.push(newLensFlareSystem);
-    }
+    };
 
     /**
      * Defines the lens flare scene component responsible to manage any lens flares
@@ -137,7 +137,7 @@
 
         /**
          * Removes all the elements in the container from the scene
-         * @param container contains the elements to remove 
+         * @param container contains the elements to remove
          */
         public removeFromContainer(container: AbstractScene): void {
             if (!container.lensFlareSystems) {
@@ -173,7 +173,7 @@
 
         private _draw(camera: Camera): void {
             // Lens flares
-            if (this.scene.lensFlaresEnabled) {                
+            if (this.scene.lensFlaresEnabled) {
                 let lensFlareSystems = this.scene.lensFlareSystems;
                 Tools.StartPerformanceCounter("Lens flares", lensFlareSystems.length > 0);
                 for (let lensFlareSystem of lensFlareSystems) {
@@ -185,4 +185,4 @@
             }
         }
     }
-} 
+}

@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     export interface Scene {
         /**
          * @hidden
@@ -28,7 +28,7 @@
             component = new OctreeSceneComponent(this);
             this._addComponent(component);
         }
-        
+
         if (!this._selectionOctree) {
             this._selectionOctree = new Octree<AbstractMesh>(Octree.CreationFuncForMeshes, maxCapacity, maxDepth);
         }
@@ -39,10 +39,10 @@
         this._selectionOctree.update(worldExtends.min, worldExtends.max, this.meshes);
 
         return this._selectionOctree;
-   }
+   };
 
     Object.defineProperty(Scene.prototype, "selectionOctree", {
-        get: function (this:Scene) {
+        get: function(this: Scene) {
             return this._selectionOctree;
         },
         enumerable: true,
@@ -50,14 +50,14 @@
     });
 
     export interface AbstractMesh {
-        /** 
-         * @hidden 
+        /**
+         * @hidden
          * Backing Field
          */
         _submeshesOctree: Octree<SubMesh>;
 
         /**
-         * This function will create an octree to help to select the right submeshes for rendering, picking and collision computations.  
+         * This function will create an octree to help to select the right submeshes for rendering, picking and collision computations.
          * Please note that you must have a decent number of submeshes to get performance improvements when using an octree
          * @param maxCapacity defines the maximum size of each block (64 by default)
          * @param maxDepth defines the maximum depth to use (no more than 2 levels by default)
@@ -69,7 +69,7 @@
     }
 
     /**
-     * This function will create an octree to help to select the right submeshes for rendering, picking and collision computations.  
+     * This function will create an octree to help to select the right submeshes for rendering, picking and collision computations.
      * Please note that you must have a decent number of submeshes to get performance improvements when using an octree
      * @param maxCapacity defines the maximum size of each block (64 by default)
      * @param maxDepth defines the maximum depth to use (no more than 2 levels by default)
@@ -98,7 +98,7 @@
         this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
 
         return this._submeshesOctree;
-    }
+    };
 
     /**
      * Defines the octree scene component responsible to manage any octrees
@@ -115,7 +115,7 @@
          */
         public scene: Scene;
 
-        /** 
+        /**
          * Indicates if the meshes have been checked to make sure they are isEnabled()
          */
         public readonly checksIsEnabled = true;
@@ -154,7 +154,7 @@
                 if (sceneOctree !== undefined && sceneOctree !== null) {
                     sceneOctree.addMesh(mesh);
                 }
-            })
+            });
         }
 
         /**
@@ -230,4 +230,4 @@
             // Nothing to do here.
         }
     }
-} 
+}

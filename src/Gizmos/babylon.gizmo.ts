@@ -6,8 +6,8 @@ module BABYLON {
         /**
          * The root mesh of the gizmo
          */
-        protected _rootMesh:Mesh;
-        private _attachedMesh:Nullable<AbstractMesh>;
+        protected _rootMesh: Mesh;
+        private _attachedMesh: Nullable<AbstractMesh>;
         /**
          * Ratio for the scale of the gizmo (Default: 1)
          */
@@ -21,12 +21,12 @@ module BABYLON {
          * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
          * * When set, interactions will be enabled
          */
-        public get attachedMesh(){
+        public get attachedMesh() {
             return this._attachedMesh;
         }
-        public set attachedMesh(value){
+        public set attachedMesh(value) {
             this._attachedMesh = value;
-            this._rootMesh.setEnabled(value?true:false);
+            this._rootMesh.setEnabled(value ? true : false);
             this._attachedMeshChanged(value);
         }
 
@@ -34,13 +34,13 @@ module BABYLON {
          * Disposes and replaces the current meshes in the gizmo with the specified mesh
          * @param mesh The mesh to replace the default mesh of the gizmo
          */
-        public setCustomMesh(mesh:Mesh){
-            if(mesh.getScene() != this.gizmoLayer.utilityLayerScene){
+        public setCustomMesh(mesh: Mesh) {
+            if (mesh.getScene() != this.gizmoLayer.utilityLayerScene) {
                 throw "When setting a custom mesh on a gizmo, the custom meshes scene must be the same as the gizmos (eg. gizmo.gizmoLayer.utilityLayerScene)";
             }
-            this._rootMesh.getChildMeshes().forEach((c)=>{
+            this._rootMesh.getChildMeshes().forEach((c) => {
                 c.dispose();
-            })
+            });
             mesh.parent = this._rootMesh;
             this._customMeshSet = true;
         }
@@ -58,22 +58,22 @@ module BABYLON {
          */
         protected _updateScale = true;
         protected _interactionsEnabled = true;
-        protected _attachedMeshChanged(value:Nullable<AbstractMesh>){
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {
         }
 
-        private _beforeRenderObserver:Nullable<Observer<Scene>>;
-        
+        private _beforeRenderObserver: Nullable<Observer<Scene>>;
+
         /**
          * Creates a gizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
          */
         constructor(
-            /** The utility layer the gizmo will be added to */ 
-            public gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer){
-            this._rootMesh = new BABYLON.Mesh("gizmoRootNode",gizmoLayer.utilityLayerScene);
-            this._beforeRenderObserver = this.gizmoLayer.utilityLayerScene.onBeforeRenderObservable.add(()=>{
+            /** The utility layer the gizmo will be added to */
+            public gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
+            this._rootMesh = new BABYLON.Mesh("gizmoRootNode", gizmoLayer.utilityLayerScene);
+            this._beforeRenderObserver = this.gizmoLayer.utilityLayerScene.onBeforeRenderObservable.add(() => {
                 this._update();
-            })
+            });
             this.attachedMesh = null;
         }
 
@@ -82,41 +82,41 @@ module BABYLON {
          * @hidden
          * Updates the gizmo to match the attached mesh's position/rotation
          */
-        protected _update(){
-            if(this.attachedMesh){
-                if(this.updateGizmoRotationToMatchAttachedMesh){
-                    if(!this._rootMesh.rotationQuaternion){
+        protected _update() {
+            if (this.attachedMesh) {
+                if (this.updateGizmoRotationToMatchAttachedMesh) {
+                    if (!this._rootMesh.rotationQuaternion) {
                         this._rootMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this._rootMesh.rotation.y, this._rootMesh.rotation.x, this._rootMesh.rotation.z);
                     }
 
                     // Remove scaling before getting rotation matrix to get rotation matrix unmodified by scale
                     this._tempVector.copyFrom(this.attachedMesh.scaling);
-                    if(this.attachedMesh.scaling.x < 0){
+                    if (this.attachedMesh.scaling.x < 0) {
                         this.attachedMesh.scaling.x *= -1;
                     }
-                    if(this.attachedMesh.scaling.y < 0){
+                    if (this.attachedMesh.scaling.y < 0) {
                         this.attachedMesh.scaling.y *= -1;
                     }
-                    if(this.attachedMesh.scaling.z < 0){
+                    if (this.attachedMesh.scaling.z < 0) {
                         this.attachedMesh.scaling.z *= -1;
                     }
                     this.attachedMesh.computeWorldMatrix().getRotationMatrixToRef(this._tmpMatrix);
                     this.attachedMesh.scaling.copyFrom(this._tempVector);
                     this.attachedMesh.computeWorldMatrix();
                     Quaternion.FromRotationMatrixToRef(this._tmpMatrix, this._rootMesh.rotationQuaternion);
-                }else if(this._rootMesh.rotationQuaternion){
-                    this._rootMesh.rotationQuaternion.set(0,0,0,1);
+                }else if (this._rootMesh.rotationQuaternion) {
+                    this._rootMesh.rotationQuaternion.set(0, 0, 0, 1);
                 }
-                if(this.updateGizmoPositionToMatchAttachedMesh){
+                if (this.updateGizmoPositionToMatchAttachedMesh) {
                     this._rootMesh.position.copyFrom(this.attachedMesh.absolutePosition);
                 }
-                if(this._updateScale && this.gizmoLayer.utilityLayerScene.activeCamera && this.attachedMesh){
+                if (this._updateScale && this.gizmoLayer.utilityLayerScene.activeCamera && this.attachedMesh) {
                     var cameraPosition = this.gizmoLayer.utilityLayerScene.activeCamera.position;
-                    if((<WebVRFreeCamera>this.gizmoLayer.utilityLayerScene.activeCamera).devicePosition){
+                    if ((<WebVRFreeCamera>this.gizmoLayer.utilityLayerScene.activeCamera).devicePosition) {
                         cameraPosition = (<WebVRFreeCamera>this.gizmoLayer.utilityLayerScene.activeCamera).devicePosition;
                     }
                     this._rootMesh.position.subtractToRef(cameraPosition, this._tempVector);
-                    var dist = this._tempVector.length()*this.scaleRatio;
+                    var dist = this._tempVector.length() * this.scaleRatio;
                     this._rootMesh.scaling.set(dist, dist, dist);
                 }
             }
@@ -125,9 +125,9 @@ module BABYLON {
         /**
          * Disposes of the gizmo
          */
-        public dispose(){
-            this._rootMesh.dispose()
-            if(this._beforeRenderObserver){
+        public dispose() {
+            this._rootMesh.dispose();
+            if (this._beforeRenderObserver) {
                 this.gizmoLayer.utilityLayerScene.onBeforeRenderObservable.remove(this._beforeRenderObserver);
             }
         }

@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
 
     /**
      * Post process used to render in black and white
@@ -8,7 +8,7 @@
          * Linear about to convert he result to black and white (default: 1)
          */
         public degree = 1;
-    
+
         /**
          * Creates a black and white post process
          * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#black-and-white
@@ -27,4 +27,4 @@
             });
         }
     }
-} 
+}

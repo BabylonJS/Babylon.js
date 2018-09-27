@@ -1,4 +1,4 @@
-﻿interface HTMLCanvasElement {
+interface HTMLCanvasElement {
     /** Track wether a record is in progress */
     isRecording: boolean;
     /** Capture Stream method defined by some browsers */
@@ -14,20 +14,20 @@ interface MediaRecorder {
     /** Event raised when an error arised. */
     onerror: (event: ErrorEvent) => void;
     /** Event raised when the recording stops. */
-    onstop: (event:Event) => void;
+    onstop: (event: Event) => void;
     /** Event raised when a new chunk  of data is available and should be tracked. */
     ondataavailable: (event: Event) => void;
 }
 
 interface MediaRecorderOptions {
     /** The mime type you want to use as the recording container for the new MediaRecorder */
-    mimeType?: string,
+    mimeType?: string;
     /** The chosen bitrate for the audio component of the media. */
-    audioBitsPerSecond?: number,
+    audioBitsPerSecond?: number;
     /** The chosen bitrate for the video component of the media. */
-    videoBitsPerSecond?: number,
+    videoBitsPerSecond?: number;
     /** The chosen bitrate for the audio and video components of the media. This can be specified instead of the above two properties. If this is specified along with one or the other of the above properties, this will be used for the one that isn't specified. */
-    bitsPerSecond?: number,
+    bitsPerSecond?: number;
 }
 
 interface MediaRecorderConstructor {
@@ -55,17 +55,17 @@ module BABYLON {
      */
     export interface VideoRecorderOptions {
         /** Defines the mime type of the video */
-        mimeType: string,
+        mimeType: string;
         /** Defines the video the video should be recorded at */
-        fps: number,
+        fps: number;
         /** Defines the chunk size for the recording data */
-        recordChunckSize: number
+        recordChunckSize: number;
     }
 
-    /** 
+    /**
      * This can helps recording videos from BabylonJS.
      * This is based on the available WebRTC functionalities of the browser.
-     * 
+     *
      * @see http://doc.babylonjs.com/how_to/render_scene_on_a_video
      */
     export class VideoRecorder {
@@ -124,7 +124,7 @@ module BABYLON {
             this._options = {
                 ...VideoRecorder._defaultOptions,
                 ...options
-            }
+            };
 
             const stream = this._canvas.captureStream(this._options.fps);
             this._mediaRecorder = new MediaRecorder(stream, { mimeType: this._options.mimeType });
@@ -153,7 +153,7 @@ module BABYLON {
         /**
          * Starts recording the canvas for a max duration specified in parameters.
          * @param fileName Defines the name of the file to be downloaded when the recording stop. If null no automatic download will start and you can rely on the promise to get the data back.
-         * @param maxDuration Defines the maximum recording time in seconds. 
+         * @param maxDuration Defines the maximum recording time in seconds.
          * It default to 7 seconds. A value of zero will not stop automatically, you would need to call stopRecording manually.
          * @return a promise callback at the end of the recording with the video data in Blob.
          */
@@ -176,7 +176,7 @@ module BABYLON {
             this._recordedChunks = [];
             this._resolve = null;
             this._reject = null;
-            
+
             this._canvas.isRecording = true;
             this._mediaRecorder.start(this._options.recordChunckSize);
 
@@ -212,7 +212,7 @@ module BABYLON {
                 this._reject(event.error);
             }
             else {
-                throw new event.error;
+                throw new event.error();
             }
         }
 
@@ -231,4 +231,4 @@ module BABYLON {
             }
         }
     }
-} 
+}

@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
 	 * PostProcessManager is used to manage one or more post processes or post process pipelines
      * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
@@ -208,4 +208,4 @@
             }
         }
     }
-} 
+}

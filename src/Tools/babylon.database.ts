@@ -93,7 +93,7 @@ module BABYLON {
                 this._enableSceneOffline = false;
                 this._enableTexturesOffline = false;
                 this.callbackManifestChecked(false);
-            }
+            };
 
             var timeStampUsed = false;
             var manifestURL = this.currentSceneUrl + ".manifest";
@@ -129,7 +129,7 @@ module BABYLON {
                 }
             }, false);
 
-            xhr.addEventListener("error", event => {
+            xhr.addEventListener("error", (event) => {
                 if (timeStampUsed) {
                     timeStampUsed = false;
                     // Let's retry without the timeStamp
@@ -160,13 +160,13 @@ module BABYLON {
         public openAsync(successCallback: () => void, errorCallback: () => void) {
             let handleError = () => {
                 this.isSupported = false;
-                if (errorCallback) errorCallback();
-            }
+                if (errorCallback) { errorCallback(); }
+            };
 
             if (!this.idbFactory || !(this._enableSceneOffline || this._enableTexturesOffline)) {
                 // Your browser doesn't support IndexedDB
                 this.isSupported = false;
-                if (errorCallback) errorCallback();
+                if (errorCallback) { errorCallback(); }
             }
             else {
                 // If the DB hasn't been opened or created yet
@@ -177,18 +177,18 @@ module BABYLON {
                     var request: IDBOpenDBRequest = this.idbFactory.open("babylonjs", 1);
 
                     // Could occur if user is blocking the quota for the DB and/or doesn't grant access to IndexedDB
-                    request.onerror = event => {
+                    request.onerror = (event) => {
                         handleError();
                     };
 
                     // executes when a version change transaction cannot complete due to other active transactions
-                    request.onblocked = event => {
+                    request.onblocked = (event) => {
                         Tools.Error("IDB request blocked. Please reload the page.");
                         handleError();
                     };
 
                     // DB has been opened successfully
-                    request.onsuccess = event => {
+                    request.onsuccess = (event) => {
                         this.db = request.result;
                         successCallback();
                     };
@@ -211,7 +211,7 @@ module BABYLON {
                 }
                 // DB has already been created and opened
                 else {
-                    if (successCallback) successCallback();
+                    if (successCallback) { successCallback(); }
                 }
             }
         }
@@ -250,11 +250,11 @@ module BABYLON {
                 var texture: any;
                 var transaction: IDBTransaction = this.db.transaction(["textures"]);
 
-                transaction.onabort = event => {
+                transaction.onabort = (event) => {
                     image.src = url;
                 };
 
-                transaction.oncomplete = event => {
+                transaction.oncomplete = (event) => {
                     var blobTextureURL: string;
                     if (texture) {
                         var URL = window.URL || window.webkitURL;
@@ -273,10 +273,10 @@ module BABYLON {
 
                 var getRequest: IDBRequest = transaction.objectStore("textures").get(url);
 
-                getRequest.onsuccess = event => {
+                getRequest.onsuccess = (event) => {
                     texture = (<any>(event.target)).result;
                 };
-                getRequest.onerror = event => {
+                getRequest.onerror = (event) => {
                     Tools.Error("Error loading texture " + url + " from DB.");
                     image.src = url;
                 };
@@ -337,7 +337,7 @@ module BABYLON {
                                 generateBlobUrl();
                             };
 
-                            transaction.oncomplete = event => {
+                            transaction.oncomplete = (event) => {
                                 generateBlobUrl();
                             };
 
@@ -346,9 +346,9 @@ module BABYLON {
                             try {
                                 // Put the blob into the dabase
                                 var addRequest = transaction.objectStore("textures").put(newTexture);
-                                addRequest.onsuccess = event => {
+                                addRequest.onsuccess = (event) => {
                                 };
-                                addRequest.onerror = event => {
+                                addRequest.onerror = (event) => {
                                     generateBlobUrl();
                                 };
                             }
@@ -365,7 +365,7 @@ module BABYLON {
                         }
                     }, false);
 
-                    xhr.addEventListener("error", event => {
+                    xhr.addEventListener("error", (event) => {
                         Tools.Error("Error in XHR request in BABYLON.Database.");
                         image.src = url;
                     }, false);
@@ -396,7 +396,7 @@ module BABYLON {
                 try {
                     var transaction = this.db.transaction(["versions"]);
 
-                    transaction.oncomplete = event => {
+                    transaction.oncomplete = (event) => {
                         if (version) {
                             // If the version in the JSON file is different from the version in DB
                             if (this.manifestVersionFound !== version.data) {
@@ -414,16 +414,16 @@ module BABYLON {
                         }
                     };
 
-                    transaction.onabort = event => {
+                    transaction.onabort = (event) => {
                         callback(-1);
                     };
 
                     var getRequest = transaction.objectStore("versions").get(url);
 
-                    getRequest.onsuccess = event => {
+                    getRequest.onsuccess = (event) => {
                         version = (<any>(event.target)).result;
                     };
-                    getRequest.onerror = event => {
+                    getRequest.onerror = (event) => {
                         Tools.Error("Error loading version for scene " + url + " from DB.");
                         callback(-1);
                     };
@@ -446,7 +446,7 @@ module BABYLON {
                     var transaction = this.db.transaction(["versions"], "readwrite");
 
                     // the transaction could abort because of a QuotaExceededError error
-                    transaction.onabort = event => {
+                    transaction.onabort = (event) => {
                         try {//backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
                             var error = (<any>event.srcElement)['error'];
                             if (error && error.name === "QuotaExceededError") {
@@ -457,7 +457,7 @@ module BABYLON {
                         callback(-1);
                     };
 
-                    transaction.oncomplete = event => {
+                    transaction.oncomplete = (event) => {
                         callback(this.manifestVersionFound);
                     };
 
@@ -465,9 +465,9 @@ module BABYLON {
 
                     // Put the scene into the database
                     var addRequest = transaction.objectStore("versions").put(newVersion);
-                    addRequest.onsuccess = event => {
+                    addRequest.onsuccess = (event) => {
                     };
-                    addRequest.onerror = event => {
+                    addRequest.onerror = (event) => {
                         Tools.Error("Error in DB add version request in BABYLON.Database.");
                     };
                 }
@@ -497,7 +497,7 @@ module BABYLON {
                 this._saveFileIntoDBAsync(completeUrl, sceneLoaded, progressCallBack, useArrayBuffer, errorCallback);
             };
 
-            this._checkVersionFromDB(completeUrl, version => {
+            this._checkVersionFromDB(completeUrl, (version) => {
                 if (version !== -1) {
                     if (!this.mustUpdateRessources) {
                         this._loadFileFromDBAsync(completeUrl, sceneLoaded, saveAndLoadFile, useArrayBuffer);
@@ -527,7 +527,7 @@ module BABYLON {
                 var file: any;
                 var transaction = this.db.transaction([targetStore]);
 
-                transaction.oncomplete = event => {
+                transaction.oncomplete = (event) => {
                     if (file) {
                         callback(file.data);
                     }
@@ -537,16 +537,16 @@ module BABYLON {
                     }
                 };
 
-                transaction.onabort = event => {
+                transaction.onabort = (event) => {
                     notInDBCallback();
                 };
 
                 var getRequest = transaction.objectStore(targetStore).get(url);
 
-                getRequest.onsuccess = event => {
+                getRequest.onsuccess = (event) => {
                     file = (<any>(event.target)).result;
                 };
-                getRequest.onerror = event => {
+                getRequest.onerror = (event) => {
                     Tools.Error("Error loading file " + url + " from DB.");
                     notInDBCallback();
                 };
@@ -603,7 +603,7 @@ module BABYLON {
                                 callback(fileData);
                             };
 
-                            transaction.oncomplete = event => {
+                            transaction.oncomplete = (event) => {
                                 callback(fileData);
                             };
 
@@ -618,9 +618,9 @@ module BABYLON {
                             try {
                                 // Put the scene into the database
                                 var addRequest = transaction.objectStore(targetStore).put(newFile);
-                                addRequest.onsuccess = event => {
+                                addRequest.onsuccess = (event) => {
                                 };
-                                addRequest.onerror = event => {
+                                addRequest.onerror = (event) => {
                                     Tools.Error("Error in DB add file request in BABYLON.Database.");
                                 };
                             }
@@ -633,15 +633,15 @@ module BABYLON {
                         }
                     }
                     else {
-                        if(xhr.status >= 400 && errorCallback){
+                        if (xhr.status >= 400 && errorCallback) {
                             errorCallback(xhr);
-                        }else{
+                        }else {
                             callback();
                         }
                     }
                 }, false);
 
-                xhr.addEventListener("error", event => {
+                xhr.addEventListener("error", (event) => {
                     Tools.Error("error on XHR request.");
                     callback();
                 }, false);

@@ -43,7 +43,7 @@ module BABYLON {
 
     /**
     * Interface representing a pose controlled object in Babylon.
-    * A pose controlled object has both regular pose values as well as pose values 
+    * A pose controlled object has both regular pose values as well as pose values
     * from an external device such as a VR head mounted display
     */
     export interface PoseControlled {
@@ -255,15 +255,16 @@ module BABYLON {
                 }
             });
 
-            if (typeof (VRFrameData) !== "undefined")
+            if (typeof (VRFrameData) !== "undefined") {
                 this._frameData = new VRFrameData();
+            }
 
             /**
              * The idea behind the following lines:
              * objects that have the camera as parent should actually have the rig cameras as a parent.
              * BUT, each of those cameras has a different view matrix, which means that if we set the parent to the first rig camera,
              * the second will not show it correctly.
-             * 
+             *
              * To solve this - each object that has the camera as parent will be added to a protected array.
              * When the rig camera renders, it will take this array and set all of those to be its children.
              * This way, the right camera will be used as a parent, and the mesh will be rendered correctly.
@@ -273,11 +274,11 @@ module BABYLON {
                 if (camera.parent === this && this.rigParenting) {
                     this._descendants = this.getDescendants(true, (n) => {
                         // don't take the cameras or the controllers!
-                        let isController = this.controllers.some(controller => { return controller._mesh === n });
-                        let isRigCamera = this._rigCameras.indexOf(<Camera>n) !== -1
+                        let isController = this.controllers.some((controller) => { return controller._mesh === n; });
+                        let isRigCamera = this._rigCameras.indexOf(<Camera>n) !== -1;
                         return !isController && !isRigCamera;
                     });
-                    this._descendants.forEach(node => {
+                    this._descendants.forEach((node) => {
                         node.parent = camera;
                     });
                 }
@@ -285,7 +286,7 @@ module BABYLON {
 
             scene.onAfterCameraRenderObservable.add((camera) => {
                 if (camera.parent === this && this.rigParenting) {
-                    this._descendants.forEach(node => {
+                    this._descendants.forEach((node) => {
                         node.parent = this;
                     });
                 }
@@ -300,7 +301,7 @@ module BABYLON {
             if (this._standingMatrix) {
                 // Add standing matrix offset to get real offset from ground in room
                 this._standingMatrix.getTranslationToRef(this._workingVector);
-                return this._deviceRoomPosition.y + this._workingVector.y
+                return this._deviceRoomPosition.y + this._workingVector.y;
             }
             //If VRDisplay does not inform stage parameters and no default height is set we fallback to zero.
             return this._defaultHeight || 0;
@@ -348,7 +349,7 @@ module BABYLON {
         public dispose(): void {
             this._detachIfAttached();
             this.getEngine().onVRRequestPresentComplete.removeCallback(this._onVREnabled);
-            if(this._updateCacheWhenTrackingDisabledObserver){
+            if (this._updateCacheWhenTrackingDisabledObserver) {
                 this._scene.onBeforeRenderObservable.remove(this._updateCacheWhenTrackingDisabledObserver);
             }
             super.dispose();
@@ -379,7 +380,7 @@ module BABYLON {
             }
 
             return this._leftController;
-        };
+        }
 
         private _rightController: Nullable<WebVRController>;
         /**
@@ -391,8 +392,7 @@ module BABYLON {
             }
 
             return this._rightController;
-        };
-
+        }
 
         /**
          * Casts a ray forward from the vrCamera's gaze.
@@ -446,8 +446,8 @@ module BABYLON {
             }
         }
 
-        private _htmlElementAttached:Nullable<HTMLElement> = null;
-        private _detachIfAttached = ()=>{
+        private _htmlElementAttached: Nullable<HTMLElement> = null;
+        private _detachIfAttached = () => {
             var vrDisplay = this.getEngine().getVRDevice();
             if (vrDisplay && !vrDisplay.isPresenting && this._htmlElementAttached) {
                 this.detachControl(this._htmlElementAttached);
@@ -459,7 +459,7 @@ module BABYLON {
          * Note that in certain browsers (chrome for example) this function must be called
          * within a user-interaction callback. Example:
          * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
-         * 
+         *
          * @param element html element to attach the vrDevice to
          * @param noPreventDefault prevent the default html element operation when attaching the vrDevice
          */
@@ -478,7 +478,7 @@ module BABYLON {
 
         /**
          * Detaches the camera from the html element and disables VR
-         * 
+         *
          * @param element html element to detach from
          */
         public detachControl(element: HTMLElement): void {
@@ -529,10 +529,10 @@ module BABYLON {
         private updateCacheCalled: boolean;
 
         // Remove translation from 6dof headset if trackposition is set to false
-        private _correctPositionIfNotTrackPosition(matrix:Matrix, isViewMatrix = false){
-            if(this.rawPose && this.rawPose.position && !this.webVROptions.trackPosition){
+        private _correctPositionIfNotTrackPosition(matrix: Matrix, isViewMatrix = false) {
+            if (this.rawPose && this.rawPose.position && !this.webVROptions.trackPosition) {
                 Matrix.TranslationToRef(this.rawPose.position[0], this.rawPose.position[1], -this.rawPose.position[2], this._tmpMatrix);
-                if(!isViewMatrix){
+                if (!isViewMatrix) {
                     this._tmpMatrix.invert();
                 }
                 this._tmpMatrix.multiplyToRef(matrix, matrix);
@@ -588,7 +588,7 @@ module BABYLON {
          * @hidden
          * Get current device position in babylon world
          */
-        public _computeDevicePosition(){
+        public _computeDevicePosition() {
             Vector3.TransformCoordinatesToRef(this._deviceRoomPosition, this._deviceToWorld, this.devicePosition);
         }
 
@@ -597,10 +597,10 @@ module BABYLON {
          */
         public update() {
             this._computeDevicePosition();
-            
+
             // Get current device rotation in babylon world
             Matrix.FromQuaternionToRef(this._deviceRoomRotationQuaternion, this._workingMatrix);
-            this._workingMatrix.multiplyToRef(this._deviceToWorld, this._workingMatrix)
+            this._workingMatrix.multiplyToRef(this._deviceToWorld, this._workingMatrix);
             Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
 
             if (this._poseSet) {
@@ -658,7 +658,7 @@ module BABYLON {
 
                 this._webvrViewMatrix.invert();
             }
-             
+
             // Remove translation from 6dof headset if trackposition is set to false
             parentCamera._correctPositionIfNotTrackPosition(this._webvrViewMatrix, true);
 
@@ -728,14 +728,14 @@ module BABYLON {
             this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
                 if (gamepad.type === Gamepad.POSE_ENABLED) {
                     let webVrController: WebVRController = <WebVRController>gamepad;
-                    if(!this.webVROptions.trackPosition){
-                        webVrController._disableTrackPosition(new Vector3(webVrController.hand == "left" ? -0.15 : 0.15,-0.5, 0.25));
+                    if (!this.webVROptions.trackPosition) {
+                        webVrController._disableTrackPosition(new Vector3(webVrController.hand == "left" ? -0.15 : 0.15, -0.5, 0.25));
                         // Cache must be updated before rendering controllers to avoid them being one frame behind
-                        if(!this._updateCacheWhenTrackingDisabledObserver){
-                            this._updateCacheWhenTrackingDisabledObserver = this._scene.onBeforeRenderObservable.add(()=>{
+                        if (!this._updateCacheWhenTrackingDisabledObserver) {
+                            this._updateCacheWhenTrackingDisabledObserver = this._scene.onBeforeRenderObservable.add(() => {
                                 this._updateCache();
                             });
-                        }                        
+                        }
                     }
                     webVrController.deviceScaleFactor = this.deviceScaleFactor;
                     webVrController._deviceToWorld.copyFrom(this._deviceToWorld);
@@ -753,7 +753,7 @@ module BABYLON {
                                     if (!this._lightOnControllers) {
                                         this._lightOnControllers = new HemisphericLight("vrControllersLight", new Vector3(0, 1, 0), this.getScene());
                                     }
-                                    let activateLightOnSubMeshes = function (mesh: AbstractMesh, light: HemisphericLight) {
+                                    let activateLightOnSubMeshes = function(mesh: AbstractMesh, light: HemisphericLight) {
                                         let children = mesh.getChildren();
                                         if (children && children.length !== 0) {
                                             children.forEach((mesh) => {
@@ -761,7 +761,7 @@ module BABYLON {
                                                 activateLightOnSubMeshes(<AbstractMesh>mesh, light);
                                             });
                                         }
-                                    }
+                                    };
                                     this._lightOnControllers.includedOnlyMeshes.push(loadedMesh);
                                     activateLightOnSubMeshes(loadedMesh, this._lightOnControllers);
                                 }
@@ -802,4 +802,3 @@ module BABYLON {
         }
     }
 }
-

@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * This represents the object necessary to create a rendering group.
      * This is exclusively used and created by the rendering manager.
@@ -28,7 +28,7 @@
 
         /**
          * Set the opaque sort comparison function.
-         * If null the sub meshes will be render in the order they were created 
+         * If null the sub meshes will be render in the order they were created
          */
         public set opaqueSortCompareFn(value: Nullable<(a: SubMesh, b: SubMesh) => number>) {
             this._opaqueSortCompareFn = value;
@@ -42,7 +42,7 @@
 
         /**
          * Set the alpha test sort comparison function.
-         * If null the sub meshes will be render in the order they were created 
+         * If null the sub meshes will be render in the order they were created
          */
         public set alphaTestSortCompareFn(value: Nullable<(a: SubMesh, b: SubMesh) => number>) {
             this._alphaTestSortCompareFn = value;
@@ -56,7 +56,7 @@
 
         /**
          * Set the transparent sort comparison function.
-         * If null the sub meshes will be render in the order they were created 
+         * If null the sub meshes will be render in the order they were created
          */
         public set transparentSortCompareFn(value: Nullable<(a: SubMesh, b: SubMesh) => number>) {
             if (value) {
@@ -235,7 +235,7 @@
         /**
          * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
          * are rendered back to front if in the same alpha index.
-         * 
+         *
          * @param a The first submesh
          * @param b The second submesh
          * @returns The result of the comparison
@@ -256,7 +256,7 @@
         /**
          * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
          * are rendered back to front.
-         * 
+         *
          * @param a The first submesh
          * @param b The second submesh
          * @returns The result of the comparison
@@ -276,7 +276,7 @@
         /**
          * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
          * are rendered front to back (prevent overdraw).
-         * 
+         *
          * @param a The first submesh
          * @param b The second submesh
          * @returns The result of the comparison
@@ -393,7 +393,7 @@
                 return;
             }
 
-            // Sprites       
+            // Sprites
             var activeCamera = this._scene.activeCamera;
             this._scene.onBeforeSpritesRenderingObservable.notifyObservers(this._scene);
             for (var id = 0; id < this._spriteManagers.length; id++) {
@@ -406,4 +406,4 @@
             this._scene.onAfterSpritesRenderingObservable.notifyObservers(this._scene);
         }
     }
-} 
+}
