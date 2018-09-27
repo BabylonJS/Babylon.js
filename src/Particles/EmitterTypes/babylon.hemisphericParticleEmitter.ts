@@ -7,7 +7,7 @@ module BABYLON {
          /**
          * Creates a new instance HemisphericParticleEmitter
          * @param radius the radius of the emission hemisphere (1 by default)
-         * @param radiusRange the range of the emission hemisphere [0-1] 0 Surface only, 1 Entire Radius (1 by default) 
+         * @param radiusRange the range of the emission hemisphere [0-1] 0 Surface only, 1 Entire Radius (1 by default)
          * @param directionRandomizer defines how much to randomize the particle direction [0-1]
          */
         constructor(
@@ -52,7 +52,7 @@ module BABYLON {
          */
         public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
             var randRadius = this.radius - Scalar.RandomRange(0, this.radius * this.radiusRange);
-            var v = Scalar.RandomRange(0, 1.0); 
+            var v = Scalar.RandomRange(0, 1.0);
             var phi = Scalar.RandomRange(0, 2 * Math.PI);
             var theta = Math.acos(2 * v - 1);
             var randX = randRadius * Math.cos(phi) * Math.sin(theta);
@@ -71,38 +71,38 @@ module BABYLON {
             Tools.DeepCopy(this, newOne);
 
             return newOne;
-        }    
-        
+        }
+
         /**
          * Called by the GPUParticleSystem to setup the update shader
          * @param effect defines the update shader
-         */        
+         */
         public applyToShader(effect: Effect): void {
             effect.setFloat("radius", this.radius);
             effect.setFloat("radiusRange", this.radiusRange);
             effect.setFloat("directionRandomizer", this.directionRandomizer);
-        }    
-        
+        }
+
         /**
          * Returns a string to use to update the GPU particles update shader
          * @returns a string containng the defines string
          */
         public getEffectDefines(): string {
-            return "#define HEMISPHERICEMITTER"
-        }   
-        
+            return "#define HEMISPHERICEMITTER";
+        }
+
         /**
          * Returns the string "HemisphericParticleEmitter"
          * @returns a string containing the class name
          */
         public getClassName(): string {
             return "HemisphericParticleEmitter";
-        }         
-        
+        }
+
         /**
          * Serializes the particle system to a JSON object.
          * @returns the JSON object
-         */        
+         */
         public serialize(): any {
             var serializationObject: any = {};
             serializationObject.type = this.getClassName();
@@ -111,8 +111,8 @@ module BABYLON {
             serializationObject.directionRandomizer = this.directionRandomizer;
 
             return serializationObject;
-        }    
-        
+        }
+
         /**
          * Parse properties from a JSON object
          * @param serializationObject defines the JSON object
@@ -121,6 +121,6 @@ module BABYLON {
             this.radius = serializationObject.radius;
             this.radiusRange = serializationObject.radiusRange;
             this.directionRandomizer = serializationObject.directionRandomizer;
-        }          
+        }
     }
 }

@@ -1,7 +1,7 @@
 module BABYLON {
     /**
      * Particle emitter emitting particles from a point.
-     * It emits the particles randomly between 2 given directions. 
+     * It emits the particles randomly between 2 given directions.
      */
     export class PointParticleEmitter implements IParticleEmitterType {
 
@@ -13,7 +13,7 @@ module BABYLON {
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
          */
         public direction2 = new Vector3(0, 1.0, 0);
-             
+
         /**
          * Creates a new instance PointParticleEmitter
          */
@@ -61,8 +61,8 @@ module BABYLON {
         /**
          * Called by the GPUParticleSystem to setup the update shader
          * @param effect defines the update shader
-         */        
-        public applyToShader(effect: Effect): void {            
+         */
+        public applyToShader(effect: Effect): void {
             effect.setVector3("direction1", this.direction1);
             effect.setVector3("direction2", this.direction2);
         }
@@ -72,7 +72,7 @@ module BABYLON {
          * @returns a string containng the defines string
          */
         public getEffectDefines(): string {
-            return "#define POINTEMITTER"
+            return "#define POINTEMITTER";
         }
 
         /**
@@ -81,12 +81,12 @@ module BABYLON {
          */
         public getClassName(): string {
             return "PointParticleEmitter";
-        }   
-        
+        }
+
         /**
          * Serializes the particle system to a JSON object.
          * @returns the JSON object
-         */        
+         */
         public serialize(): any {
             var serializationObject: any = {};
 

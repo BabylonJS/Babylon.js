@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     export interface Scene {
         /** @hidden (Backing field) */
         _boundingBoxRenderer: BoundingBoxRenderer;
@@ -8,10 +8,10 @@
 
         /**
          * Gets or sets a boolean indicating if all bounding boxes must be rendered
-         */    
+         */
         forceShowBoundingBoxes: boolean;
 
-        /** 
+        /**
          * Gets the bounding box renderer associated with the scene
          * @returns a BoundingBoxRenderer
          */
@@ -19,10 +19,10 @@
     }
 
     Object.defineProperty(Scene.prototype, "forceShowBoundingBoxes", {
-        get: function (this:Scene) {
+        get: function(this: Scene) {
             return this._forceShowBoundingBoxes || false;
         },
-        set: function (this:Scene, value: boolean) {
+        set: function(this: Scene, value: boolean) {
             this._forceShowBoundingBoxes = value;
             // Lazyly creates a BB renderer if needed.
             if (value) {
@@ -40,7 +40,7 @@
         }
 
         return this._boundingBoxRenderer;
-    }
+    };
 
     export interface AbstractMesh {
         /** @hidden (Backing field) */
@@ -53,10 +53,10 @@
     }
 
     Object.defineProperty(AbstractMesh.prototype, "showBoundingBox", {
-        get: function (this: AbstractMesh) {
+        get: function(this: AbstractMesh) {
             return this._showBoundingBox || false;
         },
-        set: function (this: AbstractMesh, value: boolean) {
+        set: function(this: AbstractMesh, value: boolean) {
             this._showBoundingBox = value;
             // Lazyly creates a BB renderer if needed.
             if (value) {
@@ -153,7 +153,6 @@
                     attributes: [VertexBuffer.PositionKind],
                     uniforms: ["world", "viewProjection", "color"]
                 });
-
 
             var engine = this.scene.getEngine();
             var boxdata = VertexData.CreateBox({ size: 1.0 });
@@ -306,4 +305,4 @@
             this.scene.getEngine()._releaseBuffer(this._indexBuffer);
         }
     }
-} 
+}

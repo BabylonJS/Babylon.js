@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Render pipeline to produce ssao effect
      */
@@ -112,8 +112,9 @@
 
             // Finish
             scene.postProcessRenderPipelineManager.addPipeline(this);
-            if (cameras)
+            if (cameras) {
                 scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
+            }
         }
 
         // Public Methods
@@ -134,8 +135,9 @@
 
             this._randomTexture.dispose();
 
-            if (disableDepthRender)
+            if (disableDepthRender) {
                 this._scene.disableDepthRenderer();
+            }
 
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
 
@@ -238,7 +240,7 @@
 
             var rand = (min: number, max: number) => {
                 return Math.random() * (max - min) + min;
-            }
+            };
 
             var randVector = Vector3.Zero();
 

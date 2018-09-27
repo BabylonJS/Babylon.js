@@ -1,11 +1,11 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces fo this big mesh.
      *As it is just a mesh, the SPS has all the same properties than any other BJS mesh : not more, not less. It can be scaled, rotated, translated, enlighted, textured, moved, etc.
 
      * The SPS is also a particle system. It provides some methods to manage the particles.
      * However it is behavior agnostic. This means it has no emitter, no particle physics, no particle recycler. You have to implement your own behavior.
-     * 
+     *
      * Full documentation here : http://doc.babylonjs.com/overviews/Solid_Particle_System
      */
     export class SolidParticleSystem implements IDisposable {
@@ -44,17 +44,17 @@
          */
         public vars: any = {};
         /**
-         * This array is populated when the SPS is set as 'pickable'.  
-         * Each key of this array is a `faceId` value that you can get from a pickResult object.  
-         * Each element of this array is an object `{idx: int, faceId: int}`.  
-         * `idx` is the picked particle index in the `SPS.particles` array  
-         * `faceId` is the picked face index counted within this particle.  
-         * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#pickable-particles  
+         * This array is populated when the SPS is set as 'pickable'.
+         * Each key of this array is a `faceId` value that you can get from a pickResult object.
+         * Each element of this array is an object `{idx: int, faceId: int}`.
+         * `idx` is the picked particle index in the `SPS.particles` array
+         * `faceId` is the picked face index counted within this particle.
+         * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#pickable-particles
          */
         public pickedParticles: { idx: number; faceId: number }[];
         /**
-         * This array is populated when `enableDepthSort` is set to true.  
-         * Each element of this array is an instance of the class DepthSortedParticle.  
+         * This array is populated when `enableDepthSort` is set to true.
+         * Each element of this array is an instance of the class DepthSortedParticle.
          */
         public depthSortedParticles: DepthSortedParticle[];
 
@@ -113,7 +113,7 @@
         private static _maximum: Vector3 = Vector3.Zero();
         private _particlesIntersect: boolean = false;
         private _depthSortFunction: (p1: DepthSortedParticle, p2: DepthSortedParticle) => number =
-            function (p1, p2) {
+            function(p1, p2) {
                 return (p2.sqDistance - p1.sqDistance);
             };
         private _needs32Bits: boolean = false;
@@ -122,15 +122,15 @@
 
         /**
          * Creates a SPS (Solid Particle System) object.
-         * @param name (String) is the SPS name, this will be the underlying mesh name.  
-         * @param scene (Scene) is the scene in which the SPS is added.  
-         * @param updatable (optional boolean, default true) : if the SPS must be updatable or immutable.  
-         * @param isPickable (optional boolean, default false) : if the solid particles must be pickable.  
-         * @param enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.  
-         * @param particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.    
+         * @param name (String) is the SPS name, this will be the underlying mesh name.
+         * @param scene (Scene) is the scene in which the SPS is added.
+         * @param updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
+         * @param isPickable (optional boolean, default false) : if the solid particles must be pickable.
+         * @param enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
+         * @param particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
          * @param boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
-         * @param bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance. 
-         * @example bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.  
+         * @param bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
+         * @example bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
          */
         constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean; enableDepthSort?: boolean; particleIntersection?: boolean; boundingSphereOnly?: boolean; bSphereRadiusFactor?: number }) {
             this.name = name;
@@ -211,10 +211,10 @@
         }
 
         /**
-         * Digests the mesh and generates as many solid particles in the system as wanted. Returns the SPS.  
+         * Digests the mesh and generates as many solid particles in the system as wanted. Returns the SPS.
          * These particles will have the same geometry than the mesh parts and will be positioned at the same localisation than the mesh original places.
-         * Thus the particles generated from `digest()` have their property `position` set yet.  
-         * @param mesh ( Mesh ) is the mesh to be digested  
+         * Thus the particles generated from `digest()` have their property `position` set yet.
+         * @param mesh ( Mesh ) is the mesh to be digested
          * @param options {facetNb} (optional integer, default 1) is the number of mesh facets per particle, this parameter is overriden by the parameter `number` if any
          * {delta} (optional integer, default 0) is the random extra number of facets per particle , each particle will have between `facetNb` and `facetNb + delta` facets
          * {number} (optional positive integer) is the wanted number of particles : each particle is built with `mesh_total_facets / number` facets
@@ -466,8 +466,9 @@
         private _uvsToShapeUV(uvs: number[] | Float32Array): number[] {
             var shapeUV = [];
             if (uvs) {
-                for (var i = 0; i < uvs.length; i++)
+                for (var i = 0; i < uvs.length; i++) {
                     shapeUV.push(uvs[i]);
+                }
             }
             return shapeUV;
         }
@@ -480,7 +481,7 @@
         }
 
         /**
-         * Adds some particles to the SPS from the model shape. Returns the shape id.   
+         * Adds some particles to the SPS from the model shape. Returns the shape id.
          * Please read the doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#create-an-immutable-sps
          * @param mesh is any Mesh object that will be used as a model for the solid particles.
          * @param nb (positive integer) the number of particles to be created from this model
@@ -585,7 +586,7 @@
         }
 
         /**
-         * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.  
+         * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
          * @returns the SPS.
          */
         public rebuildMesh(): SolidParticleSystem {
@@ -602,7 +603,7 @@
          *  For an animated SPS, it is usually called within the render loop.
          * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
          * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
-         * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_   
+         * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
          * @returns the SPS.
          */
         public setParticles(start: number = 0, end: number = this.nbParticles - 1, update: boolean = true): SolidParticleSystem {
@@ -1048,7 +1049,7 @@
 
         /**
          * Visibilty helper : Recomputes the visible size according to the mesh bounding box
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility   
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
          * @returns the SPS.
          */
         public refreshVisibleSize(): SolidParticleSystem {
@@ -1058,7 +1059,7 @@
             return this;
         }
 
-        /** 
+        /**
          * Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
          * @param size the size (float) of the visibility box
          * note : this doesn't lock the SPS mesh bounding box.
@@ -1141,9 +1142,9 @@
             this._computeBoundingBox = val;
         }
         /**
-         * Tells to `setParticles()` to sort or not the distance between each particle and the camera.  
+         * Tells to `setParticles()` to sort or not the distance between each particle and the camera.
          * Skipped when `enableDepthSort` is set to `false` (default) at construction time.
-         * Default : `true`  
+         * Default : `true`
          */
         public set depthSortParticles(val: boolean) {
             this._depthSortParticles = val;
@@ -1188,9 +1189,9 @@
             return this._computeBoundingBox;
         }
         /**
-         * Gets if `setParticles()` sorts or not the distance between each particle and the camera.  
+         * Gets if `setParticles()` sorts or not the distance between each particle and the camera.
          * Skipped when `enableDepthSort` is set to `false` (default) at construction time.
-         * Default : `true`  
+         * Default : `true`
          */
         public get depthSortParticles(): boolean {
             return this._depthSortParticles;
@@ -1198,7 +1199,7 @@
 
         // =======================================================================
         // Particle behavior logic
-        // these following methods may be overwritten by the user to fit his needs    
+        // these following methods may be overwritten by the user to fit his needs
 
         /**
          * This function does nothing. It may be overwritten to set all the particle first values.

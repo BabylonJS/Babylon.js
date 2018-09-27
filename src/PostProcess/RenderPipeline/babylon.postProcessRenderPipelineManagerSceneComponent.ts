@@ -1,7 +1,7 @@
 module BABYLON {
     export interface Scene {
         /** @hidden (Backing field) */
-        _postProcessRenderPipelineManager: PostProcessRenderPipelineManager
+        _postProcessRenderPipelineManager: PostProcessRenderPipelineManager;
 
         /**
          * Gets the postprocess render pipeline manager
@@ -12,7 +12,7 @@ module BABYLON {
     }
 
     Object.defineProperty(Scene.prototype, "postProcessRenderPipelineManager", {
-        get: function (this:Scene) {
+        get: function(this: Scene) {
             if (!this._postProcessRenderPipelineManager) {
                 // Register the G Buffer component to the scene.
                 let component = this._getComponent(SceneComponentConstants.NAME_POSTPROCESSRENDERPIPELINEMANAGER) as PostProcessRenderPipelineManagerSceneComponent;
@@ -22,7 +22,7 @@ module BABYLON {
                 }
                 this._postProcessRenderPipelineManager = new PostProcessRenderPipelineManager();
             }
-    
+
             return this._postProcessRenderPipelineManager;
         },
         enumerable: true,
@@ -83,4 +83,4 @@ module BABYLON {
             }
         }
     }
-} 
+}

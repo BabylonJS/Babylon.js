@@ -8,7 +8,6 @@ module BABYLON {
         public name: string = "OimoJSPlugin";
         public BJSOIMO: any;
 
-
         constructor(iterations?: number) {
             this.BJSOIMO = OIMO;
             this.world = new this.BJSOIMO.World({
@@ -33,7 +32,7 @@ module BABYLON {
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>) {
 
-            impostors.forEach(function (impostor) {
+            impostors.forEach(function(impostor) {
                 impostor.beforeStep();
             });
 
@@ -109,19 +108,19 @@ module BABYLON {
 
                 var impostors = [impostor];
                 let addToArray = (parent: IPhysicsEnabledObject) => {
-                    if (!parent.getChildMeshes) return;
-                    parent.getChildMeshes().forEach(function (m) {
+                    if (!parent.getChildMeshes) { return; }
+                    parent.getChildMeshes().forEach(function(m) {
                         if (m.physicsImpostor) {
                             impostors.push(m.physicsImpostor);
                             //m.physicsImpostor._init();
                         }
                     });
-                }
-                addToArray(impostor.object)
+                };
+                addToArray(impostor.object);
 
                 let checkWithEpsilon = (value: number): number => {
                     return Math.max(value, PhysicsEngine.Epsilon);
-                }
+                };
 
                 let globalQuaternion: Quaternion = new Quaternion();
 
@@ -209,7 +208,6 @@ module BABYLON {
                             var sizeY = checkWithEpsilon(extendSize.y);
                             var sizeZ = checkWithEpsilon(extendSize.z);
 
-
                             bodyConfig.type.push('box');
                             //if (i === impostor) {
                             bodyConfig.size.push(sizeX);
@@ -276,7 +274,7 @@ module BABYLON {
                 //supporting older version of Oimo
                 world: this.world
 
-            }
+            };
             switch (impostorJoint.joint.type) {
                 case PhysicsJoint.BallAndSocketJoint:
                     type = "jointBall";
@@ -289,7 +287,7 @@ module BABYLON {
                     nativeJointData.max = Math.max(nativeJointData.min, nativeJointData.max);
                 case PhysicsJoint.DistanceJoint:
                     type = "jointDistance";
-                    nativeJointData.max = (<DistanceJointData>jointData).maxDistance
+                    nativeJointData.max = (<DistanceJointData>jointData).maxDistance;
                     break;
                 case PhysicsJoint.PrismaticJoint:
                     type = "jointPrisme";
@@ -371,14 +369,14 @@ module BABYLON {
             if (!v) {
                 return null;
             }
-            return new Vector3(v.x, v.y, v.z)
+            return new Vector3(v.x, v.y, v.z);
         }
         public getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
             var v = impostor.physicsBody.angularVelocity;
             if (!v) {
                 return null;
             }
-            return new Vector3(v.x, v.y, v.z)
+            return new Vector3(v.x, v.y, v.z);
         }
 
         public setBodyMass(impostor: PhysicsImpostor, mass: number) {

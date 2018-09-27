@@ -16,7 +16,7 @@ module BABYLON {
         public wheelPrecision = 3.0;
 
         /**
-         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0. 
+         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
          * It defines the percentage of current camera.radius to use as delta when wheel is used.
          */
         @serialize()
@@ -33,7 +33,7 @@ module BABYLON {
         public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
             this._wheel = (p, s) => {
                 //sanity check - this should be a PointerWheel event.
-                if (p.type !== PointerEventTypes.POINTERWHEEL) return;
+                if (p.type !== PointerEventTypes.POINTERWHEEL) { return; }
                 var event = <MouseWheelEvent>p.event;
                 var delta = 0;
 
@@ -52,8 +52,9 @@ module BABYLON {
                     delta = -event.detail / this.wheelPrecision;
                 }
 
-                if (delta)
+                if (delta) {
                     this.camera.inertialRadiusOffset += delta;
+                }
 
                 if (event.preventDefault) {
                     if (!noPreventDefault) {

@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
      * @see http://doc.babylonjs.com/babylon101/materials#texture
@@ -251,7 +251,7 @@
                 if (!this.isBlocking && scene) {
                     scene.resetCachedMaterial();
                 }
-            }
+            };
 
             if (!this.url) {
                 this._delayedOnLoad = load;

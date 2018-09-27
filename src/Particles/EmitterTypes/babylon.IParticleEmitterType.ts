@@ -47,7 +47,7 @@ module BABYLON {
         /**
          * Serializes the particle system to a JSON object.
          * @returns the JSON object
-         */        
+         */
         serialize(): any;
 
         /**

@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Raw texture can help creating a texture directly from an array of data.
      * This can be super useful if you either get the data from an uncompressed source or
@@ -22,11 +22,11 @@
          * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
          * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
          */
-        constructor(data: ArrayBufferView, width: number, height: number, 
+        constructor(data: ArrayBufferView, width: number, height: number,
             /**
              * Define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
              */
-            public format: number, 
+            public format: number,
             scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, type: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             super(null, scene, !generateMipMaps, invertY);
             this._engine = scene.getEngine();

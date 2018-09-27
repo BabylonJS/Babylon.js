@@ -24,7 +24,7 @@ module BABYLON.GLTF2.Loader.Extensions {
                     if (!(babylonMaterial instanceof PBRMaterial)) {
                         throw new Error(`${extraContext}: Material type not supported`);
                     }
-        
+
                     const promise = this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial);
 
                     if (!babylonMaterial.albedoTexture) {
@@ -43,5 +43,5 @@ module BABYLON.GLTF2.Loader.Extensions {
         }
     }
 
-    GLTFLoader.RegisterExtension(NAME, loader => new MSFT_sRGBFactors(loader));
+    GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_sRGBFactors(loader));
 }

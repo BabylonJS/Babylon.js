@@ -960,7 +960,7 @@ export class Control {
     /** @hidden */
     protected _applyStates(context: CanvasRenderingContext2D): void {
         if (this._isFontSizeInPercentage) {
-            this._resetFontCache();
+            this._fontSet = true;
         }
 
         if (this._fontSet) {

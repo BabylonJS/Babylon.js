@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Represents the range of an animation
      */
@@ -153,7 +153,7 @@
          * @returns This path cursor
          */
         private raiseOnChange(): PathCursor {
-            this._onchange.forEach(f => f(this));
+            this._onchange.forEach((f) => f(this));
 
             return this;
         }
@@ -578,7 +578,7 @@
                     }
                 }
             }
-            this._ranges[name] = null; // said much faster than 'delete this._range[name]' 
+            this._ranges[name] = null; // said much faster than 'delete this._range[name]'
 
         }
 
@@ -889,7 +889,7 @@
          * Defines the function to use to interpolate matrices
          * @param startValue defines the start matrix
          * @param endValue defines the end matrix
-         * @param gradient defines the gradient between both matrices 
+         * @param gradient defines the gradient between both matrices
          * @param result defines an optional target matrix where to store the interpolation
          * @returns the interpolated matrix
          */
@@ -1200,7 +1200,7 @@
                 if (outTangent != undefined) {
                     keyData.outTangent = outTangent;
                 }
-                keys.push(keyData)
+                keys.push(keyData);
             }
 
             animation.setKeys(keys);
@@ -1232,5 +1232,3 @@
         }
     }
 }
-
-

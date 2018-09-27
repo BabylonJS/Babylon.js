@@ -1,16 +1,16 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * The PBR material of BJS following the metal roughness convention.
-     * 
-     * This fits to the PBR convention in the GLTF definition: 
+     *
+     * This fits to the PBR convention in the GLTF definition:
      * https://github.com/KhronosGroup/glTF/tree/2.0/specification/2.0
      */
     export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
 
         /**
-         * The base color has two different interpretations depending on the value of metalness. 
-         * When the material is a metal, the base color is the specific measured reflectance value 
-         * at normal incidence (F0). For a non-metal the base color represents the reflected diffuse color 
+         * The base color has two different interpretations depending on the value of metalness.
+         * When the material is a metal, the base color is the specific measured reflectance value
+         * at normal incidence (F0). For a non-metal the base color represents the reflected diffuse color
          * of the material.
          */
         @serializeAsColor3()
@@ -42,7 +42,7 @@
         public roughness: number;
 
         /**
-         * Texture containing both the metallic value in the B channel and the 
+         * Texture containing both the metallic value in the B channel and the
          * roughness value in the G channel to keep better precision.
          */
         @serializeAsTexture()
@@ -51,7 +51,7 @@
 
         /**
          * Instantiates a new PBRMetalRoughnessMaterial instance.
-         * 
+         *
          * @param name The material name
          * @param scene The scene the material will be use in.
          */

@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Post process which applies a refractin texture
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#refraction
@@ -23,7 +23,7 @@
             this._refTexture = value;
             this._ownRefractionTexture = false;
         }
-        
+
         /**
          * Initializes the RefractionPostProcess
          * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#refraction
@@ -39,18 +39,18 @@
          * @param reusable If the post process can be reused on the same frame. (default: false)
          */
         constructor(
-            name: string, 
-            refractionTextureUrl: string, 
+            name: string,
+            refractionTextureUrl: string,
             /** the base color of the refraction (used to taint the rendering) */
-            public color: Color3, 
+            public color: Color3,
             /** simulated refraction depth */
-            public depth: number, 
+            public depth: number,
             /** the coefficient of the base color (0 to remove base color tainting) */
-            public colorLevel: number, 
-            options: number | PostProcessOptions, 
-            camera: Camera, 
-            samplingMode?: number, 
-            engine?: Engine, 
+            public colorLevel: number,
+            options: number | PostProcessOptions,
+            camera: Camera,
+            samplingMode?: number,
+            engine?: Engine,
             reusable?: boolean
         ) {
             super(name, "refraction", ["baseColor", "depth", "colorLevel"], ["refractionSampler"], options, camera, samplingMode, engine, reusable);

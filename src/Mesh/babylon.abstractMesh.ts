@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /** @hidden */
     class _FacetDataStorage {
         // facetData private properties
@@ -6,7 +6,7 @@
         public facetNormals: Vector3[];               // facet local normals
         public facetPartitioning: number[][];         // partitioning array of facet index arrays
         public facetNb: number = 0;                   // facet number
-        public partitioningSubdivisions: number = 10; // number of subdivisions per axis in the partioning space  
+        public partitioningSubdivisions: number = 10; // number of subdivisions per axis in the partioning space
         public partitioningBBoxRatio: number = 1.01;  // the partioning array space is by default 1% bigger than the bounding box
         public facetDataEnabled: boolean = false;     // is the facet data feature enabled on this mesh ?
         public facetParameters: any = {};             // keep a reference to the object parameters to avoid memory re-allocation
@@ -25,7 +25,7 @@
         public facetDepthSortFunction: (f1: { ind: number, sqDistance: number }, f2: { ind: number, sqDistance: number }) => number;  // facet depth sort function
         public facetDepthSortFrom: Vector3;                               // location where to depth sort from
         public facetDepthSortOrigin: Vector3;                             // same as facetDepthSortFrom but expressed in the mesh local space
-        
+
         public invertedMatrix: Matrix; // Inverted world matrix.
     }
 
@@ -47,7 +47,7 @@
         /** Default culling strategy with bounding box and bounding sphere and then frustum culling */
         public static readonly CULLINGSTRATEGY_STANDARD = 0;
         /** Culling strategy with bounding sphere only and then frustum culling */
-        public static readonly CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY = 1;       
+        public static readonly CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY = 1;
 
         /**
          * No billboard
@@ -99,7 +99,7 @@
             this._facetData.partitioningSubdivisions = nb;
         }
         /**
-         * The ratio (float) to apply to the bouding box size to set to the partioning space.  
+         * The ratio (float) to apply to the bouding box size to set to the partioning space.
          * Ex : 1.01 (default) the partioning space is 1% bigger than the bounding box
          * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#tweaking-the-partitioning
          */
@@ -112,7 +112,7 @@
 
         /**
          * Gets or sets a boolean indicating that the facets must be depth sorted on next call to `updateFacetData()`.
-         * Works only for updatable meshes.  
+         * Works only for updatable meshes.
          * Doesn't work with multi-materials
          * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#facet-depth-sort
          */
@@ -124,8 +124,8 @@
         }
 
         /**
-         * The location (Vector3) where the facet depth sort must be computed from.  
-         * By default, the active camera position.  
+         * The location (Vector3) where the facet depth sort must be computed from.
+         * By default, the active camera position.
          * Used only when facet depth sort is enabled
          * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#facet-depth-sort
          */
@@ -194,7 +194,7 @@
         /**
          * Gets or sets the orientation for POV movement & rotation
          */
-        public definedFacingForward = true; 
+        public definedFacingForward = true;
 
         /** @hidden */
         public _occlusionQuery: Nullable<WebGLQuery>;
@@ -210,7 +210,7 @@
 
         /**
          * Gets or sets mesh visibility between 0 and 1 (default is 1)
-         */        
+         */
         public set visibility(value: number) {
             if (this._visibility === value) {
                 return;
@@ -218,7 +218,7 @@
 
             this._visibility = value;
             this._markSubMeshesAsMiscDirty();
-        }        
+        }
 
         /** Gets or sets the alpha index used to sort transparent meshes
          * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#alpha-index
@@ -248,12 +248,12 @@
          */
         public enablePointerMoveEvents = false;
 
-        /** 
-         * Specifies the rendering group id for this mesh (0 by default) 
+        /**
+         * Specifies the rendering group id for this mesh (0 by default)
          * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
          */
         public renderingGroupId = 0;
-        private _material: Nullable<Material>
+        private _material: Nullable<Material>;
 
         /** Gets or sets current material */
         public get material(): Nullable<Material> {
@@ -279,7 +279,7 @@
 
         private _receiveShadows = false;
 
-        /** 
+        /**
          * Gets or sets a boolean indicating that this mesh can receive realtime shadows
          * @see http://doc.babylonjs.com/babylon101/shadows
          */
@@ -451,7 +451,7 @@
         /**
          * Gets or sets the current collision group mask (-1 by default).
          * A collision between A and B will happen if A.collisionGroup & b.collisionMask !== 0
-         */        
+         */
         public get collisionGroup(): number {
             return this._collisionGroup;
         }
@@ -461,12 +461,12 @@
         }
 
         // Edges
-        /** 
+        /**
          * Defines edge width used when edgesRenderer is enabled
          * @see https://www.babylonjs-playground.com/#10OJSG#13
          */
         public edgesWidth = 1;
-        /** 
+        /**
          * Defines edge color used when edgesRenderer is enabled
          * @see https://www.babylonjs-playground.com/#10OJSG#13
          */
@@ -481,8 +481,8 @@
         /** @hidden */
         public _renderId = 0;
 
-        /** 
-         * Gets or sets the list of subMeshes 
+        /**
+         * Gets or sets the list of subMeshes
          * @see http://doc.babylonjs.com/how_to/multi_materials
          */
         public subMeshes: SubMesh[];
@@ -567,7 +567,7 @@
         }
 
         /**
-         * Gets a string representation of the current mesh 
+         * Gets a string representation of the current mesh
          * @param fullDetails defines a boolean indicating if full details must be included
          * @returns a string representation of the current mesh
          */
@@ -644,7 +644,7 @@
             for (var subMesh of this.subMeshes) {
                 subMesh.setEffect(null);
             }
-        }        
+        }
 
         /** @hidden */
         public _removeLightSource(light: Light): void {
@@ -672,12 +672,12 @@
 
         /** @hidden */
         public _markSubMeshesAsLightDirty() {
-            this._markSubMeshesAsDirty(defines => defines.markAsLightDirty());
+            this._markSubMeshesAsDirty((defines) => defines.markAsLightDirty());
         }
 
         /** @hidden */
         public _markSubMeshesAsAttributesDirty() {
-            this._markSubMeshesAsDirty(defines => defines.markAsAttributesDirty());
+            this._markSubMeshesAsDirty((defines) => defines.markAsAttributesDirty());
         }
 
         /** @hidden */
@@ -717,16 +717,16 @@
         }
 
         /**
-         * Returns the mesh itself by default. Implemented by child classes 
+         * Returns the mesh itself by default. Implemented by child classes
          * @param camera defines the camera to use to pick the right LOD level
-         * @returns the currentAbstractMesh 
+         * @returns the currentAbstractMesh
          */
         public getLOD(camera: Camera): Nullable<AbstractMesh> {
             return this;
         }
 
         /**
-         * Returns 0 by default. Implemented by child classes  
+         * Returns 0 by default. Implemented by child classes
          * @returns an integer
          */
         public getTotalVertices(): number {
@@ -734,7 +734,7 @@
         }
 
         /**
-         * Returns null by default. Implemented by child classes  
+         * Returns null by default. Implemented by child classes
          * @returns null
          */
         public getIndices(): Nullable<IndicesArray> {
@@ -742,7 +742,7 @@
         }
 
         /**
-         * Returns the array of the requested vertex data kind. Implemented by child classes  
+         * Returns the array of the requested vertex data kind. Implemented by child classes
          * @param kind defines the vertex data kind to use
          * @returns null
          */
@@ -752,9 +752,9 @@
 
         /**
          * Sets the vertex data of the mesh geometry for the requested `kind`.
-         * If the mesh has no geometry, a new Geometry object is set to the mesh and then passed this vertex data.  
-         * Note that a new underlying VertexBuffer object is created each call. 
-         * If the `kind` is the `PositionKind`, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed. 
+         * If the mesh has no geometry, a new Geometry object is set to the mesh and then passed this vertex data.
+         * Note that a new underlying VertexBuffer object is created each call.
+         * If the `kind` is the `PositionKind`, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.
          * @param kind defines vertex data kind:
          * * BABYLON.VertexBuffer.PositionKind
          * * BABYLON.VertexBuffer.UVKind
@@ -767,7 +767,7 @@
          * * BABYLON.VertexBuffer.MatricesIndicesKind
          * * BABYLON.VertexBuffer.MatricesIndicesExtraKind
          * * BABYLON.VertexBuffer.MatricesWeightsKind
-         * * BABYLON.VertexBuffer.MatricesWeightsExtraKind  
+         * * BABYLON.VertexBuffer.MatricesWeightsExtraKind
          * @param data defines the data source
          * @param updatable defines if the data must be flagged as updatable (or static)
          * @param stride defines the vertex stride (size of an entire vertex). Can be null and in this case will be deduced from vertex data kind
@@ -779,7 +779,7 @@
 
         /**
          * Updates the existing vertex data of the mesh geometry for the requested `kind`.
-         * If the mesh has no geometry, it is simply returned as it is.  
+         * If the mesh has no geometry, it is simply returned as it is.
          * @param kind defines vertex data kind:
          * * BABYLON.VertexBuffer.PositionKind
          * * BABYLON.VertexBuffer.UVKind
@@ -792,11 +792,11 @@
          * * BABYLON.VertexBuffer.MatricesIndicesKind
          * * BABYLON.VertexBuffer.MatricesIndicesExtraKind
          * * BABYLON.VertexBuffer.MatricesWeightsKind
-         * * BABYLON.VertexBuffer.MatricesWeightsExtraKind  
+         * * BABYLON.VertexBuffer.MatricesWeightsExtraKind
          * @param data defines the data source
          * @param updateExtends If `kind` is `PositionKind` and if `updateExtends` is true, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed
          * @param makeItUnique If true, a new global geometry is created from this data and is set to the mesh
-         * @returns the current mesh 
+         * @returns the current mesh
          */
         public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): AbstractMesh {
             return this;
@@ -804,16 +804,16 @@
 
         /**
          * Sets the mesh indices,
-         * If the mesh has no geometry, a new Geometry object is created and set to the mesh. 
+         * If the mesh has no geometry, a new Geometry object is created and set to the mesh.
          * @param indices Expects an array populated with integers or a typed array (Int32Array, Uint32Array, Uint16Array)
          * @param totalVertices Defines the total number of vertices
-         * @returns the current mesh  
+         * @returns the current mesh
          */
         public setIndices(indices: IndicesArray, totalVertices: Nullable<number>): AbstractMesh {
             return this;
         }
 
-        /** 
+        /**
          * Gets a boolean indicating if specific vertex data is present
          * @param kind defines the vertex data kind to use
          * @returns true is data kind is present
@@ -863,7 +863,7 @@
         /**
          * Overwrite the current bounding info
          * @param boundingInfo defines the new bounding info
-         * @returns the current mesh 
+         * @returns the current mesh
          */
         public setBoundingInfo(boundingInfo: BoundingInfo): AbstractMesh {
             this._boundingInfo = boundingInfo;
@@ -910,7 +910,7 @@
         }
 
         // ================================== Point of View Movement =================================
-        
+
         /**
          * Perform relative position change from the point of view of behind the front of the mesh.
          * This is performed taking into account the meshes current rotation, so you do not have to care.
@@ -918,7 +918,7 @@
          * @param amountRight defines the distance on the right axis
          * @param amountUp defines the distance on the up axis
          * @param amountForward defines the distance on the forward axis
-         * @returns the current mesh 
+         * @returns the current mesh
          */
         public movePOV(amountRight: number, amountUp: number, amountForward: number): AbstractMesh {
             this.position.addInPlace(this.calcMovePOV(amountRight, amountUp, amountForward));
@@ -932,7 +932,7 @@
          * @param amountRight defines the distance on the right axis
          * @param amountUp defines the distance on the up axis
          * @param amountForward defines the distance on the forward axis
-         * @returns the new displacement vector 
+         * @returns the new displacement vector
          */
         public calcMovePOV(amountRight: number, amountUp: number, amountForward: number): Vector3 {
             var rotMatrix = new Matrix();
@@ -951,7 +951,7 @@
          * @param flipBack defines the flip
          * @param twirlClockwise defines the twirl
          * @param tiltRight defines the tilt
-         * @returns the current mesh  
+         * @returns the current mesh
          */
         public rotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): AbstractMesh {
             this.rotation.addInPlace(this.calcRotatePOV(flipBack, twirlClockwise, tiltRight));
@@ -1026,7 +1026,7 @@
             return {
                 min: min,
                 max: max
-            }
+            };
         }
 
         /** @hidden */
@@ -1063,26 +1063,26 @@
         }
 
         /**
-         * Returns `true` if the mesh is within the frustum defined by the passed array of planes.  
+         * Returns `true` if the mesh is within the frustum defined by the passed array of planes.
          * A mesh is in the frustum if its bounding box intersects the frustum
          * @param frustumPlanes defines the frustum to test
-         * @returns true if the mesh is in the frustum planes 
+         * @returns true if the mesh is in the frustum planes
          */
         public isInFrustum(frustumPlanes: Plane[]): boolean {
             return this._boundingInfo !== null && this._boundingInfo.isInFrustum(frustumPlanes, this.cullingStrategy);
         }
 
         /**
-         * Returns `true` if the mesh is completely in the frustum defined be the passed array of planes.  
-         * A mesh is completely in the frustum if its bounding box it completely inside the frustum.  
+         * Returns `true` if the mesh is completely in the frustum defined be the passed array of planes.
+         * A mesh is completely in the frustum if its bounding box it completely inside the frustum.
          * @param frustumPlanes defines the frustum to test
-         * @returns true if the mesh is completely in the frustum planes 
+         * @returns true if the mesh is completely in the frustum planes
          */
         public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
             return this._boundingInfo !== null && this._boundingInfo.isCompletelyInFrustum(frustumPlanes);
         }
 
-        /** 
+        /**
          * True if the mesh intersects another mesh or a SolidParticle object
          * @param mesh defines a target mesh or SolidParticle to test
          * @param precise Unless the parameter `precise` is set to `true` the intersection is computed according to Axis Aligned Bounding Boxes (AABB), else according to OBB (Oriented BBoxes)
@@ -1145,12 +1145,12 @@
                 camera = (<Camera>this.getScene().activeCamera);
             }
             return this.absolutePosition.subtract(camera.position).length();
-        }    
+        }
 
         // Collisions
 
         /**
-         * Gets or sets a boolean indicating that this mesh can be used in the collision engine 
+         * Gets or sets a boolean indicating that this mesh can be used in the collision engine
          * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
          */
         public get checkCollisions(): boolean {
@@ -1195,8 +1195,9 @@
 
         private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
             //TODO move this to the collision coordinator!
-            if (this.getScene().workerCollisions)
+            if (this.getScene().workerCollisions) {
                 newPosition.multiplyInPlace(this._collider._radius);
+            }
 
             newPosition.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
 
@@ -1248,8 +1249,9 @@
                 var subMesh = subMeshes.data[index];
 
                 // Bounding test
-                if (len > 1 && !subMesh._checkCollision(collider))
+                if (len > 1 && !subMesh._checkCollision(collider)) {
                     continue;
+                }
 
                 this._collideForSubMesh(subMesh, transformMatrix, collider);
             }
@@ -1259,8 +1261,9 @@
         /** @hidden */
         public _checkCollision(collider: Collider): AbstractMesh {
             // Bounding box test
-            if (!this._boundingInfo || !this._boundingInfo._checkCollision(collider))
+            if (!this._boundingInfo || !this._boundingInfo._checkCollision(collider)) {
                 return this;
+            }
 
             // Transformation matrix
             const collisionsScalingMatrix = Tmp.Matrix[0];
@@ -1303,8 +1306,9 @@
                 var subMesh = subMeshes.data[index];
 
                 // Bounding test
-                if (len > 1 && !subMesh.canIntersects(ray))
+                if (len > 1 && !subMesh.canIntersects(ray)) {
                     continue;
+                }
 
                 var currentIntersectInfo = subMesh.intersects(ray, (<Vector3[]>this._positions), (<IndicesArray>this.getIndices()), fastCheck);
 
@@ -1348,9 +1352,9 @@
         /**
          * Clones the current mesh
          * @param name defines the mesh name
-         * @param newParent defines the new mesh parent 
+         * @param newParent defines the new mesh parent
          * @param doNotCloneChildren defines a boolean indicating that children must not be cloned (false by default)
-         * @returns the new mesh 
+         * @returns the new mesh
          */
         public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Nullable<AbstractMesh> {
             return null;
@@ -1492,7 +1496,7 @@
         }
 
         /**
-         * Removes the passed mesh from the current mesh children list 
+         * Removes the passed mesh from the current mesh children list
          * @param mesh defines the child mesh
          * @returns the current mesh
          */
@@ -1526,8 +1530,8 @@
         }
 
         /**
-         * Updates the mesh facetData arrays and the internal partitioning when the mesh is morphed or updated.  
-         * This method can be called within the render loop.  
+         * Updates the mesh facetData arrays and the internal partitioning when the mesh is morphed or updated.
+         * This method can be called within the render loop.
          * You don't need to call this method by yourself in the render loop when you update/morph a mesh with the methods CreateXXX() as they automatically manage this computation
          * @returns the current mesh
          * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
@@ -1566,7 +1570,7 @@
                         data.depthSortedIndices = new Uint16Array(indices!);
                     }
                 }
-                data.facetDepthSortFunction = function (f1, f2) {
+                data.facetDepthSortFunction = function(f1, f2) {
                     return (f2.sqDistance - f1.sqDistance);
                 };
                 if (!data.facetDepthSortFrom) {
@@ -1628,7 +1632,7 @@
         }
 
         /**
-         * Returns the facetLocalNormals array.  
+         * Returns the facetLocalNormals array.
          * The normals are expressed in the mesh local spac
          * @returns an array of Vector3
          * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
@@ -1641,10 +1645,10 @@
         }
 
         /**
-         * Returns the facetLocalPositions array.  
+         * Returns the facetLocalPositions array.
          * The facet positions are expressed in the mesh local space
          * @returns an array of Vector3
-         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata 
+         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
          */
         public getFacetLocalPositions(): Vector3[] {
             if (!this._facetData.facetPositions) {
@@ -1656,7 +1660,7 @@
         /**
          * Returns the facetLocalPartioning array
          * @returns an array of array of numbers
-         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata 
+         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
          */
         public getFacetLocalPartitioning(): number[][] {
             if (!this._facetData.facetPartitioning) {
@@ -1666,11 +1670,11 @@
         }
 
         /**
-         * Returns the i-th facet position in the world system.  
+         * Returns the i-th facet position in the world system.
          * This method allocates a new Vector3 per call
          * @param i defines the facet index
          * @returns a new Vector3
-         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata 
+         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
          */
         public getFacetPosition(i: number): Vector3 {
             var pos = Vector3.Zero();
@@ -1683,7 +1687,7 @@
          * @param i defines the facet index
          * @param ref defines the target vector
          * @returns the current mesh
-         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata 
+         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
          */
         public getFacetPositionToRef(i: number, ref: Vector3): AbstractMesh {
             var localPos = (this.getFacetLocalPositions())[i];
@@ -1693,11 +1697,11 @@
         }
 
         /**
-         * Returns the i-th facet normal in the world system.  
+         * Returns the i-th facet normal in the world system.
          * This method allocates a new Vector3 per call
          * @param i defines the facet index
          * @returns a new Vector3
-         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata 
+         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
          */
         public getFacetNormal(i: number): Vector3 {
             var norm = Vector3.Zero();
@@ -1710,7 +1714,7 @@
          * @param i defines the facet index
          * @param ref defines the target vector
          * @returns the current mesh
-         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata 
+         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
          */
         public getFacetNormalToRef(i: number, ref: Vector3) {
             var localNorm = (this.getFacetLocalNormals())[i];
@@ -1718,13 +1722,13 @@
             return this;
         }
 
-        /** 
+        /**
          * Returns the facets (in an array) in the same partitioning block than the one the passed coordinates are located (expressed in the mesh local system)
          * @param x defines x coordinate
          * @param y defines y coordinate
          * @param z defines z coordinate
          * @returns the array of facet indexes
-         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata 
+         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
          */
         public getFacetsAtLocalCoordinates(x: number, y: number, z: number): Nullable<number[]> {
             var bInfo = this.getBoundingInfo();
@@ -1739,7 +1743,7 @@
             return data.facetPartitioning[ox + data.subDiv.max * oy + data.subDiv.max * data.subDiv.max * oz];
         }
 
-        /** 
+        /**
          * Returns the closest mesh facet index at (x,y,z) World coordinates, null if not found
          * @param projected sets as the (x,y,z) world projection on the facet
          * @param checkFace if true (default false), only the facet "facing" to (x,y,z) or only the ones "turning their backs", according to the parameter "facing" are returned
@@ -1748,7 +1752,7 @@
          * @param y defines y coordinate
          * @param z defines z coordinate
          * @returns the face index if found (or null instead)
-         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata 
+         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
          */
         public getClosestFacetAtCoordinates(x: number, y: number, z: number, projected?: Vector3, checkFace: boolean = false, facing: boolean = true): Nullable<number> {
             var world = this.getWorldMatrix();
@@ -1764,7 +1768,7 @@
             return closest;
         }
 
-        /** 
+        /**
          * Returns the closest mesh facet index at (x,y,z) local coordinates, null if not found
          * @param projected sets as the (x,y,z) local projection on the facet
          * @param checkFace if true (default false), only the facet "facing" to (x,y,z) or only the ones "turning their backs", according to the parameter "facing" are returned
@@ -1773,7 +1777,7 @@
          * @param y defines y coordinate
          * @param z defines z coordinate
          * @returns the face index if found (or null instead)
-         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata 
+         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
          */
         public getClosestFacetAtLocalCoordinates(x: number, y: number, z: number, projected?: Vector3, checkFace: boolean = false, facing: boolean = true): Nullable<number> {
             var closest = null;
@@ -1834,16 +1838,16 @@
         /**
          * Returns the object "parameter" set with all the expected parameters for facetData computation by ComputeNormals()
          * @returns the parameters
-         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata 
+         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
          */
         public getFacetDataParameters(): any {
             return this._facetData.facetParameters;
         }
 
-        /** 
+        /**
          * Disables the feature FacetData and frees the related memory
          * @returns the current mesh
-         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata 
+         * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
          */
         public disableFacetData(): AbstractMesh {
             if (this._facetData.facetDataEnabled) {

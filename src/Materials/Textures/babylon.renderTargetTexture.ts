@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * This Helps creating a texture that will be created from a camera in your scene.
      * It is basically a dynamic texture that could be used to create special effects for instance.
@@ -14,7 +14,7 @@
          */
         public static readonly REFRESHRATE_RENDER_ONEVERYFRAME: number = 1;
         /**
-         * The texture will be rendered every 2 frames which could be enough if your dynamic objects are not 
+         * The texture will be rendered every 2 frames which could be enough if your dynamic objects are not
          * the central point of your effect and can save a lot of performances.
          */
         public static readonly REFRESHRATE_RENDER_ONEVERYTWOFRAMES: number = 2;
@@ -49,26 +49,26 @@
                 var result = oldPush.apply(array, items);
 
                 if (wasEmpty) {
-                    this.getScene()!.meshes.forEach(mesh => {
+                    this.getScene()!.meshes.forEach((mesh) => {
                         mesh._markSubMeshesAsLightDirty();
                     });
                 }
 
                 return result;
-            }
+            };
 
             var oldSplice = array.splice;
             array.splice = (index: number, deleteCount?: number) => {
                 var deleted = oldSplice.apply(array, [index, deleteCount]);
 
                 if (array.length === 0) {
-                    this.getScene()!.meshes.forEach(mesh => {
+                    this.getScene()!.meshes.forEach((mesh) => {
                         mesh._markSubMeshesAsLightDirty();
                     });
                 }
 
                 return deleted;
-            }
+            };
         }
 
         /**
@@ -182,7 +182,7 @@
          */
         public clearColor: Color4;
         protected _size: number | { width: number, height: number };
-        protected _initialSizeParameter: number | { width: number, height: number } | { ratio: number }
+        protected _initialSizeParameter: number | { width: number, height: number } | { ratio: number };
         protected _sizeRatio: Nullable<number>;
         /** @hidden */
         public _generateMipMaps: boolean;
@@ -239,7 +239,7 @@
         }
 
         /**
-         * In case the RTT has been created with a depth texture, get the associated 
+         * In case the RTT has been created with a depth texture, get the associated
          * depth texture.
          * Otherwise, return null.
          */
@@ -343,7 +343,7 @@
                 this._size = {
                     width: this._bestReflectionRenderTargetDimension(this._engine.getRenderWidth(), this._sizeRatio),
                     height: this._bestReflectionRenderTargetDimension(this._engine.getRenderHeight(), this._sizeRatio)
-                }
+                };
             } else {
                 this._size = <number | { width: number, height: number }>size;
             }
@@ -531,7 +531,7 @@
          * Resize the texture to a new desired size.
          * Be carrefull as it will recreate all the data in the new texture.
          * @param size Define the new size. It can be:
-         *   - a number for squared texture, 
+         *   - a number for squared texture,
          *   - an object containing { width: number, height: number }
          *   - or an object containing a ratio { ratio: number }
          */
@@ -790,7 +790,7 @@
         /**
          * Overrides the default sort function applied in the renderging group to prepare the meshes.
          * This allowed control for front to back rendering or reversly depending of the special needs.
-         * 
+         *
          * @param renderingGroupId The rendering group id corresponding to its index
          * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
          * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
@@ -809,7 +809,7 @@
 
         /**
          * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         * 
+         *
          * @param renderingGroupId The rendering group id corresponding to its index
          * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
          */

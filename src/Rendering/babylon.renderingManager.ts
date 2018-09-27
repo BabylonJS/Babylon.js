@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
 
     /**
      * Interface describing the different options available in the rendering manager
@@ -100,8 +100,9 @@
             for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 this._depthStencilBufferAlreadyCleaned = index === RenderingManager.MIN_RENDERINGGROUPS;
                 var renderingGroup = this._renderingGroups[index];
-                if (!renderingGroup)
+                if (!renderingGroup) {
                     continue;
+                }
 
                 let renderingGroupMask = Math.pow(2, index);
                 info.renderingGroupId = index;
@@ -223,7 +224,7 @@
         /**
          * Overrides the default sort function applied in the renderging group to prepare the meshes.
          * This allowed control for front to back rendering or reversly depending of the special needs.
-         * 
+         *
          * @param renderingGroupId The rendering group id corresponding to its index
          * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
          * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
@@ -248,7 +249,7 @@
 
         /**
          * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         * 
+         *
          * @param renderingGroupId The rendering group id corresponding to its index
          * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
          * @param depth Automatically clears depth between groups if true and autoClear is true.
@@ -274,4 +275,4 @@
             return this._autoClearDepthStencil[index];
         }
     }
-} 
+}

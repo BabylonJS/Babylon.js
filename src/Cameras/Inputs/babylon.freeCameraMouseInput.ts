@@ -43,7 +43,7 @@ module BABYLON {
          * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        public attachControl(element: HTMLElement, noPreventDefault?: boolean):void {
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
             var engine = this.camera.getEngine();
 
             if (!this._pointerInput) {
@@ -100,8 +100,8 @@ module BABYLON {
                         }
 
                         var offsetX = evt.clientX - this.previousPosition.x;
-                        if (this.camera.getScene().useRightHandedSystem) offsetX *= -1;
-                        if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) offsetX *= -1;
+                        if (this.camera.getScene().useRightHandedSystem) { offsetX *= -1; }
+                        if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) { offsetX *= -1; }
                         this.camera.cameraRotation.y += offsetX / this.angularSensibility;
 
                         var offsetY = evt.clientY - this.previousPosition.y;
@@ -116,10 +116,10 @@ module BABYLON {
                             evt.preventDefault();
                         }
                     }
-                }
+                };
             }
 
-            this._onMouseMove = evt => {
+            this._onMouseMove = (evt) => {
                 if (!engine.isPointerLock) {
                     return;
                 }
@@ -129,8 +129,8 @@ module BABYLON {
                 }
 
                 var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                if (this.camera.getScene().useRightHandedSystem) offsetX *= -1;
-                if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) offsetX *= -1;
+                if (this.camera.getScene().useRightHandedSystem) { offsetX *= -1; }
+                if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) { offsetX *= -1; }
                 this.camera.cameraRotation.y += offsetX / this.angularSensibility;
 
                 var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
@@ -152,7 +152,7 @@ module BABYLON {
          * Detach the current controls from the specified dom element.
          * @param element Defines the element to stop listening the inputs from
          */
-        public detachControl(element: Nullable<HTMLElement>):void {
+        public detachControl(element: Nullable<HTMLElement>): void {
             if (this._observer && element) {
                 this.camera.getScene().onPointerObservable.remove(this._observer);
 

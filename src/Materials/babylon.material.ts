@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Manages the defines for the Material
      */
@@ -469,7 +469,7 @@
         public get hasRenderTargetTextures(): boolean {
           return false;
         }
-        
+
         /**
          * Specifies if the material should be serialized
          */
@@ -1135,7 +1135,7 @@
          * @returns a promise that resolves when the compilation completes
          */
         public forceCompilationAsync(mesh: AbstractMesh, options?: Partial<{ clipPlane: boolean }>): Promise<void> {
-            return new Promise(resolve => {
+            return new Promise((resolve) => {
                 this.forceCompilation(mesh, () => {
                     resolve();
                 }, options);
@@ -1197,28 +1197,28 @@
          * Indicates that image processing needs to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsImageProcessingDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines.markAsImageProcessingDirty());
+            this._markAllSubMeshesAsDirty((defines) => defines.markAsImageProcessingDirty());
         }
 
         /**
          * Indicates that textures need to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsTexturesDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines.markAsTexturesDirty());
+            this._markAllSubMeshesAsDirty((defines) => defines.markAsTexturesDirty());
         }
 
         /**
          * Indicates that fresnel needs to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsFresnelDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines.markAsFresnelDirty());
+            this._markAllSubMeshesAsDirty((defines) => defines.markAsFresnelDirty());
         }
 
         /**
          * Indicates that fresnel and misc need to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsFresnelAndMiscDirty() {
-            this._markAllSubMeshesAsDirty(defines => {
+            this._markAllSubMeshesAsDirty((defines) => {
                 defines.markAsFresnelDirty();
                 defines.markAsMiscDirty();
             });
@@ -1228,28 +1228,28 @@
          * Indicates that lights need to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsLightsDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines.markAsLightDirty());
+            this._markAllSubMeshesAsDirty((defines) => defines.markAsLightDirty());
         }
 
         /**
          * Indicates that attributes need to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsAttributesDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines.markAsAttributesDirty());
+            this._markAllSubMeshesAsDirty((defines) => defines.markAsAttributesDirty());
         }
 
         /**
          * Indicates that misc needs to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsMiscDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines.markAsMiscDirty());
+            this._markAllSubMeshesAsDirty((defines) => defines.markAsMiscDirty());
         }
 
         /**
          * Indicates that textures and misc need to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsTexturesAndMiscDirty() {
-            this._markAllSubMeshesAsDirty(defines => {
+            this._markAllSubMeshesAsDirty((defines) => {
                 defines.markAsTexturesDirty();
                 defines.markAsMiscDirty();
             });
@@ -1290,7 +1290,7 @@
                                 }
                             }
                         } else {
-                            geometry._releaseVertexArrayObject(this._effect)
+                            geometry._releaseVertexArrayObject(this._effect);
                         }
                     }
                 }
@@ -1380,4 +1380,4 @@
             return materialType.Parse(parsedMaterial, scene, rootUrl);
         }
     }
-} 
+}

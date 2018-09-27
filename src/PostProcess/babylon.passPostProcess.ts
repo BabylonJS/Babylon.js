@@ -1,8 +1,8 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * PassPostProcess which produces an output the same as it's input
      */
-    export class PassPostProcess extends PostProcess {    
+    export class PassPostProcess extends PostProcess {
         /**
          * Creates the PassPostProcess
          * @param name The name of the effect.
@@ -18,4 +18,4 @@
             super(name, "pass", null, null, options, camera, samplingMode, engine, reusable, undefined, textureType, undefined, null, blockCompilation);
         }
     }
-} 
+}

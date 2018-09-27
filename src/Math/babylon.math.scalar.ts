@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
 
     /**
      * Scalar computation library
@@ -23,9 +23,9 @@
         }
 
         /**
-         * Returns a string : the upper case translation of the number i to hexadecimal.  
+         * Returns a string : the upper case translation of the number i to hexadecimal.
          * @param i number
-         * @returns the upper case translation of the number i to hexadecimal.  
+         * @returns the upper case translation of the number i to hexadecimal.
          */
         public static ToHex(i: number): string {
             var str = i.toString(16);
@@ -38,23 +38,24 @@
         }
 
         /**
-         * Returns -1 if value is negative and +1 is value is positive.  
+         * Returns -1 if value is negative and +1 is value is positive.
          * @param value the value
-         * @returns the value itself if it's equal to zero.  
+         * @returns the value itself if it's equal to zero.
          */
         public static Sign(value: number): number {
             value = +value; // convert to a number
 
-            if (value === 0 || isNaN(value))
+            if (value === 0 || isNaN(value)) {
                 return value;
+            }
 
             return value > 0 ? 1 : -1;
         }
 
         /**
-         * Returns the value itself if it's between min and max.  
+         * Returns the value itself if it's between min and max.
          * Returns min if the value is lower than min.
-         * Returns max if the value is greater than max.  
+         * Returns max if the value is greater than max.
          * @param value the value to clmap
          * @param min the min value to clamp to (default: 0)
          * @param max the max value to clamp to (default: 1)
@@ -75,10 +76,10 @@
 
         /**
         * Loops the value, so that it is never larger than length and never smaller than 0.
-        * 
-        * This is similar to the modulo operator but it works with floating point numbers. 
-        * For example, using 3.0 for t and 2.5 for length, the result would be 0.5. 
-        * With t = 5 and length = 2.5, the result would be 0.0. 
+        *
+        * This is similar to the modulo operator but it works with floating point numbers.
+        * For example, using 3.0 for t and 2.5 for length, the result would be 0.5.
+        * With t = 5 and length = 2.5, the result would be 0.0.
         * Note, however, that the behaviour is not defined for negative numbers as it is for the modulo operator
         * @param value the value
         * @param length the length
@@ -153,7 +154,7 @@
 
         /**
         * Moves a value current towards target.
-        * 
+        *
         * This is essentially the same as Mathf.Lerp but instead the function will ensure that the speed never exceeds maxDelta.
         * Negative values of maxDelta pushes the value away from target.
         * @param current current value
@@ -265,14 +266,14 @@
         * @returns random value
         */
         public static RandomRange(min: number, max: number): number {
-            if (min === max) return min;
+            if (min === max) { return min; }
             return ((Math.random() * (max - min)) + min);
         }
 
         /**
-        * This function returns percentage of a number in a given range. 
-        * 
-        * RangeToPercent(40,20,60) will return 0.5 (50%) 
+        * This function returns percentage of a number in a given range.
+        *
+        * RangeToPercent(40,20,60) will return 0.5 (50%)
         * RangeToPercent(34,0,100) will return 0.34 (34%)
         * @param number to convert to percentage
         * @param min min range
@@ -284,8 +285,8 @@
         }
 
         /**
-        * This function returns number that corresponds to the percentage in a given range. 
-        * 
+        * This function returns number that corresponds to the percentage in a given range.
+        *
         * PercentToRange(0.34,0,100) will return 34.
         * @param percent to convert to number
         * @param min min range

@@ -1,34 +1,41 @@
-﻿module BABYLON {
+module BABYLON {
     var intersectBoxAASphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean => {
-        if (boxMin.x > sphereCenter.x + sphereRadius)
+        if (boxMin.x > sphereCenter.x + sphereRadius) {
             return false;
+        }
 
-        if (sphereCenter.x - sphereRadius > boxMax.x)
+        if (sphereCenter.x - sphereRadius > boxMax.x) {
             return false;
+        }
 
-        if (boxMin.y > sphereCenter.y + sphereRadius)
+        if (boxMin.y > sphereCenter.y + sphereRadius) {
             return false;
+        }
 
-        if (sphereCenter.y - sphereRadius > boxMax.y)
+        if (sphereCenter.y - sphereRadius > boxMax.y) {
             return false;
+        }
 
-        if (boxMin.z > sphereCenter.z + sphereRadius)
+        if (boxMin.z > sphereCenter.z + sphereRadius) {
             return false;
+        }
 
-        if (sphereCenter.z - sphereRadius > boxMax.z)
+        if (sphereCenter.z - sphereRadius > boxMax.z) {
             return false;
+        }
 
         return true;
     };
 
     var getLowestRoot: (a: number, b: number, c: number, maxR: number) => { root: number, found: boolean } =
-        (function () {
+        (function() {
             var result = { root: 0, found: false };
-            return function (a: number, b: number, c: number, maxR: number) {
+            return function(a: number, b: number, c: number, maxR: number) {
                 result.root = 0; result.found = false;
                 var determinant = b * b - 4.0 * a * c;
-                if (determinant < 0)
+                if (determinant < 0) {
                     return result;
+                }
 
                 var sqrtD = Math.sqrt(determinant);
                 var r1 = (-b - sqrtD) / (2.0 * a);
@@ -53,7 +60,7 @@
                 }
 
                 return result;
-            }
+            };
         }
         )();
 
@@ -143,14 +150,16 @@
 
             Vector3.CrossToRef(this._tempVector, this._tempVector2, this._tempVector4);
             var d = Vector3.Dot(this._tempVector4, n);
-            if (d < 0)
+            if (d < 0) {
                 return false;
+            }
 
             pc.subtractToRef(point, this._tempVector3);
             Vector3.CrossToRef(this._tempVector2, this._tempVector3, this._tempVector4);
             d = Vector3.Dot(this._tempVector4, n);
-            if (d < 0)
+            if (d < 0) {
                 return false;
+            }
 
             Vector3.CrossToRef(this._tempVector3, this._tempVector, this._tempVector4);
             d = Vector3.Dot(this._tempVector4, n);
@@ -167,8 +176,9 @@
                 return false;
             }
 
-            if (!intersectBoxAASphere(vecMin, vecMax, this._basePointWorld, this._velocityWorldLength + max))
+            if (!intersectBoxAASphere(vecMin, vecMax, this._basePointWorld, this._velocityWorldLength + max)) {
                 return false;
+            }
 
             return true;
         }
@@ -190,15 +200,17 @@
 
             var trianglePlane = trianglePlaneArray[faceIndex];
 
-            if ((!hasMaterial) && !trianglePlane.isFrontFacingTo(this._normalizedVelocity, 0))
+            if ((!hasMaterial) && !trianglePlane.isFrontFacingTo(this._normalizedVelocity, 0)) {
                 return;
+            }
 
             var signedDistToTrianglePlane = trianglePlane.signedDistanceTo(this._basePoint);
             var normalDotVelocity = Vector3.Dot(trianglePlane.normal, this._velocity);
 
             if (normalDotVelocity == 0) {
-                if (Math.abs(signedDistToTrianglePlane) >= 1.0)
+                if (Math.abs(signedDistToTrianglePlane) >= 1.0) {
                     return;
+                }
                 embeddedInPlane = true;
                 t0 = 0;
             }
@@ -212,13 +224,16 @@
                     t0 = temp;
                 }
 
-                if (t0 > 1.0 || t1 < 0.0)
+                if (t0 > 1.0 || t1 < 0.0) {
                     return;
+                }
 
-                if (t0 < 0)
+                if (t0 < 0) {
                     t0 = 0;
-                if (t0 > 1.0)
+                }
+                if (t0 > 1.0) {
                     t0 = 1.0;
+                }
             }
 
             this._collisionPoint.copyFromFloats(0, 0, 0);
@@ -387,4 +402,4 @@
             this._destinationPoint.subtractToRef(this.intersectionPoint, vel);
         }
     }
-} 
+}

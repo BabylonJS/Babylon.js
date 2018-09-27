@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Class used to store bounding box information
      */
@@ -30,7 +30,7 @@
         /**
          * Gets the 8 vectors representing the bounding box in world space
          */
-        public vectorsWorld: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];;
+        public vectorsWorld: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
         /**
          * Gets the minimum vector in world space
          */
@@ -70,7 +70,7 @@
         /**
          * Recreates the entire bounding box from scratch
          * @param min defines the new minimum vector (in local space)
-         * @param max defines the new maximum vector (in local space) 
+         * @param max defines the new maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
          */
         public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
@@ -177,7 +177,7 @@
          * Tests if the bounding box is entirely inside the frustum planes
          * @param frustumPlanes defines the frustum planes to test
          * @returns true if there is an inclusion
-         */        
+         */
         public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
             return BoundingBox.IsCompletelyInFrustum(this.vectorsWorld, frustumPlanes);
         }
@@ -194,14 +194,17 @@
             const pointX = point.x, pointY = point.y, pointZ = point.z;
             var delta = -Epsilon;
 
-            if (maxX - pointX < delta || delta > pointX - minX)
+            if (maxX - pointX < delta || delta > pointX - minX) {
                 return false;
+            }
 
-            if (maxY - pointY < delta || delta > pointY - minY)
+            if (maxY - pointY < delta || delta > pointY - minY) {
                 return false;
+            }
 
-            if (maxZ - pointZ < delta || delta > pointZ - minZ)
+            if (maxZ - pointZ < delta || delta > pointZ - minZ) {
                 return false;
+            }
 
             return true;
         }
@@ -226,14 +229,17 @@
             const myMax = this.maximumWorld;
             const myMinX = myMin.x, myMinY = myMin.y, myMinZ = myMin.z, myMaxX = myMax.x, myMaxY = myMax.y, myMaxZ = myMax.z;
             const minX = min.x, minY = min.y, minZ = min.z, maxX = max.x, maxY = max.y, maxZ = max.z;
-            if (myMaxX < minX || myMinX > maxX) 
+            if (myMaxX < minX || myMinX > maxX) {
                 return false;
+            }
 
-            if (myMaxY < minY || myMinY > maxY)
+            if (myMaxY < minY || myMinY > maxY) {
                 return false;
+            }
 
-            if (myMaxZ < minZ || myMinZ > maxZ)
+            if (myMaxZ < minZ || myMinZ > maxZ) {
                 return false;
+            }
 
             return true;
         }
@@ -284,9 +290,9 @@
 
         /**
          * Tests if a bounding box defined with 8 vectors intersects frustum planes
-         * @param boundingVectors defines an array of 8 vectors representing a bounding box 
+         * @param boundingVectors defines an array of 8 vectors representing a bounding box
          * @param frustumPlanes defines the frustum planes to test
-         * @return true if there is an intersection 
+         * @return true if there is an intersection
          */
         public static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean {
             for (var p = 0; p < 6; ++p) {
@@ -298,8 +304,9 @@
                         break;
                     }
                 }
-                if (canReturnFalse)
+                if (canReturnFalse) {
                     return false;
+                }
             }
             return true;
         }

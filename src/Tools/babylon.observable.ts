@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
 
     /**
      * A class serves as a medium between the observable and its observers
@@ -80,11 +80,11 @@
             /**
              * Defines the callback to call when the observer is notified
              */
-            public callback: (eventData: T, eventState: EventState) => void, 
+            public callback: (eventData: T, eventState: EventState) => void,
             /**
              * Defines the mask of the observer (used to filter notifications)
              */
-            public mask: number, 
+            public mask: number,
             /**
              * Defines the current scope used to restore the JS context
              */
@@ -140,7 +140,7 @@
 
     /**
      * The Observable class is a simple implementation of the Observable pattern.
-     * 
+     *
      * There's one slight particularity though: a given Observable can notify its observer using a particular mask value, only the Observers registered with this mask value will be notified.
      * This enable a more fine grained execution without having to rely on multiple different Observable objects.
      * For instance you may have a given Observable that have four different types of notifications: Move (mask = 0x01), Stop (mask = 0x02), Turn Right (mask = 0X04), Turn Left (mask = 0X08).
@@ -224,7 +224,6 @@
             return false;
         }
 
-
         /**
          * Remove a callback from the Observable object
          * @param callback the callback to remove
@@ -248,7 +247,7 @@
             observer._willBeUnregistered = true;
             Tools.SetImmediate(() => {
                 this._remove(observer);
-            })
+            });
         }
 
         // This should only be called when not iterating over _observers to avoid callback skipping.
@@ -296,7 +295,7 @@
 
                 if (obs.mask & mask) {
                     if (obs.scope) {
-                        state.lastReturnValue = obs.callback.apply(obs.scope, [eventData, state])
+                        state.lastReturnValue = obs.callback.apply(obs.scope, [eventData, state]);
                     } else {
                         state.lastReturnValue = obs.callback(eventData, state);
                     }
@@ -318,7 +317,7 @@
          * This is useful when a chain of events (sometimes async events) is needed to initialize a certain object
          * and it is crucial that all callbacks will be executed.
          * The order of the callbacks is kept, callbacks are not executed parallel.
-         * 
+         *
          * @param eventData The data to be sent to each callback
          * @param mask is used to filter observers defaults to -1
          * @param target defines the callback target (see EventState)
@@ -342,13 +341,13 @@
             state.skipNextObservers = false;
 
             // execute one callback after another (not using Promise.all, the order is important)
-            this._observers.forEach(obs => {
+            this._observers.forEach((obs) => {
                 if (state.skipNextObservers) {
                     return;
                 }
                 if (obs._willBeUnregistered) {
                     return;
-                }                
+                }
                 if (obs.mask & mask) {
                     if (obs.scope) {
                         p = p.then((lastReturnedValue) => {
@@ -363,7 +362,7 @@
                     }
                     if (obs.unregisterOnNextCall) {
                         this._deferUnregister(obs);
-                    }                    
+                    }
                 }
             });
 
@@ -416,7 +415,7 @@
         /**
          * Does this observable handles observer registered with a given mask
          * @param mask defines the mask to be tested
-         * @return whether or not one observer registered with the given mask is handeled 
+         * @return whether or not one observer registered with the given mask is handeled
         **/
         public hasSpecificMask(mask: number = -1): boolean {
             for (var obs of this._observers) {

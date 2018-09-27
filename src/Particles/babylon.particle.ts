@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
 
     /**
      * A particle represents one of the element emitted by a particle system.
@@ -9,7 +9,7 @@
         /**
          * Unique ID of the particle
          */
-        public id:number;
+        public id: number;
         /**
          * The world position of the particle in the scene.
          */
@@ -48,7 +48,7 @@
         /**
          * The current scale of the particle.
          */
-        public scale = new Vector2(1, 1);        
+        public scale = new Vector2(1, 1);
 
         /**
          * The current angle of the particle.
@@ -63,7 +63,7 @@
         /**
          * Defines the cell index used by the particle to be rendered from a sprite.
          */
-        public cellIndex: number = 0;  
+        public cellIndex: number = 0;
 
         /**
          * The information required to support color remapping
@@ -96,41 +96,40 @@
         /** @hidden */
         public _currentSize1 = 0;
         /** @hidden */
-        public _currentSize2 = 0;      
-        
+        public _currentSize2 = 0;
+
         /** @hidden */
         public _currentAngularSpeedGradient: Nullable<FactorGradient>;
         /** @hidden */
         public _currentAngularSpeed1 = 0;
         /** @hidden */
-        public _currentAngularSpeed2 = 0;          
+        public _currentAngularSpeed2 = 0;
 
         /** @hidden */
         public _currentVelocityGradient: Nullable<FactorGradient>;
         /** @hidden */
         public _currentVelocity1 = 0;
         /** @hidden */
-        public _currentVelocity2 = 0;           
-        
+        public _currentVelocity2 = 0;
+
         /** @hidden */
         public _currentLimitVelocityGradient: Nullable<FactorGradient>;
         /** @hidden */
         public _currentLimitVelocity1 = 0;
         /** @hidden */
-        public _currentLimitVelocity2 = 0;       
-        
+        public _currentLimitVelocity2 = 0;
+
         /** @hidden */
         public _currentDragGradient: Nullable<FactorGradient>;
         /** @hidden */
         public _currentDrag1 = 0;
         /** @hidden */
-        public _currentDrag2 = 0;  
+        public _currentDrag2 = 0;
 
         /** @hidden */
         public _randomNoiseCoordinates1: Vector3;
         /** @hidden */
         public _randomNoiseCoordinates2: Vector3;
-     
 
         /**
          * Creates a new instance Particle
@@ -161,7 +160,7 @@
             let changeSpeed = this.particleSystem.spriteCellChangeSpeed;
 
             if (this.particleSystem.spriteRandomStartCell) {
-                if (this._randomCellOffset === undefined) {         
+                if (this._randomCellOffset === undefined) {
                     this._randomCellOffset = Math.random() * this.lifeTime;
                 }
 
@@ -184,7 +183,7 @@
             if ((<AbstractMesh>subEmitter.particleSystem.emitter).position) {
                 var emitterMesh = (<AbstractMesh>subEmitter.particleSystem.emitter);
                 emitterMesh.position.copyFrom(this.position);
-                if (subEmitter.inheritDirection) { 
+                if (subEmitter.inheritDirection) {
                     emitterMesh.position.subtractToRef(this.direction, BABYLON.Tmp.Vector3[0]);
                     // Look at using Y as forward
                     emitterMesh.lookAt(BABYLON.Tmp.Vector3[0], 0, Math.PI / 2);
@@ -263,22 +262,22 @@
                 other._currentAngularSpeedGradient = this._currentAngularSpeedGradient;
                 other._currentAngularSpeed1 = this._currentAngularSpeed1;
                 other._currentAngularSpeed2 = this._currentAngularSpeed2;
-            }        
+            }
             if (this._currentVelocityGradient) {
                 other._currentVelocityGradient = this._currentVelocityGradient;
                 other._currentVelocity1 = this._currentVelocity1;
                 other._currentVelocity2 = this._currentVelocity2;
-            }     
+            }
             if (this._currentLimitVelocityGradient) {
                 other._currentLimitVelocityGradient = this._currentLimitVelocityGradient;
                 other._currentLimitVelocity1 = this._currentLimitVelocity1;
                 other._currentLimitVelocity2 = this._currentLimitVelocity2;
-            }     
+            }
             if (this._currentDragGradient) {
                 other._currentDragGradient = this._currentDragGradient;
                 other._currentDrag1 = this._currentDrag1;
                 other._currentDrag2 = this._currentDrag2;
-            }                                   
+            }
             if (this.particleSystem.isAnimationSheetEnabled) {
                 other._initialStartSpriteCellID = this._initialStartSpriteCellID;
                 other._initialEndSpriteCellID = this._initialEndSpriteCellID;
@@ -297,4 +296,4 @@
             }
         }
     }
-} 
+}

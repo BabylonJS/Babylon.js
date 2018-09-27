@@ -60,7 +60,7 @@ module BABYLON {
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
          */
         public distanceModel: string = "linear";
-        /** 
+        /**
          * @hidden
          * Back Compat
          **/
@@ -77,7 +77,7 @@ module BABYLON {
         private _startTime: number = 0;
         private _startOffset: number = 0;
         private _position: Vector3 = Vector3.Zero();
-        /** @hidden */ 
+        /** @hidden */
         public _positionInEmitterSpace: boolean = false;
         private _localDirection: Vector3 = new Vector3(1, 0, 0);
         private _volume: number = 1;
@@ -86,7 +86,7 @@ module BABYLON {
         private _readyToPlayCallback: Nullable<() => any>;
         private _audioBuffer: Nullable<AudioBuffer>;
         private _soundSource: Nullable<AudioBufferSourceNode>;
-        private _streamingSource: MediaElementAudioSourceNode
+        private _streamingSource: MediaElementAudioSourceNode;
         private _soundPanner: Nullable<PannerNode>;
         private _soundGain: Nullable<GainNode>;
         private _inputAudioNode: AudioNode;
@@ -106,7 +106,7 @@ module BABYLON {
 
         /**
         * Create a sound and attach it to a scene
-        * @param name Name of your sound 
+        * @param name Name of your sound
         * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
         * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
         * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
@@ -197,7 +197,7 @@ module BABYLON {
                             case "String":
                                 urls.push(urlOrArrayBuffer);
                             case "Array":
-                                if (urls.length === 0) urls = urlOrArrayBuffer;
+                                if (urls.length === 0) { urls = urlOrArrayBuffer; }
                                 // If we found a supported format, we load it immediately and stop the loop
                                 for (var i = 0; i < urls.length; i++) {
                                     var url = urls[i];
@@ -414,7 +414,7 @@ module BABYLON {
         private _updateSpatialParameters() {
             if (this.spatialSound && this._soundPanner) {
                 if (this.useCustomAttenuation) {
-                    // Tricks to disable in a way embedded Web Audio attenuation 
+                    // Tricks to disable in a way embedded Web Audio attenuation
                     this._soundPanner.distanceModel = "linear";
                     this._soundPanner.maxDistance = Number.MAX_VALUE;
                     this._soundPanner.refDistance = 1;
@@ -655,7 +655,7 @@ module BABYLON {
                                 else {
                                     Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => { tryToPlay(); });
                                 }
-                            }
+                            };
                             tryToPlay();
                         }
                     }
@@ -776,9 +776,9 @@ module BABYLON {
          * Gets the volume of the sound.
          * @returns the volume of the sound
          */
-        public getVolume(): number { 
-            return this._volume; 
-        } 
+        public getVolume(): number {
+            return this._volume;
+        }
 
         /**
          * Attach the sound to a dedicated mesh
@@ -825,7 +825,7 @@ module BABYLON {
                 mesh.worldMatrixFromCache.invertToRef(Tmp.Matrix[0]);
                 this.setPosition(Tmp.Matrix[0].getTranslation());
             }
-            else 
+            else
             {
                 let boundingInfo = mesh.getBoundingInfo();
                 this.setPosition(boundingInfo.boundingSphere.centerWorld);
@@ -905,8 +905,9 @@ module BABYLON {
             };
 
             if (this.spatialSound) {
-                if (this._connectedMesh)
+                if (this._connectedMesh) {
                     serializationObject.connectedMeshId = this._connectedMesh.id;
+                }
 
                 serializationObject.position = this._position.asArray();
                 serializationObject.refDistance = this.refDistance;
@@ -966,7 +967,7 @@ module BABYLON {
                     else {
                         window.setTimeout(setBufferAndRun, 300);
                     }
-                }
+                };
 
                 newSound = new Sound(soundName, new ArrayBuffer(0), scene, null, options);
                 setBufferAndRun();

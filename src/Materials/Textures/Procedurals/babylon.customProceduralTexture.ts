@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
      * Custom Procedural textures are the easiest way to create your own procedural in your application.
@@ -40,7 +40,7 @@
                 catch (ex) {
                     Tools.Error("No json or ShaderStore or DOM element found for CustomProceduralTexture");
                 }
-            }
+            };
 
             var configFileUrl = jsonUrl + "/config.json";
             var xhr: XMLHttpRequest = new XMLHttpRequest();
