@@ -254,7 +254,7 @@ module BABYLON {
                 away = this.borderLimit;
             }
 
-            var intensity = 1.0 - (away / this.borderLimit);
+            var intensity = 1.0 - Scalar.Clamp(away / this.borderLimit, 0, 1);
             if (intensity < 0) {
                 return false;
             }
