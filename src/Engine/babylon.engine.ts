@@ -1118,7 +1118,10 @@ module BABYLON {
                     this._webGLVersion = 2.0;
                 }
 
-                options.stencil = this._gl.getContextAttributes().stencil;
+                const attributes = this._gl.getContextAttributes();
+                if (attributes) {
+                    options.stencil = attributes.stencil;
+                }
             }
 
             // Viewport
@@ -1964,8 +1967,7 @@ module BABYLON {
             if (x !== this._viewportCached.x ||
                 y !== this._viewportCached.y ||
                 width !== this._viewportCached.z ||
-                height !== this._viewportCached.w)
-            {
+                height !== this._viewportCached.w) {
                 this._viewportCached.x = x;
                 this._viewportCached.y = y;
                 this._viewportCached.z = width;
@@ -2120,7 +2122,7 @@ module BABYLON {
                     vrSupported: this._vrSupported
                 };
                 this.onVRDisplayChangedObservable.notifyObservers(eventArgs);
-                this._webVRInitPromise = new Promise((res) => {res(eventArgs); });
+                this._webVRInitPromise = new Promise((res) => { res(eventArgs); });
             };
 
             if (!this._onVrDisplayConnect) {
@@ -3220,6 +3222,10 @@ module BABYLON {
             var gl = this._gl;
             var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
+            if (!shader) {
+                throw new Error("Something went wrong while compile the shader.");
+            }
+
             gl.shaderSource(shader, source);
             gl.compileShader(shader);
 
@@ -3228,10 +3234,6 @@ module BABYLON {
                 if (log) {
                     throw new Error(log);
                 }
-            }
-
-            if (!shader) {
-                throw new Error("Something went wrong while compile the shader.");
             }
 
             return shader;
@@ -4218,9 +4220,9 @@ module BABYLON {
                 var callback = (data: string | ArrayBuffer) => {
                     loader!.loadData(data as ArrayBuffer, texture, (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => {
                         this._prepareWebGLTexture(texture, scene, width, height, invertY, !loadMipmap, isCompressed, () => {
-                                done();
-                                return false;
-                            },
+                            done();
+                            return false;
+                        },
                             samplingMode);
                     });
                 };
@@ -4359,7 +4361,8 @@ module BABYLON {
          * @param compression defines the compression used (null by default)
          * @param type defines the type fo the data (BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT by default)
          */
-        public updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type = Engine.TEXTURETYPE_UNSIGNED_INT): void {            if (!texture) {
+        public updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type = Engine.TEXTURETYPE_UNSIGNED_INT): void {
+            if (!texture) {
                 return;
             }
             // babylon's internalSizedFomat but gl's texImage2D internalFormat
@@ -4669,7 +4672,7 @@ module BABYLON {
             texture._comparisonFunction = comparisonFunction;
         }
 
-        private _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | { width: number, height: number }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number) : void {
+        private _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | { width: number, height: number }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number): void {
             var width = (<{ width: number, height: number }>size).width || <number>size;
             var height = (<{ width: number, height: number }>size).height || <number>size;
             internalTexture.baseWidth = width;
@@ -4710,7 +4713,7 @@ module BABYLON {
          * @param options The options defining the texture.
          * @returns The texture
          */
-        public createDepthStencilTexture(size: number | { width: number, height: number }, options: DepthTextureCreationOptions) : InternalTexture {
+        public createDepthStencilTexture(size: number | { width: number, height: number }, options: DepthTextureCreationOptions): InternalTexture {
             if (options.isCube) {
                 let width = (<{ width: number, height: number }>size).width || <number>size;
                 return this._createDepthStencilCubeTexture(width, options);
@@ -4727,7 +4730,7 @@ module BABYLON {
          * @param options The options defining the texture.
          * @returns The texture
          */
-        private _createDepthStencilTexture(size: number | { width: number, height: number }, options: DepthTextureCreationOptions) : InternalTexture {
+        private _createDepthStencilTexture(size: number | { width: number, height: number }, options: DepthTextureCreationOptions): InternalTexture {
             var internalTexture = new InternalTexture(this, InternalTexture.DATASOURCE_DEPTHTEXTURE);
 
             if (!this._caps.depthTextureExtension) {
@@ -4776,7 +4779,7 @@ module BABYLON {
          * @param options The options defining the cube texture.
          * @returns The cube texture
          */
-        private _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions) : InternalTexture {
+        private _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions): InternalTexture {
             var internalTexture = new InternalTexture(this, InternalTexture.DATASOURCE_UNKNOWN);
             internalTexture.isCube = true;
 
@@ -5368,23 +5371,23 @@ module BABYLON {
          */
         public createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
             let fullOptions = {
-              generateMipMaps: true,
-              generateDepthBuffer: true,
-              generateStencilBuffer: false,
-              type: Engine.TEXTURETYPE_UNSIGNED_INT,
-              samplingMode: Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
-              format: Engine.TEXTUREFORMAT_RGBA,
-              ...options
+                generateMipMaps: true,
+                generateDepthBuffer: true,
+                generateStencilBuffer: false,
+                type: Engine.TEXTURETYPE_UNSIGNED_INT,
+                samplingMode: Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
+                format: Engine.TEXTUREFORMAT_RGBA,
+                ...options
             };
             fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-              // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-              fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+                // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+                fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             }
             else if (fullOptions.type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
-              // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-              fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+                // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+                fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             }
             var gl = this._gl;
 
@@ -5394,8 +5397,8 @@ module BABYLON {
             var filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps);
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-              fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
-              Tools.Warn("Float textures are not supported. Cube render target forced to TEXTURETYPE_UNESIGNED_BYTE type");
+                fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                Tools.Warn("Float textures are not supported. Cube render target forced to TEXTURETYPE_UNESIGNED_BYTE type");
             }
 
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
@@ -5415,7 +5418,7 @@ module BABYLON {
 
             // MipMaps
             if (fullOptions.generateMipMaps) {
-              gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
             }
 
             // Unbind
@@ -5769,8 +5772,8 @@ module BABYLON {
          * @returns the cube texture as an InternalTexture
          */
         public createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number,
-                                    generateMipMaps: boolean, invertY: boolean, samplingMode: number,
-                                    compression: Nullable<string> = null): InternalTexture {
+            generateMipMaps: boolean, invertY: boolean, samplingMode: number,
+            compression: Nullable<string> = null): InternalTexture {
             var gl = this._gl;
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBERAW);
             texture.isCube = true;
@@ -7264,7 +7267,7 @@ module BABYLON {
                             return this._gl.RGBA8UI;
                         default:
                             return this._gl.RGBA8;
-                        }
+                    }
                 case Engine.TEXTURETYPE_SHORT:
                     switch (format) {
                         case Engine.TEXTUREFORMAT_RED_INTEGER:

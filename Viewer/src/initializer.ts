@@ -24,7 +24,7 @@ export function initListeners() {
 export function InitTags(selector: string = 'babylon') {
     let elements = document.querySelectorAll(selector);
     for (let i = 0; i < elements.length; ++i) {
-        let element: HTMLElement = <HTMLElement>elements.item(i);
+        let element = elements.item(i);
 
         // get the html configuration
         let configMapper = mapperManager.getMapper('dom');

@@ -57,13 +57,14 @@ describe('Viewer', function () {
         let viewer: DefaultViewer = <DefaultViewer>Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
             // default visibility is not none
-            expect(viewer.containerElement.style.display).not.to.equal('none');
+            const htmlElement = viewer.containerElement as HTMLElement;
+            expect(htmlElement.style.display).not.to.equal('none');
             viewer.hide().then(() => {
                 // element is hidden
-                assert.equal(viewer.containerElement.style.display, 'none', "Viewer is still visible");
+                assert.equal(htmlElement.style.display, 'none', "Viewer is still visible");
                 viewer.show().then(() => {
                     //element is shown
-                    assert.notEqual(viewer.containerElement.style.display, 'none', "Viewer is not visible");
+                    assert.notEqual(htmlElement.style.display, 'none', "Viewer is not visible");
                     viewer.dispose();
                     done();
                 });

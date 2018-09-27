@@ -19,6 +19,7 @@ interface Window {
     msURL: typeof URL;
     VRFrameData: any; // WebVR, from specs 1.1
     DracoDecoderModule: any;
+    setImmediate(handler: (...args: any[]) => void): number;
 }
 
 interface WebGLRenderingContext {
@@ -87,15 +88,20 @@ interface WebGLRenderingContext {
 interface Document {
     mozCancelFullScreen(): void;
     msCancelFullScreen(): void;
+    webkitCancelFullScreen(): void;
+    requestPointerLock(): void;
+    exitPointerLock(): void;
     mozFullScreen: boolean;
     msIsFullScreen: boolean;
-    fullscreen: boolean;
+    readonly webkitIsFullScreen: boolean;
+    readonly pointerLockElement: Element;
     mozPointerLockElement: HTMLElement;
     msPointerLockElement: HTMLElement;
     webkitPointerLockElement: HTMLElement;
 }
 
 interface HTMLCanvasElement {
+    requestPointerLock(): void;
     msRequestPointerLock?(): void;
     mozRequestPointerLock?(): void;
     webkitRequestPointerLock?(): void;
@@ -140,8 +146,11 @@ interface HTMLVideoElement {
     mozSrcObject: any;
 }
 
+interface Element {
+    webkitRequestFullScreen: () => void;
+}
+
 interface Screen {
-    orientation: string;
     mozOrientation: string;
 }
 

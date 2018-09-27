@@ -51,7 +51,7 @@ export class TemplateManager {
 
     private templates: { [name: string]: Template };
 
-    constructor(public containerElement: HTMLElement) {
+    constructor(public containerElement: Element) {
         this.templates = {};
 
         this.onTemplateInit = new Observable<Template>();
@@ -410,7 +410,10 @@ export class Template {
             children = this._fragment.querySelectorAll('*');
         }
         for (let i = 0; i < children.length; ++i) {
-            childrenArray.push(kebabToCamel(children.item(i).nodeName.toLowerCase()));
+            const child = children.item(i);
+            if (child) {
+                childrenArray.push(kebabToCamel(child.nodeName.toLowerCase()));
+            }
         }
         return childrenArray;
     }

@@ -16,14 +16,14 @@ import { PrintButtonPlugin } from '../templating/plugins/printButton';
  */
 export class DefaultViewer extends AbstractViewer {
 
-    public fullscreenElement?: HTMLElement;
+    public fullscreenElement?: Element;
 
     /**
      * Create a new default viewer
      * @param containerElement the element in which the templates will be rendered
      * @param initialConfiguration the initial configuration. Defaults to extending the default configuration
      */
-    constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
+    constructor(public containerElement: Element, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
         super(containerElement, initialConfiguration);
 
         this.onModelLoadedObservable.add(this._onModelLoaded);
@@ -102,7 +102,7 @@ export class DefaultViewer extends AbstractViewer {
                     }, () => {
                     }, () => {
                     }, () => {
-                    }, function () {
+                    }, function() {
                     }, (file: File) => {
                         this.loadModel(file);
                     }, () => {
@@ -364,15 +364,15 @@ export class DefaultViewer extends AbstractViewer {
         let fullscreenElement = this.fullscreenElement || viewerElement;
 
         if (fullscreenElement) {
-            let currentElement = document.fullscreenElement || document.webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).msFullscreenElement;
+            let currentElement = (<any>document).fullscreenElement || (<any>document).webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).msFullscreenElement;
             if (!currentElement) {
-                let requestFullScreen = fullscreenElement.requestFullscreen || fullscreenElement.webkitRequestFullscreen || (<any>fullscreenElement).msRequestFullscreen || (<any>fullscreenElement).mozRequestFullScreen;
+                let requestFullScreen = fullscreenElement.requestFullscreen || (<any>fullscreenElement).webkitRequestFullscreen || (<any>fullscreenElement).msRequestFullscreen || (<any>fullscreenElement).mozRequestFullScreen;
                 requestFullScreen.call(fullscreenElement);
                 if (viewerElement) {
                     viewerElement.classList.add("in-fullscreen");
                 }
             } else {
-                let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen
+                let exitFullscreen = document.exitFullscreen || (<any>document).webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen
                 exitFullscreen.call(document);
                 if (viewerElement) {
                     viewerElement.classList.remove("in-fullscreen");
@@ -385,9 +385,12 @@ export class DefaultViewer extends AbstractViewer {
      * Preparing the container element to present the viewer
      */
     protected _prepareContainerElement() {
-        this.containerElement.style.position = 'relative';
-        this.containerElement.style.height = '100%';
-        this.containerElement.style.display = 'flex';
+        const htmlElement = this.containerElement as HTMLElement;
+        if (htmlElement.style) {
+            htmlElement.style.position = 'relative';
+            htmlElement.style.height = '100%';
+            htmlElement.style.display = 'flex';
+        }
     }
 
     /**

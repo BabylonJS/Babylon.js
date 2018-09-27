@@ -17,7 +17,7 @@ export class Scheduler {
     private interval: number;
 
     constructor() {
-        this.interval = setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
+        this.interval = window.setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
     }
 
     public static getInstance(): Scheduler {
