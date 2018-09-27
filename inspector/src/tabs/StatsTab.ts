@@ -8,7 +8,7 @@ export class StatsTab extends Tab {
 
     private _inspector: Inspector;
 
-    /** 
+    /**
      * Properties in this array will be updated
      * in a render loop - Mostly stats properties
      */
@@ -60,13 +60,13 @@ export class StatsTab extends Tab {
 
         // Build the stats panel: a div that will contains all stats
         this._panel = Helpers.CreateDiv('tab-panel') as HTMLDivElement;
-        this._panel.classList.add("stats-panel")
+        this._panel.classList.add("stats-panel");
 
         let title = Helpers.CreateDiv('stat-title1', this._panel);
         let fpsSpan = Helpers.CreateElement('span', 'stats-fps');
         this._updatableProperties.push({
             elem: fpsSpan,
-            updateFct: () => { return Tools.Format(this._inspector.scene.getEngine().getFps(), 0) + " fps" }
+            updateFct: () => { return Tools.Format(this._inspector.scene.getEngine().getFps(), 0) + " fps"; }
         });
 
         let versionSpan = Helpers.CreateElement('span');
@@ -86,77 +86,77 @@ export class StatsTab extends Tab {
             let elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return this._scene.meshes.length.toString() }
+                updateFct: () => { return this._scene.meshes.length.toString(); }
             });
 
             this._createStatLabel("Draw calls", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return this._sceneInstrumentation!.drawCallsCounter.current.toString() }
+                updateFct: () => { return this._sceneInstrumentation!.drawCallsCounter.current.toString(); }
             });
 
             this._createStatLabel("Texture collisions", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return this._sceneInstrumentation!.textureCollisionsCounter.current.toString() }
+                updateFct: () => { return this._sceneInstrumentation!.textureCollisionsCounter.current.toString(); }
             });
 
             this._createStatLabel("Total lights", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return this._scene.lights.length.toString() }
+                updateFct: () => { return this._scene.lights.length.toString(); }
             });
 
             this._createStatLabel("Total vertices", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return this._scene.getTotalVertices().toString() }
+                updateFct: () => { return this._scene.getTotalVertices().toString(); }
             });
 
             this._createStatLabel("Total materials", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return this._scene.materials.length.toString() }
+                updateFct: () => { return this._scene.materials.length.toString(); }
             });
 
             this._createStatLabel("Total textures", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return this._scene.textures.length.toString() }
+                updateFct: () => { return this._scene.textures.length.toString(); }
             });
 
             this._createStatLabel("Active meshes", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return this._scene.getActiveMeshes().length.toString() }
+                updateFct: () => { return this._scene.getActiveMeshes().length.toString(); }
             });
 
             this._createStatLabel("Active indices", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return this._scene.getActiveIndices().toString() }
+                updateFct: () => { return this._scene.getActiveIndices().toString(); }
             });
 
             this._createStatLabel("Active bones", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return this._scene.getActiveBones().toString() }
+                updateFct: () => { return this._scene.getActiveBones().toString(); }
             });
 
             this._createStatLabel("Active particles", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return this._scene.getActiveParticles().toString() }
+                updateFct: () => { return this._scene.getActiveParticles().toString(); }
             });
         }
 
@@ -170,84 +170,84 @@ export class StatsTab extends Tab {
             elemValue.appendChild(this._inputElement);
             this._inputElement.addEventListener('keyup', (evt: KeyboardEvent) => {
                 this.refreshRate = this._inputElement.value;
-            })
+            });
             this._createStatLabel("Meshes selection", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.activeMeshesEvaluationTimeCounter.current) }
+                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.activeMeshesEvaluationTimeCounter.current); }
             });
             this._createStatLabel("Render targets", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.renderTargetsRenderTimeCounter.current) }
+                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.renderTargetsRenderTimeCounter.current); }
             });
             this._createStatLabel("Particles", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.particlesRenderTimeCounter.current) }
+                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.particlesRenderTimeCounter.current); }
             });
             this._createStatLabel("Sprites", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.spritesRenderTimeCounter.current) }
+                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.spritesRenderTimeCounter.current); }
             });
             this._createStatLabel("Animations", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.animationsTimeCounter.current) }
+                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.animationsTimeCounter.current); }
             });
             this._createStatLabel("Physics", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.physicsTimeCounter.current) }
+                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.physicsTimeCounter.current); }
             });
             this._createStatLabel("Render", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.renderTimeCounter.current) }
+                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.renderTimeCounter.current); }
             });
             this._createStatLabel("Frame", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.frameTimeCounter.current) }
+                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.frameTimeCounter.current); }
             });
             this._createStatLabel("Inter-frame", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.interFrameTimeCounter.current) }
+                updateFct: () => { return Tools.Format(this._sceneInstrumentation!.interFrameTimeCounter.current); }
             });
             this._createStatLabel("GPU Frame time", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return Tools.Format(this._engineInstrumentation!.gpuFrameTimeCounter.current * 0.000001) }
+                updateFct: () => { return Tools.Format(this._engineInstrumentation!.gpuFrameTimeCounter.current * 0.000001); }
             });
             this._createStatLabel("GPU Frame time (average)", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return Tools.Format(this._engineInstrumentation!.gpuFrameTimeCounter.average * 0.000001) }
+                updateFct: () => { return Tools.Format(this._engineInstrumentation!.gpuFrameTimeCounter.average * 0.000001); }
             });
             this._createStatLabel("Potential FPS", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return Tools.Format(1000.0 / this._sceneInstrumentation!.frameTimeCounter.current, 0) }
+                updateFct: () => { return Tools.Format(1000.0 / this._sceneInstrumentation!.frameTimeCounter.current, 0); }
             });
             this._createStatLabel("Resolution", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return this._engine.getRenderWidth() + "x" + this._engine.getRenderHeight() }
+                updateFct: () => { return this._engine.getRenderWidth() + "x" + this._engine.getRenderHeight(); }
             });
         }
 
@@ -258,61 +258,61 @@ export class StatsTab extends Tab {
             let elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return (this._engine.getCaps().standardDerivatives ? "Yes" : "No") }
+                updateFct: () => { return (this._engine.getCaps().standardDerivatives ? "Yes" : "No"); }
             });
             this._createStatLabel("Compressed textures", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return (this._engine.getCaps().s3tc ? "Yes" : "No") }
+                updateFct: () => { return (this._engine.getCaps().s3tc ? "Yes" : "No"); }
             });
             this._createStatLabel("Hardware instances", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return (this._engine.getCaps().instancedArrays ? "Yes" : "No") }
+                updateFct: () => { return (this._engine.getCaps().instancedArrays ? "Yes" : "No"); }
             });
             this._createStatLabel("Texture float", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return (this._engine.getCaps().textureFloat ? "Yes" : "No") }
+                updateFct: () => { return (this._engine.getCaps().textureFloat ? "Yes" : "No"); }
             });
             this._createStatLabel("32bits indices", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return (this._engine.getCaps().uintIndices ? "Yes" : "No") }
+                updateFct: () => { return (this._engine.getCaps().uintIndices ? "Yes" : "No"); }
             });
             this._createStatLabel("Fragment depth", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return (this._engine.getCaps().fragmentDepthSupported ? "Yes" : "No") }
+                updateFct: () => { return (this._engine.getCaps().fragmentDepthSupported ? "Yes" : "No"); }
             });
             this._createStatLabel("High precision shaders", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return (this._engine.getCaps().highPrecisionShaderSupported ? "Yes" : "No") }
+                updateFct: () => { return (this._engine.getCaps().highPrecisionShaderSupported ? "Yes" : "No"); }
             });
             this._createStatLabel("Draw buffers", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return (this._engine.getCaps().drawBuffersExtension ? "Yes" : "No") }
+                updateFct: () => { return (this._engine.getCaps().drawBuffersExtension ? "Yes" : "No"); }
             });
             this._createStatLabel("Vertex array object", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return (this._engine.getCaps().vertexArrayObject ? "Yes" : "No") }
+                updateFct: () => { return (this._engine.getCaps().vertexArrayObject ? "Yes" : "No"); }
             });
             this._createStatLabel("Timer query", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return (this._engine.getCaps().timerQuery ? "Yes" : "No") }
+                updateFct: () => { return (this._engine.getCaps().timerQuery ? "Yes" : "No"); }
             });
         }
 
@@ -323,25 +323,25 @@ export class StatsTab extends Tab {
             let elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return (this._engine.isStencilEnable ? "Enabled" : "Disabled") }
+                updateFct: () => { return (this._engine.isStencilEnable ? "Enabled" : "Disabled"); }
             });
             this._createStatLabel("Max textures units", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return this._engine.getCaps().maxTexturesImageUnits.toString() }
+                updateFct: () => { return this._engine.getCaps().maxTexturesImageUnits.toString(); }
             });
             this._createStatLabel("Max textures size", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return this._engine.getCaps().maxTextureSize.toString() }
+                updateFct: () => { return this._engine.getCaps().maxTextureSize.toString(); }
             });
             this._createStatLabel("Max anisotropy", this._panel);
             elemValue = Helpers.CreateDiv('stat-value', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return this._engine.getCaps().maxAnisotropy.toString() }
+                updateFct: () => { return this._engine.getCaps().maxAnisotropy.toString(); }
             });
         }
         title = Helpers.CreateDiv('stat-title2', this._panel);
@@ -350,7 +350,7 @@ export class StatsTab extends Tab {
             let elemValue = Helpers.CreateDiv('stat-infos', this._panel);
             this._updatableProperties.push({
                 elem: elemValue,
-                updateFct: () => { return "WebGL v" + this._engine.webGLVersion + " - " + this._glInfo.version + " - " + this._glInfo.renderer }
+                updateFct: () => { return "WebGL v" + this._engine.webGLVersion + " - " + this._glInfo.version + " - " + this._glInfo.renderer; }
             });
         }
     }

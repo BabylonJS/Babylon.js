@@ -25,7 +25,7 @@ export class ConfigurationLoader {
     /**
      * load a configuration object that is defined in the initial configuration provided.
      * The viewer configuration can extend different types of configuration objects and have an extra configuration defined.
-     * 
+     *
      * @param initConfig the initial configuration that has the definitions of further configuration to load.
      * @param callback an optional callback that will be called sync, if noconfiguration needs to be loaded or configuration is payload-only
      * @returns A promise that delivers the extended viewer configuration, when done.
@@ -74,13 +74,13 @@ export class ConfigurationLoader {
                 let parsed = deepmerge(mapper.map(data), loadedConfig);
                 let merged = deepmerge(extendedConfiguration, parsed);
                 processConfigurationCompatibility(merged);
-                if (callback) callback(merged);
+                if (callback) { callback(merged); }
                 return merged;
             });
         } else {
             loadedConfig = deepmerge(extendedConfiguration, loadedConfig);
             processConfigurationCompatibility(loadedConfig);
-            if (callback) callback(loadedConfig);
+            if (callback) { callback(loadedConfig); }
             return Promise.resolve(loadedConfig);
         }
     }
@@ -89,7 +89,7 @@ export class ConfigurationLoader {
      * Dispose the configuration loader. This will cancel file requests, if active.
      */
     public dispose() {
-        this._loadRequests.forEach(request => {
+        this._loadRequests.forEach((request) => {
             request.abort();
         });
         this._loadRequests.length = 0;
@@ -104,7 +104,7 @@ export class ConfigurationLoader {
             if (typeof config.model === "string") {
                 config.model = {
                     url: config.model
-                }
+                };
             }
         }
     }
@@ -118,14 +118,16 @@ export class ConfigurationLoader {
         return new Promise((resolve, reject) => {
             let fileRequest = Tools.LoadFile(url, (result) => {
                 let idx = this._loadRequests.indexOf(fileRequest);
-                if (idx !== -1)
+                if (idx !== -1) {
                     this._loadRequests.splice(idx, 1);
-                if (this._enableCache) cacheReference[url] = result;
+                }
+                if (this._enableCache) { cacheReference[url] = result; }
                 resolve(result);
             }, undefined, undefined, false, (request, error: any) => {
                 let idx = this._loadRequests.indexOf(fileRequest);
-                if (idx !== -1)
+                if (idx !== -1) {
                     this._loadRequests.splice(idx, 1);
+                }
                 reject(error);
             });
             this._loadRequests.push(fileRequest);

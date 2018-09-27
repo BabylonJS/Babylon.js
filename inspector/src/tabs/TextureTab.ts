@@ -163,7 +163,7 @@ export class TextureTab extends Tab {
                 let size = texture.getSize();
 
                 let tmp = pixels.buffer.slice(0, size.height * size.width * 4);
-                let u = new Uint8ClampedArray(tmp)
+                let u = new Uint8ClampedArray(tmp);
 
                 let colors = new ImageData(size.width * 6, size.height);
 
@@ -276,9 +276,9 @@ class DDSPreview {
     }
 
     public insertPreview(AdapterItem: TextureAdapter) {
-        if (this._tex) this._tex.dispose();
-        if (this._mat) this._mat.dispose();
-        if (this._mesh) this._mesh.dispose();
+        if (this._tex) { this._tex.dispose(); }
+        if (this._mat) { this._mat.dispose(); }
+        if (this._mesh) { this._mesh.dispose(); }
 
         this._mat = new BABYLON.StandardMaterial("customMat", this._scene);
 

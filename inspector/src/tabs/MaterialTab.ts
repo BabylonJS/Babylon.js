@@ -17,7 +17,7 @@ export class MaterialTab extends PropertyTab {
         // get all meshes from the first scene
         let instances = this._inspector.scene;
         for (let mat of instances.materials) {
-            arr.push(new TreeItem(this, new MaterialAdapter(mat)))
+            arr.push(new TreeItem(this, new MaterialAdapter(mat)));
         }
         return arr;
     }

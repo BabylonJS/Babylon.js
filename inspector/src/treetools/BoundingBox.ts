@@ -1,10 +1,10 @@
 import { AbstractTreeTool } from "./AbstractTreeTool";
 
-/** Any object implementing this interface should 
+/** Any object implementing this interface should
  * provide methods to toggle its bounding box
  */
 export interface IToolBoundingBox {
-    isBoxVisible: () => boolean,
+    isBoxVisible: () => boolean;
     setBoxVisible: (b: boolean) => void;
 }
 /**

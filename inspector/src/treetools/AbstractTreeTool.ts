@@ -1,6 +1,5 @@
 import { Inspector } from "../Inspector";
 
-
 export abstract class AbstractTreeTool {
     protected _elem: HTMLElement;
     /** Is the tool enabled ? */

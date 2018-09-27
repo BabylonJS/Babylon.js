@@ -72,11 +72,11 @@ export class Button3D extends AbstractButton3D {
                 return;
             }
             (<StandardMaterial>this._currentMaterial).emissiveColor = Color3.Red();
-        }
+        };
 
         this.pointerOutAnimation = () => {
             (<StandardMaterial>this._currentMaterial).emissiveColor = Color3.Black();
-        }
+        };
 
         this.pointerDownAnimation = () => {
             if (!this.mesh) {
@@ -84,7 +84,7 @@ export class Button3D extends AbstractButton3D {
             }
 
             this.mesh.scaling.scaleInPlace(0.95);
-        }
+        };
 
         this.pointerUpAnimation = () => {
             if (!this.mesh) {
@@ -92,7 +92,7 @@ export class Button3D extends AbstractButton3D {
             }
 
             this.mesh.scaling.scaleInPlace(1.0 / 0.95);
-        }
+        };
     }
 
     /**
