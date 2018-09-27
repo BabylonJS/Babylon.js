@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Interface describing all the common properties and methods a shadow light needs to implement.
      * This helps both the shadow generator and materials to genrate the corresponding shadow maps
@@ -123,7 +123,7 @@
             this._position = value;
         }
         /**
-         * Sets the position the shadow will be casted from. Also use as the light position for both 
+         * Sets the position the shadow will be casted from. Also use as the light position for both
          * point and spot lights.
          */
         @serializeAsVector3()
@@ -131,7 +131,7 @@
             return this._position;
         }
         /**
-         * Sets the position the shadow will be casted from. Also use as the light position for both 
+         * Sets the position the shadow will be casted from. Also use as the light position for both
          * point and spot lights.
          */
         public set position(value: Vector3) {
@@ -164,7 +164,7 @@
          */
         @serialize()
         public get shadowMinZ(): number {
-            return this._shadowMinZ
+            return this._shadowMinZ;
         }
         /**
          * Sets the shadow projection clipping minimum z value.
@@ -180,7 +180,7 @@
          */
         @serialize()
         public get shadowMaxZ(): number {
-            return this._shadowMaxZ
+            return this._shadowMaxZ;
         }
         /**
          * Gets the shadow projection clipping maximum z value.
@@ -309,11 +309,12 @@
 
         /** @hidden */
         public _isSynchronized(): boolean {
-            if (!this._cache.position.equals(this.position))
+            if (!this._cache.position.equals(this.position)) {
                 return false;
+            }
 
             return true;
-        }        
+        }
 
         /**
          * Computes the world matrix of the node
@@ -339,7 +340,7 @@
                 this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
 
                 this._markSyncedWithParent();
-            }            
+            }
 
             // Cache the determinant
             this._worldMatrixDeterminant = this._worldMatrix.determinant();

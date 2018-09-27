@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
 
     /**
      * This represents the main contract an easing function should follow.
@@ -8,7 +8,7 @@
     export interface IEasingFunction {
         /**
          * Given an input gradient between 0 and 1, this returns the corrseponding value
-         * of the easing function. 
+         * of the easing function.
          * The link below provides some of the most common examples of easing functions.
          * @see https://easings.net/
          * @param gradient Defines the value between 0 and 1 we want the easing value for
@@ -135,7 +135,7 @@
          */
         constructor(
             /** Defines the number of bounces */
-            public bounces: number= 3, 
+            public bounces: number= 3,
             /** Defines the amplitude of the bounce */
             public bounciness: number= 2) {
             super();

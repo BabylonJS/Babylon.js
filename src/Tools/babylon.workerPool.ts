@@ -18,7 +18,7 @@ module BABYLON {
          * @param workers Array of workers to use for actions
          */
         constructor(workers: Array<Worker>) {
-            this._workerInfos = workers.map(worker => ({
+            this._workerInfos = workers.map((worker) => ({
                 worker: worker,
                 active: false
             }));

@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     export interface Scene {
         /**
          * The list of reflection probes added to the scene
@@ -7,11 +7,11 @@
         reflectionProbes: Array<ReflectionProbe>;
     }
 
-    /** 
+    /**
      * Class used to generate realtime reflection / refraction cube textures
      * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
      */
-    export class ReflectionProbe{  
+    export class ReflectionProbe{
         private _scene: Scene;
         private _renderTargetTexture: RenderTargetTexture;
         private _projectionMatrix: Matrix;
@@ -24,7 +24,7 @@
 
         /** Gets or sets probe position (center of the cube map) */
         public position = Vector3.Zero();
-          
+
         /**
          * Creates a new reflection probe
          * @param name defines the name of the probe
@@ -35,7 +35,7 @@
          */
         constructor(
             /** defines the name of the probe */
-            public name: string, 
+            public name: string,
             size: number, scene: Scene, generateMipMaps = true, useFloat = false) {
             this._scene = scene;
 
@@ -111,7 +111,7 @@
             this._renderTargetTexture.refreshRate = value;
         }
 
-        /** 
+        /**
          * Gets the hosting scene
          * @returns a Scene
          */
@@ -136,7 +136,7 @@
         public attachToMesh(mesh: AbstractMesh): void {
             this._attachedMesh = mesh;
         }
-        
+
         /**
          * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups
          * @param renderingGroupId The rendering group id corresponding to its index
@@ -153,14 +153,14 @@
             var index = this._scene.reflectionProbes.indexOf(this);
 
             if (index !== -1) {
-                // Remove from the scene if found 
+                // Remove from the scene if found
                 this._scene.reflectionProbes.splice(index, 1);
-            }            
+            }
 
             if (this._renderTargetTexture) {
                 this._renderTargetTexture.dispose();
                 (<any>this._renderTargetTexture) = null;
             }
         }
-    }    
+    }
 }

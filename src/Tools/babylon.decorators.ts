@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     var __decoratorInitialStore = {};
     var __mergedStore = {};
 
@@ -111,17 +111,17 @@
             if (!classStore[propertyKey]) {
                 classStore[propertyKey] = { type: type, sourceName: sourceName };
             }
-        }
+        };
     }
 
     function generateExpandMember(setCallback: string, targetKey: Nullable<string> = null) {
         return (target: any, propertyKey: string) => {
             var key = targetKey || ("_" + propertyKey);
             Object.defineProperty(target, propertyKey, {
-                get: function (this: any) {
+                get: function(this: any) {
                     return this[key];
                 },
-                set: function (this: any, value) {
+                set: function(this: any, value) {
                     if (this[key] === value) {
                         return;
                     }
@@ -132,7 +132,7 @@
                 enumerable: true,
                 configurable: true
             });
-        }
+        };
     }
 
     export function expandToProperty(callback: string, targetKey: Nullable<string> = null) {
@@ -144,7 +144,7 @@
     }
 
     export function serializeAsTexture(sourceName?: string) {
-        return generateSerializableMember(1, sourceName);// texture member
+        return generateSerializableMember(1, sourceName); // texture member
     }
 
     export function serializeAsColor3(sourceName?: string) {

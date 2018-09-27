@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
         for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
             var parsedMaterial = parsedData.materials[index];
@@ -25,7 +25,7 @@
 
     var logOperation = (operation: string, producer: { file: string, name: string, version: string, exporter_version: string }) => {
         return operation + " of " + (producer ? producer.file + " from " + producer.name + " version: " + producer.version + ", exporter version: " + producer.exporter_version : "unknown");
-    }
+    };
 
     var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
         var container = new AssetContainer(scene);
@@ -186,7 +186,7 @@
                     if (g) {
                         container.geometries.push(g);
                     }
-                })
+                });
             }
 
             // Transform nodes
@@ -221,8 +221,8 @@
             }
 
             // Animation Groups
-            if(parsedData.animationGroups !== undefined && parsedData.animationGroups !== null) {
-                for (index = 0, cache = parsedData.animationGroups.length; index < cache; index++){
+            if (parsedData.animationGroups !== undefined && parsedData.animationGroups !== null) {
+                for (index = 0, cache = parsedData.animationGroups.length; index < cache; index++) {
                     var parsedAnimationGroup = parsedData.animationGroups[index];
                     var animationGroup = AnimationGroup.Parse(parsedAnimationGroup, scene);
                     container.animationGroups.push(animationGroup);
@@ -230,7 +230,7 @@
                     log += "\n\t\t" + animationGroup.toString(fullDetails);
                 }
             }
-            
+
             // Browsing all the graph to connect the dots
             for (index = 0, cache = scene.cameras.length; index < cache; index++) {
                 var camera = scene.cameras[index];
@@ -304,9 +304,9 @@
                     light._includedOnlyMeshesIds = [];
                 }
             }
-            
+
             AbstractScene.Parse(parsedData, scene, container, rootUrl);
-            
+
             // Actions (scene) Done last as it can access other objects.
             for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                 var mesh = scene.meshes[index];
@@ -337,7 +337,7 @@
         }
 
         return container;
-    }
+    };
 
     SceneLoader.RegisterPlugin({
         name: "babylon.js",
@@ -488,11 +488,11 @@
                                 for (var managerData of parsedData.morphTargetManagers) {
                                     MorphTargetManager.Parse(managerData, scene);
                                 }
-                            }                               
+                            }
 
                             var mesh = Mesh.Parse(parsedMesh, scene, rootUrl);
                             meshes.push(mesh);
-                            log += "\n\tMesh " + mesh.toString(fullDetails);                         
+                            log += "\n\tMesh " + mesh.toString(fullDetails);
                         }
                     }
 
@@ -630,10 +630,10 @@
                     scene.setActiveCameraByID(parsedData.activeCameraID);
                 }
 
-                // Environment texture		
+                // Environment texture
                 if (parsedData.environmentTexture !== undefined && parsedData.environmentTexture !== null) {
                     if (parsedData.environmentTextureType && parsedData.environmentTextureType === "BABYLON.HDRCubeTexture") {
-                        var hdrSize:number = (parsedData.environmentTextureSize) ? parsedData.environmentTextureSize : 128;
+                        var hdrSize: number = (parsedData.environmentTextureSize) ? parsedData.environmentTextureSize : 128;
                         var hdrTexture = new HDRCubeTexture(rootUrl + parsedData.environmentTexture, scene, hdrSize);
                         if (parsedData.environmentTextureRotationY) {
                             hdrTexture.rotationY = parsedData.environmentTextureRotationY;
@@ -644,7 +644,7 @@
                         if (parsedData.environmentTextureRotationY) {
                             cubeTexture.rotationY = parsedData.environmentTextureRotationY;
                         }
-                        scene.environmentTexture = cubeTexture;                        
+                        scene.environmentTexture = cubeTexture;
                     }
                     if (parsedData.createDefaultSkybox === true) {
                         var skyboxScale = (scene.activeCamera !== undefined && scene.activeCamera !== null) ? (scene.activeCamera.maxZ - scene.activeCamera.minZ) / 2 : 1000;

@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     // Adds the parser to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
         // Shadows
@@ -75,9 +75,9 @@
 
         /**
          * Removes all the elements in the container from the scene
-         * @param container contains the elements to remove 
+         * @param container contains the elements to remove
          */
-        public removeFromContainer(container: AbstractScene): void{
+        public removeFromContainer(container: AbstractScene): void {
             // Nothing To Do Here. (directly attached to a light)
         }
 
@@ -107,4 +107,4 @@
             }
         }
     }
-} 
+}

@@ -1,4 +1,4 @@
-﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
     class FurMaterialDefines extends MaterialDefines {
@@ -7,7 +7,7 @@ module BABYLON {
         public CLIPPLANE = false;
         public CLIPPLANE2 = false;
         public CLIPPLANE3 = false;
-        public CLIPPLANE4 = false;        
+        public CLIPPLANE4 = false;
         public ALPHATEST = false;
         public DEPTHPREPASS = false;
         public POINTSIZE = false;
@@ -72,7 +72,6 @@ module BABYLON {
 
         public furTexture: DynamicTexture;
 
-
         @serialize("disableLighting")
         private _disableLighting = false;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
@@ -135,7 +134,7 @@ module BABYLON {
             }
         }
 
-        // Methods   
+        // Methods
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
@@ -186,7 +185,7 @@ module BABYLON {
                 defines.markAsUnprocessed();
             }
 
-            // Misc.   
+            // Misc.
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
             // Lights
@@ -198,7 +197,7 @@ module BABYLON {
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
 
@@ -252,7 +251,7 @@ module BABYLON {
                     "heightTexture", "furTexture"
                 ];
 
-                var uniformBuffers = new Array<string>()
+                var uniformBuffers = new Array<string>();
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms,
@@ -299,7 +298,7 @@ module BABYLON {
             }
             this._activeEffect = effect;
 
-            // Matrices        
+            // Matrices
             this.bindOnlyWorldMatrix(world);
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
@@ -307,7 +306,7 @@ module BABYLON {
             MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
 
             if (scene.getCachedMaterial() !== this) {
-                // Textures        
+                // Textures
                 if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                     this._activeEffect.setTexture("diffuseSampler", this._diffuseTexture);
 
@@ -531,4 +530,3 @@ module BABYLON {
         }
     }
 }
-

@@ -1,4 +1,4 @@
-﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF1 {
     /**
@@ -108,8 +108,8 @@ module BABYLON.GLTF1 {
         type: string;
         componentType: EComponentType;
 
-        max?: number[],
-        min?: number[],
+        max?: number[];
+        min?: number[];
         name?: string;
     }
 
@@ -146,7 +146,7 @@ module BABYLON.GLTF1 {
         count?: number;
         semantic?: string;
         node?: string;
-        value?: number|boolean|string|Array<any>;
+        value?: number | boolean | string | Array<any>;
         source?: string;
 
         babylonValue?: any;
@@ -217,7 +217,7 @@ module BABYLON.GLTF1 {
         internalFormat?: ETextureFormat;
         target?: number;
         type?: number;
-        
+
         // Babylon.js values (optimize)
         babylonTexture?: Texture;
     }

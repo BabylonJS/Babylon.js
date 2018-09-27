@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Represents a gamepad control stick position
      */
@@ -12,7 +12,7 @@
             /**
              * The x component of the control stick
              */
-            public x: number, 
+            public x: number,
             /**
              * The y component of the control stick
              */
@@ -117,15 +117,15 @@
             /**
              * The id of the gamepad
              */
-            public id: string, 
+            public id: string,
             /**
              * The index of the gamepad
              */
-            public index: number, 
+            public index: number,
             /**
              * The browser gamepad
              */
-            public browserGamepad: any, 
+            public browserGamepad: any,
             leftStickX: number = 0, leftStickY: number = 1, rightStickX: number = 2, rightStickY: number = 3) {
             this.type = Gamepad.GAMEPAD;
             this._leftStickAxisX = leftStickX;
@@ -142,7 +142,7 @@
 
         /**
          * Callback triggered when the left joystick has changed
-         * @param callback 
+         * @param callback
          */
         public onleftstickchanged(callback: (values: StickValues) => void) {
             this._onleftstickchanged = callback;
@@ -150,7 +150,7 @@
 
         /**
          * Callback triggered when the right joystick has changed
-         * @param callback 
+         * @param callback
          */
         public onrightstickchanged(callback: (values: StickValues) => void) {
             this._onrightstickchanged = callback;

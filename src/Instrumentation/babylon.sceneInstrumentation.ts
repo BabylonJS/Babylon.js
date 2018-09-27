@@ -285,7 +285,6 @@ module BABYLON {
             }
         }
 
-
         /**
          * Gets the perf counter used for animations time
          */
@@ -429,12 +428,12 @@ module BABYLON {
             this._captureCameraRenderTime = value;
 
             if (value) {
-                this._onBeforeCameraRenderObserver = this.scene.onBeforeCameraRenderObservable.add(camera => {
+                this._onBeforeCameraRenderObserver = this.scene.onBeforeCameraRenderObservable.add((camera) => {
                     this._cameraRenderTime.beginMonitoring();
                     Tools.StartPerformanceCounter(`Rendering camera ${camera.name}`);
                 });
 
-                this._onAfterCameraRenderObserver = this.scene.onAfterCameraRenderObservable.add(camera => {
+                this._onAfterCameraRenderObserver = this.scene.onAfterCameraRenderObservable.add((camera) => {
                     this._cameraRenderTime.endMonitoring(false);
                     Tools.EndPerformanceCounter(`Rendering camera ${camera.name}`);
                 });
@@ -454,7 +453,7 @@ module BABYLON {
         }
 
         /**
-         * Gets the perf counter used for texture collisions 
+         * Gets the perf counter used for texture collisions
          */
         public get textureCollisionsCounter(): PerfCounter {
             return this.scene.getEngine()._textureCollisions;

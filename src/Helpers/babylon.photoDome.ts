@@ -18,7 +18,7 @@ module BABYLON {
          */
         public get photoTexture(): Texture {
             return this._photoTexture;
-        }        
+        }
 
         public set photoTexture(value: Texture) {
             if (this._photoTexture === value) {
@@ -26,7 +26,7 @@ module BABYLON {
             }
             this._photoTexture = value;
             if (this._useDirectMapping) {
-                this._photoTexture.wrapU = Texture.CLAMP_ADDRESSMODE;     
+                this._photoTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
                 this._photoTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
                 this._material.diffuseTexture = this._photoTexture;
             } else {
@@ -34,8 +34,8 @@ module BABYLON {
                 this._photoTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
                 this._material.reflectionTexture = this._photoTexture;
             }
-        }      
-        
+        }
+
         /**
          * Observable raised when an error occured while loading the 360 image
          */
@@ -82,9 +82,9 @@ module BABYLON {
             options.size = Math.abs(options.size as any) || (scene.activeCamera ? scene.activeCamera.maxZ * 0.48 : 1000);
 
             if (options.useDirectMapping === undefined) {
-                this._useDirectMapping = true;    
+                this._useDirectMapping = true;
             } else {
-                this._useDirectMapping = options.useDirectMapping;            
+                this._useDirectMapping = options.useDirectMapping;
             }
 
             this._setReady(false);
@@ -106,10 +106,10 @@ module BABYLON {
                 }
             });
 
-            this.photoTexture.onLoadObservable.addOnce(()=> {
+            this.photoTexture.onLoadObservable.addOnce(() => {
                 this._setReady(true);
-            }) ;             
-           
+            }) ;
+
             // configure mesh
             this._mesh.material = material;
             this._mesh.parent = this;

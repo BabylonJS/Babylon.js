@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
      * This is the base class of any Procedural texture and contains most of the shareable code.
@@ -225,7 +225,7 @@
 
                     this._fallbackTextureUsed = true;
                 });
-                
+
             return this._effect.isReady();
         }
 
@@ -459,43 +459,43 @@
                 this._effect.setTexture(name, this._textures[name]);
             }
 
-            // Float    
+            // Float
             for (name in this._ints) {
                 this._effect.setInt(name, this._ints[name]);
             }
 
-            // Float    
+            // Float
             for (name in this._floats) {
                 this._effect.setFloat(name, this._floats[name]);
             }
 
-            // Floats   
+            // Floats
             for (name in this._floatsArrays) {
                 this._effect.setArray(name, this._floatsArrays[name]);
             }
 
-            // Color3        
+            // Color3
             for (name in this._colors3) {
                 this._effect.setColor3(name, this._colors3[name]);
             }
 
-            // Color4      
+            // Color4
             for (name in this._colors4) {
                 var color = this._colors4[name];
                 this._effect.setFloat4(name, color.r, color.g, color.b, color.a);
             }
 
-            // Vector2        
+            // Vector2
             for (name in this._vectors2) {
                 this._effect.setVector2(name, this._vectors2[name]);
             }
 
-            // Vector3        
+            // Vector3
             for (name in this._vectors3) {
                 this._effect.setVector3(name, this._vectors3[name]);
             }
 
-            // Matrix      
+            // Matrix
             for (name in this._matrices) {
                 this._effect.setMatrix(name, this._matrices[name]);
             }
@@ -594,4 +594,4 @@
             super.dispose();
         }
     }
-} 
+}

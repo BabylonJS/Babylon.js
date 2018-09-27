@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Unique ID when we import meshes from Babylon to CSG
      */
@@ -11,7 +11,7 @@
      * `flip()`, and `interpolate()` methods that behave analogous to the ones
      * defined by `BABYLON.CSG.Vertex`. This class provides `normal` so convenience
      * functions like `BABYLON.CSG.sphere()` can return a smooth vertex normal, but `normal`
-     * is not used anywhere else. 
+     * is not used anywhere else.
      * Same goes for uv, it allows to keep the original vertex uv coordinates of the 2 meshes
      */
     class Vertex {
@@ -25,11 +25,11 @@
             /**
              * The position of the vertex
              */
-            public pos: Vector3, 
+            public pos: Vector3,
             /**
              * The normal of the vertex
              */
-            public normal: Vector3, 
+            public normal: Vector3,
             /**
              * The texture coordinate of the vertex
              */
@@ -44,7 +44,6 @@
             return new Vertex(this.pos.clone(), this.normal.clone(), this.uv.clone());
         }
 
-        
         /**
          * Invert all orientation-specific data (e.g. vertex normal). Called when the
          * orientation of a polygon is flipped.
@@ -53,7 +52,6 @@
             this.normal = this.normal.scale(-1);
         }
 
-        
         /**
          * Create a new vertex between this vertex and `other` by linearly
          * interpolating all properties using a parameter of `t`. Subclasses should
@@ -68,7 +66,7 @@
             );
         }
     }
-    
+
     /**
      * Represents a plane in 3D space.
      */
@@ -76,12 +74,11 @@
         /**
          * Initializes the plane
          * @param normal The normal for the plane
-         * @param w 
+         * @param w
          */
         constructor(public normal: Vector3, public w: number) {
         }
 
-        
         /**
          * `BABYLON.CSG.Plane.EPSILON` is the tolerance used by `splitPolygon()` to decide if a
          * point is on the plane
@@ -122,7 +119,6 @@
             this.w = -this.w;
         }
 
-        
         /**
          * Split `polygon` by this plane if needed, then put the polygon or polygon
          * fragments in the appropriate lists. Coplanar polygons go into either
@@ -171,8 +167,8 @@
                         var j = (i + 1) % polygon.vertices.length;
                         var ti = types[i], tj = types[j];
                         var vi = polygon.vertices[i], vj = polygon.vertices[j];
-                        if (ti !== BACK) f.push(vi);
-                        if (ti !== FRONT) b.push(ti !== BACK ? vi.clone() : vi);
+                        if (ti !== BACK) { f.push(vi); }
+                        if (ti !== FRONT) { b.push(ti !== BACK ? vi.clone() : vi); }
                         if ((ti | tj) === SPANNING) {
                             t = (this.w - Vector3.Dot(this.normal, vi.pos)) / Vector3.Dot(this.normal, vj.pos.subtract(vi.pos));
                             var v = vi.interpolate(vj, t);
@@ -183,15 +179,17 @@
                     var poly: Polygon;
                     if (f.length >= 3) {
                         poly = new Polygon(f, polygon.shared);
-                        if (poly.plane)
+                        if (poly.plane) {
                             front.push(poly);
+                        }
                     }
 
                     if (b.length >= 3) {
                         poly = new Polygon(b, polygon.shared);
 
-                        if (poly.plane)
+                        if (poly.plane) {
                             back.push(poly);
+                        }
                     }
 
                     break;
@@ -237,7 +235,7 @@
          * Clones, or makes a deep copy, or the polygon
          */
         public clone(): Polygon {
-            var vertices = this.vertices.map(v => v.clone());
+            var vertices = this.vertices.map((v) => v.clone());
             return new Polygon(vertices, this.shared);
         }
 
@@ -245,7 +243,7 @@
          * Flips the faces of the polygon
          */
         public flip() {
-            this.vertices.reverse().map(v => { v.flip(); });
+            this.vertices.reverse().map((v) => { v.flip(); });
             this.plane.flip();
         }
     }
@@ -282,7 +280,7 @@
             node.plane = this.plane && this.plane.clone();
             node.front = this.front && this.front.clone();
             node.back = this.back && this.back.clone();
-            node.polygons = this.polygons.map(p => p.clone());
+            node.polygons = this.polygons.map((p) => p.clone());
             return node;
         }
 
@@ -307,7 +305,6 @@
             this.back = temp;
         }
 
-        
         /**
          * Recursively remove all polygons in `polygons` that are inside this BSP
          * tree.
@@ -315,7 +312,7 @@
          * @returns Polygons clipped from the BSP
          */
         clipPolygons(polygons: Polygon[]): Polygon[] {
-            if (!this.plane) return polygons.slice();
+            if (!this.plane) { return polygons.slice(); }
             var front = new Array<Polygon>(), back = new Array<Polygon>();
             for (var i = 0; i < polygons.length; i++) {
                 this.plane.splitPolygon(polygons[i], front, back, front, back);
@@ -331,7 +328,6 @@
             return front.concat(back);
         }
 
-        
         /**
          * Remove all polygons in this BSP tree that are inside the other BSP tree
          * `bsp`.
@@ -339,8 +335,8 @@
          */
         clipTo(bsp: Node): void {
             this.polygons = bsp.clipPolygons(this.polygons);
-            if (this.front) this.front.clipTo(bsp);
-            if (this.back) this.back.clipTo(bsp);
+            if (this.front) { this.front.clipTo(bsp); }
+            if (this.back) { this.back.clipTo(bsp); }
         }
 
         /**
@@ -349,12 +345,11 @@
          */
         allPolygons(): Polygon[] {
             var polygons = this.polygons.slice();
-            if (this.front) polygons = polygons.concat(this.front.allPolygons());
-            if (this.back) polygons = polygons.concat(this.back.allPolygons());
+            if (this.front) { polygons = polygons.concat(this.front.allPolygons()); }
+            if (this.back) { polygons = polygons.concat(this.back.allPolygons()); }
             return polygons;
         }
 
-        
         /**
          * Build a BSP tree out of `polygons`. When called on an existing tree, the
          * new polygons are filtered down to the bottom of the tree and become new
@@ -363,18 +358,18 @@
          * @param polygons Polygons used to construct the BSP tree
          */
         build(polygons: Polygon[]): void {
-            if (!polygons.length) return;
-            if (!this.plane) this.plane = polygons[0].plane.clone();
+            if (!polygons.length) { return; }
+            if (!this.plane) { this.plane = polygons[0].plane.clone(); }
             var front = new Array<Polygon>(), back = new Array<Polygon>();
             for (var i = 0; i < polygons.length; i++) {
                 this.plane.splitPolygon(polygons[i], this.polygons, this.polygons, front, back);
             }
             if (front.length) {
-                if (!this.front) this.front = new Node();
+                if (!this.front) { this.front = new Node(); }
                 this.front.build(front);
             }
             if (back.length) {
-                if (!this.back) this.back = new Node();
+                if (!this.back) { this.back = new Node(); }
                 this.back.build(back);
             }
         }
@@ -386,7 +381,7 @@
     export class CSG {
         private polygons = new Array<Polygon>();
         /**
-         * The world matrix  
+         * The world matrix
          */
         public matrix: Matrix;
         /**
@@ -460,8 +455,9 @@
 
                     // To handle the case of degenerated triangle
                     // polygon.plane == null <=> the polygon does not represent 1 single plane <=> the triangle is degenerated
-                    if (polygon.plane)
+                    if (polygon.plane) {
                         polygons.push(polygon);
+                    }
                 }
             }
 
@@ -475,7 +471,6 @@
 
             return csg;
         }
-
 
         /**
          * Construct a BABYLON.CSG solid from a list of `BABYLON.CSG.Polygon` instances.
@@ -493,7 +488,7 @@
          */
         public clone(): CSG {
             var csg = new CSG();
-            csg.polygons = this.polygons.map(p => p.clone());
+            csg.polygons = this.polygons.map((p) => p.clone());
             csg.copyTransformAttributes(this);
             return csg;
         }
@@ -553,7 +548,7 @@
         }
 
         /**
-         * Subtracts this CSG with another CSG in place 
+         * Subtracts this CSG with another CSG in place
          * @param csg The CSG to subtact against this CSG
          */
         public subtractInPlace(csg: CSG): void {
@@ -609,7 +604,6 @@
             this.polygons = a.allPolygons();
         }
 
-        
         /**
          * Return a new BABYLON.CSG solid with solid and empty space switched. This solid is
          * not modified.
@@ -625,10 +619,9 @@
          * Inverses the BABYLON.CSG in place
          */
         public inverseInPlace(): void {
-            this.polygons.map(p => { p.flip(); });
+            this.polygons.map((p) => { p.flip(); });
         }
 
-        
         /**
          * This is used to keep meshes transformations so they can be restored
          * when we build back a Babylon Mesh
@@ -673,7 +666,6 @@
                 currentIndex = 0,
                 subMesh_dict = {},
                 subMesh_obj;
-
 
             if (keepSubMeshes) {
                 // Sort Polygons, since subMeshes are indices range
@@ -791,4 +783,4 @@
             return mesh;
         }
     }
-} 
+}

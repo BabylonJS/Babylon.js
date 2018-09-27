@@ -48,7 +48,7 @@ module BABYLON {
          */
         public displayLoadingUI(): void {
             if (this._loadingDiv) {
-                // Do not add a loading screen if there is already one  
+                // Do not add a loading screen if there is already one
                 return;
             }
 
@@ -74,14 +74,14 @@ module BABYLON {
             this._loadingTextDiv.innerHTML = "Loading";
 
             this._loadingDiv.appendChild(this._loadingTextDiv);
-			
+
             //set the predefined text
             this._loadingTextDiv.innerHTML = this._loadingText;
 
             // Generating keyframes
             var style = document.createElement('style');
             style.type = 'text/css';
-            var keyFrames = 
+            var keyFrames =
                 `@-webkit-keyframes spin1 {\
                     0% { -webkit-transform: rotate(0deg);}
                     100% { -webkit-transform: rotate(360deg);}
@@ -106,7 +106,7 @@ module BABYLON {
             imgBack.style.webkitAnimation = "spin1 2s infinite ease-in-out";
             imgBack.style.transformOrigin = "50% 50%";
             imgBack.style.webkitTransformOrigin = "50% 50%";
-            
+
             this._loadingDiv.appendChild(imgBack);
 
             this._resizeLoadingUI();
@@ -121,7 +121,7 @@ module BABYLON {
 
         /**
          * Function called to hide the loading screen
-         */        
+         */
         public hideLoadingUI(): void {
             if (!this._loadingDiv) {
                 return;
@@ -135,7 +135,7 @@ module BABYLON {
                 window.removeEventListener("resize", this._resizeLoadingUI);
 
                 this._loadingDiv = null;
-            }
+            };
 
             this._loadingDiv.style.opacity = "0";
             this._loadingDiv.addEventListener("transitionend", onTransitionEnd);
@@ -158,7 +158,7 @@ module BABYLON {
 
         /**
          * Gets or sets the color to use for the background
-         */        
+         */
         public get loadingUIBackgroundColor(): string {
             return this._loadingDivBackgroundColor;
         }
@@ -171,7 +171,7 @@ module BABYLON {
             }
 
             this._loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
-        }	
+        }
 
         // Resize
         private _resizeLoadingUI = () => {

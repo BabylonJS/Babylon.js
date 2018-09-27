@@ -198,7 +198,7 @@ module BABYLON {
          * Disposes of the pipeline
          */
         public dispose() {
-            // Must be implemented by children 
+            // Must be implemented by children
         }
     }
 }

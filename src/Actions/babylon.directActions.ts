@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * This defines an action responsible to toggle a boolean once triggered.
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions
@@ -534,4 +534,4 @@
             }, parent);
         }
     }
-} 
+}

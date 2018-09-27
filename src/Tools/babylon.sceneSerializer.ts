@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     var serializedGeometries: Geometry[] = [];
     var serializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
         if ((<any>serializedGeometries)[geometry.id]) {
@@ -43,7 +43,7 @@
     var serializeMesh = (mesh: Mesh, serializationScene: any): any => {
         var serializationObject: any = {};
 
-        // Geometry      
+        // Geometry
         var geometry = mesh._geometry;
         if (geometry) {
             if (!mesh.getScene().getGeometryByID(geometry.id)) {
@@ -113,7 +113,7 @@
             serializationObject.meshes = serializationObject.meshes || [];
             serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
         }
-    }
+    };
 
     /**
      * Class used to serialize a scene into a string

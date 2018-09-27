@@ -156,7 +156,7 @@ module BABYLON {
 
         private _onBeforePhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
         private _onAfterPhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
-        private _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void, otherImpostors: Array<PhysicsImpostor> }> = []
+        private _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void, otherImpostors: Array<PhysicsImpostor> }> = [];
 
         private _deltaPosition: Vector3 = Vector3.Zero();
         private _deltaRotation: Quaternion;
@@ -244,7 +244,7 @@ module BABYLON {
             /**
              * The physics-enabled object used as the physics imposter
              */
-            public object: IPhysicsEnabledObject, 
+            public object: IPhysicsEnabledObject,
             /**
              * The type of the physics imposter
              */
@@ -258,7 +258,7 @@ module BABYLON {
 
             //legacy support for old syntax.
             if (!this._scene && object.getScene) {
-                this._scene = object.getScene()
+                this._scene = object.getScene();
             }
 
             if (!this._scene) {
@@ -267,7 +267,7 @@ module BABYLON {
 
             this._physicsEngine = this._scene.getPhysicsEngine();
             if (!this._physicsEngine) {
-                Tools.Error("Physics not enabled. Please use scene.enablePhysics(...) before creating impostors.")
+                Tools.Error("Physics not enabled. Please use scene.enablePhysics(...) before creating impostors.");
             } else {
                 //set the object's quaternion, if not set
                 if (!this.object.rotationQuaternion) {
@@ -279,9 +279,9 @@ module BABYLON {
 
                 }
                 //default options params
-                this._options.mass = (_options.mass === void 0) ? 0 : _options.mass
-                this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction
-                this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution
+                this._options.mass = (_options.mass === void 0) ? 0 : _options.mass;
+                this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction;
+                this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution;
 
                 this._joints = [];
                 //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
@@ -404,7 +404,7 @@ module BABYLON {
                 //calculate the world matrix with no rotation
                 this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
                 let boundingInfo = this.object.getBoundingInfo();
-                let size = boundingInfo.boundingBox.extendSizeWorld.scale(2)
+                let size = boundingInfo.boundingBox.extendSizeWorld.scale(2);
 
                 //bring back the rotation
                 this.object.rotationQuaternion = q;
@@ -482,7 +482,7 @@ module BABYLON {
 
         /**
          * Gets the angular velocity
-         * @returns angular velocity or null 
+         * @returns angular velocity or null
          */
         public getAngularVelocity(): Nullable<Vector3> {
             return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getAngularVelocity(this) : Vector3.Zero();
@@ -560,7 +560,7 @@ module BABYLON {
          * @param func Callback that is executed on collision
          */
         public registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void {
-            var collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst]
+            var collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst];
             this._onPhysicsCollideCallbacks.push({ callback: func, otherImpostors: collidedAgainstList });
         }
 
@@ -570,7 +570,7 @@ module BABYLON {
          * @param func Callback to execute on collision
          */
         public unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void {
-            var collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst]
+            var collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst];
             var index = -1;
             let found = this._onPhysicsCollideCallbacks.some((cbDef, idx) => {
                 if (cbDef.callback === func && cbDef.otherImpostors.length === collidedAgainstList.length) {
@@ -609,7 +609,7 @@ module BABYLON {
                 if (parent.rotationQuaternion) {
                     this._tmpQuat2.copyFrom(parent.rotationQuaternion);
                 } else {
-                    Quaternion.RotationYawPitchRollToRef(parent.rotation.y, parent.rotation.x, parent.rotation.z, this._tmpQuat2)
+                    Quaternion.RotationYawPitchRollToRef(parent.rotation.y, parent.rotation.x, parent.rotation.z, this._tmpQuat2);
                 }
                 this._tmpQuat.multiplyToRef(this._tmpQuat2, this._tmpQuat);
                 parent = parent.parent;
@@ -692,15 +692,15 @@ module BABYLON {
                     this.onCollideEvent(this, otherImpostor);
                 }
                 this._onPhysicsCollideCallbacks.filter((obj) => {
-                    return obj.otherImpostors.indexOf((<PhysicsImpostor>otherImpostor)) !== -1
+                    return obj.otherImpostors.indexOf((<PhysicsImpostor>otherImpostor)) !== -1;
                 }).forEach((obj) => {
                     obj.callback(this, <PhysicsImpostor>otherImpostor);
-                })
+                });
             }
         }
 
         /**
-         * Apply a force 
+         * Apply a force
          * @param force The force to apply
          * @param contactPoint The contact point for the force
          * @returns The physics imposter
@@ -789,7 +789,7 @@ module BABYLON {
          * @returns A nullable physics imposter
          */
         public clone(newObject: IPhysicsEnabledObject): Nullable<PhysicsImpostor> {
-            if (!newObject) return null;
+            if (!newObject) { return null; }
             return new PhysicsImpostor(newObject, this.type, this._options, this._scene);
         }
 
@@ -806,7 +806,7 @@ module BABYLON {
                 if (this._physicsEngine) {
                     this._physicsEngine.removeJoint(this, j.otherImpostor, j.joint);
                 }
-            })
+            });
             //dispose the physics body
             this._physicsEngine.removeImpostor(this);
             if (this.parent) {

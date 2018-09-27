@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Mirror texture can be used to simulate the view from a mirror in a scene.
      * It will dynamically be rendered every frame to adapt to the camera point of view.
@@ -8,7 +8,7 @@
      */
     export class MirrorTexture extends RenderTargetTexture {
         /**
-         * Define the reflection plane we want to use. The mirrorPlane is usually set to the constructed reflector. 
+         * Define the reflection plane we want to use. The mirrorPlane is usually set to the constructed reflector.
          * It is possible to directly set the mirrorPlane by directly using a BABYLON.Plane(a, b, c, d) where a, b and c give the plane normal vector (a, b, c) and d is a scalar displacement from the mirrorPlane to the origin. However in all but the very simplest of situations it is more straight forward to set it to the reflector as stated in the doc.
          * @see https://doc.babylonjs.com/how_to/reflect#mirrors
          */
@@ -104,11 +104,11 @@
             }
         }
 
-        private _updateGammaSpace(){
+        private _updateGammaSpace() {
             this.gammaSpace = !this.scene.imageProcessingConfiguration.isEnabled || !this.scene.imageProcessingConfiguration.applyByPostProcess;
         }
 
-        private _imageProcessingConfigChangeObserver:Nullable<Observer<ImageProcessingConfiguration>>;
+        private _imageProcessingConfigChangeObserver: Nullable<Observer<ImageProcessingConfiguration>>;
 
         private _transformMatrix = Matrix.Zero();
         private _mirrorMatrix = Matrix.Zero();
@@ -128,22 +128,22 @@
          * You can then easily use it as a reflectionTexture on a flat surface.
          * In case the surface is not a plane, please consider relying on reflection probes.
          * @see https://doc.babylonjs.com/how_to/reflect#mirrors
-         * @param name 
-         * @param size 
-         * @param scene 
-         * @param generateMipMaps 
-         * @param type 
-         * @param samplingMode 
-         * @param generateDepthBuffer 
+         * @param name
+         * @param size
+         * @param scene
+         * @param generateMipMaps
+         * @param type
+         * @param samplingMode
+         * @param generateDepthBuffer
          */
         constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, private scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
             super(name, size, scene, generateMipMaps, true, type, false, samplingMode, generateDepthBuffer);
 
             this.ignoreCameraViewport = true;
-            
+
             this._updateGammaSpace();
             this._imageProcessingConfigChangeObserver = scene.imageProcessingConfiguration.onUpdateParameters.add(() => {
-                this._updateGammaSpace
+                this._updateGammaSpace;
             });
 
             this.onBeforeRenderObservable.add(() => {
@@ -262,9 +262,9 @@
         /**
          * Dispose the texture and release its associated resources.
          */
-        public dispose(){
+        public dispose() {
             super.dispose();
             this.scene.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigChangeObserver);
         }
     }
-} 
+}

@@ -20,17 +20,17 @@ module BABYLON {
         }
 
         public updateShaderUniforms() {
-            this.setFloat("time", this._time);      
-            this.setFloat("alpha", this._alpha);  
-            this.setFloat("beta", this._beta);  
-            this.setFloat("zoom", this._zoom); 
-            this.setFloat("formuparam", this._formuparam); 
-            this.setFloat("stepsize", this._stepsize); 
-            this.setFloat("tile", this._tile); 
-            this.setFloat("brightness", this._brightness); 
-            this.setFloat("darkmatter", this._darkmatter); 
-            this.setFloat("distfading", this._distfading); 
-            this.setFloat("saturation", this._saturation); 
+            this.setFloat("time", this._time);
+            this.setFloat("alpha", this._alpha);
+            this.setFloat("beta", this._beta);
+            this.setFloat("zoom", this._zoom);
+            this.setFloat("formuparam", this._formuparam);
+            this.setFloat("stepsize", this._stepsize);
+            this.setFloat("tile", this._tile);
+            this.setFloat("brightness", this._brightness);
+            this.setFloat("darkmatter", this._darkmatter);
+            this.setFloat("distfading", this._distfading);
+            this.setFloat("saturation", this._saturation);
         }
 
         @serialize()
@@ -41,8 +41,8 @@ module BABYLON {
         public set time(value: number) {
             this._time = value;
             this.updateShaderUniforms();
-        }      
-        
+        }
+
         @serialize()
         public get alpha(): number {
             return this._alpha;
@@ -51,7 +51,7 @@ module BABYLON {
         public set alpha(value: number) {
             this._alpha = value;
             this.updateShaderUniforms();
-        }    
+        }
 
         @serialize()
         public get beta(): number {
@@ -61,7 +61,7 @@ module BABYLON {
         public set beta(value: number) {
             this._beta = value;
             this.updateShaderUniforms();
-        } 
+        }
 
         @serialize()
         public get formuparam(): number {
@@ -72,7 +72,7 @@ module BABYLON {
             this._formuparam = value;
             this.updateShaderUniforms();
         }
-        
+
         @serialize()
         public get stepsize(): number {
             return this._stepsize;
@@ -82,7 +82,7 @@ module BABYLON {
             this._stepsize = value;
             this.updateShaderUniforms();
         }
-        
+
         @serialize()
         public get zoom(): number {
             return this._zoom;
@@ -92,7 +92,7 @@ module BABYLON {
             this._zoom = value;
             this.updateShaderUniforms();
         }
-        
+
         @serialize()
         public get tile(): number {
             return this._tile;
@@ -102,7 +102,7 @@ module BABYLON {
             this._tile = value;
             this.updateShaderUniforms();
         }
-        
+
         @serialize()
         public get brightness(): number {
             return this._brightness;
@@ -112,7 +112,7 @@ module BABYLON {
             this._brightness = value;
             this.updateShaderUniforms();
         }
-        
+
         @serialize()
         public get darkmatter(): number {
             return this._darkmatter;
@@ -122,7 +122,7 @@ module BABYLON {
             this._darkmatter = value;
             this.updateShaderUniforms();
         }
-        
+
         @serialize()
         public get distfading(): number {
             return this._distfading;
@@ -132,7 +132,7 @@ module BABYLON {
             this._distfading = value;
             this.updateShaderUniforms();
         }
-        
+
         @serialize()
         public get saturation(): number {
             return this._saturation;

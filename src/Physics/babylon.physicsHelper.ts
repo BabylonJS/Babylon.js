@@ -43,7 +43,7 @@ module BABYLON {
 
             var event = new PhysicsRadialExplosionEvent(this._scene);
 
-            impostors.forEach(impostor => {
+            impostors.forEach((impostor) => {
                 var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(impostor, origin, radius, strength, falloff);
                 if (!impostorForceAndContactPoint) {
                     return;
@@ -78,7 +78,7 @@ module BABYLON {
 
             var event = new PhysicsRadialExplosionEvent(this._scene);
 
-            impostors.forEach(impostor => {
+            impostors.forEach((impostor) => {
                 var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(impostor, origin, radius, strength, falloff);
                 if (!impostorForceAndContactPoint) {
                     return;
@@ -221,7 +221,7 @@ module BABYLON {
             if (!this._intersectsWithSphere(impostor, origin, radius)) {
                 return null;
             }
-  
+
             if (impostor.object.getClassName() !== 'Mesh' && impostor.object.getClassName() !== 'InstancedMesh') {
                 return null;
             }
@@ -397,7 +397,7 @@ module BABYLON {
         private _cylinder: Mesh;
         private _cylinderPosition: Vector3 = Vector3.Zero(); // to keep the cylinders position, because normally the origin is in the center and not on the bottom
         private _dataFetched: boolean = false; // check if the has been fetched the data. If not, do cleanup
- 
+
         /**
          * Initializes the physics updraft event
          * @param _scene BabylonJS scene
@@ -416,7 +416,7 @@ module BABYLON {
             if (this._updraftMode === PhysicsUpdraftMode.Perpendicular) {
                 this._originDirection = this._origin.subtract(this._originTop).normalize();
             }
- 
+
             this._tickCallback = this._tick.bind(this);
         }
 
@@ -488,7 +488,7 @@ module BABYLON {
         }
 
         private _tick() {
-            this._physicsEngine.getImpostors().forEach(impostor => {
+            this._physicsEngine.getImpostors().forEach((impostor) => {
                 var impostorForceAndContactPoint = this.getImpostorForceAndContactPoint(impostor);
                 if (!impostorForceAndContactPoint) {
                     return;
@@ -646,7 +646,7 @@ module BABYLON {
         }
 
         private _tick() {
-            this._physicsEngine.getImpostors().forEach(impostor => {
+            this._physicsEngine.getImpostors().forEach((impostor) => {
                 var impostorForceAndContactPoint = this.getImpostorForceAndContactPoint(impostor);
                 if (!impostorForceAndContactPoint) {
                     return;
@@ -688,7 +688,7 @@ module BABYLON {
         /** Defines that impulse is constant in strength across it's whole radius */
         Constant,
         /** DEfines that impulse gets weaker if it's further from the origin */
-        Linear 
+        Linear
     }
 
     /**

@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     Node.AddNodeConstructor("FollowCamera", (name, scene) => {
         return () => new FollowCamera(name, Vector3.Zero(), scene);
     });
@@ -8,7 +8,7 @@
     });
 
     /**
-     * A follow camera takes a mesh as a target and follows it as it moves. Both a free camera version followCamera and 
+     * A follow camera takes a mesh as a target and follows it as it moves. Both a free camera version followCamera and
      * an arc rotate version arcFollowCamera are available.
      * @see http://doc.babylonjs.com/features/cameras#follow-camera
      */
@@ -65,8 +65,9 @@
         }
 
         private _follow(cameraTarget: AbstractMesh) {
-            if (!cameraTarget)
+            if (!cameraTarget) {
                 return;
+            }
 
             var yRotation;
             if (cameraTarget.rotationQuaternion) {
@@ -84,7 +85,7 @@
             var dx: number = targetX - this.position.x;
             var dy: number = (targetPosition.y + this.heightOffset) - this.position.y;
             var dz: number = (targetZ) - this.position.z;
-            var vx: number = dx * this.cameraAcceleration * 2;//this is set to .05
+            var vx: number = dx * this.cameraAcceleration * 2; //this is set to .05
             var vy: number = dy * this.cameraAcceleration;
             var vz: number = dz * this.cameraAcceleration * 2;
 
@@ -140,15 +141,15 @@
          * @param target Define the target of the camera
          * @param scene Define the scene the camera belongs to
          */
-        constructor(name: string, 
+        constructor(name: string,
             /** The longitudinal angle of the camera */
-            public alpha: number, 
+            public alpha: number,
             /** The latitudinal angle of the camera */
-            public beta: number, 
+            public beta: number,
             /** The radius of the camera from its target */
-            public radius: number, 
+            public radius: number,
             /** Define the camera target (the messh it should follow) */
-            public target: Nullable<AbstractMesh>, 
+            public target: Nullable<AbstractMesh>,
             scene: Scene) {
             super(name, Vector3.Zero(), scene);
             this._follow();
@@ -182,5 +183,3 @@
         }
     }
 }
-
-
