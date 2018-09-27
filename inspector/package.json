@@ -38,10 +38,5 @@
         "webpack-cli": "^3.1.0",
         "webpack-dev-server": "^3.1.5"
     },
-    "peerDependencies": {
-        "babylonjs": ">3.2.0",
-        "babylonjs-gui": ">3.2.0",
-        "babylonjs-loaders": ">3.2.0"
-    },
     "dependencies": {}
 }

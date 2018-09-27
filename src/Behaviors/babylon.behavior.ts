@@ -9,7 +9,7 @@ module BABYLON {
         /**
          * Function called when the behavior needs to be initialized (after attaching it to a target)
          */
-        init(): void
+        init(): void;
         /**
          * Called when the behavior is attached to a target
          * @param target defines the target where the behavior is attached to
@@ -30,7 +30,7 @@ module BABYLON {
          * @param behavior defines the behavior to attach
          * @returns the current host
          */
-        addBehavior(behavior: Behavior<T>): T
+        addBehavior(behavior: Behavior<T>): T;
         /**
          * Remove a behavior from the current object
          * @param behavior defines the behavior to detach

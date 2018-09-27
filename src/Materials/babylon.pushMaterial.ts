@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Base class of materials working in push mode in babylon JS
      * @hidden
@@ -32,7 +32,7 @@
 
          /**
          * Binds the given world matrix to the active effect
-         * 
+         *
          * @param world the matrix to bind
          */
         public bindOnlyWorldMatrix(world: Matrix): void {
@@ -41,10 +41,10 @@
 
         /**
          * Binds the given normal matrix to the active effect
-         * 
+         *
          * @param normalMatrix the matrix to bind
          */
-        public bindOnlyNormalMatrix(normalMatrix: Matrix): void {                        
+        public bindOnlyNormalMatrix(normalMatrix: Matrix): void {
             this._activeEffect.setMatrix("normalMatrix", normalMatrix);
         }
 
@@ -65,4 +65,4 @@
             return scene.isCachedMaterialInvalid(this, effect, visibility);
         }
     }
-} 
+}

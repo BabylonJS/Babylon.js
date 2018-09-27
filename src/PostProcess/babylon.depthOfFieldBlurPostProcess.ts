@@ -1,7 +1,7 @@
-module BABYLON {    
+module BABYLON {
     /**
      * The DepthOfFieldBlurPostProcess applied a blur in a give direction.
-     * This blur differs from the standard BlurPostProcess as it attempts to avoid blurring pixels 
+     * This blur differs from the standard BlurPostProcess as it attempts to avoid blurring pixels
      * based on samples that have a large difference in distance than the center pixel.
      * See section 2.6.2 http://fileadmin.cs.lth.se/cs/education/edan35/lectures/12dof.pdf
      */
@@ -22,18 +22,18 @@ module BABYLON {
          * @param textureType Type of textures used when performing the post process. (default: 0)
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(name: string, scene: Scene, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, circleOfConfusion:PostProcess, imageToBlur:Nullable<PostProcess> = null, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+        constructor(name: string, scene: Scene, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, circleOfConfusion: PostProcess, imageToBlur: Nullable<PostProcess> = null, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
             super(name, direction, kernel, options, camera, samplingMode = Texture.BILINEAR_SAMPLINGMODE, engine, reusable, textureType = Engine.TEXTURETYPE_UNSIGNED_INT, `#define DOF 1\r\n`, blockCompilation);
-			
-			this.onApplyObservable.add((effect: Effect) => {
-                if(imageToBlur != null){
+
+            this.onApplyObservable.add((effect: Effect) => {
+                if (imageToBlur != null) {
                     effect.setTextureFromPostProcess("textureSampler", imageToBlur);
                 }
                 effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
-                if(scene.activeCamera){
+                if (scene.activeCamera) {
                     effect.setFloat2('cameraMinMaxZ', scene.activeCamera.minZ, scene.activeCamera.maxZ);
                 }
-			});
+            });
         }
     }
 }

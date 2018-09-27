@@ -1,4 +1,4 @@
-﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
     class LavaMaterialDefines extends MaterialDefines {
@@ -6,7 +6,7 @@ module BABYLON {
         public CLIPPLANE = false;
         public CLIPPLANE2 = false;
         public CLIPPLANE3 = false;
-        public CLIPPLANE4 = false;        
+        public CLIPPLANE4 = false;
         public ALPHATEST = false;
         public DEPTHPREPASS = false;
         public POINTSIZE = false;
@@ -131,7 +131,7 @@ module BABYLON {
             return null;
         }
 
-        // Methods   
+        // Methods
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
@@ -174,7 +174,7 @@ module BABYLON {
 
             // Lights
             defines._needNormals = true;
-            
+
             MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
             // Values that need to be evaluated on every frame
@@ -183,7 +183,7 @@ module BABYLON {
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
                 scene.resetCachedMaterial();
@@ -238,7 +238,7 @@ module BABYLON {
                 var samplers = ["diffuseSampler",
                     "noiseTexture"
                 ];
-                var uniformBuffers = new Array<string>()
+                var uniformBuffers = new Array<string>();
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms,
@@ -288,7 +288,7 @@ module BABYLON {
 
             defines.UNLIT = this._unlit;
 
-            // Matrices        
+            // Matrices
             this.bindOnlyWorldMatrix(world);
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
@@ -296,7 +296,7 @@ module BABYLON {
             MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
 
             if (this._mustRebind(scene, effect)) {
-                // Textures        
+                // Textures
                 if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                     this._activeEffect.setTexture("diffuseSampler", this.diffuseTexture);
 
@@ -332,7 +332,6 @@ module BABYLON {
 
             // Fog
             MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
-
 
             this._lastTime += scene.getEngine().getDeltaTime();
             this._activeEffect.setFloat("time", this._lastTime * this.speed / 1000);
@@ -415,4 +414,4 @@ module BABYLON {
             return SerializationHelper.Parse(() => new LavaMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
-} 
+}

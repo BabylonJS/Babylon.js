@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Base class for submeshes
      */
@@ -89,13 +89,13 @@
          */
         constructor(
             /** the material index to use */
-            public materialIndex: number, 
+            public materialIndex: number,
             /** vertex index start */
-            public verticesStart: number, 
+            public verticesStart: number,
             /** vertices count */
-            public verticesCount: number, 
+            public verticesCount: number,
             /** index start */
-            public indexStart: number, 
+            public indexStart: number,
             /** indices count */
             public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {
             super();
@@ -134,7 +134,7 @@
         }
 
         /**
-         * Sets the submesh BoundingInfo  
+         * Sets the submesh BoundingInfo
          * @param boundingInfo defines the new bounding info to use
          * @returns the SubMesh
          */
@@ -143,7 +143,7 @@
             return this;
         }
 
-        /** 
+        /**
          * Returns the mesh of the current submesh
          * @return the parent mesh
          */
@@ -187,7 +187,7 @@
 
         /**
          * Sets a new updated BoundingInfo object to the submesh
-         * @returns the SubMesh 
+         * @returns the SubMesh
          */
         public refreshBoundingInfo(): SubMesh {
             this._lastColliderWorldVertices = null;
@@ -242,9 +242,9 @@
         }
 
         /**
-         * True is the submesh bounding box intersects the frustum defined by the passed array of planes.  
+         * True is the submesh bounding box intersects the frustum defined by the passed array of planes.
          * @param frustumPlanes defines the frustum planes
-         * @returns true if the submesh is intersecting with the frustum  
+         * @returns true if the submesh is intersecting with the frustum
          */
         public isInFrustum(frustumPlanes: Plane[]): boolean {
             let boundingInfo = this.getBoundingInfo();
@@ -258,7 +258,7 @@
         /**
          * True is the submesh bounding box is completely inside the frustum defined by the passed array of planes
          * @param frustumPlanes defines the frustum planes
-         * @returns true if the submesh is inside the frustum  
+         * @returns true if the submesh is inside the frustum
          */
         public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
             let boundingInfo = this.getBoundingInfo();
@@ -270,7 +270,7 @@
         }
 
         /**
-         * Renders the submesh  
+         * Renders the submesh
          * @param enableAlphaMode defines if alpha needs to be used
          * @returns the submesh
          */
@@ -280,7 +280,7 @@
         }
 
         /**
-         * @hidden 
+         * @hidden
          */
         public _getLinesIndexBuffer(indices: IndicesArray, engine: Engine): WebGLBuffer {
             if (!this._linesIndexBuffer) {
@@ -338,9 +338,9 @@
 
             // LineMesh first as it's also a Mesh...
             if (LinesMesh) {
-                const mesh = this._mesh instanceof InstancedMesh ? (<InstancedMesh>this._mesh).sourceMesh : this._mesh
+                const mesh = this._mesh instanceof InstancedMesh ? (<InstancedMesh>this._mesh).sourceMesh : this._mesh;
                 if (mesh instanceof LinesMesh) {
-                    const linesMesh = <LinesMesh>mesh
+                    const linesMesh = <LinesMesh>mesh;
                     return this._intersectLines(ray, positions, indices, linesMesh.intersectionThreshold, fastCheck);
                 }
             }
@@ -349,7 +349,7 @@
         }
 
         /** @hidden */
-        private _intersectLines(ray: Ray, positions: Vector3[], indices: IndicesArray, intersectionThreshold:number, fastCheck?: boolean): Nullable<IntersectionInfo> {
+        private _intersectLines(ray: Ray, positions: Vector3[], indices: IndicesArray, intersectionThreshold: number, fastCheck?: boolean): Nullable<IntersectionInfo> {
             var intersectInfo: Nullable<IntersectionInfo> = null;
 
             // Line test
@@ -409,7 +409,7 @@
             }
         }
 
-        // Clone    
+        // Clone
         /**
          * Creates a new submesh from the passed mesh
          * @param newMesh defines the new hosting mesh
@@ -468,10 +468,12 @@
             for (var index = startIndex; index < startIndex + indexCount; index++) {
                 var vertexIndex = indices[index];
 
-                if (vertexIndex < minVertexIndex)
+                if (vertexIndex < minVertexIndex) {
                     minVertexIndex = vertexIndex;
-                if (vertexIndex > maxVertexIndex)
+                }
+                if (vertexIndex > maxVertexIndex) {
                     maxVertexIndex = vertexIndex;
+                }
             }
 
             return new SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex + 1, startIndex, indexCount, mesh, renderingMesh);

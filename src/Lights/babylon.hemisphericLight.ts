@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     Node.AddNodeConstructor("Light_Type_3", (name, scene) => {
         return () => new HemisphericLight(name, Vector3.Zero(), scene);
     });
@@ -22,9 +22,9 @@
         public direction: Vector3;
 
         /**
-         * Creates a HemisphericLight object in the scene according to the passed direction (Vector3).  
-         * The HemisphericLight simulates the ambient environment light, so the passed direction is the light reflection direction, not the incoming direction.  
-         * The HemisphericLight can't cast shadows.  
+         * Creates a HemisphericLight object in the scene according to the passed direction (Vector3).
+         * The HemisphericLight simulates the ambient environment light, so the passed direction is the light reflection direction, not the incoming direction.
+         * The HemisphericLight can't cast shadows.
          * Documentation : http://doc.babylonjs.com/tutorials/lights
          * @param name The friendly name of the light
          * @param direction The direction of the light reflection
@@ -54,7 +54,7 @@
         }
 
         /**
-         * Sets the HemisphericLight direction towards the passed target (Vector3).  
+         * Sets the HemisphericLight direction towards the passed target (Vector3).
          * Returns the updated direction.
          * @param target The target the direction should point to
          * @return The computed direction
@@ -73,7 +73,7 @@
         }
 
         /**
-         * Sets the passed Effect object with the HemisphericLight normalized direction and color and the passed name (string).  
+         * Sets the passed Effect object with the HemisphericLight normalized direction and color and the passed name (string).
          * @param effect The effect to update
          * @param lightIndex The index of the light in the effect to update
          * @returns The hemispheric light
@@ -120,4 +120,4 @@
             defines["HEMILIGHT" + lightIndex] = true;
         }
     }
-} 
+}

@@ -1,7 +1,7 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * @hidden
-     **/        
+     **/
     export class _StencilState {
         private _isStencilTestDirty = false;
         private _isStencilMaskDirty = false;

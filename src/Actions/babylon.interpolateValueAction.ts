@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * This defines an action responsible to change the value of a property
      * by interpolating between its current value and the newly set one once triggered.
@@ -9,7 +9,7 @@
          * Defines the path of the property where the value should be interpolated
          */
         public propertyPath: string;
-        
+
         /**
          * Defines the target value at the end of the interpolation.
          */
@@ -29,7 +29,7 @@
          * Defines a callback raised once the interpolation animation has been done.
          */
         public onInterpolationDone?: () => void;
-        
+
         /**
          * Observable triggered once the interpolation animation has been done.
          */
@@ -112,7 +112,7 @@
                 if (this.onInterpolationDone) {
                     this.onInterpolationDone();
                 }
-            }
+            };
 
             scene.beginDirectAnimation(this._effectiveTarget, [animation], 0, 100, false, 1, wrapper);
         }
@@ -135,4 +135,4 @@
             }, parent);
         }
     }
-} 
+}

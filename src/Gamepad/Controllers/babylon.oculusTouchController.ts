@@ -58,7 +58,7 @@ module BABYLON {
                 - trigger
                 - thumbstick
                 - grip
-                - button_y 
+                - button_y
                 - button_x
                 - button_enter
                 */
@@ -70,7 +70,6 @@ module BABYLON {
                 }
             });
         }
-
 
         /**
          * Fired when the A button on this controller is modified
@@ -122,7 +121,7 @@ module BABYLON {
          * 1) index trigger (touch (?), press (only when value > 0.1), value 0 to 1)
          * 2) secondary trigger (same)
          * 3) A (right) X (left), touch, pressed = value
-         * 4) B / Y 
+         * 4) B / Y
          * 5) thumb rest
          * @param buttonIdx Which button index changed
          * @param state New state of the button

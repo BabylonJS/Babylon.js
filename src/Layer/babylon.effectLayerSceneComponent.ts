@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     // Adds the parser to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
         if (parsedData.effectLayers) {
@@ -31,7 +31,7 @@
         /**
          * Adds the given effect layer to this scene
          * @param newEffectLayer defines the effect layer to add
-         */     
+         */
         addEffectLayer(newEffectLayer: EffectLayer): void;
     }
 
@@ -42,11 +42,11 @@
         }
 
         return index;
-    }
+    };
 
     AbstractScene.prototype.addEffectLayer = function(newEffectLayer: EffectLayer): void {
         this.effectLayers.push(newEffectLayer);
-    }
+    };
 
     /**
      * Defines the layer scene component responsible to manage any effect layers
@@ -61,7 +61,7 @@
         /**
          * The scene the component belongs to.
          */
-        public scene: Scene
+        public scene: Scene;
 
         private _engine: Engine;
         private _renderEffects = false;
@@ -136,7 +136,7 @@
 
         /**
          * Removes all the elements in the container from the scene
-         * @param container contains the elements to remove 
+         * @param container contains the elements to remove
          */
         public removeFromContainer(container: AbstractScene): void {
             if (!container.effectLayers) {
@@ -150,14 +150,14 @@
         /**
          * Disposes the component and the associated ressources.
          */
-        public dispose(): void {            
+        public dispose(): void {
             let layers = this.scene.effectLayers;
             while (layers.length) {
                 layers[0].dispose();
             }
         }
 
-        private _isReadyForMesh(mesh: AbstractMesh, hardwareInstancedRendering: boolean): boolean {            
+        private _isReadyForMesh(mesh: AbstractMesh, hardwareInstancedRendering: boolean): boolean {
             let layers = this.scene.effectLayers;
             for (let layer of layers) {
                 if (!layer.hasMesh(mesh)) {
@@ -218,7 +218,7 @@
         private _draw(renderingGroupId: number): void {
             if (this._renderEffects) {
                 this._engine.setDepthBuffer(false);
-                
+
                 let layers = this.scene.effectLayers;
                 for (let i = 0; i < layers.length; i++) {
                     const effectLayer = layers[i];
@@ -243,4 +243,4 @@
             }
         }
     }
-} 
+}

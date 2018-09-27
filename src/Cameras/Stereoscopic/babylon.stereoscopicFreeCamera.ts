@@ -6,7 +6,7 @@ module BABYLON {
     /**
      * Camera used to simulate stereoscopic rendering (based on FreeCamera)
      * @see http://doc.babylonjs.com/features/cameras
-     */    
+     */
     export class StereoscopicFreeCamera extends FreeCamera {
         /**
          * Creates a new StereoscopicFreeCamera
@@ -26,7 +26,7 @@ module BABYLON {
         /**
          * Gets camera class name
          * @returns StereoscopicFreeCamera
-         */            
+         */
         public getClassName(): string {
             return "StereoscopicFreeCamera";
         }

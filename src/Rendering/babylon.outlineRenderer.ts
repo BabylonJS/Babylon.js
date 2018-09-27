@@ -1,16 +1,16 @@
-﻿module BABYLON {
+module BABYLON {
     export interface Scene {
         /** @hidden */
         _outlineRenderer: OutlineRenderer;
 
-        /** 
+        /**
          * Gets the outline renderer associated with the scene
          * @returns a OutlineRenderer
          */
         getOutlineRenderer(): OutlineRenderer;
     }
 
-    /** 
+    /**
      * Gets the outline renderer associated with the scene
      * @returns a OutlineRenderer
      */
@@ -19,7 +19,7 @@
             this._outlineRenderer = new OutlineRenderer(this);
         }
         return this._outlineRenderer;
-    }
+    };
 
     export interface AbstractMesh {
         /** @hidden (Backing field) */
@@ -40,10 +40,10 @@
     }
 
     Object.defineProperty(AbstractMesh.prototype, "renderOutline", {
-        get: function (this:AbstractMesh) {
+        get: function(this: AbstractMesh) {
             return this._renderOutline;
         },
-        set: function (this:AbstractMesh, value: boolean) {
+        set: function(this: AbstractMesh, value: boolean) {
             if (value) {
                 // Lazy Load the component.
                 this.getScene().getOutlineRenderer();
@@ -55,10 +55,10 @@
     });
 
     Object.defineProperty(AbstractMesh.prototype, "renderOverlay", {
-        get: function (this:AbstractMesh) {
+        get: function(this: AbstractMesh) {
             return this._renderOverlay;
         },
-        set: function (this:AbstractMesh, value: boolean) {
+        set: function(this: AbstractMesh, value: boolean) {
             if (value) {
                 // Lazy Load the component.
                 this.getScene().getOutlineRenderer();
@@ -153,7 +153,7 @@
             engine.enableEffect(this._effect);
 
             // Logarithmic depth
-            if((<any> material).useLogarithmicDepth)
+            if ((<any> material).useLogarithmicDepth)
             {
                 this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
             }
@@ -181,7 +181,7 @@
             engine.setZOffset(-this.zOffset);
 
             mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
-                (isInstance, world) => { this._effect.setMatrix("world", world) });
+                (isInstance, world) => { this._effect.setMatrix("world", world); });
 
             engine.setZOffset(0);
         }
@@ -202,7 +202,7 @@
 
             if (material) {
                 // Alpha test
-                if(material.needAlphaTesting())
+                if (material.needAlphaTesting())
                 {
                     defines.push("#define ALPHATEST");
                     if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
@@ -215,7 +215,7 @@
                     }
                 }
                 //Logarithmic depth
-                if((<any> material).useLogarithmicDepth)
+                if ((<any> material).useLogarithmicDepth)
                 {
                     defines.push("#define LOGARITHMICDEPTH");
                 }
@@ -243,7 +243,7 @@
                 attribs.push("world3");
             }
 
-            // Get correct effect      
+            // Get correct effect
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
@@ -284,4 +284,4 @@
             }
         }
     }
-} 
+}

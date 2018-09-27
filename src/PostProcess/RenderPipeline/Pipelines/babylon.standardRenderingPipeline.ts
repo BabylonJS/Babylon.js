@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Standard rendering pipeline
      * Default pipeline should be used going forward but the standard pipeline will be kept for backwards compatibility.
@@ -150,10 +150,10 @@
         public volumetricLightBlurScale: number = 64.0;
         /**
          * Light (spot or directional) used to generate the volumetric lights rays
-         * The source light must have a shadow generate so the pipeline can get its 
+         * The source light must have a shadow generate so the pipeline can get its
          * depth map
          */
-        public sourceLight: Nullable<SpotLight |  DirectionalLight> = null;
+        public sourceLight: Nullable<SpotLight |  DirectionalLight> = null;
 
         /**
          * For eye adaptation, represents the minimum luminance the eye can see
@@ -401,7 +401,7 @@
             return this._volumetricLightStepsCount;
         }
 
-        public set volumetricLightStepsCount(count: number)  {
+        public set volumetricLightStepsCount(count: number)  {
             if (this.volumetricLightPostProcess) {
                 this.volumetricLightPostProcess.updateEffect("#define VLS\n#define NB_STEPS " + count.toFixed(1));
             }
@@ -454,7 +454,7 @@
          */
         constructor(name: string, scene: Scene, ratio: number, originalPostProcess: Nullable<PostProcess> = null, cameras?: Camera[]) {
             super(scene.getEngine(), name);
-            this._cameras = cameras ||  [];
+            this._cameras = cameras ||  [];
 
             // Initialize
             this._scene = scene;
@@ -564,7 +564,7 @@
                 this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
             }
 
-            if (!this._enableMSAAOnFirstPostProcess(this._samples) && this._samples > 1){
+            if (!this._enableMSAAOnFirstPostProcess(this._samples) && this._samples > 1) {
                 BABYLON.Tools.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
             }
         }
@@ -578,7 +578,6 @@
                 var id = 0;
                 let width = (<PostProcess>this.downSampleX4PostProcess).width;
                 let height = (<PostProcess>this.downSampleX4PostProcess).height;
-
 
                 for (var i = -2; i < 2; i++) {
                     for (var j = -2; j < 2; j++) {
@@ -615,7 +614,7 @@
 
                 effect.setArray2("dsOffsets", brightOffsets);
                 effect.setFloat("brightThreshold", this.brightThreshold);
-            }
+            };
 
             // Add to pipeline
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRBrightPass", () => { return this.brightPassPostProcess; }, true));

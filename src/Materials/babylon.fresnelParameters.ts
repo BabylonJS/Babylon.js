@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * This represents all the required information to add a fresnel effect on a material:
      * @see http://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
@@ -18,7 +18,7 @@
 
             this._isEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.FresnelDirtyFlag | Material.MiscDirtyFlag);
-        }   
+        }
 
         /**
          * Define the color used on edges (grazing angle)

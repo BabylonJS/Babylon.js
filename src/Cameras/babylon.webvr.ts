@@ -3,7 +3,6 @@
 // Definitions by: six a <https://github.com/lostfictions>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
-
 interface VRDisplay extends EventTarget {
     /**
      * Dictionary of capabilities describing the VRDisplay.

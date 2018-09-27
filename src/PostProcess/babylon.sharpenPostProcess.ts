@@ -7,11 +7,11 @@ module BABYLON {
         /**
          * How much of the original color should be applied. Setting this to 0 will display edge detection. (default: 1)
          */
-        public colorAmount:number = 1.0;
+        public colorAmount: number = 1.0;
         /**
          * How much sharpness should be applied (default: 0.3)
          */
-        public edgeAmount:number = 0.3;
+        public edgeAmount: number = 0.3;
         /**
          * Creates a new instance ConvolutionPostProcess
          * @param name The name of the effect.

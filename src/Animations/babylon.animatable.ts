@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Class used to store an actual running animation
      */
@@ -80,7 +80,6 @@
             this._speedRatio = value;
         }
 
-
         /**
          * Creates a new Animatable
          * @param scene defines the hosting scene
@@ -92,18 +91,18 @@
          * @param onAnimationEnd defines a callback to call when animation ends if it is not looping
          * @param animations defines a group of animation to add to the new Animatable
          */
-        constructor(scene: Scene, 
+        constructor(scene: Scene,
             /** defines the target object */
-            public target: any, 
+            public target: any,
             /** defines the starting frame number (default is 0) */
-            public fromFrame: number = 0, 
+            public fromFrame: number = 0,
             /** defines the ending frame number (default is 100) */
-            public toFrame: number = 100, 
+            public toFrame: number = 100,
             /** defines if the animation must loop (default is false)  */
-            public loopAnimation: boolean = false, 
-            speedRatio: number = 1.0, 
+            public loopAnimation: boolean = false,
+            speedRatio: number = 1.0,
             /** defines a callback to call when animation ends if it is not looping */
-            public onAnimationEnd?: Nullable<() => void>, 
+            public onAnimationEnd?: Nullable<() => void>,
             animations?: Animation[]) {
             this._scene = scene;
             if (animations) {
@@ -390,7 +389,7 @@
                 this._raiseOnAnimationEnd();
 
                 if (this.disposeOnEnd) {
-                    this.onAnimationEnd = null
+                    this.onAnimationEnd = null;
                     this.onAnimationEndObservable.clear();
                 }
             }
@@ -398,4 +397,4 @@
             return running;
         }
     }
-} 
+}

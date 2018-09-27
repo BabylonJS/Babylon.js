@@ -1,4 +1,4 @@
-﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
 
@@ -8,7 +8,6 @@ module BABYLON {
         public facetsPattern = /facet([\s\S]*?)endfacet/g;
         public normalPattern = /normal[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
         public vertexPattern = /vertex[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
-
 
         public name = "stl";
 
@@ -142,7 +141,6 @@ module BABYLON {
                 var normalX = reader.getFloat32(start, true);
                 var normalY = reader.getFloat32(start + 4, true);
                 var normalZ = reader.getFloat32(start + 8, true);
-
 
                 for (var i = 1; i <= 3; i++) {
 

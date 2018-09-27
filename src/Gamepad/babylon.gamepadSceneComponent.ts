@@ -11,7 +11,7 @@ module BABYLON {
     }
 
     Object.defineProperty(Scene.prototype, "gamepadManager", {
-        get: function (this:Scene) {
+        get: function(this: Scene) {
             if (!this._gamepadManager) {
                 this._gamepadManager = new GamepadManager(this);
                 let component = this._getComponent(SceneComponentConstants.NAME_GAMEPAD) as GamepadSystemSceneComponent;
@@ -37,14 +37,14 @@ module BABYLON {
          */
         addGamepad(): FreeCameraInputsManager;
     }
-    
+
     /**
      * Adds a gamepad to the free camera inputs manager
      */
     FreeCameraInputsManager.prototype.addGamepad = function(): FreeCameraInputsManager {
         this.add(new FreeCameraGamepadInput());
         return this;
-    }
+    };
 
     /**
      * Interface representing an arc rotate camera inputs manager
@@ -56,14 +56,14 @@ module BABYLON {
          */
         addGamepad(): ArcRotateCameraInputsManager;
     }
-    
+
     /**
      * Adds a gamepad to the arc rotate camera inputs manager
      */
     ArcRotateCameraInputsManager.prototype.addGamepad = function(): ArcRotateCameraInputsManager {
         this.add(new ArcRotateCameraGamepadInput());
         return this;
-    }  
+    };
 
    /**
      * Defines the gamepad scene component responsible to manage gamepads in a given scene
@@ -113,12 +113,12 @@ module BABYLON {
             }
         }
 
-        private _beforeCameraUpdate(): void {            
+        private _beforeCameraUpdate(): void {
             let gamepadManager = this.scene._gamepadManager;
 
             if (gamepadManager && gamepadManager._isMonitoring) {
                 gamepadManager._checkGamepadsStatus();
             }
         }
-    }    
+    }
 }

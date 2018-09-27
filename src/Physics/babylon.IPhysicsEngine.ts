@@ -145,7 +145,7 @@ module BABYLON {
          * Gets the impostor for a physics body object
          * @param body defines physics body used by the impostor
          * @returns the PhysicsImpostor or null if not found
-         */        
+         */
         getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor>;
 
         /**

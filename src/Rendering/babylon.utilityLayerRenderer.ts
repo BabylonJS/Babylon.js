@@ -7,7 +7,7 @@ module BABYLON {
         private _lastPointerEvents: { [pointerId: number]: boolean } = {};
         private static _DefaultUtilityLayer: Nullable<UtilityLayerRenderer> = null;
         private static _DefaultKeepDepthUtilityLayer: Nullable<UtilityLayerRenderer> = null;
-        /** 
+        /**
          * A shared utility layer that can be used to overlay objects into a scene (Depth map of the previous scene is cleared before drawing on top of it)
          */
         public static get DefaultUtilityLayer(): UtilityLayerRenderer {
@@ -19,7 +19,7 @@ module BABYLON {
             }
             return UtilityLayerRenderer._DefaultUtilityLayer;
         }
-        /** 
+        /**
          * A shared utility layer that can be used to embed objects into a scene (Depth map of the previous scene is not cleared before drawing on top of it)
          */
         public static get DefaultKeepDepthUtilityLayer(): UtilityLayerRenderer {
@@ -33,7 +33,7 @@ module BABYLON {
             return UtilityLayerRenderer._DefaultKeepDepthUtilityLayer;
         }
 
-        /** 
+        /**
          * The scene that is rendered on top of the original scene
          */
         public utilityLayerScene: Scene;
@@ -100,12 +100,12 @@ module BABYLON {
                 }
 
                 // always fire the prepointer oversvable
-                this.utilityLayerScene.onPrePointerObservable.notifyObservers(prePointerInfo)
+                this.utilityLayerScene.onPrePointerObservable.notifyObservers(prePointerInfo);
 
                 // allow every non pointer down event to flow to the utility layer
                 if (this.onlyCheckPointerDownEvents && prePointerInfo.type != BABYLON.PointerEventTypes.POINTERDOWN) {
                     if (!prePointerInfo.skipOnPointerObservable) {
-                        this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick))
+                        this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick));
                     }
                     if (prePointerInfo.type === BABYLON.PointerEventTypes.POINTERUP && this._pointerCaptures[pointerEvent.pointerId]) {
                         this._pointerCaptures[pointerEvent.pointerId] = false;
@@ -118,7 +118,7 @@ module BABYLON {
                     if (utilityScenePick && utilityScenePick.hit) {
 
                         if (!prePointerInfo.skipOnPointerObservable) {
-                            this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick))
+                            this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick));
                         }
                         prePointerInfo.skipOnPointerObservable = true;
                     }
@@ -169,7 +169,7 @@ module BABYLON {
                     }
                 }
 
-            })
+            });
 
             // Render directly on top of existing scene without clearing
             this.utilityLayerScene.autoClear = false;
@@ -182,14 +182,14 @@ module BABYLON {
 
             this._sceneDisposeObserver = this.originalScene.onDisposeObservable.add(() => {
                 this.dispose();
-            })
+            });
 
             this._updateCamera();
         }
 
         private _notifyObservers(prePointerInfo: PointerInfoPre, pickInfo: PickingInfo, pointerEvent: PointerEvent) {
             if (!prePointerInfo.skipOnPointerObservable) {
-                this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, pickInfo))
+                this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, pickInfo));
                 this._lastPointerEvents[pointerEvent.pointerId] = true;
             }
         }

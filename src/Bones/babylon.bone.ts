@@ -1,5 +1,5 @@
-﻿module BABYLON {
-    /** 
+module BABYLON {
+    /**
      * Class used to store bone information
      * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
      */
@@ -22,7 +22,7 @@
          */
         public length: number;
 
-        /** 
+        /**
          * @hidden Internal only
          * Set this value to map this bone to a different index in the transform matrices
          * Set this value to -1 to exclude the bone from the transform matrices
@@ -109,7 +109,7 @@
 
         /**
          * Sets the parent bone
-         * @param parent defines the parent (can be null if the bone is the root) 
+         * @param parent defines the parent (can be null if the bone is the root)
          * @param updateDifferenceMatrix defines if the difference matrix must be updated
          */
         public setParent(parent: Nullable<Bone>, updateDifferenceMatrix: boolean = true): void {
@@ -1121,4 +1121,4 @@
             Vector3.TransformCoordinatesToRef(position, tmat, result);
         }
     }
-} 
+}

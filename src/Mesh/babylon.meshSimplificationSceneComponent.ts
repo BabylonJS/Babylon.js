@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     export interface Scene {
         /** @hidden (Backing field) */
         _simplificationQueue: SimplificationQueue;
@@ -11,7 +11,7 @@
     }
 
     Object.defineProperty(Scene.prototype, "simplificationQueue", {
-        get: function (this:Scene) {
+        get: function(this: Scene) {
             if (!this._simplificationQueue) {
                 this._simplificationQueue = new SimplificationQueue();
                 let component = this._getComponent(SceneComponentConstants.NAME_SIMPLIFICATIONQUEUE) as SimplicationQueueSceneComponent;
@@ -22,7 +22,7 @@
             }
             return this._simplificationQueue;
         },
-        set: function (this:Scene, value: SimplificationQueue) {
+        set: function(this: Scene, value: SimplificationQueue) {
             this._simplificationQueue = value;
         },
         enumerable: true,
@@ -51,7 +51,7 @@
             successCallback: successCallback
         });
         return this;
-    }
+    };
 
     /**
      * Defines the simplification queue scene component responsible to help scheduling the various simplification task
@@ -104,4 +104,4 @@
             }
         }
     }
-} 
+}
