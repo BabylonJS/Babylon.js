@@ -162,48 +162,32 @@
             if (instance) {   // existing ribbon instance update
                 // positionFunction : ribbon case
                 // only pathArray and sideOrientation parameters are taken into account for positions update
-                Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, Tmp.Vector3[0]);         // minimum
-                Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, Tmp.Vector3[1]);
+                const minimum = Tmp.Vector3[0].setAll(Number.MAX_VALUE);
+                const maximum = Tmp.Vector3[1].setAll(-Number.MAX_VALUE);
                 var positionFunction = (positions: FloatArray) => {
                     var minlg = pathArray[0].length;
                     var mesh = (<Mesh>instance);
                     var i = 0;
                     var ns = (mesh._originalBuilderSideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
-                    for (var si = 1; si <= ns; si++) {
-                        for (var p = 0; p < pathArray.length; p++) {
+                    for (var si = 1; si <= ns; ++si) {
+                        for (var p = 0; p < pathArray.length; ++p) {
                             var path = pathArray[p];
                             var l = path.length;
                             minlg = (minlg < l) ? minlg : l;
-                            var j = 0;
-                            while (j < minlg) {
-                                positions[i] = path[j].x;
-                                positions[i + 1] = path[j].y;
-                                positions[i + 2] = path[j].z;
-                                if (path[j].x < Tmp.Vector3[0].x) {
-                                    Tmp.Vector3[0].x = path[j].x;
-                                }
-                                if (path[j].x > Tmp.Vector3[1].x) {
-                                    Tmp.Vector3[1].x = path[j].x;
-                                }
-                                if (path[j].y < Tmp.Vector3[0].y) {
-                                    Tmp.Vector3[0].y = path[j].y;
-                                }
-                                if (path[j].y > Tmp.Vector3[1].y) {
-                                    Tmp.Vector3[1].y = path[j].y;
-                                }
-                                if (path[j].z < Tmp.Vector3[0].z) {
-                                    Tmp.Vector3[0].z = path[j].z;
-                                }
-                                if (path[j].z > Tmp.Vector3[1].z) {
-                                    Tmp.Vector3[1].z = path[j].z;
-                                }
-                                j++;
+                            for (let j=0; j < minlg; ++j){
+                                const pathPoint = path[j];
+                                positions[i] = pathPoint.x;
+                                positions[i + 1] = pathPoint.y;
+                                positions[i + 2] = pathPoint.z;
+                                minimum.minimizeInPlaceFromFloats(pathPoint.x, pathPoint.y, pathPoint.z);
+                                maximum.maximizeInPlaceFromFloats(pathPoint.x, pathPoint.y, pathPoint.z);
                                 i += 3;
                             }
                             if (mesh._creationDataStorage && mesh._creationDataStorage.closePath) {
-                                positions[i] = path[0].x;
-                                positions[i + 1] = path[0].y;
-                                positions[i + 2] = path[0].z;
+                                const pathPoint = path[0];
+                                positions[i] = pathPoint.x;
+                                positions[i + 1] = pathPoint.y;
+                                positions[i + 2] = pathPoint.z;
                                 i += 3;
                             }
                         }
@@ -211,16 +195,21 @@
                 };
                 var positions = <FloatArray>instance.getVerticesData(VertexBuffer.PositionKind);
                 positionFunction(positions);
-                instance._boundingInfo = new BoundingInfo(Tmp.Vector3[2], Tmp.Vector3[3]);
-                instance._boundingInfo.update(instance._worldMatrix);
+                if (instance._boundingInfo) {
+                    instance._boundingInfo.reConstruct(Tmp.Vector3[2], Tmp.Vector3[3], instance._worldMatrix);
+                }
+                else {
+                    instance._boundingInfo = new BoundingInfo(Tmp.Vector3[2], Tmp.Vector3[3], instance._worldMatrix);
+                }
                 instance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
                 if (options.colors) {
                     var colors = <FloatArray>instance.getVerticesData(VertexBuffer.ColorKind);
-                    for (var c = 0; c < options.colors.length; c++) {
-                        colors[c * 4] = options.colors[c].r;
-                        colors[c * 4 + 1] = options.colors[c].g;
-                        colors[c * 4 + 2] = options.colors[c].b;
-                        colors[c * 4 + 3] = options.colors[c].a;
+                    for (var c = 0, colorIndex = 0; c < options.colors.length; c++, colorIndex += 4) {
+                        const color = options.colors[c];
+                        colors[colorIndex] = color.r;
+                        colors[colorIndex + 1] = color.g;
+                        colors[colorIndex + 2] = color.b;
+                        colors[colorIndex + 3] = color.a;
                     }
                     instance.updateVerticesData(VertexBuffer.ColorKind, colors, false, false);
                 }
