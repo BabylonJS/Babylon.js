@@ -57,11 +57,11 @@ module BABYLON {
             this.uniformScaleGizmo.setCustomMesh(uniformScalingMesh, true);
 
             // Relay drag events
-            [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo)=>{
-                gizmo.dragBehavior.onDragStartObservable.add(()=>{
+            [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
+                gizmo.dragBehavior.onDragStartObservable.add(() => {
                     this.onDragStartObservable.notifyObservers({});
                 });
-                gizmo.dragBehavior.onDragEndObservable.add(()=>{
+                gizmo.dragBehavior.onDragEndObservable.add(() => {
                     this.onDragEndObservable.notifyObservers({});
                 });
             });

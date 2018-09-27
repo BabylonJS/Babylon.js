@@ -91,6 +91,7 @@ interface Document {
     webkitCancelFullScreen(): void;
     requestPointerLock(): void;
     exitPointerLock(): void;
+    fullscreen: boolean;
     mozFullScreen: boolean;
     msIsFullScreen: boolean;
     readonly webkitIsFullScreen: boolean;
@@ -151,7 +152,8 @@ interface Element {
 }
 
 interface Screen {
-    mozOrientation: string;
+    readonly orientation: string;
+    readonly mozOrientation: string;
 }
 
 interface Math {

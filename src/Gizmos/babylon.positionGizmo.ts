@@ -39,11 +39,11 @@ module BABYLON {
             this.zGizmo = new AxisDragGizmo(new Vector3(0, 0, 1), BABYLON.Color3.Blue().scale(0.5), gizmoLayer);
 
             // Relay drag events
-            [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo)=>{
-                gizmo.dragBehavior.onDragStartObservable.add(()=>{
+            [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+                gizmo.dragBehavior.onDragStartObservable.add(() => {
                     this.onDragStartObservable.notifyObservers({});
                 });
-                gizmo.dragBehavior.onDragEndObservable.add(()=>{
+                gizmo.dragBehavior.onDragEndObservable.add(() => {
                     this.onDragEndObservable.notifyObservers({});
                 });
             });
