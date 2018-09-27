@@ -121,6 +121,8 @@ module BABYLON {
             this.yGizmo.dispose();
             this.zGizmo.dispose();
             this.uniformScaleGizmo.dispose();
+            this.onDragStartObservable.clear();
+            this.onDragEndObservable.clear();
         }
     }
 }

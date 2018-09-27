@@ -98,6 +98,8 @@ module BABYLON {
             this.xGizmo.dispose();
             this.yGizmo.dispose();
             this.zGizmo.dispose();
+            this.onDragStartObservable.clear();
+            this.onDragEndObservable.clear();
         }
 
         /**
