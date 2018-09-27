@@ -16,6 +16,11 @@ module BABYLON {
          */
         public zGizmo: AxisDragGizmo;
 
+        /** Fires an event when any of it's sub gizmos are dragged */
+        public onDragStartObservable = new Observable();
+        /** Fires an event when any of it's sub gizmos are released from dragging */
+        public onDragEndObservable = new Observable();
+
         public set attachedMesh(mesh: Nullable<AbstractMesh>) {
             if (this.xGizmo) {
                 this.xGizmo.attachedMesh = mesh;
@@ -23,7 +28,7 @@ module BABYLON {
                 this.zGizmo.attachedMesh = mesh;
             }
         }
-    /**
+        /**
          * Creates a PositionGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
          */
@@ -32,6 +37,17 @@ module BABYLON {
             this.xGizmo = new AxisDragGizmo(new Vector3(1, 0, 0), BABYLON.Color3.Red().scale(0.5), gizmoLayer);
             this.yGizmo = new AxisDragGizmo(new Vector3(0, 1, 0), BABYLON.Color3.Green().scale(0.5), gizmoLayer);
             this.zGizmo = new AxisDragGizmo(new Vector3(0, 0, 1), BABYLON.Color3.Blue().scale(0.5), gizmoLayer);
+
+            // Relay drag events
+            [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo)=>{
+                gizmo.dragBehavior.onDragStartObservable.add(()=>{
+                    this.onDragStartObservable.notifyObservers({});
+                });
+                gizmo.dragBehavior.onDragEndObservable.add(()=>{
+                    this.onDragEndObservable.notifyObservers({});
+                });
+            });
+
             this.attachedMesh = null;
         }
 
