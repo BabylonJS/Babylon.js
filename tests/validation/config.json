@@ -3,9 +3,8 @@
   "tests": [
     {
       "title": "Simulate pointer",
-      "playgroundId": "#8MGKWK#66",
-      "referenceImage": "simulatePointer.png",
-      "excludeFromAutomaticTesting": true
+      "playgroundId": "#8MGKWK#78",
+      "referenceImage": "simulatePointer.png"
     },
     {
       "title": "Camera rig",
