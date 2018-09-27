@@ -1,6 +1,6 @@
-﻿module BABYLON {
+module BABYLON {
     /**
-     * A multi-material is used to apply different materials to different parts of the same object without the need of 
+     * A multi-material is used to apply different materials to different parts of the same object without the need of
      * separate meshes. This can be use to improve performances.
      * @see http://doc.babylonjs.com/how_to/multi_materials
      */
@@ -22,7 +22,7 @@
 
         /**
          * Instantiates a new Multi Material
-         * A multi-material is used to apply different materials to different parts of the same object without the need of 
+         * A multi-material is used to apply different materials to different parts of the same object without the need of
          * separate meshes. This can be use to improve performances.
          * @see http://doc.babylonjs.com/how_to/multi_materials
          * @param name Define the name in the scene
@@ -46,7 +46,7 @@
                 this._markAllSubMeshesAsTexturesDirty();
 
                 return result;
-            }
+            };
 
             var oldSplice = array.splice;
             array.splice = (index: number, deleteCount?: number) => {
@@ -55,7 +55,7 @@
                 this._markAllSubMeshesAsTexturesDirty();
 
                 return deleted;
-            }
+            };
         }
 
         /**
@@ -76,7 +76,7 @@
          * @returns All the textures that will be used during the rendering
          */
         public getActiveTextures(): BaseTexture[] {
-            return super.getActiveTextures().concat(...this.subMaterials.map(subMaterial => {
+            return super.getActiveTextures().concat(...this.subMaterials.map((subMaterial) => {
                 if (subMaterial) {
                     return subMaterial.getActiveTextures();
                 } else {
@@ -96,7 +96,7 @@
 
         /**
          * Checks if the material is ready to render the requested sub mesh
-         * @param mesh Define the mesh the submesh belongs to 
+         * @param mesh Define the mesh the submesh belongs to
          * @param subMesh Define the sub mesh to look readyness for
          * @param useInstances Define whether or not the material is used with instances
          * @returns true if ready, otherwise false
@@ -190,4 +190,4 @@
             super.dispose(forceDisposeEffect, forceDisposeTextures);
         }
     }
-} 
+}

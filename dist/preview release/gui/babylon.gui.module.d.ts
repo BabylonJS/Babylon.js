@@ -1,6 +1,6 @@
 /*BabylonJS GUI*/
 // Dependencies for this module:
-//   ../../../../Tools/gulp/babylonjs
+//   ../../../../Tools/Gulp/babylonjs
 
 declare module 'babylonjs-gui' {
     export * from "babylonjs-gui/2D";
@@ -2826,7 +2826,7 @@ declare module 'babylonjs-gui/3D/materials/fluentMaterial' {
 
 /*BabylonJS GUI*/
 // Dependencies for this module:
-//   ../../../../Tools/gulp/babylonjs
+//   ../../../../Tools/Gulp/babylonjs
 declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {

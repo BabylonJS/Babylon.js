@@ -6,40 +6,40 @@ module BABYLON {
         /**
          * Define if the texture needs to create mip maps after render.
          */
-        generateMipMaps?: boolean,
+        generateMipMaps?: boolean;
         /**
          * Define the types of all the draw buffers we want to create
          */
-        types?: number[],
+        types?: number[];
         /**
          * Define the sampling modes of all the draw buffers we want to create
          */
-        samplingModes?: number[],
+        samplingModes?: number[];
         /**
          * Define if a depth buffer is required
          */
-        generateDepthBuffer?: boolean,
+        generateDepthBuffer?: boolean;
         /**
          * Define if a stencil buffer is required
          */
-        generateStencilBuffer?: boolean,
+        generateStencilBuffer?: boolean;
         /**
          * Define if a depth texture is required instead of a depth buffer
          */
-        generateDepthTexture?: boolean,
+        generateDepthTexture?: boolean;
         /**
          * Define the number of desired draw buffers
          */
-        textureCount?: number,
+        textureCount?: number;
         /**
          * Define if aspect ratio should be adapted to the texture or stay the scene one
          */
-        doNotChangeAspectRatio?: boolean,
+        doNotChangeAspectRatio?: boolean;
         /**
          * Define the default type of the buffers we are creating
          */
-        defaultType?: number
-    };
+        defaultType?: number;
+    }
 
     /**
      * A multi render target, like a render target provides the ability to render to a texture.

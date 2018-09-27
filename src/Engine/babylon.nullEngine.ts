@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
 
     /**
      * Options to create the null engine
@@ -121,13 +121,13 @@
             // Wrappers
             if (typeof URL === "undefined") {
                 (<any>URL) = {
-                    createObjectURL: function () { },
-                    revokeObjectURL: function () { }
-                }
+                    createObjectURL: function() { },
+                    revokeObjectURL: function() { }
+                };
             }
 
             if (typeof Blob === "undefined") {
-                (<any>Blob) = function () { };
+                (<any>Blob) = function() { };
             }
         }
 
@@ -425,7 +425,7 @@
                 capacity: 1,
                 references: 1,
                 is32Bits: false
-            }
+            };
 
             return vbo;
         }

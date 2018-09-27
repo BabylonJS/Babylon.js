@@ -11,12 +11,12 @@ module BABYLON {
             return "Bouncing";
         }
 
-		/**
+        /**
 		 * The easing function used by animations
 		 */
         public static EasingFunction = new BackEase(0.3);
 
-		/**
+        /**
 		 * The easing mode used by animations
 		 */
         public static EasingMode = EasingFunction.EASINGMODE_EASEOUT;
@@ -38,14 +38,14 @@ module BABYLON {
 
         private _autoTransitionRange = false;
 
-		/**
+        /**
 		 * Gets a value indicating if the lowerRadiusTransitionRange and upperRadiusTransitionRange are defined automatically
 		 */
         public get autoTransitionRange(): boolean {
             return this._autoTransitionRange;
         }
 
-		/**
+        /**
 		 * Sets a value indicating if the lowerRadiusTransitionRange and upperRadiusTransitionRange are defined automatically
 		 * Transition ranges will be set to 5% of the bounding box diagonal in world space
 		 */
@@ -191,7 +191,7 @@ module BABYLON {
             }
         }
 
-		/**
+        /**
 		 * Stops and removes all animations that have been applied to the camera
 		 */
         public stopAllAnimations(): void {

@@ -1,10 +1,10 @@
-﻿module BABYLON {
+module BABYLON {
     Node.AddNodeConstructor("Light_Type_0", (name, scene) => {
         return () => new PointLight(name, Vector3.Zero(), scene);
     });
 
     /**
-     * A point light is a light defined by an unique point in world space. 
+     * A point light is a light defined by an unique point in world space.
      * The light is emitted in every direction from this point.
      * A good example of a point light is a standard light bulb.
      * Documentation: https://doc.babylonjs.com/babylon101/lights
@@ -15,17 +15,17 @@
         /**
          * Getter: In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
          * This specifies what angle the shadow will use to be created.
-         * 
+         *
          * It default to 90 degrees to work nicely with the cube texture generation for point lights shadow maps.
          */
         @serialize()
         public get shadowAngle(): number {
-            return this._shadowAngle
+            return this._shadowAngle;
         }
         /**
          * Setter: In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
          * This specifies what angle the shadow will use to be created.
-         * 
+         *
          * It default to 90 degrees to work nicely with the cube texture generation for point lights shadow maps.
          */
         public set shadowAngle(value: number) {
@@ -53,14 +53,14 @@
         }
 
         /**
-         * Creates a PointLight object from the passed name and position (Vector3) and adds it in the scene.  
-         * A PointLight emits the light in every direction.  
-         * It can cast shadows.  
+         * Creates a PointLight object from the passed name and position (Vector3) and adds it in the scene.
+         * A PointLight emits the light in every direction.
+         * It can cast shadows.
          * If the scene camera is already defined and you want to set your PointLight at the camera position, just set it :
          * ```javascript
          * var pointLight = new BABYLON.PointLight("pl", camera.position, scene);
          * ```
-         * Documentation : http://doc.babylonjs.com/tutorials/lights  
+         * Documentation : http://doc.babylonjs.com/tutorials/lights
          * @param name The light friendly name
          * @param position The position of the point light in the scene
          * @param scene The scene the lights belongs to
@@ -77,7 +77,7 @@
         public getClassName(): string {
             return "PointLight";
         }
-        
+
         /**
          * Returns the integer 0.
          * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
@@ -124,11 +124,11 @@
         }
 
         /**
-         * Sets the passed matrix "matrix" as a left-handed perspective projection matrix with the following settings : 
+         * Sets the passed matrix "matrix" as a left-handed perspective projection matrix with the following settings :
          * - fov = PI / 2
          * - aspect ratio : 1.0
-         * - z-near and far equal to the active camera minZ and maxZ.  
-         * Returns the PointLight.  
+         * - z-near and far equal to the active camera minZ and maxZ.
+         * Returns the PointLight.
          */
         protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
             var activeCamera = this.getScene().activeCamera;
@@ -137,7 +137,7 @@
                 return;
             }
 
-            Matrix.PerspectiveFovLHToRef(this.shadowAngle, 1.0, 
+            Matrix.PerspectiveFovLHToRef(this.shadowAngle, 1.0,
             this.getDepthMinZ(activeCamera), this.getDepthMaxZ(activeCamera), matrix);
         }
 
@@ -152,7 +152,7 @@
         }
 
         /**
-         * Sets the passed Effect "effect" with the PointLight transformed position (or position, if none) and passed name (string).  
+         * Sets the passed Effect "effect" with the PointLight transformed position (or position, if none) and passed name (string).
          * @param effect The effect to update
          * @param lightIndex The index of the light in the effect to update
          * @returns The point light
@@ -189,4 +189,4 @@
             defines["POINTLIGHT" + lightIndex] = true;
         }
     }
-} 
+}

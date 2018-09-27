@@ -1,6 +1,6 @@
-﻿// Mainly based on these 2 articles : 
+// Mainly based on these 2 articles :
 // Creating an universal virtual touch joystick working for all Touch models thanks to Hand.JS : http://blogs.msdn.com/b/davrous/archive/2013/02/22/creating-an-universal-virtual-touch-joystick-working-for-all-touch-models-thanks-to-hand-js.aspx
-// & on Seb Lee-Delisle original work: http://seb.ly/2011/04/multi-touch-game-controller-in-javascripthtml5-for-ipad/ 
+// & on Seb Lee-Delisle original work: http://seb.ly/2011/04/multi-touch-game-controller-in-javascripthtml5-for-ipad/
 
 module BABYLON {
     /**
@@ -43,7 +43,6 @@ module BABYLON {
         private static vjCanvasWidth: number;
         private static vjCanvasHeight: number;
         private static halfWidth: number;
-
 
         private _action: () => any;
         private _axisTargetedByLeftAndRight: JoystickAxis;
@@ -93,7 +92,7 @@ module BABYLON {
             this._joystickSensibility = 25;
             this._inversedSensibility = 1 / (this._joystickSensibility / 1000);
 
-            this._onResize = evt => {
+            this._onResize = (evt) => {
                 VirtualJoystick.vjCanvasWidth = window.innerWidth;
                 VirtualJoystick.vjCanvasHeight = window.innerHeight;
                 if (VirtualJoystick.vjCanvas) {
@@ -101,7 +100,7 @@ module BABYLON {
                     VirtualJoystick.vjCanvas.height = VirtualJoystick.vjCanvasHeight;
                 }
                 VirtualJoystick.halfWidth = VirtualJoystick.vjCanvasWidth / 2;
-            }
+            };
 
             // injecting a canvas element on top of the canvas 3D game
             if (!VirtualJoystick.vjCanvas) {
@@ -145,15 +144,15 @@ module BABYLON {
             this._joystickPointerStartPos = new Vector2(0, 0);
             this._deltaJoystickVector = new Vector2(0, 0);
 
-            this._onPointerDownHandlerRef = evt => {
+            this._onPointerDownHandlerRef = (evt) => {
                 this._onPointerDown(evt);
-            }
-            this._onPointerMoveHandlerRef = evt => {
+            };
+            this._onPointerMoveHandlerRef = (evt) => {
                 this._onPointerMove(evt);
-            }
-            this._onPointerUpHandlerRef = evt => {
+            };
+            this._onPointerUpHandlerRef = (evt) => {
                 this._onPointerUp(evt);
-            }
+            };
 
             VirtualJoystick.vjCanvas.addEventListener('pointerdown', this._onPointerDownHandlerRef, false);
             VirtualJoystick.vjCanvas.addEventListener('pointermove', this._onPointerMoveHandlerRef, false);
@@ -287,7 +286,7 @@ module BABYLON {
         }
 
         /**
-         * Defines which axis you'd like to control for left & right 
+         * Defines which axis you'd like to control for left & right
          * @param axis defines the axis to use
          */
         public setAxisForLeftRight(axis: JoystickAxis) {
@@ -304,7 +303,7 @@ module BABYLON {
         }
 
         /**
-         * Defines which axis you'd like to control for up & down 
+         * Defines which axis you'd like to control for up & down
          * @param axis defines the axis to use
          */
         public setAxisForUpDown(axis: JoystickAxis) {
@@ -357,7 +356,7 @@ module BABYLON {
                         VirtualJoystick.vjCanvasContext.closePath();
                         (<any>touch).prevX = touch.x;
                         (<any>touch).prevY = touch.y;
-                    };
+                    }
                 });
             }
             requestAnimationFrame(() => { this._drawVirtualJoystick(); });
@@ -379,5 +378,3 @@ module BABYLON {
         }
     }
 }
-
-

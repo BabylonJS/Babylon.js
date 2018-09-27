@@ -103,11 +103,13 @@ module BABYLON {
                 for (let i = 0; i < lines.length; i++) {
                     line = lines[i];
 
-                    if (!ColorGradingTexture._noneEmptyLineRegex.test(line))
+                    if (!ColorGradingTexture._noneEmptyLineRegex.test(line)) {
                         continue;
+                    }
 
-                    if (line.indexOf('#') === 0)
+                    if (line.indexOf('#') === 0) {
                         continue;
+                    }
 
                     var words = line.split(" ");
                     if (size === 0) {
@@ -146,7 +148,7 @@ module BABYLON {
                         //     }
                         // }
 
-                        pixelIndexH++
+                        pixelIndexH++;
                         if (pixelIndexH % size == 0) {
                             pixelIndexSlice++;
                             pixelIndexH = 0;
@@ -178,7 +180,7 @@ module BABYLON {
                     texture.updateSize(size * size, size);
                     engine.updateRawTexture(texture, data, Engine.TEXTUREFORMAT_RGBA, false);
                 }
-            }
+            };
 
             let scene = this.getScene();
             if (scene) {

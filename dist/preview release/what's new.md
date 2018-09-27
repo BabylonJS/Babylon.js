@@ -2,13 +2,16 @@
 
 ## Major updates
 
+
+- Documentation
+  - Entire codebase is now documented. [API documentation](http://doc.babylonjs.com/api/)
 - GUI
   - New GUI 3D controls toolset. [Complete doc + demos](http://doc.babylonjs.com/how_to/gui3d) ([Deltakosh](https://github.com/deltakosh))
   - New GUI control: [Grid](http://doc.babylonjs.com/how_to/gui#grid) ([Deltakosh](https://github.com/deltakosh))
   - New GUI control: [InputPassword](https://doc.babylonjs.com/how_to/gui#inputpassword) ([theom](https://github.com/theom))
   - New GUI container [SelectionPanel](http://doc.babylonjs.com/how_to/selector) ([JohnK](https://github.com/BabylonJSGuide))
 - Gizmo Support ([TrevorDev](https://github.com/TrevorDev))
-  - Gizmo and GizmoManager classes used to manipulate meshes in a scene. Gizmo types include: position, scale, rotation and bounding box. [Doc](http://doc.babylonjs.com/how_to/gizmo) ([TrevorDev](https://github.com/TrevorDev))
+  - Gizmo and GizmoManager classes used to manipulate meshes in a scene. Gizmo types include: position, scale, rotation and bounding box [Doc](http://doc.babylonjs.com/how_to/gizmo) ([TrevorDev](https://github.com/TrevorDev))
   - New behaviors: PointerDragBehavior, SixDofDragBehavior and MultiPointerScaleBehavior to enable smooth drag and drop/scaling with mouse or 6dof controller on a mesh. [Doc](http://doc.babylonjs.com/how_to/meshbehavior) ([TrevorDev](https://github.com/TrevorDev))
   - Added attachToBoxBehavior to attach UI to a bounding box ([TrevorDev](https://github.com/TrevorDev))
   - Gizmo manager's internal gizmos are now public ([TrevorDev](https://github.com/TrevorDev))
@@ -53,7 +56,7 @@
 - GUI and Inspector are now ES-Modules ([RaananW](https://github.com/RaananW))
 - Added support for noise procedural textures. [Doc](http://doc.babylonjs.com/how_to/how_to_use_procedural_textures#noise-procedural-texture) ([Deltakosh](https://github.com/deltakosh))
 - Added new `PhotoDome` object to display 360 photos. [Demo](https://www.babylonjs-playground.com/#14KRGG#0) ([SzeyinLee](https://github.com/SzeyinLee))
-- Added Video Recorder. [Documentation](https://doc.babylonjs.com/How_To/Render_Scene_on_a_Video) ([sebavan](http://www.github.com/sebavan))
+- Added Video Recorder. [Doc](https://doc.babylonjs.com/How_To/Render_Scene_on_a_Video) ([sebavan](http://www.github.com/sebavan))
 
 ## Updates
 
@@ -168,10 +171,6 @@
 ### Materials Library
 
 - Added ```unlit``` mode to lava material ([sebavan](http://www.github.com/sebavan))
-
-### Documentation
-
-- Added all code comments for GUI
 
 ## Bug fixes
 

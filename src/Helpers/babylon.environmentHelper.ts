@@ -1,8 +1,8 @@
 module BABYLON {
     /**
-     * Represents the different options available during the creation of 
+     * Represents the different options available during the creation of
      * a Environment helper.
-     * 
+     *
      * This can control the default ground, skybox and image processing setup of your scene.
      */
     export interface IEnvironmentHelperOptions {
@@ -19,7 +19,7 @@ module BABYLON {
         /**
          * The texture used on the ground for the main color.
          * Comes from the BabylonJS CDN by default.
-         * 
+         *
          * Remarks: Can be either a texture or a url.
          */
         groundTexture: string | BaseTexture;
@@ -100,7 +100,7 @@ module BABYLON {
         /**
          * The texture used on the skybox for the main color.
          * Comes from the BabylonJS CDN by default.
-         * 
+         *
          * Remarks: Can be either a texture or a url.
          */
         skyboxTexture: string | BaseTexture;
@@ -136,7 +136,7 @@ module BABYLON {
         /**
          * The texture used as your environment texture in the scene.
          * Comes from the BabylonJS CDN by default and in use if setupImageProcessing is true.
-         * 
+         *
          * Remarks: Can be either a texture or a url.
          */
         environmentTexture: string | BaseTexture;
@@ -161,9 +161,9 @@ module BABYLON {
     }
 
     interface ISceneSize {
-        groundSize: number,
-        skyboxSize: number,
-        rootPosition: Vector3
+        groundSize: number;
+        skyboxSize: number;
+        rootPosition: Vector3;
     }
 
     /**
@@ -285,7 +285,7 @@ module BABYLON {
         }
 
         /**
-         * Gets the ground mirror render list to helps pushing the meshes 
+         * Gets the ground mirror render list to helps pushing the meshes
          * you wish in the ground reflection.
          */
         public get groundMirrorRenderList(): Nullable<AbstractMesh[]> {
@@ -310,21 +310,21 @@ module BABYLON {
         private _options: IEnvironmentHelperOptions;
 
         /**
-         * This observable will be notified with any error during the creation of the environment, 
+         * This observable will be notified with any error during the creation of the environment,
          * mainly texture creation errors.
          */
         public onErrorObservable: Observable<{ message?: string, exception?: any }>;
 
         /**
          * constructor
-         * @param options 
+         * @param options
          * @param scene The scene to add the material to
          */
         constructor(options: Partial<IEnvironmentHelperOptions>, scene: Scene) {
             this._options = {
                 ...EnvironmentHelper._getDefaultOptions(),
                 ...options
-            }
+            };
             this._scene = scene;
             this.onErrorObservable = new Observable();
 
@@ -334,13 +334,13 @@ module BABYLON {
 
         /**
          * Updates the background according to the new options
-         * @param options 
+         * @param options
          */
         public updateOptions(options: Partial<IEnvironmentHelperOptions>) {
             const newOptions = {
                 ...this._options,
                 ...options
-            }
+            };
 
             if (this._ground && !newOptions.createGround) {
                 this._ground.dispose();
@@ -625,7 +625,7 @@ module BABYLON {
         private _setupSkybox(sceneSize: ISceneSize): void {
             if (!this._skybox || this._skybox.isDisposed()) {
                 this._skybox = Mesh.CreateBox("BackgroundSkybox", sceneSize.skyboxSize, this._scene, undefined, Mesh.BACKSIDE);
-                this._skybox.onDisposeObservable.add(() => { this._skybox = null; })
+                this._skybox.onDisposeObservable.add(() => { this._skybox = null; });
             }
             this._skybox.parent = this._rootMesh;
         }

@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     // This matrix is used as a value to reset the bounding box.
     const _identityMatrix = Matrix.Identity();
 
@@ -44,7 +44,7 @@
         /**
          * Recreates the entire bounding sphere from scratch
          * @param min defines the new minimum vector (in local space)
-         * @param max defines the new maximum vector (in local space) 
+         * @param max defines the new maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
          */
         public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
@@ -92,8 +92,9 @@
          */
         public isInFrustum(frustumPlanes: Plane[]): boolean {
             for (var i = 0; i < 6; i++) {
-                if (frustumPlanes[i].dotCoordinate(this.centerWorld) <= -this.radiusWorld)
+                if (frustumPlanes[i].dotCoordinate(this.centerWorld) <= -this.radiusWorld) {
                     return false;
+                }
             }
 
             return true;
@@ -111,8 +112,9 @@
 
             var distance = Math.sqrt((x * x) + (y * y) + (z * z));
 
-            if (this.radiusWorld < distance)
+            if (this.radiusWorld < distance) {
                 return false;
+            }
 
             return true;
         }
@@ -131,11 +133,12 @@
 
             var distance = Math.sqrt((x * x) + (y * y) + (z * z));
 
-            if (sphere0.radiusWorld + sphere1.radiusWorld < distance)
+            if (sphere0.radiusWorld + sphere1.radiusWorld < distance) {
                 return false;
+            }
 
             return true;
         }
 
     }
-} 
+}

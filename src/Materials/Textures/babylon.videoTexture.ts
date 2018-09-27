@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Settings for finer control over video usage
      */
@@ -25,7 +25,7 @@
     }
 
     /**
-     * If you want to display a video in your scene, this is the special texture for that. 
+     * If you want to display a video in your scene, this is the special texture for that.
      * This special texture works similar to other textures, with the exception of a few parameters.
      * @see https://doc.babylonjs.com/how_to/video_texture
      */
@@ -60,7 +60,7 @@
 
         /**
          * Creates a video texture.
-         * If you want to display a video in your scene, this is the special texture for that. 
+         * If you want to display a video in your scene, this is the special texture for that.
          * This special texture works similar to other textures, with the exception of a few parameters.
          * @see https://doc.babylonjs.com/how_to/video_texture
          * @param name optional name, will detect from video source, if not defined
@@ -131,7 +131,7 @@
             }
 
             return src;
-        };
+        }
 
         private _getVideo(src: string | string[] | HTMLVideoElement): HTMLVideoElement {
             if (src instanceof HTMLVideoElement) {
@@ -144,14 +144,14 @@
                 video.src = src;
             } else {
                 Tools.SetCorsBehavior(src[0], video);
-                src.forEach(url => {
+                src.forEach((url) => {
                     const source = document.createElement("source");
                     source.src = url;
                     video.appendChild(source);
                 });
             }
             return video;
-        };
+        }
 
         private _createInternalTexture = (): void => {
             if (this._texture != null) {
@@ -224,7 +224,7 @@
                     this.onLoadObservable.notifyObservers(this);
                 }
             }
-        };
+        }
 
         private reset = (): void => {
             if (this._texture == null) {
@@ -235,7 +235,7 @@
                 this._texture.dispose();
                 this._texture = null;
             }
-        };
+        }
 
         /**
          * @hidden Internal method to initiate `update`.
@@ -280,7 +280,7 @@
             }
 
             this._engine.updateVideoTexture(this._texture, this.video, this._invertY);
-        };
+        }
 
         /**
          * Change video content. Changing video instance or setting multiple urls (as in constructor) is not supported.
@@ -341,7 +341,7 @@
 
             if (navigator.mediaDevices) {
                 navigator.mediaDevices.getUserMedia({ video: constraints })
-                    .then(function (stream) {
+                    .then(function(stream) {
                         if (video.mozSrcObject !== undefined) {
                             // hack for Firefox < 19
                             video.mozSrcObject = stream;
@@ -359,7 +359,7 @@
                         video.addEventListener("playing", onPlaying);
                         video.play();
                     })
-                    .catch(function (err) {
+                    .catch(function(err) {
                         Tools.Error(err.name);
                     });
             }
@@ -399,7 +399,7 @@
                                 onReady(new VideoTexture("video", video, scene, true, true));
                             }
                         },
-                        function (e: MediaStreamError) {
+                        function(e: MediaStreamError) {
                             Tools.Error(e.name);
                         }
                     );

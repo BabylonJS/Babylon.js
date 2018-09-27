@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Line mesh
      * @see https://doc.babylonjs.com/babylon101/parametric_shapes
@@ -42,15 +42,15 @@
         private _colorShader: ShaderMaterial;
 
         constructor(
-            name: string, 
-            scene: Nullable<Scene> = null, 
-            parent: Nullable<Node> = null, 
-            source?: LinesMesh, 
-            doNotCloneChildren?: boolean, 
+            name: string,
+            scene: Nullable<Scene> = null,
+            parent: Nullable<Node> = null,
+            source?: LinesMesh,
+            doNotCloneChildren?: boolean,
             /**
              * If vertex color should be applied to the mesh
              */
-            public useVertexColor?: boolean, 
+            public useVertexColor?: boolean,
             /**
              * If vertex alpha should be applied to the mesh
              */
@@ -91,7 +91,7 @@
         }
 
         /**
-         * Returns the string "LineMesh"  
+         * Returns the string "LineMesh"
          */
         public getClassName(): string {
             return "LinesMesh";
@@ -157,10 +157,10 @@
         }
 
         /**
-         * Returns a new LineMesh object cloned from the current one.  
+         * Returns a new LineMesh object cloned from the current one.
          */
         public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh {
             return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
         }
     }
-} 
+}

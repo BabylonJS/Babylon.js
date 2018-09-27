@@ -14,11 +14,11 @@ module BABYLON {
          * @param alpha defines alpha angle (in radians)
          * @param beta defines beta angle (in radians)
          * @param radius defines radius
-         * @param target defines camera target 
+         * @param target defines camera target
          * @param interaxialDistance defines distance between each color axis
          * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
          * @param scene defines the hosting scene
-         */        
+         */
         constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene) {
             super(name, alpha, beta, radius, target, scene);
             this.interaxialDistance = interaxialDistance;
@@ -29,7 +29,7 @@ module BABYLON {
         /**
          * Gets camera class name
          * @returns StereoscopicArcRotateCamera
-         */              
+         */
         public getClassName(): string {
             return "StereoscopicArcRotateCamera";
         }

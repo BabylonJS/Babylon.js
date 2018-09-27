@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Class used to help managing file picking and drag'n'drop
      */
@@ -39,7 +39,7 @@
          * @param onReloadCallback callback called when a reload is requested
          * @param errorCallback callback call if an error occurs
          */
-        constructor(engine: Engine, scene: Scene, sceneLoadedCallback: (sceneFile: File, scene: Scene) => void, progressCallback: (progress: SceneLoaderProgressEvent) => void, additionalRenderLoopLogicCallback: () => void, 
+        constructor(engine: Engine, scene: Scene, sceneLoadedCallback: (sceneFile: File, scene: Scene) => void, progressCallback: (progress: SceneLoaderProgressEvent) => void, additionalRenderLoopLogicCallback: () => void,
             textureLoadingCallback: (remaining: number) => void, startingProcessingFilesCallback: (files?: File[]) => void, onReloadCallback: (sceneFile: File) => void, errorCallback: (sceneFile: File, scene: Scene, message: string) => void) {
             this._engine = engine;
             this._currentScene = scene;
@@ -233,7 +233,6 @@
                     }
                 }
 
-
             }
         }
 
@@ -259,11 +258,11 @@
                     this._engine.stopRenderLoop();
                 }
 
-                SceneLoader.LoadAsync("file:", this._sceneFileToLoad.name, this._engine, progress => {
+                SceneLoader.LoadAsync("file:", this._sceneFileToLoad.name, this._engine, (progress) => {
                     if (this._progressCallback) {
                         this._progressCallback(progress);
                     }
-                }).then(scene => {
+                }).then((scene) => {
                     if (this._currentScene) {
                         this._currentScene.dispose();
                     }
@@ -280,7 +279,7 @@
                             this.renderFunction();
                         });
                     });
-                }).catch(error => {
+                }).catch((error) => {
                     if (this._errorCallback) {
                         this._errorCallback(this._sceneFileToLoad, this._currentScene, error.message);
                     }

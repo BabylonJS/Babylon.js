@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * EffectFallbacks can be used to add fallbacks (properties to disable) to certain properties when desired to improve performance.
      * (Eg. Start at high quality with reflection and fog, if fps is low, remove reflection, if still low remove fog)
@@ -203,7 +203,6 @@
          */
         public onErrorObservable = new Observable<Effect>();
 
-
         /** @hidden */
         public _onBindObservable: Nullable<Observable<Effect>>;
 
@@ -217,7 +216,6 @@
 
             return this._onBindObservable;
         }
-
 
         /** @hidden */
         public _bonesComputationForcedToCPU = false;
@@ -328,12 +326,12 @@
                 fragmentSource = baseName.fragment || baseName;
             }
 
-            this._loadVertexShader(vertexSource, vertexCode => {
-                this._processIncludes(vertexCode, vertexCodeWithIncludes => {
-                    this._processShaderConversion(vertexCodeWithIncludes, false, migratedVertexCode => {
+            this._loadVertexShader(vertexSource, (vertexCode) => {
+                this._processIncludes(vertexCode, (vertexCodeWithIncludes) => {
+                    this._processShaderConversion(vertexCodeWithIncludes, false, (migratedVertexCode) => {
                         this._loadFragmentShader(fragmentSource, (fragmentCode) => {
-                            this._processIncludes(fragmentCode, fragmentCodeWithIncludes => {
-                                this._processShaderConversion(fragmentCodeWithIncludes, true, migratedFragmentCode => {
+                            this._processIncludes(fragmentCode, (fragmentCodeWithIncludes) => {
+                                this._processShaderConversion(fragmentCodeWithIncludes, true, (migratedFragmentCode) => {
                                     if (baseName) {
                                         var vertex = baseName.vertexElement || baseName.vertex || baseName;
                                         var fragment = baseName.fragmentElement || baseName.fragment || baseName;
@@ -557,9 +555,9 @@
             // Number lines of shaders source code
             var i = 2;
             var regex = /\n/gm;
-            var formattedVertexCode = "\n1\t" + vertexCode.replace(regex, function () { return "\n" + (i++) + "\t"; });
+            var formattedVertexCode = "\n1\t" + vertexCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
             i = 2;
-            var formattedFragmentCode = "\n1\t" + fragmentCode.replace(regex, function () { return "\n" + (i++) + "\t"; });
+            var formattedFragmentCode = "\n1\t" + fragmentCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
 
             // Dump shaders name and formatted source code
             if (this.name.vertexElement) {
@@ -574,7 +572,7 @@
                 Tools.Error("Vertex shader: " + this.name + formattedVertexCode);
                 Tools.Error("Fragment shader: " + this.name + formattedFragmentCode);
             }
-        };
+        }
 
         private _processShaderConversion(sourceCode: string, isFragment: boolean, callback: (data: any) => void): void {
 
@@ -593,7 +591,7 @@
 
             var hasDrawBuffersExtension = preparedSourceCode.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
 
-            // Remove extensions 
+            // Remove extensions
             // #extension GL_OES_standard_derivatives : enable
             // #extension GL_EXT_shader_texture_lod : enable
             // #extension GL_EXT_frag_depth : enable
@@ -828,10 +826,10 @@
 
                 // Let's go through fallbacks then
                 Tools.Error("Unable to compile effect:");
-                Tools.Error("Uniforms: " + this._uniformsNames.map(function (uniform) {
+                Tools.Error("Uniforms: " + this._uniformsNames.map(function(uniform) {
                     return " " + uniform;
                 }));
-                Tools.Error("Attributes: " + attributesNames.map(function (attribute) {
+                Tools.Error("Attributes: " + attributesNames.map(function(attribute) {
                     return " " + attribute;
                 }));
                 Tools.Error("Error: " + this._compilationError);
@@ -1056,8 +1054,9 @@
          */
         public setInt(uniformName: string, value: number): Effect {
             var cache = this._valueCache[uniformName];
-            if (cache !== undefined && cache === value)
+            if (cache !== undefined && cache === value) {
                 return this;
+            }
 
             this._valueCache[uniformName] = value;
 
@@ -1286,8 +1285,9 @@
          */
         public setFloat(uniformName: string, value: number): Effect {
             var cache = this._valueCache[uniformName];
-            if (cache !== undefined && cache === value)
+            if (cache !== undefined && cache === value) {
                 return this;
+            }
 
             this._valueCache[uniformName] = value;
 
@@ -1304,8 +1304,9 @@
          */
         public setBool(uniformName: string, bool: boolean): Effect {
             var cache = this._valueCache[uniformName];
-            if (cache !== undefined && cache === bool)
+            if (cache !== undefined && cache === bool) {
                 return this;
+            }
 
             this._valueCache[uniformName] = bool;
 
@@ -1471,4 +1472,4 @@
             Effect._baseCache = {};
         }
     }
-} 
+}

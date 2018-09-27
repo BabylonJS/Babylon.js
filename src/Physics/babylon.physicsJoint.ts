@@ -17,15 +17,15 @@ module BABYLON {
         /**
          * The main axis of the joint
          */
-        mainAxis?: Vector3,
+        mainAxis?: Vector3;
         /**
          * The connected axis of the joint
          */
-        connectedAxis?: Vector3,
+        connectedAxis?: Vector3;
         /**
          * The collision of the joint
          */
-        collision?: boolean
+        collision?: boolean;
         /**
          * Native Oimo/Cannon/Energy data
          */
@@ -87,13 +87,12 @@ module BABYLON {
 
         /**
          * Execute a function that is physics-plugin specific.
-         * @param {Function} func the function that will be executed. 
+         * @param {Function} func the function that will be executed.
          *                        It accepts two parameters: the physics world and the physics joint
          */
         public executeNativeFunction(func: (world: any, physicsJoint: any) => void) {
-            func(this._physicsPlugin.world, this._physicsJoint)
+            func(this._physicsPlugin.world, this._physicsJoint);
         }
-
 
         //TODO check if the native joints are the same
 
@@ -155,7 +154,7 @@ module BABYLON {
      */
     export class DistanceJoint extends PhysicsJoint {
         /**
-         * 
+         *
          * @param jointData The data for the Distance-Joint
          */
         constructor(jointData: DistanceJointData) {

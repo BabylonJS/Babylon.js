@@ -79,7 +79,7 @@ module BABYLON {
             super.update();
             for (var index = 0; index < this._buttons.length; index++) {
                 this._setButtonValue(this.browserGamepad.buttons[index], this._buttons[index], index);
-            };
+            }
             if (this.leftStick.x !== this.pad.x || this.leftStick.y !== this.pad.y) {
                 this.pad.x = this.leftStick.x;
                 this.pad.y = this.leftStick.y;
@@ -106,13 +106,13 @@ module BABYLON {
                     touched: false,
                     value: 0
                 };
-            }  
+            }
             if (!currentState) {
                 this._buttons[buttonIndex] = {
                     pressed: newState.pressed,
                     touched: newState.touched,
                     value: newState.value
-                }
+                };
                 return;
             }
             this._checkChanges(newState, currentState);
@@ -156,5 +156,5 @@ module BABYLON {
             this.onPadValuesChangedObservable.clear();
         }
     }
-        
+
 }

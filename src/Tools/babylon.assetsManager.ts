@@ -73,7 +73,7 @@ module BABYLON {
 
         /**
          * Internal only
-         * @hidden 
+         * @hidden
          */
         public _setErrorObject(message?: string, exception?: any) {
             if (this._errorObject) {
@@ -125,7 +125,7 @@ module BABYLON {
             this._errorObject = {
                 message: message,
                 exception: exception
-            }
+            };
 
             if (this.onError) {
                 this.onError(this, message, exception);
@@ -822,7 +822,7 @@ module BABYLON {
         }
 
         /**
-         * 
+         *
          * Add a HDRCubeTextureAssetTask to the list of active tasks
          * @param taskName defines the name of the new task
          * @param url defines the url of the file to load
@@ -917,7 +917,7 @@ module BABYLON {
                     error("Error executing task success callbacks", e);
                 }
 
-            }
+            };
 
             let error = (message?: string, exception?: any) => {
                 task._setErrorObject(message, exception);
@@ -927,7 +927,7 @@ module BABYLON {
                 }
                 this.onTaskErrorObservable.notifyObservers(task);
                 this._decreaseWaitingTasksCount(task);
-            }
+            };
 
             task.run(this._scene, done, error);
         }
