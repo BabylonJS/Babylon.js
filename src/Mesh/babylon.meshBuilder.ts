@@ -174,7 +174,7 @@ module BABYLON {
                             var path = pathArray[p];
                             var l = path.length;
                             minlg = (minlg < l) ? minlg : l;
-                            for (let j=0; j < minlg; ++j){
+                            for (let j = 0; j < minlg; ++j) {
                                 const pathPoint = path[j];
                                 positions[i] = pathPoint.x;
                                 positions[i + 1] = pathPoint.y;

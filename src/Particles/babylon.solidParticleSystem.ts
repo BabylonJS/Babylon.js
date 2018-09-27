@@ -374,7 +374,7 @@ module BABYLON {
             }
             this._quaternionToRotationMatrix();
 
-            copy.pivot.multiplyToRef(copy.scaling, this._scaledPivot)
+            copy.pivot.multiplyToRef(copy.scaling, this._scaledPivot);
 
             if (copy.translateFromPivot) {
                 this._pivotBackTranslation.copyFromFloats(0.0, 0.0, 0.0);
@@ -548,7 +548,7 @@ module BABYLON {
             if (copy.rotationQuaternion) {
                 this._quaternion.copyFrom(copy.rotationQuaternion);
             } else {
-                const rotation = copy.rotation
+                const rotation = copy.rotation;
                 this._quaternionRotationYPR(rotation.y, rotation.x, rotation.z);
             }
             this._quaternionToRotationMatrix();
@@ -664,7 +664,7 @@ module BABYLON {
                     maximum.setAll(-Number.MAX_VALUE);
                 }
                 else {      // only some particles are updated, then use the current existing BBox basis. Note : it can only increase.
-                    const boundingInfo = this.mesh._boundingInfo
+                    const boundingInfo = this.mesh._boundingInfo;
                     if (boundingInfo) {
                         minimum.copyFrom(boundingInfo.minimum);
                         maximum.copyFrom(boundingInfo.maximum);
@@ -694,13 +694,12 @@ module BABYLON {
             const indices32 = this._indices32;
             const indices = this._indices;
             const fixedNormal32 = this._fixedNormal32;
-            
 
             for (var p = start; p <= end; p++) {
                 const particle = this.particles[p];
                 const shape = particle._model._shape;
                 const shapeUV = particle._model._shapeUV;
-                
+
                 const rotationMatrix = particle._rotationMatrix;
                 const position = particle.position;
                 const rotation = particle.rotation;
@@ -750,7 +749,7 @@ module BABYLON {
                     const particleHasParent = (particle.parentId !== null);
                     if (particleHasParent) {
                         const parent = this.particles[particle.parentId!];
-                        const parentRotMatrix = parent._rotationMatrix
+                        const parentRotMatrix = parent._rotationMatrix;
                         const parentGlobalPosition = parent._globalPosition;
 
                         const rotatedY = position.x * parentRotMatrix[1] + position.y * parentRotMatrix[4] + position.z * parentRotMatrix[7];
@@ -807,7 +806,7 @@ module BABYLON {
                         if (this._computeParticleVertex) {
                             this.updateParticleVertex(particle, tmpVertex, pt);
                         }
-                        
+
                         // positions
                         const vertexX = tmpVertex.x * scaling.x - scaledPivot.x;
                         const vertexY = tmpVertex.y * scaling.y - scaledPivot.y;
@@ -821,13 +820,13 @@ module BABYLON {
                         rotatedY += pivotBackTranslation.y;
                         rotatedZ += pivotBackTranslation.z;
 
-                        positions32[idx] = globalPosition.x + camAxisX.x * rotatedX + camAxisY.x * rotatedY + camAxisZ.x * rotatedZ;
-                        positions32[idx + 1] = globalPosition.y + camAxisX.y * rotatedX + camAxisY.y * rotatedY + camAxisZ.y * rotatedZ;
-                        positions32[idx + 2] = globalPosition.z + camAxisX.z * rotatedX + camAxisY.z * rotatedY + camAxisZ.z * rotatedZ;
+                        const px = positions32[idx] = globalPosition.x + camAxisX.x * rotatedX + camAxisY.x * rotatedY + camAxisZ.x * rotatedZ;
+                        const py = positions32[idx + 1] = globalPosition.y + camAxisX.y * rotatedX + camAxisY.y * rotatedY + camAxisZ.y * rotatedZ;
+                        const pz = positions32[idx + 2] = globalPosition.z + camAxisX.z * rotatedX + camAxisY.z * rotatedY + camAxisZ.z * rotatedZ;
 
                         if (this._computeBoundingBox) {
-                            minimum.minimizeInPlaceFromFloats(positions32[idx], positions32[idx+1], positions32[idx+1]);
-                            maximum.maximizeInPlaceFromFloats(positions32[idx], positions32[idx+1], positions32[idx+1]);
+                            minimum.minimizeInPlaceFromFloats(px, py, pz);
+                            maximum.maximizeInPlaceFromFloats(px, py, pz);
                         }
 
                         // normals : if the particles can't be morphed then just rotate the normals, what is much more faster than ComputeNormals()
@@ -989,7 +988,7 @@ module BABYLON {
             return this;
         }
 
-        private _quaternionRotationYPR(yaw:number, pitch:number, roll:number): void {
+        private _quaternionRotationYPR(yaw: number, pitch: number, roll: number): void {
             const halfroll = roll * 0.5;
             const halfpitch = pitch * 0.5;
             const halfyaw = yaw * 0.5;
