@@ -1,5 +1,4 @@
 
-
 import { ViewerConfiguration, IModelConfiguration, ILightConfiguration } from './../configuration';
 import { Template, EventCallback } from '../templating/templateManager';
 import { AbstractViewer } from './viewer';
@@ -29,19 +28,19 @@ export class DefaultViewer extends AbstractViewer {
         this.onModelLoadedObservable.add(this._onModelLoaded);
         this.onModelRemovedObservable.add(() => {
             this._configureTemplate();
-        })
+        });
 
         this.onEngineInitObservable.add(() => {
             this.sceneManager.onLightsConfiguredObservable.add((data) => {
                 this._configureLights();
-            })
+            });
         });
 
         this.onInitDoneObservable.add(() => {
             if (!this.sceneManager.models.length) {
                 this.hideLoadingScreen();
             }
-        })
+        });
     }
 
     private _registeredPlugins: Array<IViewerTemplatePlugin> = [];
@@ -64,7 +63,7 @@ export class DefaultViewer extends AbstractViewer {
         }
 
         if (plugin.eventsToAttach) {
-            plugin.eventsToAttach.forEach(eventName => {
+            plugin.eventsToAttach.forEach((eventName) => {
                 plugin.onEvent && this.templateManager.eventManager.registerCallback(plugin.templateName, (event) => {
                     if (plugin.onEvent && plugin.interactionPredicate(event)) {
                         plugin.onEvent(event);
@@ -108,10 +107,9 @@ export class DefaultViewer extends AbstractViewer {
                     }, () => {
                     });
                     filesInput.monitorElementForDragNDrop(this.templateManager.getCanvas()!);
-                })
+                });
             }
         }
-
 
         return super._onTemplatesLoaded();
     }
@@ -129,9 +127,9 @@ export class DefaultViewer extends AbstractViewer {
             this.templateManager.eventManager.registerCallback("navBar", (event: EventCallback) => {
                 const evt = event.event;
                 const element = <HTMLInputElement>(evt.target);
-                if (!this._currentAnimation) return;
+                if (!this._currentAnimation) { return; }
                 const gotoFrame = +element.value / 100 * this._currentAnimation.frames;
-                if (isNaN(gotoFrame)) return;
+                if (isNaN(gotoFrame)) { return; }
                 this._currentAnimation.goToFrame(gotoFrame);
             }, "input");
 
@@ -161,7 +159,7 @@ export class DefaultViewer extends AbstractViewer {
     private _handlePointerClick = (event: EventCallback) => {
 
         let pointerDown = <PointerEvent>event.event;
-        if (pointerDown.button !== 0) return;
+        if (pointerDown.button !== 0) { return; }
         var element = (<HTMLElement>event.event.target);
 
         if (!element) {
@@ -206,8 +204,9 @@ export class DefaultViewer extends AbstractViewer {
                     return;
                 }
                 var speed = element.dataset["value"];
-                if (speed)
+                if (speed) {
                     this._updateAnimationSpeed(speed);
+                }
                 break;
             case "progress-wrapper":
                 this._resumePlay = !this._isAnimationPaused;
@@ -241,10 +240,10 @@ export class DefaultViewer extends AbstractViewer {
 
         this._isAnimationPaused = !this._isAnimationPaused;
 
-        if (noUiUpdate) return;
+        if (noUiUpdate) { return; }
 
         let navbar = this.templateManager.getTemplate('navBar');
-        if (!navbar) return;
+        if (!navbar) { return; }
 
         navbar.updateParams({
             paused: this._isAnimationPaused,
@@ -258,7 +257,7 @@ export class DefaultViewer extends AbstractViewer {
      */
     private _updateProgressBar = () => {
         let navbar = this.templateManager.getTemplate('navBar');
-        if (!navbar) return;
+        if (!navbar) { return; }
         var progressSlider = <HTMLInputElement>navbar.parent.querySelector("input.progress-wrapper");
         if (progressSlider && this._currentAnimation) {
             const progress = this._currentAnimation.currentFrame / this._currentAnimation.frames * 100;
@@ -281,12 +280,12 @@ export class DefaultViewer extends AbstractViewer {
         }
     }
 
-    /** 
+    /**
      * Update Current Animation Speed
      */
     private _updateAnimationSpeed = (speed: string, paramsObject?: any) => {
         let navbar = this.templateManager.getTemplate('navBar');
-        if (!navbar) return;
+        if (!navbar) { return; }
 
         if (speed && this._currentAnimation) {
             this._currentAnimation.speedRatio = parseFloat(speed);
@@ -295,7 +294,7 @@ export class DefaultViewer extends AbstractViewer {
             }
 
             if (paramsObject) {
-                paramsObject.selectedSpeed = speed + "x"
+                paramsObject.selectedSpeed = speed + "x";
             } else {
                 navbar.updateParams({
                     selectedSpeed: speed + "x",
@@ -304,12 +303,12 @@ export class DefaultViewer extends AbstractViewer {
         }
     }
 
-    /** 
+    /**
      * Update Current Animation Type
      */
     private _updateAnimationType = (data: { label: string, value: string }, paramsObject?: any) => {
         let navbar = this.templateManager.getTemplate('navBar');
-        if (!navbar) return;
+        if (!navbar) { return; }
 
         if (data) {
             this._currentAnimation = this.sceneManager.models[0].setCurrentAnimationByName(data.value);
@@ -372,7 +371,7 @@ export class DefaultViewer extends AbstractViewer {
                     viewerElement.classList.add("in-fullscreen");
                 }
             } else {
-                let exitFullscreen = document.exitFullscreen || (<any>document).webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen
+                let exitFullscreen = document.exitFullscreen || (<any>document).webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen;
                 exitFullscreen.call(document);
                 if (viewerElement) {
                     viewerElement.classList.remove("in-fullscreen");
@@ -400,7 +399,7 @@ export class DefaultViewer extends AbstractViewer {
      */
     protected _configureTemplate(model?: ViewerModel) {
         let navbar = this.templateManager.getTemplate('navBar');
-        if (!navbar) return;
+        if (!navbar) { return; }
 
         let newParams: any = navbar.configuration.params || {};
 
@@ -409,7 +408,7 @@ export class DefaultViewer extends AbstractViewer {
         } else {
 
             let animationNames = model.getAnimationNames();
-            newParams.animations = animationNames.map(a => { return { label: a, value: a } });
+            newParams.animations = animationNames.map((a) => { return { label: a, value: a }; });
             if (animationNames.length) {
                 this._isAnimationPaused = (model.configuration.animation && !model.configuration.animation.autoStart) || !model.configuration.animation;
                 this._animationList = animationNames;
@@ -427,7 +426,7 @@ export class DefaultViewer extends AbstractViewer {
             }
 
             if (model.configuration.thumbnail) {
-                newParams.logoImage = model.configuration.thumbnail
+                newParams.logoImage = model.configuration.thumbnail;
             }
         }
         navbar.updateParams(newParams, false);
@@ -475,9 +474,9 @@ export class DefaultViewer extends AbstractViewer {
      */
     public showOverlayScreen(subScreen: string) {
         let template = this.templateManager.getTemplate('overlay');
-        if (!template) return Promise.resolve('Overlay template not found');
+        if (!template) { return Promise.resolve('Overlay template not found'); }
 
-        return template.show((template => {
+        return template.show(((template) => {
 
             var canvasRect = this.containerElement.getBoundingClientRect();
 
@@ -490,7 +489,7 @@ export class DefaultViewer extends AbstractViewer {
             if (!subTemplate) {
                 return Promise.reject(subScreen + ' template not found');
             }
-            return subTemplate.show((template => {
+            return subTemplate.show(((template) => {
                 template.parent.style.display = 'flex';
                 return Promise.resolve(template);
             }));
@@ -502,14 +501,14 @@ export class DefaultViewer extends AbstractViewer {
      */
     public hideOverlayScreen() {
         let template = this.templateManager.getTemplate('overlay');
-        if (!template) return Promise.resolve('Overlay template not found');
+        if (!template) { return Promise.resolve('Overlay template not found'); }
 
-        return template.hide((template => {
+        return template.hide(((template) => {
             template.parent.style.opacity = "0";
             let onTransitionEnd = () => {
                 template.parent.removeEventListener("transitionend", onTransitionEnd);
                 template.parent.style.display = 'none';
-            }
+            };
             template.parent.addEventListener("transitionend", onTransitionEnd);
 
             let overlays = template.parent.querySelectorAll('.overlay');
@@ -525,25 +524,25 @@ export class DefaultViewer extends AbstractViewer {
 
     /**
      * show the viewer (in case it was hidden)
-     * 
+     *
      * @param visibilityFunction an optional function to execute in order to show the container
      */
     public show(visibilityFunction?: ((template: Template) => Promise<Template>)): Promise<Template> {
         let template = this.templateManager.getTemplate('main');
         //not possible, but yet:
-        if (!template) return Promise.reject('Main template not found');
+        if (!template) { return Promise.reject('Main template not found'); }
         return template.show(visibilityFunction);
     }
 
     /**
      * hide the viewer (in case it is visible)
-     * 
+     *
      * @param visibilityFunction an optional function to execute in order to hide the container
      */
     public hide(visibilityFunction?: ((template: Template) => Promise<Template>)) {
         let template = this.templateManager.getTemplate('main');
         //not possible, but yet:
-        if (!template) return Promise.reject('Main template not found');
+        if (!template) { return Promise.reject('Main template not found'); }
         return template.hide(visibilityFunction);
     }
 
@@ -553,9 +552,9 @@ export class DefaultViewer extends AbstractViewer {
      */
     public showLoadingScreen() {
         let template = this.templateManager.getTemplate('loadingScreen');
-        if (!template) return Promise.resolve('Loading Screen template not found');
+        if (!template) { return Promise.resolve('Loading Screen template not found'); }
 
-        return template.show((template => {
+        return template.show(((template) => {
 
             var canvasRect = this.containerElement.getBoundingClientRect();
             // var canvasPositioning = window.getComputedStyle(this.containerElement).position;
@@ -580,14 +579,14 @@ export class DefaultViewer extends AbstractViewer {
      */
     public hideLoadingScreen() {
         let template = this.templateManager.getTemplate('loadingScreen');
-        if (!template) return Promise.resolve('Loading Screen template not found');
+        if (!template) { return Promise.resolve('Loading Screen template not found'); }
 
-        return template.hide((template => {
+        return template.hide(((template) => {
             template.parent.style.opacity = "0";
             let onTransitionEnd = () => {
                 template.parent.removeEventListener("transitionend", onTransitionEnd);
                 template.parent.style.display = 'none';
-            }
+            };
             template.parent.addEventListener("transitionend", onTransitionEnd);
             return Promise.resolve(template);
         }));
@@ -662,7 +661,7 @@ export class DefaultViewer extends AbstractViewer {
                         lightTarget.subtractToRef(flashlight.position, flashlight.direction);
                     }
                 }
-            }
+            };
             this.sceneManager.scene.registerBeforeRender(updateFlashlightFunction);
             this._registeredOnBeforeRenderFunctions.push(updateFlashlightFunction);
         }

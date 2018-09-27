@@ -37,21 +37,21 @@ export class Button extends Rectangle {
 
         this.pointerEnterAnimation = () => {
             this.alpha -= 0.1;
-        }
+        };
 
         this.pointerOutAnimation = () => {
             this.alpha += 0.1;
-        }
+        };
 
         this.pointerDownAnimation = () => {
             this.scaleX -= 0.05;
             this.scaleY -= 0.05;
-        }
+        };
 
         this.pointerUpAnimation = () => {
             this.scaleX += 0.05;
             this.scaleY += 0.05;
-        }
+        };
     }
 
     protected _getTypeName(): string {
@@ -101,7 +101,6 @@ export class Button extends Rectangle {
         if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
             return false;
         }
-
 
         if (this.pointerDownAnimation) {
             this.pointerDownAnimation();
@@ -206,4 +205,4 @@ export class Button extends Rectangle {
 
         return result;
     }
-}    
+}

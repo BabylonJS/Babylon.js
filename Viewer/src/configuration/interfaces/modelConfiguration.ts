@@ -27,7 +27,7 @@ export interface IModelConfiguration {
         autoStart?: boolean | string;
         playOnce?: boolean;
         autoStartIndex?: number;
-    }
+    };
 
     entryAnimation?: IModelAnimationConfiguration;
     exitAnimation?: IModelAnimationConfiguration;
@@ -38,9 +38,9 @@ export interface IModelConfiguration {
         emissiveIntensity?: number;
         environmentIntensity?: number;
         [propName: string]: any;
-    }
+    };
 
-    /** 
+    /**
      * Rotation offset axis definition
      */
     rotationOffsetAxis?: {
@@ -57,7 +57,7 @@ export interface IModelConfiguration {
     loaderConfiguration?: {
         maxLODsToLoad?: number;
         progressiveLoading?: boolean;
-    }
+    };
 
     // [propName: string]: any; // further configuration, like title and creator
 }

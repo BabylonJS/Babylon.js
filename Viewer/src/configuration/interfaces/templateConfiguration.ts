@@ -21,7 +21,7 @@ export interface ITemplateConfiguration {
      * Events to attach to this template.
      * event name is the key. the value can either be a boolean (attach to the parent element)
      * or a map of html id elements.
-     * 
+     *
      * See - http://doc.babylonjs.com/extensions/the_templating_system#event-binding
      */
     events?: {
@@ -40,7 +40,6 @@ export interface ITemplateConfiguration {
         dragstart?: boolean | { [id: string]: boolean; };
         drop?: boolean | { [id: string]: boolean; };
 
-
         [key: string]: boolean | { [id: string]: boolean; } | undefined;
-    }
+    };
 }

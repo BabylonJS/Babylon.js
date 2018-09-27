@@ -2,7 +2,6 @@ import { Geometry } from "babylonjs";
 import { PropertyLine } from "../details/PropertyLine";
 import { AbstractTreeTool } from "../treetools/AbstractTreeTool";
 
-
 export abstract class Adapter {
 
     protected _obj: any;
@@ -12,7 +11,6 @@ export abstract class Adapter {
     constructor(obj: any) {
         this._obj = obj;
     }
-
 
     /** Returns the name displayed in the tree */
     public abstract id(): string;

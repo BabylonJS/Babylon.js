@@ -160,4 +160,4 @@ export class ValueAndUnit {
     public static get UNITMODE_PIXEL(): number {
         return ValueAndUnit._UNITMODE_PIXEL;
     }
-}  
+}

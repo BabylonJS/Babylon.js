@@ -2,7 +2,6 @@ import { AbstractMesh } from "babylonjs";
 import { Inspector } from "../Inspector";
 import { AbstractTool } from "./AbstractTool";
 
-
 export class PickTool extends AbstractTool {
 
     private _isActive: boolean = false;
@@ -40,7 +39,7 @@ export class PickTool extends AbstractTool {
     /** Pick a mesh in the scene */
     private _pickMesh(evt: PointerEvent) {
         let pos = this._updatePointerPosition(evt);
-        let pi = this._inspector.scene.pick(pos.x, pos.y, (mesh: AbstractMesh) => { return true });
+        let pi = this._inspector.scene.pick(pos.x, pos.y, (mesh: AbstractMesh) => { return true; });
 
         if (pi && pi.pickedMesh) {
             this._inspector.displayObjectDetails(pi.pickedMesh);
@@ -53,5 +52,5 @@ export class PickTool extends AbstractTool {
         let pointerX = evt.clientX - canvasRect.left;
         let pointerY = evt.clientY - canvasRect.top;
         return { x: pointerX, y: pointerY };
-    };
+    }
 }

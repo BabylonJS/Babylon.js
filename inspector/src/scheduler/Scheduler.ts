@@ -1,6 +1,5 @@
 import { PropertyLine } from "../details/PropertyLine";
 
-
 export class Scheduler {
 
     private static _instance: Scheduler;
@@ -41,7 +40,7 @@ export class Scheduler {
     }
 
     private _update() {
-        // If not in pause, update 
+        // If not in pause, update
         if (!this.pause) {
             for (let prop of this._updatableProperties) {
                 prop.update();
