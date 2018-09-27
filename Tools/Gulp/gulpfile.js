@@ -269,16 +269,82 @@ gulp.task("build", gulp.series("shaders", function build() {
 }));
 
 /*
-* Compiles all typescript files and creating a js and a declaration file.
+* TsLint all typescript files from the src directory.
 */
-gulp.task("typescript-compile", function () {
-    var tsResult = gulp.src(config.typescript)
+gulp.task("typescript-tsLint", function () {
+    return gulp.src(config.typescript)
         .pipe(gulpTslint({
             formatter: "stylish",
             configuration: "../../tslint.json",
             fix: tsLintFix
         }))
-        .pipe(gulpTslint.report())
+        .pipe(gulpTslint.report());
+});
+
+/*
+* TsLint all typescript files from the src directory.
+*/
+var tsLintExternalLibrary = function (library, settings, watch) {
+    if (library.files && library.files.length) {
+        return gulp.src(library.files, { base: settings.build.srcOutputDirectory })
+            .pipe(gulpTslint({
+                formatter: "stylish",
+                configuration: "../../tslint.json",
+                fix: tsLintFix
+            }))
+            .pipe(gulpTslint.report());
+    }
+    else {
+        return gulp.src(settings.build.srcOutputDirectory + "/**/*.ts")
+            .pipe(gulpTslint({
+                formatter: "stylish",
+                configuration: "../../tslint.json",
+                fix: tsLintFix
+            }))
+            .pipe(gulpTslint.report());
+    }
+}
+
+/**
+ * Helper methods to tsLint external library (mat, post processes, ...).
+ */
+var tsLintExternalLibraries = function (settings) {
+    var tasks = settings.libraries.map(function (library) {
+        return tsLintExternalLibrary(library, settings, false);
+    });
+
+    let mergedTasks = merge2(tasks);
+    return mergedTasks;
+}
+
+/**
+ * Dynamic module creation tsLint.
+ */
+config.modules.map(function (module) {
+    gulp.task(module + "-tsLint", function () {
+        return tsLintExternalLibraries(config[module]);
+    });
+});
+
+/**
+ * Full Librairies tsLint.
+ */
+gulp.task("typescript-libraries-tsLint", 
+    gulp.series(config.modules.map((module) => {
+         return module + "-tsLint";
+    })
+));
+
+/**
+ * Full TsLint.
+ */
+gulp.task("tsLint", gulp.series("typescript-tsLint", "typescript-libraries-tsLint"));
+
+/*
+* Compiles all typescript files and creating a js and a declaration file.
+*/
+gulp.task("typescript-compile", function () {
+    var tsResult = gulp.src(config.typescript)
         .pipe(sourcemaps.init())
         .pipe(tsProject({
             summarizeFailureOutput: true
@@ -370,12 +436,6 @@ var buildExternalLibrary = function (library, settings, watch) {
     var tsProcess;
     if (library.files && library.files.length) {
         tsProcess = gulp.src(library.files, { base: settings.build.srcOutputDirectory })
-            .pipe(gulpTslint({
-                formatter: "stylish",
-                configuration: "../../tslint.json",
-                fix: tsLintFix
-            }))
-            .pipe(gulpTslint.report())
             .pipe(sourcemaps.init())
             .pipe(typescript(externalTsConfig));
     }
@@ -1443,4 +1503,4 @@ gulp.task("typescript-all", gulp.series("typescript", "typescript-libraries", "n
 /**
  * The default task, concat and min the main BJS files.
  */
-gulp.task("default", gulp.series("typescript-all", "intellisense", "typedoc-all", "tests-unit", "tests-modules", "tests-validation-virtualscreen", "tests-validation-browserstack"));
+gulp.task("default", gulp.series("tsLint", "typescript-all", "intellisense", "typedoc-all", "tests-unit", "tests-modules", "tests-validation-virtualscreen", "tests-validation-browserstack"));
