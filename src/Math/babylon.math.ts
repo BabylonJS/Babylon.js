@@ -1878,10 +1878,7 @@ module BABYLON {
          * @returns the current updated Vector3
          */
         public minimizeInPlace(other: Vector3): Vector3 {
-            if (other.x < this.x) this.x = other.x;
-            if (other.y < this.y) this.y = other.y;
-            if (other.z < this.z) this.z = other.z;
-            return this;
+            return this.minimizeInPlaceFromFloats(other.x, other.y, other.z);
         }
 
         /**
@@ -1890,10 +1887,7 @@ module BABYLON {
          * @returns the current updated Vector3
          */
         public maximizeInPlace(other: Vector3): Vector3 {
-            if (other.x < this.x) this.x = other.x;
-            if (other.y < this.y) this.y = other.y;
-            if (other.z < this.z) this.z = other.z;
-            return this;
+            return this.maximizeInPlaceFromFloats(other.x, other.y, other.z);
         }
 
         /**
@@ -1992,7 +1986,7 @@ module BABYLON {
          * Normalize the current Vector3 with the given input length.
          * Please note that this is an in place operation.
          * @param len the length of the vector
-         * @returns the current updated Vector3 
+         * @returns the current updated Vector3
          */
         public normalizeFromLength(len : number): Vector3 {
             if (len === 0 || len === 1.0) {
@@ -2005,7 +1999,6 @@ module BABYLON {
             this.z *= num;
             return this;
         }
-
 
         /**
          * Normalize the current Vector3 to a new vector
@@ -2265,7 +2258,7 @@ module BABYLON {
          * @param result defines the Vector3 where to store the result
          */
         public static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
-            return Vector3.TransformCoordinatesFromFloatsToRef(vector.x, vector.y, vector.z, transformation, result)
+            return Vector3.TransformCoordinatesFromFloatsToRef(vector.x, vector.y, vector.z, transformation, result);
         }
 
         /**
@@ -2282,7 +2275,7 @@ module BABYLON {
             var rx = x * m[0] + y * m[4] + z * m[8] + m[12];
             var ry = x * m[1] + y * m[5] + z * m[9] + m[13];
             var rz = x * m[2] + y * m[6] + z * m[10] + m[14];
-            var rw = 1/(x * m[3] + y * m[7] + z * m[11] + m[15]);
+            var rw = 1 / (x * m[3] + y * m[7] + z * m[11] + m[15]);
 
             result.x = rx * rw;
             result.y = ry * rw;

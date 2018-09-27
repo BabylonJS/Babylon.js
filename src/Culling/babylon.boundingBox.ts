@@ -253,7 +253,7 @@
          * @returns true if there is an intersection
          */
         public static Intersects(box0: BoundingBox, box1: BoundingBox): boolean {
-            return box0.intersectsMinMax(box1.minimumWorld, box1.maximumWorld)
+            return box0.intersectsMinMax(box1.minimumWorld, box1.maximumWorld);
         }
 
         /**

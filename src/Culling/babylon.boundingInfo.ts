@@ -56,12 +56,12 @@ module BABYLON {
         public boundingSphere: BoundingSphere;
 
         private _isLocked = false;
-        
+
         /**
          * Constructs bounding info
          * @param minimum min vector of the bounding box/sphere
          * @param maximum max vector of the bounding box/sphere
-         * @param worldMatrix defines the new world matrix 
+         * @param worldMatrix defines the new world matrix
          */
         constructor(minimum: Vector3, maximum: Vector3, worldMatrix?: Matrix) {
             this.boundingBox = new BoundingBox(minimum, maximum, worldMatrix);
@@ -71,7 +71,7 @@ module BABYLON {
         /**
          * Recreates the entire bounding info from scratch
          * @param min defines the new minimum vector (in local space)
-         * @param max defines the new maximum vector (in local space) 
+         * @param max defines the new maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
          */
         public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
