@@ -196,10 +196,10 @@ module BABYLON {
                 var positions = <FloatArray>instance.getVerticesData(VertexBuffer.PositionKind);
                 positionFunction(positions);
                 if (instance._boundingInfo) {
-                    instance._boundingInfo.reConstruct(Tmp.Vector3[2], Tmp.Vector3[3], instance._worldMatrix);
+                    instance._boundingInfo.reConstruct(minimum, maximum, instance._worldMatrix);
                 }
                 else {
-                    instance._boundingInfo = new BoundingInfo(Tmp.Vector3[2], Tmp.Vector3[3], instance._worldMatrix);
+                    instance._boundingInfo = new BoundingInfo(minimum, maximum, instance._worldMatrix);
                 }
                 instance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
                 if (options.colors) {
