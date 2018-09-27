@@ -431,7 +431,7 @@ module BABYLON {
                 onSuccess();
             };
 
-            img.onerror = (err: ErrorEvent): any => {
+            img.onerror = (err: string | Event): any => {
                 onError("Error loading image", err);
             };
 

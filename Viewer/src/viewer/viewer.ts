@@ -175,7 +175,7 @@ export abstract class AbstractViewer {
         return this._configurationContainer;
     }
 
-    constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = {}) {
+    constructor(public containerElement: Element, initialConfiguration: ViewerConfiguration = {}) {
         // if exists, use the container id. otherwise, generate a random string.
         if (containerElement.id) {
             this.baseId = containerElement.id;
@@ -355,7 +355,7 @@ export abstract class AbstractViewer {
             this.observablesManager.onExitingVRObservable.add(() => {
                 if (this._vrToggled) {
                     this._vrToggled = false;
-                    
+
                     // undo the scaling of the model
                     if (this.sceneManager.models.length) {
                         this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(1 / this._vrScale);

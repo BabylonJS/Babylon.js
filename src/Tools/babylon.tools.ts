@@ -549,13 +549,13 @@ module BABYLON {
                 stride = 3;
             }
 
-            for (var index = start, offset = start * stride; index < start + count; index++, offset += stride) {
+            for (var index = start, offset = start * stride; index < start + count; index++ , offset += stride) {
                 const x = positions[offset];
                 const y = positions[offset + 1];
                 const z = positions[offset + 2];
                 minimum.minimizeInPlaceFromFloats(x, y, z);
                 maximum.maximizeInPlaceFromFloats(x, y, z);
-              }
+            }
 
             if (bias) {
                 minimum.x -= minimum.x * bias.x + bias.y;
@@ -641,7 +641,7 @@ module BABYLON {
          * @param element defines the DOM element to promote
          */
         public static RequestFullscreen(element: HTMLElement): void {
-            var requestFunction = element.requestFullscreen || (<any>element).msRequestFullscreen || element.webkitRequestFullscreen || (<any>element).mozRequestFullScreen;
+            var requestFunction = element.requestFullscreen || (<any>element).msRequestFullscreen || (<any>element).webkitRequestFullscreen || (<any>element).mozRequestFullScreen;
             if (!requestFunction) { return; }
             requestFunction.call(element);
         }
@@ -960,13 +960,13 @@ module BABYLON {
             return fileRequest;
         }
 
-         /**
-          * Load a script (identified by an url). When the url returns, the
-          * content of this file is added into a new script element, attached to the DOM (body element)
-          * @param scriptUrl defines the url of the script to laod
-          * @param onSuccess defines the callback called when the script is loaded
-          * @param onError defines the callback to call if an error occurs
-          */
+        /**
+         * Load a script (identified by an url). When the url returns, the
+         * content of this file is added into a new script element, attached to the DOM (body element)
+         * @param scriptUrl defines the url of the script to laod
+         * @param onSuccess defines the callback called when the script is loaded
+         * @param onError defines the callback to call if an error occurs
+         */
         public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void) {
             if (!Tools.IsWindowObjectExist()) {
                 return;
@@ -1973,10 +1973,10 @@ module BABYLON {
                 let nextGradient = gradients[gradientIndex + 1];
 
                 if (ratio >= currentGradient.gradient && ratio <= nextGradient.gradient) {
-                    let scale =  (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
+                    let scale = (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
                     updateFunc(currentGradient, nextGradient, scale);
                     return;
-               }
+                }
             }
 
             // Use last index if over

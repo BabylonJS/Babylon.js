@@ -405,7 +405,10 @@ export class Inspector {
             let link = popup.document.createElement("link");
             link.rel = "stylesheet";
             link.href = (links[l] as HTMLLinkElement).href;
-            popup.document.head.appendChild(link);
+
+            if (popup.document.head) {
+                popup.document.head.appendChild(link);
+            }
         }
         // Dispose the right panel if existing
         if (!firstTime) {
