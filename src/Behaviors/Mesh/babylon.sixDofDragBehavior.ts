@@ -69,6 +69,7 @@ module BABYLON {
             this._scene = this._ownerNode.getScene();
             if (!SixDofDragBehavior._virtualScene) {
                 SixDofDragBehavior._virtualScene = new BABYLON.Scene(this._scene.getEngine());
+                SixDofDragBehavior._virtualScene.detachControl();
                 this._scene.getEngine().scenes.pop();
             }
 
