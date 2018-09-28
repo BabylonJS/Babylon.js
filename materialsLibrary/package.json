@@ -1,0 +1,38 @@
+{
+    "name": "babylonjs-materials",
+    "version": "1.0.0",
+    "description": "The js Materials library is an extension containing extra materials for babylonjs.",
+    "scripts": {
+        "start:server": "webpack-dev-server",
+        "start:watch": "webpack -w",
+        "build:dev": "webpack",
+        "build:prod": "webpack --mode=production",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "keywords": [
+        "3d",
+        "webgl",
+        "viewer"
+    ],
+    "license": "Apache2",
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    },
+    "homepage": "https://github.com/BabylonJS/Babylon.js#readme",
+    "devDependencies": {
+        "@types/node": "^10.5.2",
+        "clean-webpack-plugin": "^0.1.19",
+        "ts-loader": "^4.0.0",
+        "typescript": "~3.0.1",
+        "webpack": "^4.16.0",
+        "webpack-cli": "^3.0.8",
+        "webpack-dev-server": "^3.1.4"
+    },
+    "dependencies": {
+        "dts-bundle-webpack": "^1.0.0"
+    }
+}
