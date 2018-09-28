@@ -1,7 +1,5 @@
 const path = require('path');
 const webpack = require('webpack');
-const DtsBundleWebpack = require('dts-bundle-webpack');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 module.exports = {
     context: __dirname,
