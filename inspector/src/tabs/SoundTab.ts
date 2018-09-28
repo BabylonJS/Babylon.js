@@ -18,7 +18,7 @@ export class SoundTab extends PropertyTab {
         if (instances.soundTracks) {
             for (let sounds of instances.soundTracks) {
                 let sound = sounds.soundCollection;
-                sound.forEach(element => {
+                sound.forEach((element) => {
                     arr.push(new TreeItem(this, new SoundAdapter(element)));
                 });
 

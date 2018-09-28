@@ -81,36 +81,36 @@ export class SceneTab extends Tab {
 
             title = Helpers.CreateDiv('actions-title', this._actions, 'Choose which textures channels to display or not on materials. (Check to display)');
             title.textContent = 'Textures channels';
-            this._generateActionLine('Diffuse Texture', StandardMaterial.DiffuseTextureEnabled, (b: boolean) => { StandardMaterial.DiffuseTextureEnabled = b }, 'StandardMaterial.DiffuseTextureEnabled');
-            this._generateActionLine('Ambient Texture', StandardMaterial.AmbientTextureEnabled, (b: boolean) => { StandardMaterial.AmbientTextureEnabled = b }, 'StandardMaterial.AmbientTextureEnabled');
-            this._generateActionLine('Specular Texture', StandardMaterial.SpecularTextureEnabled, (b: boolean) => { StandardMaterial.SpecularTextureEnabled = b }, 'StandardMaterial.SpecularTextureEnabled');
-            this._generateActionLine('Emissive Texture', StandardMaterial.EmissiveTextureEnabled, (b: boolean) => { StandardMaterial.EmissiveTextureEnabled = b }, 'StandardMaterial.EmissiveTextureEnabled');
-            this._generateActionLine('Bump Texture', StandardMaterial.BumpTextureEnabled, (b: boolean) => { StandardMaterial.BumpTextureEnabled = b }, 'StandardMaterial.BumpTextureEnabled');
-            this._generateActionLine('Opacity Texture', StandardMaterial.OpacityTextureEnabled, (b: boolean) => { StandardMaterial.OpacityTextureEnabled = b }, 'StandardMaterial.OpacityTextureEnabled');
-            this._generateActionLine('Reflection Texture', StandardMaterial.ReflectionTextureEnabled, (b: boolean) => { StandardMaterial.ReflectionTextureEnabled = b }, 'StandardMaterial.ReflectionTextureEnabled');
-            this._generateActionLine('Refraction Texture', StandardMaterial.RefractionTextureEnabled, (b: boolean) => { StandardMaterial.RefractionTextureEnabled = b }, 'StandardMaterial.RefractionTextureEnabled');
-            this._generateActionLine('ColorGrading', StandardMaterial.ColorGradingTextureEnabled, (b: boolean) => { StandardMaterial.ColorGradingTextureEnabled = b }, 'StandardMaterial.ColorGradingTextureEnabled');
-            this._generateActionLine('Lightmap Texture', StandardMaterial.LightmapTextureEnabled, (b: boolean) => { StandardMaterial.LightmapTextureEnabled = b }, 'StandardMaterial.LightmapTextureEnabled');
-            this._generateActionLine('Fresnel', StandardMaterial.FresnelEnabled, (b: boolean) => { StandardMaterial.FresnelEnabled = b }, 'StandardMaterial.FresnelEnabled');
+            this._generateActionLine('Diffuse Texture', StandardMaterial.DiffuseTextureEnabled, (b: boolean) => { StandardMaterial.DiffuseTextureEnabled = b; }, 'StandardMaterial.DiffuseTextureEnabled');
+            this._generateActionLine('Ambient Texture', StandardMaterial.AmbientTextureEnabled, (b: boolean) => { StandardMaterial.AmbientTextureEnabled = b; }, 'StandardMaterial.AmbientTextureEnabled');
+            this._generateActionLine('Specular Texture', StandardMaterial.SpecularTextureEnabled, (b: boolean) => { StandardMaterial.SpecularTextureEnabled = b; }, 'StandardMaterial.SpecularTextureEnabled');
+            this._generateActionLine('Emissive Texture', StandardMaterial.EmissiveTextureEnabled, (b: boolean) => { StandardMaterial.EmissiveTextureEnabled = b; }, 'StandardMaterial.EmissiveTextureEnabled');
+            this._generateActionLine('Bump Texture', StandardMaterial.BumpTextureEnabled, (b: boolean) => { StandardMaterial.BumpTextureEnabled = b; }, 'StandardMaterial.BumpTextureEnabled');
+            this._generateActionLine('Opacity Texture', StandardMaterial.OpacityTextureEnabled, (b: boolean) => { StandardMaterial.OpacityTextureEnabled = b; }, 'StandardMaterial.OpacityTextureEnabled');
+            this._generateActionLine('Reflection Texture', StandardMaterial.ReflectionTextureEnabled, (b: boolean) => { StandardMaterial.ReflectionTextureEnabled = b; }, 'StandardMaterial.ReflectionTextureEnabled');
+            this._generateActionLine('Refraction Texture', StandardMaterial.RefractionTextureEnabled, (b: boolean) => { StandardMaterial.RefractionTextureEnabled = b; }, 'StandardMaterial.RefractionTextureEnabled');
+            this._generateActionLine('ColorGrading', StandardMaterial.ColorGradingTextureEnabled, (b: boolean) => { StandardMaterial.ColorGradingTextureEnabled = b; }, 'StandardMaterial.ColorGradingTextureEnabled');
+            this._generateActionLine('Lightmap Texture', StandardMaterial.LightmapTextureEnabled, (b: boolean) => { StandardMaterial.LightmapTextureEnabled = b; }, 'StandardMaterial.LightmapTextureEnabled');
+            this._generateActionLine('Fresnel', StandardMaterial.FresnelEnabled, (b: boolean) => { StandardMaterial.FresnelEnabled = b; }, 'StandardMaterial.FresnelEnabled');
 
             // --------------------- Options ---------------------
 
             title = Helpers.CreateDiv('actions-title', this._actions, 'Choose which options to enable / disable on the scene. (Uncheck to disable).');
             title.textContent = 'Options';
-            this._generateActionLine('Animations', this._inspector.scene.animationsEnabled, (b: boolean) => { this._inspector.scene.animationsEnabled = b }, 'scene.animationsEnabled');
-            this._generateActionLine('Collisions', this._inspector.scene.collisionsEnabled, (b: boolean) => { this._inspector.scene.collisionsEnabled = b }, 'scene.collisionsEnabled');
-            this._generateActionLine('Fog', this._inspector.scene.fogEnabled, (b: boolean) => { this._inspector.scene.fogEnabled = b }, 'scene.fogEnabled(boolean)');
-            this._generateActionLine('Lens flares', this._inspector.scene.lensFlaresEnabled, (b: boolean) => { this._inspector.scene.lensFlaresEnabled = b }, 'scene.lensFlaresEnabled');
-            this._generateActionLine('Lights', this._inspector.scene.lightsEnabled, (b: boolean) => { this._inspector.scene.lightsEnabled = b }, 'scene.lightsEnabled');
-            this._generateActionLine('Particles', this._inspector.scene.particlesEnabled, (b: boolean) => { this._inspector.scene.particlesEnabled = b }, 'scene.particlesEnabled');
-            this._generateActionLine('Post-processes', this._inspector.scene.postProcessesEnabled, (b: boolean) => { this._inspector.scene.postProcessesEnabled = b }, 'scene.postProcessesEnabled');
-            this._generateActionLine('Probes', this._inspector.scene.probesEnabled, (b: boolean) => { this._inspector.scene.probesEnabled = b }, 'scene.probesEnabled');
-            this._generateActionLine('Procedural textures', this._inspector.scene.proceduralTexturesEnabled, (b: boolean) => { this._inspector.scene.proceduralTexturesEnabled = b }, 'scene.proceduralTexturesEnabled');
-            this._generateActionLine('Render targets', this._inspector.scene.renderTargetsEnabled, (b: boolean) => { this._inspector.scene.renderTargetsEnabled = b }, 'scene.renderTargetsEnabled');
-            this._generateActionLine('Shadows', this._inspector.scene.shadowsEnabled, (b: boolean) => { this._inspector.scene.shadowsEnabled = b }, 'scene.shadowsEnabled');
-            this._generateActionLine('Skeletons', this._inspector.scene.skeletonsEnabled, (b: boolean) => { this._inspector.scene.skeletonsEnabled = b }, 'scene.skeletonsEnabled');
-            this._generateActionLine('Sprites', this._inspector.scene.spritesEnabled, (b: boolean) => { this._inspector.scene.spritesEnabled = b }, 'scene.spritesEnabled');
-            this._generateActionLine('Textures', this._inspector.scene.texturesEnabled, (b: boolean) => { this._inspector.scene.texturesEnabled = b }, 'scene.texturesEnabled');
+            this._generateActionLine('Animations', this._inspector.scene.animationsEnabled, (b: boolean) => { this._inspector.scene.animationsEnabled = b; }, 'scene.animationsEnabled');
+            this._generateActionLine('Collisions', this._inspector.scene.collisionsEnabled, (b: boolean) => { this._inspector.scene.collisionsEnabled = b; }, 'scene.collisionsEnabled');
+            this._generateActionLine('Fog', this._inspector.scene.fogEnabled, (b: boolean) => { this._inspector.scene.fogEnabled = b; }, 'scene.fogEnabled(boolean)');
+            this._generateActionLine('Lens flares', this._inspector.scene.lensFlaresEnabled, (b: boolean) => { this._inspector.scene.lensFlaresEnabled = b; }, 'scene.lensFlaresEnabled');
+            this._generateActionLine('Lights', this._inspector.scene.lightsEnabled, (b: boolean) => { this._inspector.scene.lightsEnabled = b; }, 'scene.lightsEnabled');
+            this._generateActionLine('Particles', this._inspector.scene.particlesEnabled, (b: boolean) => { this._inspector.scene.particlesEnabled = b; }, 'scene.particlesEnabled');
+            this._generateActionLine('Post-processes', this._inspector.scene.postProcessesEnabled, (b: boolean) => { this._inspector.scene.postProcessesEnabled = b; }, 'scene.postProcessesEnabled');
+            this._generateActionLine('Probes', this._inspector.scene.probesEnabled, (b: boolean) => { this._inspector.scene.probesEnabled = b; }, 'scene.probesEnabled');
+            this._generateActionLine('Procedural textures', this._inspector.scene.proceduralTexturesEnabled, (b: boolean) => { this._inspector.scene.proceduralTexturesEnabled = b; }, 'scene.proceduralTexturesEnabled');
+            this._generateActionLine('Render targets', this._inspector.scene.renderTargetsEnabled, (b: boolean) => { this._inspector.scene.renderTargetsEnabled = b; }, 'scene.renderTargetsEnabled');
+            this._generateActionLine('Shadows', this._inspector.scene.shadowsEnabled, (b: boolean) => { this._inspector.scene.shadowsEnabled = b; }, 'scene.shadowsEnabled');
+            this._generateActionLine('Skeletons', this._inspector.scene.skeletonsEnabled, (b: boolean) => { this._inspector.scene.skeletonsEnabled = b; }, 'scene.skeletonsEnabled');
+            this._generateActionLine('Sprites', this._inspector.scene.spritesEnabled, (b: boolean) => { this._inspector.scene.spritesEnabled = b; }, 'scene.spritesEnabled');
+            this._generateActionLine('Textures', this._inspector.scene.texturesEnabled, (b: boolean) => { this._inspector.scene.texturesEnabled = b; }, 'scene.texturesEnabled');
 
             // --------------------- Audio ---------------------
 
@@ -120,8 +120,8 @@ export class SceneTab extends Tab {
             headphones.textContent = 'Headphones';
             let normalSpeaker = Helpers.CreateDiv('action-radio', this._actions, 'Use Normal speakers mode.');
             normalSpeaker.textContent = 'Normal speakers';
-            this._generateActionLine('Disable audio', !this._inspector.scene.audioEnabled, (b: boolean) => { this._inspector.scene.audioEnabled = !b }, 'Disable audio on the scene.');
-            
+            this._generateActionLine('Disable audio', !this._inspector.scene.audioEnabled, (b: boolean) => { this._inspector.scene.audioEnabled = !b; }, 'Disable audio on the scene.');
+
             this._generateRadioAction([headphones, normalSpeaker]);
             if (this._inspector.scene.headphone) {
                 headphones.classList.add('active');
@@ -182,11 +182,11 @@ export class SceneTab extends Tab {
             div.classList.toggle('active');
             let isActivated = div.classList.contains('active');
             action(isActivated);
-        })
+        });
     }
 
-    /** 
-     * Add a click action for all given elements : 
+    /**
+     * Add a click action for all given elements :
      * the clicked element is set as active, all others elements are deactivated
      */
     private _generateRadioAction(arr: Array<HTMLElement>) {
@@ -195,7 +195,7 @@ export class SceneTab extends Tab {
                 e.classList.remove('active');
             }
             elem.classList.add('active');
-        }
+        };
         for (let elem of arr) {
             elem.addEventListener('click', active.bind(this, elem));
         }

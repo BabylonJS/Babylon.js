@@ -162,16 +162,16 @@ export class Checkbox extends Control {
         checkbox.isChecked = true;
         checkbox.color = "green";
         checkbox.onIsCheckedChangedObservable.add(onValueChanged);
-        panel.addControl(checkbox);    
-    
+        panel.addControl(checkbox);
+
         var header = new TextBlock();
         header.text = title;
         header.width = "180px";
         header.paddingLeft = "5px";
         header.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         header.color = "white";
-        panel.addControl(header); 
+        panel.addControl(header);
 
         return panel;
     }
-}   
+}

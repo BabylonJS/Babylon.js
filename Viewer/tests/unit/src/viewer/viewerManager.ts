@@ -4,7 +4,7 @@ import { DefaultViewer, AbstractViewer, Version, viewerManager } from "../../../
 
 export let name = "viewer manager tests";
 
-describe('Viewer Manager', function () {
+describe('Viewer Manager', function() {
     it("should be defined when the library is loaded", (done) => {
         assert.isDefined(viewerManager, "viewerManager is not defined");
         done();
@@ -78,7 +78,7 @@ describe('Viewer Manager', function () {
         viewer.dispose = () => {
             dispose.call(viewer);
             done();
-        }
+        };
 
         viewerManager.dispose();
 

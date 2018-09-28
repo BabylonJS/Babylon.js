@@ -13,7 +13,6 @@ import { ViewerModel } from '../model/viewerModel';
 import { TemplateManager } from '../templating/templateManager';
 import { viewerManager } from './viewerManager';
 
-
 /**
  * The AbstractViewr is the center of Babylon's viewer.
  * It is the basic implementation of the default viewer and is responsible of loading and showing the model and the templates
@@ -36,7 +35,7 @@ export abstract class AbstractViewer {
     public readonly baseId: string;
 
     /**
-     * The last loader used to load a model. 
+     * The last loader used to load a model.
      * @deprecated
      */
     public lastUsedLoader: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
@@ -148,7 +147,6 @@ export abstract class AbstractViewer {
         return this._canvas;
     }
 
-
     /**
      * is this viewer disposed?
      */
@@ -246,7 +244,7 @@ export abstract class AbstractViewer {
     }
 
     /**
-     * Get the configuration object. This is a reference only. 
+     * Get the configuration object. This is a reference only.
      * The configuration can ONLY be updated using the updateConfiguration function.
      * changing this object will have no direct effect on the scene.
      */
@@ -303,7 +301,7 @@ export abstract class AbstractViewer {
                 // set the height of the model to be what the user has configured, or floating by default
                 if (this.configuration.vr && this.configuration.vr.modelHeightCorrection !== undefined) {
                     if (typeof this.configuration.vr.modelHeightCorrection === 'number') {
-                        this._vrModelRepositioning = this.configuration.vr.modelHeightCorrection
+                        this._vrModelRepositioning = this.configuration.vr.modelHeightCorrection;
                     } else if (this.configuration.vr.modelHeightCorrection) {
                         this._vrModelRepositioning = this.sceneManager.vrHelper.currentVRCamera.position.y / 2;
                     } else {
@@ -379,7 +377,7 @@ export abstract class AbstractViewer {
                     this.canvas.removeAttribute("width");
                     this.engine.resize();
                 }
-            })
+            });
         }
 
         this._vrInit = true;
@@ -412,11 +410,11 @@ export abstract class AbstractViewer {
         }
         // TODO remove this after testing, as this is done in the updateConfiguration as well.
         if (this.configuration.loaderPlugins) {
-            Object.keys(this.configuration.loaderPlugins).forEach((name => {
+            Object.keys(this.configuration.loaderPlugins).forEach(((name) => {
                 if (this.configuration.loaderPlugins && this.configuration.loaderPlugins[name]) {
                     this.modelLoader.addPlugin(name);
                 }
-            }))
+            }));
         }
 
         this.templateManager = new TemplateManager(this.containerElement);
@@ -479,10 +477,10 @@ export abstract class AbstractViewer {
     /**
      * Update the current viewer configuration with new values.
      * Only provided information will be updated, old configuration values will be kept.
-     * If this.configuration was manually changed, you can trigger this function with no parameters, 
-     * and the entire configuration will be updated. 
+     * If this.configuration was manually changed, you can trigger this function with no parameters,
+     * and the entire configuration will be updated.
      * @param newConfiguration the partial configuration to update or a URL to a JSON holding the updated configuration
-     * 
+     *
      */
     public updateConfiguration(newConfiguration: Partial<ViewerConfiguration> | string = this.configuration) {
         if (typeof newConfiguration === "string") {
@@ -511,7 +509,7 @@ export abstract class AbstractViewer {
             }
 
             if (newConfiguration.loaderPlugins) {
-                Object.keys(newConfiguration.loaderPlugins).forEach((name => {
+                Object.keys(newConfiguration.loaderPlugins).forEach(((name) => {
                     if (newConfiguration.loaderPlugins && newConfiguration.loaderPlugins[name]) {
                         this.modelLoader.addPlugin(name);
                     }
@@ -567,8 +565,6 @@ export abstract class AbstractViewer {
 
         this._fpsTimeoutInterval && clearInterval(this._fpsTimeoutInterval);
 
-
-
         this.observablesManager.dispose();
 
         this.modelLoader.dispose();
@@ -589,7 +585,7 @@ export abstract class AbstractViewer {
     /**
      * This function will execute when the HTML templates finished initializing.
      * It should initialize the engine and continue execution.
-     * 
+     *
      * @returns {Promise<AbstractViewer>} The viewer object will be returned after the object was loaded.
      */
     protected _onTemplatesLoaded(): Promise<AbstractViewer> {
@@ -613,24 +609,24 @@ export abstract class AbstractViewer {
             }).then(() => {
                 this._initTelemetryEvents();
                 if (autoLoad) {
-                    return this.loadModel(this.configuration.model!).catch(() => { }).then(() => { return this.sceneManager.scene });
+                    return this.loadModel(this.configuration.model!).catch(() => { }).then(() => { return this.sceneManager.scene; });
                 } else {
                     return this.sceneManager.scene || this.sceneManager.initScene(this.configuration.scene);
                 }
             }).then(() => {
                 return this.onInitDoneObservable.notifyObserversWithPromise(this);
-            }).catch(e => {
+            }).catch((e) => {
                 Tools.Warn(e.toString());
                 return this;
             });
-        })
+        });
     }
 
     /**
      * Initialize the engine. Retruns a promise in case async calls are needed.
-     * 
+     *
      * @protected
-     * @returns {Promise<Engine>} 
+     * @returns {Promise<Engine>}
      * @memberof Viewer
      */
     protected _initEngine(): Promise<Engine> {
@@ -681,7 +677,7 @@ export abstract class AbstractViewer {
     /**
      * Initialize a model loading. The returned object (a ViewerModel object) will be loaded in the background.
      * The difference between this and loadModel is that loadModel will fulfill the promise when the model finished loading.
-     * 
+     *
      * @param modelConfig model configuration to use when loading the model.
      * @param clearScene should the scene be cleared before loading this model
      * @returns a ViewerModel object that is not yet fully loaded.
@@ -692,14 +688,14 @@ export abstract class AbstractViewer {
         if (typeof modelConfig === 'string') {
             configuration = {
                 url: modelConfig
-            }
+            };
         } else if (modelConfig instanceof File) {
             configuration = {
                 file: modelConfig,
                 root: "file:"
-            }
+            };
         } else {
-            configuration = modelConfig
+            configuration = modelConfig;
         }
 
         if (!configuration.url && !configuration.file) {
@@ -712,7 +708,7 @@ export abstract class AbstractViewer {
 
         //merge the configuration for future models:
         if (this.configuration.model && typeof this.configuration.model === 'object') {
-            let globalConfig = deepmerge({}, this.configuration.model)
+            let globalConfig = deepmerge({}, this.configuration.model);
             configuration = deepmerge(globalConfig, configuration);
             if (modelConfig instanceof File) {
                 configuration.file = modelConfig;
@@ -745,10 +741,10 @@ export abstract class AbstractViewer {
      * load a model using the provided configuration.
      * This function, as opposed to initModel, will return a promise that resolves when the model is loaded, and rejects with error.
      * If you want to attach to the observables of the model, use initModle instead.
-     * 
+     *
      * @param modelConfig the model configuration or URL to load.
      * @param clearScene Should the scene be cleared before loading the model
-     * @returns a Promise the fulfills when the model finished loading successfully. 
+     * @returns a Promise the fulfills when the model finished loading successfully.
      */
     public loadModel(modelConfig: string | File | IModelConfiguration, clearScene: boolean = true): Promise<ViewerModel> {
         if (this._isLoading) {
@@ -757,7 +753,7 @@ export abstract class AbstractViewer {
         }
 
         return Promise.resolve(this.sceneManager.scene).then((scene) => {
-            if (!scene) return this.sceneManager.initScene(this.configuration.scene, this.configuration.optimizer);
+            if (!scene) { return this.sceneManager.initScene(this.configuration.scene, this.configuration.optimizer); }
             return scene;
         }).then(() => {
             let model = this.initModel(modelConfig, clearScene);
@@ -770,11 +766,10 @@ export abstract class AbstractViewer {
                     reject(error);
                 });
             });
-        })
+        });
     }
 
     private _fpsTimeoutInterval: number;
-
 
     protected _initTelemetryEvents() {
         telemetryManager.broadcast("Engine Capabilities", this.baseId, this.engine.getCaps());
@@ -804,13 +799,13 @@ export abstract class AbstractViewer {
             return;
         }
         if (customShaders.shaders) {
-            Object.keys(customShaders.shaders).forEach(key => {
+            Object.keys(customShaders.shaders).forEach((key) => {
                 // typescript considers a callback "unsafe", so... '!'
                 Effect.ShadersStore[key] = customShaders!.shaders![key];
             });
         }
         if (customShaders.includes) {
-            Object.keys(customShaders.includes).forEach(key => {
+            Object.keys(customShaders.includes).forEach((key) => {
                 // typescript considers a callback "unsafe", so... '!'
                 Effect.IncludesShadersStore[key] = customShaders!.includes![key];
             });

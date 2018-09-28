@@ -172,7 +172,7 @@ function includeShadersName(filename) {
 /*
  * Main necessary files stream Management.
  */
-gulp.task("includeShaders", function (cb) {
+gulp.task("includeShaders", function(cb) {
     var filesToProcess = determineFilesToProcess("shaderIncludes");
     includeShadersStream = gulp.src(filesToProcess).
         pipe(expect.real({ errorOnFailure: true }, filesToProcess)).
@@ -183,7 +183,7 @@ gulp.task("includeShaders", function (cb) {
     cb();
 });
 
-gulp.task("shaders", gulp.series("includeShaders", function (cb) {
+gulp.task("shaders", gulp.series("includeShaders", function(cb) {
     var filesToProcess = determineFilesToProcess("shaders");
     shadersStream = gulp.src(filesToProcess).
         pipe(expect.real({ errorOnFailure: true }, filesToProcess)).
@@ -194,8 +194,8 @@ gulp.task("shaders", gulp.series("includeShaders", function (cb) {
     cb();
 }));
 
-gulp.task("workers", function (cb) {
-    workersStream = config.workers.map(function (workerDef) {
+gulp.task("workers", function(cb) {
+    workersStream = config.workers.map(function(workerDef) {
         return gulp.src(workerDef.files).
             pipe(expect.real({ errorOnFailure: true }, workerDef.files)).
             pipe(uglify()).
@@ -209,7 +209,7 @@ gulp.task("workers", function (cb) {
 /**
  * Build tasks to concat minify uflify optimise the BJS js in different flavor (workers...).
  */
-gulp.task("buildWorker", gulp.series(gulp.parallel("workers", "shaders"), function () {
+gulp.task("buildWorker", gulp.series(gulp.parallel("workers", "shaders"), function() {
     var filesToProcess = determineFilesToProcess("files");
     return merge2(
         gulp.src(filesToProcess).
@@ -239,7 +239,7 @@ gulp.task("build", gulp.series("shaders", function build() {
         shadersStream,
         includeShadersStream);
     if (directFilesToProcess.length) {
-      mergedStreams.add(gulp.src(directFilesToProcess));
+        mergedStreams.add(gulp.src(directFilesToProcess));
     }
     return merge2(
         mergedStreams
@@ -271,7 +271,7 @@ gulp.task("build", gulp.series("shaders", function build() {
 /*
 * TsLint all typescript files from the src directory.
 */
-gulp.task("typescript-tsLint", function () {
+gulp.task("typescript-tsLint", function() {
     return gulp.src(config.typescript)
         .pipe(gulpTslint({
             formatter: "stylish",
@@ -284,7 +284,7 @@ gulp.task("typescript-tsLint", function () {
 /*
 * TsLint all typescript files from the src directory.
 */
-var tsLintExternalLibrary = function (library, settings, watch) {
+var tsLintExternalLibrary = function(library, settings, watch) {
     if (library.files && library.files.length) {
         return gulp.src(library.files, { base: settings.build.srcOutputDirectory })
             .pipe(gulpTslint({
@@ -295,7 +295,7 @@ var tsLintExternalLibrary = function (library, settings, watch) {
             .pipe(gulpTslint.report());
     }
     else {
-        return gulp.src(settings.build.srcOutputDirectory + "/**/*.ts")
+        return gulp.src((settings.build.srcDirectory || settings.build.srcOutputDirectory) + "/**/*.ts")
             .pipe(gulpTslint({
                 formatter: "stylish",
                 configuration: "../../tslint.json",
@@ -308,8 +308,8 @@ var tsLintExternalLibrary = function (library, settings, watch) {
 /**
  * Helper methods to tsLint external library (mat, post processes, ...).
  */
-var tsLintExternalLibraries = function (settings) {
-    var tasks = settings.libraries.map(function (library) {
+var tsLintExternalLibraries = function(settings) {
+    var tasks = settings.libraries.map(function(library) {
         return tsLintExternalLibrary(library, settings, false);
     });
 
@@ -320,8 +320,8 @@ var tsLintExternalLibraries = function (settings) {
 /**
  * Dynamic module creation tsLint.
  */
-config.modules.map(function (module) {
-    gulp.task(module + "-tsLint", function () {
+config.modules.map(function(module) {
+    gulp.task(module + "-tsLint", function() {
         return tsLintExternalLibraries(config[module]);
     });
 });
@@ -329,11 +329,11 @@ config.modules.map(function (module) {
 /**
  * Full Librairies tsLint.
  */
-gulp.task("typescript-libraries-tsLint", 
+gulp.task("typescript-libraries-tsLint",
     gulp.series(config.modules.map((module) => {
-         return module + "-tsLint";
+        return module + "-tsLint";
     })
-));
+    ));
 
 /**
  * Full TsLint.
@@ -343,7 +343,7 @@ gulp.task("tsLint", gulp.series("typescript-tsLint", "typescript-libraries-tsLin
 /*
 * Compiles all typescript files and creating a js and a declaration file.
 */
-gulp.task("typescript-compile", function () {
+gulp.task("typescript-compile", function() {
     var tsResult = gulp.src(config.typescript)
         .pipe(sourcemaps.init())
         .pipe(tsProject({
@@ -352,8 +352,8 @@ gulp.task("typescript-compile", function () {
 
     //If this gulp task is running on travis, file the build!
     if (process.env.TRAVIS) {
-        tsResult.once("error", function () {
-            tsResult.once("finish", function () {
+        tsResult.once("error", function() {
+            tsResult.once("finish", function() {
                 console.log("Typescript compile failed");
                 process.exit(1);
             });
@@ -380,19 +380,19 @@ gulp.task("typescript-compile", function () {
 /**
  * Helper methods to build external library (mat, post processes, ...).
  */
-var buildExternalLibraries = function (settings) {
-    var tasks = settings.libraries.map(function (library) {
+var buildExternalLibraries = function(settings) {
+    var tasks = settings.libraries.map(function(library) {
         return buildExternalLibrary(library, settings, false);
     });
 
     let mergedTasks = merge2(tasks);
 
     if (settings.build.buildAsModule) {
-        mergedTasks.on("end", function () {
+        mergedTasks.on("end", function() {
             //generate js file list
-            let files = settings.libraries.filter(function (lib) {
+            let files = settings.libraries.filter(function(lib) {
                 return !lib.doNotIncludeInBundle;
-            }).map(function (lib) {
+            }).map(function(lib) {
                 return config.build.outputDirectory + settings.build.distOutputDirectory + lib.output;
             });
 
@@ -412,7 +412,7 @@ var buildExternalLibraries = function (settings) {
                 .pipe(optimisejs())
                 .pipe(gulp.dest(outputDirectory));
 
-            let dtsFiles = files.map(function (filename) {
+            let dtsFiles = files.map(function(filename) {
                 return filename.replace(".js", ".d.ts");
             });
             let dtsModuleTask = gulp.src(dtsFiles)
@@ -432,7 +432,7 @@ var buildExternalLibraries = function (settings) {
     return mergedTasks;
 }
 
-var buildExternalLibrary = function (library, settings, watch) {
+var buildExternalLibrary = function(library, settings, watch) {
     var tsProcess;
     if (library.files && library.files.length) {
         tsProcess = gulp.src(library.files, { base: settings.build.srcOutputDirectory })
@@ -604,7 +604,7 @@ var buildExternalLibrary = function (library, settings, watch) {
                     //shoud dtsBundle create the declaration?
                     if (settings.build.dtsBundle) {
                         let event = wpBuild
-                            .pipe(through.obj(function (file, enc, cb) {
+                            .pipe(through.obj(function(file, enc, cb) {
                                 // only declaration files
                                 const isdts = /\.d\.ts$/.test(file.path);
                                 if (isdts) this.push(file);
@@ -613,12 +613,12 @@ var buildExternalLibrary = function (library, settings, watch) {
                             .pipe(gulp.dest(outputDirectory));
                         // dts-bundle does NOT support (gulp) streams, so files have to be saved and reloaded, 
                         // until I fix it
-                        event.on("end", function () {
+                        event.on("end", function() {
                             // create the file
                             dtsBundle.bundle(settings.build.dtsBundle);
                             // prepend the needed reference
                             let fileLocation = path.join(path.dirname(settings.build.dtsBundle.main), settings.build.dtsBundle.out);
-                            fs.readFile(fileLocation, function (err, data) {
+                            fs.readFile(fileLocation, function(err, data) {
                                 if (err) throw err;
                                 data = (settings.build.dtsBundle.prependText || "") + '\n' + data.toString();
                                 fs.writeFileSync(fileLocation, data);
@@ -631,7 +631,7 @@ var buildExternalLibrary = function (library, settings, watch) {
                     }
 
                     let build = wpBuild
-                        .pipe(through.obj(function (file, enc, cb) {
+                        .pipe(through.obj(function(file, enc, cb) {
                             // only pipe js files
                             const isJs = /\.js$/.test(file.path);
                             if (isJs) this.push(file);
@@ -650,11 +650,11 @@ var buildExternalLibrary = function (library, settings, watch) {
                             if (dest.addBabylonDeclaration === true) {
                                 dest.addBabylonDeclaration = [config.build.declarationFilename];
                             }
-                            var decsToAdd = dest.addBabylonDeclaration.map(function (dec) {
+                            var decsToAdd = dest.addBabylonDeclaration.map(function(dec) {
                                 return config.build.outputDirectory + '/' + dec;
                             });
                             sequence.unshift(gulp.src(decsToAdd)
-                                .pipe(rename(function (path) {
+                                .pipe(rename(function(path) {
                                     path.dirname = '';
                                 }))
                                 .pipe(gulp.dest(outputDirectory)))
@@ -675,13 +675,13 @@ var buildExternalLibrary = function (library, settings, watch) {
                 let buildEvent = wpBuild
                     .pipe(gulp.dest(outputDirectory))
                     //back-compat
-                    .pipe(through.obj(function (file, enc, cb) {
+                    .pipe(through.obj(function(file, enc, cb) {
                         // only js files
                         const isjs = /\.js$/.test(file.path);
                         if (isjs) this.push(file);
                         cb();
                     }))
-                    .pipe(rename(function (path) {
+                    .pipe(rename(function(path) {
                         console.log(path.basename);
                         //path.extname === ".js"
                         path.basename = path.basename.replace(".min", "")
@@ -690,12 +690,12 @@ var buildExternalLibrary = function (library, settings, watch) {
                     buildEvent
                 );
                 if (settings.build.dtsBundle || settings.build.processDeclaration) {
-                    buildEvent.on("end", function () {
+                    buildEvent.on("end", function() {
                         if (settings.build.dtsBundle) {
                             dtsBundle.bundle(settings.build.dtsBundle);
                         } if (settings.build.processDeclaration) {
                             let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
-                            fs.readFile(fileLocation, function (err, data) {
+                            fs.readFile(fileLocation, function(err, data) {
                                 if (err) throw err;
 
                                 // For Raanan,litera litteral import hack TO BETTER INTEGRATE
@@ -743,8 +743,8 @@ gulp.task("typescript", gulp.series("typescript-compile", "mainBuild"));
 /**
  * Dynamic module creation.
  */
-config.modules.map(function (module) {
-    gulp.task(module, function () {
+config.modules.map(function(module) {
+    gulp.task(module, function() {
         return buildExternalLibraries(config[module]);
     });
 });
@@ -759,7 +759,7 @@ gulp.task("build-custom", gulp.series("typescript-compile", "build"));
 /**
  * Watch ts files from typescript .
  */
-gulp.task("srcTscWatch", function () {
+gulp.task("srcTscWatch", function() {
     // Reuse The TSC CLI from gulp to enable -w.
     process.argv[2] = "-w";
     process.argv[3] = "-p";
@@ -776,9 +776,9 @@ gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
 
     var tasks = [];
 
-    config.modules.map(function (module) {
+    config.modules.map(function(module) {
 
-        config[module].libraries.map(function (library) {
+        config[module].libraries.map(function(library) {
             if (library.webpack) {
                 if (library.noWatch) return;
                 var outputDirectory = config.build.tempDirectory + config[module].build.distOutputDirectory;
@@ -790,17 +790,17 @@ gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
                 //config.stats = "minimal";
                 tasks.push(webpackStream(wpconfig, webpack).pipe(gulp.dest(outputDirectory)))
             } else {
-                tasks.push(gulp.watch(library.files, { interval: interval }, function () {
+                tasks.push(gulp.watch(library.files, { interval: interval }, function() {
                     console.log(library.output);
                     return buildExternalLibrary(library, config[module], true)
                         .pipe(debug());
                 }));
-                tasks.push(gulp.watch(library.shaderFiles, { interval: interval }, function () {
+                tasks.push(gulp.watch(library.shaderFiles, { interval: interval }, function() {
                     console.log(library.output);
                     return buildExternalLibrary(library, config[module], true)
                         .pipe(debug())
                 }));
-                tasks.push(gulp.watch(library.sassFiles, { interval: interval }, function () {
+                tasks.push(gulp.watch(library.sassFiles, { interval: interval }, function() {
                     console.log(library.output);
                     return buildExternalLibrary(library, config[module], true)
                         .pipe(debug())
@@ -814,7 +814,7 @@ gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
     return Promise.resolve();
 }));
 
-gulp.task("intellisense", function () {
+gulp.task("intellisense", function() {
     return gulp.src(config.build.intellisenseSources)
         .pipe(concat(config.build.intellisenseFile))
         .pipe(replace(/^\s+_.*?;/gm, ""))
@@ -828,7 +828,7 @@ gulp.task("intellisense", function () {
 /**
  * Embedded local dev env management.
  */
-gulp.task("deployLocalDev", function () {
+gulp.task("deployLocalDev", function() {
     return gulp.src("../../localDev/template/**.*")
         .pipe(gulp.dest("../../localDev/src/"));
 });
@@ -836,7 +836,7 @@ gulp.task("deployLocalDev", function () {
 /**
  * Embedded webserver for test convenience.
  */
-gulp.task("webserver", function () {
+gulp.task("webserver", function() {
     var options = {
         port: 1338,
         livereload: false,
@@ -858,13 +858,13 @@ gulp.task("run", gulp.series("watch", "webserver"));
 /**
  * Cleans map and js files from the src folder.
  */
-gulp.task("clean-JS-MAP", function () {
+gulp.task("clean-JS-MAP", function() {
     return del([
         "../../src/**/*.js.map", "../../src/**/*.js"
     ], { force: true });
 });
 
-gulp.task("netlify-cleanup", function () {
+gulp.task("netlify-cleanup", function() {
     //set by netlify
     if (process.env.REPOSITORY_URL) {
         return del([
@@ -878,15 +878,15 @@ gulp.task("netlify-cleanup", function () {
 })
 
 // this is needed for the modules for the declaration files.
-gulp.task("modules-compile", function () {
+gulp.task("modules-compile", function() {
     var tsResult = gulp.src(config.typescript)
         .pipe(sourcemaps.init())
         .pipe(tsProject());
 
     // If this gulp task is running on travis
     if (process.env.TRAVIS) {
-        tsResult.once("error", function () {
-            tsResult.once("finish", function () {
+        tsResult.once("error", function() {
+            tsResult.once("finish", function() {
                 console.log("Typescript compile failed");
                 process.exit(1);
             });
@@ -913,7 +913,7 @@ let declared = {}
 let perFile = {};
 let dependencyTree = {};
 
-gulp.task('prepare-for-modules', /*["modules-compile"],*/ function () {
+gulp.task('prepare-for-modules', /*["modules-compile"],*/ function() {
     let tasks = [];
     Object.keys(config.workloads).forEach((moduleName) => {
         let dtsFiles = config.workloads[moduleName].files.map(f => f.replace(".js", ".d.ts"))
@@ -935,7 +935,7 @@ gulp.task('prepare-for-modules', /*["modules-compile"],*/ function () {
     return merge2(tasks);
 });
 
-gulp.task('prepare-dependency-tree', gulp.series("prepare-for-modules", function () {
+gulp.task('prepare-dependency-tree', gulp.series("prepare-for-modules", function() {
     let tasks = [];
 
     // now calculate internal dependencies in the .ts files!
@@ -952,7 +952,7 @@ gulp.task('prepare-dependency-tree', gulp.series("prepare-for-modules", function
 
 // generate the modules directory, along with commonjs modules and es6 modules
 // Note - the generated modules are UNMINIFIED! The user will choose whether they want to minify or not.
-gulp.task("modules", gulp.series("prepare-dependency-tree", function () {
+gulp.task("modules", gulp.series("prepare-dependency-tree", function() {
     let tasks = [];
 
     Object.keys(config.workloads)
@@ -976,7 +976,7 @@ gulp.task("modules", gulp.series("prepare-dependency-tree", function () {
                     .pipe(replace(referenceSearchRegex, ""))
                     .pipe(replace(/var BABYLON;\n/g, ""))
                     .pipe(babylonModuleExports(moduleName, dependencyTree, false, perFile, shadersFiles.length, shaderIncludeFiles.length))
-                    .pipe(rename(function (path) {
+                    .pipe(rename(function(path) {
                         path.basename = path.basename.split(".").pop()
                         path.extname = ".js"
                     })),
@@ -1003,7 +1003,7 @@ gulp.task("modules", gulp.series("prepare-dependency-tree", function () {
                     .pipe(replace(referenceSearchRegex, ""))
                     .pipe(replace(/var BABYLON;\n/g, ""))
                     .pipe(babylonES6ModuleExports(moduleName, dependencyTree, false, perFile, shadersFiles.length, shaderIncludeFiles.length))
-                    .pipe(rename(function (path) {
+                    .pipe(rename(function(path) {
                         path.basename = path.basename.split(".").pop()
                         path.extname = ".js"
                     })),
@@ -1080,7 +1080,7 @@ gulp.task("modules", gulp.series("prepare-dependency-tree", function () {
 /**
  * Generate the TypeDoc JSON output in order to create code metadata.
  */
-gulp.task("typedoc-generate", function () {
+gulp.task("typedoc-generate", function() {
     return gulp
         .src([
             "../../dist/preview release/babylon.d.ts",
@@ -1115,7 +1115,7 @@ gulp.task("typedoc-generate", function () {
  * Validate the TypeDoc JSON output against the current baselin to ensure our code is correctly documented.
  * (in the newly introduced areas)
  */
-gulp.task("typedoc-validate", function () {
+gulp.task("typedoc-validate", function() {
     return gulp.src(config.build.typedocJSON)
         .pipe(validateTypedoc(config.build.typedocValidationBaseline, "BABYLON", true, false));
 });
@@ -1123,7 +1123,7 @@ gulp.task("typedoc-validate", function () {
 /**
  * Generate the validation reference to ensure our code is correctly documented.
  */
-gulp.task("typedoc-generateValidationBaseline", function () {
+gulp.task("typedoc-generateValidationBaseline", function() {
     return gulp.src(config.build.typedocJSON)
         .pipe(validateTypedoc(config.build.typedocValidationBaseline, "BABYLON", true, true));
 });
@@ -1144,7 +1144,7 @@ gulp.task("typedoc-check", gulp.series("typescript-compile", "gui", "loaders", "
  * Launches the KARMA validation tests in chrome in order to debug them.
  * (Can only be launch locally.)
  */
-gulp.task("tests-validation-karma", function (done) {
+gulp.task("tests-validation-karma", function(done) {
     var kamaServerOptions = {
         configFile: __dirname + "/../../tests/validation/karma.conf.js",
         singleRun: false
@@ -1158,7 +1158,7 @@ gulp.task("tests-validation-karma", function (done) {
  * Launches the KARMA validation tests in ff or virtual screen ff on travis for a quick analysis during the build.
  * (Can only be launch on any branches.)
  */
-gulp.task("tests-validation-virtualscreen", function (done) {
+gulp.task("tests-validation-virtualscreen", function(done) {
     var kamaServerOptions = {
         configFile: __dirname + "/../../tests/validation/karma.conf.js",
         singleRun: true,
@@ -1173,7 +1173,7 @@ gulp.task("tests-validation-virtualscreen", function (done) {
  * Launches the KARMA validation tests in browser stack for remote and cross devices validation tests.
  * (Can only be launch from secure branches.)
  */
-gulp.task("tests-validation-browserstack", function (done) {
+gulp.task("tests-validation-browserstack", function(done) {
     if (!process.env.BROWSER_STACK_USERNAME) {
         done();
         return;
@@ -1191,14 +1191,14 @@ gulp.task("tests-validation-browserstack", function (done) {
 /**
  * Transpiles typescript unit tests. 
  */
-gulp.task("tests-unit-transpile", function (done) {
+gulp.task("tests-unit-transpile", function(done) {
     var tsProject = typescript.createProject('../../tests/unit/tsconfig.json');
 
     var tsResult = gulp.src("../../tests/unit/**/*.ts", { base: "../../" })
         .pipe(tsProject());
 
-    tsResult.once("error", function () {
-        tsResult.once("finish", function () {
+    tsResult.once("error", function() {
+        tsResult.once("finish", function() {
             console.log("Typescript compile failed");
             process.exit(1);
         });
@@ -1211,7 +1211,7 @@ gulp.task("tests-unit-transpile", function (done) {
  * Launches the KARMA unit tests in phantomJS.
  * (Can only be launch on any branches.)
  */
-gulp.task("tests-unit-debug", gulp.series("tests-unit-transpile", function (done) {
+gulp.task("tests-unit-debug", gulp.series("tests-unit-transpile", function(done) {
     var kamaServerOptions = {
         configFile: __dirname + "/../../tests/unit/karma.conf.js",
         singleRun: false,
@@ -1222,7 +1222,7 @@ gulp.task("tests-unit-debug", gulp.series("tests-unit-transpile", function (done
     server.start();
 }));
 
-gulp.task("tests-babylon-unit", gulp.series("tests-unit-transpile", function (done) {
+gulp.task("tests-babylon-unit", gulp.series("tests-unit-transpile", function(done) {
     var kamaServerOptions = {
         configFile: __dirname + "/../../tests/unit/karma.conf.js",
         singleRun: true
@@ -1232,7 +1232,7 @@ gulp.task("tests-babylon-unit", gulp.series("tests-unit-transpile", function (do
     server.start();
 }));
 
-var rmDir = function (dirPath) {
+var rmDir = function(dirPath) {
     try { var files = fs.readdirSync(dirPath); }
     catch (e) { return; }
     if (files.length > 0)
@@ -1249,7 +1249,7 @@ var rmDir = function (dirPath) {
 /**
  * Transpiles viewer typescript unit tests. 
  */
-gulp.task("tests-viewer-validation-transpile", function () {
+gulp.task("tests-viewer-validation-transpile", function() {
 
     let wpBuild = webpackStream(require('../../Viewer/webpack.gulp.config.js'), webpack);
 
@@ -1257,7 +1257,7 @@ gulp.task("tests-viewer-validation-transpile", function () {
     rmDir("../../Viewer/tests/build/");
 
     return wpBuild
-        .pipe(rename(function (path) {
+        .pipe(rename(function(path) {
             if (path.extname === '.js') {
                 path.basename = "test";
             }
@@ -1269,7 +1269,7 @@ gulp.task("tests-viewer-validation-transpile", function () {
  * Launches the viewer's KARMA validation tests in chrome in order to debug them.
  * (Can only be launch locally.)
  */
-gulp.task("tests-viewer-validation-karma", gulp.series("tests-viewer-validation-transpile", function (done) {
+gulp.task("tests-viewer-validation-karma", gulp.series("tests-viewer-validation-transpile", function(done) {
     var kamaServerOptions = {
         configFile: __dirname + "/../../Viewer/tests/validation/karma.conf.js",
         singleRun: false
@@ -1283,7 +1283,7 @@ gulp.task("tests-viewer-validation-karma", gulp.series("tests-viewer-validation-
  * Launches the KARMA validation tests in ff or virtual screen ff on travis for a quick analysis during the build.
  * (Can only be launch on any branches.)
  */
-gulp.task("tests-viewer-validation-virtualscreen", gulp.series("tests-viewer-validation-transpile", function (done) {
+gulp.task("tests-viewer-validation-virtualscreen", gulp.series("tests-viewer-validation-transpile", function(done) {
     var kamaServerOptions = {
         configFile: __dirname + "/../../Viewer/tests/validation/karma.conf.js",
         singleRun: true,
@@ -1298,7 +1298,7 @@ gulp.task("tests-viewer-validation-virtualscreen", gulp.series("tests-viewer-val
  * Launches the KARMA validation tests in browser stack for remote and cross devices validation tests.
  * (Can only be launch from secure branches.)
  */
-gulp.task("tests-viewer-validation-browserstack", gulp.series("tests-viewer-validation-transpile", function (done) {
+gulp.task("tests-viewer-validation-browserstack", gulp.series("tests-viewer-validation-transpile", function(done) {
     if (!process.env.BROWSER_STACK_USERNAME) {
         done();
         return;
@@ -1316,7 +1316,7 @@ gulp.task("tests-viewer-validation-browserstack", gulp.series("tests-viewer-vali
 /**
  * Transpiles viewer typescript unit tests. 
  */
-gulp.task("tests-viewer-transpile", function () {
+gulp.task("tests-viewer-transpile", function() {
 
     let wpBuild = webpackStream(require('../../Viewer/tests/unit/webpack.config.js'), webpack);
 
@@ -1324,7 +1324,7 @@ gulp.task("tests-viewer-transpile", function () {
     rmDir("../../Viewer/tests/build/");
 
     return wpBuild
-        .pipe(rename(function (path) {
+        .pipe(rename(function(path) {
             if (path.extname === '.js') {
                 path.basename = "test";
             }
@@ -1336,7 +1336,7 @@ gulp.task("tests-viewer-transpile", function () {
  * Launches the KARMA unit tests in chrome.
  * (Can be launch on any branches.)
  */
-gulp.task("tests-viewer-unit-debug", gulp.series("tests-viewer-transpile", function (done) {
+gulp.task("tests-viewer-unit-debug", gulp.series("tests-viewer-transpile", function(done) {
     var kamaServerOptions = {
         configFile: __dirname + "/../../Viewer/tests/karma.conf.js",
         singleRun: false,
@@ -1351,7 +1351,7 @@ gulp.task("tests-viewer-unit-debug", gulp.series("tests-viewer-transpile", funct
  * Launches the KARMA unit tests in phantomJS.
  * (Can be launch on any branches.)
  */
-gulp.task("tests-viewer-unit", gulp.series("tests-viewer-transpile", function (done) {
+gulp.task("tests-viewer-unit", gulp.series("tests-viewer-transpile", function(done) {
     var kamaServerOptions = {
         configFile: __dirname + "/../../Viewer/tests/karma.conf.js",
         singleRun: true
@@ -1367,7 +1367,7 @@ gulp.task("tests-viewer-unit", gulp.series("tests-viewer-transpile", function (d
  */
 gulp.task("tests-unit", gulp.series("tests-babylon-unit", "tests-viewer-unit"));
 
-gulp.task("tests-modules", function () {
+gulp.task("tests-modules", function() {
     let testsToRun = require('../../tests/modules/tests.json');
 
     let sequencePromise = Promise.resolve();
@@ -1380,9 +1380,9 @@ gulp.task("tests-modules", function () {
             let compilePromise = Promise.resolve();
 
             if (test.dependencies) {
-                compilePromise = new Promise(function (resolve, reject) {
+                compilePromise = new Promise(function(resolve, reject) {
                     let counter = 0;
-                    let copyTask = gulp.src(test.dependencies.map(dep => config.build.outputDirectory + '/' + dep)).pipe(rename(function (path) {
+                    let copyTask = gulp.src(test.dependencies.map(dep => config.build.outputDirectory + '/' + dep)).pipe(rename(function(path) {
                         path.basename = (counter++) + '';
                     })).pipe(gulp.dest("../../tests/modules/build/dependencies/"))
                     copyTask.once("finish", resolve);
@@ -1393,20 +1393,20 @@ gulp.task("tests-modules", function () {
                 //typescript only
                 if (test.typescript && !test.bundler) {
                     compilePromise = compilePromise.then(() => {
-                        return new Promise(function (resolve, reject) {
+                        return new Promise(function(resolve, reject) {
                             var tsProject = typescript.createProject(basePath + (test.tsconfig || 'tsconfig.json'));
 
                             var tsResult = gulp.src(basePath + '/src/**/*.ts', { base: basePath })
                                 .pipe(tsProject());
 
                             let error = false;
-                            tsResult.once("error", function () {
+                            tsResult.once("error", function() {
                                 error = true;
                             });
 
                             let jsPipe = tsResult.js.pipe(gulp.dest("../../tests/modules/"));
 
-                            jsPipe.once("finish", function () {
+                            jsPipe.once("finish", function() {
                                 if (error)
                                     reject('error compiling test');
                                 else
@@ -1418,11 +1418,11 @@ gulp.task("tests-modules", function () {
                     if (test.bundler === 'webpack') {
                         console.log("webpack");
                         compilePromise = compilePromise.then(() => {
-                            return new Promise(function (resolve, reject) {
+                            return new Promise(function(resolve, reject) {
                                 let wpBuild = webpackStream(require(basePath + '/webpack.config.js'), webpack);
 
                                 wpBuild = wpBuild
-                                    .pipe(rename(function (path) {
+                                    .pipe(rename(function(path) {
                                         if (path.extname === '.js') {
                                             path.basename = "tests-loader";
                                         }
@@ -1437,7 +1437,7 @@ gulp.task("tests-modules", function () {
             }
 
             return compilePromise.then(() => {
-                return new Promise(function (resolve, reject) {
+                return new Promise(function(resolve, reject) {
                     var kamaServerOptions = {
                         configFile: __dirname + "/../../tests/modules/karma.conf.js",
                         singleRun: true
@@ -1453,7 +1453,7 @@ gulp.task("tests-modules", function () {
     return sequencePromise;
 });
 
-gulp.task("tests-whatsnew", function (done) {
+gulp.task("tests-whatsnew", function(done) {
     // Only checks on Travis
     if (!process.env.TRAVIS) {
         done();
@@ -1482,7 +1482,7 @@ gulp.task("tests-whatsnew", function (done) {
             oldData += data;
         });
         res.on("end", () => {
-            fs.readFile("../../dist/preview release/what's new.md", "utf-8", function (err, newData) {
+            fs.readFile("../../dist/preview release/what's new.md", "utf-8", function(err, newData) {
                 if (err || oldData != newData) {
                     done();
                     return;

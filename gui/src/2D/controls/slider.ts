@@ -216,7 +216,6 @@ export class Slider extends Control {
         return thumbThickness;
     }
 
-
     public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
         context.save();
 
@@ -237,7 +236,6 @@ export class Slider extends Control {
             backgroundBoxLength -= effectiveThumbThickness;
 
             var radius = 0;
-
 
             //throw error when height is less than width for vertical slider
             if ((this._isVertical && this._currentMeasure.height < this._currentMeasure.width)) {
@@ -273,10 +271,12 @@ export class Slider extends Control {
             }
 
             if (this.isThumbClamped && this.isThumbCircle) {
-                if (this._isVertical)
+                if (this._isVertical) {
                     top += (effectiveThumbThickness / 2);
-                else
+                }
+                else {
                     left += (effectiveThumbThickness / 2);
+                }
 
                 radius = backgroundBoxThickness / 2;
             }
@@ -367,7 +367,6 @@ export class Slider extends Control {
                 }
             }
 
-
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;
                 context.shadowBlur = this.shadowBlur;
@@ -414,7 +413,6 @@ export class Slider extends Control {
         }
         context.restore();
     }
-
 
     // Events
     private _pointerIsDown = false;

@@ -315,4 +315,4 @@ export let extendedConfiguration: ViewerConfiguration = {
             bloomWeight: 0.05
         }
     }
-}
+};

@@ -17,23 +17,23 @@ export class PropertyFormatter {
     public static format(obj: any, prop: string): string {
         // Get original value;
         let value = obj[prop];
-        // test if type PrimitiveAlignment is available (only included in canvas2d)           
+        // test if type PrimitiveAlignment is available (only included in canvas2d)
         return value;
     }
 
 }
 
 /**
- * A property line represents a line in the detail panel. This line is composed of : 
+ * A property line represents a line in the detail panel. This line is composed of :
  * - a name (the property name)
  * - a value if this property is of a type 'simple' : string, number, boolean, color, texture
  * - the type of the value if this property is of a complex type (Vector2, Size, ...)
  * - a ID if defined (otherwise an empty string is displayed)
  * The original object is sent to the value object who will update it at will.
- * 
+ *
  * A property line can contain OTHER property line objects in the case of a complex type.
  * If this instance has no link to other instances, its type is ALWAYS a simple one (see above).
- * 
+ *
  */
 export class PropertyLine {
 
@@ -121,8 +121,8 @@ export class PropertyLine {
         Scheduler.getInstance().add(this);
     }
 
-    /** 
-     * Init the input element and al its handler : 
+    /**
+     * Init the input element and al its handler :
      * - a click in the window remove the input and restore the old property value
      * - enters updates the property
      */
@@ -142,7 +142,7 @@ export class PropertyLine {
         this._onMouseUpHandler = this._onMouseUp.bind(this);
     }
 
-    /** 
+    /**
      * On enter : validates the new value and removes the input
      * On escape : removes the input
      */
@@ -173,7 +173,7 @@ export class PropertyLine {
         }
     }
 
-    /** 
+    /**
      * On escape : removes the input
      */
     private _escapeInput(e: KeyboardEvent) {
@@ -222,16 +222,15 @@ export class PropertyLine {
         Scheduler.getInstance().pause = true;
     }
 
-    /** Retrieve the correct object from its parent. 
+    /** Retrieve the correct object from its parent.
      * If no parent exists, returns the property value.
-     * This method is used at each update in case the property object is removed from the original object 
+     * This method is used at each update in case the property object is removed from the original object
      * (example : mesh.position = new Vector3 ; the original vector3 object is deleted from the mesh).
     */
     public updateObject() {
         if (this._parent) {
             this._property.obj = this._parent.updateObject();
         }
-
 
         return this._property.value;
     }
@@ -279,7 +278,7 @@ export class PropertyLine {
         }
     }
 
-    // Returns the text displayed on the left of the property name : 
+    // Returns the text displayed on the left of the property name :
     // - If the type is simple, display its value
     // - If the type is complex, but instance of Vector2, Size, display the type and its tostring
     // - If the type is another one, display the Type
@@ -297,7 +296,7 @@ export class PropertyLine {
         return PROPERTIES.format(value);
     }
 
-    /** Delete properly this property line. 
+    /** Delete properly this property line.
      * Removes itself from the scheduler.
      * Dispose all viewer element (color, texture...)
      */
@@ -312,7 +311,7 @@ export class PropertyLine {
         this._elements = [];
     }
 
-    /** Updates the content of _valueDiv with the value of the property, 
+    /** Updates the content of _valueDiv with the value of the property,
      * and all HTML element correpsonding to this type.
      * Elements are updated as well
      */
@@ -380,7 +379,6 @@ export class PropertyLine {
 
             }
 
-
         }
         for (let elem of this._elements) {
             elem.update(this.value);
@@ -388,7 +386,7 @@ export class PropertyLine {
     }
 
     /**
-     * Update the property division with the new property value. 
+     * Update the property division with the new property value.
      * If this property is complex, update its child, otherwise update its text content
      */
     public update() {
@@ -490,7 +488,7 @@ export class PropertyLine {
                     this._children.unshift(hexLine);
                 }
             }
-            // otherwise display it    
+            // otherwise display it
             if (this._div.parentNode) {
                 for (let child of this._children) {
                     this._div.parentNode.insertBefore(child.toHtml(), this._div.nextSibling);
@@ -501,7 +499,7 @@ export class PropertyLine {
 
     /**
      * Refresh mouse position on y axis
-     * @param e 
+     * @param e
      */
     private _onMouseDrag(e: MouseEvent): void {
         const diff = this._prevY - e.clientY;
@@ -510,7 +508,7 @@ export class PropertyLine {
 
     /**
      * Save new value from slider
-     * @param e 
+     * @param e
      */
     private _onMouseUp(e: MouseEvent): void {
         window.removeEventListener('mousemove', this._onMouseDragHandler);
@@ -520,7 +518,7 @@ export class PropertyLine {
 
     /**
      * Start record mouse position
-     * @param e 
+     * @param e
      */
     private _onMouseDown(e: MouseEvent): void {
         this._prevY = e.clientY;
@@ -535,12 +533,12 @@ export class PropertyLine {
     private _checkboxInput() {
         if (this._valueDiv.childElementCount < 1) { // Prevent display two checkbox
             this._input = Helpers.CreateInput('checkbox-element', this._valueDiv);
-            this._input.type = 'checkbox'
+            this._input.type = 'checkbox';
             this._input.checked = this.value;
             this._input.addEventListener('change', () => {
                 Scheduler.getInstance().pause = true;
-                this.validateInput(!this.value)
-            })
+                this.validateInput(!this.value);
+            });
         }
     }
 
@@ -554,11 +552,11 @@ export class PropertyLine {
             this._input.step = this._getSliderProperty().step;
             this._input.value = this.value;
 
-            this._validateInputHandler = this._rangeHandler.bind(this)
-            this._input.addEventListener('input', this._validateInputHandler)
+            this._validateInputHandler = this._rangeHandler.bind(this);
+            this._input.addEventListener('input', this._validateInputHandler);
             this._input.addEventListener('change', () => {
                 Scheduler.getInstance().pause = false;
-            })
+            });
 
             this._textValue = Helpers.CreateDiv('value-text', this._valueDiv);
             this._textValue.innerText = Helpers.Trunc(this.value).toString();
@@ -582,6 +580,6 @@ export class PropertyLine {
     }
 
     private _getSliderProperty() {
-        return (<any>PROPERTIES)[this._property.obj.constructor.name].slider[this.name]
+        return (<any>PROPERTIES)[this._property.obj.constructor.name].slider[this.name];
     }
 }
