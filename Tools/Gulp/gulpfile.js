@@ -670,6 +670,7 @@ var buildExternalLibrary = function(library, settings, watch) {
 
                 });
             } else {
+                console.log(library.output)
                 var wpConfig = require(library.webpack);
 
                 let wpBuild = webpackStream(wpConfig, webpack);
