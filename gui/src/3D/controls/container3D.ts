@@ -96,9 +96,8 @@ export class Container3D extends Control3D {
         return this;
     }
 
-
     /**
-     * This function will be called everytime a new control is added 
+     * This function will be called everytime a new control is added
      */
     protected _arrangeChildren() {
     }

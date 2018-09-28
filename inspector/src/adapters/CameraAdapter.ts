@@ -5,7 +5,6 @@ import { Helpers } from "../helpers/Helpers";
 import { CameraPOV, ICameraPOV } from "../treetools/CameraPOV";
 import { Adapter } from "./Adapter";
 
-
 export class CameraAdapter
     extends Adapter
     implements ICameraPOV {
@@ -19,7 +18,7 @@ export class CameraAdapter
         let str = '';
         if (this._obj.name) {
             str = this._obj.name;
-        } // otherwise nothing displayed        
+        } // otherwise nothing displayed
         return str;
     }
 
@@ -53,7 +52,5 @@ export class CameraAdapter
             return "0";
         }
     }
-
-
 
 }

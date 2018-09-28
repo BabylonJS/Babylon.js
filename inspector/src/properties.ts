@@ -3,7 +3,7 @@ import { Vector2, Vector3, Color3, Color4, Quaternion, Size, Texture, RenderTarg
 
 export const PROPERTIES = {
 
-    /** Format the given object : 
+    /** Format the given object :
      * If a format function exists, returns the result of this function.
      * If this function doesn't exists, return the object type instead
      */
@@ -25,11 +25,11 @@ export const PROPERTIES = {
     },
     'Vector3': {
         type: Vector3,
-        format: (vec: Vector3) => { return `x:${Helpers.Trunc(vec.x)}, y:${Helpers.Trunc(vec.y)}, z:${Helpers.Trunc(vec.z)}` }
+        format: (vec: Vector3) => { return `x:${Helpers.Trunc(vec.x)}, y:${Helpers.Trunc(vec.y)}, z:${Helpers.Trunc(vec.z)}`; }
     },
     'Color3': {
         type: Color3,
-        format: (color: Color3) => { return `R:${color.r.toPrecision(2)}, G:${color.g.toPrecision(2)}, B:${color.b.toPrecision(2)}` },
+        format: (color: Color3) => { return `R:${color.r.toPrecision(2)}, G:${color.g.toPrecision(2)}, B:${color.b.toPrecision(2)}`; },
         slider: {
             r: { min: 0, max: 1, step: 0.01 },
             g: { min: 0, max: 1, step: 0.01 },
@@ -38,7 +38,7 @@ export const PROPERTIES = {
     },
     'Color4': {
         type: Color4,
-        format: (color: Color4) => { return `R:${color.r}, G:${color.g}, B:${color.b}` },
+        format: (color: Color4) => { return `R:${color.r}, G:${color.g}, B:${color.b}`; },
         slider: {
             r: { min: 0, max: 1, step: 0.01 },
             g: { min: 0, max: 1, step: 0.01 },
@@ -50,11 +50,11 @@ export const PROPERTIES = {
     },
     'Size': {
         type: Size,
-        format: (size: Size) => { return `Size - w:${Helpers.Trunc(size.width)}, h:${Helpers.Trunc(size.height)}` }
+        format: (size: Size) => { return `Size - w:${Helpers.Trunc(size.width)}, h:${Helpers.Trunc(size.height)}`; }
     },
     'Texture': {
         type: Texture,
-        format: (tex: Texture) => { return tex.name }
+        format: (tex: Texture) => { return tex.name; }
     },
     'RenderTargetTexture': {
         type: RenderTargetTexture
@@ -128,4 +128,4 @@ export const PROPERTIES = {
     'ColorCurves': {
         type: ColorCurves
     }
-}
+};

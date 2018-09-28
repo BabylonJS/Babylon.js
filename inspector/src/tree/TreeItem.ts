@@ -8,7 +8,6 @@ import { Inspector } from "../Inspector";
 import { Helpers } from "../helpers/Helpers";
 import { PropertyLine } from "../details/PropertyLine";
 
-
 export class TreeItem extends BasicElement {
 
     // Reference to the tab
@@ -100,7 +99,7 @@ export class TreeItem extends BasicElement {
             || adapterId == "zline") {
             this._div.className = "line_invisible";
         }
-        else this._div.className = 'line';
+        else { this._div.className = 'line'; }
 
         // special class for transform node ONLY
         if (this.adapter instanceof MeshAdapter) {
@@ -110,11 +109,9 @@ export class TreeItem extends BasicElement {
             }
         }
 
-
         for (let tool of this._tools) {
             this._div.appendChild(tool.toHtml());
         }
-
 
         // Id
         let text = Inspector.DOCUMENT.createElement('span');
@@ -159,7 +156,7 @@ export class TreeItem extends BasicElement {
     }
 
     /**
-     * Add an event listener on the item : 
+     * Add an event listener on the item :
      * - one click display details
      */
     protected _addEvent() {

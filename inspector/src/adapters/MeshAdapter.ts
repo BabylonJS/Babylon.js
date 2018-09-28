@@ -8,7 +8,6 @@ import { DebugArea, IToolDebug } from "../treetools/DebugArea";
 import { Info, IToolInfo } from "../treetools/Info";
 import { Adapter } from "./Adapter";
 
-
 export class MeshAdapter
     extends Adapter
     implements IToolVisible, IToolDebug, IToolBoundingBox, IToolInfo {
@@ -26,7 +25,7 @@ export class MeshAdapter
         let str = '';
         if (this._obj.name) {
             str = this._obj.name;
-        } // otherwise nothing displayed        
+        } // otherwise nothing displayed
         return str;
     }
 
@@ -49,7 +48,6 @@ export class MeshAdapter
                 tools.push(new BoundingBox(this));
             }
         }
-
 
         tools.push(new Info(this));
         return tools;

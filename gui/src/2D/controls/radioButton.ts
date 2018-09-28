@@ -191,16 +191,16 @@ export class RadioButton extends Control {
         radio.color = "green";
         radio.group = group;
         radio.onIsCheckedChangedObservable.add((value) => onValueChanged(radio, value));
-        panel.addControl(radio);    
-    
+        panel.addControl(radio);
+
         var header = new TextBlock();
         header.text = title;
         header.width = "180px";
         header.paddingLeft = "5px";
         header.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         header.color = "white";
-        panel.addControl(header); 
+        panel.addControl(header);
 
         return panel;
     }
-}   
+}

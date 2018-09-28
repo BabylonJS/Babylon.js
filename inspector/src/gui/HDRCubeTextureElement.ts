@@ -2,11 +2,10 @@ import { HDRCubeTexture, Mesh, PBRMaterial, Texture } from "babylonjs";
 import { CubeTextureElement } from "./CubeTextureElement";
 
 /**
-* Display a very small div. A new canvas is created, with a new js scene, containing only the 
+* Display a very small div. A new canvas is created, with a new js scene, containing only the
 * cube texture in a cube
 */
 export class HDRCubeTextureElement extends CubeTextureElement {
-
 
     /** The texture given as a parameter should be cube. */
     constructor(tex: Texture) {
@@ -28,6 +27,6 @@ export class HDRCubeTextureElement extends CubeTextureElement {
         this._cube.material = hdrSkyboxMaterial;
         this._cube.registerBeforeRender(() => {
             this._cube.rotation.y += 0.01;
-        })
+        });
     }
 }

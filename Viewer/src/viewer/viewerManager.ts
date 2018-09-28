@@ -75,7 +75,7 @@ export class ViewerManager {
      */
     public getViewerPromiseById(id: string): Promise<AbstractViewer> {
         return new Promise((resolve, reject) => {
-            let localViewer = this.getViewerById(id)
+            let localViewer = this.getViewerById(id);
             if (localViewer) {
                 return resolve(localViewer);
             }
@@ -84,7 +84,7 @@ export class ViewerManager {
                     resolve(viewer);
                     this.onViewerAddedObservable.removeCallback(viewerFunction);
                 }
-            }
+            };
             this.onViewerAddedObservable.add(viewerFunction);
         });
     }

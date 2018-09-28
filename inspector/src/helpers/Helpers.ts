@@ -6,8 +6,7 @@ import { PROPERTIES } from "../properties";
 
 export class Helpers {
 
-
-    /** 
+    /**
      * Returns the type of the given object. First
      * uses getClassName. If nothing is returned, used the type of the constructor
      */
@@ -52,19 +51,19 @@ export class Helpers {
      * Returns true if the user browser is edge.
      */
     public static IsBrowserEdge(): boolean {
-        var regexp = /Edge/
+        var regexp = /Edge/;
         return regexp.test(navigator.userAgent);
     }
     /**
      * Returns true if the user browser is IE.
      */
     public static IsBrowserIE(): boolean {
-        var regexp = /Trident.*rv\:11\./
+        var regexp = /Trident.*rv\:11\./;
         return regexp.test(navigator.userAgent);
     }
 
-    /** 
-     * Returns the name of the type of the given object, where the name 
+    /**
+     * Returns the name of the type of the given object, where the name
      * is in PROPERTIES constant.
      * Returns 'Undefined' if no type exists for this object
      */
@@ -109,7 +108,7 @@ export class Helpers {
             return (<any>nb.toFixed(2));
         }
         return nb;
-    };
+    }
 
     /**
      * Useful function used to create a div
@@ -131,7 +130,7 @@ export class Helpers {
         if (className) {
             elem.className = className;
         }
-        if(tooltip && tooltip != '') {
+        if (tooltip && tooltip != '') {
             elem.title = tooltip;
         }
         if (parent) {
@@ -186,7 +185,7 @@ export class Helpers {
             });
 
         }, undefined, undefined, undefined, () => {
-            console.log('Error : LoadFile "highlight.min.js"')
+            console.log('Error : LoadFile "highlight.min.js"');
         });
 
     }
@@ -200,7 +199,7 @@ export class Helpers {
 
     /**
      * Return an array of PropertyLine for an obj
-     * @param obj 
+     * @param obj
      */
     public static GetAllLinesProperties(obj: any): Array<PropertyLine> {
         let propertiesLines: Array<PropertyLine> = [];
@@ -213,10 +212,9 @@ export class Helpers {
         return propertiesLines;
     }
 
-
     /**
      * Returns an array of string corresponding to tjhe list of properties of the object to be displayed
-     * @param obj 
+     * @param obj
      */
     public static GetAllLinesPropertiesAsString(obj: any, dontTakeThis: Array<string> = []): Array<string> {
         let props: Array<string> = [];
