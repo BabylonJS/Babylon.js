@@ -2,6 +2,27 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
+      "title": "Simulate pointer",
+      "playgroundId": "#8MGKWK#78",
+      "referenceImage": "simulatePointer.png"
+    },
+    {
+      "title": "Camera rig",
+      "playgroundId": "#ATL1CS#6",
+      "referenceImage": "cameraRig.png"
+    },
+    {
+      "title": "Color Grading",
+      "playgroundId": "#8EDB5N#2",
+      "referenceImage": "colorGrading.png"
+    },
+    {
+      "title": "Ribbon morphing",
+      "playgroundId": "#ACKC2#1",
+      "renderCount": 50,
+      "referenceImage": "ribbon morphing.png"
+    },    
+    {
       "title": "Clip planes",
       "playgroundId": "#Y6W087#0",
       "referenceImage": "clipplanes.png"

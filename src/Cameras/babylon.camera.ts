@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * This is the base class of all the camera used in the application.
      * @see http://doc.babylonjs.com/features/cameras
@@ -122,7 +122,7 @@
 
         /**
          * Define the minimum distance the camera can see from.
-         * This is important to note that the depth buffer are not infinite and the closer it starts 
+         * This is important to note that the depth buffer are not infinite and the closer it starts
          * the more your scene might encounter depth fighting issue.
          */
         @serialize()
@@ -130,7 +130,7 @@
 
         /**
          * Define the maximum distance the camera can see to.
-         * This is important to note that the depth buffer are not infinite and the further it end 
+         * This is important to note that the depth buffer are not infinite and the further it end
          * the more your scene might encounter depth fighting issue.
          */
         @serialize()
@@ -186,17 +186,17 @@
          * Defines the distance between both "eyes" in case of a RIG
          */
         @serialize()
-        public interaxialDistance: number
+        public interaxialDistance: number;
 
         /**
          * Defines if stereoscopic rendering is done side by side or over under.
          */
         @serialize()
-        public isStereoscopicSideBySide: boolean
+        public isStereoscopicSideBySide: boolean;
 
         /**
          * Defines the list of custom render target the camera should render to.
-         * This is pretty helpfull if you wish to make a camera render to a texture you could reuse somewhere 
+         * This is pretty helpfull if you wish to make a camera render to a texture you could reuse somewhere
          * else in the scene.
          */
         public customRenderTargets = new Array<RenderTargetTexture>();
@@ -351,7 +351,7 @@
 
         /**
          * Check wether a mesh is part of the current active mesh list of the camera
-         * @param mesh Defines the mesh to check 
+         * @param mesh Defines the mesh to check
          * @returns true if active, false otherwise
          */
         public isActiveMesh(mesh: Mesh): boolean {
@@ -414,8 +414,9 @@
 
         /** @hidden */
         public _isSynchronizedViewMatrix(): boolean {
-            if (!super._isSynchronized())
+            if (!super._isSynchronized()) {
                 return false;
+            }
 
             return this._cache.position.equals(this.position)
                 && this._cache.upVector.equals(this.upVector)
@@ -486,6 +487,9 @@
             return this._rigCameras;
         }
 
+        /**
+         * Gets the post process used by the rig cameras
+         */
         public get rigPostProcess(): Nullable<PostProcess> {
             return this._rigPostProcess;
         }
@@ -617,7 +621,7 @@
 
         /**
          * Freeze the projection matrix.
-         * It will prevent the cache check of the camera projection compute and can speed up perf 
+         * It will prevent the cache check of the camera projection compute and can speed up perf
          * if no parameter of the camera are meant to change
          * @param projection Defines manually a projection if necessary
          */
@@ -626,14 +630,14 @@
             if (projection !== undefined) {
                 this._projectionMatrix = projection;
             }
-        };
+        }
 
         /**
          * Unfreeze the projection matrix if it has previously been freezed by freezeProjectionMatrix.
          */
         public unfreezeProjectionMatrix(): void {
             this._doNotComputeProjectionMatrix = false;
-        };
+        }
 
         /**
          * Gets the current projection matrix of the camera.
@@ -777,7 +781,7 @@
             if (!origin) {
                 origin = this.position;
             }
-            var forward = new Vector3(0, 0, 1);
+            var forward = this._scene.useRightHandedSystem ? new Vector3(0, 0, -1) : new Vector3(0, 0, 1);
             var forwardWorld = Vector3.TransformNormal(forward, transform);
 
             var direction = Vector3.Normalize(forwardWorld);
@@ -826,7 +830,7 @@
             } else {
                 var i = this._postProcesses.length;
                 while (--i >= 0) {
-                    var postProcess = this._postProcesses[i]
+                    var postProcess = this._postProcesses[i];
                     if (postProcess) {
                         postProcess.dispose(this);
                     }

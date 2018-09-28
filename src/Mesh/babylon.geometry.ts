@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Class used to store geometry data (vertex buffers + index buffer)
      */
@@ -61,11 +61,15 @@
          *  Gets or sets the Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
          */
         public set boundingBias(value: Vector2) {
-            if (this._boundingBias && this._boundingBias.equals(value)) {
-                return;
+            if (this._boundingBias) {
+                if (this._boundingBias.equals(value)) {
+                    return;
+                }
+                this._boundingBias.copyFrom(value);
             }
-
-            this._boundingBias = value.clone();
+            else {
+                this._boundingBias = value.clone();
+            }
 
             this._updateBoundingInfo(true, null);
         }
@@ -73,7 +77,7 @@
         /**
          * Static function used to attach a new empty geometry to a mesh
          * @param mesh defines the mesh to attach the geometry to
-         * @returns the new {BABYLON.Geometry}
+         * @returns the new Geometry
          */
         public static CreateGeometryForMesh(mesh: Mesh): Geometry {
             let geometry = new Geometry(Geometry.RandomId(), mesh.getScene());
@@ -87,7 +91,7 @@
          * Creates a new geometry
          * @param id defines the unique ID
          * @param scene defines the hosting scene
-         * @param vertexData defines the {BABYLON.VertexData} used to get geometry data
+         * @param vertexData defines the VertexData used to get geometry data
          * @param updatable defines if geometry must be updatable (false by default)
          * @param mesh defines the mesh that will be associated with the geometry
          */
@@ -135,7 +139,7 @@
 
         /**
          * Gets the hosting scene
-         * @returns the hosting {BABYLON.Scene}
+         * @returns the hosting Scene
          */
         public getScene(): Scene {
             return this._scene;
@@ -143,7 +147,7 @@
 
         /**
          * Gets the hosting engine
-         * @returns the hosting {BABYLON.Engine}
+         * @returns the hosting Engine
          */
         public getEngine(): Engine {
             return this._engine;
@@ -271,7 +275,7 @@
          * This function will directly update the underlying WebGLBuffer according to the passed numeric array or Float32Array
          * It will do nothing if the buffer is not updatable
          * @param kind defines the data kind (Position, normal, etc...)
-         * @param data defines the data to use 
+         * @param data defines the data to use
          * @param offset defines the offset in the target buffer where to store the data
          * @param useBytes set to true if the offset is in bytes
          */
@@ -290,7 +294,7 @@
          * Update a specific vertex buffer
          * This function will create a new buffer if the current one is not updatable
          * @param kind defines the data kind (Position, normal, etc...)
-         * @param data defines the data to use 
+         * @param data defines the data to use
          * @param updateExtends defines if the geometry extends must be recomputed (false by default)
          */
         public updateVerticesData(kind: string, data: FloatArray, updateExtends: boolean = false): void {
@@ -415,7 +419,7 @@
                         let source = new Float32Array(data.buffer, offset, count);
 
                         result.set(source);
-                
+
                         return result;
                     }
                     return new Float32Array(data.buffer, offset, count);
@@ -447,7 +451,7 @@
         /**
          * Gets a specific vertex buffer
          * @param kind defines the data kind (Position, normal, etc...)
-         * @returns a {BABYLON.VertexBuffer}
+         * @returns a VertexBuffer
          */
         public getVertexBuffer(kind: string): Nullable<VertexBuffer> {
             if (!this.isReady()) {
@@ -678,8 +682,9 @@
                     this._vertexBuffers[kind].create();
                 }
                 var buffer = this._vertexBuffers[kind].getBuffer();
-                if (buffer)
+                if (buffer) {
                     buffer.references = numOfMeshes;
+                }
 
                 if (kind === VertexBuffer.PositionKind) {
                     if (!this._extend) {
@@ -744,7 +749,7 @@
             }
 
             scene._addPendingData(this);
-            scene._loadFile(this.delayLoadingFile, data => {
+            scene._loadFile(this.delayLoadingFile, (data) => {
                 if (!this._delayLoadingFunction) {
                     return;
                 }
@@ -811,8 +816,9 @@
 
         /** @hidden */
         public _generatePointsArray(): boolean {
-            if (this._positions)
+            if (this._positions) {
                 return true;
+            }
 
             var data = this.getVerticesData(VertexBuffer.PositionKind);
 
@@ -1536,7 +1542,7 @@
 
     /**
      * Creates a ribbon geometry
-     * @description See http://doc.babylonjs.com/how_to/ribbon_tutorial, http://doc.babylonjs.com/resources/maths_make_ribbons 
+     * @description See http://doc.babylonjs.com/how_to/ribbon_tutorial, http://doc.babylonjs.com/resources/maths_make_ribbons
      */
     export class RibbonGeometry extends _PrimitiveGeometry {
 
@@ -1547,7 +1553,7 @@
          * @param pathArray defines the array of paths to use
          * @param closeArray defines if the last path and the first path must be  joined
          * @param closePath defines if the last and first points of each path in your pathArray must be joined
-         * @param offset defines the offset between points 
+         * @param offset defines the offset between points
          * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
          * @param mesh defines the hosting mesh (can be null)
          * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
@@ -1567,7 +1573,7 @@
              */
             public closePath: boolean,
             /**
-             * Defines the offset between points 
+             * Defines the offset between points
              */
             public offset: number,
             canBeRegenerated?: boolean,
@@ -1602,7 +1608,7 @@
          * @param size defines the zise of the box (width, height and depth are the same)
          * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
          * @param mesh defines the hosting mesh (can be null)
-         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
          */
         constructor(
             id: string, scene: Scene,
@@ -1613,7 +1619,7 @@
             canBeRegenerated?: boolean,
             mesh: Nullable<Mesh> = null,
             /**
-             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
              */
             public side: number = Mesh.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
@@ -1666,7 +1672,7 @@
          * @param diameter defines the diameter of the sphere
          * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
          * @param mesh defines the hosting mesh (can be null)
-         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
          */
         constructor(
             id: string, scene: Scene,
@@ -1681,7 +1687,7 @@
             canBeRegenerated?: boolean,
             mesh: Nullable<Mesh> = null,
             /**
-             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
              */
             public side: number = Mesh.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
@@ -1735,7 +1741,7 @@
          * @param tessellation defines the tesselation factor to apply to the disc
          * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
          * @param mesh defines the hosting mesh (can be null)
-         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
          */
         constructor(
             id: string, scene: Scene,
@@ -1750,7 +1756,7 @@
             canBeRegenerated?: boolean,
             mesh: Nullable<Mesh> = null,
             /**
-             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
              */
             public side: number = Mesh.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
@@ -1765,7 +1771,6 @@
             return new DiscGeometry(id, this.getScene(), this.radius, this.tessellation, this.canBeRegenerated(), null, this.side);
         }
     }
-
 
     /**
      * Creates a new cylinder geometry
@@ -1784,7 +1789,7 @@
          * @param subdivisions defines the number of subdivisions to apply to the cylinder (number of rings) (1 by default)
          * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
          * @param mesh defines the hosting mesh (can be null)
-         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
          */
         constructor(
             id: string, scene: Scene,
@@ -1868,7 +1873,7 @@
          * @param tessellation defines the tesselation factor to apply to the torus (number of segments along the circle)
          * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
          * @param mesh defines the hosting mesh (can be null)
-         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
          */
         constructor(
             id: string, scene: Scene,
@@ -1887,7 +1892,7 @@
             canBeRegenerated?: boolean,
             mesh: Nullable<Mesh> = null,
             /**
-             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
              */
             public side: number = Mesh.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
@@ -2196,7 +2201,7 @@
             serializationObject.q = this.q;
 
             return serializationObject;
-        };
+        }
 
         public static Parse(parsedTorusKnot: any, scene: Scene): Nullable<TorusKnotGeometry> {
             if (scene.getGeometryByID(parsedTorusKnot.id)) {
@@ -2215,5 +2220,3 @@
     }
     //}
 }
-
-

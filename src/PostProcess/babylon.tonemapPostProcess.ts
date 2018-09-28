@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /** Defines operator used for tonemapping */
     export enum TonemappingOperator {
         /** Hable */
@@ -9,7 +9,7 @@
         HejiDawson = 2,
         /** Photographic */
         Photographic = 3,
-    };
+    }
 
     /**
      * Defines a post process to apply tone mapping
@@ -26,25 +26,28 @@
          * @param engine defines the hosting engine (can be ignore if camera is set)
          * @param textureFormat defines the texture format to use (BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT by default)
          */
-        constructor(name: string, private _operator: TonemappingOperator, 
+        constructor(name: string, private _operator: TonemappingOperator,
             /** Defines the required exposure adjustement */
             public exposureAdjustment: number, camera: Camera, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, textureFormat = Engine.TEXTURETYPE_UNSIGNED_INT) {
             super(name, "tonemap", ["_ExposureAdjustment"], null, 1.0, camera, samplingMode, engine, true, null, textureFormat);
 
             var defines = "#define ";
 
-            if (this._operator === TonemappingOperator.Hable)
+            if (this._operator === TonemappingOperator.Hable) {
                 defines += "HABLE_TONEMAPPING";
-            else if (this._operator === TonemappingOperator.Reinhard)
+            }
+            else if (this._operator === TonemappingOperator.Reinhard) {
                 defines += "REINHARD_TONEMAPPING";
-            else if (this._operator === TonemappingOperator.HejiDawson)
+                 }
+            else if (this._operator === TonemappingOperator.HejiDawson) {
                 defines += "OPTIMIZED_HEJIDAWSON_TONEMAPPING";
-            else if (this._operator === TonemappingOperator.Photographic)
+                 }
+            else if (this._operator === TonemappingOperator.Photographic) {
                 defines += "PHOTOGRAPHIC_TONEMAPPING";
-                
+                 }
+
             //sadly a second call to create the effect.
             this.updateEffect(defines);
-
 
             this.onApply = (effect: Effect) => {
                 effect.setFloat("_ExposureAdjustment", this.exposureAdjustment);

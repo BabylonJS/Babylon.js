@@ -3,7 +3,7 @@ import { Helpers } from "../helpers/Helpers";
 import { BasicElement } from "./BasicElement";
 
 /**
-* Display a very small div. A new canvas is created, with a new js scene, containing only the 
+* Display a very small div. A new canvas is created, with a new js scene, containing only the
 * cube texture in a cube
 */
 export class CubeTextureElement extends BasicElement {
@@ -75,7 +75,7 @@ export class CubeTextureElement extends BasicElement {
         this._cube.material = hdrSkyboxMaterial;
         this._cube.registerBeforeRender(() => {
             this._cube.rotation.y += 0.01;
-        })
+        });
     }
 
     /** Init the babylon engine */
@@ -97,7 +97,7 @@ export class CubeTextureElement extends BasicElement {
     private _showViewer(mode: string) {
         // If displaying...
         if (mode != 'none') {
-            // ... and the canvas is not initialized                
+            // ... and the canvas is not initialized
             if (!this._engine) {
                 this._initEngine();
                 this._populateScene();

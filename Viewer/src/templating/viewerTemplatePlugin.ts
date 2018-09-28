@@ -27,7 +27,7 @@ export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugi
         } else {
             this._buttonClass = buttonName + '-button';
         }
-        if (htmlTemplate) { this._htmlTemplate = htmlTemplate }
+        if (htmlTemplate) { this._htmlTemplate = htmlTemplate; }
         else {
             this._htmlTemplate = `
 <button class="${this._buttonClass}">
@@ -39,7 +39,7 @@ export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugi
 
     interactionPredicate(event: EventCallback): boolean {
         let pointerDown = <PointerEvent>event.event;
-        if (pointerDown.button !== 0) return false;
+        if (pointerDown.button !== 0) { return false; }
         var element = (<HTMLElement>event.event.target);
 
         if (!element) {

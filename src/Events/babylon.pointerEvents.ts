@@ -28,7 +28,7 @@ module BABYLON {
          */
         public static readonly POINTERTAP = 0x20;
         /**
-         * The pointertap event is fired when a the object has been touched and released twice without drag.
+         * The pointerdoubletap event is fired when a the object has been touched and released twice without drag.
          */
         public static readonly POINTERDOUBLETAP = 0x40;
     }
@@ -46,7 +46,7 @@ module BABYLON {
             /**
              * Defines the type of event (BABYLON.PointerEventTypes)
              */
-            public type: number, 
+            public type: number,
             /**
              * Defines the related dom event
              */
@@ -62,7 +62,7 @@ module BABYLON {
         /**
          * Ray from a pointer if availible (eg. 6dof controller)
          */
-        public ray:Nullable<Ray> = null;
+        public ray: Nullable<Ray> = null;
 
         /**
          * Defines the local position of the pointer on the canvas.
@@ -99,13 +99,13 @@ module BABYLON {
          * @param event Defines the related dom event
          * @param pickInfo Defines the picking info associated to the info (if any)\
          */
-        constructor(type: number, 
-            event: PointerEvent | MouseWheelEvent, 
+        constructor(type: number,
+            event: PointerEvent | MouseWheelEvent,
             /**
              * Defines the picking info associated to the info (if any)\
              */
             public pickInfo: Nullable<PickingInfo>) {
             super(type, event);
         }
-    }    
+    }
 }

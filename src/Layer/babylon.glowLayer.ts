@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
 
     export interface AbstractScene {
         /**
@@ -9,7 +9,7 @@
         getGlowLayerByName(name: string): Nullable<GlowLayer>;
     }
 
-    AbstractScene.prototype.getGlowLayerByName = function (name: string): Nullable<GlowLayer> {
+    AbstractScene.prototype.getGlowLayerByName = function(name: string): Nullable<GlowLayer> {
         for (var index = 0; index < this.effectLayers.length; index++) {
             if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === GlowLayer.EffectName) {
                 return (<any>this.effectLayers[index]) as GlowLayer;
@@ -17,7 +17,7 @@
         }
 
         return null;
-    }
+    };
 
     /**
      * Glow layer options. This helps customizing the behaviour
@@ -58,10 +58,10 @@
 
     /**
      * The glow layer Helps adding a glow effect around the emissive parts of a mesh.
-     * 
+     *
      * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
      * glowy meshes to your scene.
-     * 
+     *
      * Documentation: https://doc.babylonjs.com/how_to/glow_layer
      */
     export class GlowLayer extends EffectLayer {
@@ -250,7 +250,7 @@
                 null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
             this._horizontalBlurPostprocess1.width = blurTextureWidth;
             this._horizontalBlurPostprocess1.height = blurTextureHeight;
-            this._horizontalBlurPostprocess1.onApplyObservable.add(effect => {
+            this._horizontalBlurPostprocess1.onApplyObservable.add((effect) => {
                 effect.setTexture("textureSampler", this._mainTexture);
             });
 
@@ -267,7 +267,7 @@
                 null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
             this._horizontalBlurPostprocess2.width = blurTextureWidth2;
             this._horizontalBlurPostprocess2.height = blurTextureHeight2;
-            this._horizontalBlurPostprocess2.onApplyObservable.add(effect => {
+            this._horizontalBlurPostprocess2.onApplyObservable.add((effect) => {
                 effect.setTexture("textureSampler", this._blurTexture1);
             });
 
@@ -301,7 +301,7 @@
             });
 
             // Prevent autoClear.
-            this._postProcesses.map(pp => { pp.autoClear = false; });
+            this._postProcesses.map((pp) => { pp.autoClear = false; });
         }
 
         /**
@@ -457,12 +457,12 @@
             // Included Mesh
             if (this._includedOnlyMeshes.length) {
                 return this._includedOnlyMeshes.indexOf(mesh.uniqueId) !== -1;
-            };
+            }
 
             // Excluded Mesh
             if (this._excludedMeshes.length) {
                 return this._excludedMeshes.indexOf(mesh.uniqueId) === -1;
-            };
+            }
 
             return true;
         }
@@ -553,4 +553,4 @@
             return gl;
         }
     }
-} 
+}

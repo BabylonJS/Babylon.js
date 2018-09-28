@@ -1,4 +1,4 @@
-﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
     class TriPlanarMaterialDefines extends MaterialDefines {
@@ -13,7 +13,7 @@ module BABYLON {
         public CLIPPLANE = false;
         public CLIPPLANE2 = false;
         public CLIPPLANE3 = false;
-        public CLIPPLANE4 = false;        
+        public CLIPPLANE4 = false;
         public ALPHATEST = false;
         public DEPTHPREPASS = false;
         public POINTSIZE = false;
@@ -106,7 +106,7 @@ module BABYLON {
             return null;
         }
 
-        // Methods   
+        // Methods
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
@@ -175,7 +175,7 @@ module BABYLON {
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
                 scene.resetCachedMaterial();
@@ -219,7 +219,7 @@ module BABYLON {
                     "normalSamplerX", "normalSamplerY", "normalSamplerZ"
                 ];
 
-                var uniformBuffers = new Array<string>()
+                var uniformBuffers = new Array<string>();
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms,
@@ -266,7 +266,7 @@ module BABYLON {
             }
             this._activeEffect = effect;
 
-            // Matrices        
+            // Matrices
             this.bindOnlyWorldMatrix(world);
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
@@ -276,7 +276,7 @@ module BABYLON {
             this._activeEffect.setFloat("tileSize", this.tileSize);
 
             if (scene.getCachedMaterial() !== this) {
-                // Textures        
+                // Textures
                 if (this.diffuseTextureX) {
                     this._activeEffect.setTexture("diffuseSamplerX", this.diffuseTextureX);
                 }
@@ -426,4 +426,3 @@ module BABYLON {
         }
     }
 }
-

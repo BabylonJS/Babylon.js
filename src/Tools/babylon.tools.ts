@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Interface containing an array of animations
      */
@@ -9,12 +9,11 @@
         animations: Array<Animation>;
     }
 
-    
     /** Interface used by value gradients (color, factor, ...) */
     export interface IValueGradient {
         /**
          * Gets or sets the gradient value (between 0 and 1)
-         */        
+         */
         gradient: number;
     }
 
@@ -33,7 +32,7 @@
          */
         public color2?: Color4;
 
-        /** 
+        /**
          * Will get a color picked randomly between color1 and color2.
          * If color2 is undefined then color1 will be used
          * @param result defines the target Color4 to store the result in
@@ -58,7 +57,7 @@
          * Gets or sets the associated color
          */
         public color: Color3;
-    }    
+    }
 
     /** Class used to store factor gradient */
     export class FactorGradient implements IValueGradient {
@@ -68,14 +67,14 @@
         public gradient: number;
         /**
          * Gets or sets first associated factor
-         */        
+         */
         public factor1: number;
         /**
          * Gets or sets second associated factor
-         */        
-        public factor2?: number;    
-        
-        /** 
+         */
+        public factor2?: number;
+
+        /**
          * Will get a number picked randomly between factor1 and factor2.
          * If factor2 is undefined then factor1 will be used
          * @returns the picked number
@@ -86,17 +85,31 @@
             }
 
             return Scalar.Lerp(this.factor1, this.factor2, Math.random());
-        }        
-    }  
+        }
+    }
 
-    // See https://stackoverflow.com/questions/12915412/how-do-i-extend-a-host-object-e-g-error-in-typescript
-    // and https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
+    /**
+     * @ignore
+     * Application error to support additional information when loading a file
+     */
     export class LoadFileError extends Error {
+        // See https://stackoverflow.com/questions/12915412/how-do-i-extend-a-host-object-e-g-error-in-typescript
+        // and https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
+
         // Polyfill for Object.setPrototypeOf if necessary.
         private static _setPrototypeOf: (o: any, proto: object | null) => any =
             (Object as any).setPrototypeOf || ((o, proto) => { o.__proto__ = proto; return o; });
 
-        constructor(message: string, public request?: XMLHttpRequest) {
+        /**
+         * Creates a new LoadFileError
+         * @param message defines the message of the error
+         * @param request defines the optional XHR request
+         */
+        constructor(
+            message: string,
+            /** defines the optional XHR request */
+            public request?: XMLHttpRequest
+        ) {
             super(message);
             this.name = "LoadFileError";
 
@@ -104,7 +117,16 @@
         }
     }
 
+    /**
+     * Class used to define a retry strategy when error happens while loading assets
+     */
     export class RetryStrategy {
+        /**
+         * Function used to defines an exponential back off strategy
+         * @param maxRetries defines the maximum number of retries (3 by default)
+         * @param baseInterval defines the interval between retries
+         * @returns the strategy function to use
+         */
         public static ExponentialBackoff(maxRetries = 3, baseInterval = 500) {
             return (url: string, request: XMLHttpRequest, retryIndex: number): number => {
                 if (request.status !== 0 || retryIndex >= maxRetries || url.indexOf("file:") !== -1) {
@@ -135,8 +157,9 @@
     var screenshotCanvas: HTMLCanvasElement;
 
     var cloneValue = (source: any, destinationObject: any) => {
-        if (!source)
+        if (!source) {
             return null;
+        }
 
         if (source instanceof Mesh) {
             return null;
@@ -150,8 +173,18 @@
         return null;
     };
 
+    /**
+     * Class containing a set of static utilities functions
+     */
     export class Tools {
+        /**
+         * Gets or sets the base URL to use to load assets
+         */
         public static BaseUrl = "";
+
+        /**
+         * Gets or sets the retry strategy to apply when an error happens while loading an asset
+         */
         public static DefaultRetryStrategy = RetryStrategy.ExponentialBackoff();
 
         /**
@@ -161,21 +194,28 @@
          */
         public static CorsBehavior: string | ((url: string | string[]) => string) = "anonymous";
 
+        /**
+         * Gets or sets a global variable indicating if fallback texture must be used when a texture cannot be loaded
+         * @ignorenaming
+         */
         public static UseFallbackTexture = true;
 
         /**
-         * Use this object to register external classes like custom textures or material 
+         * Use this object to register external classes like custom textures or material
          * to allow the laoders to instantiate them
          */
         public static RegisteredExternalClasses: { [key: string]: Object } = {};
 
-        // Used in case of a texture loading problem 
+        /**
+         * Texture content used if a texture cannot loaded
+         * @ignorenaming
+         */
         public static fallbackTexture = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
 
         /**
          * Read the content of a byte array at a specified coordinates (taking in account wrapping)
          * @param u defines the coordinate on X axis
-         * @param v defines the coordinate on Y axis 
+         * @param v defines the coordinate on Y axis
          * @param width defines the width of the source data
          * @param height defines the height of the source data
          * @param pixels defines the source byte array
@@ -190,7 +230,7 @@
             color.g = pixels[position + 1] / 255;
             color.b = pixels[position + 2] / 255;
             color.a = pixels[position + 3] / 255;
-        }       
+        }
 
         /**
 		 * Interpolates between a and b via alpha
@@ -203,6 +243,11 @@
             return a * (1 - alpha) + b * alpha;
         }
 
+        /**
+         * Tries to instantiate a new object from a given class name
+         * @param className defines the class name to instantiate
+         * @returns the new object or null if the system was not able to do the instantiation
+         */
         public static Instantiate(className: string): any {
             if (Tools.RegisteredExternalClasses && Tools.RegisteredExternalClasses[className]) {
                 return Tools.RegisteredExternalClasses[className];
@@ -237,6 +282,10 @@
             return Array.prototype.slice.call(data, start, end);
         }
 
+        /**
+         * Polyfill for setImmediate
+         * @param action defines the action to execute after the current execution block
+         */
         public static SetImmediate(action: () => void) {
             if (Tools.IsWindowObjectExist() && window.setImmediate) {
                 window.setImmediate(action);
@@ -245,6 +294,11 @@
             }
         }
 
+        /**
+         * Function indicating if a number is an exponent of 2
+         * @param value defines the value to test
+         * @returns true if the value is an exponent of 2
+         */
         public static IsExponentOfTwo(value: number): boolean {
             var count = 1;
 
@@ -256,6 +310,7 @@
         }
 
         private static _tmpFloatArray = new Float32Array(1);
+
         /**
          * Returns the nearest 32-bit single precision float representation of a Number
          * @param value A Number.  If the parameter is of a different type, it will get converted
@@ -270,7 +325,7 @@
             return (Tools._tmpFloatArray[0] = value);
         }
 
-		/**
+        /**
 		 * Find the next highest power of two.
 		 * @param x Number to start search from.
 		 * @return Next highest power of two.
@@ -286,7 +341,7 @@
             return x;
         }
 
-		/**
+        /**
 		 * Find the next lowest power of two.
 		 * @param x Number to start search from.
 		 * @return Next lowest power of two.
@@ -300,7 +355,7 @@
             return x - (x >> 1);
         }
 
-		/**
+        /**
 		 * Find the nearest power of two.
 		 * @param x Number to start search from.
 		 * @return Next nearest power of two.
@@ -311,6 +366,13 @@
             return (c - x) > (x - f) ? f : c;
         }
 
+        /**
+         * Get the closest exponent of two
+         * @param value defines the value to approximate
+         * @param max defines the maximum value to return
+         * @param mode defines how to define the closest value
+         * @returns closest exponent of two of the given value
+         */
         public static GetExponentOfTwo(value: number, max: number, mode = Engine.SCALEMODE_NEAREST): number {
             let pot;
 
@@ -330,10 +392,16 @@
             return Math.min(pot, max);
         }
 
+        /**
+         * Extracts the filename from a path
+         * @param path defines the path to use
+         * @returns the filename
+         */
         public static GetFilename(path: string): string {
             var index = path.lastIndexOf("/");
-            if (index < 0)
+            if (index < 0) {
                 return path;
+            }
 
             return path.substring(index + 1);
         }
@@ -356,6 +424,11 @@
             return uri.substring(0, index + 1);
         }
 
+        /**
+         * Extracts text content from a DOM element hierarchy
+         * @param element defines the root element
+         * @returns a string
+         */
         public static GetDOMTextContent(element: HTMLElement): string {
             var result = "";
             var child = element.firstChild;
@@ -370,14 +443,29 @@
             return result;
         }
 
+        /**
+         * Convert an angle in radians to degrees
+         * @param angle defines the angle to convert
+         * @returns the angle in degrees
+         */
         public static ToDegrees(angle: number): number {
             return angle * 180 / Math.PI;
         }
 
+        /**
+         * Convert an angle in degrees to radians
+         * @param angle defines the angle to convert
+         * @returns the angle in radians
+         */
         public static ToRadians(angle: number): number {
             return angle * Math.PI / 180;
         }
 
+        /**
+         * Encode a buffer to a base64 string
+         * @param buffer defines the buffer to encode
+         * @returns the encoded string
+         */
         public static EncodeArrayBufferTobase64(buffer: ArrayBuffer): string {
             var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
             var output = "";
@@ -387,7 +475,7 @@
 
             while (i < bytes.length) {
                 chr1 = bytes[i++];
-                chr2 = i < bytes.length ? bytes[i++] : Number.NaN; // Not sure if the index 
+                chr2 = i < bytes.length ? bytes[i++] : Number.NaN; // Not sure if the index
                 chr3 = i < bytes.length ? bytes[i++] : Number.NaN; // checks are needed here
 
                 enc1 = chr1 >> 2;
@@ -407,15 +495,26 @@
             return "data:image/png;base64," + output;
         }
 
+        /**
+         * Extracts minimum and maximum values from a list of indexed positions
+         * @param positions defines the positions to use
+         * @param indices defines the indices to the positions
+         * @param indexStart defines the start index
+         * @param indexCount defines the end index
+         * @param bias defines bias value to add to the result
+         * @return minimum and maximum values
+         */
         public static ExtractMinAndMaxIndexed(positions: FloatArray, indices: IndicesArray, indexStart: number, indexCount: number, bias: Nullable<Vector2> = null): { minimum: Vector3; maximum: Vector3 } {
             var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
             for (var index = indexStart; index < indexStart + indexCount; index++) {
-                var current = new Vector3(positions[indices[index] * 3], positions[indices[index] * 3 + 1], positions[indices[index] * 3 + 2]);
-
-                minimum = Vector3.Minimize(current, minimum);
-                maximum = Vector3.Maximize(current, maximum);
+                const offset = indices[index] * 3;
+                const x = positions[offset];
+                const y = positions[offset + 1];
+                const z = positions[offset + 2];
+                minimum.minimizeInPlaceFromFloats(x, y, z);
+                maximum.maximizeInPlaceFromFloats(x, y, z);
             }
 
             if (bias) {
@@ -433,6 +532,15 @@
             };
         }
 
+        /**
+         * Extracts minimum and maximum values from a list of positions
+         * @param positions defines the positions to use
+         * @param start defines the start index in the positions array
+         * @param count defines the number of positions to handle
+         * @param bias defines bias value to add to the result
+         * @param stride defines the stride size to use (distance between two positions in the positions array)
+         * @return minimum and maximum values
+         */
         public static ExtractMinAndMax(positions: FloatArray, start: number, count: number, bias: Nullable<Vector2> = null, stride?: number): { minimum: Vector3; maximum: Vector3 } {
             var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
@@ -441,11 +549,12 @@
                 stride = 3;
             }
 
-            for (var index = start; index < start + count; index++) {
-                var current = new Vector3(positions[index * stride], positions[index * stride + 1], positions[index * stride + 2]);
-
-                minimum = Vector3.Minimize(current, minimum);
-                maximum = Vector3.Maximize(current, maximum);
+            for (var index = start, offset = start * stride; index < start + count; index++ , offset += stride) {
+                const x = positions[offset];
+                const y = positions[offset + 1];
+                const z = positions[offset + 2];
+                minimum.minimizeInPlaceFromFloats(x, y, z);
+                maximum.maximizeInPlaceFromFloats(x, y, z);
             }
 
             if (bias) {
@@ -463,58 +572,24 @@
             };
         }
 
-        public static Vector2ArrayFeeder(array: Array<Vector2> | Float32Array): (i: number) => Nullable<Vector2> {
-            return (index: number) => {
-                let isFloatArray = ((<Float32Array>array).BYTES_PER_ELEMENT !== undefined);
-                let length = isFloatArray ? array.length / 2 : array.length;
-
-                if (index >= length) {
-                    return null;
-                }
-
-                if (isFloatArray) {
-                    let fa = <Float32Array>array;
-                    return new Vector2(fa[index * 2 + 0], fa[index * 2 + 1]);
-                }
-                let a = <Array<Vector2>>array;
-                return a[index];
-            };
-        }
-
-        public static ExtractMinAndMaxVector2(feeder: (index: number) => Vector2, bias: Nullable<Vector2> = null): { minimum: Vector2; maximum: Vector2 } {
-            var minimum = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
-            var maximum = new Vector2(-Number.MAX_VALUE, -Number.MAX_VALUE);
-
-            let i = 0;
-            let cur = feeder(i++);
-            while (cur) {
-                minimum = Vector2.Minimize(cur, minimum);
-                maximum = Vector2.Maximize(cur, maximum);
-
-                cur = feeder(i++);
-            }
-
-            if (bias) {
-                minimum.x -= minimum.x * bias.x + bias.y;
-                minimum.y -= minimum.y * bias.x + bias.y;
-                maximum.x += maximum.x * bias.x + bias.y;
-                maximum.y += maximum.y * bias.x + bias.y;
-            }
-
-            return {
-                minimum: minimum,
-                maximum: maximum
-            };
-        }
-
+        /**
+         * Returns an array if obj is not an array
+         * @param obj defines the object to evaluate as an array
+         * @param allowsNullUndefined defines a boolean indicating if obj is allowed to be null or undefined
+         * @returns either obj directly if obj is an array or a new array containing obj
+         */
         public static MakeArray(obj: any, allowsNullUndefined?: boolean): Nullable<Array<any>> {
-            if (allowsNullUndefined !== true && (obj === undefined || obj == null))
+            if (allowsNullUndefined !== true && (obj === undefined || obj == null)) {
                 return null;
+            }
 
             return Array.isArray(obj) ? obj : [obj];
         }
 
-        // Misc.
+        /**
+         * Gets the pointer prefix to use
+         * @returns "pointer" if touch is enabled. Else returns "mouse"
+         */
         public static GetPointerPrefix(): string {
             var eventPrefix = "pointer";
 
@@ -527,8 +602,10 @@
         }
 
         /**
+         * Queue a new function into the requested animation frame pool (ie. this function will be executed byt the browser for the next frame)
          * @param func - the function to be called
          * @param requester - the object that will request the next frame. Falls back to window.
+         * @returns frame number
          */
         public static QueueNewFrame(func: () => void, requester?: any): number {
             if (!Tools.IsWindowObjectExist()) {
@@ -559,12 +636,19 @@
             }
         }
 
+        /**
+         * Ask the browser to promote the current element to fullscreen rendering mode
+         * @param element defines the DOM element to promote
+         */
         public static RequestFullscreen(element: HTMLElement): void {
-            var requestFunction = element.requestFullscreen || (<any>element).msRequestFullscreen || element.webkitRequestFullscreen || (<any>element).mozRequestFullScreen;
-            if (!requestFunction) return;
+            var requestFunction = element.requestFullscreen || (<any>element).msRequestFullscreen || (<any>element).webkitRequestFullscreen || (<any>element).mozRequestFullScreen;
+            if (!requestFunction) { return; }
             requestFunction.call(element);
         }
 
+        /**
+         * Asks the browser to exit fullscreen mode
+         */
         public static ExitFullscreen(): void {
             if (document.exitFullscreen) {
                 document.exitFullscreen();
@@ -582,7 +666,7 @@
 
         /**
          * Sets the cors behavior on a dom element. This will add the required Tools.CorsBehavior to the element.
-         * @param url define the url we are trying 
+         * @param url define the url we are trying
          * @param element define the dom element where to configure the cors policy
          */
         public static SetCorsBehavior(url: string | string[], element: { crossOrigin: string | null }): void {
@@ -604,11 +688,20 @@
         }
 
         // External files
+
+        /**
+         * Removes unwanted characters from an url
+         * @param url defines the url to clean
+         * @returns the cleaned url
+         */
         public static CleanUrl(url: string): string {
             url = url.replace(/#/mg, "%23");
             return url;
         }
 
+        /**
+         * Gets or sets a function used to pre-process url before using them to load assets
+         */
         public static PreprocessUrl = (url: string) => {
             return url;
         }
@@ -712,6 +805,16 @@
             return img;
         }
 
+        /**
+         * Loads a file
+         * @param url url string, ArrayBuffer, or Blob to load
+         * @param onSuccess callback called when the file successfully loads
+         * @param onProgress callback called while file is loading (if the server supports this mode)
+         * @param database  database for caching
+         * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+         * @param onError callback called when the file fails to load
+         * @returns a file request object
+         */
         public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
             url = Tools.CleanUrl(url);
 
@@ -816,8 +919,8 @@
             // Caching all files
             if (database && database.enableSceneOffline) {
                 const noIndexedDB = (request?: any) => {
-                    if(request && request.status > 400){
-                        if(onError){
+                    if (request && request.status > 400) {
+                        if (onError) {
                             onError(request);
                         }
                     } else {
@@ -834,13 +937,13 @@
                     }
 
                     if (database) {
-                        database.loadFileFromDB(url, data => {
+                        database.loadFileFromDB(url, (data) => {
                             if (!aborted) {
                                 onSuccess(data);
                             }
 
                             fileRequest.onCompleteObservable.notifyObservers(fileRequest);
-                        }, onProgress ? event => {
+                        }, onProgress ? (event) => {
                             if (!aborted) {
                                 onProgress(event);
                             }
@@ -857,9 +960,12 @@
             return fileRequest;
         }
 
-        /** 
-         * Load a script (identified by an url). When the url returns, the 
+        /**
+         * Load a script (identified by an url). When the url returns, the
          * content of this file is added into a new script element, attached to the DOM (body element)
+         * @param scriptUrl defines the url of the script to laod
+         * @param onSuccess defines the callback called when the script is loaded
+         * @param onError defines the callback to call if an error occurs
          */
         public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void) {
             if (!Tools.IsWindowObjectExist()) {
@@ -885,6 +991,13 @@
             head.appendChild(script);
         }
 
+        /**
+         * Loads a file from a blob
+         * @param fileToLoad defines the blob to use
+         * @param callback defines the callback to call when data is loaded
+         * @param progressCallback defines the callback to call during loading process
+         * @returns a file request object
+         */
         public static ReadFileAsDataURL(fileToLoad: Blob, callback: (data: any) => void, progressCallback: (ev: ProgressEvent) => any): IFileRequest {
             let reader = new FileReader();
 
@@ -893,11 +1006,11 @@
                 abort: () => reader.abort(),
             };
 
-            reader.onloadend = e => {
+            reader.onloadend = (e) => {
                 request.onCompleteObservable.notifyObservers(request);
             };
 
-            reader.onload = e => {
+            reader.onload = (e) => {
                 //target doesn't have result from ts 1.3
                 callback((<any>e.target)['result']);
             };
@@ -909,6 +1022,14 @@
             return request;
         }
 
+        /**
+         * Loads a file
+         * @param fileToLoad defines the file to load
+         * @param callback defines the callback to call when data is loaded
+         * @param progressCallBack defines the callback to call during loading process
+         * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
+         * @returns a file request object
+         */
         public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest {
             let reader = new FileReader();
             let request: IFileRequest = {
@@ -916,12 +1037,12 @@
                 abort: () => reader.abort(),
             };
 
-            reader.onloadend = e => request.onCompleteObservable.notifyObservers(request);
-            reader.onerror = e => {
+            reader.onloadend = (e) => request.onCompleteObservable.notifyObservers(request);
+            reader.onerror = (e) => {
                 Tools.Log("Error while reading file: " + fileToLoad.name);
                 callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: [] }));
             };
-            reader.onload = e => {
+            reader.onload = (e) => {
                 //target doesn't have result from ts 1.3
                 callback((<any>e.target)['result']);
             };
@@ -939,7 +1060,11 @@
             return request;
         }
 
-        //returns a downloadable url to a file content.
+        /**
+         * Creates a data url from a given string content
+         * @param content defines the content to convert
+         * @returns the new data url link
+         */
         public static FileAsURL(content: string): string {
             var fileBlob = new Blob([content]);
             var url = window.URL || window.webkitURL;
@@ -947,27 +1072,51 @@
             return link;
         }
 
-        // Misc.
+        /**
+         * Format the given number to a specific decimal format
+         * @param value defines the number to format
+         * @param decimals defines the number of decimals to use
+         * @returns the formatted string
+         */
         public static Format(value: number, decimals: number = 2): string {
             return value.toFixed(decimals);
         }
 
+        /**
+         * Checks if a given vector is inside a specific range
+         * @param v defines the vector to test
+         * @param min defines the minimum range
+         * @param max defines the maximum range
+         */
         public static CheckExtends(v: Vector3, min: Vector3, max: Vector3): void {
-            if (v.x < min.x)
+            if (v.x < min.x) {
                 min.x = v.x;
-            if (v.y < min.y)
+            }
+            if (v.y < min.y) {
                 min.y = v.y;
-            if (v.z < min.z)
+            }
+            if (v.z < min.z) {
                 min.z = v.z;
+            }
 
-            if (v.x > max.x)
+            if (v.x > max.x) {
                 max.x = v.x;
-            if (v.y > max.y)
+            }
+            if (v.y > max.y) {
                 max.y = v.y;
-            if (v.z > max.z)
+            }
+            if (v.z > max.z) {
                 max.z = v.z;
+            }
         }
 
+        /**
+         * Tries to copy an object by duplicating every property
+         * @param source defines the source object
+         * @param destination defines the target object
+         * @param doNotCopyList defines a list of properties to avoid
+         * @param mustCopyList defines a list of properties to copy (even if they start with _)
+         */
         public static DeepCopy(source: any, destination: any, doNotCopyList?: string[], mustCopyList?: string[]): void {
             for (var prop in source) {
 
@@ -1017,6 +1166,11 @@
             }
         }
 
+        /**
+         * Gets a boolean indicating if the given object has no own property
+         * @param obj defines the object to test
+         * @returns true if object has no own property
+         */
         public static IsEmpty(obj: any): boolean {
             for (var i in obj) {
                 if (obj.hasOwnProperty(i)) {
@@ -1026,6 +1180,10 @@
             return true;
         }
 
+        /**
+         * Function used to register events at window level
+         * @param events defines the events to register
+         */
         public static RegisterTopRootEvents(events: { name: string; handler: Nullable<(e: FocusEvent) => any> }[]): void {
             for (var index = 0; index < events.length; index++) {
                 var event = events[index];
@@ -1041,6 +1199,10 @@
             }
         }
 
+        /**
+         * Function used to unregister events from window level
+         * @param events defines the events to unregister
+         */
         public static UnregisterTopRootEvents(events: { name: string; handler: Nullable<(e: FocusEvent) => any> }[]): void {
             for (var index = 0; index < events.length; index++) {
                 var event = events[index];
@@ -1056,6 +1218,15 @@
             }
         }
 
+        /**
+         * Dumps the current bound framebuffer
+         * @param width defines the rendering width
+         * @param height defines the rendering height
+         * @param engine defines the hosting engine
+         * @param successCallback defines the callback triggered once the data are available
+         * @param mimeType defines the mime type of the result
+         * @param fileName defines the filename to download. If present, the result will automatically be downloaded
+         */
         public static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string): void {
             // Read the contents of the framebuffer
             var numberOfChannelsByLine = width * 4;
@@ -1107,7 +1278,7 @@
             // We need HTMLCanvasElement.toBlob for HD screenshots
             if (!canvas.toBlob) {
                 //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
-                canvas.toBlob = function (callback, type, quality) {
+                canvas.toBlob = function(callback, type, quality) {
                     setTimeout(() => {
                         var binStr = atob(this.toDataURL(type, quality).split(',')[1]),
                             len = binStr.length,
@@ -1118,18 +1289,18 @@
                         }
                         callback(new Blob([arr]));
                     });
-                }
+                };
             }
-            canvas.toBlob(function (blob) {
+            canvas.toBlob(function(blob) {
                 successCallback(blob);
             }, mimeType);
         }
 
         /**
          * Encodes the canvas data to base 64 or automatically download the result if filename is defined
-         * @param successCallback Defines the callback triggered once the data are available
-         * @param mimeType Defines the mime type of the result
-         * @param fileName The filename to download. If present, the result will automatically be downloaded
+         * @param successCallback defines the callback triggered once the data are available
+         * @param mimeType defines the mime type of the result
+         * @param fileName defines he filename to download. If present, the result will automatically be downloaded
          */
         static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string): void {
             if (successCallback) {
@@ -1137,7 +1308,7 @@
                 successCallback(base64Image);
             }
             else {
-                this.ToBlob(screenshotCanvas, function (blob) {
+                this.ToBlob(screenshotCanvas, function(blob) {
                     //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
                     if (("download" in document.createElement("a"))) {
                         if (!fileName) {
@@ -1149,11 +1320,11 @@
                     }
                     else {
                         var url = URL.createObjectURL(blob);
-                    
+
                         var newWindow = window.open("");
-                        if (!newWindow) return;
+                        if (!newWindow) { return; }
                         var img = newWindow.document.createElement("img");
-                        img.onload = function () {
+                        img.onload = function() {
                             // no longer need to read the blob so it's revoked
                             URL.revokeObjectURL(url);
                         };
@@ -1190,6 +1361,22 @@
             window.URL.revokeObjectURL(url);
         }
 
+        /**
+         * Captures a screenshot of the current rendering
+         * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+         * @param engine defines the rendering engine
+         * @param camera defines the source camera
+         * @param size This parameter can be set to a single number or to an object with the
+         * following (optional) properties: precision, width, height. If a single number is passed,
+         * it will be used for both width and height. If an object is passed, the screenshot size
+         * will be derived from the parameters. The precision property is a multiplier allowing
+         * rendering at a higher or lower resolution
+         * @param successCallback defines the callback receives a single parameter which contains the
+         * screenshot as a string of base64-encoded characters. This string can be assigned to the
+         * src parameter of an <img> to display it
+         * @param mimeType defines the MIME type of the screenshot image (default: image/png).
+         * Check your browser for supported MIME types
+         */
         public static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {
             var width: number;
             var height: number;
@@ -1253,23 +1440,22 @@
 
         /**
          * Generates an image screenshot from the specified camera.
-         *
+         * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
          * @param engine The engine to use for rendering
          * @param camera The camera to use for rendering
          * @param size This parameter can be set to a single number or to an object with the
          * following (optional) properties: precision, width, height. If a single number is passed,
          * it will be used for both width and height. If an object is passed, the screenshot size
          * will be derived from the parameters. The precision property is a multiplier allowing
-         * rendering at a higher or lower resolution.
+         * rendering at a higher or lower resolution
          * @param successCallback The callback receives a single parameter which contains the
          * screenshot as a string of base64-encoded characters. This string can be assigned to the
-         * src parameter of an <img> to display it.
+         * src parameter of an <img> to display it
          * @param mimeType The MIME type of the screenshot image (default: image/png).
-         * Check your browser for supported MIME types.
+         * Check your browser for supported MIME types
          * @param samples Texture samples (default: 1)
          * @param antialiasing Whether antialiasing should be turned on or not (default: false)
          * @param fileName A name for for the downloaded file.
-         * @constructor
          */
         public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
             var width: number;
@@ -1315,7 +1501,7 @@
                 scene.activeCamera = camera;
             }
 
-            //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
+            // At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
             var texture = new RenderTargetTexture("screenShot", size, scene, false, false, Engine.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
             texture.renderList = null;
             texture.samples = samples;
@@ -1338,7 +1524,12 @@
             camera.getProjectionMatrix(true); // Force cache refresh;
         }
 
-        // XHR response validator for local file scenario
+        /**
+         * Validates if xhr data is correct
+         * @param xhr defines the request to validate
+         * @param dataType defines the expected data type
+         * @returns true if data is correct
+         */
         public static ValidateXHRData(xhr: XMLHttpRequest, dataType = 7): boolean {
             // 1 for text (.babylon, manifest and shaders), 2 for TGA, 4 for DDS, 7 for all
 
@@ -1384,18 +1575,19 @@
          * Implementation from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#answer-2117523
          * Be aware Math.random() could cause collisions, but:
          * "All but 6 of the 128 bits of the ID are randomly generated, which means that for any two ids, there's a 1 in 2^^122 (or 5.3x10^^36) chance they'll collide"
+         * @returns a pseudo random id
          */
         public static RandomId(): string {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
                 var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
         }
 
         /**
-        * Test if the given uri is a base64 string.
+        * Test if the given uri is a base64 string
         * @param uri The uri to test
-        * @return True if the uri is a base64 string or false otherwise.
+        * @return True if the uri is a base64 string or false otherwise
         */
         public static IsBase64(uri: string): boolean {
             return uri.length < 5 ? false : uri.substr(0, 5) === "data:";
@@ -1419,34 +1611,39 @@
         }
 
         // Logs
-        private static _NoneLogLevel = 0;
-        private static _MessageLogLevel = 1;
-        private static _WarningLogLevel = 2;
-        private static _ErrorLogLevel = 4;
+        /**
+         * No log
+         */
+        public static readonly NoneLogLevel = 0;
+        /**
+         * Only message logs
+         */
+        public static readonly MessageLogLevel = 1;
+        /**
+         * Only warning logs
+         */
+        public static readonly WarningLogLevel = 2;
+        /**
+         * Only error logs
+         */
+        public static readonly ErrorLogLevel = 4;
+        /**
+         * All logs
+         */
+        public static readonly AllLogLevel = 7;
+
         private static _LogCache = "";
 
+        /**
+         * Gets a value indicating the number of loading errors
+         * @ignorenaming
+         */
         public static errorsCount = 0;
+
+        /**
+         * Callback called when a new log is added
+         */
         public static OnNewCacheEntry: (entry: string) => void;
-
-        static get NoneLogLevel(): number {
-            return Tools._NoneLogLevel;
-        }
-
-        static get MessageLogLevel(): number {
-            return Tools._MessageLogLevel;
-        }
-
-        static get WarningLogLevel(): number {
-            return Tools._WarningLogLevel;
-        }
-
-        static get ErrorLogLevel(): number {
-            return Tools._ErrorLogLevel;
-        }
-
-        static get AllLogLevel(): number {
-            return Tools._MessageLogLevel | Tools._WarningLogLevel | Tools._ErrorLogLevel;
-        }
 
         private static _AddLogEntry(entry: string) {
             Tools._LogCache = entry + Tools._LogCache;
@@ -1497,21 +1694,39 @@
             Tools._AddLogEntry(entry);
         }
 
+        /**
+         * Log a message to the console
+         */
         public static Log: (message: string) => void = Tools._LogEnabled;
 
+        /**
+         * Write a warning message to the console
+         */
         public static Warn: (message: string) => void = Tools._WarnEnabled;
 
+        /**
+         * Write an error message to the console
+         */
         public static Error: (message: string) => void = Tools._ErrorEnabled;
 
+        /**
+         * Gets current log cache (list of logs)
+         */
         public static get LogCache(): string {
             return Tools._LogCache;
         }
 
+        /**
+         * Clears the log cache
+         */
         public static ClearLogCache(): void {
             Tools._LogCache = "";
             Tools.errorsCount = 0;
         }
 
+        /**
+         * Sets the current log level (MessageLogLevel / WarningLogLevel / ErrorLogLevel)
+         */
         public static set LogLevels(level: number) {
             if ((level & Tools.MessageLogLevel) === Tools.MessageLogLevel) {
                 Tools.Log = Tools._LogEnabled;
@@ -1534,38 +1749,43 @@
                 Tools.Error = Tools._ErrorDisabled;
             }
         }
-	
-	/** 
-         * Check if the loaded document was accessed via `file:`-Protocol.
+
+        /**
+         * Checks if the loaded document was accessed via `file:`-Protocol.
          * @returns boolean
          */
-	public static IsFileURL(): boolean {
-	    return location.protocol === "file:";
-	}
+        public static IsFileURL(): boolean {
+            return location.protocol === "file:";
+        }
 
+        /**
+         * Checks if the window object exists
+         * @returns true if the window object exists
+         */
         public static IsWindowObjectExist(): boolean {
             return (typeof window) !== "undefined";
         }
 
         // Performances
-        private static _PerformanceNoneLogLevel = 0;
-        private static _PerformanceUserMarkLogLevel = 1;
-        private static _PerformanceConsoleLogLevel = 2;
+
+        /**
+         * No performance log
+         */
+        public static readonly PerformanceNoneLogLevel = 0;
+        /**
+         * Use user marks to log performance
+         */
+        public static readonly PerformanceUserMarkLogLevel = 1;
+        /**
+         * Log performance to the console
+         */
+        public static readonly PerformanceConsoleLogLevel = 2;
 
         private static _performance: Performance;
 
-        static get PerformanceNoneLogLevel(): number {
-            return Tools._PerformanceNoneLogLevel;
-        }
-
-        static get PerformanceUserMarkLogLevel(): number {
-            return Tools._PerformanceUserMarkLogLevel;
-        }
-
-        static get PerformanceConsoleLogLevel(): number {
-            return Tools._PerformanceConsoleLogLevel;
-        }
-
+        /**
+         * Sets the current performance log level
+         */
         public static set PerformanceLogLevel(level: number) {
             if ((level & Tools.PerformanceUserMarkLogLevel) === Tools.PerformanceUserMarkLogLevel) {
                 Tools.StartPerformanceCounter = Tools._StartUserMark;
@@ -1583,13 +1803,13 @@
             Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
         }
 
-        static _StartPerformanceCounterDisabled(counterName: string, condition?: boolean): void {
+        private static _StartPerformanceCounterDisabled(counterName: string, condition?: boolean): void {
         }
 
-        static _EndPerformanceCounterDisabled(counterName: string, condition?: boolean): void {
+        private static _EndPerformanceCounterDisabled(counterName: string, condition?: boolean): void {
         }
 
-        static _StartUserMark(counterName: string, condition = true): void {
+        private static _StartUserMark(counterName: string, condition = true): void {
             if (!Tools._performance) {
                 if (!Tools.IsWindowObjectExist()) {
                     return;
@@ -1603,7 +1823,7 @@
             Tools._performance.mark(counterName + "-Begin");
         }
 
-        static _EndUserMark(counterName: string, condition = true): void {
+        private static _EndUserMark(counterName: string, condition = true): void {
             if (!condition || !Tools._performance.mark) {
                 return;
             }
@@ -1611,7 +1831,7 @@
             Tools._performance.measure(counterName, counterName + "-Begin", counterName + "-End");
         }
 
-        static _StartPerformanceConsole(counterName: string, condition = true): void {
+        private static _StartPerformanceConsole(counterName: string, condition = true): void {
             if (!condition) {
                 return;
             }
@@ -1623,7 +1843,7 @@
             }
         }
 
-        static _EndPerformanceConsole(counterName: string, condition = true): void {
+        private static _EndPerformanceConsole(counterName: string, condition = true): void {
             if (!condition) {
                 return;
             }
@@ -1635,9 +1855,19 @@
             }
         }
 
+        /**
+         * Starts a performance counter
+         */
         public static StartPerformanceCounter: (counterName: string, condition?: boolean) => void = Tools._StartPerformanceCounterDisabled;
+
+        /**
+         * Ends a specific performance coutner
+         */
         public static EndPerformanceCounter: (counterName: string, condition?: boolean) => void = Tools._EndPerformanceCounterDisabled;
 
+        /**
+         * Gets either window.performance.now() if supported or Date.now() else
+         */
         public static get Now(): number {
             if (Tools.IsWindowObjectExist() && window.performance && window.performance.now) {
                 return window.performance.now();
@@ -1650,7 +1880,8 @@
          * This method will return the name of the class used to create the instance of the given object.
          * It will works only on Javascript basic data types (number, string, ...) and instance of class declared with the @className decorator.
          * @param object the object to get the class name from
-         * @return the name of the class, will be "object" for a custom data type not using the @className decorator
+         * @param isType defines if the object is actually a type
+         * @returns the name of the class, will be "object" for a custom data type not using the @className decorator
          */
         public static GetClassName(object: any, isType: boolean = false): string {
             let name = null;
@@ -1669,6 +1900,12 @@
             return name;
         }
 
+        /**
+         * Gets the first element of an array satisfying a given predicate
+         * @param array defines the array to browse
+         * @param predicate defines the predicate to use
+         * @returns null if not found or the element
+         */
         public static First<T>(array: Array<T>, predicate: (item: T) => boolean): Nullable<T> {
             for (let el of array) {
                 if (predicate(el)) {
@@ -1683,7 +1920,9 @@
          * This method will return the name of the full name of the class, including its owning module (if any).
          * It will works only on Javascript basic data types (number, string, ...) and instance of class declared with the @className decorator or implementing a method getClassName():string (in which case the module won't be specified).
          * @param object the object to get the class name from
+         * @param isType defines if the object is actually a type
          * @return a string that can have two forms: "moduleName.className" if module was specified when the class' Name was registered or "className" if there was not module specified.
+         * @ignorenaming
          */
         public static getFullClassName(object: any, isType: boolean = false): Nullable<string> {
             let className = null;
@@ -1710,58 +1949,17 @@
         }
 
         /**
-         * This method can be used with hashCodeFromStream when your input is an array of values that are either: number, string, boolean or custom type implementing the getHashCode():number method.
-         * @param array
-         */
-        public static arrayOrStringFeeder(array: any): (i: number) => number {
-            return (index: number) => {
-                if (index >= array.length) {
-                    return null;
-                }
-
-                let val = array.charCodeAt ? array.charCodeAt(index) : array[index];
-                if (val && val.getHashCode) {
-                    val = val.getHashCode();
-                }
-                if (typeof val === "string") {
-                    return Tools.hashCodeFromStream(Tools.arrayOrStringFeeder(val));
-                }
-                return val;
-            };
-        }
-
-        /**
-         * Compute the hashCode of a stream of number
-         * To compute the HashCode on a string or an Array of data types implementing the getHashCode() method, use the arrayOrStringFeeder method.
-         * @param feeder a callback that will be called until it returns null, each valid returned values will be used to compute the hash code.
-         * @return the hash code computed
-         */
-        public static hashCodeFromStream(feeder: (index: number) => number): number {
-            // Based from here: http://stackoverflow.com/a/7616484/802124
-            let hash = 0;
-            let index = 0;
-            let chr = feeder(index++);
-            while (chr != null) {
-                hash = ((hash << 5) - hash) + chr;
-                hash |= 0;                          // Convert to 32bit integer
-                chr = feeder(index++);
-            }
-            return hash;
-        }
-
-        /**
          * Returns a promise that resolves after the given amount of time.
          * @param delay Number of milliseconds to delay
          * @returns Promise that resolves after the given amount of time
          */
         public static DelayAsync(delay: number): Promise<void> {
-            return new Promise(resolve => {
+            return new Promise((resolve) => {
                 setTimeout(() => {
                     resolve();
                 }, delay);
             });
         }
-
 
         /**
          * Gets the current gradient from an array of IValueGradient
@@ -1775,10 +1973,10 @@
                 let nextGradient = gradients[gradientIndex + 1];
 
                 if (ratio >= currentGradient.gradient && ratio <= nextGradient.gradient) {
-                    let scale =  (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
+                    let scale = (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
                     updateFunc(currentGradient, nextGradient, scale);
                     return;
-               }
+                }
             }
 
             // Use last index if over
@@ -1789,13 +1987,16 @@
 
     /**
      * This class is used to track a performance counter which is number based.
-     * The user has access to many properties which give statistics of different nature
-     * 
-     * The implementer can track two kinds of Performance Counter: time and count
+     * The user has access to many properties which give statistics of different nature.
+     *
+     * The implementer can track two kinds of Performance Counter: time and count.
      * For time you can optionally call fetchNewFrame() to notify the start of a new frame to monitor, then call beginMonitoring() to start and endMonitoring() to record the lapsed time. endMonitoring takes a newFrame parameter for you to specify if the monitored time should be set for a new frame or accumulated to the current frame being monitored.
      * For count you first have to call fetchNewFrame() to notify the start of a new frame to monitor, then call addCount() how many time required to increment the count value you monitor.
      */
     export class PerfCounter {
+        /**
+         * Gets or sets a global boolean to turn on and off all the counters
+         */
         public static Enabled = true;
 
         /**
@@ -1833,14 +2034,23 @@
             return this._current;
         }
 
+        /**
+         * Gets the accumulated total
+         */
         public get total(): number {
             return this._totalAccumulated;
         }
 
+        /**
+         * Gets the total value count
+         */
         public get count(): number {
             return this._totalValueCount;
         }
 
+        /**
+         * Creates a new counter
+         */
         constructor() {
             this._startMonitoringTime = 0;
             this._min = 0;
@@ -1954,7 +2164,7 @@
         return (target: Object) => {
             (<any>target)["__bjsclassName__"] = name;
             (<any>target)["__bjsmoduleName__"] = (module != null) ? module : null;
-        }
+        };
     }
 
     /**
@@ -1980,9 +2190,9 @@
             /**
              * Defines the number of iterations for the loop
              */
-            public iterations: number, 
-            func: (asyncLoop: AsyncLoop) => void, 
-            successCallback: () => void, 
+            public iterations: number,
+            func: (asyncLoop: AsyncLoop) => void,
+            successCallback: () => void,
             offset: number = 0) {
 
             this.index = offset - 1;
@@ -2041,12 +2251,12 @@
          */
         public static SyncAsyncForLoop(iterations: number, syncedIterations: number, fn: (iteration: number) => void, callback: () => void, breakFunction?: () => boolean, timeout: number = 0): AsyncLoop {
             return AsyncLoop.Run(Math.ceil(iterations / syncedIterations), (loop: AsyncLoop) => {
-                if (breakFunction && breakFunction()) loop.breakLoop();
+                if (breakFunction && breakFunction()) { loop.breakLoop(); }
                 else {
                     setTimeout(() => {
                         for (var i = 0; i < syncedIterations; ++i) {
                             var iteration = (loop.index * syncedIterations) + i;
-                            if (iteration >= iterations) break;
+                            if (iteration >= iterations) { break; }
                             fn(iteration);
                             if (breakFunction && breakFunction()) {
                                 loop.breakLoop();
@@ -2059,4 +2269,4 @@
             }, callback);
         }
     }
-} 
+}

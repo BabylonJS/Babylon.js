@@ -109,7 +109,6 @@ export class DetailPanel extends BasicElement {
             elems[e].classList.remove('fa-chevron-down');
         }
 
-
         if (_direction || !this._sortDirection[property]) {
             this._sortDirection[property] = _direction || 1;
         } else {
@@ -133,7 +132,7 @@ export class DetailPanel extends BasicElement {
 
         this._detailRows.forEach((property) => {
             property.closeDetails();
-        })
+        });
 
         this._detailRows.sort((detail1: any, detail2: any): number => {
             let str1 = String(detail1[property]);

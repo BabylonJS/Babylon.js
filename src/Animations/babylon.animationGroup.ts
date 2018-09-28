@@ -3,7 +3,13 @@ module BABYLON {
      * This class defines the direct association between an animation and a target
      */
     export class TargetedAnimation {
+        /**
+         * Animation to perform
+         */
         public animation: Animation;
+        /**
+         * Target to animate
+         */
         public target: any;
     }
 
@@ -95,14 +101,14 @@ module BABYLON {
 
         /**
          * Instantiates a new Animation Group.
-         * This helps managing several animations at once. 
+         * This helps managing several animations at once.
          * @see http://doc.babylonjs.com/how_to/group
          * @param name Defines the name of the group
          * @param scene Defines the scene the group belongs to
          */
         public constructor(
             /** The name of the animation group */
-            public name: string, 
+            public name: string,
             scene: Nullable<Scene> = null) {
             this._scene = scene || Engine.LastCreatedScene!;
 
@@ -113,7 +119,7 @@ module BABYLON {
          * Add an animation (with its target) in the group
          * @param animation defines the animation we want to add
          * @param target defines the target of the animation
-         * @returns the {BABYLON.TargetedAnimation} object
+         * @returns the TargetedAnimation object
          */
         public addTargetedAnimation(animation: Animation, target: any): TargetedAnimation {
             let targetedAnimation = {
@@ -143,8 +149,8 @@ module BABYLON {
          * @returns the animation group
          */
         public normalize(beginFrame: Nullable<number> = null, endFrame: Nullable<number> = null): AnimationGroup {
-            if (beginFrame == null) beginFrame = this._from;
-            if (endFrame == null) endFrame = this._to;
+            if (beginFrame == null) { beginFrame = this._from; }
+            if (endFrame == null) { endFrame = this._to; }
 
             for (var index = 0; index < this._targetedAnimations.length; index++) {
                 let targetedAnimation = this._targetedAnimations[index];
@@ -159,7 +165,7 @@ module BABYLON {
                         inTangent: startKey.inTangent,
                         outTangent: startKey.outTangent,
                         interpolation: startKey.interpolation
-                    }
+                    };
                     keys.splice(0, 0, newKey);
                 }
 
@@ -170,7 +176,7 @@ module BABYLON {
                         inTangent: endKey.outTangent,
                         outTangent: endKey.outTangent,
                         interpolation: endKey.interpolation
-                    }
+                    };
                     keys.push(newKey);
                 }
             }
@@ -199,7 +205,7 @@ module BABYLON {
                 animatable.onAnimationEnd = () => {
                     this.onAnimationEndObservable.notifyObservers(targetedAnimation);
                     this._checkAnimationGroupEnded(animatable);
-                }
+                };
                 this._animatables.push(animatable);
             }
 
@@ -391,18 +397,20 @@ module BABYLON {
          */
         public static Parse(parsedAnimationGroup: any, scene: Scene): AnimationGroup {
             var animationGroup = new BABYLON.AnimationGroup(parsedAnimationGroup.name, scene);
-            for (var i = 0; i < parsedAnimationGroup.targetedAnimations.length; i++){
+            for (var i = 0; i < parsedAnimationGroup.targetedAnimations.length; i++) {
                 var targetedAnimation = parsedAnimationGroup.targetedAnimations[i];
                 var animation = Animation.Parse(targetedAnimation.animation);
                 var id = targetedAnimation.targetId;
                 var targetNode = scene.getNodeByID(id);
-                
-                if(targetNode != null)
-                    animationGroup.addTargetedAnimation(animation,targetNode);
+
+                if (targetNode != null) {
+                    animationGroup.addTargetedAnimation(animation, targetNode);
+                }
             }
-            
-            if(parsedAnimationGroup.from !== null && parsedAnimationGroup.from !== null)
+
+            if (parsedAnimationGroup.from !== null && parsedAnimationGroup.from !== null) {
                 animationGroup.normalize(parsedAnimationGroup.from, parsedAnimationGroup.to);
+            }
 
             return animationGroup;
         }

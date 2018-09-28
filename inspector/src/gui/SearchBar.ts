@@ -3,7 +3,6 @@ import { Inspector } from "../Inspector";
 import { PropertyTab } from "../tabs/PropertyTab";
 import { BasicElement } from "./BasicElement";
 
-
 /**
  * A search bar can be used to filter elements in the tree panel.
  * At each keypress on the input, the treepanel will be filtered.
@@ -30,7 +29,7 @@ export class SearchBar extends BasicElement {
         this._inputElement.addEventListener('keyup', (evt: KeyboardEvent) => {
             let filter = this._inputElement.value;
             this._propTab.filter(filter);
-        })
+        });
     }
 
     /** Delete all characters typped in the input element */
@@ -66,7 +65,7 @@ export class SearchBarDetails extends BasicElement {
         this._inputElement.addEventListener('keyup', (evt: KeyboardEvent) => {
             let filter = this._inputElement.value;
             this._detailTab.searchByName(filter);
-        })
+        });
     }
 
     /** Delete all characters typped in the input element */

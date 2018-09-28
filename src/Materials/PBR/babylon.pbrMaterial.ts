@@ -1,9 +1,9 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * The Physically based material of BJS.
-     * 
+     *
      * This offers the main features of a standard PBR material.
-     * For more information, please refer to the documentation : 
+     * For more information, please refer to the documentation :
      * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
      */
     export class PBRMaterial extends PBRBaseMaterial {
@@ -59,7 +59,7 @@
         public environmentIntensity: number = 1.0;
 
         /**
-         * This is a special control allowing the reduction of the specular highlights coming from the 
+         * This is a special control allowing the reduction of the specular highlights coming from the
          * four lights of the scene. Those highlights may not be needed in full environment lighting.
          */
         @serialize()
@@ -96,7 +96,7 @@
 
         /**
          * Defines how much the AO map is occluding the analytical lights (point spot...).
-         * 1 means it completely occludes it 
+         * 1 means it completely occludes it
          * 0 mean it has no impact
          */
         @serialize()
@@ -155,7 +155,7 @@
         public roughness: Nullable<number>;
 
         /**
-         * Used to enable roughness/glossiness fetch from a separate chanel depending on the current mode.
+         * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
          * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
          */
         @serializeAsTexture()
@@ -247,6 +247,9 @@
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public linkRefractionWithTransparency = false;
 
+        /**
+         * If true, the light map contains occlusion information instead of lighting info.
+         */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useLightmapAsShadowmap = false;
@@ -273,7 +276,7 @@
         public alphaCutOff = 0.4;
 
         /**
-         * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
+         * Specifies that the material will keep the specular highlights over a transparent surface (only the most limunous ones).
          * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
          */
         @serialize()
@@ -360,7 +363,7 @@
         }
 
         /**
-         * In order to support the falloff compatibility with gltf, a special mode has been added 
+         * In order to support the falloff compatibility with gltf, a special mode has been added
          * to reproduce the gltf light falloff.
          */
         @serialize()
@@ -369,7 +372,7 @@
         }
 
         /**
-         * In order to support the falloff compatibility with gltf, a special mode has been added 
+         * In order to support the falloff compatibility with gltf, a special mode has been added
          * to reproduce the gltf light falloff.
          */
         public set useGLTFLightFalloff(value: boolean) {
@@ -400,7 +403,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useObjectSpaceNormalMap = false;
-        
+
         /**
          * Allows using the bump map in parallax mode.
          */
@@ -536,7 +539,7 @@
 
         /**
          * Sets the Default image processing configuration used either in the this material.
-         * 
+         *
          * If sets to null, the scene one is in use.
          */
         public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
@@ -577,13 +580,13 @@
          */
         public get cameraToneMappingEnabled(): boolean {
             return this._imageProcessingConfiguration.toneMappingEnabled;
-        };
+        }
         /**
          * Sets wether tonemapping is enabled or not
          */
         public set cameraToneMappingEnabled(value: boolean) {
             this._imageProcessingConfiguration.toneMappingEnabled = value;
-        };
+        }
 
         /**
          * The camera exposure used on this material.
@@ -592,7 +595,7 @@
          */
         public get cameraExposure(): number {
             return this._imageProcessingConfiguration.exposure;
-        };
+        }
         /**
          * The camera exposure used on this material.
          * This property is here and not in the camera to allow controlling exposure without full screen post process.
@@ -600,7 +603,7 @@
          */
         public set cameraExposure(value: number) {
             this._imageProcessingConfiguration.exposure = value;
-        };
+        }
 
         /**
          * Gets The camera contrast used on this material.
@@ -630,18 +633,18 @@
         }
 
         /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
          * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         public get cameraColorCurves(): Nullable<ColorCurves> {
             return this._imageProcessingConfiguration.colorCurves;
         }
         /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
          * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         public set cameraColorCurves(value: Nullable<ColorCurves>) {
@@ -650,7 +653,7 @@
 
         /**
          * Instantiates a new PBRMaterial instance.
-         * 
+         *
          * @param name The material name
          * @param scene The scene the material will be use in.
          */

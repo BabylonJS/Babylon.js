@@ -1,4 +1,7 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * Size options for a post process
+     */
     export type PostProcessOptions = { width: number, height: number };
 
     /**
@@ -43,7 +46,7 @@
         */
         public alphaConstants: Color4;
         /**
-        * Animations to be used for the post processing 
+        * Animations to be used for the post processing
         */
         public animations = new Array<Animation>();
 
@@ -66,26 +69,26 @@
         * | 1     | SCALEMODE_FLOOR                     | [engine.scalemode_floor](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_floor) |
         * | 2     | SCALEMODE_NEAREST                   | [engine.scalemode_nearest](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_nearest) |
         * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
-	* 
+	*
         */
         public scaleMode = Engine.SCALEMODE_FLOOR;
         /**
         * Force textures to be a power of two (default: false)
         */
         public alwaysForcePOT = false;
-        
+
         private _samples = 1;
         /**
         * Number of sample textures (default: 1)
         */
-        public get samples () {
+        public get samples() {
             return this._samples;
         }
 
-        public set samples (n: number) {
+        public set samples(n: number) {
             this._samples = n;
 
-            this._textures.forEach(texture => {
+            this._textures.forEach((texture) => {
                 if (texture.samples !== this._samples) {
                     this._engine.updateRenderTargetTextureSampleCount(texture, this._samples);
                 }
@@ -260,7 +263,7 @@
          * @param textureType Type of textures used when performing the post process. (default: 0)
          * @param vertexUrl The url of the vertex shader to be used. (default: "postprocess")
          * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
-         * @param blockCompilation If the shader should not be compiled imediatly. (default: false) 
+         * @param blockCompilation If the shader should not be compiled imediatly. (default: false)
          */
         constructor(
             /** Name of the PostProcess. */
@@ -331,7 +334,7 @@
         }
 
         /**
-         * Reverses the effect of calling shareOutputWith and returns the post process back to its original state. 
+         * Reverses the effect of calling shareOutputWith and returns the post process back to its original state.
          * This should be called if the post process that shares output with this post process is disabled/disposed.
          */
         public useOwnOutput() {
@@ -384,7 +387,7 @@
          * @param camera The camera that will be used in the post process. This camera will be used when calling onActivateObservable.
          * @param sourceTexture The source texture to be inspected to get the width and height if not specified in the post process constructor. (default: null)
          * @param forceDepthStencil If true, a depth and stencil buffer will be generated. (default: false)
-         * @returns The target texture that was bound to be written to. 
+         * @returns The target texture that was bound to be written to.
          */
         public activate(camera: Nullable<Camera>, sourceTexture: Nullable<InternalTexture> = null, forceDepthStencil?: boolean): InternalTexture {
             camera = camera || this._camera;
@@ -456,7 +459,7 @@
                     this.onSizeChangedObservable.notifyObservers(this);
                 }
 
-                this._textures.forEach(texture => {
+                this._textures.forEach((texture) => {
                     if (texture.samples !== this.samples) {
                         this._engine.updateRenderTargetTextureSampleCount(texture, this.samples);
                     }
@@ -499,7 +502,6 @@
             return target;
         }
 
-
         /**
          * If the post process is supported.
          */
@@ -535,8 +537,9 @@
          */
         public apply(): Nullable<Effect> {
             // Check
-            if (!this._effect || !this._effect.isReady())
+            if (!this._effect || !this._effect.isReady()) {
                 return null;
+            }
 
             // States
             this._engine.enableEffect(this._effect);
@@ -550,7 +553,7 @@
                 this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
             }
 
-            // Bind the output texture of the preivous post process as the input to this post process.            
+            // Bind the output texture of the preivous post process as the input to this post process.
             var source: InternalTexture;
             if (this._shareOutputWithPostProcess) {
                 source = this._shareOutputWithPostProcess.inputTexture;

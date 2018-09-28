@@ -313,7 +313,7 @@ void main() {
     float power = emitPower.x + (emitPower.y - emitPower.x) * randoms.a;
 
     outPosition = (emitterWM * vec4(position, 1.)).xyz;
-    vec3 initial = (emitterWM * vec4(normalize(direction), 0.)).xyz;
+    vec3 initial = (emitterWM * vec4(direction, 0.)).xyz;
     outDirection = initial * power;
 #ifndef BILLBOARD        
     outInitialDirection = initial;

@@ -79,7 +79,7 @@ module BABYLON {
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
          */
-        public loadData(data: ArrayBuffer, texture: InternalTexture, 
+        public loadData(data: ArrayBuffer, texture: InternalTexture,
             callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void {
             throw ".env not supported in 2d.";
         }

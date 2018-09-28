@@ -4,7 +4,6 @@ import { TreeItem } from "../tree/TreeItem";
 import { PropertyTab } from "./PropertyTab";
 import { TabBar } from "./TabBar";
 
-
 export class LightTab extends PropertyTab {
 
     constructor(tabbar: TabBar, inspector: Inspector) {

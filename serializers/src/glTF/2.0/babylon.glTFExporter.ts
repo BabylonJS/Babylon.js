@@ -1,23 +1,23 @@
 /// <reference path="../../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"/>
 
 module BABYLON.GLTF2.Exporter {
-    /** 
+    /**
      * Utility interface for storing vertex attribute data
      * @hidden
      */
 
     interface _IVertexAttributeData {
-        /** 
+        /**
          * Specifies the Babylon Vertex Buffer Type (Position, Normal, Color, etc.)
         */
         kind: string;
 
-        /** 
+        /**
          * Specifies the glTF Accessor Type (VEC2, VEC3, etc.)
         */
         accessorType: AccessorType;
 
-        /** 
+        /**
          * Specifies the BufferView index for the vertex attribute data
         */
         bufferViewIndex?: number;
@@ -153,11 +153,11 @@ module BABYLON.GLTF2.Exporter {
         }
 
         public _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Nullable<Promise<BaseTexture>> {
-            return this._applyExtensions(babylonTexture, extension => extension.preExportTextureAsync && extension.preExportTextureAsync(context, babylonTexture, mimeType));
+            return this._applyExtensions(babylonTexture, (extension) => extension.preExportTextureAsync && extension.preExportTextureAsync(context, babylonTexture, mimeType));
         }
-        
+
         public _extensionsPostExportMeshPrimitiveAsync(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Nullable<Promise<IMeshPrimitive>> {
-            return this._applyExtensions(meshPrimitive, extension => extension.postExportMeshPrimitiveAsync && extension.postExportMeshPrimitiveAsync(context, meshPrimitive, babylonSubMesh, binaryWriter));
+            return this._applyExtensions(meshPrimitive, (extension) => extension.postExportMeshPrimitiveAsync && extension.postExportMeshPrimitiveAsync(context, meshPrimitive, babylonSubMesh, binaryWriter));
         }
 
         /**
@@ -282,7 +282,7 @@ module BABYLON.GLTF2.Exporter {
         }
 
         /**
-         * Reorders the vertex attribute data based on the primitive mode.  This is necessary when indices are not available and the winding order is 
+         * Reorders the vertex attribute data based on the primitive mode.  This is necessary when indices are not available and the winding order is
          * clock-wise during export to glTF
          * @param submesh BabylonJS submesh
          * @param primitiveMode Primitive mode of the mesh
@@ -312,7 +312,7 @@ module BABYLON.GLTF2.Exporter {
         }
 
         /**
-         * Reorders the vertex attributes in the correct triangle mode order .  This is necessary when indices are not available and the winding order is 
+         * Reorders the vertex attributes in the correct triangle mode order .  This is necessary when indices are not available and the winding order is
          * clock-wise during export to glTF
          * @param submesh BabylonJS submesh
          * @param primitiveMode Primitive mode of the mesh
@@ -392,7 +392,7 @@ module BABYLON.GLTF2.Exporter {
         }
 
         /**
-         * Reorders the vertex attributes in the correct triangle strip order.  This is necessary when indices are not available and the winding order is 
+         * Reorders the vertex attributes in the correct triangle strip order.  This is necessary when indices are not available and the winding order is
          * clock-wise during export to glTF
          * @param submesh BabylonJS submesh
          * @param primitiveMode Primitive mode of the mesh
@@ -451,7 +451,7 @@ module BABYLON.GLTF2.Exporter {
         }
 
         /**
-         * Reorders the vertex attributes in the correct triangle fan order.  This is necessary when indices are not available and the winding order is 
+         * Reorders the vertex attributes in the correct triangle fan order.  This is necessary when indices are not available and the winding order is
          * clock-wise during export to glTF
          * @param submesh BabylonJS submesh
          * @param primitiveMode Primitive mode of the mesh
@@ -728,7 +728,7 @@ module BABYLON.GLTF2.Exporter {
          * @returns GLTFData with glTF file data
          */
         public _generateGLTFAsync(glTFPrefix: string): Promise<GLTFData> {
-            return this._generateBinaryAsync().then(binaryBuffer => {
+            return this._generateBinaryAsync().then((binaryBuffer) => {
                 const jsonText = this.generateJSON(false, glTFPrefix, true);
                 const bin = new Blob([binaryBuffer], { type: 'application/octet-stream' });
 
@@ -780,11 +780,11 @@ module BABYLON.GLTF2.Exporter {
         /**
          * Generates a glb file from the json and binary data
          * Returns an object with the glb file name as the key and data as the value
-         * @param glTFPrefix 
+         * @param glTFPrefix
          * @returns object with glb filename as key and data as value
          */
         public _generateGLBAsync(glTFPrefix: string): Promise<GLTFData> {
-            return this._generateBinaryAsync().then(binaryBuffer => {
+            return this._generateBinaryAsync().then((binaryBuffer) => {
                 const jsonText = this.generateJSON(true);
                 const glbFileName = glTFPrefix + '.glb';
                 const headerLength = 12;
@@ -1102,11 +1102,11 @@ module BABYLON.GLTF2.Exporter {
                                 // get the color from the lines mesh and set it in the material
                                 const material: IMaterial = {
                                     name: bufferMesh.name + ' material'
-                                }
+                                };
                                 if (!bufferMesh.color.equals(Color3.White()) || bufferMesh.alpha < 1) {
                                     material.pbrMetallicRoughness = {
                                         baseColorFactor: bufferMesh.color.asArray().concat([bufferMesh.alpha])
-                                    }
+                                    };
                                 }
                                 this._materials.push(material);
                                 materialIndex = this._materials.length - 1;
@@ -1182,7 +1182,7 @@ module BABYLON.GLTF2.Exporter {
                                         if (vertexData) {
                                             let byteOffset = this._bufferViews[vertexAttributeBufferViews[attribute.kind]].byteOffset;
                                             if (!byteOffset) {
-                                                byteOffset = 0
+                                                byteOffset = 0;
                                             }
                                             this.reorderVertexAttributeDataBasedOnPrimitiveMode(submesh, primitiveMode, sideOrientation, attribute.kind, vertexData, byteOffset, binaryWriter);
                                         }
@@ -1235,7 +1235,6 @@ module BABYLON.GLTF2.Exporter {
                         throw new Error("undefined byte length!");
                     }
 
-
                     // Build Hierarchy with the node map.
                     for (let babylonTransformNode of nodes) {
                         glTFNodeIndex = this._nodeMap[babylonTransformNode.uniqueId];
@@ -1271,7 +1270,7 @@ module BABYLON.GLTF2.Exporter {
                                 }
                             }
                         }
-                    };
+                    }
                     if (scene.nodes.length) {
                         this._scenes.push(scene);
                     }
@@ -1318,7 +1317,7 @@ module BABYLON.GLTF2.Exporter {
                 else {
                     `Excluding mesh ${babylonTransformNode.name}`;
                 }
-            };
+            }
 
             return promiseChain.then(() => {
                 if (runtimeGLTFAnimation.channels.length && runtimeGLTFAnimation.samplers.length) {
@@ -1372,7 +1371,7 @@ module BABYLON.GLTF2.Exporter {
 
     /**
      * @hidden
-     * 
+     *
      * Stores glTF binary data.  If the array buffer byte length is exceeded, it doubles in size dynamically
      */
     export class _BinaryWriter {
@@ -1399,7 +1398,7 @@ module BABYLON.GLTF2.Exporter {
         }
         /**
          * Resize the array buffer to the specified byte length
-         * @param byteLength 
+         * @param byteLength
          */
         private resizeBuffer(byteLength: number): ArrayBuffer {
             let newBuffer = new ArrayBuffer(byteLength);
@@ -1432,7 +1431,7 @@ module BABYLON.GLTF2.Exporter {
         }
         /**
          * Stores an UInt8 in the array buffer
-         * @param entry 
+         * @param entry
          * @param byteOffset If defined, specifies where to set the value as an offset.
          */
         public setUInt8(entry: number, byteOffset?: number) {
@@ -1454,7 +1453,7 @@ module BABYLON.GLTF2.Exporter {
 
         /**
          * Gets an UInt32 in the array buffer
-         * @param entry 
+         * @param entry
          * @param byteOffset If defined, specifies where to set the value as an offset.
          */
         public getUInt32(byteOffset: number): number {
@@ -1514,7 +1513,7 @@ module BABYLON.GLTF2.Exporter {
         }
         /**
          * Stores a Float32 in the array buffer
-         * @param entry 
+         * @param entry
          */
         public setFloat32(entry: number, byteOffset?: number) {
             if (isNaN(entry)) {
@@ -1536,7 +1535,7 @@ module BABYLON.GLTF2.Exporter {
         }
         /**
          * Stores an UInt32 in the array buffer
-         * @param entry 
+         * @param entry
          * @param byteOffset If defined, specifies where to set the value as an offset.
          */
         public setUInt32(entry: number, byteOffset?: number) {

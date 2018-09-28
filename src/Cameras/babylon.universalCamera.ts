@@ -1,6 +1,6 @@
 module BABYLON {
     /**
-     * The Universal Camera is the one to choose for first person shooter type games, and works with all the keyboard, mouse, touch and gamepads. This replaces the earlier Free Camera, 
+     * The Universal Camera is the one to choose for first person shooter type games, and works with all the keyboard, mouse, touch and gamepads. This replaces the earlier Free Camera,
      * which still works and will still be found in many Playgrounds.
      * @see http://doc.babylonjs.com/features/cameras#universal-camera
      */
@@ -11,16 +11,18 @@ module BABYLON {
          */
         public get gamepadAngularSensibility(): number {
             var gamepad = <FreeCameraGamepadInput>this.inputs.attached["gamepad"];
-            if (gamepad)
+            if (gamepad) {
                 return gamepad.gamepadAngularSensibility;
+            }
 
             return 0;
         }
 
         public set gamepadAngularSensibility(value: number) {
             var gamepad = <FreeCameraGamepadInput>this.inputs.attached["gamepad"];
-            if (gamepad)
+            if (gamepad) {
                 gamepad.gamepadAngularSensibility = value;
+            }
         }
 
         /**
@@ -29,20 +31,22 @@ module BABYLON {
          */
         public get gamepadMoveSensibility(): number {
             var gamepad = <FreeCameraGamepadInput>this.inputs.attached["gamepad"];
-            if (gamepad)
+            if (gamepad) {
                 return gamepad.gamepadMoveSensibility;
+            }
 
             return 0;
         }
 
         public set gamepadMoveSensibility(value: number) {
             var gamepad = <FreeCameraGamepadInput>this.inputs.attached["gamepad"];
-            if (gamepad)
+            if (gamepad) {
                 gamepad.gamepadMoveSensibility = value;
+            }
         }
 
         /**
-         * The Universal Camera is the one to choose for first person shooter type games, and works with all the keyboard, mouse, touch and gamepads. This replaces the earlier Free Camera, 
+         * The Universal Camera is the one to choose for first person shooter type games, and works with all the keyboard, mouse, touch and gamepads. This replaces the earlier Free Camera,
          * which still works and will still be found in many Playgrounds.
          * @see http://doc.babylonjs.com/features/cameras#universal-camera
          * @param name Define the name of the camera in the scene

@@ -22,13 +22,13 @@ module BABYLON {
     }
 
     Object.defineProperty(Scene.prototype, "geometryBufferRenderer", {
-        get: function (this:Scene) {
+        get: function(this: Scene) {
             this._geometryBufferRenderer;
         },
-        set: function (this:Scene, value: Nullable<GeometryBufferRenderer>) {
+        set: function(this: Scene, value: Nullable<GeometryBufferRenderer>) {
             if (value && value.isSupported) {
                 this._geometryBufferRenderer = value;
-            };
+            }
         },
         enumerable: true,
         configurable: true
@@ -45,7 +45,7 @@ module BABYLON {
         }
 
         return this._geometryBufferRenderer;
-    }
+    };
 
     Scene.prototype.disableGeometryBufferRenderer = function(): void {
         if (!this._geometryBufferRenderer) {
@@ -54,7 +54,7 @@ module BABYLON {
 
         this._geometryBufferRenderer.dispose();
         this._geometryBufferRenderer = null;
-    }
+    };
 
     /**
      * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
@@ -107,4 +107,4 @@ module BABYLON {
             }
         }
     }
-} 
+}

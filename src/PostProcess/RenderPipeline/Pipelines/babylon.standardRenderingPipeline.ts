@@ -1,4 +1,9 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * Standard rendering pipeline
+     * Default pipeline should be used going forward but the standard pipeline will be kept for backwards compatibility.
+     * @see https://doc.babylonjs.com/how_to/using_standard_rendering_pipeline
+     */
     export class StandardRenderingPipeline extends PostProcessRenderPipeline implements IDisposable, IAnimatable {
         /**
         * Public members
@@ -145,10 +150,10 @@
         public volumetricLightBlurScale: number = 64.0;
         /**
          * Light (spot or directional) used to generate the volumetric lights rays
-         * The source light must have a shadow generate so the pipeline can get its 
+         * The source light must have a shadow generate so the pipeline can get its
          * depth map
          */
-        public sourceLight: Nullable<SpotLight |  DirectionalLight> = null;
+        public sourceLight: Nullable<SpotLight |  DirectionalLight> = null;
 
         /**
          * For eye adaptation, represents the minimum luminance the eye can see
@@ -255,6 +260,7 @@
         private _samples: number = 1;
 
         /**
+         * @ignore
          * Specifies if the bloom pipeline is enabled
          */
         @serialize()
@@ -272,6 +278,7 @@
         }
 
         /**
+         * @ignore
          * Specifies if the depth of field pipeline is enabed
          */
         @serialize()
@@ -289,6 +296,7 @@
         }
 
         /**
+         * @ignore
          * Specifies if the lens flare pipeline is enabed
          */
         @serialize()
@@ -306,6 +314,7 @@
         }
 
         /**
+         * @ignore
          * Specifies if the HDR pipeline is enabled
          */
         @serialize()
@@ -323,6 +332,7 @@
         }
 
         /**
+         * @ignore
          * Specifies if the volumetric lights scattering effect is enabled
          */
         @serialize()
@@ -348,6 +358,7 @@
         }
 
         /**
+         * @ignore
          * Specifies if the motion blur effect is enabled
          */
         @serialize()
@@ -390,7 +401,7 @@
             return this._volumetricLightStepsCount;
         }
 
-        public set volumetricLightStepsCount(count: number)  {
+        public set volumetricLightStepsCount(count: number)  {
             if (this.volumetricLightPostProcess) {
                 this.volumetricLightPostProcess.updateEffect("#define VLS\n#define NB_STEPS " + count.toFixed(1));
             }
@@ -433,16 +444,17 @@
         }
 
         /**
+         * Default pipeline should be used going forward but the standard pipeline will be kept for backwards compatibility.
          * @constructor
-         * @param {string} name - The rendering pipeline name
-         * @param {BABYLON.Scene} scene - The scene linked to this pipeline
-         * @param {any} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
-         * @param {BABYLON.PostProcess} originalPostProcess - the custom original color post-process. Must be "reusable". Can be null.
-         * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
+         * @param name The rendering pipeline name
+         * @param scene The scene linked to this pipeline
+         * @param ratio The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param originalPostProcess the custom original color post-process. Must be "reusable". Can be null.
+         * @param cameras The array of cameras that the rendering pipeline will be attached to
          */
         constructor(name: string, scene: Scene, ratio: number, originalPostProcess: Nullable<PostProcess> = null, cameras?: Camera[]) {
             super(scene.getEngine(), name);
-            this._cameras = cameras ||  [];
+            this._cameras = cameras ||  [];
 
             // Initialize
             this._scene = scene;
@@ -552,7 +564,7 @@
                 this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
             }
 
-            if (!this._enableMSAAOnFirstPostProcess(this._samples) && this._samples > 1){
+            if (!this._enableMSAAOnFirstPostProcess(this._samples) && this._samples > 1) {
                 BABYLON.Tools.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
             }
         }
@@ -566,7 +578,6 @@
                 var id = 0;
                 let width = (<PostProcess>this.downSampleX4PostProcess).width;
                 let height = (<PostProcess>this.downSampleX4PostProcess).height;
-
 
                 for (var i = -2; i < 2; i++) {
                     for (var j = -2; j < 2; j++) {
@@ -603,7 +614,7 @@
 
                 effect.setArray2("dsOffsets", brightOffsets);
                 effect.setFloat("brightThreshold", this.brightThreshold);
-            }
+            };
 
             // Add to pipeline
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRBrightPass", () => { return this.brightPassPostProcess; }, true));
@@ -1071,7 +1082,9 @@
             return p;
         }
 
-        // Luminance steps
+        /**
+         * Luminance steps
+         */
         public static LuminanceSteps: number = 6;
     }
 }

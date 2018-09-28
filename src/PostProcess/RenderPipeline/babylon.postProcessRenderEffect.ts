@@ -153,7 +153,7 @@ module BABYLON {
                 var cameraName: string = camera.name;
                 this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess: PostProcess) => {
                     camera.detachPostProcess(postProcess);
-                })
+                });
 
                 if (this._cameras[cameraName]) {
                     //this._indicesForCamera.splice(index, 1);

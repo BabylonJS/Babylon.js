@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Class used to store 3D textures containing user data
      */
@@ -18,11 +18,11 @@
          * @param samplingMode defines the sampling mode to use (BABYLON.Texture.TRILINEAR_SAMPLINGMODE by default)
          * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
          */
-        constructor(data: ArrayBufferView, width: number, height: number, depth: number, 
+        constructor(data: ArrayBufferView, width: number, height: number, depth: number,
                     /** Gets or sets the texture format to use */
-                    public format: number, scene: Scene, 
-                    generateMipMaps: boolean = true, 
-                    invertY: boolean = false, 
+                    public format: number, scene: Scene,
+                    generateMipMaps: boolean = true,
+                    invertY: boolean = false,
                     samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
                     textureType = Engine.TEXTURETYPE_UNSIGNED_INT) {
             super(null, scene, !generateMipMaps, invertY);
@@ -39,8 +39,8 @@
                 samplingMode,
                 undefined,
                 textureType
-            )
-    
+            );
+
             this.is3D = true;
         }
 

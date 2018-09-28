@@ -1,10 +1,11 @@
-// BABYLON.JS Chromatic Aberration GLSL Shader
-// Author: Olivier Guyot
-// Separates very slightly R, G and B colors on the edges of the screen
-// Inspired by Francois Tarlier & Martins Upitis
-
 
 module BABYLON {
+    /**
+     * BABYLON.JS Chromatic Aberration GLSL Shader
+     * Author: Olivier Guyot
+     * Separates very slightly R, G and B colors on the edges of the screen
+     * Inspired by Francois Tarlier & Martins Upitis
+     */
     export class LensRenderingPipeline extends PostProcessRenderPipeline {
 
         // Lens effects can be of the following:
@@ -20,14 +21,17 @@ module BABYLON {
         // - grain texture
 
         /**
-        * The chromatic aberration PostProcess id in the pipeline
-        */
+         * @ignore
+         * The chromatic aberration PostProcess id in the pipeline
+         */
         public LensChromaticAberrationEffect: string = "LensChromaticAberrationEffect";
         /**
-        * The highlights enhancing PostProcess id in the pipeline
-        */
+         * @ignore
+         * The highlights enhancing PostProcess id in the pipeline
+         */
         public HighlightsEnhancingEffect: string = "HighlightsEnhancingEffect";
         /**
+         * @ignore
         * The depth-of-field PostProcess id in the pipeline
         */
         public LensDepthOfFieldEffect: string = "LensDepthOfFieldEffect";
@@ -52,7 +56,6 @@ module BABYLON {
         private _dofPentagon: boolean;
         private _blurNoise: boolean;
 
-
         /**
          * @constructor
          *
@@ -73,11 +76,11 @@ module BABYLON {
          * }
          * Note: if an effect parameter is unset, effect is disabled
          *
-         * @param {string} name - The rendering pipeline name
-         * @param {object} parameters - An object containing all parameters (see above)
-         * @param {BABYLON.Scene} scene - The scene linked to this pipeline
-         * @param {number} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
-         * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
+         * @param name The rendering pipeline name
+         * @param parameters - An object containing all parameters (see above)
+         * @param scene The scene linked to this pipeline
+         * @param ratio The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param cameras The array of cameras that the rendering pipeline will be attached to
          */
         constructor(name: string, parameters: any, scene: Scene, ratio: number = 1.0, cameras?: Camera[]) {
             super(scene.getEngine(), name);
@@ -124,42 +127,108 @@ module BABYLON {
         }
 
         // public methods (self explanatory)
-
+        /**
+         * Sets the amount of blur at the edges
+         * @param amount blur amount
+         */
         public setEdgeBlur(amount: number) { this._edgeBlur = amount; }
+        /**
+         * Sets edge blur to 0
+         */
         public disableEdgeBlur() { this._edgeBlur = 0; }
+        /**
+         * Sets the amout of grain
+         * @param amount Amount of grain
+         */
         public setGrainAmount(amount: number) { this._grainAmount = amount; }
+        /**
+         * Set grain amount to 0
+         */
         public disableGrain() { this._grainAmount = 0; }
+        /**
+         * Sets the chromatic aberration amount
+         * @param amount amount of chromatic aberration
+         */
         public setChromaticAberration(amount: number) { this._chromaticAberration = amount; }
+        /**
+         * Sets chromatic aberration amount to 0
+         */
         public disableChromaticAberration() { this._chromaticAberration = 0; }
+        /**
+         * Sets the EdgeDistortion amount
+         * @param amount amount of EdgeDistortion
+         */
         public setEdgeDistortion(amount: number) { this._distortion = amount; }
+        /**
+         * Sets edge distortion to 0
+         */
         public disableEdgeDistortion() { this._distortion = 0; }
+        /**
+         * Sets the FocusDistance amount
+         * @param amount amount of FocusDistance
+         */
         public setFocusDistance(amount: number) { this._dofDistance = amount; }
+         /**
+         * Disables depth of field
+         */
         public disableDepthOfField() { this._dofDistance = -1; }
+        /**
+         * Sets the Aperture amount
+         * @param amount amount of Aperture
+         */
         public setAperture(amount: number) { this._dofAperture = amount; }
+        /**
+         * Sets the DarkenOutOfFocus amount
+         * @param amount amount of DarkenOutOfFocus
+         */
         public setDarkenOutOfFocus(amount: number) { this._dofDarken = amount; }
+        /**
+         * Creates a pentagon bokeh effect
+         */
         public enablePentagonBokeh() {
             this._highlightsPostProcess.updateEffect("#define PENTAGON\n");
         }
+        /**
+         * Disables the pentagon bokeh effect
+         */
         public disablePentagonBokeh() {
             this._highlightsPostProcess.updateEffect();
         }
+        /**
+         * Enables noise blur
+         */
         public enableNoiseBlur() { this._blurNoise = true; }
+        /**
+         * Disables noise blur
+         */
         public disableNoiseBlur() { this._blurNoise = false; }
+        /**
+         * Sets the HighlightsGain amount
+         * @param amount amount of HighlightsGain
+         */
         public setHighlightsGain(amount: number) {
             this._highlightsGain = amount;
         }
+        /**
+         * Sets the HighlightsThreshold amount
+         * @param amount amount of HighlightsThreshold
+         */
         public setHighlightsThreshold(amount: number) {
             if (this._highlightsGain === -1) {
                 this._highlightsGain = 1.0;
             }
             this._highlightsThreshold = amount;
         }
+        /**
+         * Disables highlights
+         */
         public disableHighlights() {
             this._highlightsGain = -1;
         }
 
         /**
          * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
+         * @param disableDepthRender If the scens depth rendering should be disabled (default: false)
          */
         public dispose(disableDepthRender: boolean = false): void {
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
@@ -170,8 +239,9 @@ module BABYLON {
 
             this._grainTexture.dispose();
 
-            if (disableDepthRender)
+            if (disableDepthRender) {
                 this._scene.disableDepthRenderer();
+            }
         }
 
         // colors shifting and distortion
@@ -188,7 +258,7 @@ module BABYLON {
                 effect.setFloat('screen_height', this._scene.getEngine().getRenderHeight());
                 effect.setFloat('radialIntensity', 1);
                 effect.setFloat2('direction', 17, 17);
-                effect.setFloat2('centerPosition', 0.5,0.5);
+                effect.setFloat2('centerPosition', 0.5, 0.5);
             };
         }
 
@@ -264,7 +334,7 @@ module BABYLON {
 
             var rand = (min: number, max: number) => {
                 return Math.random() * (max - min) + min;
-            }
+            };
 
             var value;
             for (var x = 0; x < size; x++) {

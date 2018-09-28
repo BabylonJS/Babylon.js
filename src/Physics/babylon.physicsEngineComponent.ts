@@ -1,7 +1,7 @@
 module BABYLON {
     export interface Scene {
-        /** @hidden (Backing field) */        
-        _physicsEngine: Nullable<IPhysicsEngine>;             
+        /** @hidden (Backing field) */
+        _physicsEngine: Nullable<IPhysicsEngine>;
 
         /**
          * Gets the current physics engine
@@ -17,7 +17,7 @@ module BABYLON {
          */
         enablePhysics(gravity: Nullable<Vector3>, plugin?: IPhysicsEnginePlugin): boolean;
 
-        /** 
+        /**
          * Disables and disposes the physics engine associated with the scene
          */
         disablePhysicsEngine(): void;
@@ -26,7 +26,7 @@ module BABYLON {
          * Gets a boolean indicating if there is an active physics engine
          * @returns a boolean indicating if there is an active physics engine
          */
-        isPhysicsEnabled(): boolean;   
+        isPhysicsEnabled(): boolean;
 
         /**
          * Deletes a physics compound impostor
@@ -45,13 +45,13 @@ module BABYLON {
         onAfterPhysicsObservable: Observable<Scene>;
     }
 
-    /** 
+    /**
      * Gets the current physics engine
      * @returns a IPhysicsEngine or null if none attached
      */
     Scene.prototype.getPhysicsEngine = function(): Nullable<IPhysicsEngine> {
         return this._physicsEngine;
-    }
+    };
 
     /**
      * Enables physics to the current scene
@@ -63,7 +63,7 @@ module BABYLON {
         if (this._physicsEngine) {
             return true;
         }
-        
+
         // Register the component to the scene
         let component = this._getComponent(SceneComponentConstants.NAME_PHYSICSENGINE) as PhysicsEngineSceneComponent;
         if (!component) {
@@ -78,9 +78,9 @@ module BABYLON {
             Tools.Error(e.message);
             return false;
         }
-    }
+    };
 
-    /** 
+    /**
      * Disables and disposes the physics engine associated with the scene
      */
     Scene.prototype.disablePhysicsEngine = function(): void {
@@ -90,7 +90,7 @@ module BABYLON {
 
         this._physicsEngine.dispose();
         this._physicsEngine = null;
-    }
+    };
 
     /**
      * Gets a boolean indicating if there is an active physics engine
@@ -98,7 +98,7 @@ module BABYLON {
      */
     Scene.prototype.isPhysicsEnabled = function(): boolean {
         return this._physicsEngine !== undefined;
-    }
+    };
 
     /**
      * Deletes a physics compound impostor
@@ -111,7 +111,7 @@ module BABYLON {
             mesh.physicsImpostor.dispose(/*true*/);
             mesh.physicsImpostor = null;
         }
-    }
+    };
 
     /** @hidden */
     Scene.prototype._advancePhysicsEngineStep = function(step: number) {
@@ -120,9 +120,9 @@ module BABYLON {
             this._physicsEngine._step(step / 1000);
             this.onAfterPhysicsObservable.notifyObservers(this);
         }
-    }
+    };
 
-    export interface AbstractMesh {       
+    export interface AbstractMesh {
         /** @hidden */
         _physicsImpostor: Nullable<PhysicsImpostor>;
 
@@ -139,7 +139,7 @@ module BABYLON {
          */
         getPhysicsImpostor(): Nullable<PhysicsImpostor>;
 
-        /** Apply a physic impulse to the mesh 
+        /** Apply a physic impulse to the mesh
          * @param force defines the force to apply
          * @param contactPoint defines where to apply the force
          * @returns the current mesh
@@ -163,10 +163,10 @@ module BABYLON {
     }
 
     Object.defineProperty(AbstractMesh.prototype, "physicsImpostor", {
-        get: function (this:AbstractMesh) {
+        get: function(this: AbstractMesh) {
             return this._physicsImpostor;
         },
-        set: function(this:AbstractMesh, value: Nullable<PhysicsImpostor>) {
+        set: function(this: AbstractMesh, value: Nullable<PhysicsImpostor>) {
             if (this._physicsImpostor === value) {
                 return;
             }
@@ -197,10 +197,10 @@ module BABYLON {
      */
     AbstractMesh.prototype.getPhysicsImpostor = function(): Nullable<PhysicsImpostor> {
         return this.physicsImpostor;
-    }
+    };
 
     /**
-     * Apply a physic impulse to the mesh 
+     * Apply a physic impulse to the mesh
      * @param force defines the force to apply
      * @param contactPoint defines where to apply the force
      * @returns the current mesh
@@ -212,7 +212,7 @@ module BABYLON {
         }
         this.physicsImpostor.applyImpulse(force, contactPoint);
         return this;
-    }
+    };
 
     /**
      * Creates a physic joint between two meshes
@@ -233,8 +233,8 @@ module BABYLON {
             nativeParams: options
         });
         return this;
-    }    
-   
+    };
+
     /**
      * Defines the physics engine scene component responsible to manage a physics engine
      */
@@ -259,13 +259,13 @@ module BABYLON {
             this.scene.onAfterPhysicsObservable = new Observable<Scene>();
 
             // Replace the function used to get the deterministic frame time
-            this.scene.getDeterministicFrameTime = () => {    
+            this.scene.getDeterministicFrameTime = () => {
                 if (this.scene._physicsEngine) {
                     return this.scene._physicsEngine.getTimeStep() * 1000;
                 }
 
                 return 1000.0 / 60.0;
-            }        
+            };
         }
 
         /**

@@ -95,7 +95,7 @@ module BABYLON {
         private _moveChildren(children: InternalPromise<T>[]): void {
             this._children.push(...children.splice(0, children.length));
 
-            this._children.forEach(child => {
+            this._children.forEach((child) => {
                 child._parent = this;
             });
 
@@ -194,7 +194,7 @@ module BABYLON {
                 if (agregator.rootPromise._state !== PromiseStates.Rejected) {
                     agregator.rootPromise._reject(reason);
                 }
-            })
+            });
         }
 
         public static all<T>(promises: InternalPromise<T>[]): InternalPromise<T[]> {
@@ -204,13 +204,12 @@ module BABYLON {
             agregator.rootPromise = newPromise;
 
             if (promises.length) {
-                for(var index = 0; index < promises.length; index++) {
+                for (var index = 0; index < promises.length; index++) {
                     InternalPromise._RegisterForFulfillment(promises[index], agregator, index);
                 }
             } else {
                 newPromise._resolve([]);
             }
-
 
             return newPromise;
         }

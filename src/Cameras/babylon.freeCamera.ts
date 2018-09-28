@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     Node.AddNodeConstructor("FreeCamera", (name, scene) => {
         // Forcing to use the Universal camera
         return () => new UniversalCamera(name, Vector3.Zero(), scene);
@@ -20,7 +20,7 @@
 
         /**
          * Define an offset for the position of the ellipsoid around the camera.
-         * This can be helpful to determine the center of the body near the gravity center of the body 
+         * This can be helpful to determine the center of the body near the gravity center of the body
          * instead of its head.
          */
         @serializeAsVector3()
@@ -49,8 +49,9 @@
          */
         public get angularSensibility(): number {
             var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
-            if (mouse)
+            if (mouse) {
                 return mouse.angularSensibility;
+            }
 
             return 0;
         }
@@ -61,8 +62,9 @@
          */
         public set angularSensibility(value: number) {
             var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
-            if (mouse)
+            if (mouse) {
                 mouse.angularSensibility = value;
+            }
         }
 
         /**
@@ -70,16 +72,18 @@
          */
         public get keysUp(): number[] {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 return keyboard.keysUp;
+            }
 
             return [];
         }
 
         public set keysUp(value: number[]) {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 keyboard.keysUp = value;
+            }
         }
 
         /**
@@ -87,16 +91,18 @@
          */
         public get keysDown(): number[] {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 return keyboard.keysDown;
+            }
 
             return [];
         }
 
         public set keysDown(value: number[]) {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 keyboard.keysDown = value;
+            }
         }
 
         /**
@@ -104,16 +110,18 @@
          */
         public get keysLeft(): number[] {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 return keyboard.keysLeft;
+            }
 
             return [];
         }
 
         public set keysLeft(value: number[]) {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 keyboard.keysLeft = value;
+            }
         }
 
         /**
@@ -121,16 +129,18 @@
          */
         public get keysRight(): number[] {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 return keyboard.keysRight;
+            }
 
             return [];
         }
 
         public set keysRight(value: number[]) {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 keyboard.keysRight = value;
+            }
         }
 
         /**
@@ -235,8 +245,9 @@
 
         private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
             //TODO move this to the collision coordinator!
-            if (this.getScene().workerCollisions)
+            if (this.getScene().workerCollisions) {
                 newPosition.multiplyInPlace(this._collider._radius);
+            }
 
             var updatePosition = (newPos: Vector3) => {
                 this._newPosition.copyFrom(newPos);
@@ -249,7 +260,7 @@
                         this.onCollide(collidedMesh);
                     }
                 }
-            }
+            };
 
             updatePosition(newPosition);
         }

@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Defines how the parser contract is defined.
      * These parsers are used to parse a list of specific assets (like particle systems, etc..)
@@ -13,7 +13,7 @@
 
     /**
      * Base class of the scene acting as a container for the different elements composing a scene.
-     * This class is dynamically extended by the different components of the scene increasing 
+     * This class is dynamically extended by the different components of the scene increasing
      * flexibility and reducing coupling
      */
     export abstract class AbstractScene {
@@ -69,7 +69,7 @@
             }
 
             return null;
-        }        
+        }
 
         /**
          * Parser json data and populate both a scene and its associated container object
@@ -121,7 +121,7 @@
 
         /**
          * Gets a list of Animations associated with the scene
-         */        
+         */
         public animations: Animation[] = [];
 
         /**
@@ -147,7 +147,7 @@
          * @see http://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh
          */
         public morphTargetManagers = new Array<MorphTargetManager>();
-        
+
         /**
          * The list of geometries used in the scene.
          */
