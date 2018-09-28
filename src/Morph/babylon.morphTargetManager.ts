@@ -57,7 +57,7 @@ module BABYLON {
 
         /**
          * Gets a boolean indicating if this manager supports morphing of tangents
-         */        
+         */
         public get supportsTangents(): boolean {
             return this._supportsTangents;
         }
@@ -107,7 +107,7 @@ module BABYLON {
          */
         public addTarget(target: MorphTarget): void {
             this._targets.push(target);
-            this._targetInfluenceChangedObservers.push(target.onInfluenceChanged.add(needUpdate => {
+            this._targetInfluenceChangedObservers.push(target.onInfluenceChanged.add((needUpdate) => {
                 this._syncActiveTargets(needUpdate);
             }));
             this._targetDataLayoutChangedObservers.push(target._onDataLayoutChanged.add(() => {
@@ -136,7 +136,7 @@ module BABYLON {
          * @returns the serialized object
          */
         public serialize(): any {
-            var serializationObject:any = {};
+            var serializationObject: any = {};
 
             serializationObject.id = this.uniqueId;
 

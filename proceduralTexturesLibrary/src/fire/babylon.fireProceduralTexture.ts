@@ -87,7 +87,7 @@ module BABYLON {
         public set autoGenerateTime(value: boolean) {
             this._autoGenerateTime = value;
         }
-        
+
         public get fireColors(): Color3[] {
             return this._fireColors;
         }

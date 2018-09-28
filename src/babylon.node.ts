@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
 
     /**
      * Defines how a node can be built from a string name.
@@ -6,7 +6,7 @@
     export type NodeConstructor = (name: string, scene: Scene, options?: any) => () => Node;
 
     /**
-     * Node is the basic class for all scene objects (Mesh, Light Camera).
+     * Node is the basic class for all scene objects (Mesh, Light, Camera.)
      */
     export class Node implements IBehaviorAware<Node> {
         private static _NodeConstructors: {[key: string]: any} = {};
@@ -72,9 +72,9 @@
          * Gets or sets a boolean used to define if the node must be serialized
          */
         public doNotSerialize = false;
-        
+
         /** @hidden */
-        public _isDisposed = false;        
+        public _isDisposed = false;
 
         /**
          * Gets a list of Animations associated with the node
@@ -108,7 +108,10 @@
         /** @hidden */
         public _worldMatrix = Matrix.Identity();
         /** @hidden */
-        public _worldMatrixDeterminant = 0;        
+        public _worldMatrixDeterminant = 0;
+
+        /** @hidden */
+        private _sceneRootNodesIndex = -1;
 
         /**
          * Gets a boolean indicating if the node has been disposed
@@ -116,7 +119,7 @@
          */
         public isDisposed(): boolean {
             return this._isDisposed;
-        }        
+        }
 
         /**
          * Gets or sets the parent of the node
@@ -136,8 +139,7 @@
                 }
 
                 if (!parent) {
-                    // Need to add this node to the rootNodes
-                    this._scene.rootNodes.push(this);
+                    this.addToSceneRootNodes();
                 }
             }
 
@@ -152,12 +154,7 @@
                 this._parentNode._children.push(this);
 
                 if (!previousParentNode) {
-                    // Need to remove from rootNodes
-                    const rootNodeIndex = this._scene.rootNodes.indexOf(this);
-
-                    if (rootNodeIndex > -1) {
-                        this._scene.rootNodes.splice(rootNodeIndex, 1);
-                    }
+                    this.removeFromSceneRootNodes();
                 }
             }
 
@@ -168,7 +165,25 @@
         public get parent(): Nullable<Node> {
             return this._parentNode;
         }
-        
+
+        private addToSceneRootNodes() {
+            if (this._sceneRootNodesIndex === -1) {
+                this._sceneRootNodesIndex = this._scene.rootNodes.length;
+                this._scene.rootNodes.push(this);
+            }
+        }
+
+        private removeFromSceneRootNodes() {
+            if (this._sceneRootNodesIndex !== -1) {
+                const rootNodes = this._scene.rootNodes;
+                const lastIdx = rootNodes.length - 1;
+                rootNodes[this._sceneRootNodesIndex] = rootNodes[lastIdx];
+                rootNodes[this._sceneRootNodesIndex]._sceneRootNodesIndex = this._sceneRootNodesIndex;
+                this._scene.rootNodes.pop();
+                this._sceneRootNodesIndex = -1;
+            }
+        }
+
         private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
         /**
@@ -211,8 +226,8 @@
 
         /**
          * Creates a new Node
-         * @param {string} name - the name and id to be given to this node
-         * @param {BABYLON.Scene} the scene this node will be added to
+         * @param name the name and id to be given to this node
+         * @param scene the scene this node will be added to
          */
         constructor(name: string, scene: Nullable<Scene> = null) {
             this.name = name;
@@ -221,12 +236,12 @@
             this.uniqueId = this._scene.getUniqueId();
             this._initCache();
 
-            this._scene.rootNodes.push(this);
+            this.addToSceneRootNodes();
         }
 
         /**
          * Gets the scene of the node
-         * @returns a {BABYLON.Scene}
+         * @returns a scene
          */
         public getScene(): Scene {
             return this._scene;
@@ -234,7 +249,7 @@
 
         /**
          * Gets the engine of the node
-         * @returns a {BABYLON.Engine}
+         * @returns a Engine
          */
         public getEngine(): Engine {
             return this._scene.getEngine();
@@ -314,7 +329,6 @@
             return null;
         }
 
-
         /**
          * Returns the latest update of the World matrix
          * @returns a Matrix
@@ -326,19 +340,18 @@
             return this._worldMatrix;
         }
 
-
         /** @hidden */
         public _getWorldMatrixDeterminant(): number {
             return this._worldMatrixDeterminant;
         }
 
         /**
-         * Returns directly the latest state of the mesh World matrix. 
-         * A Matrix is returned.    
+         * Returns directly the latest state of the mesh World matrix.
+         * A Matrix is returned.
          */
         public get worldMatrixFromCache(): Matrix {
             return this._worldMatrix;
-        }        
+        }
 
         // override it in derived class if you add new variables to the cache
         // and call the parent class method
@@ -350,8 +363,9 @@
 
         /** @hidden */
         public updateCache(force?: boolean): void {
-            if (!force && this.isSynchronized())
+            if (!force && this.isSynchronized()) {
                 return;
+            }
 
             this._cache.parent = this.parent;
 
@@ -436,10 +450,10 @@
             this._isParentEnabled = this._parentNode ? this._parentNode.isEnabled() : true;
 
             if (this._children) {
-                this._children.forEach(c => {
+                this._children.forEach((c) => {
                     c._syncParentEnabledState(); // Force children to update accordingly
                 });
-            }            
+            }
         }
 
         /**
@@ -506,7 +520,7 @@
          * Get all child-meshes of this node
          * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
          * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-         * @returns an array of {BABYLON.AbstractMesh}
+         * @returns an array of AbstractMesh
          */
         public getChildMeshes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): AbstractMesh[] {
             var results: Array<AbstractMesh> = [];
@@ -520,7 +534,7 @@
          * Get all child-transformNodes of this node
          * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
          * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-         * @returns an array of {BABYLON.TransformNode}
+         * @returns an array of TransformNode
          */
         public getChildTransformNodes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): TransformNode[] {
             var results: Array<TransformNode> = [];
@@ -533,7 +547,7 @@
         /**
          * Get all direct children of this node
          * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-         * @returns an array of {BABYLON.Node}
+         * @returns an array of Node
          */
         public getChildren(predicate?: (node: Node) => boolean): Node[] {
             return this.getDescendants(true, predicate);
@@ -602,7 +616,7 @@
                     this.animations[i].deleteRange(name, deleteFrames);
                 }
             }
-            this._ranges[name] = null; // said much faster than 'delete this._range[name]' 
+            this._ranges[name] = null; // said much faster than 'delete this._range[name]'
         }
 
         /**
@@ -684,11 +698,7 @@
             }
 
             if (!this.parent) {
-                const rootNodeIndex = this._scene.rootNodes.indexOf(this);
-
-                if (rootNodeIndex > -1) {
-                    this._scene.rootNodes.splice(rootNodeIndex, 1);
-                }
+                this.removeFromSceneRootNodes();
             } else {
                 this.parent = null;
             }
@@ -721,4 +731,4 @@
             }
         }
     }
-} 
+}

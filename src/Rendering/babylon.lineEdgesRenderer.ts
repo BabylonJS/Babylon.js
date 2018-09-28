@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * FaceAdjacencies Helper class to generate edges
      */
@@ -100,10 +100,10 @@
             var adjacencies = new Array<FaceAdjacencies>();
             var faceNormals = new Array<Vector3>();
             var index: number;
-            for(let i=0; i<(positions.length / 3) - 1 ; i++){
+            for (let i = 0; i < (positions.length / 3) - 1 ; i++) {
                 const currentAdjecancy  = new FaceAdjacencies();
-                currentAdjecancy.p0 = new Vector3(positions[i*3], positions[i*3+1], positions[i*3+2]);
-                currentAdjecancy.p1 = new Vector3(positions[(i+1)*3], positions[(i+1)*3 + 1], positions[(i+1)*3 + 2]);
+                currentAdjecancy.p0 = new Vector3(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);
+                currentAdjecancy.p1 = new Vector3(positions[(i + 1) * 3], positions[(i + 1) * 3 + 1], positions[(i + 1) * 3 + 2]);
                 adjacencies.push(currentAdjecancy);
             }
             // Create lines
@@ -124,4 +124,4 @@
             this._indicesCount = this._linesIndices.length;
         }
     }
-} 
+}

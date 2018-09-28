@@ -139,6 +139,13 @@
             "picking",
             "backgroundMaterial",
             "videoDome"
+        ],
+        "glTFViewer": [
+            "arcRotateCamera",
+            "imageProcessing",
+            "backgroundMaterial",
+            "pbrMaterial",
+            "hdr"
         ]
     },
     "workloads": {
@@ -1436,7 +1443,6 @@
                 "core"
             ]
         }
-
     },
     "typescript": [
         "../../src/**/*.ts",
@@ -1992,6 +1998,7 @@
             }
         ],
         "build": {
+            "srcDirectory": "../../Viewer/src/",
             "srcOutputDirectory": "../../Viewer/",
             "distOutputDirectory": "/viewer/",
             "dtsBundle": {
@@ -2064,6 +2071,7 @@
             }
         ],
         "build": {
+            "srcDirectory": "../../Viewer/src/",
             "srcOutputDirectory": "../../Viewer/",
             "distOutputDirectory": "/viewer/",
             "dtsBundle": {

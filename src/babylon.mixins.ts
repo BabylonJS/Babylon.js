@@ -1,4 +1,4 @@
-﻿// Mixins
+// Mixins
 interface Window {
     mozIndexedDB: IDBFactory;
     webkitIndexedDB: IDBFactory;
@@ -19,6 +19,7 @@ interface Window {
     msURL: typeof URL;
     VRFrameData: any; // WebVR, from specs 1.1
     DracoDecoderModule: any;
+    setImmediate(handler: (...args: any[]) => void): number;
 }
 
 interface WebGLRenderingContext {
@@ -72,7 +73,6 @@ interface WebGLRenderingContext {
     drawBuffers(buffers: number[]): void;
     readBuffer(src: number): void;
 
-
     readonly COLOR_ATTACHMENT0: number;                             // 0x8CE1
     readonly COLOR_ATTACHMENT1: number;                             // 0x8CE2
     readonly COLOR_ATTACHMENT2: number;                             // 0x8CE3
@@ -88,15 +88,21 @@ interface WebGLRenderingContext {
 interface Document {
     mozCancelFullScreen(): void;
     msCancelFullScreen(): void;
+    webkitCancelFullScreen(): void;
+    requestPointerLock(): void;
+    exitPointerLock(): void;
+    fullscreen: boolean;
     mozFullScreen: boolean;
     msIsFullScreen: boolean;
-    fullscreen: boolean;
+    readonly webkitIsFullScreen: boolean;
+    readonly pointerLockElement: Element;
     mozPointerLockElement: HTMLElement;
     msPointerLockElement: HTMLElement;
     webkitPointerLockElement: HTMLElement;
 }
 
 interface HTMLCanvasElement {
+    requestPointerLock(): void;
     msRequestPointerLock?(): void;
     mozRequestPointerLock?(): void;
     webkitRequestPointerLock?(): void;
@@ -141,9 +147,13 @@ interface HTMLVideoElement {
     mozSrcObject: any;
 }
 
+interface Element {
+    webkitRequestFullScreen: () => void;
+}
+
 interface Screen {
-    orientation: string;
-    mozOrientation: string;
+    readonly orientation: string;
+    readonly mozOrientation: string;
 }
 
 interface Math {

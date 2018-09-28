@@ -61,6 +61,12 @@ module BABYLON {
         @serialize()
         public useAltToZoom: boolean = true;
 
+        /**
+         * Rotation speed of the camera
+         */
+        @serialize()
+        public angularSpeed = 0.01;
+
         private _keys = new Array<number>();
         private _ctrlPressed: boolean;
         private _altPressed: boolean;
@@ -78,15 +84,15 @@ module BABYLON {
             if (this._onCanvasBlurObserver) {
                 return;
             }
-            
+
             this._scene = this.camera.getScene();
             this._engine = this._scene.getEngine();
 
-            this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(()=>{
+            this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(() => {
                 this._keys = [];
             });
 
-            this._onKeyboardObserver = this._scene.onKeyboardObservable.add(info => {
+            this._onKeyboardObserver = this._scene.onKeyboardObservable.add((info) => {
                 let evt = info.event;
 
                 if (info.type === KeyboardEventTypes.KEYDOWN) {
@@ -118,11 +124,11 @@ module BABYLON {
                         this.keysRight.indexOf(evt.keyCode) !== -1 ||
                         this.keysReset.indexOf(evt.keyCode) !== -1) {
                         var index = this._keys.indexOf(evt.keyCode);
-    
+
                         if (index >= 0) {
                             this._keys.splice(index, 1);
                         }
-    
+
                         if (evt.preventDefault) {
                             if (!noPreventDefault) {
                                 evt.preventDefault();
@@ -130,7 +136,7 @@ module BABYLON {
                         }
                     }
                 }
-            });    
+            });
         }
 
         /**
@@ -157,7 +163,7 @@ module BABYLON {
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
          */
         public checkInputs(): void {
-            if (this._onKeyboardObserver){
+            if (this._onKeyboardObserver) {
                 var camera = this.camera;
 
                 for (var index = 0; index < this._keys.length; index++) {
@@ -166,7 +172,7 @@ module BABYLON {
                         if (this._ctrlPressed && this.camera._useCtrlForPanning) {
                             camera.inertialPanningX -= 1 / this.panningSensibility;
                         } else {
-                            camera.inertialAlphaOffset -= 0.01;
+                            camera.inertialAlphaOffset -= this.angularSpeed;
                         }
                     } else if (this.keysUp.indexOf(keyCode) !== -1) {
                         if (this._ctrlPressed && this.camera._useCtrlForPanning) {
@@ -176,13 +182,13 @@ module BABYLON {
                             camera.inertialRadiusOffset += 1 / this.zoomingSensibility;
                         }
                         else {
-                            camera.inertialBetaOffset -= 0.01;
+                            camera.inertialBetaOffset -= this.angularSpeed;
                         }
                     } else if (this.keysRight.indexOf(keyCode) !== -1) {
                         if (this._ctrlPressed && this.camera._useCtrlForPanning) {
                             camera.inertialPanningX += 1 / this.panningSensibility;
                         } else {
-                            camera.inertialAlphaOffset += 0.01;
+                            camera.inertialAlphaOffset += this.angularSpeed;
                         }
                     } else if (this.keysDown.indexOf(keyCode) !== -1) {
                         if (this._ctrlPressed && this.camera._useCtrlForPanning) {
@@ -192,7 +198,7 @@ module BABYLON {
                             camera.inertialRadiusOffset -= 1 / this.zoomingSensibility;
                         }
                         else {
-                            camera.inertialBetaOffset += 0.01;
+                            camera.inertialBetaOffset += this.angularSpeed;
                         }
                     } else if (this.keysReset.indexOf(keyCode) !== -1) {
                         if (camera.useInputToRestoreState) {
@@ -215,10 +221,10 @@ module BABYLON {
          * Get the friendly name associated with the input class.
          * @returns the input friendly name
          */
-        public getSimpleName(): string{
+        public getSimpleName(): string {
             return "keyboard";
         }
     }
-    
+
     (<any>CameraInputTypes)["ArcRotateCameraKeyboardMoveInput"] = ArcRotateCameraKeyboardMoveInput;
 }

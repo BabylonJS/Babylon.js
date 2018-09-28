@@ -2,8 +2,8 @@ import * as INSPECTOR from "./index";
 
 /**
  * Legacy support, defining window.INSPECTOR (global variable).
- * 
- * This is the entry point for the UMD module. 
+ *
+ * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
 

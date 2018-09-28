@@ -1,5 +1,12 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * Class used to store custom tags
+     */
     export class Tags {
+        /**
+         * Adds support for tags on the given object
+         * @param obj defines the object to use
+         */
         public static EnableFor(obj: any): void {
             obj._tags = obj._tags || {};
 
@@ -20,6 +27,10 @@
             };
         }
 
+        /**
+         * Removes tags support
+         * @param obj defines the object to use
+         */
         public static DisableFor(obj: any): void {
             delete obj._tags;
             delete obj.hasTags;
@@ -28,6 +39,11 @@
             delete obj.matchesTagsQuery;
         }
 
+        /**
+         * Gets a boolean indicating if the given object has tags
+         * @param obj defines the object to use
+         * @returns a boolean
+         */
         public static HasTags(obj: any): boolean {
             if (!obj._tags) {
                 return false;
@@ -35,12 +51,18 @@
             return !Tools.IsEmpty(obj._tags);
         }
 
+        /**
+         * Gets the tags available on a given object
+         * @param obj defines the object to use
+         * @param asString defines if the tags must be returned as a string instead of an array of strings
+         * @returns the tags
+         */
         public static GetTags(obj: any, asString: boolean = true): any {
             if (!obj._tags) {
                 return null;
             }
             if (asString) {
-                var tagsArray = []
+                var tagsArray = [];
                 for (var tag in obj._tags) {
                     if (obj._tags.hasOwnProperty(tag) && obj._tags[tag] === true) {
                         tagsArray.push(tag);
@@ -53,9 +75,12 @@
 
         }
 
-        // the tags 'true' and 'false' are reserved and cannot be used as tags
-        // a tag cannot start with '||', '&&', and '!'
-        // it cannot contain whitespaces
+        /**
+         * Adds tags to an object
+         * @param obj defines the object to use
+         * @param tagsString defines the tag string. The tags 'true' and 'false' are reserved and cannot be used as tags.
+         * A tag cannot start with '||', '&&', and '!'. It cannot contain whitespaces
+         */
         public static AddTagsTo(obj: any, tagsString: string): void {
             if (!tagsString) {
                 return;
@@ -66,11 +91,14 @@
             }
 
             var tags = tagsString.split(" ");
-            tags.forEach(function (tag, index, array) {
+            tags.forEach(function(tag, index, array) {
                 Tags._AddTagTo(obj, tag);
             });
         }
 
+        /**
+         * @hidden
+         */
         public static _AddTagTo(obj: any, tag: string): void {
             tag = tag.trim();
 
@@ -86,6 +114,11 @@
             obj._tags[tag] = true;
         }
 
+        /**
+         * Removes specific tags from a specific object
+         * @param obj defines the object to use
+         * @param tagsString defines the tags to remove
+         */
         public static RemoveTagsFrom(obj: any, tagsString: string) {
             if (!Tags.HasTags(obj)) {
                 return;
@@ -96,10 +129,19 @@
             }
         }
 
+        /**
+         * @hidden
+         */
         public static _RemoveTagFrom(obj: any, tag: string): void {
             delete obj._tags[tag];
         }
 
+        /**
+         * Defines if tags hosted on an object match a given query
+         * @param obj defines the object to use
+         * @param tagsQuery defines the tag query
+         * @returns a boolean
+         */
         public static MatchesQuery(obj: any, tagsQuery: string): boolean {
             if (tagsQuery === undefined) {
                 return true;
@@ -109,7 +151,7 @@
                 return Tags.HasTags(obj);
             }
 
-            return AndOrNotEvaluator.Eval(tagsQuery, r => Tags.HasTags(obj) && obj._tags[r]);
+            return AndOrNotEvaluator.Eval(tagsQuery, (r) => Tags.HasTags(obj) && obj._tags[r]);
         }
     }
 }

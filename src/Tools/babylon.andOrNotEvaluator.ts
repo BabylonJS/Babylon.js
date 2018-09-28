@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Class used to evalaute queries containing `and` and `or` operators
      */
@@ -14,7 +14,7 @@
                 query = AndOrNotEvaluator._HandleParenthesisContent(query, evaluateCallback);
             }
             else {
-                query = query.replace(/\([^\(\)]*\)/g, r => {
+                query = query.replace(/\([^\(\)]*\)/g, (r) => {
                     // remove parenthesis
                     r = r.slice(1, r.length - 1);
                     return AndOrNotEvaluator._HandleParenthesisContent(r, evaluateCallback);
@@ -92,7 +92,7 @@
         }
 
         private static _SimplifyNegation(booleanString: string): string {
-            booleanString = booleanString.replace(/^[\s!]+/, r => {
+            booleanString = booleanString.replace(/^[\s!]+/, (r) => {
                 // remove whitespaces
                 r = r.replace(/[\s]/g, () => "");
                 return r.length % 2 ? "!" : "";

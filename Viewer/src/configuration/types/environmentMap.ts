@@ -12,4 +12,4 @@ export const environmentMapConfiguration: ViewerConfiguration = {
             tintLevel: 0.4
         }
     }
-}
+};

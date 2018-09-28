@@ -1,8 +1,8 @@
-﻿module BABYLON {
+module BABYLON {
     // Adds the parsers to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
 
-        let individualParser = AbstractScene.GetIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM); 
+        let individualParser = AbstractScene.GetIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM);
 
         if (!individualParser) {
             return;
@@ -32,7 +32,7 @@
          * Create an effect to use with particle systems.
          * Please note that some parameters like animation sheets or not being billboard are not supported in this configuration
          * @param fragmentName defines the base name of the effect (The name of file without .fragment.fx)
-         * @param uniformsNames defines a list of attribute names 
+         * @param uniformsNames defines a list of attribute names
          * @param samplers defines an array of string used to represent textures
          * @param defines defines the string containing the defines to use to compile the shaders
          * @param fallbacks defines the list of potential fallbacks to use if shader conmpilation fails
@@ -41,7 +41,7 @@
          * @returns the new Effect
          */
         createEffectForParticles(fragmentName: string, uniformsNames: string[], samplers: string[], defines: string, fallbacks?: EffectFallbacks,
-            onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect
+            onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect;
     }
 
     Engine.prototype.createEffectForParticles = function(fragmentName: string, uniformsNames: string[] = [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
@@ -66,7 +66,7 @@
             attributesNamesOrOptions,
             effectCreationOption.concat(uniformsNames),
             samplers, defines, fallbacks, onCompiled, onError);
-    }
+    };
 
     export interface Mesh {
         /**
@@ -74,7 +74,7 @@
          * @returns an array of IParticleSystem
          */
         getEmittedParticleSystems(): IParticleSystem[];
-    
+
         /**
          * Returns an array populated with IParticleSystem objects whose the mesh or its children are the emitter
          * @returns an array of IParticleSystem
@@ -91,7 +91,7 @@
             }
         }
         return results;
-    }
+    };
 
     Mesh.prototype.getHierarchyEmittedParticleSystems = function(): IParticleSystem[] {
         var results = new Array<IParticleSystem>();
@@ -108,5 +108,5 @@
         }
 
         return results;
-    }
-} 
+    };
+}

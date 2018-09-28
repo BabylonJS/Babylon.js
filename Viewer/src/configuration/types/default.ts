@@ -119,4 +119,4 @@ export let defaultConfiguration: ViewerConfiguration = {
     },
     scene: {
     }
-}
+};

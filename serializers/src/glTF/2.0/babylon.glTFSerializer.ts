@@ -20,7 +20,7 @@ module BABYLON {
          * Begin serialization without waiting for the scene to be ready
          */
         exportWithoutWaitingForScene?: boolean;
-    };
+    }
 
     /**
      * Class for generating glTF data from a Babylon scene.
@@ -75,7 +75,7 @@ module BABYLON {
             return this._PreExportAsync(scene, options).then(() => {
                 const glTFPrefix = filePrefix.replace(/\.[^/.]+$/, "");
                 const gltfGenerator = new GLTF2.Exporter._Exporter(scene, options);
-                return gltfGenerator._generateGLBAsync(glTFPrefix).then(glTFData => {
+                return gltfGenerator._generateGLBAsync(glTFPrefix).then((glTFData) => {
                     return this._PostExportAsync(scene, glTFData, options);
                 });
             });

@@ -833,6 +833,7 @@ declare module 'babylonjs-gui/2D/controls/container' {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
+            _flagDescendantsAsMatrixDirty(): void;
             /**
                 * Gets a child using its name
                 * @param name defines the child name to look for
@@ -871,8 +872,6 @@ declare module 'babylonjs-gui/2D/controls/container' {
             removeControl(control: Control): Container;
             /** @hidden */
             _reOrderControl(control: Control): void;
-            /** @hidden */
-            _markMatrixAsDirty(): void;
             /** @hidden */
             _markAllAsDirty(): void;
             /** @hidden */
@@ -1087,6 +1086,10 @@ declare module 'babylonjs-gui/2D/controls/control' {
             /** Gets a boolean indicating that the control needs to update its rendering */
             readonly isDirty: boolean;
             /**
+                * Gets the current linked mesh (or null if none)
+                */
+            readonly linkedMesh: Nullable<AbstractMesh>;
+            /**
                 * Gets or sets a value indicating the padding to use on the left of the control
                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
                 */
@@ -1227,7 +1230,9 @@ declare module 'babylonjs-gui/2D/controls/control' {
             /** @hidden */
             _markMatrixAsDirty(): void;
             /** @hidden */
-            _markAsDirty(): void;
+            _flagDescendantsAsMatrixDirty(): void;
+            /** @hidden */
+            _markAsDirty(force?: boolean): void;
             /** @hidden */
             _markAllAsDirty(): void;
             /** @hidden */
@@ -3560,6 +3565,7 @@ declare module BABYLON.GUI {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
+            _flagDescendantsAsMatrixDirty(): void;
             /**
                 * Gets a child using its name
                 * @param name defines the child name to look for
@@ -3598,8 +3604,6 @@ declare module BABYLON.GUI {
             removeControl(control: Control): Container;
             /** @hidden */
             _reOrderControl(control: Control): void;
-            /** @hidden */
-            _markMatrixAsDirty(): void;
             /** @hidden */
             _markAllAsDirty(): void;
             /** @hidden */
@@ -3806,6 +3810,10 @@ declare module BABYLON.GUI {
             /** Gets a boolean indicating that the control needs to update its rendering */
             readonly isDirty: boolean;
             /**
+                * Gets the current linked mesh (or null if none)
+                */
+            readonly linkedMesh: BABYLON.Nullable<BABYLON.AbstractMesh>;
+            /**
                 * Gets or sets a value indicating the padding to use on the left of the control
                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
                 */
@@ -3946,7 +3954,9 @@ declare module BABYLON.GUI {
             /** @hidden */
             _markMatrixAsDirty(): void;
             /** @hidden */
-            _markAsDirty(): void;
+            _flagDescendantsAsMatrixDirty(): void;
+            /** @hidden */
+            _markAsDirty(force?: boolean): void;
             /** @hidden */
             _markAllAsDirty(): void;
             /** @hidden */

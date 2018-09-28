@@ -1,10 +1,29 @@
 module BABYLON {
+    /**
+     * A TransformNode is an object that is not rendered but can be used as a center of transformation. This can decrease memory usage and increase rendering speed compared to using an empty mesh as a parent and is less complicated than using a pivot matrix.
+     * @see https://doc.babylonjs.com/how_to/transformnode
+     */
     export class TransformNode extends Node {
         // Statics
+        /**
+         * Object will not rotate to face the camera
+         */
         public static BILLBOARDMODE_NONE = 0;
+        /**
+         * Object will rotate to face the camera but only on the x axis
+         */
         public static BILLBOARDMODE_X = 1;
+        /**
+         * Object will rotate to face the camera but only on the y axis
+         */
         public static BILLBOARDMODE_Y = 2;
+        /**
+         * Object will rotate to face the camera but only on the z axis
+         */
         public static BILLBOARDMODE_Z = 4;
+        /**
+         * Object will rotate to face the camera
+         */
         public static BILLBOARDMODE_ALL = 7;
 
         private _forward = new Vector3(0, 0, 1);
@@ -43,9 +62,15 @@ module BABYLON {
         @serialize()
         public billboardMode = TransformNode.BILLBOARDMODE_NONE;
 
+        /**
+         * Multiplication factor on scale x/y/z when computing the world matrix. Eg. for a 1x1x1 cube setting this to 2 will make it a 2x2x2 cube
+         */
         @serialize()
         public scalingDeterminant = 1;
 
+        /**
+         * Sets the distance of the object to max, often used by skybox
+         */
         @serialize()
         public infiniteDistance = false;
 
@@ -56,7 +81,7 @@ module BABYLON {
         @serialize()
         public ignoreNonUniformScaling = false;
 
-        // Cache      
+        // Cache
         /** @hidden */
         public _poseMatrix: Matrix;
         private _localWorld = Matrix.Zero();
@@ -99,7 +124,7 @@ module BABYLON {
         public set position(newPosition: Vector3) {
             this._position = newPosition;
             this._isDirty = true;
-        }        
+        }
 
         /**
           * Gets or sets the rotation property : a Vector3 defining the rotation value in radians around each local axis X, Y, Z  (default is (0.0, 0.0, 0.0)).
@@ -136,7 +161,7 @@ module BABYLON {
 
         public set rotationQuaternion(quaternion: Nullable<Quaternion>) {
             this._rotationQuaternion = quaternion;
-            //reset the rotation vector. 
+            //reset the rotation vector.
             if (quaternion && this.rotation.length()) {
                 this.rotation.copyFromFloats(0.0, 0.0, 0.0);
             }
@@ -173,8 +198,9 @@ module BABYLON {
         }
 
         /**
-         * Copies the parameter passed Matrix into the mesh Pose matrix.  
-         * Returns the TransformNode.  
+         * Copies the parameter passed Matrix into the mesh Pose matrix.
+         * @param matrix the matrix to copy the pose from
+         * @returns this TransformNode.
          */
         public updatePoseMatrix(matrix: Matrix): TransformNode {
             this._poseMatrix.copyFrom(matrix);
@@ -182,8 +208,8 @@ module BABYLON {
         }
 
         /**
-         * Returns the mesh Pose matrix.  
-         * Returned object : Matrix
+         * Returns the mesh Pose matrix.
+         * @returns the pose matrix
          */
         public getPoseMatrix(): Matrix {
             return this._poseMatrix;
@@ -195,8 +221,9 @@ module BABYLON {
                 return false;
             }
 
-            if (this.billboardMode !== this._cache.billboardMode || this.billboardMode !== TransformNode.BILLBOARDMODE_NONE)
+            if (this.billboardMode !== this._cache.billboardMode || this.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
                 return false;
+            }
 
             if (this._cache.pivotMatrixUpdated) {
                 return false;
@@ -206,19 +233,23 @@ module BABYLON {
                 return false;
             }
 
-            if (!this._cache.position.equals(this._position))
+            if (!this._cache.position.equals(this._position)) {
                 return false;
-
-            if (this._rotationQuaternion) {
-                if (!this._cache.rotationQuaternion.equals(this._rotationQuaternion))
-                    return false;
             }
 
-            if (!this._cache.rotation.equals(this._rotation))
-                return false;                
+            if (this._rotationQuaternion) {
+                if (!this._cache.rotationQuaternion.equals(this._rotationQuaternion)) {
+                    return false;
+                }
+            }
 
-            if (!this._cache.scaling.equals(this._scaling))
+            if (!this._cache.rotation.equals(this._rotation)) {
                 return false;
+            }
+
+            if (!this._cache.scaling.equals(this._scaling)) {
+                return false;
+            }
 
             return true;
         }
@@ -235,6 +266,11 @@ module BABYLON {
             this._cache.billboardMode = -1;
         }
 
+         /**
+         * Flag the transform node as dirty (Forcing it to update everything)
+         * @param property if set to "rotation" the objects rotationQuaternion will be set to null
+         * @returns this transform node
+         */
         public markAsDirty(property: string): TransformNode {
             if (property === "rotation") {
                 this.rotationQuaternion = null;
@@ -285,8 +321,8 @@ module BABYLON {
 
         /**
          * Returns the mesh pivot matrix.
-         * Default : Identity.  
-         * A Matrix is returned.  
+         * Default : Identity.
+         * @returns the matrix
          */
         public getPivotMatrix(): Matrix {
             return this._pivotMatrix;
@@ -294,7 +330,7 @@ module BABYLON {
 
         /**
          * Prevents the World matrix to be computed any longer.
-         * Returns the TransformNode.  
+         * @returns the TransformNode.
          */
         public freezeWorldMatrix(): TransformNode {
             this._isWorldMatrixFrozen = false;  // no guarantee world is not already frozen, switch off temporarily
@@ -304,8 +340,8 @@ module BABYLON {
         }
 
         /**
-         * Allows back the World matrix computation. 
-         * Returns the TransformNode.  
+         * Allows back the World matrix computation.
+         * @returns the TransformNode.
          */
         public unfreezeWorldMatrix() {
             this._isWorldMatrixFrozen = false;
@@ -314,17 +350,16 @@ module BABYLON {
         }
 
         /**
-         * True if the World matrix has been frozen.  
-         * Returns a boolean.  
+         * True if the World matrix has been frozen.
          */
         public get isWorldMatrixFrozen(): boolean {
             return this._isWorldMatrixFrozen;
         }
 
         /**
-            * Retuns the mesh absolute position in the World.  
-            * Returns a Vector3.
-            */
+        * Retuns the mesh absolute position in the World.
+        * @returns a Vector3.
+        */
         public getAbsolutePosition(): Vector3 {
             this.computeWorldMatrix();
             return this._absolutePosition;
@@ -332,7 +367,8 @@ module BABYLON {
 
         /**
          * Sets the mesh absolute position in the World from a Vector3 or an Array(3).
-         * Returns the TransformNode.  
+         * @param absolutePosition the absolute position to set
+         * @returns the TransformNode.
          */
         public setAbsolutePosition(absolutePosition: Vector3): TransformNode {
             if (!absolutePosition) {
@@ -368,9 +404,10 @@ module BABYLON {
         }
 
         /**
-           * Sets the mesh position in its local space.  
-           * Returns the TransformNode.  
-           */
+         * Sets the mesh position in its local space.
+         * @param vector3 the position to set in localspace
+         * @returns the TransformNode.
+         */
         public setPositionWithLocalVector(vector3: Vector3): TransformNode {
             this.computeWorldMatrix();
             this.position = Vector3.TransformNormal(vector3, this._localWorld);
@@ -379,7 +416,7 @@ module BABYLON {
 
         /**
          * Returns the mesh position in the local space from the current World matrix values.
-         * Returns a new Vector3.
+         * @returns a new Vector3.
          */
         public getPositionExpressedInLocalSpace(): Vector3 {
             this.computeWorldMatrix();
@@ -390,8 +427,9 @@ module BABYLON {
         }
 
         /**
-         * Translates the mesh along the passed Vector3 in its local space.  
-         * Returns the TransformNode. 
+         * Translates the mesh along the passed Vector3 in its local space.
+         * @param vector3 the distance to translate in localspace
+         * @returns the TransformNode.
          */
         public locallyTranslate(vector3: Vector3): TransformNode {
             this.computeWorldMatrix(true);
@@ -408,7 +446,7 @@ module BABYLON {
          * @param pitchCor optional pitch (x-axis) correction in radians
          * @param rollCor optional roll (z-axis) correction in radians
          * @param space the choosen space of the target
-         * @returns the TransformNode. 
+         * @returns the TransformNode.
          */
         public lookAt(targetPoint: Vector3, yawCor: number = 0, pitchCor: number = 0, rollCor: number = 0, space: Space = Space.LOCAL): TransformNode {
             var dv = TransformNode._lookAtVectorCache;
@@ -429,8 +467,10 @@ module BABYLON {
         }
 
         /**
-          * Returns a new Vector3 what is the localAxis, expressed in the mesh local space, rotated like the mesh.  
-          * This Vector3 is expressed in the World space.  
+          * Returns a new Vector3 that is the localAxis, expressed in the mesh local space, rotated like the mesh.
+          * This Vector3 is expressed in the World space.
+          * @param localAxis axis to rotate
+          * @returns a new Vector3 that is the localAxis, expressed in the mesh local space, rotated like the mesh.
           */
         public getDirection(localAxis: Vector3): Vector3 {
             var result = Vector3.Zero();
@@ -443,8 +483,10 @@ module BABYLON {
         /**
          * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
          * localAxis is expressed in the mesh local space.
-         * result is computed in the Wordl space from the mesh World matrix.  
-         * Returns the TransformNode.  
+         * result is computed in the Wordl space from the mesh World matrix.
+         * @param localAxis axis to rotate
+         * @param result the resulting transformnode
+         * @returns this TransformNode.
          */
         public getDirectionToRef(localAxis: Vector3, result: Vector3): TransformNode {
             Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
@@ -474,7 +516,8 @@ module BABYLON {
         }
 
         /**
-         * Returns a new Vector3 set with the mesh pivot point coordinates in the local space.  
+         * Returns a new Vector3 set with the mesh pivot point coordinates in the local space.
+         * @returns the pivot point
          */
         public getPivotPoint(): Vector3 {
             var point = Vector3.Zero();
@@ -483,8 +526,9 @@ module BABYLON {
         }
 
         /**
-         * Sets the passed Vector3 "result" with the coordinates of the mesh pivot point in the local space.   
-         * Returns the TransformNode.   
+         * Sets the passed Vector3 "result" with the coordinates of the mesh pivot point in the local space.
+         * @param result the vector3 to store the result
+         * @returns this TransformNode.
          */
         public getPivotPointToRef(result: Vector3): TransformNode {
             result.x = -this._pivotMatrix.m[12];
@@ -494,7 +538,8 @@ module BABYLON {
         }
 
         /**
-         * Returns a new Vector3 set with the mesh pivot point World coordinates.  
+         * Returns a new Vector3 set with the mesh pivot point World coordinates.
+         * @returns a new Vector3 set with the mesh pivot point World coordinates.
          */
         public getAbsolutePivotPoint(): Vector3 {
             var point = Vector3.Zero();
@@ -503,8 +548,9 @@ module BABYLON {
         }
 
         /**
-         * Sets the Vector3 "result" coordinates with the mesh pivot point World coordinates.  
-         * Returns the TransformNode.  
+         * Sets the Vector3 "result" coordinates with the mesh pivot point World coordinates.
+         * @param result vector3 to store the result
+         * @returns this TransformNode.
          */
         public getAbsolutePivotPointToRef(result: Vector3): TransformNode {
             result.x = this._pivotMatrix.m[12];
@@ -516,9 +562,10 @@ module BABYLON {
         }
 
         /**
-         * Defines the passed node as the parent of the current node.  
+         * Defines the passed node as the parent of the current node.
          * The node will remain exactly where it is and its position / rotation will be updated accordingly
-         * Returns the TransformNode.
+         * @param node the node ot set as the parent
+         * @returns this TransformNode.
          */
         public setParent(node: Nullable<Node>): TransformNode {
             if (!node && !this.parent) {
@@ -582,6 +629,9 @@ module BABYLON {
         }
 
         private _nonUniformScaling = false;
+        /**
+         * True if the scaling property of this object is non uniform eg. (1,2,1)
+         */
         public get nonUniformScaling(): boolean {
             return this._nonUniformScaling;
         }
@@ -599,7 +649,8 @@ module BABYLON {
         /**
          * Attach the current TransformNode to another TransformNode associated with a bone
          * @param bone Bone affecting the TransformNode
-         * @param affectedTransformNode TransformNode associated with the bone 
+         * @param affectedTransformNode TransformNode associated with the bone
+         * @returns this object
          */
         public attachToBone(bone: Bone, affectedTransformNode: TransformNode): TransformNode {
             this._transformToBoneReferal = affectedTransformNode;
@@ -611,6 +662,10 @@ module BABYLON {
             return this;
         }
 
+        /**
+         * Detach the transform node if its associated with a bone
+         * @returns this object
+         */
         public detachFromBone(): TransformNode {
             if (!this.parent) {
                 return this;
@@ -626,11 +681,14 @@ module BABYLON {
 
         private static _rotationAxisCache = new Quaternion();
         /**
-         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.  
+         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.
          * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
-         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.  
-         * The passed axis is also normalized.  
-         * Returns the TransformNode.
+         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
+         * The passed axis is also normalized.
+         * @param axis the axis to rotate around
+         * @param amount the amount to rotate in radians
+         * @param space Space to rotate in (Default: local)
+         * @returns the TransformNode.
          */
         public rotate(axis: Vector3, amount: number, space?: Space): TransformNode {
             axis.normalize();
@@ -656,11 +714,14 @@ module BABYLON {
         }
 
         /**
-         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in world space.  
-         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.  
-         * The passed axis is also normalized.  
-         * Returns the TransformNode.
+         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in world space.
+         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
+         * The passed axis is also normalized. .
          * Method is based on http://www.euclideanspace.com/maths/geometry/affine/aroundPoint/index.htm
+         * @param point the point to rotate around
+         * @param axis the axis to rotate around
+         * @param amount the amount to rotate in radians
+         * @returns the TransformNode
          */
         public rotateAround(point: Vector3, axis: Vector3, amount: number): TransformNode {
             axis.normalize();
@@ -684,9 +745,12 @@ module BABYLON {
         }
 
         /**
-         * Translates the mesh along the axis vector for the passed distance in the given space.  
+         * Translates the mesh along the axis vector for the passed distance in the given space.
          * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
-         * Returns the TransformNode.
+         * @param axis the axis to translate in
+         * @param distance the distance to translate
+         * @param space Space to rotate in (Default: local)
+         * @returns the TransformNode.
          */
         public translate(axis: Vector3, distance: number, space?: Space): TransformNode {
             var displacementVector = axis.scale(distance);
@@ -701,18 +765,21 @@ module BABYLON {
         }
 
         /**
-         * Adds a rotation step to the mesh current rotation.  
-         * x, y, z are Euler angles expressed in radians.  
-         * This methods updates the current mesh rotation, either mesh.rotation, either mesh.rotationQuaternion if it's set.  
-         * This means this rotation is made in the mesh local space only.   
-         * It's useful to set a custom rotation order different from the BJS standard one YXZ.  
-         * Example : this rotates the mesh first around its local X axis, then around its local Z axis, finally around its local Y axis.  
+         * Adds a rotation step to the mesh current rotation.
+         * x, y, z are Euler angles expressed in radians.
+         * This methods updates the current mesh rotation, either mesh.rotation, either mesh.rotationQuaternion if it's set.
+         * This means this rotation is made in the mesh local space only.
+         * It's useful to set a custom rotation order different from the BJS standard one YXZ.
+         * Example : this rotates the mesh first around its local X axis, then around its local Z axis, finally around its local Y axis.
          * ```javascript
          * mesh.addRotation(x1, 0, 0).addRotation(0, 0, z2).addRotation(0, 0, y3);
          * ```
-         * Note that `addRotation()` accumulates the passed rotation values to the current ones and computes the .rotation or .rotationQuaternion updated values.  
-         * Under the hood, only quaternions are used. So it's a little faster is you use .rotationQuaternion because it doesn't need to translate them back to Euler angles.   
-         * Returns the TransformNode.  
+         * Note that `addRotation()` accumulates the passed rotation values to the current ones and computes the .rotation or .rotationQuaternion updated values.
+         * Under the hood, only quaternions are used. So it's a little faster is you use .rotationQuaternion because it doesn't need to translate them back to Euler angles.
+         * @param x Rotation to add
+         * @param y Rotation to add
+         * @param z Rotation to add
+         * @returns the TransformNode.
          */
         public addRotation(x: number, y: number, z: number): TransformNode {
             var rotationQuaternion;
@@ -765,7 +832,7 @@ module BABYLON {
             if (this.rotationQuaternion) {
                 var len = this.rotation.length();
                 if (len) {
-                    this.rotationQuaternion.multiplyInPlace(Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z))
+                    this.rotationQuaternion.multiplyInPlace(Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z));
                     this.rotation.copyFromFloats(0, 0, 0);
                 }
             }
@@ -877,7 +944,6 @@ module BABYLON {
                 this._worldMatrix.copyFrom(this._localWorld);
             }
 
-
             // Normal matrix
             if (!this.ignoreNonUniformScaling) {
                 if (this.scaling.isNonUniform) {
@@ -913,10 +979,10 @@ module BABYLON {
         }
 
         /**
-        * If you'd like to be called back after the mesh position, rotation or scaling has been updated.  
-        * @param func: callback function to add
+        * If you'd like to be called back after the mesh position, rotation or scaling has been updated.
+        * @param func callback function to add
         *
-        * Returns the TransformNode. 
+        * @returns the TransformNode.
         */
         public registerAfterWorldMatrixUpdate(func: (mesh: TransformNode) => void): TransformNode {
             this.onAfterWorldMatrixUpdateObservable.add(func);
@@ -924,8 +990,9 @@ module BABYLON {
         }
 
         /**
-         * Removes a registered callback function.  
-         * Returns the TransformNode.
+         * Removes a registered callback function.
+         * @param func callback function to remove
+         * @returns the TransformNode.
          */
         public unregisterAfterWorldMatrixUpdate(func: (mesh: TransformNode) => void): TransformNode {
             this.onAfterWorldMatrixUpdateObservable.removeCallback(func);
@@ -934,10 +1001,10 @@ module BABYLON {
 
         /**
          * Clone the current transform node
-         * Returns the new transform node
          * @param name Name of the new clone
          * @param newParent New parent for the clone
          * @param doNotCloneChildren Do not clone children hierarchy
+         * @returns the new transform node
          */
         public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Nullable<TransformNode> {
             var result = SerializationHelper.Clone(() => new TransformNode(name, this.getScene()), this);
@@ -964,6 +1031,11 @@ module BABYLON {
             return result;
         }
 
+        /**
+         * Serializes the objects information.
+         * @param currentSerializationObject defines the object to serialize in
+         * @returns the serialized object
+         */
         public serialize(currentSerializationObject?: any): any {
             let serializationObject = SerializationHelper.Serialize(this, currentSerializationObject);
             serializationObject.type = this.getClassName();
@@ -991,9 +1063,11 @@ module BABYLON {
 
         // Statics
         /**
-         * Returns a new TransformNode object parsed from the source provided.   
-         * The parameter `parsedMesh` is the source.   
-         * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
+         * Returns a new TransformNode object parsed from the source provided.
+         * @param parsedTransformNode is the source.
+         * @param scene the scne the object belongs to
+         * @param rootUrl is a string, it's the root URL to prefix the `delayLoadingFile` property with
+         * @returns a new TransformNode object parsed from the source provided.
          */
         public static Parse(parsedTransformNode: any, scene: Scene, rootUrl: string): TransformNode {
             var transformNode = SerializationHelper.Parse(() => new TransformNode(parsedTransformNode.name, scene), parsedTransformNode, scene, rootUrl);

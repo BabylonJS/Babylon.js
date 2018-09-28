@@ -1,7 +1,6 @@
 import { Inspector } from "../Inspector";
 import { AbstractTool } from "./AbstractTool";
 
-
 export class RefreshTool extends AbstractTool {
 
     constructor(parent: HTMLElement, inspector: Inspector) {

@@ -33,7 +33,7 @@ module BABYLON {
     }
 
     export class WaterMaterial extends PushMaterial {
-		/*
+        /*
 		* Public members
 		*/
         @serializeAsTexture("bumpTexture")
@@ -138,7 +138,7 @@ module BABYLON {
 
         protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
 
-		/*
+        /*
 		* Private members
 		*/
         private _mesh: Nullable<AbstractMesh> = null;
@@ -161,7 +161,7 @@ module BABYLON {
          */
         public get hasRenderTargetTextures(): boolean {
             return true;
-          }        
+        }
 
         /**
 		* Constructor
@@ -178,7 +178,7 @@ module BABYLON {
                 this._renderTargets.push(<RenderTargetTexture>this._refractionRTT);
 
                 return this._renderTargets;
-            }
+            };
         }
 
         @serialize()
@@ -319,7 +319,7 @@ module BABYLON {
                 this._waitingRenderList = null;
             }
 
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
                 scene.resetCachedMaterial();
@@ -375,12 +375,12 @@ module BABYLON {
                     // Water
                     "worldReflectionViewProjection", "windDirection", "waveLength", "time", "windForce",
                     "cameraPosition", "bumpHeight", "waveHeight", "waterColor", "waterColor2", "colorBlendFactor", "colorBlendFactor2", "waveSpeed"
-                ]
+                ];
                 var samplers = ["normalSampler",
                     // Water
                     "refractionSampler", "reflectionSampler"
                 ];
-                var uniformBuffers = new Array<string>()
+                var uniformBuffers = new Array<string>();
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms,
@@ -427,7 +427,7 @@ module BABYLON {
             }
             this._activeEffect = effect;
 
-            // Matrices        
+            // Matrices
             this.bindOnlyWorldMatrix(world);
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
@@ -435,7 +435,7 @@ module BABYLON {
             MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
 
             if (this._mustRebind(scene, effect)) {
-                // Textures        
+                // Textures
                 if (this.bumpTexture && StandardMaterial.BumpTextureEnabled) {
                     this._activeEffect.setTexture("normalSampler", this.bumpTexture);
 
@@ -527,20 +527,12 @@ module BABYLON {
                     isVisible = this._mesh.isVisible;
                     this._mesh.isVisible = false;
                 }
-                // Clip plane
-                clipPlane = scene.clipPlane;
-
-                var positiony = this._mesh ? this._mesh.position.y : 0.0;
-                scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony + 0.05, 0), new Vector3(0, 1, 0));
             };
 
             this._refractionRTT.onAfterRender = () => {
                 if (this._mesh) {
                     this._mesh.isVisible = isVisible;
                 }
-
-                // Clip plane 
-                scene.clipPlane = clipPlane;
             };
 
             this._reflectionRTT.onBeforeRender = () => {

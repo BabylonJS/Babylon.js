@@ -1,9 +1,9 @@
-﻿module BABYLON {
-    /*
-    * Based on jsTGALoader - Javascript loader for TGA file
-    * By Vincent Thibault
-    * @blog http://blog.robrowser.com/javascript-tga-loader.html
-    */
+module BABYLON {
+    /**
+     * Based on jsTGALoader - Javascript loader for TGA file
+     * By Vincent Thibault
+     * @see http://blog.robrowser.com/javascript-tga-loader.html
+     */
     export class TGATools {
 
         //private static _TYPE_NO_DATA = 0;
@@ -20,6 +20,11 @@
         private static _ORIGIN_UL = 0x02;
         private static _ORIGIN_UR = 0x03;
 
+        /**
+         * Gets the header of a TGA file
+         * @param data defines the TGA data
+         * @returns the header
+         */
         public static GetTGAHeader(data: Uint8Array): any {
             var offset = 0;
 
@@ -199,6 +204,7 @@
             engine._uploadDataToTextureDirectly(texture, imageData);
         }
 
+        /** @hidden */
         static _getImageData8bits(header: any, palettes: Uint8Array, pixel_data: Uint8Array, y_start: number, y_step: number, y_end: number, x_start: number, x_step: number, x_end: number): Uint8Array {
             var image = pixel_data, colormap = palettes;
             var width = header.width, height = header.height;
@@ -219,6 +225,7 @@
             return imageData;
         }
 
+        /** @hidden */
         static _getImageData16bits(header: any, palettes: Uint8Array, pixel_data: Uint8Array, y_start: number, y_step: number, y_end: number, x_start: number, x_step: number, x_end: number): Uint8Array {
             var image = pixel_data;
             var width = header.width, height = header.height;
@@ -243,6 +250,7 @@
             return imageData;
         }
 
+        /** @hidden */
         static _getImageData24bits(header: any, palettes: Uint8Array, pixel_data: Uint8Array, y_start: number, y_step: number, y_end: number, x_start: number, x_step: number, x_end: number): Uint8Array {
             var image = pixel_data;
             var width = header.width, height = header.height;
@@ -262,6 +270,7 @@
             return imageData;
         }
 
+        /** @hidden */
         static _getImageData32bits(header: any, palettes: Uint8Array, pixel_data: Uint8Array, y_start: number, y_step: number, y_end: number, x_start: number, x_step: number, x_end: number): Uint8Array {
             var image = pixel_data;
             var width = header.width, height = header.height;
@@ -281,6 +290,7 @@
             return imageData;
         }
 
+        /** @hidden */
         static _getImageDataGrey8bits(header: any, palettes: Uint8Array, pixel_data: Uint8Array, y_start: number, y_step: number, y_end: number, x_start: number, x_step: number, x_end: number): Uint8Array {
             var image = pixel_data;
             var width = header.width, height = header.height;
@@ -301,6 +311,7 @@
             return imageData;
         }
 
+        /** @hidden */
         static _getImageDataGrey16bits(header: any, palettes: Uint8Array, pixel_data: Uint8Array, y_start: number, y_step: number, y_end: number, x_start: number, x_step: number, x_end: number): Uint8Array {
             var image = pixel_data;
             var width = header.width, height = header.height;
@@ -321,4 +332,4 @@
         }
 
     }
-} 
+}

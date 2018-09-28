@@ -54,7 +54,7 @@ module BABYLON {
         public resetToCurrentRotation(axis: Axis = Axis.Y): void {
 
             //can only work if this camera has a rotation quaternion already.
-            if (!this.rotationQuaternion) return;
+            if (!this.rotationQuaternion) { return; }
 
             if (!this._initialQuaternion) {
                 this._initialQuaternion = new Quaternion();

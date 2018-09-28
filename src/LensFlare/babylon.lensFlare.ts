@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * This represents one of the lens effect in a `BABYLON.lensFlareSystem`.
      * It controls one of the indiviual texture used in the effect.
@@ -53,13 +53,13 @@
             /**
              * Define the size of the lens flare in the system (a floating value between 0 and 1)
              */
-            public size: number, 
+            public size: number,
             /**
              * Define the position of the lens flare in the system. (a floating value between -1 and 1). A value of 0 is located on the emitter. A value greater than 0 is beyond the emitter and a value lesser than 0 is behind.
              */
-            public position: number, 
-            color: Color3, 
-            imgUrl: string, 
+            public position: number,
+            color: Color3,
+            imgUrl: string,
             system: LensFlareSystem) {
 
             this.color = color || new Color3(1, 1, 1);
@@ -80,6 +80,6 @@
             // Remove from scene
             var index = this._system.lensFlares.indexOf(this);
             this._system.lensFlares.splice(index, 1);
-        };
+        }
     }
-} 
+}

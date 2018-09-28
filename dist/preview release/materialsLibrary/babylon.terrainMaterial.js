@@ -68,7 +68,7 @@ var BABYLON;
         TerrainMaterial.prototype.getAlphaTestTexture = function () {
             return null;
         };
-        // Methods   
+        // Methods
         TerrainMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
@@ -111,7 +111,7 @@ var BABYLON;
             BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
                 scene.resetCachedMaterial();
@@ -191,13 +191,13 @@ var BABYLON;
                 return;
             }
             this._activeEffect = effect;
-            // Matrices        
+            // Matrices
             this.bindOnlyWorldMatrix(world);
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
             BABYLON.MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
             if (this._mustRebind(scene, effect)) {
-                // Textures        
+                // Textures
                 if (this.mixTexture) {
                     this._activeEffect.setTexture("textureSampler", this._mixTexture);
                     this._activeEffect.setFloat2("vTextureInfos", this._mixTexture.coordinatesIndex, this._mixTexture.level);

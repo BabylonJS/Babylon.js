@@ -3,7 +3,6 @@ import { Inspector } from "../Inspector";
 import { TreeItem } from "../tree/TreeItem";
 import { TabBar } from "./TabBar";
 
-
 export abstract class Tab extends BasicElement {
     protected _tabbar: TabBar;
     // The tab name displayed in the tabbar
@@ -55,17 +54,17 @@ export abstract class Tab extends BasicElement {
     }
 
     /** Add this in the propertytab with the searchbar */
-    public filter(str: string) { };
+    public filter(str: string) { }
 
     /** Dispose properly this tab */
     public abstract dispose(): void;
 
     /** Select an item in the tree */
     public select(item: TreeItem) {
-        // To define in subclasses if needed 
+        // To define in subclasses if needed
     }
 
-    /** 
+    /**
      * Returns the total width in pixel of this tab, 0 by default
     */
     public getPixelWidth(): number {
@@ -78,4 +77,3 @@ export abstract class Tab extends BasicElement {
         return (this._div.clientWidth || 0) + left + right;
     }
 }
-

@@ -1,7 +1,7 @@
 module BABYLON {
 
     /**
-     * Defines the list of states available for a task inside a {BABYLON.AssetsManager}
+     * Defines the list of states available for a task inside a AssetsManager
      */
     export enum AssetTaskState {
         /**
@@ -23,7 +23,7 @@ module BABYLON {
     }
 
     /**
-     * Define an abstract asset task used with a {BABYLON.AssetsManager} class to load assets into a scene
+     * Define an abstract asset task used with a AssetsManager class to load assets into a scene
      */
     export abstract class AbstractAssetTask {
         /**
@@ -37,7 +37,7 @@ module BABYLON {
         public onError: (task: any, message?: string, exception?: any) => void;
 
         /**
-         * Creates a new {BABYLON.AssetsManager}
+         * Creates a new AssetsManager
          * @param name defines the name of the task
          */
         constructor(
@@ -73,7 +73,7 @@ module BABYLON {
 
         /**
          * Internal only
-         * @hidden 
+         * @hidden
          */
         public _setErrorObject(message?: string, exception?: any) {
             if (this._errorObject) {
@@ -125,7 +125,7 @@ module BABYLON {
             this._errorObject = {
                 message: message,
                 exception: exception
-            }
+            };
 
             if (this.onError) {
                 this.onError(this, message, exception);
@@ -187,7 +187,7 @@ module BABYLON {
         public task: AbstractAssetTask;
 
         /**
-         * Creates a {BABYLON.AssetsProgressEvent}
+         * Creates a AssetsProgressEvent
          * @param remainingCount defines the number of remaining tasks to process
          * @param totalCount defines the total number of tasks
          * @param task defines the task that was just processed
@@ -200,7 +200,7 @@ module BABYLON {
     }
 
     /**
-     * Define a task used by {BABYLON.AssetsManager} to load meshes
+     * Define a task used by AssetsManager to load meshes
      */
     export class MeshAssetTask extends AbstractAssetTask {
         /**
@@ -227,7 +227,7 @@ module BABYLON {
         public onError: (task: MeshAssetTask, message?: string, exception?: any) => void;
 
         /**
-         * Creates a new {BABYLON.MeshAssetTask}
+         * Creates a new MeshAssetTask
          * @param name defines the name of the task
          * @param meshesNames defines the list of mesh's names you want to load
          * @param rootUrl defines the root url to use as a base to load your meshes and associated resources
@@ -274,7 +274,7 @@ module BABYLON {
     }
 
     /**
-     * Define a task used by {BABYLON.AssetsManager} to load text content
+     * Define a task used by AssetsManager to load text content
      */
     export class TextFileAssetTask extends AbstractAssetTask {
         /**
@@ -328,7 +328,7 @@ module BABYLON {
     }
 
     /**
-     * Define a task used by {BABYLON.AssetsManager} to load binary data
+     * Define a task used by AssetsManager to load binary data
      */
     export class BinaryFileAssetTask extends AbstractAssetTask {
         /**
@@ -381,7 +381,7 @@ module BABYLON {
     }
 
     /**
-     * Define a task used by {BABYLON.AssetsManager} to load images
+     * Define a task used by AssetsManager to load images
      */
     export class ImageAssetTask extends AbstractAssetTask {
         /**
@@ -431,7 +431,7 @@ module BABYLON {
                 onSuccess();
             };
 
-            img.onerror = (err: ErrorEvent): any => {
+            img.onerror = (err: string | Event): any => {
                 onError("Error loading image", err);
             };
 
@@ -450,7 +450,7 @@ module BABYLON {
     }
 
     /**
-     * Define a task used by {BABYLON.AssetsManager} to load 2D textures
+     * Define a task used by AssetsManager to load 2D textures
      */
     export class TextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<Texture> {
         /**
@@ -520,7 +520,7 @@ module BABYLON {
     }
 
     /**
-     * Define a task used by {BABYLON.AssetsManager} to load cube textures
+     * Define a task used by AssetsManager to load cube textures
      */
     export class CubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<CubeTexture> {
         /**
@@ -590,7 +590,7 @@ module BABYLON {
     }
 
     /**
-     * Define a task used by {BABYLON.AssetsManager} to load HDR cube textures
+     * Define a task used by AssetsManager to load HDR cube textures
      */
     export class HDRCubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<HDRCubeTexture> {
         /**
@@ -722,7 +722,7 @@ module BABYLON {
         public onProgressObservable = new Observable<IAssetsProgressEvent>();
 
         /**
-         * Gets or sets a boolean defining if the {BABYLON.AssetsManager} should use the default loading screen
+         * Gets or sets a boolean defining if the AssetsManager should use the default loading screen
          * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
          */
         public useDefaultLoadingScreen = true;
@@ -736,12 +736,12 @@ module BABYLON {
         }
 
         /**
-         * Add a {BABYLON.MeshAssetTask} to the list of active tasks
+         * Add a MeshAssetTask to the list of active tasks
          * @param taskName defines the name of the new task
          * @param meshesNames defines the name of meshes to load
          * @param rootUrl defines the root url to use to locate files
          * @param sceneFilename defines the filename of the scene file
-         * @returns a new {BABYLON.MeshAssetTask} object
+         * @returns a new MeshAssetTask object
          */
         public addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): MeshAssetTask {
             var task = new MeshAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
@@ -751,10 +751,10 @@ module BABYLON {
         }
 
         /**
-         * Add a {BABYLON.TextFileAssetTask} to the list of active tasks
+         * Add a TextFileAssetTask to the list of active tasks
          * @param taskName defines the name of the new task
          * @param url defines the url of the file to load
-         * @returns a new {BABYLON.TextFileAssetTask} object
+         * @returns a new TextFileAssetTask object
          */
         public addTextFileTask(taskName: string, url: string): TextFileAssetTask {
             var task = new TextFileAssetTask(taskName, url);
@@ -764,10 +764,10 @@ module BABYLON {
         }
 
         /**
-         * Add a {BABYLON.BinaryFileAssetTask} to the list of active tasks
+         * Add a BinaryFileAssetTask to the list of active tasks
          * @param taskName defines the name of the new task
          * @param url defines the url of the file to load
-         * @returns a new {BABYLON.BinaryFileAssetTask} object
+         * @returns a new BinaryFileAssetTask object
          */
         public addBinaryFileTask(taskName: string, url: string): BinaryFileAssetTask {
             var task = new BinaryFileAssetTask(taskName, url);
@@ -777,10 +777,10 @@ module BABYLON {
         }
 
         /**
-         * Add a {BABYLON.ImageAssetTask} to the list of active tasks
+         * Add a ImageAssetTask to the list of active tasks
          * @param taskName defines the name of the new task
          * @param url defines the url of the file to load
-         * @returns a new {BABYLON.ImageAssetTask} object
+         * @returns a new ImageAssetTask object
          */
         public addImageTask(taskName: string, url: string): ImageAssetTask {
             var task = new ImageAssetTask(taskName, url);
@@ -790,13 +790,13 @@ module BABYLON {
         }
 
         /**
-         * Add a {BABYLON.TextureAssetTask} to the list of active tasks
+         * Add a TextureAssetTask to the list of active tasks
          * @param taskName defines the name of the new task
          * @param url defines the url of the file to load
          * @param noMipmap defines if the texture must not receive mipmaps (false by default)
          * @param invertY defines if you want to invert Y axis of the loaded texture (false by default)
          * @param samplingMode defines the sampling mode to use (BABYLON.Texture.TRILINEAR_SAMPLINGMODE by default)
-         * @returns a new {BABYLON.TextureAssetTask} object
+         * @returns a new TextureAssetTask object
          */
         public addTextureTask(taskName: string, url: string, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): TextureAssetTask {
             var task = new TextureAssetTask(taskName, url, noMipmap, invertY, samplingMode);
@@ -806,13 +806,13 @@ module BABYLON {
         }
 
         /**
-         * Add a {BABYLON.CubeTextureAssetTask} to the list of active tasks
+         * Add a CubeTextureAssetTask to the list of active tasks
          * @param taskName defines the name of the new task
          * @param url defines the url of the file to load
          * @param extensions defines the extension to use to load the cube map (can be null)
          * @param noMipmap defines if the texture must not receive mipmaps (false by default)
          * @param files defines the list of files to load (can be null)
-         * @returns a new {BABYLON.CubeTextureAssetTask} object
+         * @returns a new CubeTextureAssetTask object
          */
         public addCubeTextureTask(taskName: string, url: string, extensions?: string[], noMipmap?: boolean, files?: string[]): CubeTextureAssetTask {
             var task = new CubeTextureAssetTask(taskName, url, extensions, noMipmap, files);
@@ -822,8 +822,8 @@ module BABYLON {
         }
 
         /**
-         * 
-         * Add a {BABYLON.HDRCubeTextureAssetTask} to the list of active tasks
+         *
+         * Add a HDRCubeTextureAssetTask to the list of active tasks
          * @param taskName defines the name of the new task
          * @param url defines the url of the file to load
          * @param size defines the size you want for the cubemap (can be null)
@@ -831,7 +831,7 @@ module BABYLON {
          * @param generateHarmonics defines if you want to automatically generate (true by default)
          * @param gammaSpace specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space) (default is false)
          * @param reserved Internal use only
-         * @returns a new {BABYLON.HDRCubeTextureAssetTask} object
+         * @returns a new HDRCubeTextureAssetTask object
          */
         public addHDRCubeTextureTask(taskName: string, url: string, size: number, noMipmap = false, generateHarmonics = true, gammaSpace = false, reserved = false): HDRCubeTextureAssetTask {
             var task = new HDRCubeTextureAssetTask(taskName, url, size, noMipmap, generateHarmonics, gammaSpace, reserved);
@@ -917,7 +917,7 @@ module BABYLON {
                     error("Error executing task success callbacks", e);
                 }
 
-            }
+            };
 
             let error = (message?: string, exception?: any) => {
                 task._setErrorObject(message, exception);
@@ -927,14 +927,14 @@ module BABYLON {
                 }
                 this.onTaskErrorObservable.notifyObservers(task);
                 this._decreaseWaitingTasksCount(task);
-            }
+            };
 
             task.run(this._scene, done, error);
         }
 
         /**
-         * Reset the {BABYLON.AssetsManager} and remove all tasks
-         * @return the current instance of the {BABYLON.AssetsManager}
+         * Reset the AssetsManager and remove all tasks
+         * @return the current instance of the AssetsManager
          */
         public reset(): AssetsManager {
             this._isLoading = false;
@@ -944,7 +944,7 @@ module BABYLON {
 
         /**
          * Start the loading process
-         * @return the current instance of the {BABYLON.AssetsManager}
+         * @return the current instance of the AssetsManager
          */
         public load(): AssetsManager {
             if (this._isLoading) {

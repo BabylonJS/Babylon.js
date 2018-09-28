@@ -54,12 +54,12 @@ module BABYLON.Debug {
         }
 
         /**
-         * Force the viewer to update 
+         * Force the viewer to update
          * @param position defines the position of the viewer
          * @param xaxis defines the x axis of the viewer
          * @param yaxis defines the y axis of the viewer
          * @param zaxis defines the z axis of the viewer
-         */        
+         */
         public update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void {
 
             var scaleLines = this.scaleLines;

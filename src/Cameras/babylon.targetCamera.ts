@@ -1,6 +1,6 @@
-﻿module BABYLON {
+module BABYLON {
     /**
-     * A target camera takes a mesh or position as a target and continues to look at it while it moves. 
+     * A target camera takes a mesh or position as a target and continues to look at it while it moves.
      * This is the base of the follow, arc rotate cameras and Free camera
      * @see http://doc.babylonjs.com/features/cameras
      */
@@ -70,7 +70,7 @@
         private _defaultUp = BABYLON.Vector3.Up();
 
         /**
-         * Instantiates a target camera that takes a meshor position as a target and continues to look at it while it moves. 
+         * Instantiates a target camera that takes a meshor position as a target and continues to look at it while it moves.
          * This is the base of the follow, arc rotate cameras and Free camera
          * @see http://doc.babylonjs.com/features/cameras
          * @param name Defines the name of the camera in the scene
@@ -177,8 +177,9 @@
             }
 
             this._cache.rotation.copyFrom(this.rotation);
-            if (this.rotationQuaternion)
+            if (this.rotationQuaternion) {
                 this._cache.rotationQuaternion.copyFrom(this.rotationQuaternion);
+            }
         }
 
         // Synchronized
@@ -242,7 +243,6 @@
             }
         }
 
-
         /**
          * Return the current target position of the camera. This value is expressed in local space.
          * @returns the target position
@@ -290,15 +290,15 @@
                     }
                 }
 
-
                 if (!this.noRotationConstraint) {
                     var limit = (Math.PI / 2) * 0.95;
 
-
-                    if (this.rotation.x > limit)
+                    if (this.rotation.x > limit) {
                         this.rotation.x = limit;
-                    if (this.rotation.x < -limit)
+                    }
+                    if (this.rotation.x < -limit) {
                         this.rotation.x = -limit;
+                    }
                 }
             }
 
@@ -350,6 +350,7 @@
         }
 
         private _cachedRotationZ = 0;
+        private _cachedQuaternionRotationZ = 0;
         /** @hidden */
         public _getViewMatrix(): Matrix {
             if (this.lockedTarget) {
@@ -359,8 +360,11 @@
             // Compute
             this._updateCameraRotationMatrix();
 
-            // Apply the changed rotation to the upVector.
-            if (this._cachedRotationZ != this.rotation.z) {
+            // Apply the changed rotation to the upVector
+            if (this.rotationQuaternion && this._cachedQuaternionRotationZ != this.rotationQuaternion.z) {
+                this._rotateUpVectorWithCameraRotationMatrix();
+                this._cachedQuaternionRotationZ = this.rotationQuaternion.z;
+            } else if (this._cachedRotationZ != this.rotation.z) {
                 this._rotateUpVectorWithCameraRotationMatrix();
                 this._cachedRotationZ = this.rotation.z;
             }
@@ -470,4 +474,4 @@
             return "TargetCamera";
         }
     }
-} 
+}

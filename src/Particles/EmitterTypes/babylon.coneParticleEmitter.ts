@@ -1,7 +1,7 @@
 module BABYLON {
     /**
      * Particle emitter emitting particles from the inside of a cone.
-     * It emits the particles alongside the cone volume from the base to the particle. 
+     * It emits the particles alongside the cone volume from the base to the particle.
      * The emission direction might be randomized.
      */
     export class ConeParticleEmitter implements IParticleEmitterType {
@@ -12,12 +12,12 @@ module BABYLON {
         /**
          * Gets or sets a value indicating where on the radius the start position should be picked (1 = everywhere, 0 = only surface)
          */
-        public radiusRange = 1;        
+        public radiusRange = 1;
 
         /**
          * Gets or sets a value indicating where on the height the start position should be picked (1 = everywhere, 0 = only surface)
          */
-        public heightRange = 1;   
+        public heightRange = 1;
 
         /**
          * Gets or sets a value indicating if all the particles should be emitted from the spawn point only (the base of the cone)
@@ -46,7 +46,7 @@ module BABYLON {
         public set angle(value: number) {
             this._angle = value;
             this._buildHeight();
-        }        
+        }
 
         private _buildHeight() {
             if (this._angle !== 0) {
@@ -63,7 +63,7 @@ module BABYLON {
          * @param angles the cone base angle (PI by default)
          * @param directionRandomizer defines how much to randomize the particle direction [0-1] (default is 0)
          */
-        constructor(radius = 1, angle = Math.PI, 
+        constructor(radius = 1, angle = Math.PI,
             /** defines how much to randomize the particle direction [0-1] (default is 0) */
             public directionRandomizer = 0) {
             this.angle = angle;
@@ -104,7 +104,7 @@ module BABYLON {
         startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
             var s = Scalar.RandomRange(0, Math.PI * 2);
             var h: number;
-            
+
             if (!this.emitFromSpawnPointOnly) {
                 h = Scalar.RandomRange(0, this.heightRange);
                 // Better distribution in a cone at normal angles.
@@ -132,12 +132,12 @@ module BABYLON {
             Tools.DeepCopy(this, newOne);
 
             return newOne;
-        }        
-        
+        }
+
         /**
          * Called by the GPUParticleSystem to setup the update shader
          * @param effect defines the update shader
-         */        
+         */
         public applyToShader(effect: Effect): void {
             effect.setFloat2("radius", this._radius, this.radiusRange);
             effect.setFloat("coneAngle", this._angle);
@@ -153,24 +153,24 @@ module BABYLON {
             let defines = "#define CONEEMITTER";
 
             if (this.emitFromSpawnPointOnly) {
-                defines += "\n#define CONEEMITTERSPAWNPOINT"
+                defines += "\n#define CONEEMITTERSPAWNPOINT";
             }
 
             return defines;
-        }     
-        
+        }
+
         /**
          * Returns the string "ConeParticleEmitter"
          * @returns a string containing the class name
          */
         public getClassName(): string {
             return "ConeParticleEmitter";
-        }  
-        
+        }
+
         /**
          * Serializes the particle system to a JSON object.
          * @returns the JSON object
-         */        
+         */
         public serialize(): any {
             var serializationObject: any = {};
 
@@ -180,7 +180,7 @@ module BABYLON {
             serializationObject.directionRandomizer  = this.directionRandomizer;
 
             return serializationObject;
-        }   
+        }
 
         /**
          * Parse properties from a JSON object
@@ -190,6 +190,6 @@ module BABYLON {
             this.radius = serializationObject.radius;
             this.angle = serializationObject.angle;
             this.directionRandomizer = serializationObject.directionRandomizer;
-        }        
+        }
     }
 }

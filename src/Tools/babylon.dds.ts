@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     // Based on demo done by Brandon Jones - http://media.tojicode.com/webgl-samples/dds.html
     // All values and structures referenced from:
     // http://msdn.microsoft.com/en-us/library/bb943991.aspx/
@@ -10,7 +10,7 @@
         //DDSD_WIDTH = 0x4,
         //DDSD_PITCH = 0x8,
         //DDSD_PIXELFORMAT = 0x1000,
-        DDSD_MIPMAPCOUNT = 0x20000
+        DDSD_MIPMAPCOUNT = 0x20000;
     //DDSD_LINEARSIZE = 0x80000,
     //DDSD_DEPTH = 0x800000;
 
@@ -18,7 +18,7 @@
     //     DDSCAPS_MIPMAP = 0x400000,
     //     DDSCAPS_TEXTURE = 0x1000;
 
-    var DDSCAPS2_CUBEMAP = 0x200
+    var DDSCAPS2_CUBEMAP = 0x200;
     // DDSCAPS2_CUBEMAP_POSITIVEX = 0x400,
     // DDSCAPS2_CUBEMAP_NEGATIVEX = 0x800,
     // DDSCAPS2_CUBEMAP_POSITIVEY = 0x1000,
@@ -84,7 +84,7 @@
     var off_caps2 = 28;
     // var off_caps3 = 29;
     // var off_caps4 = 30;
-    var off_dxgiFormat = 32
+    var off_dxgiFormat = 32;
 
     /**
      * Direct draw surface info
@@ -135,15 +135,26 @@
          * Texture type eg. Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT
          */
         textureType: number;
-        /** 
+        /**
          * Sphericle polynomial created for the dds texture
          */
         sphericalPolynomial?: SphericalPolynomial;
-    };
+    }
 
+    /**
+     * Class used to provide DDS decompression tools
+     */
     export class DDSTools {
+        /**
+         * Gets or sets a boolean indicating that LOD info is stored in alpha channel (false by default)
+         */
         public static StoreLODInAlphaChannel = false;
 
+        /**
+         * Gets DDS information from an array buffer
+         * @param arrayBuffer defines the array buffer to read data from
+         * @returns the DDS information
+         */
         public static GetDDSInfo(arrayBuffer: any): DDSInfo {
             var header = new Int32Array(arrayBuffer, 0, headerLengthInt);
             var extendedHeader = new Int32Array(arrayBuffer, 0, headerLengthInt + 4);
@@ -277,7 +288,7 @@
                         destArray[index] = srcData[srcPos];
                         destArray[index + 1] = srcData[srcPos + 1];
                         destArray[index + 2] = srcData[srcPos + 2];
-                        destArray[index + 3] = DDSTools._ToHalfFloat(lod)
+                        destArray[index + 3] = DDSTools._ToHalfFloat(lod);
                         index += 4;
                     }
                 }
@@ -630,4 +641,4 @@
             }
         }
     }
-} 
+}

@@ -1,4 +1,4 @@
-﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 /// <reference path="../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"/>
 
 module BABYLON {
@@ -174,7 +174,7 @@ module BABYLON {
         public compileShadowGenerators = false;
 
         /**
-         * Defines if the Alpha blended materials are only applied as coverage. 
+         * Defines if the Alpha blended materials are only applied as coverage.
          * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
          * If true, no extra effects are applied to transparent pixels.
          */
@@ -426,7 +426,7 @@ module BABYLON {
 
         /** @hidden */
         public _clear(): void {
-            this.preprocessUrlAsync = url => Promise.resolve(url);
+            this.preprocessUrlAsync = (url) => Promise.resolve(url);
 
             this.onMeshLoadedObservable.clear();
             this.onTextureLoadedObservable.clear();
@@ -447,7 +447,7 @@ module BABYLON {
          * @returns a promise containg the loaded meshes, particles, skeletons and animations
          */
         public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
-            return this._parseAsync(scene, data, rootUrl, fileName).then(loaderData => {
+            return this._parseAsync(scene, data, rootUrl, fileName).then((loaderData) => {
                 this._log(`Loading ${fileName || ""}`);
                 this._loader = this._getLoader(loaderData);
                 return this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onProgress, fileName);
@@ -464,7 +464,7 @@ module BABYLON {
          * @returns a promise which completes when objects have been loaded to the scene
          */
         public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
-            return this._parseAsync(scene, data, rootUrl, fileName).then(loaderData => {
+            return this._parseAsync(scene, data, rootUrl, fileName).then((loaderData) => {
                 this._log(`Loading ${fileName || ""}`);
                 this._loader = this._getLoader(loaderData);
                 return this._loader.loadAsync(scene, loaderData, rootUrl, onProgress, fileName);
@@ -481,10 +481,10 @@ module BABYLON {
          * @returns The loaded asset container
          */
         public loadAssetContainerAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer> {
-            return this._parseAsync(scene, data, rootUrl, fileName).then(loaderData => {
+            return this._parseAsync(scene, data, rootUrl, fileName).then((loaderData) => {
                 this._log(`Loading ${fileName || ""}`);
                 this._loader = this._getLoader(loaderData);
-                return this._loader.importMeshAsync(null, scene, loaderData, rootUrl, onProgress, fileName).then(result => {
+                return this._loader.importMeshAsync(null, scene, loaderData, rootUrl, onProgress, fileName).then((result) => {
                     const container = new AssetContainer(scene);
                     Array.prototype.push.apply(container.meshes, result.meshes);
                     Array.prototype.push.apply(container.particleSystems, result.particleSystems);
@@ -534,7 +534,7 @@ module BABYLON {
                 this.onCompleteObservable.addOnce(() => {
                     resolve();
                 });
-                this.onErrorObservable.addOnce(reason => {
+                this.onErrorObservable.addOnce((reason) => {
                     reject(reason);
                 });
             });
@@ -571,10 +571,10 @@ module BABYLON {
             this._startPerformanceCounter("Validate JSON");
 
             const options: IGLTFValidationOptions = {
-                externalResourceFunction: uri => {
+                externalResourceFunction: (uri) => {
                     return this.preprocessUrlAsync(rootUrl + uri)
-                        .then(url => scene._loadFileAsync(url, true, true))
-                        .then(data => new Uint8Array(data as ArrayBuffer));
+                        .then((url) => scene._loadFileAsync(url, true, true))
+                        .then((data) => new Uint8Array(data as ArrayBuffer));
                 }
             };
 
@@ -582,7 +582,7 @@ module BABYLON {
                 options.uri = (rootUrl === "file:" ? fileName : `${rootUrl}${fileName}`);
             }
 
-            return GLTFValidator.validateString(json, options).then(result => {
+            return GLTFValidator.validateString(json, options).then((result) => {
                 this._endPerformanceCounter("Validate JSON");
 
                 this.onValidatedObservable.notifyObservers(result);
@@ -765,10 +765,10 @@ module BABYLON {
         }
 
         private static _compareVersion(a: { major: number, minor: number }, b: { major: number, minor: number }): number {
-            if (a.major > b.major) return 1;
-            if (a.major < b.major) return -1;
-            if (a.minor > b.minor) return 1;
-            if (a.minor < b.minor) return -1;
+            if (a.major > b.major) { return 1; }
+            if (a.major < b.major) { return -1; }
+            if (a.minor > b.minor) { return 1; }
+            if (a.minor < b.minor) { return -1; }
             return 0;
         }
 
