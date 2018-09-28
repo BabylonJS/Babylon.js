@@ -1629,7 +1629,7 @@ module BABYLON {
         }
 
         /**
-         * Adds the given coordinates to the current Vector3 
+         * Adds the given coordinates to the current Vector3
          * @param x defines the x coordinate of the operand
          * @param y defines the y coordinate of the operand
          * @param z defines the z coordinate of the operand
@@ -7200,7 +7200,7 @@ module BABYLON {
      * Same as Tmp but not exported to keep it only for math functions to avoid conflicts
      */
     class MathTmp {
-        public static Vector3: Vector3[] = Tools.BuildArray(6, Vector3);;
+        public static Vector3: Vector3[] = Tools.BuildArray(6, Vector3);
         public static Matrix: Matrix[] = Tools.BuildArray(2, Matrix);
         public static Quaternion: Quaternion[] = Tools.BuildArray(3, Quaternion);
     }
