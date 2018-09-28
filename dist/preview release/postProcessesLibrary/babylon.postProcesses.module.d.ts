@@ -1,6 +1,6 @@
 /*BabylonJS Postprocess library*/
 // Dependencies for this module:
-//   ../../../../tools/gulp/babylonjs
+//   ../../../../Tools/Gulp/babylonjs
 
 declare module 'babylonjs-postProcessLibrary' {
     export * from "babylonjs-postProcessLibrary/asciiArt";
@@ -182,7 +182,7 @@ declare module 'babylonjs-postProcessLibrary/digitalRain/digitalRainPostProcess'
 
 /*BabylonJS Postprocess library*/
 // Dependencies for this module:
-//   ../../../../tools/gulp/babylonjs
+//   ../../../../Tools/Gulp/babylonjs
 declare module BABYLON {
 }
 declare module BABYLON {

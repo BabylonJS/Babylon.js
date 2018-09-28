@@ -1,6 +1,6 @@
 /*BabylonJS Postprocess library*/
 // Dependencies for this module:
-//   ../../../../tools/gulp/babylonjs
+//   ../../../../Tools/Gulp/babylonjs
 declare module BABYLON {
 }
 declare module BABYLON {
