@@ -3,19 +3,19 @@
 //   ../../../../Tools/Gulp/babylonjs
 
 declare module 'babylonjs-postProcessLibrary' {
-    export * from "babylonjs-postProcessLibrary/asciiArt";
-    export * from "babylonjs-postProcessLibrary/digitalRain";
+    export * from "babylonjs-postProcessLibrary/src/asciiArt";
+    export * from "babylonjs-postProcessLibrary/src/digitalRain";
 }
 
-declare module 'babylonjs-postProcessLibrary/asciiArt' {
-    export * from "babylonjs-postProcessLibrary/asciiArt/asciiArtPostProcess";
+declare module 'babylonjs-postProcessLibrary/src/asciiArt' {
+    export * from "babylonjs-postProcessLibrary/src/asciiArt/asciiArtPostProcess";
 }
 
-declare module 'babylonjs-postProcessLibrary/digitalRain' {
-    export * from "babylonjs-postProcessLibrary/digitalRain/digitalRainPostProcess";
+declare module 'babylonjs-postProcessLibrary/src/digitalRain' {
+    export * from "babylonjs-postProcessLibrary/src/digitalRain/digitalRainPostProcess";
 }
 
-declare module 'babylonjs-postProcessLibrary/asciiArt/asciiArtPostProcess' {
+declare module 'babylonjs-postProcessLibrary/src/asciiArt/asciiArtPostProcess' {
     import { BaseTexture, Nullable, Scene, PostProcess, Camera } from "babylonjs";
     /**
         * AsciiArtFontTexture is the helper class used to easily create your ascii art font texture.
@@ -99,7 +99,7 @@ declare module 'babylonjs-postProcessLibrary/asciiArt/asciiArtPostProcess' {
     }
 }
 
-declare module 'babylonjs-postProcessLibrary/digitalRain/digitalRainPostProcess' {
+declare module 'babylonjs-postProcessLibrary/src/digitalRain/digitalRainPostProcess' {
     import { BaseTexture, Nullable, Scene, PostProcess, Camera } from "babylonjs";
     /**
         * DigitalRainFontTexture is the helper class used to easily create your digital rain font texture.

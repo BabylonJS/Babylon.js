@@ -1480,6 +1480,16 @@
                 "webpack": "../../materialsLibrary/webpack.config.js",
                 "bundle": "true",
                 "babylonIncluded": false,
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
+            },
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.cellMaterial.min.js",
+                "webpack": "../../materialsLibrary/legacy/webpack.cell.config.js",
+                "bundle": "true",
+                "babylonIncluded": false,
                 "useOutputForDebugging": true
             }
         ],
@@ -1488,15 +1498,15 @@
             "distOutputDirectory": "/materialsLibrary/",
             "dtsBundle": {
                 "name": "babylonjs-materials",
-                "main": "../../dist/preview release/materials/build/index.d.ts",
+                "main": "../../dist/preview release/materialsLibrary/build/src/index.d.ts",
                 "out": "../babylon.materials.module.d.ts",
-                "baseDir": "../../dist/preview release/materials/build/",
+                "baseDir": "../../dist/preview release/materialsLibrary/build/",
                 "headerText": "BabylonJS Materials"
             },
             "processDeclaration": {
                 "filename": "babylon.materials.module.d.ts",
                 "packageName": "babylonjs-materials",
-                "moduleName": "BABYLON.MATERIALS",
+                "moduleName": "BABYLON",
                 "importsToRemove": [],
                 "classMap": {
                     "babylonjs": "BABYLON",
@@ -1542,7 +1552,7 @@
             "distOutputDirectory": "/postProcessesLibrary/",
             "dtsBundle": {
                 "name": "babylonjs-postProcessLibrary",
-                "main": "../../dist/preview release/postProcessesLibrary/build/index.d.ts",
+                "main": "../../dist/preview release/postProcessesLibrary/build/src/index.d.ts",
                 "out": "../babylon.postProcesses.module.d.ts",
                 "baseDir": "../../dist/preview release/postProcessesLibrary/build/",
                 "headerText": "BabylonJS Postprocess library"
