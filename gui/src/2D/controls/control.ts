@@ -893,7 +893,12 @@ export class Control {
     /** @hidden */
     public _markMatrixAsDirty(): void {
         this._isMatrixDirty = true;
-        this._markAsDirty();
+        this._flagDescendantsAsMatrixDirty();
+    }
+
+    /** @hidden */
+    public _flagDescendantsAsMatrixDirty(): void {
+        // No child
     }
 
     /** @hidden */
@@ -950,6 +955,7 @@ export class Control {
             this._cachedOffsetX = offsetX;
             this._cachedOffsetY = offsetY;
             this._isMatrixDirty = false;
+            this._flagDescendantsAsMatrixDirty();
 
             Matrix2D.ComposeToRef(-offsetX, -offsetY, this._rotation, this._scaleX, this._scaleY, this._root ? this._root._transformMatrix : null, this._transformMatrix);
 
