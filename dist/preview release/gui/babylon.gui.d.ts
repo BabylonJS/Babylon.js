@@ -1,6 +1,6 @@
 /*BabylonJS GUI*/
 // Dependencies for this module:
-//   ../../../../Tools/Gulp/babylonjs
+//   ../../../../tools/gulp/babylonjs
 declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
@@ -738,6 +738,7 @@ declare module BABYLON.GUI {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
+            _flagDescendantsAsMatrixDirty(): void;
             /**
                 * Gets a child using its name
                 * @param name defines the child name to look for
@@ -776,8 +777,6 @@ declare module BABYLON.GUI {
             removeControl(control: Control): Container;
             /** @hidden */
             _reOrderControl(control: Control): void;
-            /** @hidden */
-            _markMatrixAsDirty(): void;
             /** @hidden */
             _markAllAsDirty(): void;
             /** @hidden */
@@ -1127,6 +1126,8 @@ declare module BABYLON.GUI {
             _moveToProjectedPosition(projectedPosition: BABYLON.Vector3): void;
             /** @hidden */
             _markMatrixAsDirty(): void;
+            /** @hidden */
+            _flagDescendantsAsMatrixDirty(): void;
             /** @hidden */
             _markAsDirty(force?: boolean): void;
             /** @hidden */

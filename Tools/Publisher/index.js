@@ -6,7 +6,7 @@ let path = require('path');
 let basePath = '../../dist/preview release';
 
 // This can be changed when we have a new major release.
-let minimumDependency = '>=3.2.0-alpha';
+let minimumDependency = '>=3.3.0-rc.4';
 
 process.env.PATH += (path.delimiter + path.join(__dirname, 'node_modules', '.bin'));
 
@@ -122,7 +122,7 @@ let loginCheck = shelljs.exec('npm whoami');
 if (loginCheck.code === 0) {
     prompt.start();
 
-    prompt.get(['version'], function (err, result) {
+    prompt.get(['version'], function(err, result) {
         let version = result.version;
         updateEngineVersion(version);
         if (process.argv.indexOf('--no-build') === -1) {
