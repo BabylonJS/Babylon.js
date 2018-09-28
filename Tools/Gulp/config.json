@@ -1474,163 +1474,36 @@
     "materialsLibrary": {
         "libraries": [
             {
-                "files": [
-                    "../../materialsLibrary/src/shadowOnly/babylon.shadowOnlyMaterial.ts"
-                ],
-                "shaderFiles": [
-                    "../../materialsLibrary/src/shadowOnly/shadowOnly.vertex.fx",
-                    "../../materialsLibrary/src/shadowOnly/shadowOnly.fragment.fx"
-                ],
-                "output": "babylon.shadowOnlyMaterial.js"
-            },
-            {
-                "files": [
-                    "../../materialsLibrary/src/gradient/babylon.gradientMaterial.ts"
-                ],
-                "shaderFiles": [
-                    "../../materialsLibrary/src/gradient/gradient.vertex.fx",
-                    "../../materialsLibrary/src/gradient/gradient.fragment.fx"
-                ],
-                "output": "babylon.gradientMaterial.js"
-            },
-            {
-                "files": [
-                    "../../materialsLibrary/src/normal/babylon.normalMaterial.ts"
-                ],
-                "shaderFiles": [
-                    "../../materialsLibrary/src/normal/normal.vertex.fx",
-                    "../../materialsLibrary/src/normal/normal.fragment.fx"
-                ],
-                "output": "babylon.normalMaterial.js"
-            },
-            {
-                "files": [
-                    "../../materialsLibrary/src/lava/babylon.lavaMaterial.ts"
-                ],
-                "shaderFiles": [
-                    "../../materialsLibrary/src/lava/lava.vertex.fx",
-                    "../../materialsLibrary/src/lava/lava.fragment.fx"
-                ],
-                "output": "babylon.lavaMaterial.js"
-            },
-            {
-                "files": [
-                    "../../materialsLibrary/src/simple/babylon.simpleMaterial.ts"
-                ],
-                "shaderFiles": [
-                    "../../materialsLibrary/src/simple/simple.vertex.fx",
-                    "../../materialsLibrary/src/simple/simple.fragment.fx"
-                ],
-                "output": "babylon.simpleMaterial.js"
-            },
-            {
-                "files": [
-                    "../../materialsLibrary/src/water/babylon.waterMaterial.ts"
-                ],
-                "shaderFiles": [
-                    "../../materialsLibrary/src/water/water.vertex.fx",
-                    "../../materialsLibrary/src/water/water.fragment.fx"
-                ],
-                "output": "babylon.waterMaterial.js"
-            },
-            {
-                "files": [
-                    "../../materialsLibrary/src/fire/babylon.fireMaterial.ts"
-                ],
-                "shaderFiles": [
-                    "../../materialsLibrary/src/fire/fire.vertex.fx",
-                    "../../materialsLibrary/src/fire/fire.fragment.fx"
-                ],
-                "output": "babylon.fireMaterial.js"
-            },
-            {
-                "files": [
-                    "../../materialsLibrary/src/fur/babylon.furMaterial.ts"
-                ],
-                "shaderFiles": [
-                    "../../materialsLibrary/src/fur/fur.vertex.fx",
-                    "../../materialsLibrary/src/fur/fur.fragment.fx"
-                ],
-                "output": "babylon.furMaterial.js"
-            },
-            {
-                "files": [
-                    "../../materialsLibrary/src/terrain/babylon.terrainMaterial.ts"
-                ],
-                "shaderFiles": [
-                    "../../materialsLibrary/src/terrain/terrain.vertex.fx",
-                    "../../materialsLibrary/src/terrain/terrain.fragment.fx"
-                ],
-                "output": "babylon.terrainMaterial.js"
-            },
-            {
-                "files": [
-                    "../../materialsLibrary/src/mix/babylon.mixMaterial.ts"
-                ],
-                "shaderFiles": [
-                    "../../materialsLibrary/src/mix/mix.vertex.fx",
-                    "../../materialsLibrary/src/mix/mix.fragment.fx"
-                ],
-                "output": "babylon.mixMaterial.js"
-            },
-            {
-                "files": [
-                    "../../materialsLibrary/src/triPlanar/babylon.triPlanarMaterial.ts"
-                ],
-                "shaderFiles": [
-                    "../../materialsLibrary/src/triPlanar/triplanar.vertex.fx",
-                    "../../materialsLibrary/src/triPlanar/triplanar.fragment.fx"
-                ],
-                "output": "babylon.triPlanarMaterial.js"
-            },
-            {
-                "files": [
-                    "../../materialsLibrary/src/sky/babylon.skyMaterial.ts"
-                ],
-                "shaderFiles": [
-                    "../../materialsLibrary/src/sky/sky.vertex.fx",
-                    "../../materialsLibrary/src/sky/sky.fragment.fx"
-                ],
-                "output": "babylon.skyMaterial.js"
-            },
-            {
-                "files": [
-                    "../../materialsLibrary/src/grid/babylon.gridmaterial.ts"
-                ],
-                "shaderFiles": [
-                    "../../materialsLibrary/src/grid/grid.vertex.fx",
-                    "../../materialsLibrary/src/grid/grid.fragment.fx"
-                ],
-                "output": "babylon.gridMaterial.js"
-            },
-            {
-                "files": [
-                    "../../materialsLibrary/src/custom/babylon.customMaterial.ts"
-                ],
-                "output": "babylon.customMaterial.js"
-            },
-            {
-                "files": [
-                    "../../materialsLibrary/src/cell/babylon.cellMaterial.ts"
-                ],
-                "shaderFiles": [
-                    "../../materialsLibrary/src/cell/cell.vertex.fx",
-                    "../../materialsLibrary/src/cell/cell.fragment.fx"
-                ],
-                "output": "babylon.cellMaterial.js"
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.materials.min.js",
+                "webpack": "../../materialsLibrary/webpack.config.js",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
             }
         ],
         "build": {
-            "srcOutputDirectory": "../../materialsLibrary/",
+            "srcOutputDirectory": "../../materialsLibrary/src/",
             "distOutputDirectory": "/materialsLibrary/",
-            "buildAsModule": true,
-            "moduleName": "babylonjs-materials",
-            "outputFilename": "babylonjs.materials",
-            "moduleDeclaration": {
-                "name": "BJSMaterials",
-                "module": "babylonjs-materials"
+            "dtsBundle": {
+                "name": "babylonjs-materials",
+                "main": "../../dist/preview release/materials/build/index.d.ts",
+                "out": "../babylon.materials.module.d.ts",
+                "baseDir": "../../dist/preview release/materials/build/",
+                "headerText": "BabylonJS Materials"
             },
-            "extendsRoot": true
+            "processDeclaration": {
+                "filename": "babylon.materials.module.d.ts",
+                "packageName": "babylonjs-materials",
+                "moduleName": "BABYLON.MATERIALS",
+                "importsToRemove": [],
+                "classMap": {
+                    "babylonjs": "BABYLON",
+                    "babylonjs-loaders": "BABYLON",
+                    "babylonjs-serializers": "BABYLON"
+                }
+            }
         }
     },
     "postProcessesLibrary": {
@@ -1690,107 +1563,36 @@
     "proceduralTexturesLibrary": {
         "libraries": [
             {
-                "files": [
-                    "../../proceduralTexturesLibrary/src/wood/babylon.woodProceduralTexture.ts"
-                ],
-                "shaderFiles": [
-                    "../../proceduralTexturesLibrary/src/wood/woodProceduralTexture.fragment.fx"
-                ],
-                "output": "babylon.woodProceduralTexture.js"
-            },
-            {
-                "files": [
-                    "../../proceduralTexturesLibrary/src/fire/babylon.fireProceduralTexture.ts"
-                ],
-                "shaderFiles": [
-                    "../../proceduralTexturesLibrary/src/fire/fireProceduralTexture.fragment.fx"
-                ],
-                "output": "babylon.fireProceduralTexture.js"
-            },
-            {
-                "files": [
-                    "../../proceduralTexturesLibrary/src/cloud/babylon.cloudProceduralTexture.ts"
-                ],
-                "shaderFiles": [
-                    "../../proceduralTexturesLibrary/src/cloud/cloudProceduralTexture.fragment.fx"
-                ],
-                "output": "babylon.cloudProceduralTexture.js"
-            },
-            {
-                "files": [
-                    "../../proceduralTexturesLibrary/src/grass/babylon.grassProceduralTexture.ts"
-                ],
-                "shaderFiles": [
-                    "../../proceduralTexturesLibrary/src/grass/grassProceduralTexture.fragment.fx"
-                ],
-                "output": "babylon.grassProceduralTexture.js"
-            },
-            {
-                "files": [
-                    "../../proceduralTexturesLibrary/src/road/babylon.roadProceduralTexture.ts"
-                ],
-                "shaderFiles": [
-                    "../../proceduralTexturesLibrary/src/road/roadProceduralTexture.fragment.fx"
-                ],
-                "output": "babylon.roadProceduralTexture.js"
-            },
-            {
-                "files": [
-                    "../../proceduralTexturesLibrary/src/brick/babylon.brickProceduralTexture.ts"
-                ],
-                "shaderFiles": [
-                    "../../proceduralTexturesLibrary/src/brick/brickProceduralTexture.fragment.fx"
-                ],
-                "output": "babylon.brickProceduralTexture.js"
-            },
-            {
-                "files": [
-                    "../../proceduralTexturesLibrary/src/marble/babylon.marbleProceduralTexture.ts"
-                ],
-                "shaderFiles": [
-                    "../../proceduralTexturesLibrary/src/marble/marbleProceduralTexture.fragment.fx"
-                ],
-                "output": "babylon.marbleProceduralTexture.js"
-            },
-            {
-                "files": [
-                    "../../proceduralTexturesLibrary/src/starfield/babylon.starfieldProceduralTexture.ts"
-                ],
-                "shaderFiles": [
-                    "../../proceduralTexturesLibrary/src/starfield/starfieldProceduralTexture.fragment.fx"
-                ],
-                "output": "babylon.starfieldProceduralTexture.js"
-            },
-            {
-                "files": [
-                    "../../proceduralTexturesLibrary/src/normalMap/babylon.normalMapProceduralTexture.ts"
-                ],
-                "shaderFiles": [
-                    "../../proceduralTexturesLibrary/src/normalMap/normalMapProceduralTexture.fragment.fx"
-                ],
-                "output": "babylon.normalMapProceduralTexture.js"
-            },
-            {
-                "files": [
-                    "../../proceduralTexturesLibrary/src/perlinNoise/babylon.perlinNoiseProceduralTexture.ts"
-                ],
-                "shaderFiles": [
-                    "../../proceduralTexturesLibrary/src/perlinNoise/perlinNoiseProceduralTexture.fragment.fx"
-                ],
-                "output": "babylon.perlinNoiseProceduralTexture.js"
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.proceduralTextures.min.js",
+                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
             }
         ],
         "build": {
-            "srcOutputDirectory": "../../proceduralTexturesLibrary/",
+            "srcOutputDirectory": "../../proceduralTexturesLibrary/src/",
             "distOutputDirectory": "/proceduralTexturesLibrary/",
-            "buildAsModule": true,
-            "moduleName": "babylonjs-procedural-textures",
-            "outputFilename": "babylonjs.proceduralTextures",
-            "moduleDeclaration": {
-                "name": "ProceduralTextures",
-                "module": "babylonjs-procedural-textures"
+            "dtsBundle": {
+                "name": "babylonjs-procedural-textures",
+                "main": "../../dist/preview release/proceduralTexturesLibrary/build/index.d.ts",
+                "out": "../babylon.proceduralTextures.module.d.ts",
+                "baseDir": "../../dist/preview release/proceduralTexturesLibrary/build/",
+                "headerText": "BabylonJS Procedural Textures"
             },
-            "extendsRoot": true
+            "processDeclaration": {
+                "filename": "babylon.proceduralTextures.module.d.ts",
+                "packageName": "babylonjs-procedural-textures",
+                "moduleName": "BABYLON.PROCEDURALTEXTURES",
+                "importsToRemove": [],
+                "classMap": {
+                    "babylonjs": "BABYLON",
+                    "babylonjs-loaders": "BABYLON",
+                    "babylonjs-serializers": "BABYLON"
+                }
+            }
         }
     },
     "loaders": {

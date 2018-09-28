@@ -1,7 +1,7 @@
 {
-    "name": "babylonjs-gui",
+    "name": "babylonjs-procedural-textures",
     "version": "1.0.0",
-    "description": "The GUI library is an extension you can use to generate interactive user interface.\r It is build on top of the DynamicTexture.",
+    "description": "The js Procedural Textures library is an extension containing extra procedural textures for babylonjs.",
     "scripts": {
         "start:server": "webpack-dev-server",
         "start:watch": "webpack -w",

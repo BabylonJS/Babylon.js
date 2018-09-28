@@ -1,7 +1,7 @@
 {
-    "name": "babylonjs-gui",
+    "name": "babylonjs-materials",
     "version": "1.0.0",
-    "description": "The GUI library is an extension you can use to generate interactive user interface.\r It is build on top of the DynamicTexture.",
+    "description": "The js Materials library is an extension containing extra materials for babylonjs.",
     "scripts": {
         "start:server": "webpack-dev-server",
         "start:watch": "webpack -w",
