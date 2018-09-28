@@ -15,7 +15,8 @@
             "../../dist/preview release/gui/babylon.gui.d.ts",
             "../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts",
             "../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts",
-            "../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"
+            "../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts",
+            "../../dist/preview release/postProcessesLibrary/babylon.postProcesses.d.ts"
         ],
         "outputCustomConfigurationsDirectory": "../../dist/preview release/customConfigurations",
         "srcOutputDirectory": "../../src/",
@@ -1639,6 +1640,25 @@
                 "noBundleInName": true,
                 "output": "babylon.postProcesses.min.js",
                 "webpack": "../../postProcessLibrary/webpack.config.js",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
+            },
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.asciiArtPostProcess.min.js",
+                "webpack": "../../postProcessLibrary/legacy/webpack.asciiArt.config.js",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
+            },
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.digitalRainPostProcess.min.js",
+                "webpack": "../../postProcessLibrary/legacy/webpack.digitalRain.config.js",
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true

@@ -599,6 +599,7 @@ var buildExternalLibrary = function(library, settings, watch) {
                     if (!out.minified) {
                         wpConfig.mode = "development";
                     }
+
                     let wpBuild = webpackStream(wpConfig, require("webpack"));
 
                     //shoud dtsBundle create the declaration?
@@ -669,8 +670,9 @@ var buildExternalLibrary = function(library, settings, watch) {
 
                 });
             } else {
+                var wpConfig = require(library.webpack);
 
-                let wpBuild = webpackStream(require(library.webpack), webpack);
+                let wpBuild = webpackStream(wpConfig, webpack);
 
                 let buildEvent = wpBuild
                     .pipe(gulp.dest(outputDirectory))
@@ -698,7 +700,7 @@ var buildExternalLibrary = function(library, settings, watch) {
                             fs.readFile(fileLocation, function(err, data) {
                                 if (err) throw err;
 
-                                // For Raanan,litera litteral import hack TO BETTER INTEGRATE
+                                // For Raanan, litteral import hack TO BETTER INTEGRATE
                                 data = data + "";
                                 data = data.replace('import "../sass/main.scss";', "");
 

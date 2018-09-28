@@ -1,4 +1,4 @@
-import * as postProcessLibrary from "./index";
+import * as postProcessLibrary from "../src/digitalRain/index"
 
 /**
  *
@@ -12,4 +12,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "./index";
+export * from "../src/digitalRain/index";
