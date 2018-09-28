@@ -706,6 +706,9 @@ module BABYLON {
             if (this._indexBuffer) {
                 this._indexBuffer.references = numOfMeshes;
             }
+
+            // morphTargets
+            mesh._syncGeometryWithMorphTargetManager();
         }
 
         private notifyUpdate(kind?: string) {
