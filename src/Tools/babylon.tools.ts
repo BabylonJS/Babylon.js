@@ -1096,25 +1096,8 @@ module BABYLON {
          * @param max defines the maximum range
          */
         public static CheckExtends(v: Vector3, min: Vector3, max: Vector3): void {
-            if (v.x < min.x) {
-                min.x = v.x;
-            }
-            if (v.y < min.y) {
-                min.y = v.y;
-            }
-            if (v.z < min.z) {
-                min.z = v.z;
-            }
-
-            if (v.x > max.x) {
-                max.x = v.x;
-            }
-            if (v.y > max.y) {
-                max.y = v.y;
-            }
-            if (v.z > max.z) {
-                max.z = v.z;
-            }
+            min.minimizeInPlace(v);
+            max.maximizeInPlace(v);
         }
 
         /**
