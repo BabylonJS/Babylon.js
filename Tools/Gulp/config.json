@@ -1635,35 +1635,36 @@
     "postProcessesLibrary": {
         "libraries": [
             {
-                "files": [
-                    "../../postProcessLibrary/src/asciiArt/babylon.asciiArtPostProcess.ts"
-                ],
-                "shaderFiles": [
-                    "../../postProcessLibrary/src/asciiArt/asciiart.fragment.fx"
-                ],
-                "output": "babylon.asciiArtPostProcess.js"
-            },
-            {
-                "files": [
-                    "../../postProcessLibrary/src/digitalRain/babylon.digitalRainPostProcess.ts"
-                ],
-                "shaderFiles": [
-                    "../../postProcessLibrary/src/digitalRain/digitalrain.fragment.fx"
-                ],
-                "output": "babylon.digitalRainPostProcess.js"
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.postProcesses.min.js",
+                "webpack": "../../postProcessLibrary/webpack.config.js",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
             }
         ],
         "build": {
-            "srcOutputDirectory": "../../postProcessLibrary/",
+            "srcOutputDirectory": "../../postProcessLibrary/src/",
             "distOutputDirectory": "/postProcessesLibrary/",
-            "buildAsModule": true,
-            "moduleName": "babylonjs-post-process",
-            "outputFilename": "babylonjs.postProcess",
-            "moduleDeclaration": {
-                "name": "PostProcesses",
-                "module": "babylonjs-post-process"
+            "dtsBundle": {
+                "name": "babylonjs-postProcessLibrary",
+                "main": "../../dist/preview release/postProcessesLibrary/build/index.d.ts",
+                "out": "../babylon.postProcesses.module.d.ts",
+                "baseDir": "../../dist/preview release/postProcessesLibrary/build/",
+                "headerText": "BabylonJS Postprocess library"
             },
-            "extendsRoot": true
+            "processDeclaration": {
+                "filename": "babylon.postProcesses.module.d.ts",
+                "packageName": "babylonjs-postProcessLibrary",
+                "moduleName": "BABYLON",
+                "importsToRemove": [],
+                "classMap": {
+                    "babylonjs": "BABYLON",
+                    "babylonjs-loaders": "BABYLON",
+                    "babylonjs-serializers": "BABYLON"
+                }
+            }
         }
     },
     "proceduralTexturesLibrary": {

@@ -1,7 +1,7 @@
 {
-    "name": "babylonjs-gui",
-    "version": "1.0.0",
-    "description": "The GUI library is an extension you can use to generate interactive user interface.\r It is build on top of the DynamicTexture.",
+    "name": "babylonjs-postprocesslibrary",
+    "version": "3.3.0",
+    "description": "The Babylon.js post process library is a collection of advanced post process to be used in a Babylon.js scene.",
     "scripts": {
         "start:server": "webpack-dev-server",
         "start:watch": "webpack -w",
