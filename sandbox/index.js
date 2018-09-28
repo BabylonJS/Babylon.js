@@ -388,6 +388,7 @@ dropdownBtn.addEventListener("click", function () {
 function createDropdownLink(group, index) {
     var animation = document.createElement("a");
     animation.innerHTML = group.name;
+    animation.title = group.name;
     animation.setAttribute("id", formatId(group.name + "-" + index));
     animation.addEventListener("click", function () {
         // stop the current animation group
@@ -403,6 +404,7 @@ function createDropdownLink(group, index) {
         currentGroup.start(true);
         this.classList.add("active");
         dropdownLabel.innerHTML = currentGroup.name;
+        dropdownLabel.title = currentGroup.name;
 
         // set the slider
         slider.setAttribute("min", currentGroup.from);

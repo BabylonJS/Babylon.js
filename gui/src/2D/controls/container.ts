@@ -88,6 +88,12 @@ export class Container extends Control {
         return "Container";
     }
 
+    public _flagDescendantsAsMatrixDirty(): void {
+        for (var child of this.children) {
+            child._markMatrixAsDirty();
+        }
+    }
+
     /**
      * Gets a child using its name
      * @param name defines the child name to look for
@@ -210,15 +216,6 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _markMatrixAsDirty(): void {
-        super._markMatrixAsDirty();
-
-        for (var index = 0; index < this._children.length; index++) {
-            this._children[index]._markMatrixAsDirty();
-        }
-    }
-
-    /** @hidden */
     public _markAllAsDirty(): void {
         super._markAllAsDirty();
 
@@ -253,7 +250,7 @@ export class Container extends Control {
         super._link(root, host);
 
         for (var child of this._children) {
-            child._link(root, host);
+            child._link(this, host);
         }
     }
 
