@@ -1534,7 +1534,7 @@
             },
             {
                 "noBundleInName": true,
-                "output": "babylon.mixMaterial.normal.js",
+                "output": "babylon.normalMaterial.min.js",
                 "webpack": "../../materialsLibrary/legacy/webpack.normal.config.js",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1542,7 +1542,7 @@
             },
             {
                 "noBundleInName": true,
-                "output": "babylon.shadowOnlyMaterial.normal.js",
+                "output": "babylon.shadowOnlyMaterial.min.js",
                 "webpack": "../../materialsLibrary/legacy/webpack.shadowOnly.config.js",
                 "bundle": "true",
                 "babylonIncluded": false,
