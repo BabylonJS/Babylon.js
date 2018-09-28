@@ -50,7 +50,7 @@
         "webpack-stream": "5.0.0"
     },
     "scripts": {
-        "install": "cd ../../materialsLibrary && npm install && cd ../Tools/Gulp/ && cd ../../postProcessLibrary && npm install && cd ../Tools/Gulp/ && cd ../../gui && npm install && cd ../Tools/Gulp/ &&  cd ../../inspector && npm install && cd ../Tools/Gulp/ && npm --prefix ../../Playground/ install ../../Playground/ && npm --prefix ../../tests/unit/ install ../../tests/unit/ && npm --prefix ../../Viewer/tests/ install ../../Viewer/tests/ && cd ../../Viewer && npm install && cd ../Tools/Gulp/ && gulp deployLocalDev"
+        "install": "cd ../../proceduralTexturesLibrary && npm install && cd ../Tools/Gulp/ && cd ../../materialsLibrary && npm install && cd ../Tools/Gulp/ && cd ../../postProcessLibrary && npm install && cd ../Tools/Gulp/ && cd ../../gui && npm install && cd ../Tools/Gulp/ &&  cd ../../inspector && npm install && cd ../Tools/Gulp/ && npm --prefix ../../Playground/ install ../../Playground/ && npm --prefix ../../tests/unit/ install ../../tests/unit/ && npm --prefix ../../Viewer/tests/ install ../../Viewer/tests/ && cd ../../Viewer && npm install && cd ../Tools/Gulp/ && gulp deployLocalDev"
     },
     "dependencies": {
         "dts-bundle": "^0.7.3",
