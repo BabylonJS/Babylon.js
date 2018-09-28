@@ -674,59 +674,43 @@ var buildExternalLibrary = function(library, settings, watch) {
 
                 let wpBuild = webpackStream(wpConfig, webpack);
 
-                let buildEvent = wpBuild
-                    .pipe(gulp.dest(outputDirectory))
-                    //back-compat
-                    .pipe(through.obj(function(file, enc, cb) {
-                        // only js files
-                        const isjs = /\.js$/.test(file.path);
-                        if (isjs) this.push(file);
-                        cb();
-                    }))
-                    .pipe(rename(function(path) {
-                        console.log(path.basename);
-                        //path.extname === ".js"
-                        path.basename = path.basename.replace(".min", "")
-                    })).pipe(gulp.dest(outputDirectory));
-                sequence.push(
-                    buildEvent
-                );
-                if (settings.build.dtsBundle || settings.build.processDeclaration) {
-                    buildEvent.on("end", function() {
-                        if (settings.build.dtsBundle) {
-                            dtsBundle.bundle(settings.build.dtsBundle);
-                        }
+                let buildEvent = wpBuild.pipe(gulp.dest(outputDirectory));
+                sequence.push(buildEvent);
 
-                        if (settings.build.processDeclaration) {
-                            let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
-                            fs.readFile(fileLocation, function(err, data) {
-                                if (err) throw err;
+                // Generate unminified
+                wpConfig.mode = "development";
+                wpConfig.output.filename = wpConfig.output.filename.replace(".min", "");
 
-                                // For Raanan, litteral import hack TO BETTER INTEGRATE
-                                data = data + "";
-                                data = data.replace('import "../sass/main.scss";', "");
+                wpBuild = webpackStream(wpConfig, webpack);
 
-                                var newData = processDeclaration(data, settings.build.processDeclaration);
-                                fs.writeFileSync(fileLocation.replace('.module', ''), newData);
-                                //legacy module support
-                                fs.writeFileSync(fileLocation, data + "\n" + newData);
-                            });
-                        }
-                    });
+                let buildEvent2 = wpBuild.pipe(gulp.dest(outputDirectory));
+                sequence.push(buildEvent2);
+
+                if (library.isMain) {
+                    if (settings.build.dtsBundle || settings.build.processDeclaration) {
+                        buildEvent.on("end", function() {
+                            if (settings.build.dtsBundle) {
+                                dtsBundle.bundle(settings.build.dtsBundle);
+                            }
+
+                            if (settings.build.processDeclaration) {
+                                let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
+                                fs.readFile(fileLocation, function(err, data) {
+                                    if (err) throw err;
+
+                                    // For Raanan, litteral import hack TO BETTER INTEGRATE
+                                    data = data + "";
+                                    data = data.replace('import "../sass/main.scss";', "");
+
+                                    var newData = processDeclaration(data, settings.build.processDeclaration);
+                                    fs.writeFileSync(fileLocation.replace('.module', ''), newData);
+                                    //legacy module support
+                                    fs.writeFileSync(fileLocation, data + "\n" + newData);
+                                });
+                            }
+                        });
+                    }
                 }
-                /*if (settings.build.processDeclaration) {
-                    sequence.push(
-                        wpBuild
-                            .pipe(through.obj(function (file, enc, cb) {
-                                // only js files
-                                const isDts = /\.d.ts$/.test(file.path);
-                                file.contents = new Buffer(processDeclaration(file.contents, settings.build.processDeclaration));
-                                if (isDts) this.push(file);
-                                cb();
-                            }))
-                            .pipe(gulp.dest(outputDirectory))
-                    )
-                }*/
             }
 
             return merge2(sequence);

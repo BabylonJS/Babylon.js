@@ -1,4 +1,4 @@
-import * as postProcessLibrary from "../src/asciiArt/index";
+import * as MatLib from "../src/mix/index";
 
 /**
  * This is the entry point for the UMD module.
@@ -6,9 +6,9 @@ import * as postProcessLibrary from "../src/asciiArt/index";
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    for (var key in postProcessLibrary) {
-        (<any>globalObject).BABYLON[key] = (<any>postProcessLibrary)[key];
+    for (var key in MatLib) {
+        (<any>globalObject).BABYLON[key] = (<any>MatLib)[key];
     }
 }
 
-export * from "../src/asciiArt/index";
+export * from "../src/mix/index";
