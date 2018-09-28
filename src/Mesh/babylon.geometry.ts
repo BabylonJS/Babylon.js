@@ -398,7 +398,7 @@ module BABYLON {
 
             if (vertexBuffer.type !== VertexBuffer.FLOAT || vertexBuffer.byteStride !== tightlyPackedByteStride) {
                 const copy : number[] = [];
-                vertexBuffer.forEach(count, value => copy.push(value));
+                vertexBuffer.forEach(count, (value) => copy.push(value));
                 return copy;
             }
 
