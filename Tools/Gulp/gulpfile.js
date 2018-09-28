@@ -695,7 +695,9 @@ var buildExternalLibrary = function(library, settings, watch) {
                     buildEvent.on("end", function() {
                         if (settings.build.dtsBundle) {
                             dtsBundle.bundle(settings.build.dtsBundle);
-                        } if (settings.build.processDeclaration) {
+                        }
+
+                        if (settings.build.processDeclaration) {
                             let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
                             fs.readFile(fileLocation, function(err, data) {
                                 if (err) throw err;

@@ -6,11 +6,11 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 module.exports = {
     context: __dirname,
     entry: {
-        'babylonjs-materials': path.resolve(__dirname, './src/legacy.ts'),
+        'babylonjs-materials': path.resolve(__dirname, './legacy-cell.ts'),
     },
     output: {
         path: path.resolve(__dirname, '../dist/preview release/materialsLibrary'),
-        filename: 'babylon.materials.min.js',
+        filename: 'babylon.cellMaterial.min.js',
         libraryTarget: 'umd',
         library: {
             root: ["MATLIB"],
@@ -40,7 +40,7 @@ module.exports = {
         {
             test: /\.fx$/,
             use: [{
-                loader: path.resolve(__dirname, '../Tools/WebpackShaderLoader/index.js')
+                loader: path.resolve(__dirname, '../../Tools/WebpackShaderLoader/index.js')
             }]
         }]
     },
