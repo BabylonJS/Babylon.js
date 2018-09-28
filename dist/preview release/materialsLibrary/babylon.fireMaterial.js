@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy-cell.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy-fire.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -127,31 +127,31 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "../src/cell/cell.fragment.fx":
+/***/ "../src/fire/fire.fragment.fx":
 /*!************************************!*\
-  !*** ../src/cell/cell.fragment.fx ***!
+  !*** ../src/fire/fire.fragment.fx ***!
   \************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "precision highp float;\n\nuniform vec3 vEyePosition;\nuniform vec4 vDiffuseColor;\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#include<helperFunctions>\n\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform sampler2D diffuseSampler;\nuniform vec2 vDiffuseInfos;\n#endif\n#include<clipPlaneFragmentDeclaration>\n\n#include<fogFragmentDeclaration>\n\nvec3 computeCustomDiffuseLighting(lightingInfo info,vec3 diffuseBase,float shadow)\n{\ndiffuseBase=info.diffuse*shadow;\n#ifdef CELLBASIC\nfloat level=1.0;\nif (info.ndl<0.5)\nlevel=0.5;\ndiffuseBase.rgb*vec3(level,level,level);\n#else\nfloat ToonThresholds[4];\nToonThresholds[0]=0.95;\nToonThresholds[1]=0.5;\nToonThresholds[2]=0.2;\nToonThresholds[3]=0.03;\nfloat ToonBrightnessLevels[5];\nToonBrightnessLevels[0]=1.0;\nToonBrightnessLevels[1]=0.8;\nToonBrightnessLevels[2]=0.6;\nToonBrightnessLevels[3]=0.35;\nToonBrightnessLevels[4]=0.2;\nif (info.ndl>ToonThresholds[0])\n{\ndiffuseBase.rgb*=ToonBrightnessLevels[0];\n}\nelse if (info.ndl>ToonThresholds[1])\n{\ndiffuseBase.rgb*=ToonBrightnessLevels[1];\n}\nelse if (info.ndl>ToonThresholds[2])\n{\ndiffuseBase.rgb*=ToonBrightnessLevels[2];\n}\nelse if (info.ndl>ToonThresholds[3])\n{\ndiffuseBase.rgb*=ToonBrightnessLevels[3];\n}\nelse\n{\ndiffuseBase.rgb*=ToonBrightnessLevels[4];\n}\n#endif\nreturn max(diffuseBase,vec3(0.2));\n}\nvoid main(void)\n{\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\nvec4 baseColor=vec4(1.,1.,1.,1.);\nvec3 diffuseColor=vDiffuseColor.rgb;\n\nfloat alpha=vDiffuseColor.a;\n#ifdef DIFFUSE\nbaseColor=texture2D(diffuseSampler,vDiffuseUV);\n#ifdef ALPHATEST\nif (baseColor.a<0.4)\ndiscard;\n#endif\n#include<depthPrePass>\nbaseColor.rgb*=vDiffuseInfos.y;\n#endif\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\n#ifdef NORMAL\nvec3 normalW=normalize(vNormalW);\n#else\nvec3 normalW=vec3(1.0,1.0,1.0);\n#endif\n\nlightingInfo info;\nvec3 diffuseBase=vec3(0.,0.,0.);\nfloat shadow=1.;\nfloat glossiness=0.;\n#ifdef SPECULARTERM\nvec3 specularBase=vec3(0.,0.,0.);\n#endif \n#include<lightFragment>[0..maxSimultaneousLights]\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\nvec3 finalDiffuse=clamp(diffuseBase*diffuseColor,0.0,1.0)*baseColor.rgb;\n\nvec4 color=vec4(finalDiffuse,alpha);\n#include<fogFragment>\ngl_FragColor=color;\n}"
+module.exports = "precision highp float;\n\nuniform vec3 vEyePosition;\n\nvarying vec3 vPositionW;\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform sampler2D diffuseSampler;\nuniform vec2 vDiffuseInfos;\n#endif\n\nuniform sampler2D distortionSampler;\nuniform sampler2D opacitySampler;\n#ifdef DIFFUSE\nvarying vec2 vDistortionCoords1;\nvarying vec2 vDistortionCoords2;\nvarying vec2 vDistortionCoords3;\n#endif\n#include<clipPlaneFragmentDeclaration>\n\n#include<fogFragmentDeclaration>\nvec4 bx2(vec4 x)\n{\nreturn vec4(2.0)*x-vec4(1.0);\n}\nvoid main(void) {\n\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\nvec4 baseColor=vec4(1.,1.,1.,1.);\n\nfloat alpha=1.0;\n#ifdef DIFFUSE\n\nconst float distortionAmount0=0.092;\nconst float distortionAmount1=0.092;\nconst float distortionAmount2=0.092;\nvec2 heightAttenuation=vec2(0.3,0.39);\nvec4 noise0=texture2D(distortionSampler,vDistortionCoords1);\nvec4 noise1=texture2D(distortionSampler,vDistortionCoords2);\nvec4 noise2=texture2D(distortionSampler,vDistortionCoords3);\nvec4 noiseSum=bx2(noise0)*distortionAmount0+bx2(noise1)*distortionAmount1+bx2(noise2)*distortionAmount2;\nvec4 perturbedBaseCoords=vec4(vDiffuseUV,0.0,1.0)+noiseSum*(vDiffuseUV.y*heightAttenuation.x+heightAttenuation.y);\nvec4 opacityColor=texture2D(opacitySampler,perturbedBaseCoords.xy);\n#ifdef ALPHATEST\nif (opacityColor.r<0.1)\ndiscard;\n#endif\n#include<depthPrePass>\nbaseColor=texture2D(diffuseSampler,perturbedBaseCoords.xy)*2.0;\nbaseColor*=opacityColor;\nbaseColor.rgb*=vDiffuseInfos.y;\n#endif\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\nvec3 diffuseBase=vec3(1.0,1.0,1.0);\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\n\nvec4 color=vec4(baseColor.rgb,alpha);\n#include<fogFragment>\ngl_FragColor=color;\n}"
 
 /***/ }),
 
-/***/ "../src/cell/cell.vertex.fx":
+/***/ "../src/fire/fire.vertex.fx":
 /*!**********************************!*\
-  !*** ../src/cell/cell.vertex.fx ***!
+  !*** ../src/fire/fire.vertex.fx ***!
   \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "precision highp float;\n\nattribute vec3 position;\n#ifdef NORMAL\nattribute vec3 normal;\n#endif\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#include<bonesDeclaration>\n\n#include<instancesDeclaration>\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform mat4 diffuseMatrix;\nuniform vec2 vDiffuseInfos;\n#endif\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\nvoid main(void) {\n#include<instancesVertex>\n#include<bonesVertex>\ngl_Position=viewProjection*finalWorld*vec4(position,1.0);\nvec4 worldPos=finalWorld*vec4(position,1.0);\nvPositionW=vec3(worldPos);\n#ifdef NORMAL\nvNormalW=normalize(vec3(finalWorld*vec4(normal,0.0)));\n#endif\n\n#ifndef UV1\nvec2 uv=vec2(0.,0.);\n#endif\n#ifndef UV2\nvec2 uv2=vec2(0.,0.);\n#endif\n#ifdef DIFFUSE\nif (vDiffuseInfos.x == 0.)\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n\n#include<clipPlaneVertex>\n\n#include<fogVertex>\n#include<shadowsVertex>[0..maxSimultaneousLights]\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n\n#ifdef POINTSIZE\ngl_PointSize=pointSize;\n#endif\n}\n"
+module.exports = "precision highp float;\n\nattribute vec3 position;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#include<bonesDeclaration>\n\n#include<instancesDeclaration>\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\n#endif\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n\nuniform float time;\nuniform float speed;\n#ifdef DIFFUSE\nvarying vec2 vDistortionCoords1;\nvarying vec2 vDistortionCoords2;\nvarying vec2 vDistortionCoords3;\n#endif\nvoid main(void) {\n#include<instancesVertex>\n#include<bonesVertex>\ngl_Position=viewProjection*finalWorld*vec4(position,1.0);\nvec4 worldPos=finalWorld*vec4(position,1.0);\nvPositionW=vec3(worldPos);\n\n#ifdef DIFFUSE\nvDiffuseUV=uv;\nvDiffuseUV.y-=0.2;\n#endif\n\n#include<clipPlaneVertex>\n\n#include<fogVertex>\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n\n#ifdef POINTSIZE\ngl_PointSize=pointSize;\n#endif\n#ifdef DIFFUSE\n\nvec3 layerSpeed=vec3(-0.2,-0.52,-0.1)*speed;\nvDistortionCoords1.x=uv.x;\nvDistortionCoords1.y=uv.y+layerSpeed.x*time/1000.0;\nvDistortionCoords2.x=uv.x;\nvDistortionCoords2.y=uv.y+layerSpeed.y*time/1000.0;\nvDistortionCoords3.x=uv.x;\nvDistortionCoords3.y=uv.y+layerSpeed.z*time/1000.0;\n#endif\n}\n"
 
 /***/ }),
 
-/***/ "../src/cell/cellMaterial.ts":
+/***/ "../src/fire/fireMaterial.ts":
 /*!***********************************!*\
-  !*** ../src/cell/cellMaterial.ts ***!
+  !*** ../src/fire/fireMaterial.ts ***!
   \***********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -179,11 +179,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-babylonjs_1.Effect.ShadersStore["cellPixelShader"] = __webpack_require__(/*! ./cell.fragment.fx */ "../src/cell/cell.fragment.fx");
-babylonjs_1.Effect.ShadersStore["cellVertexShader"] = __webpack_require__(/*! ./cell.vertex.fx */ "../src/cell/cell.vertex.fx");
-var CellMaterialDefines = /** @class */ (function (_super) {
-    __extends(CellMaterialDefines, _super);
-    function CellMaterialDefines() {
+babylonjs_1.Effect.ShadersStore["firePixelShader"] = __webpack_require__(/*! ./fire.fragment.fx */ "../src/fire/fire.fragment.fx");
+babylonjs_1.Effect.ShadersStore["fireVertexShader"] = __webpack_require__(/*! ./fire.vertex.fx */ "../src/fire/fire.vertex.fx");
+var FireMaterialDefines = /** @class */ (function (_super) {
+    __extends(FireMaterialDefines, _super);
+    function FireMaterialDefines() {
         var _this = _super.call(this) || this;
         _this.DIFFUSE = false;
         _this.CLIPPLANE = false;
@@ -191,53 +191,48 @@ var CellMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
         _this.ALPHATEST = false;
+        _this.DEPTHPREPASS = false;
         _this.POINTSIZE = false;
         _this.FOG = false;
-        _this.NORMAL = false;
         _this.UV1 = false;
-        _this.UV2 = false;
         _this.VERTEXCOLOR = false;
         _this.VERTEXALPHA = false;
-        _this.NUM_BONE_INFLUENCERS = 0;
         _this.BonesPerMesh = 0;
+        _this.NUM_BONE_INFLUENCERS = 0;
         _this.INSTANCES = false;
-        _this.NDOTL = true;
-        _this.CUSTOMUSERLIGHTING = true;
-        _this.CELLBASIC = true;
-        _this.DEPTHPREPASS = false;
         _this.rebuild();
         return _this;
     }
-    return CellMaterialDefines;
+    return FireMaterialDefines;
 }(babylonjs_1.MaterialDefines));
-var CellMaterial = /** @class */ (function (_super) {
-    __extends(CellMaterial, _super);
-    function CellMaterial(name, scene) {
+var FireMaterial = /** @class */ (function (_super) {
+    __extends(FireMaterial, _super);
+    function FireMaterial(name, scene) {
         var _this = _super.call(this, name, scene) || this;
         _this.diffuseColor = new babylonjs_1.Color3(1, 1, 1);
-        _this._computeHighLevel = false;
-        _this._disableLighting = false;
-        _this._maxSimultaneousLights = 4;
+        _this.speed = 1.0;
+        _this._scaledDiffuse = new babylonjs_1.Color3();
+        _this._lastTime = 0;
         return _this;
     }
-    CellMaterial.prototype.needAlphaBlending = function () {
-        return (this.alpha < 1.0);
-    };
-    CellMaterial.prototype.needAlphaTesting = function () {
+    FireMaterial.prototype.needAlphaBlending = function () {
         return false;
     };
-    CellMaterial.prototype.getAlphaTestTexture = function () {
+    FireMaterial.prototype.needAlphaTesting = function () {
+        return true;
+    };
+    FireMaterial.prototype.getAlphaTestTexture = function () {
         return null;
     };
     // Methods
-    CellMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
+    FireMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
             if (this._wasPreviouslyReady && subMesh.effect) {
                 return true;
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new CellMaterialDefines();
+            subMesh._materialDefines = new FireMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -250,28 +245,26 @@ var CellMaterial = /** @class */ (function (_super) {
         // Textures
         if (defines._areTexturesDirty) {
             defines._needUVs = false;
-            if (scene.texturesEnabled) {
-                if (this._diffuseTexture && babylonjs_1.StandardMaterial.DiffuseTextureEnabled) {
-                    if (!this._diffuseTexture.isReady()) {
-                        return false;
-                    }
-                    else {
-                        defines._needUVs = true;
-                        defines.DIFFUSE = true;
-                    }
+            if (this._diffuseTexture && babylonjs_1.StandardMaterial.DiffuseTextureEnabled) {
+                if (!this._diffuseTexture.isReady()) {
+                    return false;
+                }
+                else {
+                    defines._needUVs = true;
+                    defines.DIFFUSE = true;
                 }
             }
         }
-        // High level
-        defines.CELLBASIC = !this.computeHighLevel;
+        defines.ALPHATEST = this._opacityTexture ? true : false;
         // Misc.
-        babylonjs_1.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
-        // Lights
-        defines._needNormals = babylonjs_1.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
+        if (defines._areMiscDirty) {
+            defines.POINTSIZE = (this.pointsCloud || scene.forcePointsCloud);
+            defines.FOG = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== babylonjs_1.Scene.FOGMODE_NONE && this.fogEnabled);
+        }
         // Values that need to be evaluated on every frame
         babylonjs_1.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
         // Attribs
-        babylonjs_1.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
+        babylonjs_1.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true);
         // Get correct effect
         if (defines.isDirty) {
             defines.markAsProcessed();
@@ -281,53 +274,44 @@ var CellMaterial = /** @class */ (function (_super) {
             if (defines.FOG) {
                 fallbacks.addFallback(1, "FOG");
             }
-            babylonjs_1.MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this.maxSimultaneousLights);
             if (defines.NUM_BONE_INFLUENCERS > 0) {
                 fallbacks.addCPUSkinningFallback(0, mesh);
             }
             //Attributes
             var attribs = [babylonjs_1.VertexBuffer.PositionKind];
-            if (defines.NORMAL) {
-                attribs.push(babylonjs_1.VertexBuffer.NormalKind);
-            }
             if (defines.UV1) {
                 attribs.push(babylonjs_1.VertexBuffer.UVKind);
-            }
-            if (defines.UV2) {
-                attribs.push(babylonjs_1.VertexBuffer.UV2Kind);
             }
             if (defines.VERTEXCOLOR) {
                 attribs.push(babylonjs_1.VertexBuffer.ColorKind);
             }
             babylonjs_1.MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
             babylonjs_1.MaterialHelper.PrepareAttributesForInstances(attribs, defines);
-            var shaderName = "cell";
+            // Legacy browser patch
+            var shaderName = "fire";
             var join = defines.toString();
-            var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
-                "vFogInfos", "vFogColor", "pointSize",
-                "vDiffuseInfos",
-                "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix"
-            ];
-            var samplers = ["diffuseSampler"];
-            var uniformBuffers = new Array();
-            babylonjs_1.MaterialHelper.PrepareUniformsAndSamplersList({
-                uniformsNames: uniforms,
-                uniformBuffersNames: uniformBuffers,
-                samplers: samplers,
-                defines: defines,
-                maxSimultaneousLights: this.maxSimultaneousLights
-            });
             subMesh.setEffect(scene.getEngine().createEffect(shaderName, {
                 attributes: attribs,
-                uniformsNames: uniforms,
-                uniformBuffersNames: uniformBuffers,
-                samplers: samplers,
+                uniformsNames: ["world", "view", "viewProjection", "vEyePosition",
+                    "vFogInfos", "vFogColor", "pointSize",
+                    "vDiffuseInfos",
+                    "mBones",
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix",
+                    // Fire
+                    "time", "speed"
+                ],
+                uniformBuffersNames: [],
+                samplers: ["diffuseSampler",
+                    // Fire
+                    "distortionSampler", "opacitySampler"
+                ],
                 defines: join,
                 fallbacks: fallbacks,
                 onCompiled: this.onCompiled,
                 onError: this.onError,
-                indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights - 1 }
+                indexParameters: null,
+                maxSimultaneousLights: 4,
+                transformFeedbackVaryings: null
             }, engine), defines);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
@@ -337,7 +321,7 @@ var CellMaterial = /** @class */ (function (_super) {
         this._wasPreviouslyReady = true;
         return true;
     };
-    CellMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
+    FireMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
         var scene = this.getScene();
         var defines = subMesh._materialDefines;
         if (!defines) {
@@ -359,6 +343,8 @@ var CellMaterial = /** @class */ (function (_super) {
                 this._activeEffect.setTexture("diffuseSampler", this._diffuseTexture);
                 this._activeEffect.setFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
                 this._activeEffect.setMatrix("diffuseMatrix", this._diffuseTexture.getTextureMatrix());
+                this._activeEffect.setTexture("distortionSampler", this._distortionTexture);
+                this._activeEffect.setTexture("opacitySampler", this._opacityTexture);
             }
             // Clip plane
             babylonjs_1.MaterialHelper.BindClipPlane(this._activeEffect, scene);
@@ -368,99 +354,150 @@ var CellMaterial = /** @class */ (function (_super) {
             }
             babylonjs_1.MaterialHelper.BindEyePosition(effect, scene);
         }
-        this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
-        // Lights
-        if (scene.lightsEnabled && !this.disableLighting) {
-            babylonjs_1.MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights);
-        }
+        this._activeEffect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
         // View
         if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== babylonjs_1.Scene.FOGMODE_NONE) {
             this._activeEffect.setMatrix("view", scene.getViewMatrix());
         }
-        console.log("TOTO");
         // Fog
         babylonjs_1.MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
+        // Time
+        this._lastTime += scene.getEngine().getDeltaTime();
+        this._activeEffect.setFloat("time", this._lastTime);
+        // Speed
+        this._activeEffect.setFloat("speed", this.speed);
         this._afterBind(mesh, this._activeEffect);
     };
-    CellMaterial.prototype.getAnimatables = function () {
+    FireMaterial.prototype.getAnimatables = function () {
         var results = [];
         if (this._diffuseTexture && this._diffuseTexture.animations && this._diffuseTexture.animations.length > 0) {
             results.push(this._diffuseTexture);
         }
+        if (this._distortionTexture && this._distortionTexture.animations && this._distortionTexture.animations.length > 0) {
+            results.push(this._distortionTexture);
+        }
+        if (this._opacityTexture && this._opacityTexture.animations && this._opacityTexture.animations.length > 0) {
+            results.push(this._opacityTexture);
+        }
         return results;
     };
-    CellMaterial.prototype.getActiveTextures = function () {
+    FireMaterial.prototype.getActiveTextures = function () {
         var activeTextures = _super.prototype.getActiveTextures.call(this);
         if (this._diffuseTexture) {
             activeTextures.push(this._diffuseTexture);
         }
+        if (this._distortionTexture) {
+            activeTextures.push(this._distortionTexture);
+        }
+        if (this._opacityTexture) {
+            activeTextures.push(this._opacityTexture);
+        }
         return activeTextures;
     };
-    CellMaterial.prototype.hasTexture = function (texture) {
+    FireMaterial.prototype.hasTexture = function (texture) {
         if (_super.prototype.hasTexture.call(this, texture)) {
             return true;
         }
-        return this._diffuseTexture === texture;
+        if (this._diffuseTexture === texture) {
+            return true;
+        }
+        if (this._distortionTexture === texture) {
+            return true;
+        }
+        if (this._opacityTexture === texture) {
+            return true;
+        }
+        return false;
     };
-    CellMaterial.prototype.dispose = function (forceDisposeEffect) {
+    FireMaterial.prototype.getClassName = function () {
+        return "FireMaterial";
+    };
+    FireMaterial.prototype.dispose = function (forceDisposeEffect) {
         if (this._diffuseTexture) {
             this._diffuseTexture.dispose();
         }
+        if (this._distortionTexture) {
+            this._distortionTexture.dispose();
+        }
         _super.prototype.dispose.call(this, forceDisposeEffect);
     };
-    CellMaterial.prototype.getClassName = function () {
-        return "CellMaterial";
-    };
-    CellMaterial.prototype.clone = function (name) {
+    FireMaterial.prototype.clone = function (name) {
         var _this = this;
-        return babylonjs_1.SerializationHelper.Clone(function () { return new CellMaterial(name, _this.getScene()); }, this);
+        return babylonjs_1.SerializationHelper.Clone(function () { return new FireMaterial(name, _this.getScene()); }, this);
     };
-    CellMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_1.SerializationHelper.Serialize(this);
-        serializationObject.customType = "BABYLON.CellMaterial";
+    FireMaterial.prototype.serialize = function () {
+        var serializationObject = _super.prototype.serialize.call(this);
+        serializationObject.customType = "BABYLON.FireMaterial";
+        serializationObject.diffuseColor = this.diffuseColor.asArray();
+        serializationObject.speed = this.speed;
+        if (this._diffuseTexture) {
+            serializationObject._diffuseTexture = this._diffuseTexture.serialize();
+        }
+        if (this._distortionTexture) {
+            serializationObject._distortionTexture = this._distortionTexture.serialize();
+        }
+        if (this._opacityTexture) {
+            serializationObject._opacityTexture = this._opacityTexture.serialize();
+        }
         return serializationObject;
     };
-    // Statics
-    CellMaterial.Parse = function (source, scene, rootUrl) {
-        return babylonjs_1.SerializationHelper.Parse(function () { return new CellMaterial(source.name, scene); }, source, scene, rootUrl);
+    FireMaterial.Parse = function (source, scene, rootUrl) {
+        var material = new FireMaterial(source.name, scene);
+        material.diffuseColor = babylonjs_1.Color3.FromArray(source.diffuseColor);
+        material.speed = source.speed;
+        material.alpha = source.alpha;
+        material.id = source.id;
+        babylonjs_1.Tags.AddTagsTo(material, source.tags);
+        material.backFaceCulling = source.backFaceCulling;
+        material.wireframe = source.wireframe;
+        if (source._diffuseTexture) {
+            material._diffuseTexture = babylonjs_1.Texture.Parse(source._diffuseTexture, scene, rootUrl);
+        }
+        if (source._distortionTexture) {
+            material._distortionTexture = babylonjs_1.Texture.Parse(source._distortionTexture, scene, rootUrl);
+        }
+        if (source._opacityTexture) {
+            material._opacityTexture = babylonjs_1.Texture.Parse(source._opacityTexture, scene, rootUrl);
+        }
+        if (source.checkReadyOnlyOnce) {
+            material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
+        }
+        return material;
     };
     __decorate([
         babylonjs_1.serializeAsTexture("diffuseTexture")
-    ], CellMaterial.prototype, "_diffuseTexture", void 0);
+    ], FireMaterial.prototype, "_diffuseTexture", void 0);
     __decorate([
         babylonjs_1.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    ], CellMaterial.prototype, "diffuseTexture", void 0);
+    ], FireMaterial.prototype, "diffuseTexture", void 0);
+    __decorate([
+        babylonjs_1.serializeAsTexture("distortionTexture")
+    ], FireMaterial.prototype, "_distortionTexture", void 0);
+    __decorate([
+        babylonjs_1.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], FireMaterial.prototype, "distortionTexture", void 0);
+    __decorate([
+        babylonjs_1.serializeAsTexture("opacityTexture")
+    ], FireMaterial.prototype, "_opacityTexture", void 0);
+    __decorate([
+        babylonjs_1.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], FireMaterial.prototype, "opacityTexture", void 0);
     __decorate([
         babylonjs_1.serializeAsColor3("diffuse")
-    ], CellMaterial.prototype, "diffuseColor", void 0);
+    ], FireMaterial.prototype, "diffuseColor", void 0);
     __decorate([
-        babylonjs_1.serialize("computeHighLevel")
-    ], CellMaterial.prototype, "_computeHighLevel", void 0);
-    __decorate([
-        babylonjs_1.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    ], CellMaterial.prototype, "computeHighLevel", void 0);
-    __decorate([
-        babylonjs_1.serialize("disableLighting")
-    ], CellMaterial.prototype, "_disableLighting", void 0);
-    __decorate([
-        babylonjs_1.expandToProperty("_markAllSubMeshesAsLightsDirty")
-    ], CellMaterial.prototype, "disableLighting", void 0);
-    __decorate([
-        babylonjs_1.serialize("maxSimultaneousLights")
-    ], CellMaterial.prototype, "_maxSimultaneousLights", void 0);
-    __decorate([
-        babylonjs_1.expandToProperty("_markAllSubMeshesAsLightsDirty")
-    ], CellMaterial.prototype, "maxSimultaneousLights", void 0);
-    return CellMaterial;
+        babylonjs_1.serialize()
+    ], FireMaterial.prototype, "speed", void 0);
+    return FireMaterial;
 }(babylonjs_1.PushMaterial));
-exports.CellMaterial = CellMaterial;
+exports.FireMaterial = FireMaterial;
 
 
 /***/ }),
 
-/***/ "../src/cell/index.ts":
+/***/ "../src/fire/index.ts":
 /*!****************************!*\
-  !*** ../src/cell/index.ts ***!
+  !*** ../src/fire/index.ts ***!
   \****************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -471,14 +508,14 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./cellMaterial */ "../src/cell/cellMaterial.ts"));
+__export(__webpack_require__(/*! ./fireMaterial */ "../src/fire/fireMaterial.ts"));
 
 
 /***/ }),
 
-/***/ "./legacy-cell.ts":
+/***/ "./legacy-fire.ts":
 /*!************************!*\
-  !*** ./legacy-cell.ts ***!
+  !*** ./legacy-fire.ts ***!
   \************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -489,7 +526,7 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-var MatLib = __webpack_require__(/*! ../src/cell/index */ "../src/cell/index.ts");
+var MatLib = __webpack_require__(/*! ../src/fire/index */ "../src/fire/index.ts");
 /**
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
@@ -500,7 +537,7 @@ if (typeof globalObject !== "undefined") {
         globalObject.BABYLON[key] = MatLib[key];
     }
 }
-__export(__webpack_require__(/*! ../src/cell/index */ "../src/cell/index.ts"));
+__export(__webpack_require__(/*! ../src/fire/index */ "../src/fire/index.ts"));
 
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../../Tools/Gulp/node_modules/webpack/buildin/global.js")))
 
@@ -519,4 +556,4 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs__;
 
 /******/ });
 });
-//# sourceMappingURL=babylon.cellMaterial.js.map
+//# sourceMappingURL=babylon.fireMaterial.js.map

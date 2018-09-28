@@ -6,16 +6,16 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 module.exports = {
     context: __dirname,
     entry: {
-        'babylonjs-postProcessesLibrary': path.resolve(__dirname, './legacy-asciiArt.ts'),
+        'babylonjs-materials': path.resolve(__dirname, './legacy-shadowOnly.ts'),
     },
     output: {
-        path: path.resolve(__dirname, '../dist/preview release/postProcessesLibrary'),
-        filename: 'babylon.asciiArtPostProcess.min.js',
+        path: path.resolve(__dirname, '../dist/preview release/materialsLibrary'),
+        filename: 'babylon.shadowOnlyMaterial.min.js',
         libraryTarget: 'umd',
         library: {
-            root: ["POSTPROCESSLIBRARY"],
-            amd: "babylonjs-postProcessesLibrary",
-            commonjs: "babylonjs-postProcessesLibrary"
+            root: ["MATLIB"],
+            amd: "babylonjs-materials",
+            commonjs: "babylonjs-materials"
         },
         umdNamedDefine: true
     },
@@ -45,10 +45,19 @@ module.exports = {
         }]
     },
     mode: "production",
+    devServer: {
+        contentBase: path.join(__dirname, "dist"),
+        compress: false,
+        //open: true,
+        port: 9000
+    },
     plugins: [
         new webpack.WatchIgnorePlugin([
             /\.js$/,
             /\.d\.ts$/
         ])
-    ]
+    ],
+    watchOptions: {
+        ignored: [path.resolve(__dirname, './dist/**/*.*'), 'node_modules']
+    }
 }

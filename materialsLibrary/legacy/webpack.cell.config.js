@@ -52,10 +52,6 @@ module.exports = {
         port: 9000
     },
     plugins: [
-        new CleanWebpackPlugin([
-            path.resolve(__dirname, './src/**/*.js'),
-            path.resolve(__dirname, './src/**/*.map')
-        ]),
         new webpack.WatchIgnorePlugin([
             /\.js$/,
             /\.d\.ts$/

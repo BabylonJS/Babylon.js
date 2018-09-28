@@ -1481,13 +1481,69 @@
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true,
-                "preventLoadLibrary": true
+                "preventLoadLibrary": true,
+                "isMain": true
             },
             {
-                "files": [],
                 "noBundleInName": true,
                 "output": "babylon.cellMaterial.min.js",
                 "webpack": "../../materialsLibrary/legacy/webpack.cell.config.js",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
+            },
+            {
+                "noBundleInName": true,
+                "output": "babylon.customMaterial.min.js",
+                "webpack": "../../materialsLibrary/legacy/webpack.custom.config.js",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
+            },
+            {
+                "noBundleInName": true,
+                "output": "babylon.fireMaterial.min.js",
+                "webpack": "../../materialsLibrary/legacy/webpack.fire.config.js",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
+            },
+            {
+                "noBundleInName": true,
+                "output": "babylon.gradientMaterial.min.js",
+                "webpack": "../../materialsLibrary/legacy/webpack.gradient.config.js",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
+            },
+            {
+                "noBundleInName": true,
+                "output": "babylon.lavaMaterial.min.js",
+                "webpack": "../../materialsLibrary/legacy/webpack.lava.config.js",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
+            },
+            {
+                "noBundleInName": true,
+                "output": "babylon.mixMaterial.min.js",
+                "webpack": "../../materialsLibrary/legacy/webpack.mix.config.js",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
+            },
+            {
+                "noBundleInName": true,
+                "output": "babylon.mixMaterial.normal.js",
+                "webpack": "../../materialsLibrary/legacy/webpack.normal.config.js",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
+            },
+            {
+                "noBundleInName": true,
+                "output": "babylon.shadowOnlyMaterial.normal.js",
+                "webpack": "../../materialsLibrary/legacy/webpack.shadowOnly.config.js",
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true
@@ -1526,7 +1582,8 @@
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true,
-                "preventLoadLibrary": true
+                "preventLoadLibrary": true,
+                "isMain": true
             },
             {
                 "files": [],
@@ -1579,7 +1636,8 @@
                 "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "isMain": true
             }
         ],
         "build": {
@@ -1751,7 +1809,8 @@
                 "webpack": "../../gui/webpack.config.js",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "isMain": true
             }
         ],
         "build": {
@@ -1786,7 +1845,8 @@
                 "webpack": "../../inspector/webpack.config.js",
                 "bundle": "true",
                 "extendsRoot": true,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "isMain": true
             }
         ],
         "build": {
@@ -1900,7 +1960,8 @@
                 },
                 "babylonIncluded": true,
                 "noWatch": true,
-                "preventLoadLibrary": true
+                "preventLoadLibrary": true,
+                "isMain": true
             }
         ],
         "build": {

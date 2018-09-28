@@ -46,10 +46,6 @@ module.exports = {
     },
     mode: "production",
     plugins: [
-        new CleanWebpackPlugin([
-            path.resolve(__dirname, './src/**/*.js'),
-            path.resolve(__dirname, './src/**/*.map')
-        ]),
         new webpack.WatchIgnorePlugin([
             /\.js$/,
             /\.d\.ts$/

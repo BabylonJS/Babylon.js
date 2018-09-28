@@ -1,7 +1,6 @@
 import * as postProcessLibrary from "../src/digitalRain/index"
 
 /**
- *
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */

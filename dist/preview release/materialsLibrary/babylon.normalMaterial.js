@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy-cell.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy-normal.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -127,21 +127,39 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "../src/cell/cell.fragment.fx":
-/*!************************************!*\
-  !*** ../src/cell/cell.fragment.fx ***!
-  \************************************/
+/***/ "../src/normal/index.ts":
+/*!******************************!*\
+  !*** ../src/normal/index.ts ***!
+  \******************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = "precision highp float;\n\nuniform vec3 vEyePosition;\nuniform vec4 vDiffuseColor;\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#include<helperFunctions>\n\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform sampler2D diffuseSampler;\nuniform vec2 vDiffuseInfos;\n#endif\n#include<clipPlaneFragmentDeclaration>\n\n#include<fogFragmentDeclaration>\n\nvec3 computeCustomDiffuseLighting(lightingInfo info,vec3 diffuseBase,float shadow)\n{\ndiffuseBase=info.diffuse*shadow;\n#ifdef CELLBASIC\nfloat level=1.0;\nif (info.ndl<0.5)\nlevel=0.5;\ndiffuseBase.rgb*vec3(level,level,level);\n#else\nfloat ToonThresholds[4];\nToonThresholds[0]=0.95;\nToonThresholds[1]=0.5;\nToonThresholds[2]=0.2;\nToonThresholds[3]=0.03;\nfloat ToonBrightnessLevels[5];\nToonBrightnessLevels[0]=1.0;\nToonBrightnessLevels[1]=0.8;\nToonBrightnessLevels[2]=0.6;\nToonBrightnessLevels[3]=0.35;\nToonBrightnessLevels[4]=0.2;\nif (info.ndl>ToonThresholds[0])\n{\ndiffuseBase.rgb*=ToonBrightnessLevels[0];\n}\nelse if (info.ndl>ToonThresholds[1])\n{\ndiffuseBase.rgb*=ToonBrightnessLevels[1];\n}\nelse if (info.ndl>ToonThresholds[2])\n{\ndiffuseBase.rgb*=ToonBrightnessLevels[2];\n}\nelse if (info.ndl>ToonThresholds[3])\n{\ndiffuseBase.rgb*=ToonBrightnessLevels[3];\n}\nelse\n{\ndiffuseBase.rgb*=ToonBrightnessLevels[4];\n}\n#endif\nreturn max(diffuseBase,vec3(0.2));\n}\nvoid main(void)\n{\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\nvec4 baseColor=vec4(1.,1.,1.,1.);\nvec3 diffuseColor=vDiffuseColor.rgb;\n\nfloat alpha=vDiffuseColor.a;\n#ifdef DIFFUSE\nbaseColor=texture2D(diffuseSampler,vDiffuseUV);\n#ifdef ALPHATEST\nif (baseColor.a<0.4)\ndiscard;\n#endif\n#include<depthPrePass>\nbaseColor.rgb*=vDiffuseInfos.y;\n#endif\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\n#ifdef NORMAL\nvec3 normalW=normalize(vNormalW);\n#else\nvec3 normalW=vec3(1.0,1.0,1.0);\n#endif\n\nlightingInfo info;\nvec3 diffuseBase=vec3(0.,0.,0.);\nfloat shadow=1.;\nfloat glossiness=0.;\n#ifdef SPECULARTERM\nvec3 specularBase=vec3(0.,0.,0.);\n#endif \n#include<lightFragment>[0..maxSimultaneousLights]\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\nvec3 finalDiffuse=clamp(diffuseBase*diffuseColor,0.0,1.0)*baseColor.rgb;\n\nvec4 color=vec4(finalDiffuse,alpha);\n#include<fogFragment>\ngl_FragColor=color;\n}"
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(/*! ./normalMaterial */ "../src/normal/normalMaterial.ts"));
+
 
 /***/ }),
 
-/***/ "../src/cell/cell.vertex.fx":
-/*!**********************************!*\
-  !*** ../src/cell/cell.vertex.fx ***!
-  \**********************************/
+/***/ "../src/normal/normal.fragment.fx":
+/*!****************************************!*\
+  !*** ../src/normal/normal.fragment.fx ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "precision highp float;\n\nuniform vec3 vEyePosition;\nuniform vec4 vDiffuseColor;\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#include<helperFunctions>\n\n#include<__decl__lightFragment>[0]\n#include<__decl__lightFragment>[1]\n#include<__decl__lightFragment>[2]\n#include<__decl__lightFragment>[3]\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform sampler2D diffuseSampler;\nuniform vec2 vDiffuseInfos;\n#endif\n#include<clipPlaneFragmentDeclaration>\n\n#include<fogFragmentDeclaration>\nvoid main(void) {\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\nvec4 baseColor=vec4(1.,1.,1.,1.);\nvec3 diffuseColor=vDiffuseColor.rgb;\n\nfloat alpha=vDiffuseColor.a;\n#ifdef DIFFUSE\nbaseColor=texture2D(diffuseSampler,vDiffuseUV);\n#ifdef ALPHATEST\nif (baseColor.a<0.4)\ndiscard;\n#endif\n#include<depthPrePass>\nbaseColor.rgb*=vDiffuseInfos.y;\n#endif\n#ifdef NORMAL\nbaseColor=mix(baseColor,vec4(vNormalW,1.0),0.5);\n#endif\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\n#ifdef NORMAL\nvec3 normalW=normalize(vNormalW);\n#else\nvec3 normalW=vec3(1.0,1.0,1.0);\n#endif\n\nvec3 diffuseBase=vec3(0.,0.,0.);\nlightingInfo info;\nfloat shadow=1.;\nfloat glossiness=0.;\n#include<lightFragment>[0]\n#include<lightFragment>[1]\n#include<lightFragment>[2]\n#include<lightFragment>[3]\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\nvec3 finalDiffuse=clamp(diffuseBase*diffuseColor,0.0,1.0)*baseColor.rgb;\n\nvec4 color=vec4(finalDiffuse,alpha);\n#include<fogFragment>\ngl_FragColor=color;\n}"
+
+/***/ }),
+
+/***/ "../src/normal/normal.vertex.fx":
+/*!**************************************!*\
+  !*** ../src/normal/normal.vertex.fx ***!
+  \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -149,10 +167,10 @@ module.exports = "precision highp float;\n\nattribute vec3 position;\n#ifdef NOR
 
 /***/ }),
 
-/***/ "../src/cell/cellMaterial.ts":
-/*!***********************************!*\
-  !*** ../src/cell/cellMaterial.ts ***!
-  \***********************************/
+/***/ "../src/normal/normalMaterial.ts":
+/*!***************************************!*\
+  !*** ../src/normal/normalMaterial.ts ***!
+  \***************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -179,11 +197,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-babylonjs_1.Effect.ShadersStore["cellPixelShader"] = __webpack_require__(/*! ./cell.fragment.fx */ "../src/cell/cell.fragment.fx");
-babylonjs_1.Effect.ShadersStore["cellVertexShader"] = __webpack_require__(/*! ./cell.vertex.fx */ "../src/cell/cell.vertex.fx");
-var CellMaterialDefines = /** @class */ (function (_super) {
-    __extends(CellMaterialDefines, _super);
-    function CellMaterialDefines() {
+babylonjs_1.Effect.ShadersStore["normalPixelShader"] = __webpack_require__(/*! ./normal.fragment.fx */ "../src/normal/normal.fragment.fx");
+babylonjs_1.Effect.ShadersStore["normalVertexShader"] = __webpack_require__(/*! ./normal.vertex.fx */ "../src/normal/normal.vertex.fx");
+var NormalMaterialDefines = /** @class */ (function (_super) {
+    __extends(NormalMaterialDefines, _super);
+    function NormalMaterialDefines() {
         var _this = _super.call(this) || this;
         _this.DIFFUSE = false;
         _this.CLIPPLANE = false;
@@ -191,8 +209,50 @@ var CellMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
         _this.ALPHATEST = false;
+        _this.DEPTHPREPASS = false;
         _this.POINTSIZE = false;
         _this.FOG = false;
+        _this.LIGHT0 = false;
+        _this.LIGHT1 = false;
+        _this.LIGHT2 = false;
+        _this.LIGHT3 = false;
+        _this.SPOTLIGHT0 = false;
+        _this.SPOTLIGHT1 = false;
+        _this.SPOTLIGHT2 = false;
+        _this.SPOTLIGHT3 = false;
+        _this.HEMILIGHT0 = false;
+        _this.HEMILIGHT1 = false;
+        _this.HEMILIGHT2 = false;
+        _this.HEMILIGHT3 = false;
+        _this.DIRLIGHT0 = false;
+        _this.DIRLIGHT1 = false;
+        _this.DIRLIGHT2 = false;
+        _this.DIRLIGHT3 = false;
+        _this.POINTLIGHT0 = false;
+        _this.POINTLIGHT1 = false;
+        _this.POINTLIGHT2 = false;
+        _this.POINTLIGHT3 = false;
+        _this.SHADOW0 = false;
+        _this.SHADOW1 = false;
+        _this.SHADOW2 = false;
+        _this.SHADOW3 = false;
+        _this.SHADOWS = false;
+        _this.SHADOWESM0 = false;
+        _this.SHADOWESM1 = false;
+        _this.SHADOWESM2 = false;
+        _this.SHADOWESM3 = false;
+        _this.SHADOWPOISSON0 = false;
+        _this.SHADOWPOISSON1 = false;
+        _this.SHADOWPOISSON2 = false;
+        _this.SHADOWPOISSON3 = false;
+        _this.SHADOWPCF0 = false;
+        _this.SHADOWPCF1 = false;
+        _this.SHADOWPCF2 = false;
+        _this.SHADOWPCF3 = false;
+        _this.SHADOWPCSS0 = false;
+        _this.SHADOWPCSS1 = false;
+        _this.SHADOWPCSS2 = false;
+        _this.SHADOWPCSS3 = false;
         _this.NORMAL = false;
         _this.UV1 = false;
         _this.UV2 = false;
@@ -201,43 +261,38 @@ var CellMaterialDefines = /** @class */ (function (_super) {
         _this.NUM_BONE_INFLUENCERS = 0;
         _this.BonesPerMesh = 0;
         _this.INSTANCES = false;
-        _this.NDOTL = true;
-        _this.CUSTOMUSERLIGHTING = true;
-        _this.CELLBASIC = true;
-        _this.DEPTHPREPASS = false;
         _this.rebuild();
         return _this;
     }
-    return CellMaterialDefines;
+    return NormalMaterialDefines;
 }(babylonjs_1.MaterialDefines));
-var CellMaterial = /** @class */ (function (_super) {
-    __extends(CellMaterial, _super);
-    function CellMaterial(name, scene) {
+var NormalMaterial = /** @class */ (function (_super) {
+    __extends(NormalMaterial, _super);
+    function NormalMaterial(name, scene) {
         var _this = _super.call(this, name, scene) || this;
         _this.diffuseColor = new babylonjs_1.Color3(1, 1, 1);
-        _this._computeHighLevel = false;
         _this._disableLighting = false;
         _this._maxSimultaneousLights = 4;
         return _this;
     }
-    CellMaterial.prototype.needAlphaBlending = function () {
+    NormalMaterial.prototype.needAlphaBlending = function () {
         return (this.alpha < 1.0);
     };
-    CellMaterial.prototype.needAlphaTesting = function () {
+    NormalMaterial.prototype.needAlphaTesting = function () {
         return false;
     };
-    CellMaterial.prototype.getAlphaTestTexture = function () {
+    NormalMaterial.prototype.getAlphaTestTexture = function () {
         return null;
     };
     // Methods
-    CellMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
+    NormalMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
             if (this._wasPreviouslyReady && subMesh.effect) {
                 return true;
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new CellMaterialDefines();
+            subMesh._materialDefines = new NormalMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -262,8 +317,6 @@ var CellMaterial = /** @class */ (function (_super) {
                 }
             }
         }
-        // High level
-        defines.CELLBASIC = !this.computeHighLevel;
         // Misc.
         babylonjs_1.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
         // Lights
@@ -281,7 +334,7 @@ var CellMaterial = /** @class */ (function (_super) {
             if (defines.FOG) {
                 fallbacks.addFallback(1, "FOG");
             }
-            babylonjs_1.MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this.maxSimultaneousLights);
+            babylonjs_1.MaterialHelper.HandleFallbacksForShadows(defines, fallbacks);
             if (defines.NUM_BONE_INFLUENCERS > 0) {
                 fallbacks.addCPUSkinningFallback(0, mesh);
             }
@@ -301,7 +354,7 @@ var CellMaterial = /** @class */ (function (_super) {
             }
             babylonjs_1.MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
             babylonjs_1.MaterialHelper.PrepareAttributesForInstances(attribs, defines);
-            var shaderName = "cell";
+            var shaderName = "normal";
             var join = defines.toString();
             var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
                 "vFogInfos", "vFogColor", "pointSize",
@@ -316,7 +369,7 @@ var CellMaterial = /** @class */ (function (_super) {
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
                 defines: defines,
-                maxSimultaneousLights: this.maxSimultaneousLights
+                maxSimultaneousLights: 4
             });
             subMesh.setEffect(scene.getEngine().createEffect(shaderName, {
                 attributes: attribs,
@@ -327,7 +380,7 @@ var CellMaterial = /** @class */ (function (_super) {
                 fallbacks: fallbacks,
                 onCompiled: this.onCompiled,
                 onError: this.onError,
-                indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights - 1 }
+                indexParameters: { maxSimultaneousLights: 4 }
             }, engine), defines);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
@@ -337,7 +390,7 @@ var CellMaterial = /** @class */ (function (_super) {
         this._wasPreviouslyReady = true;
         return true;
     };
-    CellMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
+    NormalMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
         var scene = this.getScene();
         var defines = subMesh._materialDefines;
         if (!defines) {
@@ -355,10 +408,10 @@ var CellMaterial = /** @class */ (function (_super) {
         babylonjs_1.MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
         if (this._mustRebind(scene, effect)) {
             // Textures
-            if (this._diffuseTexture && babylonjs_1.StandardMaterial.DiffuseTextureEnabled) {
-                this._activeEffect.setTexture("diffuseSampler", this._diffuseTexture);
-                this._activeEffect.setFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
-                this._activeEffect.setMatrix("diffuseMatrix", this._diffuseTexture.getTextureMatrix());
+            if (this.diffuseTexture && babylonjs_1.StandardMaterial.DiffuseTextureEnabled) {
+                this._activeEffect.setTexture("diffuseSampler", this.diffuseTexture);
+                this._activeEffect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
+                this._activeEffect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
             }
             // Clip plane
             babylonjs_1.MaterialHelper.BindClipPlane(this._activeEffect, scene);
@@ -371,115 +424,93 @@ var CellMaterial = /** @class */ (function (_super) {
         this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
         // Lights
         if (scene.lightsEnabled && !this.disableLighting) {
-            babylonjs_1.MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights);
+            babylonjs_1.MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines);
         }
         // View
         if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== babylonjs_1.Scene.FOGMODE_NONE) {
             this._activeEffect.setMatrix("view", scene.getViewMatrix());
         }
-        console.log("TOTO");
         // Fog
         babylonjs_1.MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
         this._afterBind(mesh, this._activeEffect);
     };
-    CellMaterial.prototype.getAnimatables = function () {
+    NormalMaterial.prototype.getAnimatables = function () {
         var results = [];
-        if (this._diffuseTexture && this._diffuseTexture.animations && this._diffuseTexture.animations.length > 0) {
-            results.push(this._diffuseTexture);
+        if (this.diffuseTexture && this.diffuseTexture.animations && this.diffuseTexture.animations.length > 0) {
+            results.push(this.diffuseTexture);
         }
         return results;
     };
-    CellMaterial.prototype.getActiveTextures = function () {
+    NormalMaterial.prototype.getActiveTextures = function () {
         var activeTextures = _super.prototype.getActiveTextures.call(this);
         if (this._diffuseTexture) {
             activeTextures.push(this._diffuseTexture);
         }
         return activeTextures;
     };
-    CellMaterial.prototype.hasTexture = function (texture) {
+    NormalMaterial.prototype.hasTexture = function (texture) {
         if (_super.prototype.hasTexture.call(this, texture)) {
             return true;
         }
-        return this._diffuseTexture === texture;
+        if (this.diffuseTexture === texture) {
+            return true;
+        }
+        return false;
     };
-    CellMaterial.prototype.dispose = function (forceDisposeEffect) {
-        if (this._diffuseTexture) {
-            this._diffuseTexture.dispose();
+    NormalMaterial.prototype.dispose = function (forceDisposeEffect) {
+        if (this.diffuseTexture) {
+            this.diffuseTexture.dispose();
         }
         _super.prototype.dispose.call(this, forceDisposeEffect);
     };
-    CellMaterial.prototype.getClassName = function () {
-        return "CellMaterial";
-    };
-    CellMaterial.prototype.clone = function (name) {
+    NormalMaterial.prototype.clone = function (name) {
         var _this = this;
-        return babylonjs_1.SerializationHelper.Clone(function () { return new CellMaterial(name, _this.getScene()); }, this);
+        return babylonjs_1.SerializationHelper.Clone(function () { return new NormalMaterial(name, _this.getScene()); }, this);
     };
-    CellMaterial.prototype.serialize = function () {
+    NormalMaterial.prototype.serialize = function () {
         var serializationObject = babylonjs_1.SerializationHelper.Serialize(this);
-        serializationObject.customType = "BABYLON.CellMaterial";
+        serializationObject.customType = "BABYLON.NormalMaterial";
         return serializationObject;
     };
+    NormalMaterial.prototype.getClassName = function () {
+        return "NormalMaterial";
+    };
     // Statics
-    CellMaterial.Parse = function (source, scene, rootUrl) {
-        return babylonjs_1.SerializationHelper.Parse(function () { return new CellMaterial(source.name, scene); }, source, scene, rootUrl);
+    NormalMaterial.Parse = function (source, scene, rootUrl) {
+        return babylonjs_1.SerializationHelper.Parse(function () { return new NormalMaterial(source.name, scene); }, source, scene, rootUrl);
     };
     __decorate([
         babylonjs_1.serializeAsTexture("diffuseTexture")
-    ], CellMaterial.prototype, "_diffuseTexture", void 0);
+    ], NormalMaterial.prototype, "_diffuseTexture", void 0);
     __decorate([
         babylonjs_1.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    ], CellMaterial.prototype, "diffuseTexture", void 0);
+    ], NormalMaterial.prototype, "diffuseTexture", void 0);
     __decorate([
-        babylonjs_1.serializeAsColor3("diffuse")
-    ], CellMaterial.prototype, "diffuseColor", void 0);
-    __decorate([
-        babylonjs_1.serialize("computeHighLevel")
-    ], CellMaterial.prototype, "_computeHighLevel", void 0);
-    __decorate([
-        babylonjs_1.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    ], CellMaterial.prototype, "computeHighLevel", void 0);
+        babylonjs_1.serializeAsColor3()
+    ], NormalMaterial.prototype, "diffuseColor", void 0);
     __decorate([
         babylonjs_1.serialize("disableLighting")
-    ], CellMaterial.prototype, "_disableLighting", void 0);
+    ], NormalMaterial.prototype, "_disableLighting", void 0);
     __decorate([
         babylonjs_1.expandToProperty("_markAllSubMeshesAsLightsDirty")
-    ], CellMaterial.prototype, "disableLighting", void 0);
+    ], NormalMaterial.prototype, "disableLighting", void 0);
     __decorate([
         babylonjs_1.serialize("maxSimultaneousLights")
-    ], CellMaterial.prototype, "_maxSimultaneousLights", void 0);
+    ], NormalMaterial.prototype, "_maxSimultaneousLights", void 0);
     __decorate([
         babylonjs_1.expandToProperty("_markAllSubMeshesAsLightsDirty")
-    ], CellMaterial.prototype, "maxSimultaneousLights", void 0);
-    return CellMaterial;
+    ], NormalMaterial.prototype, "maxSimultaneousLights", void 0);
+    return NormalMaterial;
 }(babylonjs_1.PushMaterial));
-exports.CellMaterial = CellMaterial;
+exports.NormalMaterial = NormalMaterial;
 
 
 /***/ }),
 
-/***/ "../src/cell/index.ts":
-/*!****************************!*\
-  !*** ../src/cell/index.ts ***!
-  \****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./cellMaterial */ "../src/cell/cellMaterial.ts"));
-
-
-/***/ }),
-
-/***/ "./legacy-cell.ts":
-/*!************************!*\
-  !*** ./legacy-cell.ts ***!
-  \************************/
+/***/ "./legacy-normal.ts":
+/*!**************************!*\
+  !*** ./legacy-normal.ts ***!
+  \**************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -489,7 +520,7 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-var MatLib = __webpack_require__(/*! ../src/cell/index */ "../src/cell/index.ts");
+var MatLib = __webpack_require__(/*! ../src/normal/index */ "../src/normal/index.ts");
 /**
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
@@ -500,7 +531,7 @@ if (typeof globalObject !== "undefined") {
         globalObject.BABYLON[key] = MatLib[key];
     }
 }
-__export(__webpack_require__(/*! ../src/cell/index */ "../src/cell/index.ts"));
+__export(__webpack_require__(/*! ../src/normal/index */ "../src/normal/index.ts"));
 
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../../Tools/Gulp/node_modules/webpack/buildin/global.js")))
 
@@ -519,4 +550,4 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs__;
 
 /******/ });
 });
-//# sourceMappingURL=babylon.cellMaterial.js.map
+//# sourceMappingURL=babylon.normalMaterial.js.map
