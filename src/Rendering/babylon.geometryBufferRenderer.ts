@@ -3,10 +3,27 @@ module BABYLON {
      * This renderer is helpfull to fill one of the render target with a geometry buffer.
      */
     export class GeometryBufferRenderer {
+        /**
+         * Constant used to retrieve the position texture index in the G-Buffer textures array
+         * using getIndex(GeometryBufferRenderer.POSITION_TEXTURE_INDEX)
+         */
+        public static readonly POSITION_TEXTURE_TYPE = 1;
+        /**
+         * Constant used to retrieve the velocity texture index in the G-Buffer textures array
+         * using getIndex(GeometryBufferRenderer.VELOCITY_TEXTURE_INDEX)
+         */
+        public static readonly VELOCITY_TEXTURE_TYPE = 2;
+
         private _scene: Scene;
         private _multiRenderTarget: MultiRenderTarget;
         private _ratio: number;
         private _enablePosition: boolean = false;
+        private _enableVelocity: boolean = false;
+
+        private _positionIndex: number = -1;
+        private _velocityIndex: number = -1;
+
+        private _previousWorldMatrices: { [index: string]: Matrix } = { };
 
         protected _effect: Effect;
         protected _cachedDefines: string;
@@ -27,6 +44,19 @@ module BABYLON {
         }
 
         /**
+         * Returns the index of the given texture type in the G-Buffer textures array
+         * @param textureType The texture type constant. For example GeometryBufferRenderer.POSITION_TEXTURE_INDEX
+         * @returns the index of the given texture type in the G-Buffer textures array
+         */
+        public getTextureIndex(textureType: number): number {
+            switch (textureType) {
+                case GeometryBufferRenderer.POSITION_TEXTURE_TYPE: return this._positionIndex;
+                case GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE: return this._velocityIndex;
+                default: return -1;
+            }
+        }
+
+        /**
          * Gets wether or not position are enabled for the G buffer.
          */
         public get enablePosition(): boolean {
@@ -38,6 +68,22 @@ module BABYLON {
          */
         public set enablePosition(enable: boolean) {
             this._enablePosition = enable;
+            this.dispose();
+            this._createRenderTargets();
+        }
+
+        /**
+         * Gets wether or not objects velocities are enabled for the G buffer
+         */
+        public get enableVelocity(): boolean {
+            return this._enableVelocity;
+        }
+
+        /**
+         * Sets wether or not objects velocities are enabled for the G buffer
+         */
+        public set enableVelocity(enable: boolean) {
+            this._enableVelocity = enable;
             this.dispose();
             this._createRenderTargets();
         }
@@ -112,6 +158,12 @@ module BABYLON {
             // Buffers
             if (this._enablePosition) {
                 defines.push("#define POSITION");
+                defines.push("#define POSITION_INDEX " + this._positionIndex);
+            }
+
+            if (this._enableVelocity) {
+                defines.push("#define VELOCITY");
+                defines.push("#define VELOCITY_INDEX " + this._velocityIndex);
             }
 
             // Bones
@@ -137,13 +189,16 @@ module BABYLON {
                 attribs.push("world3");
             }
 
+            // Setup textures count
+            defines.push("#define RENDER_TARGET_COUNT " + this._multiRenderTarget.textures.length);
+
             // Get correct effect
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("geometry",
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "view"],
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorldViewProjection"],
                     ["diffuseSampler"], join,
                     undefined, undefined, undefined,
                     { buffersCount: this._enablePosition ? 3 : 2 });
@@ -183,7 +238,17 @@ module BABYLON {
 
         protected _createRenderTargets(): void {
             var engine = this._scene.getEngine();
-            var count = this._enablePosition ? 3 : 2;
+            var count = 2;
+
+            if (this._enablePosition) {
+                this._positionIndex = count;
+                count++;
+            }
+
+            if (this._enableVelocity) {
+                this._velocityIndex = count;
+                count++;
+            }
 
             this._multiRenderTarget = new MultiRenderTarget("gBuffer",
                 { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene,
@@ -211,6 +276,15 @@ module BABYLON {
 
                 if (!material) {
                     return;
+                }
+
+                // Velocity
+                if (!mesh.id) {
+                    mesh.id = Tools.RandomId();
+                }
+
+                if (!this._previousWorldMatrices[mesh.id]) {
+                    this._previousWorldMatrices[mesh.id] = Matrix.Identity();
                 }
 
                 // Culling
@@ -247,10 +321,16 @@ module BABYLON {
                         this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                     }
 
+                    // Velocity
+                    this._effect.setMatrix("previousWorldViewProjection", this._previousWorldMatrices[mesh.id]);
+
                     // Draw
                     mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
                         (isInstance, world) => this._effect.setMatrix("world", world));
                 }
+
+                // Velocity
+                this._previousWorldMatrices[mesh.id] = mesh.getWorldMatrix().multiply(this._scene.getTransformMatrix());
             };
 
             this._multiRenderTarget.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
