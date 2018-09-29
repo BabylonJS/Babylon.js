@@ -57,6 +57,7 @@
 - Added support for noise procedural textures. [Doc](http://doc.babylonjs.com/how_to/how_to_use_procedural_textures#noise-procedural-texture) ([Deltakosh](https://github.com/deltakosh))
 - Added new `PhotoDome` object to display 360 photos. [Demo](https://www.babylonjs-playground.com/#14KRGG#0) ([SzeyinLee](https://github.com/SzeyinLee))
 - Added Video Recorder. [Doc](https://doc.babylonjs.com/How_To/Render_Scene_on_a_Video) ([sebavan](http://www.github.com/sebavan))
+- Added Object Based Motion Blur post-process ([julien-moreau](https://github.com/julien-moreau))
 
 ## Updates
 
