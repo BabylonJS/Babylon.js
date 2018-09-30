@@ -29,6 +29,12 @@ varying vec4 vViewPos;
 varying vec3 vPosition;
 #endif
 
+#ifdef VELOCITY
+uniform mat4 previousWorldViewProjection;
+varying vec4 vCurrentPosition;
+varying vec4 vPreviousPosition;
+#endif
+
 void main(void)
 {
 #include<instancesVertex>
@@ -41,6 +47,11 @@ void main(void)
 
 	#ifdef POSITION
 	vPosition = pos.xyz / pos.w;
+	#endif
+
+	#ifdef VELOCITY
+	vCurrentPosition = viewProjection * finalWorld * vec4(position, 1.0);
+	vPreviousPosition = previousWorldViewProjection * vec4(position, 1.0);
 	#endif
 
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
