@@ -18,27 +18,29 @@ canvas {
     right: 10px;
     top: 20px;
     cursor: default;
-    color: white;
+    z-index:10;
+    background-color: #7283a0;
+    color:white;
+    padding:5px;
+    font-family: 'Segoe UI';
+    pointer-events: none;
+    user-select: none;
 }
 
-#link {
+.refreshlabel, .editlabel{
     position: absolute;
-    width: 100%;
-    bottom: 10px;
-    cursor: default;
+    left: 0px;
+    cursor: pointer;    
     color: white;
-    text-align: center;
-    left:0;
-    cursor:pointer;
+    background-color: #7283a0;
+    color:white;
+    padding:5px;
+    
 }
 
-#refresh {
-    position: absolute;
-    width: 100%;
-    top: 10px;
-    cursor: default;
-    color: white;
-    text-align: center;
-    left:0;
-    cursor:pointer;
+.refreshlabel {
+    top: 20px;
+}
+.editlabel {
+    top: 75px;
 }
