@@ -1,4 +1,6 @@
 module BABYLON {
+    const depthSortFunction = (p1: DepthSortedParticle, p2: DepthSortedParticle) => p2.sqDistance - p1.sqDistance;
+
     /**
      * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces fo this big mesh.
      *As it is just a mesh, the SPS has all the same properties than any other BJS mesh : not more, not less. It can be scaled, rotated, translated, enlighted, textured, moved, etc.
@@ -96,29 +98,10 @@ module BABYLON {
         private _computeParticleVertex: boolean = false;
         private _computeBoundingBox: boolean = false;
         private _depthSortParticles: boolean = true;
-        private static _cam_axisX = Vector3.Zero();
-        private static _cam_axisY = Vector3.Zero();
-        private static _cam_axisZ = Vector3.Zero();
-        private _axisZ: Vector3 = Axis.Z;
         private _camera: TargetCamera;
-        private _camDir: Vector3 = Vector3.Zero();
-        private _camInvertedPosition: Vector3 = Vector3.Zero();
-        private _rotMatrix: Matrix = new Matrix();
-        private _invertMatrix: Matrix = new Matrix();
-        private static _rotated: Vector3 = Vector3.Zero();
-        private _quaternion: Quaternion = new Quaternion();
-        private static _vertex: Vector3 = Vector3.Zero();
         private _mustUnrotateFixedNormals = false;
-        private static _minimum: Vector3 = Vector3.Zero();
-        private static _maximum: Vector3 = Vector3.Zero();
         private _particlesIntersect: boolean = false;
-        private _depthSortFunction: (p1: DepthSortedParticle, p2: DepthSortedParticle) => number =
-            function(p1, p2) {
-                return (p2.sqDistance - p1.sqDistance);
-            };
         private _needs32Bits: boolean = false;
-        private _pivotBackTranslation: Vector3 = Vector3.Zero();
-        private _scaledPivot: Vector3 = Vector3.Zero();
 
         /**
          * Creates a SPS (Solid Particle System) object.
@@ -317,23 +300,18 @@ module BABYLON {
         private _unrotateFixedNormals() {
             var index = 0;
             var idx = 0;
-            const tmpNormal = SolidParticleSystem._vertex;
+            const tmpNormal = Tmp.Vector3[0];
+            const rotMatrix = Tmp.Matrix[0];
+            const invertedRotMatrix = Tmp.Matrix[1];
             for (var p = 0; p < this.particles.length; p++) {
                 const particle = this.particles[p];
                 const shape = particle._model._shape;
-                if (particle.rotationQuaternion) {
-                    this._quaternion.copyFrom(particle.rotationQuaternion);
-                }
-                else {
-                    const rotation = particle.rotation;
-                    this._quaternionRotationYPR(rotation.y, rotation.x, rotation.z);
-                }
-                this._quaternionToRotationMatrix();
-                this._rotMatrix.invertToRef(this._invertMatrix);
+                particle.getRotationMatrix(rotMatrix);
+                rotMatrix.invertToRef(invertedRotMatrix);
 
                 for (var pt = 0; pt < shape.length; pt++) {
                     idx = index + pt * 3;
-                    Vector3.TransformNormalFromFloatsToRef(this._normals32[idx], this._normals32[idx + 1], this._normals32[idx + 2], this._invertMatrix, tmpNormal);
+                    Vector3.TransformNormalFromFloatsToRef(this._normals32[idx], this._normals32[idx + 1], this._normals32[idx + 2], invertedRotMatrix, tmpNormal);
                     tmpNormal.toArray(this._fixedNormal32, idx);
                 }
                 index = idx + 3;
@@ -366,34 +344,31 @@ module BABYLON {
                 this._mustUnrotateFixedNormals = true;
             }
 
-            if (copy.rotationQuaternion) {
-                this._quaternion.copyFrom(copy.rotationQuaternion);
-            } else {
-                const rotation = copy.rotation;
-                this._quaternionRotationYPR(rotation.y, rotation.x, rotation.z);
-            }
-            this._quaternionToRotationMatrix();
+            const rotMatrix = Tmp.Matrix[0];
+            const tmpVertex = Tmp.Vector3[0];
+            const tmpRotated = Tmp.Vector3[1];
+            const pivotBackTranslation = Tmp.Vector3[2];
+            const scaledPivot  = Tmp.Vector3[3];
+            copy.getRotationMatrix(rotMatrix);
 
-            copy.pivot.multiplyToRef(copy.scaling, this._scaledPivot);
+            copy.pivot.multiplyToRef(copy.scaling, scaledPivot);
 
             if (copy.translateFromPivot) {
-                this._pivotBackTranslation.copyFromFloats(0.0, 0.0, 0.0);
+                pivotBackTranslation.setAll(0.0);
             }
             else {
-                this._pivotBackTranslation.copyFrom(this._scaledPivot);
+                pivotBackTranslation.copyFrom(scaledPivot);
             }
 
-            const tmpVertex = SolidParticleSystem._vertex;
-            const tmpRotated = SolidParticleSystem._rotated;
             for (i = 0; i < shape.length; i++) {
                 tmpVertex.copyFrom(shape[i]);
                 if (options && options.vertexFunction) {
                     options.vertexFunction(copy, tmpVertex, i);
                 }
 
-                tmpVertex.multiplyInPlace(copy.scaling).subtractInPlace(this._scaledPivot);
-                Vector3.TransformCoordinatesToRef(tmpVertex, this._rotMatrix, tmpRotated);
-                tmpRotated.addInPlace(this._pivotBackTranslation).addInPlace(copy.position);
+                tmpVertex.multiplyInPlace(copy.scaling).subtractInPlace(scaledPivot);
+                Vector3.TransformCoordinatesToRef(tmpVertex, rotMatrix, tmpRotated);
+                tmpRotated.addInPlace(pivotBackTranslation).addInPlace(copy.position);
                 positions.push(tmpRotated.x, tmpRotated.y, tmpRotated.z);
                 if (meshUV) {
                     const copyUvs = copy.uvs;
@@ -424,7 +399,7 @@ module BABYLON {
                     tmpVertex.x = meshNor[n];
                     tmpVertex.y = meshNor[n + 1];
                     tmpVertex.z = meshNor[n + 2];
-                    Vector3.TransformNormalToRef(tmpVertex, this._rotMatrix, tmpVertex);
+                    Vector3.TransformNormalToRef(tmpVertex, rotMatrix, tmpVertex);
                     normals.push(tmpVertex.x, tmpVertex.y, tmpVertex.z);
                     n += 3;
                 }
@@ -545,35 +520,34 @@ module BABYLON {
                 particle._model._positionFunction(copy, particle.idx, particle.idxInShape);
             }
 
-            if (copy.rotationQuaternion) {
-                this._quaternion.copyFrom(copy.rotationQuaternion);
-            } else {
-                const rotation = copy.rotation;
-                this._quaternionRotationYPR(rotation.y, rotation.x, rotation.z);
-            }
-            this._quaternionToRotationMatrix();
+            const rotMatrix = Tmp.Matrix[0];
+            const tmpVertex = Tmp.Vector3[0];
+            const tmpRotated = Tmp.Vector3[1];
+            const pivotBackTranslation = Tmp.Vector3[2];
+            const scaledPivot  = Tmp.Vector3[3];
 
-            particle.pivot.multiplyToRef(particle.scaling, this._scaledPivot);
+            copy.getRotationMatrix(rotMatrix);
+
+            particle.pivot.multiplyToRef(particle.scaling, scaledPivot);
 
             if (copy.translateFromPivot) {
-                this._pivotBackTranslation.copyFromFloats(0.0, 0.0, 0.0);
+                pivotBackTranslation.copyFromFloats(0.0, 0.0, 0.0);
             }
             else {
-                this._pivotBackTranslation.copyFrom(this._scaledPivot);
+                pivotBackTranslation.copyFrom(scaledPivot);
             }
 
             const shape = particle._model._shape;
-            const tmpVertex = SolidParticleSystem._vertex;
-            const tmpRotated = SolidParticleSystem._rotated;
+
             for (var pt = 0; pt < shape.length; pt++) {
                 tmpVertex.copyFrom(shape[pt]);
                 if (particle._model._vertexFunction) {
                     particle._model._vertexFunction(copy, tmpVertex, pt); // recall to stored vertexFunction
                 }
 
-                tmpVertex.multiplyInPlace(copy.scaling).subtractInPlace(this._scaledPivot);
-                Vector3.TransformCoordinatesToRef(tmpVertex, this._rotMatrix, tmpRotated);
-                tmpRotated.addInPlace(this._pivotBackTranslation).addInPlace(copy.position).toArray(this._positions32, particle._pos + pt * 3);
+                tmpVertex.multiplyInPlace(copy.scaling).subtractInPlace(scaledPivot);
+                Vector3.TransformCoordinatesToRef(tmpVertex, rotMatrix, tmpRotated);
+                tmpRotated.addInPlace(pivotBackTranslation).addInPlace(copy.position).toArray(this._positions32, particle._pos + pt * 3);
             }
             particle.position.setAll(0.0);
             particle.rotation.setAll(0.0);
@@ -614,26 +588,40 @@ module BABYLON {
             // custom beforeUpdate
             this.beforeUpdateParticles(start, end, update);
 
-            const camAxisX = SolidParticleSystem._cam_axisX.copyFromFloats(1.0, 0.0, 0.0);
-            const camAxisY = SolidParticleSystem._cam_axisY.copyFromFloats(0.0, 1.0, 0.0);
-            const camAxisZ = SolidParticleSystem._cam_axisZ.copyFromFloats(0.0, 0.0, 1.0);
-            const minimum = SolidParticleSystem._minimum;
-            const maximum = SolidParticleSystem._maximum;
+            const rotMatrix = Tmp.Matrix[0];
+            const invertedMatrix = Tmp.Matrix[1];
+            const mesh = this.mesh;
+            const colors32 = this._colors32;
+            const positions32 = this._positions32;
+            const normals32 = this._normals32;
+            const uvs32 = this._uvs32;
+            const indices32 = this._indices32;
+            const indices = this._indices;
+            const fixedNormal32 = this._fixedNormal32;
+
+            const tempVectors = Tmp.Vector3;
+            const camAxisX = tempVectors[5].copyFromFloats(1.0, 0.0, 0.0);
+            const camAxisY = tempVectors[6].copyFromFloats(0.0, 1.0, 0.0);
+            const camAxisZ = tempVectors[7].copyFromFloats(0.0, 0.0, 1.0);
+            const minimum = tempVectors[8].setAll(Number.MAX_VALUE);
+            const maximum = tempVectors[9].setAll(-Number.MAX_VALUE);
+            const camInvertedPosition = tempVectors[10].setAll(0);
 
             // cases when the World Matrix is to be computed first
             if (this.billboard || this._depthSort) {
                 this.mesh.computeWorldMatrix(true);
-                this.mesh._worldMatrix.invertToRef(this._invertMatrix);
+                this.mesh._worldMatrix.invertToRef(invertedMatrix);
             }
             // if the particles will always face the camera
             if (this.billboard) {
                 // compute the camera position and un-rotate it by the current mesh rotation
-                this._camera.getDirectionToRef(this._axisZ, this._camDir);
-                Vector3.TransformNormalToRef(this._camDir, this._invertMatrix, camAxisZ);
+                const tmpVertex = tempVectors[0];
+                this._camera.getDirectionToRef(Axis.Z, tmpVertex);
+                Vector3.TransformNormalToRef(tmpVertex, invertedMatrix, camAxisZ);
                 camAxisZ.normalize();
                 // same for camera up vector extracted from the cam view matrix
                 var view = this._camera.getViewMatrix(true);
-                Vector3.TransformNormalFromFloatsToRef(view.m[1], view.m[5], view.m[9], this._invertMatrix, camAxisY);
+                Vector3.TransformNormalFromFloatsToRef(view.m[1], view.m[5], view.m[9], invertedMatrix, camAxisY);
                 Vector3.CrossToRef(camAxisY, camAxisZ, camAxisX);
                 camAxisY.normalize();
                 camAxisX.normalize();
@@ -641,10 +629,10 @@ module BABYLON {
 
             // if depthSort, compute the camera global position in the mesh local system
             if (this._depthSort) {
-                Vector3.TransformCoordinatesToRef(this._camera.globalPosition, this._invertMatrix, this._camInvertedPosition); // then un-rotate the camera
+                Vector3.TransformCoordinatesToRef(this._camera.globalPosition, invertedMatrix, camInvertedPosition); // then un-rotate the camera
             }
 
-            Matrix.IdentityToRef(this._rotMatrix);
+            Matrix.IdentityToRef(rotMatrix);
             var idx = 0;            // current position index in the global array positions32
             var index = 0;          // position start index in the global array positions32 of the current particle
             var colidx = 0;         // current color index in the global array colors32
@@ -659,62 +647,41 @@ module BABYLON {
 
             end = (end >= this.nbParticles) ? this.nbParticles - 1 : end;
             if (this._computeBoundingBox) {
-                if (start == 0 && end == this.nbParticles - 1) {        // all the particles are updated, then recompute the BBox from scratch
-                    minimum.setAll(Number.MAX_VALUE);
-                    maximum.setAll(-Number.MAX_VALUE);
-                }
-                else {      // only some particles are updated, then use the current existing BBox basis. Note : it can only increase.
+                if (start != 0 || end != this.nbParticles - 1) { // only some particles are updated, then use the current existing BBox basis. Note : it can only increase.
                     const boundingInfo = this.mesh._boundingInfo;
                     if (boundingInfo) {
                         minimum.copyFrom(boundingInfo.minimum);
                         maximum.copyFrom(boundingInfo.maximum);
-                    }
-                    else {
-                        minimum.setAll(Number.MAX_VALUE);
-                        maximum.setAll(-Number.MAX_VALUE);
                     }
                 }
             }
 
             // particle loop
             index = this.particles[start]._pos;
-            var vpos = (index / 3) | 0;
+            const vpos = (index / 3) | 0;
             colorIndex = vpos * 4;
             uvIndex = vpos * 2;
 
-            const rotMatrixValues = this._rotMatrix.m;
-            const scaledPivot = this._scaledPivot;
-            const pivotBackTranslation = this._pivotBackTranslation;
-            const tmpVertex = SolidParticleSystem._vertex;
-            const mesh = this.mesh;
-            const colors32 = this._colors32;
-            const positions32 = this._positions32;
-            const normals32 = this._normals32;
-            const uvs32 = this._uvs32;
-            const indices32 = this._indices32;
-            const indices = this._indices;
-            const fixedNormal32 = this._fixedNormal32;
-
             for (var p = start; p <= end; p++) {
                 const particle = this.particles[p];
-                const shape = particle._model._shape;
-                const shapeUV = particle._model._shapeUV;
-
-                const rotationMatrix = particle._rotationMatrix;
-                const position = particle.position;
-                const rotation = particle.rotation;
-                const globalPosition = particle._globalPosition;
-                const scaling = particle.scaling;
 
                 // call to custom user function to update the particle properties
                 this.updateParticle(particle);
+
+                const shape = particle._model._shape;
+                const shapeUV = particle._model._shapeUV;
+                const particleRotationMatrix = particle._rotationMatrix;
+                const particlePosition = particle.position;
+                const particleRotation = particle.rotation;
+                const particleScaling = particle.scaling;
+                const particleGlobalPosition = particle._globalPosition;
 
                 // camera-particle distance for depth sorting
                 if (this._depthSort && this._depthSortParticles) {
                     var dsp = this.depthSortedParticles[p];
                     dsp.ind = particle._ind;
                     dsp.indicesLength = particle._model._indicesLength;
-                    dsp.sqDistance = Vector3.DistanceSquared(particle.position, this._camInvertedPosition);
+                    dsp.sqDistance = Vector3.DistanceSquared(particle.position, camInvertedPosition);
                 }
 
                 // skip the computations for inactive or already invisible particles
@@ -730,99 +697,100 @@ module BABYLON {
                 if (particle.isVisible) {
                     particle._stillInvisible = false; // un-mark permanent invisibility
 
-                    particle.pivot.multiplyToRef(scaling, scaledPivot);
+                    const scaledPivot = tempVectors[12];
+                    particle.pivot.multiplyToRef(particleScaling, scaledPivot);
 
                     // particle rotation matrix
                     if (this.billboard) {
-                        rotation.x = 0.0;
-                        rotation.y = 0.0;
+                        particleRotation.x = 0.0;
+                        particleRotation.y = 0.0;
                     }
                     if (this._computeParticleRotation || this.billboard) {
-                        if (particle.rotationQuaternion) {
-                            this._quaternion.copyFrom(particle.rotationQuaternion);
-                        } else {
-                            this._quaternionRotationYPR(rotation.y, rotation.x, rotation.z);
-                        }
-                        this._quaternionToRotationMatrix();
+                        particle.getRotationMatrix(rotMatrix);
                     }
 
                     const particleHasParent = (particle.parentId !== null);
                     if (particleHasParent) {
                         const parent = this.particles[particle.parentId!];
-                        const parentRotMatrix = parent._rotationMatrix;
+                        const parentRotationMatrix = parent._rotationMatrix;
                         const parentGlobalPosition = parent._globalPosition;
 
-                        const rotatedY = position.x * parentRotMatrix[1] + position.y * parentRotMatrix[4] + position.z * parentRotMatrix[7];
-                        const rotatedX = position.x * parentRotMatrix[0] + position.y * parentRotMatrix[3] + position.z * parentRotMatrix[6];
-                        const rotatedZ = position.x * parentRotMatrix[2] + position.y * parentRotMatrix[5] + position.z * parentRotMatrix[8];
+                        const rotatedY = particlePosition.x * parentRotationMatrix[1] + particlePosition.y * parentRotationMatrix[4] + particlePosition.z * parentRotationMatrix[7];
+                        const rotatedX = particlePosition.x * parentRotationMatrix[0] + particlePosition.y * parentRotationMatrix[3] + particlePosition.z * parentRotationMatrix[6];
+                        const rotatedZ = particlePosition.x * parentRotationMatrix[2] + particlePosition.y * parentRotationMatrix[5] + particlePosition.z * parentRotationMatrix[8];
 
-                        globalPosition.x = parentGlobalPosition.x + rotatedX;
-                        globalPosition.y = parentGlobalPosition.y + rotatedY;
-                        globalPosition.z = parentGlobalPosition.z + rotatedZ;
+                        particleGlobalPosition.x = parentGlobalPosition.x + rotatedX;
+                        particleGlobalPosition.y = parentGlobalPosition.y + rotatedY;
+                        particleGlobalPosition.z = parentGlobalPosition.z + rotatedZ;
 
                         if (this._computeParticleRotation || this.billboard) {
-                            rotationMatrix[0] = rotMatrixValues[0] * parentRotMatrix[0] + rotMatrixValues[1] * parentRotMatrix[3] + rotMatrixValues[2] * parentRotMatrix[6];
-                            rotationMatrix[1] = rotMatrixValues[0] * parentRotMatrix[1] + rotMatrixValues[1] * parentRotMatrix[4] + rotMatrixValues[2] * parentRotMatrix[7];
-                            rotationMatrix[2] = rotMatrixValues[0] * parentRotMatrix[2] + rotMatrixValues[1] * parentRotMatrix[5] + rotMatrixValues[2] * parentRotMatrix[8];
-                            rotationMatrix[3] = rotMatrixValues[4] * parentRotMatrix[0] + rotMatrixValues[5] * parentRotMatrix[3] + rotMatrixValues[6] * parentRotMatrix[6];
-                            rotationMatrix[4] = rotMatrixValues[4] * parentRotMatrix[1] + rotMatrixValues[5] * parentRotMatrix[4] + rotMatrixValues[6] * parentRotMatrix[7];
-                            rotationMatrix[5] = rotMatrixValues[4] * parentRotMatrix[2] + rotMatrixValues[5] * parentRotMatrix[5] + rotMatrixValues[6] * parentRotMatrix[8];
-                            rotationMatrix[6] = rotMatrixValues[8] * parentRotMatrix[0] + rotMatrixValues[9] * parentRotMatrix[3] + rotMatrixValues[10] * parentRotMatrix[6];
-                            rotationMatrix[7] = rotMatrixValues[8] * parentRotMatrix[1] + rotMatrixValues[9] * parentRotMatrix[4] + rotMatrixValues[10] * parentRotMatrix[7];
-                            rotationMatrix[8] = rotMatrixValues[8] * parentRotMatrix[2] + rotMatrixValues[9] * parentRotMatrix[5] + rotMatrixValues[10] * parentRotMatrix[8];
+                            const rotMatrixValues = rotMatrix.m;
+                            particleRotationMatrix[0] = rotMatrixValues[0] * parentRotationMatrix[0] + rotMatrixValues[1] * parentRotationMatrix[3] + rotMatrixValues[2] * parentRotationMatrix[6];
+                            particleRotationMatrix[1] = rotMatrixValues[0] * parentRotationMatrix[1] + rotMatrixValues[1] * parentRotationMatrix[4] + rotMatrixValues[2] * parentRotationMatrix[7];
+                            particleRotationMatrix[2] = rotMatrixValues[0] * parentRotationMatrix[2] + rotMatrixValues[1] * parentRotationMatrix[5] + rotMatrixValues[2] * parentRotationMatrix[8];
+                            particleRotationMatrix[3] = rotMatrixValues[4] * parentRotationMatrix[0] + rotMatrixValues[5] * parentRotationMatrix[3] + rotMatrixValues[6] * parentRotationMatrix[6];
+                            particleRotationMatrix[4] = rotMatrixValues[4] * parentRotationMatrix[1] + rotMatrixValues[5] * parentRotationMatrix[4] + rotMatrixValues[6] * parentRotationMatrix[7];
+                            particleRotationMatrix[5] = rotMatrixValues[4] * parentRotationMatrix[2] + rotMatrixValues[5] * parentRotationMatrix[5] + rotMatrixValues[6] * parentRotationMatrix[8];
+                            particleRotationMatrix[6] = rotMatrixValues[8] * parentRotationMatrix[0] + rotMatrixValues[9] * parentRotationMatrix[3] + rotMatrixValues[10] * parentRotationMatrix[6];
+                            particleRotationMatrix[7] = rotMatrixValues[8] * parentRotationMatrix[1] + rotMatrixValues[9] * parentRotationMatrix[4] + rotMatrixValues[10] * parentRotationMatrix[7];
+                            particleRotationMatrix[8] = rotMatrixValues[8] * parentRotationMatrix[2] + rotMatrixValues[9] * parentRotationMatrix[5] + rotMatrixValues[10] * parentRotationMatrix[8];
                         }
                     }
                     else {
-                        globalPosition.x = position.x;
-                        globalPosition.y = position.y;
-                        globalPosition.z = position.z;
+                        particleGlobalPosition.x = particlePosition.x;
+                        particleGlobalPosition.y = particlePosition.y;
+                        particleGlobalPosition.z = particlePosition.z;
 
                         if (this._computeParticleRotation || this.billboard) {
-                            rotationMatrix[0] = rotMatrixValues[0];
-                            rotationMatrix[1] = rotMatrixValues[1];
-                            rotationMatrix[2] = rotMatrixValues[2];
-                            rotationMatrix[3] = rotMatrixValues[4];
-                            rotationMatrix[4] = rotMatrixValues[5];
-                            rotationMatrix[5] = rotMatrixValues[6];
-                            rotationMatrix[6] = rotMatrixValues[8];
-                            rotationMatrix[7] = rotMatrixValues[9];
-                            rotationMatrix[8] = rotMatrixValues[10];
+                            const rotMatrixValues = rotMatrix.m;
+                            particleRotationMatrix[0] = rotMatrixValues[0];
+                            particleRotationMatrix[1] = rotMatrixValues[1];
+                            particleRotationMatrix[2] = rotMatrixValues[2];
+                            particleRotationMatrix[3] = rotMatrixValues[4];
+                            particleRotationMatrix[4] = rotMatrixValues[5];
+                            particleRotationMatrix[5] = rotMatrixValues[6];
+                            particleRotationMatrix[6] = rotMatrixValues[8];
+                            particleRotationMatrix[7] = rotMatrixValues[9];
+                            particleRotationMatrix[8] = rotMatrixValues[10];
                         }
                     }
 
+                    const pivotBackTranslation = tempVectors[11];
                     if (particle.translateFromPivot) {
-                        this._pivotBackTranslation.setAll(0.0);
+                        pivotBackTranslation.setAll(0.0);
                     }
                     else {
-                        this._pivotBackTranslation.copyFrom(scaledPivot);
+                        pivotBackTranslation.copyFrom(scaledPivot);
                     }
+
                     // particle vertex loop
                     for (pt = 0; pt < shape.length; pt++) {
                         idx = index + pt * 3;
                         colidx = colorIndex + pt * 4;
                         uvidx = uvIndex + pt * 2;
 
+                        const tmpVertex = tempVectors[0];
                         tmpVertex.copyFrom(shape[pt]);
                         if (this._computeParticleVertex) {
                             this.updateParticleVertex(particle, tmpVertex, pt);
                         }
 
                         // positions
-                        const vertexX = tmpVertex.x * scaling.x - scaledPivot.x;
-                        const vertexY = tmpVertex.y * scaling.y - scaledPivot.y;
-                        const vertexZ = tmpVertex.z * scaling.z - scaledPivot.z;
+                        const vertexX = tmpVertex.x * particleScaling.x - scaledPivot.x;
+                        const vertexY = tmpVertex.y * particleScaling.y - scaledPivot.y;
+                        const vertexZ = tmpVertex.z * particleScaling.z - scaledPivot.z;
 
-                        let rotatedX = vertexX * rotationMatrix[0] + vertexY * rotationMatrix[3] + vertexZ * rotationMatrix[6];
-                        let rotatedY = vertexX * rotationMatrix[1] + vertexY * rotationMatrix[4] + vertexZ * rotationMatrix[7];
-                        let rotatedZ = vertexX * rotationMatrix[2] + vertexY * rotationMatrix[5] + vertexZ * rotationMatrix[8];
+                        let rotatedX = vertexX * particleRotationMatrix[0] + vertexY * particleRotationMatrix[3] + vertexZ * particleRotationMatrix[6];
+                        let rotatedY = vertexX * particleRotationMatrix[1] + vertexY * particleRotationMatrix[4] + vertexZ * particleRotationMatrix[7];
+                        let rotatedZ = vertexX * particleRotationMatrix[2] + vertexY * particleRotationMatrix[5] + vertexZ * particleRotationMatrix[8];
 
                         rotatedX += pivotBackTranslation.x;
                         rotatedY += pivotBackTranslation.y;
                         rotatedZ += pivotBackTranslation.z;
 
-                        const px = positions32[idx] = globalPosition.x + camAxisX.x * rotatedX + camAxisY.x * rotatedY + camAxisZ.x * rotatedZ;
-                        const py = positions32[idx + 1] = globalPosition.y + camAxisX.y * rotatedX + camAxisY.y * rotatedY + camAxisZ.y * rotatedZ;
-                        const pz = positions32[idx + 2] = globalPosition.z + camAxisX.z * rotatedX + camAxisY.z * rotatedY + camAxisZ.z * rotatedZ;
+                        const px = positions32[idx] = particleGlobalPosition.x + camAxisX.x * rotatedX + camAxisY.x * rotatedY + camAxisZ.x * rotatedZ;
+                        const py = positions32[idx + 1] = particleGlobalPosition.y + camAxisX.y * rotatedX + camAxisY.y * rotatedY + camAxisZ.y * rotatedZ;
+                        const pz = positions32[idx + 2] = particleGlobalPosition.z + camAxisX.z * rotatedX + camAxisY.z * rotatedY + camAxisZ.z * rotatedZ;
 
                         if (this._computeBoundingBox) {
                             minimum.minimizeInPlaceFromFloats(px, py, pz);
@@ -835,9 +803,9 @@ module BABYLON {
                             const normaly = fixedNormal32[idx + 1];
                             const normalz = fixedNormal32[idx + 2];
 
-                            const rotatedx = normalx * rotationMatrix[0] + normaly * rotationMatrix[3] + normalz * rotationMatrix[6];
-                            const rotatedy = normalx * rotationMatrix[1] + normaly * rotationMatrix[4] + normalz * rotationMatrix[7];
-                            const rotatedz = normalx * rotationMatrix[2] + normaly * rotationMatrix[5] + normalz * rotationMatrix[8];
+                            const rotatedx = normalx * particleRotationMatrix[0] + normaly * particleRotationMatrix[3] + normalz * particleRotationMatrix[6];
+                            const rotatedy = normalx * particleRotationMatrix[1] + normaly * particleRotationMatrix[4] + normalz * particleRotationMatrix[7];
+                            const rotatedz = normalx * particleRotationMatrix[2] + normaly * particleRotationMatrix[5] + normalz * particleRotationMatrix[8];
 
                             normals32[idx] = camAxisX.x * rotatedx + camAxisY.x * rotatedy + camAxisZ.x * rotatedz;
                             normals32[idx + 1] = camAxisX.y * rotatedx + camAxisY.y * rotatedy + camAxisZ.y * rotatedz;
@@ -898,35 +866,37 @@ module BABYLON {
                     if (!this._bSphereOnly) {
                         // place, scale and rotate the particle bbox within the SPS local system, then update it
                         const modelBoundingInfoVectors = modelBoundingInfo.boundingBox.vectors;
-                        const min = Tmp.Vector3[0];
-                        const max = Tmp.Vector3[1];
-                        min.setAll(Number.MAX_VALUE);
-                        max.setAll(-Number.MAX_VALUE);
+
+                        const tempMin = tempVectors[1];
+                        const tempMax = tempVectors[2];
+                        tempMin.setAll(Number.MAX_VALUE);
+                        tempMax.setAll(-Number.MAX_VALUE);
                         for (var b = 0; b < 8; b++) {
-                            const vertexX = modelBoundingInfoVectors[b].x * scaling.x;
-                            const vertexY = modelBoundingInfoVectors[b].y * scaling.y;
-                            const vertexZ = modelBoundingInfoVectors[b].z * scaling.z;
-                            const rotatedX = vertexX * rotationMatrix[0] + vertexY * rotationMatrix[3] + vertexZ * rotationMatrix[6];
-                            const rotatedY = vertexX * rotationMatrix[1] + vertexY * rotationMatrix[4] + vertexZ * rotationMatrix[7];
-                            const rotatedZ = vertexX * rotationMatrix[2] + vertexY * rotationMatrix[5] + vertexZ * rotationMatrix[8];
-                            const x = position.x + camAxisX.x * rotatedX + camAxisY.x * rotatedY + camAxisZ.x * rotatedZ;
-                            const y = position.y + camAxisX.y * rotatedX + camAxisY.y * rotatedY + camAxisZ.y * rotatedZ;
-                            const z = position.z + camAxisX.z * rotatedX + camAxisY.z * rotatedY + camAxisZ.z * rotatedZ;
-                            min.minimizeInPlaceFromFloats(x, y, z);
-                            max.maximizeInPlaceFromFloats(x, y, z);
+                            const scaledX = modelBoundingInfoVectors[b].x * particleScaling.x;
+                            const scaledY = modelBoundingInfoVectors[b].y * particleScaling.y;
+                            const scaledZ = modelBoundingInfoVectors[b].z * particleScaling.z;
+                            const rotatedX = scaledX * particleRotationMatrix[0] + scaledY * particleRotationMatrix[3] + scaledZ * particleRotationMatrix[6];
+                            const rotatedY = scaledX * particleRotationMatrix[1] + scaledY * particleRotationMatrix[4] + scaledZ * particleRotationMatrix[7];
+                            const rotatedZ = scaledX * particleRotationMatrix[2] + scaledY * particleRotationMatrix[5] + scaledZ * particleRotationMatrix[8];
+                            const x = particlePosition.x + camAxisX.x * rotatedX + camAxisY.x * rotatedY + camAxisZ.x * rotatedZ;
+                            const y = particlePosition.y + camAxisX.y * rotatedX + camAxisY.y * rotatedY + camAxisZ.y * rotatedZ;
+                            const z = particlePosition.z + camAxisX.z * rotatedX + camAxisY.z * rotatedY + camAxisZ.z * rotatedZ;
+                            tempMin.minimizeInPlaceFromFloats(x, y, z);
+                            tempMax.maximizeInPlaceFromFloats(x, y, z);
                         }
 
-                        bBox.reConstruct(min, max, mesh._worldMatrix);
+                        bBox.reConstruct(tempMin, tempMax, mesh._worldMatrix);
                     }
-                    // place and scale the particle bouding sphere in the SPS local system, then update it
-                    const minBbox = modelBoundingInfo.minimum.multiplyToRef(scaling, Tmp.Vector3[0]);
-                    const maxBbox = modelBoundingInfo.maximum.multiplyToRef(scaling, Tmp.Vector3[1]);
 
-                    const center = maxBbox.addToRef(minBbox, Tmp.Vector3[2]).scaleInPlace(0.5);
-                    const halfDiag  = maxBbox.subtractToRef(minBbox, Tmp.Vector3[3]).scaleInPlace(0.5 * this._bSphereRadiusFactor);
-                    const sphereMinBbox = center.subtractToRef(halfDiag, Tmp.Vector3[4]);
-                    const sphereMaxBbox = center.addToRef(halfDiag, Tmp.Vector3[5]);
-                    bSphere.reConstruct(sphereMinBbox, sphereMaxBbox, mesh._worldMatrix);
+                    // place and scale the particle bouding sphere in the SPS local system, then update it
+                    const minBbox = modelBoundingInfo.minimum.multiplyToRef(particleScaling, tempVectors[1]);
+                    const maxBbox = modelBoundingInfo.maximum.multiplyToRef(particleScaling, tempVectors[2]);
+
+                    const bSphereCenter = maxBbox.addToRef(minBbox, tempVectors[3]).scaleInPlace(0.5);
+                    const halfDiag = maxBbox.subtractToRef(minBbox, tempVectors[4]).scaleInPlace(0.5 * this._bSphereRadiusFactor);
+                    const bSphereMinBbox = bSphereCenter.subtractToRef(halfDiag, tempVectors[1]);
+                    const bSphereMaxBbox = bSphereCenter.addToRef(halfDiag, tempVectors[2]);
+                    bSphere.reConstruct(bSphereMinBbox, bSphereMaxBbox, mesh._worldMatrix);
                 }
 
                 // increment indexes for the next particle
@@ -959,15 +929,12 @@ module BABYLON {
                 }
                 if (this._depthSort && this._depthSortParticles) {
                     const depthSortedParticles = this.depthSortedParticles;
-                    depthSortedParticles.sort(this._depthSortFunction);
-                    var dspl = depthSortedParticles.length;
-                    var sorted = 0;
-                    var lind = 0;
-                    var sind = 0;
-                    var sid = 0;
-                    for (sorted = 0; sorted < dspl; sorted++) {
-                        lind = depthSortedParticles[sorted].indicesLength;
-                        sind = depthSortedParticles[sorted].ind;
+                    depthSortedParticles.sort(depthSortFunction);
+                    const dspl = depthSortedParticles.length;
+                    let sid = 0;
+                    for (let sorted = 0; sorted < dspl; sorted++) {
+                        const lind = depthSortedParticles[sorted].indicesLength;
+                        const sind = depthSortedParticles[sorted].ind;
                         for (var i = 0; i < lind; i++) {
                             indices32[sid] = indices[sind + i];
                             sid++;
@@ -986,43 +953,6 @@ module BABYLON {
             }
             this.afterUpdateParticles(start, end, update);
             return this;
-        }
-
-        private _quaternionRotationYPR(yaw: number, pitch: number, roll: number): void {
-            const halfroll = roll * 0.5;
-            const halfpitch = pitch * 0.5;
-            const halfyaw = yaw * 0.5;
-            const sinRoll = Math.sin(halfroll);
-            const cosRoll = Math.cos(halfroll);
-            const sinPitch = Math.sin(halfpitch);
-            const cosPitch = Math.cos(halfpitch);
-            const sinYaw = Math.sin(halfyaw);
-            const cosYaw = Math.cos(halfyaw);
-            this._quaternion.x = cosYaw * sinPitch * cosRoll + sinYaw * cosPitch * sinRoll;
-            this._quaternion.y = sinYaw * cosPitch * cosRoll - cosYaw * sinPitch * sinRoll;
-            this._quaternion.z = cosYaw * cosPitch * sinRoll - sinYaw * sinPitch * cosRoll;
-            this._quaternion.w = cosYaw * cosPitch * cosRoll + sinYaw * sinPitch * sinRoll;
-        }
-
-        private _quaternionToRotationMatrix(): void {
-            const rotMatrixValues = this._rotMatrix.m;
-            const x = this._quaternion.x, y = this._quaternion.y, z = this._quaternion.z, w = this._quaternion.w;
-            rotMatrixValues[0] = 1.0 - (2.0 * (y * y + z * z));
-            rotMatrixValues[1] = 2.0 * (x * y + z * w);
-            rotMatrixValues[2] = 2.0 * (z * x - y * w);
-            rotMatrixValues[3] = 0;
-            rotMatrixValues[4] = 2.0 * (x * y - z * w);
-            rotMatrixValues[5] = 1.0 - (2.0 * (z * z + x * x));
-            rotMatrixValues[6] = 2.0 * (y * z + x * w);
-            rotMatrixValues[7] = 0;
-            rotMatrixValues[8] = 2.0 * (z * x + y * w);
-            rotMatrixValues[9] = 2.0 * (y * z - x * w);
-            rotMatrixValues[10] = 1.0 - (2.0 * (y * y + x * x));
-            rotMatrixValues[11] = 0;
-            rotMatrixValues[12] = 0;
-            rotMatrixValues[13] = 0;
-            rotMatrixValues[14] = 0;
-            rotMatrixValues[15] = 1.0;
         }
 
         /**

@@ -172,6 +172,24 @@ module BABYLON {
             }
             return this._boundingInfo.intersects(target._boundingInfo, false);
         }
+
+        /**
+         * get the rotation matrix of the particle
+         * @hidden
+         */
+        public getRotationMatrix(m : Matrix) {
+            let quaternion: Quaternion;
+            if (this.rotationQuaternion) {
+                quaternion = this.rotationQuaternion;
+            }
+            else {
+                quaternion = Tmp.Quaternion[0];
+                const rotation = this.rotation;
+                Quaternion.RotationYawPitchRollToRef(rotation.y, rotation.x, rotation.z, quaternion);
+            }
+
+            quaternion.toRotationMatrix(m);
+        }
     }
 
     /**
