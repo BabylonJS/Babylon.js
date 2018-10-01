@@ -1,5 +1,8 @@
 /// <reference path="../../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"/>
 
+/**
+ * @hidden
+ */
 module BABYLON.GLTF2.Exporter {
     /**
      * Utility interface for storing vertex attribute data
@@ -1287,7 +1290,7 @@ module BABYLON.GLTF2.Exporter {
          * @returns Node mapping of unique id to index
          */
         private createNodeMapAndAnimationsAsync(babylonScene: Scene, nodes: TransformNode[], shouldExportTransformNode: (babylonTransformNode: TransformNode) => boolean, binaryWriter: _BinaryWriter): Promise<{ [key: number]: number }> {
-            let promiseChain =  Promise.resolve();
+            let promiseChain = Promise.resolve();
             const nodeMap: { [key: number]: number } = {};
             let nodeIndex: number;
             let runtimeGLTFAnimation: IAnimation = {
@@ -1300,7 +1303,7 @@ module BABYLON.GLTF2.Exporter {
             for (let babylonTransformNode of nodes) {
                 if (shouldExportTransformNode(babylonTransformNode)) {
                     promiseChain = promiseChain.then(() => {
-                        return  this.createNodeAsync(babylonTransformNode, binaryWriter).then((node) => {
+                        return this.createNodeAsync(babylonTransformNode, binaryWriter).then((node) => {
                             const directDescendents = babylonTransformNode.getDescendants(true, (node: Node) => { return (node instanceof TransformNode); });
                             if (directDescendents.length || node.mesh != null) {
                                 this._nodes.push(node);
