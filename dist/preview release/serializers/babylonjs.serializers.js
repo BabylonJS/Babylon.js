@@ -230,6 +230,9 @@ var BABYLON;
 //# sourceMappingURL=babylon.glTFSerializer.js.map
 
 
+/**
+ * @hidden
+ */
 var BABYLON;
 (function (BABYLON) {
     var GLTF2;

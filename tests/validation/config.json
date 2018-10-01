@@ -2,12 +2,6 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
-      "title": "Noise texture",
-      "playgroundId": "#R1JWLA#4",
-      "referenceImage": "noiseTexture.png",
-      "excludeFromAutomaticTesting": true
-    },
-    {
       "title": "Simulate pointer",
       "playgroundId": "#8MGKWK#78",
       "referenceImage": "simulatePointer.png"
