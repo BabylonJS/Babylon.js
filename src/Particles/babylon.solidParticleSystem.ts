@@ -836,12 +836,8 @@ module BABYLON {
                         colidx = colorIndex + pt * 4;
                         uvidx = uvIndex + pt * 2;
 
-                        positions32[idx] = 0.0;
-                        positions32[idx + 1] = 0.0;
-                        positions32[idx + 2] = 0.0;
-                        normals32[idx] = 0.0;
-                        normals32[idx + 1] = 0.0;
-                        normals32[idx + 2] = 0.0;
+                        positions32[idx] = positions32[idx + 1] = positions32[idx + 2] = 0;
+                        normals32[idx] = normals32[idx + 1] = normals32[idx + 2] = 0;
                         if (this._computeParticleColor && particle.color) {
                             const color = particle.color;
                             colors32[colidx] = color.r;
