@@ -4,7 +4,7 @@
     var engine;
     var fpsLabel = document.getElementById("fpsLabel");
     var refreshAnchor = document.getElementById("refresh");
-    var linkAnchor = document.getElementById("link");
+    var editAnchor = document.getElementById("edit");
     var scripts;
     var zipCode;
 
@@ -13,8 +13,8 @@
         fpsLabel.style.display = "none";
         refreshAnchor.style.visibility = "hidden";
         refreshAnchor.style.display = "none";
-        linkAnchor.style.visibility = "hidden";
-        linkAnchor.style.display = "none";
+        editAnchor.style.visibility = "hidden";
+        editAnchor.style.display = "none";
     }
 
     BABYLON.Engine.ShadersRepository = "/src/Shaders/";
@@ -191,10 +191,10 @@
                 xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
                 xmlHttp.send();
 
-                var link = document.getElementById("link");
+                var edit = document.getElementById("edit");
 
-                if (link) {
-                    link.href = "//www.babylonjs-playground.com/#" + hash;
+                if (edit) {
+                    edit.href = "//www.babylonjs-playground.com/#" + hash;
                 }
             } catch (e) {
 
