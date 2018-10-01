@@ -11,6 +11,9 @@ module BABYLON {
         @serialize()
         public isEnabled = true;
 
+        /**
+         * Define if the texture must be cleared before rendering (default is true)
+         */
         @serialize()
         public autoClear = true;
 
