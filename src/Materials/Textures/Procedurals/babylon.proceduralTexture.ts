@@ -11,6 +11,9 @@ module BABYLON {
         @serialize()
         public isEnabled = true;
 
+        @serialize()
+        public autoClear = true;
+
         /**
          * Callback called when the texture is generated
          */
@@ -96,11 +99,11 @@ module BABYLON {
             this._fallbackTexture = fallbackTexture;
 
             if (isCube) {
-                this._texture = this._engine.createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
+                this._texture = this._engine.createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false });
                 this.setFloat("face", 0);
             }
             else {
-                this._texture = this._engine.createRenderTargetTexture(size, generateMipMaps);
+                this._texture = this._engine.createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false });
             }
 
             // VBO
@@ -514,7 +517,9 @@ module BABYLON {
                     this._effect.setFloat("face", face);
 
                     // Clear
-                    engine.clear(scene.clearColor, true, true, true);
+                    if (this.autoClear) {
+                        engine.clear(scene.clearColor, true, false, false);
+                    }
 
                     // Draw order
                     engine.drawElementsType(Material.TriangleFillMode, 0, 6);
@@ -531,7 +536,9 @@ module BABYLON {
                 engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
 
                 // Clear
-                engine.clear(scene.clearColor, true, true, true);
+                if (this.autoClear) {
+                    engine.clear(scene.clearColor, true, false, false);
+                }
 
                 // Draw order
                 engine.drawElementsType(Material.TriangleFillMode, 0, 6);
