@@ -1,9 +1,9 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Define an interface for all classes that will hold resources
      */
     export interface IDisposable {
-        /** 
+        /**
          * Releases all held resources
          */
         dispose(): void;
@@ -91,7 +91,7 @@
          */
         public static MaxDeltaTime = 1000.0;
 
-        // Members   
+        // Members
 
         /**
          * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
@@ -186,18 +186,15 @@
          */
         public clipPlane: Nullable<Plane>;
 
-
         /**
          * Gets or sets the active clipplane 2
          */
         public clipPlane2: Nullable<Plane>;
 
-
         /**
          * Gets or sets the active clipplane 3
          */
         public clipPlane3: Nullable<Plane>;
-
 
         /**
          * Gets or sets the active clipplane 4
@@ -441,6 +438,26 @@
         public onMeshRemovedObservable = new Observable<AbstractMesh>();
 
         /**
+        * An event triggered when a material is created
+        */
+        public onNewMaterialAddedObservable = new Observable<Material>();
+
+        /**
+        * An event triggered when a material is removed
+        */
+        public onMaterialRemovedObservable = new Observable<Material>();
+
+        /**
+        * An event triggered when a texture is created
+        */
+        public onNewTextureAddedObservable = new Observable<BaseTexture>();
+
+        /**
+        * An event triggered when a texture is removed
+        */
+        public onTextureRemovedObservable = new Observable<BaseTexture>();
+
+        /**
         * An event triggered when render targets are about to be rendered
         * Can happen multiple times per frame.
         */
@@ -612,7 +629,7 @@
          */
         public setStepId(newStepId: number): void {
             this._currentStepId = newStepId;
-        };
+        }
 
         /**
          * Gets the step Id used by deterministic lock step
@@ -621,7 +638,7 @@
          */
         public getStepId(): number {
             return this._currentStepId;
-        };
+        }
 
         /**
          * Gets the internal step used by deterministic lock step
@@ -630,7 +647,7 @@
          */
         public getInternalStep(): number {
             return this._currentInternalStep;
-        };
+        }
 
         // Fog
 
@@ -638,6 +655,7 @@
         /**
         * Gets or sets a boolean indicating if fog is enabled on this scene
         * @see http://doc.babylonjs.com/babylon101/environment#fog
+        * (Default is true)
         */
         public set fogEnabled(value: boolean) {
             if (this._fogEnabled === value) {
@@ -654,6 +672,12 @@
         /**
         * Gets or sets the fog mode to use
         * @see http://doc.babylonjs.com/babylon101/environment#fog
+        * | mode | value |
+        * | --- | --- |
+        * | FOGMODE_NONE | 0 |
+        * | FOGMODE_EXP | 1 |
+        * | FOGMODE_EXP2 | 2 |
+        * | FOGMODE_LINEAR | 3 |
         */
         public set fogMode(value: number) {
             if (this._fogMode === value) {
@@ -669,21 +693,25 @@
         /**
         * Gets or sets the fog color to use
         * @see http://doc.babylonjs.com/babylon101/environment#fog
+        * (Default is Color3(0.2, 0.2, 0.3))
         */
         public fogColor = new Color3(0.2, 0.2, 0.3);
         /**
         * Gets or sets the fog density to use
         * @see http://doc.babylonjs.com/babylon101/environment#fog
+        * (Default is 0.1)
         */
         public fogDensity = 0.1;
         /**
         * Gets or sets the fog start distance to use
         * @see http://doc.babylonjs.com/babylon101/environment#fog
+        * (Default is 0)
         */
         public fogStart = 0;
         /**
         * Gets or sets the fog end distance to use
         * @see http://doc.babylonjs.com/babylon101/environment#fog
+        * (Default is 1000)
         */
         public fogEnd = 1000.0;
 
@@ -801,7 +829,7 @@
         private _workerCollisions: boolean;
         /** @hidden */
         public collisionCoordinator: ICollisionCoordinator;
-        /** 
+        /**
          * Defines the gravity applied to this scene (used only for collisions)
          * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
          */
@@ -1011,7 +1039,7 @@
         /**
          * @hidden
          * Add a component to the scene.
-         * Note that the ccomponent could be registered on th next frame if this is called after 
+         * Note that the ccomponent could be registered on th next frame if this is called after
          * the register component stage.
          * @param component Defines the component to add to the scene
          */
@@ -1158,7 +1186,7 @@
             }
 
             //collision coordinator initialization. For now legacy per default.
-            this.workerCollisions = false;//(!!Worker && (!!BABYLON.CollisionWorker || BABYLON.WorkerIncluded));
+            this.workerCollisions = false; //(!!Worker && (!!BABYLON.CollisionWorker || BABYLON.WorkerIncluded));
 
             // Uniform Buffer
             this._createUbo();
@@ -1174,7 +1202,7 @@
         private _defaultMeshCandidates: ISmartArrayLike<AbstractMesh> = {
             data: [],
             length: 0
-        }
+        };
 
         /**
          * @hidden
@@ -1188,7 +1216,7 @@
         private _defaultSubMeshCandidates: ISmartArrayLike<SubMesh> = {
             data: [],
             length: 0
-        }
+        };
 
         /**
          * @hidden
@@ -1258,7 +1286,7 @@
             return this._pointerY;
         }
 
-        /** 
+        /**
          * Gets the cached material (ie. the latest rendered one)
          * @returns the cached material
          */
@@ -1266,7 +1294,7 @@
             return this._cachedMaterial;
         }
 
-        /** 
+        /**
          * Gets the cached effect (ie. the latest rendered one)
          * @returns the cached effect
          */
@@ -1274,7 +1302,7 @@
             return this._cachedEffect;
         }
 
-        /** 
+        /**
          * Gets the cached visibility state (ie. the latest rendered one)
          * @returns the cached visibility state
          */
@@ -1293,7 +1321,7 @@
             return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
         }
 
-        /** 
+        /**
          * Gets the engine associated with the scene
          * @returns an Engine
          */
@@ -1301,7 +1329,7 @@
             return this._engine;
         }
 
-        /** 
+        /**
          * Gets the total number of vertices rendered per frame
          * @returns the total number of vertices rendered per frame
          */
@@ -1317,9 +1345,9 @@
             return this._totalVertices;
         }
 
-        /** 
+        /**
          * Gets the total number of active indices rendered per frame (You can deduce the number of rendered triangles by dividing this number by 3)
-         * @returns the total number of active indices rendered per frame         
+         * @returns the total number of active indices rendered per frame
          */
         public getActiveIndices(): number {
             return this._activeIndices.current;
@@ -1333,9 +1361,9 @@
             return this._activeIndices;
         }
 
-        /** 
+        /**
          * Gets the total number of active particles rendered per frame
-         * @returns the total number of active particles rendered per frame         
+         * @returns the total number of active particles rendered per frame
          */
         public getActiveParticles(): number {
             return this._activeParticles.current;
@@ -1349,9 +1377,9 @@
             return this._activeParticles;
         }
 
-        /** 
+        /**
          * Gets the total number of active bones rendered per frame
-         * @returns the total number of active bones rendered per frame         
+         * @returns the total number of active bones rendered per frame
          */
         public getActiveBones(): number {
             return this._activeBones.current;
@@ -1401,9 +1429,9 @@
             return null;
         }
 
-        /** 
+        /**
          * Gets the array of active meshes
-         * @returns an array of AbstractMesh 
+         * @returns an array of AbstractMesh
          */
         public getActiveMeshes(): SmartArray<AbstractMesh> {
             return this._activeMeshes;
@@ -1451,7 +1479,7 @@
             return null;
         }
 
-        /** 
+        /**
          * Gets the animation ratio (which is 1.0 is the scene renders at 60fps and 2 if the scene renders at 30fps, etc.)
          * @returns a number
          */
@@ -1459,7 +1487,7 @@
             return this._animationRatio !== undefined ? this._animationRatio : 1;
         }
 
-        /** 
+        /**
          * Gets an unique Id for the current render phase
          * @returns a number
          */
@@ -1467,7 +1495,7 @@
             return this._renderId;
         }
 
-        /** 
+        /**
          * Gets an unique Id for the current frame
          * @returns a number
          */
@@ -1805,7 +1833,7 @@
                     clickInfo.ignore = false;
                     cb(clickInfo, this._currentPickResult);
                 }
-            }
+            };
 
             this._initClickEvent = (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => void): void => {
                 let clickInfo = new ClickInfo();
@@ -1817,8 +1845,9 @@
                     || obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
                 if (!checkPicking && ActionManager && ActionManager.HasPickTriggers) {
                     act = this._initActionManager(act, clickInfo);
-                    if (act)
+                    if (act) {
                         checkPicking = act.hasPickTriggers;
+                    }
                 }
                 if (checkPicking) {
                     let btn = evt.button;
@@ -1833,8 +1862,9 @@
 
                             if (checkSingleClickImmediately && !ActionManager.HasSpecificTrigger(ActionManager.OnDoublePickTrigger)) {
                                 act = this._initActionManager(act, clickInfo);
-                                if (act)
+                                if (act) {
                                     checkSingleClickImmediately = !act.hasSpecificTrigger(ActionManager.OnDoublePickTrigger);
+                                }
                             }
                         }
 
@@ -1858,8 +1888,9 @@
                             obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
                         if (!checkDoubleClick && ActionManager.HasSpecificTrigger(ActionManager.OnDoublePickTrigger)) {
                             act = this._initActionManager(act, clickInfo);
-                            if (act)
+                            if (act) {
                                 checkDoubleClick = act.hasSpecificTrigger(ActionManager.OnDoublePickTrigger);
+                            }
                         }
                         if (checkDoubleClick) {
                             // two successive keys pressed are equal, double click delay is not over and double click has not just occurred
@@ -1978,7 +2009,7 @@
             };
 
             this._onPointerUp = (evt: PointerEvent) => {
-                if (this._totalPointersPressed === 0) {  // We are attaching the pointer up to windows because of a bug in FF                    
+                if (this._totalPointersPressed === 0) {  // We are attaching the pointer up to windows because of a bug in FF
                     return;                             // So we need to test it the pointer down was pressed before.
                 }
 
@@ -2274,7 +2305,7 @@
                 setTimeout(() => {
                     this.unregisterBeforeRender(execFunc);
                 });
-            }
+            };
             this.registerBeforeRender(execFunc);
         }
 
@@ -2314,7 +2345,7 @@
             }
         }
 
-        /** 
+        /**
          * Returns the number of items waiting to be loaded
          * @returns the number of items waiting to be loaded
          */
@@ -2350,7 +2381,7 @@
          * @returns A promise that resolves when the scene is ready
          */
         public whenReadyAsync(): Promise<void> {
-            return new Promise(resolve => {
+            return new Promise((resolve) => {
                 this.executeWhenReady(() => {
                     resolve();
                 });
@@ -2593,7 +2624,7 @@
                     totalWeight: 0,
                     animations: [],
                     originalValue: originalValue
-                }
+                };
             }
 
             target._lateAnimationHolders[runtimeAnimation.targetPath].animations.push(runtimeAnimation);
@@ -2615,7 +2646,7 @@
 
             var scale = 1;
             if (holder.totalWeight < 1.0) {
-                // We need to mix the original value in                     
+                // We need to mix the original value in
                 originalValue.decompose(finalScaling, finalQuaternion, finalPosition);
                 scale = 1.0 - holder.totalWeight;
             } else {
@@ -2738,7 +2769,7 @@
                             let normalizer = 1.0;
 
                             if (holder.totalWeight < 1.0) {
-                                // We need to mix the original value in     
+                                // We need to mix the original value in
                                 if (originalValue.scale) {
                                     finalValue = originalValue.scale(1.0 - holder.totalWeight);
                                 } else {
@@ -2786,7 +2817,7 @@
             this._useAlternateCameraConfiguration = active;
         }
 
-        /** 
+        /**
          * Gets the current view matrix
          * @returns a Matrix
          */
@@ -2794,7 +2825,7 @@
             return this._useAlternateCameraConfiguration ? this._alternateViewMatrix : this._viewMatrix;
         }
 
-        /** 
+        /**
          * Gets the current projection matrix
          * @returns a Matrix
          */
@@ -2802,7 +2833,7 @@
             return this._useAlternateCameraConfiguration ? this._alternateProjectionMatrix : this._projectionMatrix;
         }
 
-        /** 
+        /**
          * Gets the current transform matrix
          * @returns a Matrix made of View * Projection
          */
@@ -2810,7 +2841,7 @@
             return this._useAlternateCameraConfiguration ? this._alternateTransformMatrix : this._transformMatrix;
         }
 
-        /** 
+        /**
          * Sets the current transform matrix
          * @param view defines the View matrix to use
          * @param projection defines the Projection matrix to use
@@ -2883,7 +2914,7 @@
             return this._useAlternateCameraConfiguration ? this._alternateSceneUbo : this._sceneUbo;
         }
 
-        /** 
+        /**
          * Gets an unique (relatively to the current scene) Id
          * @returns an unique number for the scene
          */
@@ -2912,7 +2943,7 @@
             if (recursive) {
                 newMesh.getChildMeshes().forEach((m) => {
                     this.addMesh(m);
-                })
+                });
             }
         }
 
@@ -2933,7 +2964,7 @@
             if (recursive) {
                 toRemove.getChildMeshes().forEach((m) => {
                     this.removeMesh(m);
-                })
+                });
             }
             return index;
         }
@@ -3045,7 +3076,6 @@
             return index;
         }
 
-
         /**
          * Remove a particle system for the list of scene's particle systems
          * @param toRemove defines the particle system to remove
@@ -3108,6 +3138,8 @@
             if (index !== -1) {
                 this.materials.splice(index, 1);
             }
+            this.onMaterialRemovedObservable.notifyObservers(toRemove);
+
             return index;
         }
 
@@ -3134,6 +3166,8 @@
             if (index !== -1) {
                 this.textures.splice(index, 1);
             }
+            this.onTextureRemovedObservable.notifyObservers(toRemove);
+
             return index;
         }
 
@@ -3156,7 +3190,7 @@
             this.onNewLightAddedObservable.notifyObservers(newLight);
         }
 
-        /** 
+        /**
          * Sorts the list list based on light priorities
          */
         public sortLightsByPriority(): void {
@@ -3220,6 +3254,7 @@
          */
         public addMaterial(newMaterial: Material): void {
             this.materials.push(newMaterial);
+            this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
         }
 
         /**
@@ -3252,6 +3287,7 @@
          */
         public addTexture(newTexture: BaseTexture): void {
             this.textures.push(newTexture);
+            this.onNewTextureAddedObservable.notifyObservers(newTexture);
         }
 
         /**
@@ -3478,7 +3514,6 @@
             return null;
         }
 
-
         /**
          * Gets a particle system by id
          * @param id defines the particle system id
@@ -3554,7 +3589,7 @@
             return false;
         }
 
-        /** 
+        /**
          * Gets the list of geometries attached to the scene
          * @returns an array of Geometry
          */
@@ -3583,9 +3618,9 @@
          * @returns a list of meshes
          */
         public getMeshesByID(id: string): Array<AbstractMesh> {
-            return this.meshes.filter(function (m) {
+            return this.meshes.filter(function(m) {
                 return m.id === id;
-            })
+            });
         }
 
         /**
@@ -3609,9 +3644,9 @@
          * @returns a list of transform nodes
          */
         public getTransformNodesByID(id: string): Array<TransformNode> {
-            return this.transformNodes.filter(function (m) {
+            return this.transformNodes.filter(function(m) {
                 return m.id === id;
-            })
+            });
         }
 
         /**
@@ -3962,7 +3997,7 @@
 
         /** @hidden */
         public _isInIntermediateRendering(): boolean {
-            return this._intermediateRendering
+            return this._intermediateRendering;
         }
 
         /**
@@ -4038,7 +4073,7 @@
 
             // Determine mesh candidates
             const meshes = this.getActiveMeshCandidates();
-            
+
             // Check each mesh
             const len = meshes.length;
             for (let i = 0; i < len; i++) {
@@ -4161,8 +4196,9 @@
 
             this.activeCamera = camera;
 
-            if (!this.activeCamera)
+            if (!this.activeCamera) {
                 throw new Error("Active camera not set");
+            }
 
             // Viewport
             engine.setViewport(this.activeCamera.viewport);
@@ -4316,7 +4352,7 @@
                             }
 
                             //if this is an exit trigger, or no exit trigger exists, remove the id from the intersection in progress array.
-                            if (!sourceMesh.actionManager.hasSpecificTrigger(ActionManager.OnIntersectionExitTrigger, parameter => {
+                            if (!sourceMesh.actionManager.hasSpecificTrigger(ActionManager.OnIntersectionExitTrigger, (parameter) => {
                                 var parameterMesh = parameter instanceof AbstractMesh ? parameter : parameter.mesh;
                                 return otherMesh === parameterMesh;
                             }) || action.trigger === ActionManager.OnIntersectionExitTrigger) {
@@ -4340,7 +4376,7 @@
             return 1000.0 / 60.0; // frame time in ms
         }
 
-        /** 
+        /**
          * Render the scene
          * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
          */
@@ -4461,8 +4497,9 @@
 
                         this.activeCamera = renderTarget.activeCamera || this.activeCamera;
 
-                        if (!this.activeCamera)
+                        if (!this.activeCamera) {
                             throw new Error("Active camera not set");
+                        }
 
                         // Viewport
                         engine.setViewport(this.activeCamera.viewport);
@@ -4553,7 +4590,7 @@
             this._activeParticles.addCount(0, true);
         }
 
-        /** 
+        /**
          * Freeze all materials
          * A frozen material will not be updatable but should be faster to render
          */
@@ -4563,7 +4600,7 @@
             }
         }
 
-        /** 
+        /**
          * Unfreeze all materials
          * A frozen material will not be updatable but should be faster to render
          */
@@ -4573,7 +4610,7 @@
             }
         }
 
-        /** 
+        /**
          * Releases all held ressources
          */
         public dispose(): void {
@@ -4656,6 +4693,27 @@
             this.onBeforeRenderingGroupObservable.clear();
             this.onAfterRenderingGroupObservable.clear();
             this.onMeshImportedObservable.clear();
+            this.onBeforeCameraRenderObservable.clear();
+            this.onAfterCameraRenderObservable.clear();
+            this.onReadyObservable.clear();
+            this.onNewCameraAddedObservable.clear();
+            this.onCameraRemovedObservable.clear();
+            this.onNewLightAddedObservable.clear();
+            this.onLightRemovedObservable.clear();
+            this.onNewGeometryAddedObservable.clear();
+            this.onGeometryRemovedObservable.clear();
+            this.onNewTransformNodeAddedObservable.clear();
+            this.onTransformNodeRemovedObservable.clear();
+            this.onNewMeshAddedObservable.clear();
+            this.onMeshRemovedObservable.clear();
+            this.onNewMaterialAddedObservable.clear();
+            this.onMaterialRemovedObservable.clear();
+            this.onNewTextureAddedObservable.clear();
+            this.onTextureRemovedObservable.clear();
+            this.onPrePointerObservable.clear();
+            this.onPointerObservable.clear();
+            this.onPreKeyboardObservable.clear();
+            this.onKeyboardObservable.clear();
 
             this.detachControl();
 
@@ -4694,7 +4752,7 @@
 
             // Release materials
             if (this.defaultMaterial) {
-                this.defaultMaterial.dispose()
+                this.defaultMaterial.dispose();
             }
             while (this.multiMaterials.length) {
                 this.multiMaterials[0].dispose();
@@ -4784,7 +4842,7 @@
 
         /**
          * Get the world extend vectors with an optional filter
-         * 
+         *
          * @param filterPredicate the predicate - which meshes should be included when calculating the world size
          * @returns {{ min: Vector3; max: Vector3 }} min and max vectors
          */
@@ -4792,7 +4850,7 @@
             var min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             filterPredicate = filterPredicate || (() => true);
-            this.meshes.filter(filterPredicate).forEach(mesh => {
+            this.meshes.filter(filterPredicate).forEach((mesh) => {
                 mesh.computeWorldMatrix(true);
 
                 if (!mesh.subMeshes || mesh.subMeshes.length === 0 || mesh.infiniteDistance) {
@@ -4806,7 +4864,7 @@
 
                 Tools.CheckExtends(minBox, min, max);
                 Tools.CheckExtends(maxBox, min, max);
-            })
+            });
 
             return {
                 min: min,
@@ -4847,8 +4905,9 @@
             var engine = this._engine;
 
             if (!camera) {
-                if (!this.activeCamera)
+                if (!this.activeCamera) {
                     throw new Error("Active camera not set");
+                }
 
                 camera = this.activeCamera;
             }
@@ -4895,8 +4954,9 @@
             var engine = this._engine;
 
             if (!camera) {
-                if (!this.activeCamera)
+                if (!this.activeCamera) {
                     throw new Error("Active camera not set");
+                }
 
                 camera = this.activeCamera;
             }
@@ -4934,11 +4994,13 @@
                 var ray = rayFunction(world);
 
                 var result = mesh.intersects(ray, fastCheck);
-                if (!result || !result.hit)
+                if (!result || !result.hit) {
                     continue;
+                }
 
-                if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance)
+                if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance) {
                     continue;
+                }
 
                 pickingInfo = result;
 
@@ -4971,8 +5033,9 @@
                 var ray = rayFunction(world);
 
                 var result = mesh.intersects(ray, false);
-                if (!result || !result.hit)
+                if (!result || !result.hit) {
                     continue;
+                }
 
                 pickingInfos.push(result);
             }
@@ -4994,7 +5057,7 @@
             if (!PickingInfo) {
                 return null;
             }
-            var result = this._internalPick(world => {
+            var result = this._internalPick((world) => {
                 this.createPickingRayToRef(x, y, world, this._tempPickingRay!, camera || null);
                 return this._tempPickingRay!;
             }, predicate, fastCheck);
@@ -5013,7 +5076,7 @@
          * @returns a PickingInfo
          */
         public pickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
-            var result = this._internalPick(world => {
+            var result = this._internalPick((world) => {
                 if (!this._pickWithRayInverseMatrix) {
                     this._pickWithRayInverseMatrix = Matrix.Identity();
                 }
@@ -5041,7 +5104,7 @@
          * @returns an array of PickingInfo
          */
         public multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
-            return this._internalMultiPick(world => this.createPickingRay(x, y, world, camera || null), predicate);
+            return this._internalMultiPick((world) => this.createPickingRay(x, y, world, camera || null), predicate);
         }
 
         /**
@@ -5051,7 +5114,7 @@
          * @returns an array of PickingInfo
          */
         public multiPickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo[]> {
-            return this._internalMultiPick(world => {
+            return this._internalMultiPick((world) => {
                 if (!this._pickWithRayInverseMatrix) {
                     this._pickWithRayInverseMatrix = Matrix.Identity();
                 }
@@ -5085,14 +5148,14 @@
             }
         }
 
-        /** 
+        /**
          * Gets the mesh under the pointer
          * @returns a Mesh or null if no mesh is under the pointer
          */
         public getPointerOverMesh(): Nullable<AbstractMesh> {
             return this._pointerOverMesh;
         }
-     
+
         // Misc.
         /** @hidden */
         public _rebuildGeometries(): void {
@@ -5273,7 +5336,7 @@
         public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useDatabase?: boolean, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
             let request = Tools.LoadFile(url, onSuccess, onProgress, useDatabase ? this.database : undefined, useArrayBuffer, onError);
             this._activeRequests.push(request);
-            request.onCompleteObservable.add(request => {
+            request.onCompleteObservable.add((request) => {
                 this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
             });
             return request;
@@ -5286,7 +5349,7 @@
                     resolve(data);
                 }, undefined, useDatabase, useArrayBuffer, (request, exception) => {
                     reject(exception);
-                })
+                });
             });
         }
     }

@@ -1,7 +1,7 @@
 import { Helpers } from "../helpers/Helpers";
 
 /**
- * Represents a html div element. 
+ * Represents a html div element.
  * The div is built when an instance of BasicElement is created.
  */
 export abstract class BasicElement {
@@ -22,11 +22,11 @@ export abstract class BasicElement {
     /**
      * Build the html element
      */
-    protected _build() { };
+    protected _build() { }
 
     public abstract update(data?: any): void;
 
     /** Default dispose method if needed */
-    public dispose() { };
+    public dispose() { }
 
 }

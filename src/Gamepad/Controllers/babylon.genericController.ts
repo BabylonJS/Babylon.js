@@ -6,11 +6,11 @@ module BABYLON {
         /**
          * Base Url for the controller model.
          */
-        public static readonly MODEL_BASE_URL:string = 'https://controllers.babylonjs.com/generic/';
+        public static readonly MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/generic/';
         /**
          * File name for the controller model.
          */
-        public static readonly MODEL_FILENAME:string = 'generic.babylon';
+        public static readonly MODEL_FILENAME: string = 'generic.babylon';
 
         /**
          * Creates a new GenericController from a gamepad

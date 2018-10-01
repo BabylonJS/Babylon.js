@@ -1,7 +1,7 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * @hidden
-     **/        
+     **/
     export class _AlphaState {
         private _isAlphaBlendDirty = false;
         private _isBlendFunctionParametersDirty = false;

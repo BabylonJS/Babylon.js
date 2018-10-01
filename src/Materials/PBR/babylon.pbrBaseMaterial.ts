@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Manages the defines for the PBR Material.
      * @hiddenChildren
@@ -133,7 +133,7 @@
         public CLIPPLANE = false;
         public CLIPPLANE2 = false;
         public CLIPPLANE3 = false;
-        public CLIPPLANE4 = false;        
+        public CLIPPLANE4 = false;
         public POINTSIZE = false;
         public FOG = false;
         public LOGARITHMICDEPTH = false;
@@ -164,9 +164,9 @@
 
     /**
      * The Physically based material base class of BJS.
-     * 
+     *
      * This offers the main features of a standard PBR material.
-     * For more information, please refer to the documentation : 
+     * For more information, please refer to the documentation :
      * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
      */
     export abstract class PBRBaseMaterial extends PushMaterial {
@@ -176,13 +176,13 @@
         public static readonly LIGHTFALLOFF_PHYSICAL = 0;
 
         /**
-         * PBRMaterialLightFalloff gltf: light is falling off as described in the gltf moving to PBR document 
+         * PBRMaterialLightFalloff gltf: light is falling off as described in the gltf moving to PBR document
          * to enhance interoperability with other engines.
          */
         public static readonly LIGHTFALLOFF_GLTF = 1;
 
         /**
-         * PBRMaterialLightFalloff Standard: light is falling off like in the standard material 
+         * PBRMaterialLightFalloff Standard: light is falling off like in the standard material
          * to enhance interoperability with other materials.
          */
         public static readonly LIGHTFALLOFF_STANDARD = 2;
@@ -206,7 +206,7 @@
         protected _environmentIntensity: number = 1.0;
 
         /**
-         * This is a special control allowing the reduction of the specular highlights coming from the 
+         * This is a special control allowing the reduction of the specular highlights coming from the
          * four lights of the scene. Those highlights may not be needed in full environment lighting.
          */
         protected _specularIntensity: number = 1.0;
@@ -238,7 +238,7 @@
 
         /**
          * Defines how much the AO map is occluding the analytical lights (point spot...).
-         * 1 means it completely occludes it 
+         * 1 means it completely occludes it
          * 0 mean it has no impact
          */
         protected _ambientTextureImpactOnAnalyticalLights: number = PBRMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
@@ -286,7 +286,7 @@
         protected _roughness: Nullable<number>;
 
         /**
-         * Used to enable roughness/glossiness fetch from a separate chanel depending on the current mode.
+         * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
          * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
          */
         protected _microSurfaceTexture: BaseTexture;
@@ -497,7 +497,7 @@
 
         /**
          * Specifies the environment BRDF texture used to comput the scale and offset roughness values
-         * from cos thetav and roughness: 
+         * from cos thetav and roughness:
          * http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
          */
         protected _environmentBRDFTexture: Nullable<BaseTexture> = null;
@@ -532,7 +532,7 @@
 
         /**
          * Attaches a new image processing configuration to the PBR Material.
-         * @param configuration 
+         * @param configuration
          */
         protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
             if (configuration === this._imageProcessingConfiguration) {
@@ -554,7 +554,7 @@
 
             // Attaches observer.
             if (this._imageProcessingConfiguration) {
-                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
+                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add((conf) => {
                     this._markAllSubMeshesAsImageProcessingDirty();
                 });
             }
@@ -582,7 +582,7 @@
 
         /**
          * Instantiates a new PBRMaterial instance.
-         * 
+         *
          * @param name The material name
          * @param scene The scene the material will be use in.
          */
@@ -604,15 +604,14 @@
                 }
 
                 return this._renderTargets;
-            }
+            };
 
             this._environmentBRDFTexture = TextureTools.GetEnvironmentBRDFTexture(scene);
         }
 
-
         /**
          * Gets a boolean indicating that current material needs to register RTT
-         */               
+         */
         public get hasRenderTargetTextures(): boolean {
             if (StandardMaterial.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
                 return true;
@@ -623,7 +622,7 @@
             }
 
             return false;
-        }        
+        }
 
         /**
          * Gets the name of the material class.
@@ -747,7 +746,7 @@
         /**
          * Specifies that the submesh is ready to be used.
          * @param mesh - BJS mesh.
-         * @param subMesh - A submesh of the BJS mesh.  Used to check if it is ready. 
+         * @param subMesh - A submesh of the BJS mesh.  Used to check if it is ready.
          * @param useInstances - Specifies that instances should be used.
          * @returns - boolean indicating that the submesh is ready or not.
          */
@@ -881,7 +880,7 @@
             return true;
         }
 
-        /** 
+        /**
          * Specifies if the material uses metallic roughness workflow.
          * @returns boolean specifiying if the material uses metallic roughness workflow.
         */
@@ -1009,7 +1008,7 @@
 
             var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
                 "vFogInfos", "vFogColor", "pointSize",
-                "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos", 
+                "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos",
                 "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                 "mBones",
                 "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "normalMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
@@ -1227,11 +1226,11 @@
                         else {
                             defines.PARALLAX = false;
                         }
-                        
+
                         defines.OBJECTSPACE_NORMALMAP = this._useObjectSpaceNormalMap;
                     } else {
                         defines.BUMP = false;
-                    }                
+                    }
 
                     var refractionTexture = this._getRefractionTexture();
                     if (refractionTexture && StandardMaterial.RefractionTextureEnabled) {
@@ -1428,7 +1427,7 @@
             if (defines.OBJECTSPACE_NORMALMAP)
             {
                 world.toNormalMatrix(this._normalMatrix);
-                this.bindOnlyNormalMatrix(this._normalMatrix);                
+                this.bindOnlyNormalMatrix(this._normalMatrix);
             }
 
             let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
@@ -1472,7 +1471,7 @@
 
                                 this._uniformBuffer.updateVector3("vReflectionPosition", cubeTexture.boundingBoxPosition);
                                 this._uniformBuffer.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
-                            }                            
+                            }
 
                             var polynomials = reflectionTexture.sphericalPolynomial;
                             if (defines.USESPHERICALFROMREFLECTIONMAP && polynomials) {
@@ -1569,7 +1568,6 @@
                     this._uniformBuffer.updateColor3("vEmissiveColor", this._emissiveColor);
                     this._uniformBuffer.updateColor3("vReflectionColor", this._reflectionColor);
                     this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, this.alpha * mesh.visibility);
-
 
                     // Misc
                     this._lightingInfos.x = this._directIntensity;
@@ -1756,7 +1754,7 @@
 
         /**
          * Returns the texture used for refraction or null if none is used.
-         * @returns - Refection texture if present.  If no refraction texture and refraction 
+         * @returns - Refection texture if present.  If no refraction texture and refraction
          * is linked with transparency, returns environment texture.  Otherwise, returns null.
          */
         private _getRefractionTexture(): Nullable<BaseTexture> {

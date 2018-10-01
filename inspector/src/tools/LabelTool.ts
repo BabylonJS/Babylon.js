@@ -36,7 +36,6 @@ export class LabelTool extends AbstractTool {
             return;
         }
 
-
         // Check if the label are already initialized and quit if it's the case
         if (this._labelInitialized || !this._scene) {
             return false;
@@ -115,15 +114,17 @@ export class LabelTool extends AbstractTool {
         // Check if we have to display the labels
         if (this._isDisplayed) {
             this._initializeLabels();
-            if (this._advancedTexture)
+            if (this._advancedTexture) {
                 this._advancedTexture._rootContainer.isVisible = true;
+            }
 
         }
 
         // Or to hide them
         else {
-            if (this._advancedTexture)
+            if (this._advancedTexture) {
                 this._advancedTexture._rootContainer.isVisible = false;
+            }
         }
     }
 }

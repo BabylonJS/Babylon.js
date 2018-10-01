@@ -1,6 +1,6 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
-module BABYLON.GLTF2.Extensions {
+module BABYLON.GLTF2.Loader.Extensions {
     const NAME = "MSFT_lod";
 
     interface IMSFTLOD {
@@ -111,7 +111,7 @@ module BABYLON.GLTF2.Extensions {
         }
 
         /** @hidden */
-        public loadNodeAsync(context: string, node: ILoaderNode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> {
+        public loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> {
             return GLTFLoader.LoadExtensionAsync<IMSFTLOD, Mesh>(context, node, this.name, (extensionContext, extension) => {
                 let firstPromise: Promise<Mesh>;
 
@@ -126,7 +126,7 @@ module BABYLON.GLTF2.Extensions {
                         this._nodeSignalLODs[indexLOD] = this._nodeSignalLODs[indexLOD] || new Deferred();
                     }
 
-                    const promise = this._loader.loadNodeAsync(`#/nodes/${nodeLOD.index}`, nodeLOD).then(babylonMesh => {
+                    const promise = this._loader.loadNodeAsync(`#/nodes/${nodeLOD.index}`, nodeLOD).then((babylonMesh) => {
                         if (indexLOD !== 0) {
                             // TODO: should not rely on _babylonMesh
                             const previousNodeLOD = nodeLODs[indexLOD - 1];
@@ -157,7 +157,7 @@ module BABYLON.GLTF2.Extensions {
         }
 
         /** @hidden */
-        public _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>> {
+        public _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>> {
             // Don't load material LODs if already loading a node LOD.
             if (this._nodeIndexLOD) {
                 return null;
@@ -176,11 +176,11 @@ module BABYLON.GLTF2.Extensions {
                         this._materialIndexLOD = indexLOD;
                     }
 
-                    const promise = this._loader._loadMaterialAsync(`#/materials/${materialLOD.index}`, materialLOD, babylonMesh, babylonDrawMode, babylonMaterial => {
+                    const promise = this._loader._loadMaterialAsync(`#/materials/${materialLOD.index}`, materialLOD, babylonMesh, babylonDrawMode, (babylonMaterial) => {
                         if (indexLOD === 0) {
                             assign(babylonMaterial);
                         }
-                    }).then(babylonMaterial => {
+                    }).then((babylonMaterial) => {
                         if (indexLOD !== 0) {
                             assign(babylonMaterial);
 
@@ -274,5 +274,5 @@ module BABYLON.GLTF2.Extensions {
         }
     }
 
-    GLTFLoader.RegisterExtension(NAME, loader => new MSFT_lod(loader));
+    GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_lod(loader));
 }

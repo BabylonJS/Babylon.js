@@ -14,7 +14,7 @@ export class GUITab extends PropertyTab {
     protected _getTree(): Array<TreeItem> {
         let arr: Array<TreeItem> = [];
 
-        if (!Inspector.GUIObject) return arr;
+        if (!Inspector.GUIObject) { return arr; }
 
         // Recursive method building the tree panel
         let createNode = (obj: import("babylonjs-gui").Control) => {

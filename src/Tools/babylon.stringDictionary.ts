@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * This class implement a typical dictionary using a string as key and the generic type T as value.
      * The underlying implementation relies on an associative array to ensure the best performances.
@@ -91,7 +91,12 @@
             return true;
         }
 
-
+        /**
+         * Update a specific value associated to a key
+         * @param key defines the key to use
+         * @param value defines the value to store
+         * @returns true if the value was updated (or false if the key was not found)
+         */
         public set(key: string, value: T): boolean {
             if (this._data[key] === undefined) {
                 return false;
@@ -102,7 +107,8 @@
 
         /**
          * Get the element of the given key and remove it from the dictionary
-         * @param key
+         * @param key defines the key to search
+         * @returns the value associated with the key or null if not found
          */
         public getAndRemove(key: string): Nullable<T> {
             let val = this.get(key);
@@ -132,10 +138,13 @@
          * Clear the whole content of the dictionary
          */
         public clear() {
-            this._data = {}
+            this._data = {};
             this._count = 0;
         }
 
+        /**
+         * Gets the current count
+         */
         public get count() {
             return this._count;
         }
@@ -157,6 +166,7 @@
          * If the callback returns null or undefined the method will iterate to the next key/value pair
          * Note that you can remove any element in this dictionary in the callback implementation
          * @param callback the callback to execute, if it return a valid T instanced object the enumeration will stop and the object will be returned
+         * @returns the first item
          */
         public first<TRes>(callback: (key: string, val: T) => TRes) {
             for (let cur in this._data) {

@@ -80,7 +80,7 @@ module BABYLON {
             if (vrGamepad.id.indexOf('Oculus Touch') !== -1) {
                 return new OculusTouchController(vrGamepad);
             }
-            // Windows Mixed Reality controllers 
+            // Windows Mixed Reality controllers
             else if (vrGamepad.id.indexOf(WindowsMotionController.GAMEPAD_ID_PREFIX) === 0) {
                 return new WindowsMotionController(vrGamepad);
             }
@@ -96,7 +96,7 @@ module BABYLON {
             else if (vrGamepad.id.indexOf(DaydreamController.GAMEPAD_ID_PREFIX) === 0) {
                 return new DaydreamController(vrGamepad);
             }
-            // Generic 
+            // Generic
             else {
                 return new GenericController(vrGamepad);
             }
@@ -144,6 +144,20 @@ module BABYLON {
          * The raw pose from the device
          */
         public rawPose: DevicePose; //GamepadPose;
+
+        // Used to convert 6dof controllers to 3dof
+        private _trackPosition = true;
+        private _maxRotationDistFromHeadset = Math.PI / 5;
+        private _draggedRoomRotation = 0;
+        /**
+         * @hidden
+         */
+        public _disableTrackPosition(fixedPosition: Vector3) {
+            if (this._trackPosition) {
+                this._calculatedPosition.copyFrom(fixedPosition);
+                this._trackPosition = false;
+            }
+        }
 
         /**
          * Internal, the mesh attached to the controller
@@ -201,10 +215,35 @@ module BABYLON {
             var pose: GamepadPose = this.browserGamepad.pose;
             this.updateFromDevice(pose);
 
-            Vector3.TransformCoordinatesToRef(this._calculatedPosition, this._deviceToWorld, this.devicePosition)
+            if (!this._trackPosition && BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.activeCamera && (<WebVRFreeCamera>BABYLON.Engine.LastCreatedScene.activeCamera).devicePosition) {
+                var camera = <WebVRFreeCamera>BABYLON.Engine.LastCreatedScene.activeCamera;
+                camera._computeDevicePosition();
+
+                this._deviceToWorld.setTranslation(camera.devicePosition);
+                if (camera.deviceRotationQuaternion) {
+                    var camera = camera;
+                    camera._deviceRoomRotationQuaternion.toEulerAnglesToRef(BABYLON.Tmp.Vector3[0]);
+
+                    // Find the radian distance away that the headset is from the controllers rotation
+                    var distanceAway = Math.atan2(Math.sin(BABYLON.Tmp.Vector3[0].y - this._draggedRoomRotation), Math.cos(BABYLON.Tmp.Vector3[0].y - this._draggedRoomRotation));
+                    if (Math.abs(distanceAway) > this._maxRotationDistFromHeadset) {
+                        // Only rotate enouph to be within the _maxRotationDistFromHeadset
+                        var rotationAmount = distanceAway - (distanceAway < 0 ? -this._maxRotationDistFromHeadset : this._maxRotationDistFromHeadset);
+                        this._draggedRoomRotation += rotationAmount;
+
+                        // Rotate controller around headset
+                        var sin = Math.sin(-rotationAmount);
+                        var cos = Math.cos(-rotationAmount);
+                        this._calculatedPosition.x = this._calculatedPosition.x * cos - this._calculatedPosition.z * sin;
+                        this._calculatedPosition.z = this._calculatedPosition.x * sin + this._calculatedPosition.z * cos;
+                    }
+                }
+            }
+
+            Vector3.TransformCoordinatesToRef(this._calculatedPosition, this._deviceToWorld, this.devicePosition);
             this._deviceToWorld.getRotationMatrixToRef(this._workingMatrix);
             Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
-            this.deviceRotationQuaternion.multiplyInPlace(this._calculatedRotation)
+            this.deviceRotationQuaternion.multiplyInPlace(this._calculatedRotation);
 
             if (this._mesh) {
                 this._mesh.position.copyFrom(this.devicePosition);
@@ -227,8 +266,9 @@ module BABYLON {
                     if (this._mesh && this._mesh.getScene().useRightHandedSystem) {
                         this._deviceRoomPosition.z *= -1;
                     }
-
-                    this._deviceRoomPosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
+                    if (this._trackPosition) {
+                        this._deviceRoomPosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
+                    }
                     this._calculatedPosition.addInPlace(this.position);
                 }
                 let pose = this.rawPose;
@@ -252,7 +292,7 @@ module BABYLON {
         /**
          * @hidden
          */
-        public _meshAttachedObservable = new Observable<AbstractMesh>()
+        public _meshAttachedObservable = new Observable<AbstractMesh>();
 
         /**
          * Attaches a mesh to the controller
@@ -279,7 +319,7 @@ module BABYLON {
                     parents.push(obj.parent);
                     obj = obj.parent;
                 }
-                parents.reverse().forEach((p) => { p.computeWorldMatrix(true) });
+                parents.reverse().forEach((p) => { p.computeWorldMatrix(true); });
             }
 
             this._meshAttachedObservable.notifyObservers(mesh);

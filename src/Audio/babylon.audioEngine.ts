@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * This represents an audio engine and it is responsible
      * to play, synchronize and analyse sounds throughout the application.
@@ -37,6 +37,12 @@
         WarnedWebAudioUnsupported: boolean;
 
         /**
+         * Defines if the audio engine relies on a custom unlocked button.
+         * In this case, the embedded button will not be displayed.
+         */
+        useCustomUnlockedButton: boolean;
+
+        /**
          * Gets whether or not the audio engine is unlocked (require first a user gesture on some browser).
          */
         readonly unlocked: boolean;
@@ -45,10 +51,27 @@
          * Event raised when audio has been unlocked on the browser.
          */
         onAudioUnlockedObservable: Observable<AudioEngine>;
+
+        /**
+         * Event raised when audio has been locked on the browser.
+         */
+        onAudioLockedObservable: Observable<AudioEngine>;
+
+        /**
+         * Flags the audio engine in Locked state.
+         * This happens due to new browser policies preventing audio to autoplay.
+         */
+        lock(): void;
+
+        /**
+         * Unlocks the audio engine once a user action has been done on the dom.
+         * This is helpful to resume play once browser policies have been satisfied.
+         */
+        unlock(): void;
     }
 
     // Sets the default audio engine to Babylon JS.
-    Engine.AudioEngineFactory = (engine: Engine) => { return new AudioEngine(engine); };
+    Engine.AudioEngineFactory = (hostElement: Nullable<HTMLElement>) => { return new AudioEngine(hostElement); };
 
     /**
      * This represents the default audio engine used in babylon.
@@ -58,9 +81,8 @@
     export class AudioEngine implements IAudioEngine{
         private _audioContext: Nullable<AudioContext> = null;
         private _audioContextInitialized = false;
-        private _muteButtonDisplayed = false;
-        private _muteButton: HTMLButtonElement;
-        private _engine: Engine;
+        private _muteButton: Nullable<HTMLButtonElement> = null;
+        private _hostElement: Nullable<HTMLElement>;
 
         /**
          * Gets whether the current host supports Web Audio and thus could create AudioContexts.
@@ -88,19 +110,28 @@
          */
         public isOGGsupported: boolean = false;
 
-        private _canvas: Nullable<HTMLCanvasElement>;
-
         /**
          * Gets whether audio has been unlocked on the device.
          * Some Browsers have strong restrictions about Audio and won t autoplay unless
          * a user interaction has happened.
          */
-        public unlocked: boolean = false;
+        public unlocked: boolean = true;
+
+        /**
+         * Defines if the audio engine relies on a custom unlocked button.
+         * In this case, the embedded button will not be displayed.
+         */
+        public useCustomUnlockedButton: boolean = false;
 
         /**
          * Event raised when audio has been unlocked on the browser.
          */
         public onAudioUnlockedObservable = new Observable<AudioEngine>();
+
+        /**
+         * Event raised when audio has been locked on the browser.
+         */
+        public onAudioLockedObservable = new Observable<AudioEngine>();
 
         /**
          * Gets the current AudioContext if available.
@@ -110,7 +141,7 @@
                 this._initializeAudioContext();
             }
             else {
-                if (!this.unlocked && !this._muteButtonDisplayed) {
+                if (!this.unlocked && !this._muteButton) {
                     this._displayMuteButton();
                 }
             }
@@ -118,22 +149,22 @@
         }
 
         private _connectedAnalyser: Nullable<Analyser>;
-        
+
         /**
          * Instantiates a new audio engine.
-         * 
+         *
          * There should be only one per page as some browsers restrict the number
          * of audio contexts you can create.
-         * @param engine defines the hosting engine
+         * @param hostElement defines the host element where to display the mute icon if necessary
          */
-        constructor(engine = Engine.LastCreatedEngine) {
+        constructor(hostElement: Nullable<HTMLElement> = null) {
             if (typeof window.AudioContext !== 'undefined' || typeof window.webkitAudioContext !== 'undefined') {
                 window.AudioContext = window.AudioContext || window.webkitAudioContext;
                 this.canUseWebAudio = true;
             }
 
             var audioElem = document.createElement('audio');
-            this._engine = engine!;
+            this._hostElement = hostElement;
 
             try {
                 if (audioElem && !!audioElem.canPlayType && audioElem.canPlayType('audio/mpeg; codecs="mp3"').replace(/^no$/, '')) {
@@ -152,65 +183,44 @@
             catch (e) {
                 // protect error during capability check.
             }
+        }
 
-            if (/iPad|iPhone|iPod/.test(navigator.platform)) {
-                this._unlockiOSaudio();
+        /**
+         * Flags the audio engine in Locked state.
+         * This happens due to new browser policies preventing audio to autoplay.
+         */
+        public lock() {
+            this._triggerSuspendedState();
+        }
+
+        /**
+         * Unlocks the audio engine once a user action has been done on the dom.
+         * This is helpful to resume play once browser policies have been satisfied.
+         */
+        public unlock() {
+            this._triggerRunningState();
+        }
+
+        private _resumeAudioContext(): Promise<void> {
+            let result: Promise<void>;
+            if (this._audioContext!.resume) {
+                result = this._audioContext!.resume();
             }
-        }
-
-        private _unlockiOSaudio() {
-            this._displayMuteButton(true);
-
-            var unlockaudio = () => {
-                if (!this.audioContext) {
-                    return;
-                }
-                var buffer = this.audioContext.createBuffer(1, 1, 22050);
-                var source = this.audioContext.createBufferSource();
-                source.buffer = buffer;
-                source.connect(this.audioContext.destination);
-                source.start(0);
-  
-                setTimeout(() => {
-                    if (((<any>source).playbackState === (<any>source).PLAYING_STATE || (<any>source).playbackState === (<any>source).FINISHED_STATE)) { 
-                        this._triggerRunningState()
-                        this._muteButton.removeEventListener('touchend', unlockaudio, false);
-                    }
-                }, 0);
-            };
-
-            this._muteButton.addEventListener('touchend', unlockaudio, false);
-        }
-
-        private _resumeAudioContext() {
-            this._audioContext!.resume();
+            return result! || Promise.resolve();
         }
 
         private _initializeAudioContext() {
             try {
                 if (this.canUseWebAudio) {
                     this._audioContext = new AudioContext();
-                    // create a global volume gain node 
+                    // create a global volume gain node
                     this.masterGain = this._audioContext.createGain();
                     this.masterGain.gain.value = 1;
                     this.masterGain.connect(this._audioContext.destination);
                     this._audioContextInitialized = true;
                     if (this._audioContext.state === "running") {
+                        // Do not wait for the promise to unlock.
                         this._triggerRunningState();
-                    }
-                    else {
-                        if (!this._muteButtonDisplayed) {
-                            this._displayMuteButton();
-                        }
-                        // 3 possible states: https://webaudio.github.io/web-audio-api/#BaseAudioContext
-                        this._audioContext.addEventListener("statechange", () => {
-                            if (this._audioContext!.state === "running") {
-                                this._triggerRunningState();
-                            }
-                            else {
-                                this._triggerSuspendedState();
-                            }
-                        });
                     }
                 }
             }
@@ -220,47 +230,68 @@
             }
         }
 
+        private _tryToRun = false;
         private _triggerRunningState() {
-            this.unlocked = true;
-            if (this._muteButtonDisplayed) {
-               this._hideMuteButton(); 
+            if (this._tryToRun) {
+                return;
             }
+            this._tryToRun = true;
+
+            this._resumeAudioContext()
+                .then(() => {
+                    this._tryToRun = false;
+                    if (this._muteButton) {
+                        this._hideMuteButton();
+                    }
+                }).catch(() => {
+                    this._tryToRun = false;
+                    this.unlocked = false;
+                });
+
             // Notify users that the audio stack is unlocked/unmuted
+            this.unlocked = true;
             this.onAudioUnlockedObservable.notifyObservers(this);
         }
 
         private _triggerSuspendedState() {
             this.unlocked = false;
+            this.onAudioLockedObservable.notifyObservers(this);
             this._displayMuteButton();
         }
 
-        private _displayMuteButton(iOS: boolean = false) {
+        private _displayMuteButton() {
+            if (this.useCustomUnlockedButton) {
+                return;
+            }
+
             this._muteButton = <HTMLButtonElement>document.createElement("BUTTON");
             this._muteButton.className = "babylonUnmuteIcon";
             this._muteButton.id = "babylonUnmuteIconBtn";
             this._muteButton.title = "Unmute";
-            var css = ".babylonUnmuteIcon { position: absolute; height: 40px; width: 60px; background-color: rgba(51,51,51,0.7); background-image: url(data:image/svg+xml;charset=UTF-8,%3Csvg%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2239%22%20height%3D%2232%22%20viewBox%3D%220%200%2039%2032%22%3E%3Cpath%20fill%3D%22white%22%20d%3D%22M9.625%2018.938l-0.031%200.016h-4.953q-0.016%200-0.031-0.016v-12.453q0-0.016%200.031-0.016h4.953q0.031%200%200.031%200.016v12.453zM12.125%207.688l8.719-8.703v27.453l-8.719-8.719-0.016-0.047v-9.938zM23.359%207.875l1.406-1.406%204.219%204.203%204.203-4.203%201.422%201.406-4.219%204.219%204.219%204.203-1.484%201.359-4.141-4.156-4.219%204.219-1.406-1.422%204.219-4.203z%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E); background-size: 90%; background-repeat:no-repeat; border: none; outline: none; } }";
+            var css = ".babylonUnmuteIcon { position: absolute; left: 20px; top: 20px; height: 40px; width: 60px; background-color: rgba(51,51,51,0.7); background-image: url(data:image/svg+xml;charset=UTF-8,%3Csvg%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2239%22%20height%3D%2232%22%20viewBox%3D%220%200%2039%2032%22%3E%3Cpath%20fill%3D%22white%22%20d%3D%22M9.625%2018.938l-0.031%200.016h-4.953q-0.016%200-0.031-0.016v-12.453q0-0.016%200.031-0.016h4.953q0.031%200%200.031%200.016v12.453zM12.125%207.688l8.719-8.703v27.453l-8.719-8.719-0.016-0.047v-9.938zM23.359%207.875l1.406-1.406%204.219%204.203%204.203-4.203%201.422%201.406-4.219%204.219%204.219%204.203-1.484%201.359-4.141-4.156-4.219%204.219-1.406-1.422%204.219-4.203z%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E);  background-size: 80%; background-repeat:no-repeat; background-position: center; background-position-y: 4px; border: none; outline: none; transition: transform 0.125s ease-out; cursor: pointer; z-index: 9999; } .babylonUnmuteIcon:hover { transform: scale(1.05) } .babylonUnmuteIcon:active { background-color: rgba(51,51,51,1) }";
 
             var style = document.createElement('style');
             style.appendChild(document.createTextNode(css));
             document.getElementsByTagName('head')[0].appendChild(style);
 
-            this._moveButtonToTopLeft();
             document.body.appendChild(this._muteButton);
 
-            if (!iOS) {
-                this._muteButton.addEventListener('mousedown', () => {this._resumeAudioContext();}, false);
-            }
-            this._muteButtonDisplayed = true;
+            this._moveButtonToTopLeft();
 
-            this._canvas = this._engine.getRenderingCanvas();
+            this._muteButton.addEventListener('touchend', () => {
+                this._triggerRunningState();
+            }, true);
+            this._muteButton.addEventListener('click', () => {
+                this._triggerRunningState();
+            }, true);
+
             window.addEventListener("resize", this._onResize);
         }
 
         private _moveButtonToTopLeft() {
-            if (this._canvas && this._muteButton) {
-                this._muteButton.style.top = this._canvas.offsetTop + 20 + "px";
-                this._muteButton.style.left = this._canvas.offsetLeft + 20 + "px";
+            if (this._hostElement && this._muteButton) {
+                this._muteButton.style.top = this._hostElement.offsetTop + 20 + "px";
+                this._muteButton.style.left = this._hostElement.offsetLeft + 20 + "px";
             }
         }
 
@@ -269,9 +300,9 @@
         }
 
         private _hideMuteButton() {
-            if (this._muteButtonDisplayed) {
+            if (this._muteButton) {
                 document.body.removeChild(this._muteButton);
-                this._muteButtonDisplayed = false;
+                this._muteButton = null;
             }
         }
 
@@ -294,6 +325,7 @@
             window.removeEventListener("resize", this._onResize);
 
             this.onAudioUnlockedObservable.clear();
+            this.onAudioLockedObservable.clear();
         }
 
         /**
@@ -320,7 +352,7 @@
         }
 
         /**
-         * Connect the audio engine to an audio analyser allowing some amazing 
+         * Connect the audio engine to an audio analyser allowing some amazing
          * synchornization between the sounds/music and your visualization (VuMeter for instance).
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
          * @param analyser The analyser to connect to the engine
@@ -337,5 +369,3 @@
         }
     }
 }
-
-

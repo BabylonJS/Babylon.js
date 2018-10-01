@@ -1,15 +1,21 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * @hidden
+     */
     export class IntersectionInfo {
         public faceId = 0;
         public subMeshId = 0;
 
-        constructor(public bu: Nullable<number>, public bv: Nullable<number>, public distance: number) {
+        constructor(
+            public bu: Nullable<number>,
+            public bv: Nullable<number>,
+            public distance: number) {
         }
     }
 
     /**
      * Information about the result of picking within a scene
-     * See https://doc.babylonjs.com/babylon101/picking_collisions
+     * @see https://doc.babylonjs.com/babylon101/picking_collisions
      */
     export class PickingInfo {
         /**
@@ -143,4 +149,3 @@
         }
     }
 }
-

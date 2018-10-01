@@ -25,7 +25,7 @@ module BABYLON {
     }
 
     /**
-     * Defines One Image in the file. It requires only the position in the file 
+     * Defines One Image in the file. It requires only the position in the file
      * as well as the length.
      */
     interface BufferImageData {
@@ -51,11 +51,11 @@ module BABYLON {
         /**
          * This contains all the images data needed to reconstruct the cubemap.
          */
-        mipmaps: Array<BufferImageData>
+        mipmaps: Array<BufferImageData>;
         /**
          * Defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness.
          */
-        lodGenerationScale: number
+        lodGenerationScale: number;
     }
 
     /**
@@ -175,13 +175,13 @@ module BABYLON {
 
                     // Creates a temp texture with the face data.
                     let tempTexture = engine.createRawTexture(data, faceWidth, faceWidth, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.NEAREST_SAMPLINGMODE, null, textureType);
-                    // And rgbdEncode them. 
+                    // And rgbdEncode them.
                     let promise = new Promise<void>((resolve, reject) => {
                         let rgbdPostProcess = new PostProcess("rgbdEncode", "rgbdEncode", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, Engine.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
                         rgbdPostProcess.getEffect().executeWhenCompiled(() => {
                             rgbdPostProcess.onApply = (effect) => {
                                 effect._bindTexture("textureSampler", tempTexture);
-                            }
+                            };
 
                             // As the process needs to happen on the main canvas, keep track of the current size
                             let currentW = engine.getRenderWidth();
@@ -483,7 +483,7 @@ module BABYLON {
                                     rgbdPostProcess!.onApply = (effect) => {
                                         effect._bindTexture("textureSampler", tempTexture);
                                         effect.setFloat2("scale", 1, 1);
-                                    }
+                                    };
 
                                     engine.scenes[0].postProcessManager.directRender([rgbdPostProcess!], cubeRtt, true, face, i);
 

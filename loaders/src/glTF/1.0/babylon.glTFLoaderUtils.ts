@@ -7,7 +7,7 @@ module BABYLON.GLTF1 {
     export class GLTFUtils {
         /**
          * Sets the given "parameter" matrix
-         * @param scene: the {BABYLON.Scene} object
+         * @param scene: the Scene object
          * @param source: the source node where to pick the matrix
          * @param parameter: the GLTF technique parameter
          * @param uniformName: the name of the shader's uniform

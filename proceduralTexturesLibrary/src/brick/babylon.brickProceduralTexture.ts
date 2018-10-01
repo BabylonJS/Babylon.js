@@ -1,7 +1,7 @@
  /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
-	export class BrickProceduralTexture extends ProceduralTexture {
+    export class BrickProceduralTexture extends ProceduralTexture {
         private _numberOfBricksHeight: number = 15;
         private _numberOfBricksWidth: number = 5;
         private _jointColor = new Color3(0.72, 0.72, 0.72);
@@ -82,5 +82,5 @@ module BABYLON {
 
             return texture;
         }
-    }	
+    }
 }

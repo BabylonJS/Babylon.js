@@ -1,26 +1,54 @@
 module BABYLON {
 
+    /**
+     * Interface used to present a loading screen while loading a scene
+     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     */
     export interface ILoadingScreen {
+        /**
+         * Function called to display the loading screen
+         */
         displayLoadingUI: () => void;
+        /**
+         * Function called to hide the loading screen
+         */
         hideLoadingUI: () => void;
-        //default loader support
+        /**
+         * Gets or sets the color to use for the background
+         */
         loadingUIBackgroundColor: string;
+        /**
+         * Gets or sets the text to display while loading
+         */
         loadingUIText: string;
 
     }
 
+    /**
+     * Class used for the default loading screen
+     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     */
     export class DefaultLoadingScreen implements ILoadingScreen {
 
         private _loadingDiv: Nullable<HTMLDivElement>;
         private _loadingTextDiv: HTMLDivElement;
 
+        /**
+         * Creates a new default loading screen
+         * @param _renderingCanvas defines the canvas used to render the scene
+         * @param _loadingText defines the default text to display
+         * @param _loadingDivBackgroundColor defines the default background color
+         */
         constructor(private _renderingCanvas: HTMLCanvasElement, private _loadingText = "", private _loadingDivBackgroundColor = "black") {
 
         }
 
+        /**
+         * Function called to display the loading screen
+         */
         public displayLoadingUI(): void {
             if (this._loadingDiv) {
-                // Do not add a loading screen if there is already one  
+                // Do not add a loading screen if there is already one
                 return;
             }
 
@@ -46,14 +74,14 @@ module BABYLON {
             this._loadingTextDiv.innerHTML = "Loading";
 
             this._loadingDiv.appendChild(this._loadingTextDiv);
-			
+
             //set the predefined text
             this._loadingTextDiv.innerHTML = this._loadingText;
 
             // Generating keyframes
             var style = document.createElement('style');
             style.type = 'text/css';
-            var keyFrames = 
+            var keyFrames =
                 `@-webkit-keyframes spin1 {\
                     0% { -webkit-transform: rotate(0deg);}
                     100% { -webkit-transform: rotate(360deg);}
@@ -78,7 +106,7 @@ module BABYLON {
             imgBack.style.webkitAnimation = "spin1 2s infinite ease-in-out";
             imgBack.style.transformOrigin = "50% 50%";
             imgBack.style.webkitTransformOrigin = "50% 50%";
-            
+
             this._loadingDiv.appendChild(imgBack);
 
             this._resizeLoadingUI();
@@ -91,6 +119,9 @@ module BABYLON {
             this._loadingDiv.style.opacity = "1";
         }
 
+        /**
+         * Function called to hide the loading screen
+         */
         public hideLoadingUI(): void {
             if (!this._loadingDiv) {
                 return;
@@ -104,12 +135,15 @@ module BABYLON {
                 window.removeEventListener("resize", this._resizeLoadingUI);
 
                 this._loadingDiv = null;
-            }
+            };
 
             this._loadingDiv.style.opacity = "0";
             this._loadingDiv.addEventListener("transitionend", onTransitionEnd);
         }
 
+        /**
+         * Gets or sets the text to display while loading
+         */
         public set loadingUIText(text: string) {
             this._loadingText = text;
 
@@ -118,6 +152,13 @@ module BABYLON {
             }
         }
 
+        public get loadingUIText(): string {
+            return this._loadingText;
+        }
+
+        /**
+         * Gets or sets the color to use for the background
+         */
         public get loadingUIBackgroundColor(): string {
             return this._loadingDivBackgroundColor;
         }
@@ -130,7 +171,7 @@ module BABYLON {
             }
 
             this._loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
-        }	
+        }
 
         // Resize
         private _resizeLoadingUI = () => {

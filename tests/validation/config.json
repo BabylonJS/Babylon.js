@@ -2,6 +2,27 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
+      "title": "Simulate pointer",
+      "playgroundId": "#8MGKWK#78",
+      "referenceImage": "simulatePointer.png"
+    },
+    {
+      "title": "Camera rig",
+      "playgroundId": "#ATL1CS#6",
+      "referenceImage": "cameraRig.png"
+    },
+    {
+      "title": "Color Grading",
+      "playgroundId": "#8EDB5N#2",
+      "referenceImage": "colorGrading.png"
+    },
+    {
+      "title": "Ribbon morphing",
+      "playgroundId": "#ACKC2#1",
+      "renderCount": 50,
+      "referenceImage": "ribbon morphing.png"
+    },
+    {
       "title": "Clip planes",
       "playgroundId": "#Y6W087#0",
       "referenceImage": "clipplanes.png"
@@ -16,31 +37,31 @@
       "playgroundId": "#8GY6J8#48",
       "renderCount": 50,
       "referenceImage": "Gizmos.png"
-    }, 
+    },
     {
       "title": "GUI3D SpherePanel",
       "playgroundId": "#HB4C01#9",
       "renderCount": 50,
       "referenceImage": "spherepanel.png"
-    },     
+    },
     {
       "title": "Particle Helper",
       "playgroundId": "#1VGT5D#2",
       "renderCount": 50,
       "referenceImage": "particle_helper.png"
-    },     
+    },
     {
       "title": "Chibi Rex",
       "playgroundId": "#QATUCH#4",
       "renderCount": 50,
       "referenceImage": "chibi_rex.png"
-    },     
+    },
     {
       "title": "Yeti",
       "playgroundId": "#QATUCH#3",
       "renderCount": 150,
       "referenceImage": "yeti.png"
-    },   
+    },
     {
       "title": "Sponza",
       "sceneFolder": "/Scenes/Sponza/",
@@ -58,7 +79,7 @@
       "sceneFolder": "/Scenes/Espilit/",
       "sceneFilename": "espilit.babylon",
       "referenceImage": "Espilit.png"
-    },    
+    },
     {
       "title": "The car",
       "sceneFolder": "/Scenes/TheCar/",
@@ -316,7 +337,7 @@
       "title": "GLTF Serializer Texture Transform",
       "playgroundId": "#S5SWJB#32",
       "referenceImage": "glTFSerializerTextureTransform.png"
-    }, 
+    },
     {
       "title": "GLTF Texture Sampler",
       "scriptToRun": "/Demos/GLTFTests/index.js",
@@ -403,7 +424,7 @@
       "scriptToRun": "/Demos/Particles/particles.js",
       "functionToCall": "CreateParticlesTestScene",
       "referenceImage": "particles.png"
-    },    
+    },
     {
       "title": "Reflection probes",
       "renderCount": 20,

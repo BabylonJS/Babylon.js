@@ -1,6 +1,7 @@
 module BABYLON {
     /**
      * This class can be used to get instrumentation data from a Babylon engine
+     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
      */
     export class SceneInstrumentation implements IDisposable {
         private _captureActiveMeshesEvaluationTime = false;
@@ -284,7 +285,6 @@ module BABYLON {
             }
         }
 
-
         /**
          * Gets the perf counter used for animations time
          */
@@ -428,12 +428,12 @@ module BABYLON {
             this._captureCameraRenderTime = value;
 
             if (value) {
-                this._onBeforeCameraRenderObserver = this.scene.onBeforeCameraRenderObservable.add(camera => {
+                this._onBeforeCameraRenderObserver = this.scene.onBeforeCameraRenderObservable.add((camera) => {
                     this._cameraRenderTime.beginMonitoring();
                     Tools.StartPerformanceCounter(`Rendering camera ${camera.name}`);
                 });
 
-                this._onAfterCameraRenderObserver = this.scene.onAfterCameraRenderObservable.add(camera => {
+                this._onAfterCameraRenderObserver = this.scene.onAfterCameraRenderObservable.add((camera) => {
                     this._cameraRenderTime.endMonitoring(false);
                     Tools.EndPerformanceCounter(`Rendering camera ${camera.name}`);
                 });
@@ -453,13 +453,23 @@ module BABYLON {
         }
 
         /**
-         * Gets the perf counter used for texture collisions 
+         * Gets the perf counter used for texture collisions
          */
         public get textureCollisionsCounter(): PerfCounter {
             return this.scene.getEngine()._textureCollisions;
         }
 
-        public constructor(public scene: Scene) {
+        /**
+         * Instantiates a new scene instrumentation.
+         * This class can be used to get instrumentation data from a Babylon engine
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
+         * @param scene Defines the scene to instrument
+         */
+        public constructor(
+            /**
+             * Defines the scene to instrument
+             */
+            public scene: Scene) {
             // Before render
             this._onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
                 if (this._captureActiveMeshesEvaluationTime) {
@@ -512,6 +522,9 @@ module BABYLON {
             });
         }
 
+        /**
+         * Dispose and release associated resources.
+         */
         public dispose() {
             this.scene.onAfterRenderObservable.remove(this._onAfterRenderObserver);
             this._onAfterRenderObserver = null;

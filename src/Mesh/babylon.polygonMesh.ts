@@ -1,18 +1,27 @@
 module BABYLON {
     declare var earcut: any;
+    /**
+     * Vector2 wth index property
+     */
     class IndexedVector2 extends Vector2 {
-        constructor(original: Vector2, public index: number) {
+        constructor(
+            original: Vector2,
+            /** Index of the vector2 */
+            public index: number) {
             super(original.x, original.y);
         }
     }
 
+    /**
+     * Defines points to create a polygon
+     */
     class PolygonPoints {
         elements = new Array<IndexedVector2>();
 
         add(originalPoints: Array<Vector2>): Array<IndexedVector2> {
 
             var result = new Array<IndexedVector2>();
-            originalPoints.forEach(point => {
+            originalPoints.forEach((point) => {
                 if (result.length === 0 || !point.equalsWithEpsilon(result[0])) {
                     var newPoint = new IndexedVector2(point, this.elements.length);
                     result.push(newPoint);
@@ -27,7 +36,7 @@ module BABYLON {
             var lmin = new Vector2(this.elements[0].x, this.elements[0].y);
             var lmax = new Vector2(this.elements[0].x, this.elements[0].y);
 
-            this.elements.forEach(point => {
+            this.elements.forEach((point) => {
 
                 // x
                 if (point.x < lmin.x) {
@@ -56,7 +65,19 @@ module BABYLON {
         }
     }
 
+    /**
+     * Polygon
+     * @see https://doc.babylonjs.com/how_to/parametric_shapes#non-regular-polygon
+     */
     export class Polygon {
+        /**
+         * Creates a rectangle
+         * @param xmin bottom X coord
+         * @param ymin bottom Y coord
+         * @param xmax top X coord
+         * @param ymax top Y coord
+         * @returns points that make the resulting rectation
+         */
         static Rectangle(xmin: number, ymin: number, xmax: number, ymax: number): Vector2[] {
             return [
                 new Vector2(xmin, ymin),
@@ -66,6 +87,14 @@ module BABYLON {
             ];
         }
 
+        /**
+         * Creates a circle
+         * @param radius radius of circle
+         * @param cx scale in x
+         * @param cy scale in y
+         * @param numberOfSides number of sides that make up the circle
+         * @returns points that make the resulting circle
+         */
         static Circle(radius: number, cx: number = 0, cy: number = 0, numberOfSides: number = 32): Vector2[] {
             var result = new Array<Vector2>();
 
@@ -83,8 +112,13 @@ module BABYLON {
             return result;
         }
 
+        /**
+         * Creates a polygon from input string
+         * @param input Input polygon data
+         * @returns the parsed points
+         */
         static Parse(input: string): Vector2[] {
-            var floats = input.split(/[^-+eE\.\d]+/).map(parseFloat).filter(val => (!isNaN(val)));
+            var floats = input.split(/[^-+eE\.\d]+/).map(parseFloat).filter((val) => (!isNaN(val)));
             var i: number, result = [];
             for (i = 0; i < (floats.length & 0x7FFFFFFE); i += 2) {
                 result.push(new Vector2(floats[i], floats[i + 1]));
@@ -92,11 +126,21 @@ module BABYLON {
             return result;
         }
 
+        /**
+         * Starts building a polygon from x and y coordinates
+         * @param x x coordinate
+         * @param y y coordinate
+         * @returns the started path2
+         */
         static StartingAt(x: number, y: number): Path2 {
             return Path2.StartingAt(x, y);
         }
     }
 
+    /**
+     * Builds a polygon
+     * @see https://doc.babylonjs.com/how_to/polygonmeshbuilder
+     */
     export class PolygonMeshBuilder {
 
         private _points = new PolygonPoints();
@@ -115,9 +159,13 @@ module BABYLON {
             }
         }
 
-        constructor(name: string, contours: Path2, scene: Scene)
-        constructor(name: string, contours: Vector2[], scene: Scene)
-        constructor(name: string, contours: any, scene: Scene) {
+        /**
+         * Creates a PolygonMeshBuilder
+         * @param name name of the builder
+         * @param contours Path of the polygon
+         * @param scene scene to add to
+         */
+        constructor(name: string, contours: Path2 | Vector2[] | any, scene: Scene) {
             this._name = name;
             this._scene = scene;
 
@@ -134,10 +182,15 @@ module BABYLON {
             this._outlinepoints.add(points);
 
             if (typeof earcut === 'undefined') {
-                Tools.Warn("Earcut was not found, the polygon will not be built.")
+                Tools.Warn("Earcut was not found, the polygon will not be built.");
             }
         }
 
+        /**
+         * Adds a whole within the polygon
+         * @param hole Array of points defining the hole
+         * @returns this
+         */
         addHole(hole: Vector2[]): PolygonMeshBuilder {
             this._points.add(hole);
             var holepoints = new PolygonPoints();
@@ -150,6 +203,12 @@ module BABYLON {
             return this;
         }
 
+        /**
+         * Creates the polygon
+         * @param updatable If the mesh should be updatable
+         * @param depth The depth of the mesh created
+         * @returns the created mesh
+         */
         build(updatable: boolean = false, depth: number = 0): Mesh {
             var result = new Mesh(this._name, this._scene);
 
@@ -208,12 +267,23 @@ module BABYLON {
             return result;
         }
 
+        /**
+         * Adds a side to the polygon
+         * @param positions points that make the polygon
+         * @param normals normals of the polygon
+         * @param uvs uvs of the polygon
+         * @param indices indices of the polygon
+         * @param bounds bounds of the polygon
+         * @param points points of the polygon
+         * @param depth depth of the polygon
+         * @param flip flip of the polygon
+         */
         private addSide(positions: any[], normals: any[], uvs: any[], indices: any[], bounds: any, points: PolygonPoints, depth: number, flip: boolean) {
             var StartIndex: number = positions.length / 3;
             var ulength: number = 0;
             for (var i: number = 0; i < points.elements.length; i++) {
                 var p: IndexedVector2 = points.elements[i];
-                var p1: IndexedVector2
+                var p1: IndexedVector2;
                 if ((i + 1) > points.elements.length - 1) {
                     p1 = points.elements[0];
                 }
@@ -268,7 +338,7 @@ module BABYLON {
                     indices.push(StartIndex + 3);
                 }
                 StartIndex += 4;
-            };
+            }
         }
     }
 }

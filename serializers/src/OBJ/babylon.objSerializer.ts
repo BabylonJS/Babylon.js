@@ -4,7 +4,7 @@ module BABYLON {
     export class OBJExport {
         //Exports the geometry of a Mesh array in .OBJ file format (text)
         public static OBJ(mesh: Mesh[], materials?: boolean, matlibname?: string, globalposition?: boolean): string {
-            const output:string[] = [];
+            const output: string[] = [];
             let v = 1;
             if (materials) {
                 if (!matlibname) {
@@ -70,12 +70,12 @@ module BABYLON {
 
                 for (i = 0; i < trunkFaces.length; i += 3) {
                     const indices = [String(trunkFaces[i + 2] + v), String(trunkFaces[i + 1] + v), String(trunkFaces[i] + v)];
-                    const blanks: string[] = ["","",""];
+                    const blanks: string[] = ["", "", ""];
 
                     const facePositions = indices;
                     const faceUVs = trunkUV != null ? indices : blanks;
                     const faceNormals = trunkNormals != null ? indices : blanks;
-                         
+
                     output.push(
                         "f " + facePositions[0] + "/" + faceUVs[0] + "/" + faceNormals[0] +
                         " " + facePositions[1] + "/" + faceUVs[1] + "/" + faceNormals[1] +

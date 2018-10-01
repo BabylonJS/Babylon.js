@@ -1,11 +1,11 @@
-﻿module BABYLON {
+module BABYLON {
     Node.AddNodeConstructor("ArcRotateCamera", (name, scene) => {
         return () => new ArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);
     });
 
     /**
      * This represents an orbital type of camera.
-     * 
+     *
      * This camera always points towards a given target position and can be rotated around that target with the target as the centre of rotation. It can be controlled with cursors and mouse, or with touch events.
      * Think of this camera as one orbiting its target position, or more imaginatively as a spy satellite orbiting the earth. Its position relative to the target (earth) can be set by three parameters, alpha (radians) the longitudinal rotation, beta (radians) the latitudinal rotation and radius the distance from the target position.
      * @see http://doc.babylonjs.com/babylon101/cameras#arc-rotate-camera
@@ -154,8 +154,9 @@
          */
         public get angularSensibilityX(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
-            if (pointers)
+            if (pointers) {
                 return pointers.angularSensibilityX;
+            }
 
             return 0;
         }
@@ -172,8 +173,9 @@
          */
         public get angularSensibilityY(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
-            if (pointers)
+            if (pointers) {
                 return pointers.angularSensibilityY;
+            }
 
             return 0;
         }
@@ -190,8 +192,9 @@
          */
         public get pinchPrecision(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
-            if (pointers)
+            if (pointers) {
                 return pointers.pinchPrecision;
+            }
 
             return 0;
         }
@@ -205,13 +208,14 @@
 
         /**
          * Gets or Set the pointer pinch delta percentage or how fast is the camera zooming.
-         * It will be used instead of pinchDeltaPrecision if different from 0. 
+         * It will be used instead of pinchDeltaPrecision if different from 0.
          * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
          */
         public get pinchDeltaPercentage(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
-            if (pointers)
+            if (pointers) {
                 return pointers.pinchDeltaPercentage;
+            }
 
             return 0;
         }
@@ -228,8 +232,9 @@
          */
         public get panningSensibility(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
-            if (pointers)
+            if (pointers) {
                 return pointers.panningSensibility;
+            }
 
             return 0;
         }
@@ -246,16 +251,18 @@
          */
         public get keysUp(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 return keyboard.keysUp;
+            }
 
             return [];
         }
 
         public set keysUp(value: number[]) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 keyboard.keysUp = value;
+            }
         }
 
         /**
@@ -263,16 +270,18 @@
          */
         public get keysDown(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 return keyboard.keysDown;
+            }
 
             return [];
         }
 
         public set keysDown(value: number[]) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 keyboard.keysDown = value;
+            }
         }
 
         /**
@@ -280,16 +289,18 @@
          */
         public get keysLeft(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 return keyboard.keysLeft;
+            }
 
             return [];
         }
 
         public set keysLeft(value: number[]) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 keyboard.keysLeft = value;
+            }
         }
 
         /**
@@ -297,16 +308,18 @@
          */
         public get keysRight(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 return keyboard.keysRight;
+            }
 
             return [];
         }
 
         public set keysRight(value: number[]) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 keyboard.keysRight = value;
+            }
         }
 
         /**
@@ -314,35 +327,39 @@
          */
         public get wheelPrecision(): number {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
-            if (mousewheel)
+            if (mousewheel) {
                 return mousewheel.wheelPrecision;
+            }
 
             return 0;
         }
 
         public set wheelPrecision(value: number) {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
-            if (mousewheel)
+            if (mousewheel) {
                 mousewheel.wheelPrecision = value;
+            }
         }
 
         /**
          * Gets or Set the mouse wheel delta percentage or how fast is the camera zooming.
-         * It will be used instead of pinchDeltaPrecision if different from 0. 
+         * It will be used instead of pinchDeltaPrecision if different from 0.
          * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
          */
         public get wheelDeltaPercentage(): number {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
-            if (mousewheel)
+            if (mousewheel) {
                 return mousewheel.wheelDeltaPercentage;
+            }
 
             return 0;
         }
 
         public set wheelDeltaPercentage(value: number) {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
-            if (mousewheel)
+            if (mousewheel) {
                 mousewheel.wheelDeltaPercentage = value;
+            }
         }
 
         //-- end properties for backward compatibility for inputs
@@ -365,6 +382,12 @@
          */
         @serialize()
         public allowUpsideDown = true;
+
+        /**
+         * Define if double tap/click is used to restore the previously saved state of the camera.
+         */
+        @serialize()
+        public useInputToRestoreState = true;
 
         /** @hidden */
         public _viewMatrix = new Matrix();
@@ -636,8 +659,9 @@
         // Synchronized
         /** @hidden */
         public _isSynchronizedViewMatrix(): boolean {
-            if (!super._isSynchronizedViewMatrix())
+            if (!super._isSynchronizedViewMatrix()) {
                 return false;
+            }
 
             return this._cache._target.equals(this._getTargetPosition())
                 && this._cache.alpha === this.alpha
@@ -692,9 +716,9 @@
             // Inertia
             if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
                 let inertialAlphaOffset = this.inertialAlphaOffset;
-                if (this.beta <= 0) inertialAlphaOffset *= -1;
-                if (this.getScene().useRightHandedSystem) inertialAlphaOffset *= -1;
-                if (this.parent && this.parent._getWorldMatrixDeterminant() < 0) inertialAlphaOffset *= -1;
+                if (this.beta <= 0) { inertialAlphaOffset *= -1; }
+                if (this.getScene().useRightHandedSystem) { inertialAlphaOffset *= -1; }
+                if (this.parent && this.parent._getWorldMatrixDeterminant() < 0) { inertialAlphaOffset *= -1; }
                 this.alpha += inertialAlphaOffset;
 
                 this.beta += this.inertialBetaOffset;
@@ -703,12 +727,15 @@
                 this.inertialAlphaOffset *= this.inertia;
                 this.inertialBetaOffset *= this.inertia;
                 this.inertialRadiusOffset *= this.inertia;
-                if (Math.abs(this.inertialAlphaOffset) < Epsilon)
+                if (Math.abs(this.inertialAlphaOffset) < Epsilon) {
                     this.inertialAlphaOffset = 0;
-                if (Math.abs(this.inertialBetaOffset) < Epsilon)
+                }
+                if (Math.abs(this.inertialBetaOffset) < Epsilon) {
                     this.inertialBetaOffset = 0;
-                if (Math.abs(this.inertialRadiusOffset) < this.speed * Epsilon)
+                }
+                if (Math.abs(this.inertialRadiusOffset) < this.speed * Epsilon) {
                     this.inertialRadiusOffset = 0;
+                }
             }
 
             // Panning inertia
@@ -743,10 +770,12 @@
                 this.inertialPanningX *= this.panningInertia;
                 this.inertialPanningY *= this.panningInertia;
 
-                if (Math.abs(this.inertialPanningX) < this.speed * Epsilon)
+                if (Math.abs(this.inertialPanningX) < this.speed * Epsilon) {
                     this.inertialPanningX = 0;
-                if (Math.abs(this.inertialPanningY) < this.speed * Epsilon)
+                }
+                if (Math.abs(this.inertialPanningY) < this.speed * Epsilon) {
                     this.inertialPanningY = 0;
+                }
             }
 
             // Limits

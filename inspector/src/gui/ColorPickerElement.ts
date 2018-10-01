@@ -5,7 +5,7 @@ import { Scheduler } from "../scheduler/Scheduler";
 import { BasicElement } from "./BasicElement";
 
 /**
- * Represents a html div element. 
+ * Represents a html div element.
  * The div is built when an instance of BasicElement is created.
  */
 export class ColorPickerElement extends BasicElement {

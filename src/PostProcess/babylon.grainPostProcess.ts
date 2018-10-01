@@ -6,12 +6,12 @@ module BABYLON {
         /**
          * The intensity of the grain added (default: 30)
          */
-        public intensity:number = 30;
+        public intensity: number = 30;
         /**
          * If the grain should be randomized on every frame
          */
-        public animated:boolean = false;
-        
+        public animated: boolean = false;
+
         /**
          * Creates a new instance of @see GrainPostProcess
          * @param name The name of the effect.
@@ -28,7 +28,7 @@ module BABYLON {
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setFloat('intensity', this.intensity);
                 effect.setFloat('animatedSeed', this.animated ? Math.random() + 1 : 1);
-            })
+            });
         }
     }
 }

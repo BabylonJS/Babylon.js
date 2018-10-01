@@ -1,6 +1,6 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
-module BABYLON.GLTF2.Extensions {
+module BABYLON.GLTF2.Loader.Extensions {
     const NAME = "KHR_texture_transform";
 
     interface IKHRTextureTransform {
@@ -11,7 +11,7 @@ module BABYLON.GLTF2.Extensions {
     }
 
     /**
-     * [Specification](https://github.com/AltspaceVR/glTF/blob/avr-sampler-offset-tile/extensions/2.0/Khronos/KHR_texture_transform/README.md) (Experimental)
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_texture_transform/README.md)
      */
     export class KHR_texture_transform implements IGLTFLoaderExtension {
         /** The name of this extension. */
@@ -35,7 +35,7 @@ module BABYLON.GLTF2.Extensions {
         /** @hidden */
         public loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
             return GLTFLoader.LoadExtensionAsync<IKHRTextureTransform, BaseTexture>(context, textureInfo, this.name, (extensionContext, extension) => {
-                return this._loader.loadTextureInfoAsync(context, textureInfo, babylonTexture => {
+                return this._loader.loadTextureInfoAsync(context, textureInfo, (babylonTexture) => {
                     if (!(babylonTexture instanceof Texture)) {
                         throw new Error(`${extensionContext}: Texture type not supported`);
                     }
@@ -68,5 +68,5 @@ module BABYLON.GLTF2.Extensions {
         }
     }
 
-    GLTFLoader.RegisterExtension(NAME, loader => new KHR_texture_transform(loader));
+    GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_texture_transform(loader));
 }

@@ -1,21 +1,21 @@
-﻿module BABYLON {
+module BABYLON {
     export interface AbstractMesh {
         /**
          * Disables the mesh edge rendering mode
          * @returns the currentAbstractMesh
          */
         disableEdgesRendering(): AbstractMesh;
-        
+
         /**
-         * Enables the edge rendering mode on the mesh.  
+         * Enables the edge rendering mode on the mesh.
          * This mode makes the mesh edges visible
          * @param epsilon defines the maximal distance between two angles to detect a face
          * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
-         * @returns the currentAbstractMesh 
+         * @returns the currentAbstractMesh
          * @see https://www.babylonjs-playground.com/#19O9TU#0
          */
         enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
-        
+
         /**
          * Gets the edgesRenderer associated with the mesh
          */
@@ -28,16 +28,16 @@
             this._edgesRenderer = null;
         }
         return this;
-    }
+    };
 
     AbstractMesh.prototype.enableEdgesRendering = function(epsilon = 0.95, checkVerticesInsteadOfIndices = false): AbstractMesh {
         this.disableEdgesRendering();
         this._edgesRenderer = new EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
         return this;
-    }
+    };
 
     Object.defineProperty(AbstractMesh.prototype, "edgesRenderer", {
-        get: function (this:AbstractMesh) {
+        get: function(this: AbstractMesh) {
             return this._edgesRenderer;
         },
         enumerable: true,
@@ -60,7 +60,7 @@
         this.disableEdgesRendering();
         this._edgesRenderer = new LineEdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
         return this;
-    }
+    };
 
     /**
      * FaceAdjacencies Helper class to generate edges
@@ -77,8 +77,8 @@
      * Defines the minimum contract an Edges renderer should follow.
      */
     export interface IEdgesRenderer extends IDisposable {
-        /** 
-         * Gets or sets a boolean indicating if the edgesRenderer is active 
+        /**
+         * Gets or sets a boolean indicating if the edgesRenderer is active
          */
         isEnabled: boolean;
 
@@ -98,8 +98,17 @@
      * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
      */
     export class EdgesRenderer implements IEdgesRenderer {
+
+        /**
+         * Define the size of the edges with an orthographic camera
+         */
         public edgesWidthScalerForOrthographic = 1000.0;
+
+        /**
+         * Define the size of the edges with a perspective camera
+         */
         public edgesWidthScalerForPerspective = 50.0;
+
         protected _source: AbstractMesh;
         protected _linesPositions = new Array<number>();
         protected _linesNormals = new Array<number>();
@@ -133,7 +142,7 @@
             this._epsilon = epsilon;
 
             this._prepareRessources();
-            if(generateEdgesLines) {
+            if (generateEdgesLines) {
                 this._generateEdgesLines();
             }
 
@@ -476,4 +485,4 @@
             this._lineShader.unbind();
         }
     }
-} 
+}

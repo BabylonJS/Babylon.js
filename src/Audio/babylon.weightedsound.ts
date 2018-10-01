@@ -41,7 +41,7 @@ module BABYLON {
             }
             this._sounds = sounds;
             for (let sound of this._sounds) {
-                sound.onEndedObservable.add(() => { this._onended() });
+                sound.onEndedObservable.add(() => { this._onended(); });
             }
         }
 

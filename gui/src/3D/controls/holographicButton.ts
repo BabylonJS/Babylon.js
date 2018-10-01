@@ -27,18 +27,18 @@ export class HolographicButton extends Button3D {
     private _tooltipTextBlock: Nullable<TextBlock>;
     private _tooltipTexture: Nullable<AdvancedDynamicTexture>;
     private _tooltipMesh: Nullable<Mesh>;
-    private _tooltipHoverObserver:Nullable<Observer<Control3D>>
-    private _tooltipOutObserver:Nullable<Observer<Control3D>>
+    private _tooltipHoverObserver: Nullable<Observer<Control3D>>;
+    private _tooltipOutObserver: Nullable<Observer<Control3D>>;
 
-    private _disposeTooltip(){
+    private _disposeTooltip() {
         this._tooltipFade = null;
-        if(this._tooltipTextBlock){
+        if (this._tooltipTextBlock) {
             this._tooltipTextBlock.dispose();
         }
-        if(this._tooltipTexture){
+        if (this._tooltipTexture) {
             this._tooltipTexture.dispose();
         }
-        if(this._tooltipMesh){
+        if (this._tooltipMesh) {
             this._tooltipMesh.dispose();
         }
         this.onPointerEnterObservable.remove(this._tooltipHoverObserver);
@@ -48,31 +48,31 @@ export class HolographicButton extends Button3D {
     /**
      * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
      */
-    public set tooltipText(text:Nullable<string>){
-        if(!text){
+    public set tooltipText(text: Nullable<string>) {
+        if (!text) {
             this._disposeTooltip();
             return;
         }
-        if(!this._tooltipFade){
+        if (!this._tooltipFade) {
             // Create tooltip with mesh and text
-            this._tooltipMesh = BABYLON.MeshBuilder.CreatePlane("", {size: 1}, this._backPlate._scene)
-            var tooltipBackground = BABYLON.MeshBuilder.CreatePlane("", {size: 1, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, this._backPlate._scene)
+            this._tooltipMesh = BABYLON.MeshBuilder.CreatePlane("", {size: 1}, this._backPlate._scene);
+            var tooltipBackground = BABYLON.MeshBuilder.CreatePlane("", {size: 1, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, this._backPlate._scene);
             var mat = new StandardMaterial("", this._backPlate._scene);
-            mat.diffuseColor = BABYLON.Color3.FromHexString("#212121")
-            tooltipBackground.material = mat
+            mat.diffuseColor = BABYLON.Color3.FromHexString("#212121");
+            tooltipBackground.material = mat;
             tooltipBackground.isPickable = false;
-            this._tooltipMesh.addChild(tooltipBackground)
-            tooltipBackground.position.z = 0.05
-            this._tooltipMesh.scaling.y = 1/3
+            this._tooltipMesh.addChild(tooltipBackground);
+            tooltipBackground.position.z = 0.05;
+            this._tooltipMesh.scaling.y = 1 / 3;
             this._tooltipMesh.position.y = 0.7;
             this._tooltipMesh.position.z = -0.15;
             this._tooltipMesh.isPickable = false;
             this._tooltipMesh.parent = this._backPlate;
 
             // Create text texture for the tooltip
-            this._tooltipTexture = AdvancedDynamicTexture.CreateForMesh(this._tooltipMesh)
+            this._tooltipTexture = AdvancedDynamicTexture.CreateForMesh(this._tooltipMesh);
             this._tooltipTextBlock = new TextBlock();
-            this._tooltipTextBlock.scaleY = 3
+            this._tooltipTextBlock.scaleY = 3;
             this._tooltipTextBlock.color = "white";
             this._tooltipTextBlock.fontSize = 130;
             this._tooltipTexture.addControl(this._tooltipTextBlock);
@@ -81,29 +81,29 @@ export class HolographicButton extends Button3D {
             this._tooltipFade = new BABYLON.FadeInOutBehavior();
             this._tooltipFade.delay = 500;
             this._tooltipMesh.addBehavior(this._tooltipFade);
-            this._tooltipHoverObserver = this.onPointerEnterObservable.add(()=>{
-                if(this._tooltipFade){
-                    this._tooltipFade.fadeIn(true)
+            this._tooltipHoverObserver = this.onPointerEnterObservable.add(() => {
+                if (this._tooltipFade) {
+                    this._tooltipFade.fadeIn(true);
                 }
-            })
-            this._tooltipOutObserver = this.onPointerOutObservable.add(()=>{
-                if(this._tooltipFade){
-                    this._tooltipFade.fadeIn(false)
+            });
+            this._tooltipOutObserver = this.onPointerOutObservable.add(() => {
+                if (this._tooltipFade) {
+                    this._tooltipFade.fadeIn(false);
                 }
-            })
+            });
         }
-        if(this._tooltipTextBlock){
+        if (this._tooltipTextBlock) {
             this._tooltipTextBlock.text = text;
         }
     }
 
-    public get tooltipText(){
-        if(this._tooltipTextBlock){
+    public get tooltipText() {
+        if (this._tooltipTextBlock) {
             return this._tooltipTextBlock.text;
         }
         return null;
     }
-    
+
     /**
      * Gets or sets text for the button
      */
@@ -179,14 +179,14 @@ export class HolographicButton extends Button3D {
                 return;
             }
             this._frontPlate.setEnabled(true);
-        }
+        };
 
         this.pointerOutAnimation = () => {
             if (!this.mesh) {
                 return;
             }
             this._frontPlate.setEnabled(false);
-        }
+        };
     }
 
     protected _getTypeName(): string {
@@ -258,7 +258,7 @@ export class HolographicButton extends Button3D {
     private _createBackMaterial(mesh: Mesh) {
         this._backMaterial = new FluentMaterial(this.name + "Back Material", mesh.getScene());
         this._backMaterial.renderHoverLight = true;
-        this._pickedPointObserver = this._host.onPickedPointChangedObservable.add(pickedPoint => {
+        this._pickedPointObserver = this._host.onPickedPointChangedObservable.add((pickedPoint) => {
             if (pickedPoint) {
                 this._backMaterial.hoverPosition = pickedPoint;
                 this._backMaterial.hoverColor.a = 1.0;

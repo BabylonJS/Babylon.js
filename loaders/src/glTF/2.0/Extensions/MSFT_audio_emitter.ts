@@ -1,6 +1,6 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
-module BABYLON.GLTF2.Extensions {
+module BABYLON.GLTF2.Loader.Extensions {
     const NAME = "MSFT_audio_emitter";
 
     interface IClipReference {
@@ -65,7 +65,7 @@ module BABYLON.GLTF2.Extensions {
     }
 
     interface IAnimationEvent {
-        action: AnimationEventAction,
+        action: AnimationEventAction;
         emitter: number;
         time: number;
         startOffset?: number;
@@ -119,7 +119,7 @@ module BABYLON.GLTF2.Extensions {
         }
 
         /** @hidden */
-        public loadSceneAsync(context: string, scene: ILoaderScene): Nullable<Promise<void>> {
+        public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
             return GLTFLoader.LoadExtensionAsync<IEmittersReference>(context, scene, this.name, (extensionContext, extension) => {
                 const promises = new Array<Promise<any>>();
 
@@ -140,11 +140,11 @@ module BABYLON.GLTF2.Extensions {
         }
 
         /** @hidden */
-        public loadNodeAsync(context: string, node: ILoaderNode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> {
+        public loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> {
             return GLTFLoader.LoadExtensionAsync<IEmittersReference, Mesh>(context, node, this.name, (extensionContext, extension) => {
                 const promises = new Array<Promise<any>>();
 
-                return this._loader.loadNodeAsync(extensionContext, node, babylonMesh => {
+                return this._loader.loadNodeAsync(extensionContext, node, (babylonMesh) => {
                     for (const emitterIndex of extension.emitters) {
                         const emitter = ArrayItem.Get(`${extensionContext}/emitters`, this._emitters, emitterIndex);
                         promises.push(this._loadEmitterAsync(`${extensionContext}/emitters/${emitter.index}`, emitter).then(() => {
@@ -162,7 +162,7 @@ module BABYLON.GLTF2.Extensions {
                     }
 
                     assign(babylonMesh);
-                }).then(babylonMesh => {
+                }).then((babylonMesh) => {
                     return Promise.all(promises).then(() => {
                         return babylonMesh;
                     });
@@ -171,9 +171,9 @@ module BABYLON.GLTF2.Extensions {
         }
 
         /** @hidden */
-        public loadAnimationAsync(context: string, animation: ILoaderAnimation): Nullable<Promise<AnimationGroup>> {
+        public loadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>> {
             return GLTFLoader.LoadExtensionAsync<ILoaderAnimationEvents, AnimationGroup>(context, animation, this.name, (extensionContext, extension) => {
-                return this._loader.loadAnimationAsync(context, animation).then(babylonAnimationGroup => {
+                return this._loader.loadAnimationAsync(context, animation).then((babylonAnimationGroup) => {
                     const promises = new Array<Promise<any>>();
 
                     ArrayItem.Assign(extension.events);
@@ -202,7 +202,7 @@ module BABYLON.GLTF2.Extensions {
                 promise = this._loader.loadBufferViewAsync(`#/bufferViews/${bufferView.index}`, bufferView);
             }
 
-            clip._objectURL = promise.then(data => {
+            clip._objectURL = promise.then((data) => {
                 return URL.createObjectURL(new Blob([data], { type: clip.mimeType }));
             });
 
@@ -234,11 +234,11 @@ module BABYLON.GLTF2.Extensions {
                 }
 
                 const promise = Promise.all(clipPromises).then(() => {
-                    const weights = emitter.clips.map(clip => { return clip.weight || 1; });
+                    const weights = emitter.clips.map((clip) => { return clip.weight || 1; });
                     const weightedSound = new WeightedSound(emitter.loop || false, emitter._babylonSounds, weights);
-                    if (emitter.innerAngle) weightedSound.directionalConeInnerAngle = 2 * Tools.ToDegrees(emitter.innerAngle);
-                    if (emitter.outerAngle) weightedSound.directionalConeOuterAngle = 2 * Tools.ToDegrees(emitter.outerAngle);
-                    if (emitter.volume) weightedSound.volume = emitter.volume;
+                    if (emitter.innerAngle) { weightedSound.directionalConeInnerAngle = 2 * Tools.ToDegrees(emitter.innerAngle); }
+                    if (emitter.outerAngle) { weightedSound.directionalConeOuterAngle = 2 * Tools.ToDegrees(emitter.outerAngle); }
+                    if (emitter.volume) { weightedSound.volume = emitter.volume; }
                     emitter._babylonData!.sound = weightedSound;
                 });
 
@@ -274,7 +274,7 @@ module BABYLON.GLTF2.Extensions {
             }
         }
 
-        private _loadAnimationEventAsync(context: string, animationContext: string, animation: ILoaderAnimation, event: ILoaderAnimationEvent, babylonAnimationGroup: AnimationGroup): Promise<void> {
+        private _loadAnimationEventAsync(context: string, animationContext: string, animation: IAnimation, event: ILoaderAnimationEvent, babylonAnimationGroup: AnimationGroup): Promise<void> {
             if (babylonAnimationGroup.targetedAnimations.length == 0) {
                 return Promise.resolve();
             }
@@ -298,5 +298,5 @@ module BABYLON.GLTF2.Extensions {
         }
     }
 
-    GLTFLoader.RegisterExtension(NAME, loader => new MSFT_audio_emitter(loader));
+    GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_audio_emitter(loader));
 }

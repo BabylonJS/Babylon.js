@@ -17,9 +17,9 @@ module BABYLON {
          */
         debugLayer: DebugLayer;
     }
-    
+
     Object.defineProperty(Scene.prototype, "debugLayer", {
-        get: function (this: Scene) {
+        get: function(this: Scene) {
             if (!this._debugLayer) {
                 this._debugLayer = new DebugLayer(this);
             }
@@ -29,16 +29,37 @@ module BABYLON {
         configurable: true
     });
 
+    /**
+     * The debug layer (aka Inspector) is the go to tool in order to better understand
+     * what is happening in your scene
+     * @see http://doc.babylonjs.com/features/playground_debuglayer
+     */
     export class DebugLayer {
-        private _scene: Scene;
+        /**
+         * Define the url to get the inspector script from.
+         * By default it uses the babylonjs CDN.
+         * @ignoreNaming
+         */
         public static InspectorURL = 'https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js';
+
+        private _scene: Scene;
         // The inspector instance
         private _inspector: any;
 
         private BJSINSPECTOR = typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
 
+        /**
+         * Observable triggered when a property is changed through the inspector.
+         */
         public onPropertyChangedObservable = new BABYLON.Observable<{ object: any, property: string, value: any, initialValue: any }>();
 
+        /**
+         * Instantiates a new debug layer.
+         * The debug layer (aka Inspector) is the go to tool in order to better understand
+         * what is happening in your scene
+         * @see http://doc.babylonjs.com/features/playground_debuglayer
+         * @param scene Defines the scene to inspect
+         */
         constructor(scene: Scene) {
             this._scene = scene;
             this._scene.onDisposeObservable.add(() => {
@@ -46,7 +67,7 @@ module BABYLON {
                 if (this._scene._debugLayer) {
                     this._scene._debugLayer.hide();
                 }
-            })
+            });
         }
 
         /** Creates the inspector window. */
@@ -70,10 +91,14 @@ module BABYLON {
             if (!this._inspector) {
                 this.BJSINSPECTOR = this.BJSINSPECTOR || typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
 
-                this._inspector = new this.BJSINSPECTOR.Inspector(this._scene, popup, initialTab, parentElement, config.newColors);               
+                this._inspector = new this.BJSINSPECTOR.Inspector(this._scene, popup, initialTab, parentElement, config.newColors);
             } // else nothing to do as instance is already created
         }
 
+        /**
+         * Get if the inspector is visible or not.
+         * @returns true if visible otherwise, false
+         */
         public isVisible(): boolean {
             if (!this._inspector) {
                 return false;
@@ -81,6 +106,9 @@ module BABYLON {
             return true;
         }
 
+        /**
+         * Hide the inspector and close its window.
+         */
         public hide() {
             if (this._inspector) {
                 try {
@@ -92,7 +120,7 @@ module BABYLON {
                 this._inspector = null;
             }
         }
-        
+
         /**
         *
         * Launch the debugLayer.
@@ -113,8 +141,8 @@ module BABYLON {
         * | 10 | Camera |
         * | 11 | Audio |
         *
+        * @param config Define the configuration of the inspector
         */
-
         public show(config: {
             popup?: boolean,
             initialTab?: number | string,
@@ -128,7 +156,7 @@ module BABYLON {
                 colorTop?: string,
                 colorBot?: string
             }
-        } = {}) {
+        } = {}): void {
             if (typeof this.BJSINSPECTOR == 'undefined') {
                 // Load inspector and add it to the DOM
                 Tools.LoadScript(DebugLayer.InspectorURL, this._createInspector.bind(this, config));

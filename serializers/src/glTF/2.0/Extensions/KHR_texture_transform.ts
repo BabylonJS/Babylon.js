@@ -1,5 +1,8 @@
 /// <reference path="../../../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
 
+/**
+ * @hidden
+ */
 module BABYLON.GLTF2.Exporter.Extensions {
     const NAME = "KHR_texture_transform";
 
@@ -66,7 +69,7 @@ module BABYLON.GLTF2.Exporter.Extensions {
                     reject(`${context}: "scene" is not defined for Babylon texture ${babylonTexture.name}!`);
                 }
                 else {
-                    this.textureTransformTextureAsync(babylonTexture, offset, rotation, scale, scene).then(texture => {
+                    this.textureTransformTextureAsync(babylonTexture, offset, rotation, scale, scene).then((texture) => {
                         resolve(texture as Texture);
                     });
                 }
@@ -75,11 +78,11 @@ module BABYLON.GLTF2.Exporter.Extensions {
 
         /**
          * Transform the babylon texture by the offset, rotation and scale parameters using a procedural texture
-         * @param babylonTexture 
-         * @param offset 
-         * @param rotation 
-         * @param scale 
-         * @param scene 
+         * @param babylonTexture
+         * @param offset
+         * @param rotation
+         * @param scale
+         * @param scene
          */
         public textureTransformTextureAsync(babylonTexture: Texture, offset: Vector2, rotation: number, scale: Vector2, scene: Scene): Promise<BaseTexture> {
             return new Promise((resolve, reject) => {
@@ -93,10 +96,10 @@ module BABYLON.GLTF2.Exporter.Extensions {
                 proceduralTexture.setMatrix("textureTransformMat", babylonTexture.getTextureMatrix());
 
                 // isReady trigger creation of effect if it doesnt exist yet
-                if(proceduralTexture.isReady()){
+                if (proceduralTexture.isReady()) {
                     proceduralTexture.render();
-                    resolve(proceduralTexture)
-                }else{
+                    resolve(proceduralTexture);
+                }else {
                     (proceduralTexture as any)._effect.onCompileObservable.add(() => {
                         proceduralTexture.render();
                         resolve(proceduralTexture);
@@ -106,5 +109,5 @@ module BABYLON.GLTF2.Exporter.Extensions {
         }
     }
 
-    _Exporter.RegisterExtension(NAME, exporter => new KHR_texture_transform(exporter));
+    _Exporter.RegisterExtension(NAME, (exporter) => new KHR_texture_transform(exporter));
 }

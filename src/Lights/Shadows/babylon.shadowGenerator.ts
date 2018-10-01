@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Interface to implement to create a shadow generator compatible with BJS.
      */
@@ -33,7 +33,7 @@
          * defined in the generator but impacting the effect).
          * It implies the unifroms available on the materials are the standard BJS ones.
          * @param lightIndex Index of the light in the enabled light list of the material owning the effect
-         * @param effect The effect we are binfing the information for 
+         * @param effect The effect we are binfing the information for
          */
         bindShadowLight(lightIndex: string, effect: Effect): void;
         /**
@@ -52,20 +52,20 @@
         /**
          * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
          * @param onCompiled Callback triggered at the and of the effects compilation
-         * @param options Sets of optional options forcing the compilation with different modes 
+         * @param options Sets of optional options forcing the compilation with different modes
          */
         forceCompilation(onCompiled?: (generator: ShadowGenerator) => void, options?: Partial<{ useInstances: boolean }>): void;
 
         /**
          * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
-         * @param options Sets of optional options forcing the compilation with different modes 
+         * @param options Sets of optional options forcing the compilation with different modes
          * @returns A promise that resolves when the compilation completes
          */
         forceCompilationAsync(options?: Partial<{ useInstances: boolean }>): Promise<void>;
 
         /**
          * Serializes the shadow generator setup to a json object.
-         * @returns The serialized JSON object 
+         * @returns The serialized JSON object
          */
         serialize(): any;
 
@@ -101,25 +101,25 @@
          */
         public static readonly FILTER_BLUREXPONENTIALSHADOWMAP = 3;
         /**
-         * Shadow generator mode ESM: Exponential Shadow Mapping using the inverse of the exponential preventing 
+         * Shadow generator mode ESM: Exponential Shadow Mapping using the inverse of the exponential preventing
          * edge artifacts on steep falloff.
          * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
          */
         public static readonly FILTER_CLOSEEXPONENTIALSHADOWMAP = 4;
         /**
-         * Shadow generator mode ESM: Blurred Exponential Shadow Mapping using the inverse of the exponential preventing 
+         * Shadow generator mode ESM: Blurred Exponential Shadow Mapping using the inverse of the exponential preventing
          * edge artifacts on steep falloff.
          * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
          */
         public static readonly FILTER_BLURCLOSEEXPONENTIALSHADOWMAP = 5;
         /**
-         * Shadow generator mode PCF: Percentage Closer Filtering 
+         * Shadow generator mode PCF: Percentage Closer Filtering
          * benefits from Webgl 2 shadow samplers. Fallback to Poisson Sampling in Webgl 1
          * (https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch11.html)
          */
         public static readonly FILTER_PCF = 6;
         /**
-         * Shadow generator mode PCSS: Percentage Closering Soft Shadow. 
+         * Shadow generator mode PCSS: Percentage Closering Soft Shadow.
          * benefits from Webgl 2 shadow samplers. Fallback to Poisson Sampling in Webgl 1
          * Contact Hardening
          */
@@ -128,27 +128,27 @@
         /**
          * Reserved for PCF and PCSS
          * Highest Quality.
-         * 
+         *
          * Execute PCF on a 5*5 kernel improving a lot the shadow aliasing artifacts.
-         * 
+         *
          * Execute PCSS with 32 taps blocker search and 64 taps PCF.
          */
         public static readonly QUALITY_HIGH = 0;
         /**
          * Reserved for PCF and PCSS
          * Good tradeoff for quality/perf cross devices
-         * 
+         *
          * Execute PCF on a 3*3 kernel.
-         * 
+         *
          * Execute PCSS with 16 taps blocker search and 32 taps PCF.
          */
         public static readonly QUALITY_MEDIUM = 1;
         /**
          * Reserved for PCF and PCSS
          * The lowest quality but the fastest.
-         * 
+         *
          * Execute PCF on a 1*1 kernel.
-         * 
+         *
          * Execute PCSS with 16 taps blocker search and 16 taps PCF.
          */
         public static readonly QUALITY_LOW = 2;
@@ -412,14 +412,14 @@
         }
 
         /**
-         * Gets if the current filter is set to "close ESM" (using the inverse of the 
+         * Gets if the current filter is set to "close ESM" (using the inverse of the
          * exponential to prevent steep falloff artifacts).
          */
         public get useCloseExponentialShadowMap(): boolean {
             return this.filter === ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP;
         }
         /**
-         * Sets the current filter to "close ESM" (using the inverse of the 
+         * Sets the current filter to "close ESM" (using the inverse of the
          * exponential to prevent steep falloff artifacts).
          */
         public set useCloseExponentialShadowMap(value: boolean) {
@@ -430,14 +430,14 @@
         }
 
         /**
-         * Gets if the current filter is set to filtered "close ESM" (using the inverse of the 
+         * Gets if the current filter is set to filtered "close ESM" (using the inverse of the
          * exponential to prevent steep falloff artifacts).
          */
         public get useBlurCloseExponentialShadowMap(): boolean {
             return this.filter === ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP;
         }
         /**
-         * Sets the current filter to filtered "close ESM" (using the inverse of the 
+         * Sets the current filter to filtered "close ESM" (using the inverse of the
          * exponential to prevent steep falloff artifacts).
          */
         public set useBlurCloseExponentialShadowMap(value: boolean) {
@@ -500,9 +500,9 @@
          * Gets the Light Size (in shadow map uv unit) used in PCSS to determine the blocker search area and the penumbra size.
          * Using a ratio helps keeping shape stability independently of the map size.
          *
-         * It does not account for the light projection as it was having too much 
+         * It does not account for the light projection as it was having too much
          * instability during the light setup or during light position changes.
-         * 
+         *
          * Only valid if useContactHardeningShadow is true.
          */
         public get contactHardeningLightSizeUVRatio(): number {
@@ -511,10 +511,10 @@
         /**
          * Sets the Light Size (in shadow map uv unit) used in PCSS to determine the blocker search area and the penumbra size.
          * Using a ratio helps keeping shape stability independently of the map size.
-         * 
-         * It does not account for the light projection as it was having too much 
+         *
+         * It does not account for the light projection as it was having too much
          * instability during the light setup or during light position changes.
-         * 
+         *
          * Only valid if useContactHardeningShadow is true.
          */
         public set contactHardeningLightSizeUVRatio(contactHardeningLightSizeUVRatio: number) {
@@ -536,12 +536,15 @@
          * @returns the shadow generator allowing fluent coding.
          */
         public setDarkness(darkness: number): ShadowGenerator {
-            if (darkness >= 1.0)
+            if (darkness >= 1.0) {
                 this._darkness = 1.0;
-            else if (darkness <= 0.0)
+            }
+            else if (darkness <= 0.0) {
                 this._darkness = 0.0;
-            else
+                 }
+            else {
                 this._darkness = darkness;
+                 }
             return this;
         }
 
@@ -675,9 +678,9 @@
          * Creates a ShadowGenerator object.
          * A ShadowGenerator is the required tool to use the shadows.
          * Each light casting shadows needs to use its own ShadowGenerator.
-         * Documentation : http://doc.babylonjs.com/tutorials/shadows  
+         * Documentation : http://doc.babylonjs.com/tutorials/shadows
          * @param mapSize The size of the texture what stores the shadows. Example : 1024.
-         * @param light The light object generating the shadows.  
+         * @param light The light object generating the shadows.
          * @param useFullFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
          */
         constructor(mapSize: number, light: IShadowLight, useFullFloatFirst?: boolean) {
@@ -800,7 +803,7 @@
                 this._kernelBlurXPostprocess = new BlurPostProcess(this._light.name + "KernelBlurX", new Vector2(1, 0), this.blurKernel, 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._textureType);
                 this._kernelBlurXPostprocess.width = targetSize;
                 this._kernelBlurXPostprocess.height = targetSize;
-                this._kernelBlurXPostprocess.onApplyObservable.add(effect => {
+                this._kernelBlurXPostprocess.onApplyObservable.add((effect) => {
                     effect.setTexture("textureSampler", this._shadowMap);
                 });
 
@@ -818,7 +821,7 @@
             }
             else {
                 this._boxBlurPostprocess = new PostProcess(this._light.name + "DepthBoxBlur", "depthBoxBlur", ["screenSize", "boxOffset"], [], 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, "#define OFFSET " + this._blurBoxOffset, this._textureType);
-                this._boxBlurPostprocess.onApplyObservable.add(effect => {
+                this._boxBlurPostprocess.onApplyObservable.add((effect) => {
                     effect.setFloat2("screenSize", targetSize, targetSize);
                     effect.setTexture("textureSampler", this._shadowMap);
                 });
@@ -945,7 +948,7 @@
         /**
          * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
          * @param onCompiled Callback triggered at the and of the effects compilation
-         * @param options Sets of optional options forcing the compilation with different modes 
+         * @param options Sets of optional options forcing the compilation with different modes
          */
         public forceCompilation(onCompiled?: (generator: ShadowGenerator) => void, options?: Partial<{ useInstances: boolean }>): void {
             let localOptions = {
@@ -1004,11 +1007,11 @@
 
         /**
          * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
-         * @param options Sets of optional options forcing the compilation with different modes 
+         * @param options Sets of optional options forcing the compilation with different modes
          * @returns A promise that resolves when the compilation completes
          */
         public forceCompilationAsync(options?: Partial<{ useInstances: boolean }>): Promise<void> {
-            return new Promise(resolve => {
+            return new Promise((resolve) => {
                 this.forceCompilation(() => {
                     resolve();
                 }, options);
@@ -1084,7 +1087,7 @@
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
             }
 
-            // Morph targets         
+            // Morph targets
             var manager = (<Mesh>mesh).morphTargetManager;
             let morphInfluencers = 0;
             if (manager) {
@@ -1193,7 +1196,7 @@
          * Binds the shadow related information inside of an effect (information like near, far, darkness...
          * defined in the generator but impacting the effect).
          * @param lightIndex Index of the light in the enabled light list of the material owning the effect
-         * @param effect The effect we are binfing the information for 
+         * @param effect The effect we are binfing the information for
          */
         public bindShadowLight(lightIndex: string, effect: Effect): void {
             var light = this._light;
@@ -1341,8 +1344,8 @@
         }
 
         /**
-         * Disposes the ShadowGenerator.  
-         * Returns nothing.  
+         * Disposes the ShadowGenerator.
+         * Returns nothing.
          */
         public dispose(): void {
             this._disposeRTTandPostProcesses();
@@ -1355,7 +1358,7 @@
 
         /**
          * Serializes the shadow generator setup to a json object.
-         * @returns The serialized JSON object 
+         * @returns The serialized JSON object
          */
         public serialize(): any {
             var serializationObject: any = {};
@@ -1415,7 +1418,7 @@
 
             for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
                 var meshes = scene.getMeshesByID(parsedShadowGenerator.renderList[meshIndex]);
-                meshes.forEach(function (mesh) {
+                meshes.forEach(function(mesh) {
                     if (!shadowMap) {
                         return;
                     }
@@ -1509,4 +1512,4 @@
             return shadowGenerator;
         }
     }
-} 
+}

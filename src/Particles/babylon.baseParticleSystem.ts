@@ -19,14 +19,14 @@ module BABYLON {
          */
         public static BLENDMODE_ADD = 2;
         /**
-         * Multiply current color with particle color 
+         * Multiply current color with particle color
          */
-        public static BLENDMODE_MULTIPLY = 3;        
+        public static BLENDMODE_MULTIPLY = 3;
 
         /**
          * Multiply current color with particle color then add current color and particle color multiplied by particle’s alpha
          */
-        public static BLENDMODE_MULTIPLYADD = 4;                
+        public static BLENDMODE_MULTIPLYADD = 4;
 
         /**
          * List of animations used by the particle system.
@@ -112,7 +112,7 @@ module BABYLON {
         /**
          * Maximum scale of emitting particles on X axis.
          */
-        public maxScaleX = 1;        
+        public maxScaleX = 1;
 
         /**
          * Minimum scale of emitting particles on Y axis.
@@ -121,16 +121,16 @@ module BABYLON {
         /**
          * Maximum scale of emitting particles on Y axis.
          */
-        public maxScaleY = 1;          
-        
+        public maxScaleY = 1;
+
         /**
-         * Gets or sets the minimal initial rotation in radians.         
+         * Gets or sets the minimal initial rotation in radians.
          */
         public minInitialRotation = 0;
         /**
-         * Gets or sets the maximal initial rotation in radians.         
+         * Gets or sets the maximal initial rotation in radians.
          */
-        public maxInitialRotation = 0;             
+        public maxInitialRotation = 0;
 
         /**
          * Minimum angular speed of emitting particles (Z-axis rotation for each particle).
@@ -153,12 +153,12 @@ module BABYLON {
 
         /**
          * This can help using your own shader to render the particle system.
-         * The according effect will be created 
+         * The according effect will be created
          */
         public customShader: any = null;
 
         /**
-         * By default particle system starts as soon as they are created. This prevents the 
+         * By default particle system starts as soon as they are created. This prevents the
          * automatic start to happen and let you decide when to start emitting particles.
          */
         public preventAutoStart: boolean = false;
@@ -192,7 +192,7 @@ module BABYLON {
 
         /** Gets or sets a value indicating the time step multiplier to use in pre-warm mode (default is 1) */
         public preWarmStepOffset = 1;
-        
+
         /**
          * If using a spritesheet (isAnimationSheetEnabled) defines the speed of the sprite loop (default is 1 meaning the animation will play once during the entire particle lifetime)
          */
@@ -216,14 +216,34 @@ module BABYLON {
         /**
          * This allows the system to random pick the start cell ID between startSpriteCellID and endSpriteCellID
          */
-        public spriteRandomStartCell = false;   
+        public spriteRandomStartCell = false;
 
         /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
-        public translationPivot = new Vector2(0, 0);        
+        public translationPivot = new Vector2(0, 0);
 
         /** @hidden */
         protected _isAnimationSheetEnabled: boolean;
-       
+
+        /**
+         * Gets or sets a boolean indicating that hosted animations (in the system.animations array) must be started when system.start() is called
+         */
+        public beginAnimationOnStart = false;
+
+        /**
+         * Gets or sets the frame to start the animation from when beginAnimationOnStart is true
+         */
+        public beginAnimationFrom = 0;
+
+        /**
+         * Gets or sets the frame to end the animation on when beginAnimationOnStart is true
+         */
+        public beginAnimationTo = 60;
+
+        /**
+         * Gets or sets a boolean indicating if animations must loop when beginAnimationOnStart is true
+         */
+        public beginAnimationLoop = false;
+
         /**
          * Gets or sets whether an animation sprite sheet is enabled or not on the particle system
          */
@@ -240,14 +260,14 @@ module BABYLON {
 
             this._reset();
         }
-        
+
         /**
          * Get hosting scene
          * @returns the scene
          */
         public getScene(): Scene {
             return this._scene;
-        }    
+        }
 
         /**
          * You can use gravity if you want to give an orientation to your particles.
@@ -265,9 +285,9 @@ module BABYLON {
         protected _startSizeGradients: Nullable<Array<FactorGradient>> = null;
         protected _rampGradients: Nullable<Array<Color3Gradient>> = null;
         protected _colorRemapGradients: Nullable<Array<FactorGradient>> = null;
-        protected _alphaRemapGradients: Nullable<Array<FactorGradient>> = null;        
-        
-        protected _hasTargetStopDurationDependantGradient(){
+        protected _alphaRemapGradients: Nullable<Array<FactorGradient>> = null;
+
+        protected _hasTargetStopDurationDependantGradient() {
             return (this._startSizeGradients && this._startSizeGradients.length > 0)
                 || (this._emitRateGradients && this._emitRateGradients.length > 0)
                 || (this._lifeTimeGradients && this._lifeTimeGradients.length > 0);
@@ -285,11 +305,11 @@ module BABYLON {
          */
         public getDragGradients(): Nullable<Array<FactorGradient>> {
             return this._dragGradients;
-        }   
+        }
 
         /** Gets or sets a value indicating the damping to apply if the limit velocity factor is reached */
         public limitVelocityDamping = 0.4;
-        
+
         /**
          * Gets the current list of limit velocity gradients.
          * You must use addLimitVelocityGradient and removeLimitVelocityGradient to udpate this list
@@ -297,7 +317,7 @@ module BABYLON {
          */
         public getLimitVelocityGradients(): Nullable<Array<FactorGradient>> {
             return this._limitVelocityGradients;
-        }        
+        }
 
         /**
          * Gets the current list of color gradients.
@@ -315,7 +335,7 @@ module BABYLON {
          */
         public getSizeGradients(): Nullable<Array<FactorGradient>> {
             return this._sizeGradients;
-        }        
+        }
 
         /**
          * Gets the current list of color remap gradients.
@@ -324,7 +344,7 @@ module BABYLON {
          */
         public getColorRemapGradients(): Nullable<Array<FactorGradient>> {
             return this._colorRemapGradients;
-        }   
+        }
 
         /**
          * Gets the current list of alpha remap gradients.
@@ -333,7 +353,7 @@ module BABYLON {
          */
         public getAlphaRemapGradients(): Nullable<Array<FactorGradient>> {
             return this._alphaRemapGradients;
-        }   
+        }
 
         /**
          * Gets the current list of life time gradients.
@@ -342,8 +362,8 @@ module BABYLON {
          */
         public getLifeTimeGradients(): Nullable<Array<FactorGradient>> {
             return this._lifeTimeGradients;
-        }   
-        
+        }
+
         /**
          * Gets the current list of angular speed gradients.
          * You must use addAngularSpeedGradient and removeAngularSpeedGradient to udpate this list
@@ -351,7 +371,7 @@ module BABYLON {
          */
         public getAngularSpeedGradients(): Nullable<Array<FactorGradient>> {
             return this._angularSpeedGradients;
-        } 
+        }
 
         /**
          * Gets the current list of velocity gradients.
@@ -360,7 +380,7 @@ module BABYLON {
          */
         public getVelocityGradients(): Nullable<Array<FactorGradient>> {
             return this._velocityGradients;
-        }         
+        }
 
         /**
          * Gets the current list of start size gradients.
@@ -370,7 +390,7 @@ module BABYLON {
         public getStartSizeGradients(): Nullable<Array<FactorGradient>> {
             return this._startSizeGradients;
         }
-        
+
         /**
          * Gets the current list of emit rate gradients.
          * You must use addEmitRateGradient and removeEmitRateGradient to udpate this list
@@ -378,7 +398,7 @@ module BABYLON {
          */
         public getEmitRateGradients(): Nullable<Array<FactorGradient>> {
             return this._emitRateGradients;
-        }      
+        }
 
         /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
@@ -450,7 +470,7 @@ module BABYLON {
             if ((<BoxParticleEmitter>this.particleEmitterType).maxEmitBox) {
                 (<BoxParticleEmitter>this.particleEmitterType).maxEmitBox = value;
             }
-        }        
+        }
 
         /**
          * Random color of each particle after it has been emitted, between color1 and color2 vectors
@@ -476,20 +496,23 @@ module BABYLON {
          */
         public particleEmitterType: IParticleEmitterType;
 
+        /** @hidden */
+        public _isSubEmitter = false;
+
         /**
          * Gets or sets the billboard mode to use when isBillboardBased = true.
          * Value can be: ParticleSystem.BILLBOARDMODE_ALL, ParticleSystem.BILLBOARDMODE_Y, ParticleSystem.BILLBOARDMODE_STRETCHED
          */
-        public billboardMode = ParticleSystem.BILLBOARDMODE_ALL;        
-        
+        public billboardMode = ParticleSystem.BILLBOARDMODE_ALL;
+
         protected _isBillboardBased = true;
         /**
          * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
          */
         public get isBillboardBased(): boolean {
             return this._isBillboardBased;
-        }      
-        
+        }
+
         public set isBillboardBased(value: boolean) {
             if (this._isBillboardBased === value) {
                 return;
@@ -523,7 +546,7 @@ module BABYLON {
 
         /**
          * Sets the Default image processing configuration used either in the this material.
-         * 
+         *
          * If sets to null, the scene one is in use.
          */
         public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
@@ -532,7 +555,7 @@ module BABYLON {
 
         /**
          * Attaches a new image processing configuration to the Standard Material.
-         * @param configuration 
+         * @param configuration
          */
         protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
             if (configuration === this._imageProcessingConfiguration) {
@@ -569,10 +592,10 @@ module BABYLON {
 
             if (texture) {
                 texture.dispose();
-            }            
+            }
 
             return this;
-        } 
+        }
 
         /**
          * Instantiates a particle system.
@@ -631,7 +654,7 @@ module BABYLON {
          * @returns the emitter
          */
         public createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
-            var particleEmitter = new SphereDirectedParticleEmitter(radius, direction1, direction2)
+            var particleEmitter = new SphereDirectedParticleEmitter(radius, direction1, direction2);
             this.particleEmitterType = particleEmitter;
             return particleEmitter;
         }
@@ -654,13 +677,13 @@ module BABYLON {
          * Creates a Directed Cylinder Emitter for the particle system (emits between direction1 and direction2)
          * @param radius The radius of the cylinder to emit from
          * @param height The height of the emission cylinder
-         * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default) 
+         * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default)
          * @param direction1 Particles are emitted between the direction1 and direction2 from within the cylinder
          * @param direction2 Particles are emitted between the direction1 and direction2 from within the cylinder
          * @returns the emitter
          */
         public createDirectedCylinderEmitter(radius = 1, height = 1, radiusRange = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): CylinderDirectedParticleEmitter {
-            var particleEmitter = new CylinderDirectedParticleEmitter(radius, height, radiusRange, direction1, direction2)
+            var particleEmitter = new CylinderDirectedParticleEmitter(radius, height, radiusRange, direction1, direction2);
             this.particleEmitterType = particleEmitter;
             return particleEmitter;
         }
