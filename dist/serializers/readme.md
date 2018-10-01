@@ -7,8 +7,8 @@ Babylon.js Serializers
 
 Compiled js files (minified and source) are offered on our public CDN here:
 
-* https://preview.babylonjs.com/serializers/babylonjs.serializers.js
-* https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.serializers.min.js
+* https://cdn.babylonjs.com/serializers/babylonjs.serializers.js
+* https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.serializers.min.js
 
 ## NPM
 
