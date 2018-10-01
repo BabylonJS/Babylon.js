@@ -27,6 +27,7 @@ module BABYLON {
          */
         constructor(name: string, size: number = 256, scene: Nullable<Scene> = Engine.LastCreatedScene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
             super(name, size, "noise", scene, fallbackTexture, generateMipMaps);
+            this.autoClear = false;
             this._updateShaderUniforms();
         }
 
