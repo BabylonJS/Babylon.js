@@ -30,7 +30,7 @@ if (indexOf !== -1) {
                 break;
             }
             case "cameraPosition": {
-                cameraPosition = BABYLON.Vector3.FromArray(value.split(",").map(function (component) { return +component; }));
+                cameraPosition = BABYLON.Vector3.FromArray(value.split(",").map(function(component) { return +component; }));
                 break;
             }
             case "kiosk": {
@@ -62,7 +62,7 @@ if (BABYLON.Engine.isSupported()) {
     btnFullScreen.classList.add("hidden");
     btnInspector.classList.add("hidden");
 
-    canvas.addEventListener("contextmenu", function (evt) {
+    canvas.addEventListener("contextmenu", function(evt) {
         evt.preventDefault();
     }, false);
 
@@ -72,16 +72,16 @@ if (BABYLON.Engine.isSupported()) {
     BABYLON.Animation.AllowMatricesInterpolation = true;
 
     // Update the defaults of the GLTFTab in the inspector.
-    INSPECTOR.GLTFTab._GetLoaderDefaultsAsync().then(function (defaults) {
+    INSPECTOR.GLTFTab._GetLoaderDefaultsAsync().then(function(defaults) {
         defaults.validate = true;
     });
 
     // Setting up some GLTF values
     BABYLON.GLTFFileLoader.IncrementalLoading = false;
-    BABYLON.SceneLoader.OnPluginActivatedObservable.add(function (plugin) {
+    BABYLON.SceneLoader.OnPluginActivatedObservable.add(function(plugin) {
         currentPluginName = plugin.name;
         if (currentPluginName === "gltf") {
-            plugin.onValidatedObservable.add(function (results) {
+            plugin.onValidatedObservable.add(function(results) {
                 if (results.issues.numErrors > 0) {
                     debugLayerEnabled = true;
                     debugLayerLastActiveTab = "GLTF";
@@ -91,11 +91,11 @@ if (BABYLON.Engine.isSupported()) {
     });
 
     // Resize
-    window.addEventListener("resize", function () {
+    window.addEventListener("resize", function() {
         engine.resize();
     });
 
-    var sceneLoaded = function (sceneFile, babylonScene) {
+    var sceneLoaded = function(sceneFile, babylonScene) {
         engine.clearInternalTexturesCache();
 
         // Clear dropdown that contains animation names
@@ -115,12 +115,12 @@ if (BABYLON.Engine.isSupported()) {
         }
 
         // Sync the slider with the current frame
-        babylonScene.registerBeforeRender(function () {
+        babylonScene.registerBeforeRender(function() {
             if (currentGroup != null && currentGroup.targetedAnimations[0].animation.runtimeAnimations[0] != null) {
                 var currentValue = slider.valueAsNumber;
                 var newValue = currentGroup.targetedAnimations[0].animation.runtimeAnimations[0].currentFrame;
                 var range = Math.abs(currentGroup.from - currentGroup.to);
-                if (Math.abs(currentValue - newValue) > range * 0.01) { // Only move if greater than a 1% change
+                if (Math.abs(currentValue - newValue) > range * 0.005) { // Only move if greater than a 0.5% change
                     slider.value = newValue;
                 }
             }
@@ -214,7 +214,7 @@ if (BABYLON.Engine.isSupported()) {
         }
     };
 
-    var sceneError = function (sceneFile, babylonScene, message) {
+    var sceneError = function(sceneFile, babylonScene, message) {
         document.title = "BabylonJS - " + sceneFile.name;
         document.getElementById("logo").className = "";
         canvas.style.opacity = 0;
@@ -225,27 +225,27 @@ if (BABYLON.Engine.isSupported()) {
         errorZone.innerHTML = errorContent;
 
         // Close button error
-        errorZone.querySelector('.close').addEventListener('click', function () {
+        errorZone.querySelector('.close').addEventListener('click', function() {
             errorZone.style.display = 'none';
         });
     };
 
-    var loadFromAssetUrl = function () {
+    var loadFromAssetUrl = function() {
         var rootUrl = BABYLON.Tools.GetFolderPath(assetUrl);
         var fileName = BABYLON.Tools.GetFilename(assetUrl);
-        BABYLON.SceneLoader.LoadAsync(rootUrl, fileName, engine).then(function (scene) {
+        BABYLON.SceneLoader.LoadAsync(rootUrl, fileName, engine).then(function(scene) {
             if (currentScene) {
                 currentScene.dispose();
             }
 
             sceneLoaded({ name: fileName }, scene);
 
-            scene.whenReadyAsync().then(function () {
-                engine.runRenderLoop(function () {
+            scene.whenReadyAsync().then(function() {
+                engine.runRenderLoop(function() {
                     scene.render();
                 });
             });
-        }).catch(function (reason) {
+        }).catch(function(reason) {
             sceneError({ name: fileName }, null, reason.message || reason);
         });
     };
@@ -254,7 +254,7 @@ if (BABYLON.Engine.isSupported()) {
         loadFromAssetUrl();
     }
     else {
-        var startProcessingFiles = function () {
+        var startProcessingFiles = function() {
             BABYLON.Tools.ClearLogCache();
 
             if (currentScene) {
@@ -263,7 +263,7 @@ if (BABYLON.Engine.isSupported()) {
         };
 
         filesInput = new BABYLON.FilesInput(engine, null, sceneLoaded, null, null, null, startProcessingFiles, null, sceneError);
-        filesInput.onProcessFileCallback = (function (file, name, extension) {
+        filesInput.onProcessFileCallback = (function(file, name, extension) {
             if (filesInput._filesToLoad && filesInput._filesToLoad.length === 1 && extension) {
                 if (extension.toLowerCase() === "dds" || extension.toLowerCase() === "env") {
                     BABYLON.FilesInput.FilesToLoad[name] = file;
@@ -275,7 +275,7 @@ if (BABYLON.Engine.isSupported()) {
         }).bind(this);
         filesInput.monitorElementForDragNDrop(canvas);
 
-        htmlInput.addEventListener('change', function (event) {
+        htmlInput.addEventListener('change', function(event) {
             var filestoLoad;
             // Handling data transfer via drag'n'drop
             if (event && event.dataTransfer && event.dataTransfer.files) {
@@ -289,7 +289,7 @@ if (BABYLON.Engine.isSupported()) {
         }, false);
     }
 
-    window.addEventListener("keydown", function (event) {
+    window.addEventListener("keydown", function(event) {
         // Press R to reload
         if (event.keyCode === 82 && event.target.nodeName !== "INPUT" && currentScene) {
             debugLayerLastActiveTab = currentScene.debugLayer.getActiveTab();
@@ -307,11 +307,11 @@ if (BABYLON.Engine.isSupported()) {
         footer.style.display = "none";
     }
 
-    btnFullScreen.addEventListener('click', function () {
+    btnFullScreen.addEventListener('click', function() {
         engine.switchFullscreen(true);
     }, false);
 
-    btnInspector.addEventListener('click', function () {
+    btnInspector.addEventListener('click', function() {
         if (currentScene) {
             if (currentScene.debugLayer.isVisible()) {
                 debugLayerEnabled = false;
@@ -325,7 +325,7 @@ if (BABYLON.Engine.isSupported()) {
         }
     }, false);
 
-    window.addEventListener("keydown", function (event) {
+    window.addEventListener("keydown", function(event) {
         // Press space to toggle footer
         if (event.keyCode === 32 && event.target.nodeName !== "INPUT") {
             if (footer.style.display === "none") {
@@ -344,7 +344,7 @@ if (BABYLON.Engine.isSupported()) {
 
     sizeScene();
 
-    window.onresize = function () {
+    window.onresize = function() {
         sizeScene();
     }
 }
@@ -376,7 +376,7 @@ function displayDropdownContent(display) {
         chevronUp.style.display = "inline";
     }
 }
-dropdownBtn.addEventListener("click", function () {
+dropdownBtn.addEventListener("click", function() {
     if (dropdownContent.style.display === "flex") {
         displayDropdownContent(false);
     }
@@ -390,7 +390,7 @@ function createDropdownLink(group, index) {
     animation.innerHTML = group.name;
     animation.title = group.name;
     animation.setAttribute("id", formatId(group.name + "-" + index));
-    animation.addEventListener("click", function () {
+    animation.addEventListener("click", function() {
         // stop the current animation group
         currentGroup.reset();
         currentGroup.stop();
@@ -419,7 +419,7 @@ function createDropdownLink(group, index) {
 }
 
 // event on the play/pause button
-playBtn.addEventListener("click", function () {
+playBtn.addEventListener("click", function() {
     // click on the button to run the animation
     if (this.classList.contains("play")) {
         this.classList.remove("play");
@@ -436,7 +436,7 @@ playBtn.addEventListener("click", function () {
 });
 
 // event on the slider
-slider.addEventListener("input", function () {
+slider.addEventListener("input", function() {
     if (playBtn.classList.contains("play")) {
         currentGroup.play(true);
         currentGroup.goToFrame(this.value);
@@ -447,14 +447,14 @@ slider.addEventListener("input", function () {
 });
 
 var sliderPause = false;
-slider.addEventListener("mousedown", function () {
+slider.addEventListener("mousedown", function() {
     if (playBtn.classList.contains("pause")) {
         sliderPause = true;
         playBtn.click();
     }
 });
 
-slider.addEventListener("mouseup", function () {
+slider.addEventListener("mouseup", function() {
     if (sliderPause) {
         sliderPause = false;
         playBtn.click();
