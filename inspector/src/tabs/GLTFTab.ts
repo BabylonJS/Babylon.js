@@ -34,7 +34,7 @@ export class GLTFTab extends Tab {
             if (loader.name === "gltf") {
                 GLTFTab._ApplyLoaderDefaults(loader);
 
-                loader.onValidatedObservable.add(results => {
+                loader.onValidatedObservable.add((results) => {
                     GLTFTab._ValidationResults = results;
 
                     if (GLTFTab._OnValidationResultsUpdated) {
@@ -51,7 +51,7 @@ export class GLTFTab extends Tab {
         this._inspector = inspector;
         this._panel = Helpers.CreateDiv("tab-panel") as HTMLDivElement;
         this._actions = Helpers.CreateDiv("gltf-actions", this._panel) as HTMLDivElement;
-        this._actions.addEventListener("click", event => {
+        this._actions.addEventListener("click", (event) => {
             this._closeDetailsPanel();
         });
 
@@ -76,10 +76,10 @@ export class GLTFTab extends Tab {
 
         const importActions = Helpers.CreateDiv("gltf-actions", this._actions) as HTMLDivElement;
 
-        GLTFTab._GetLoaderDefaultsAsync().then(defaults => {
+        GLTFTab._GetLoaderDefaultsAsync().then((defaults) => {
             const loaderAction = Helpers.CreateDiv("gltf-action", importActions) as HTMLDivElement;
             loaderAction.innerText = "Loader";
-            loaderAction.addEventListener("click", event => {
+            loaderAction.addEventListener("click", (event) => {
                 this._showLoaderDefaults(defaults);
                 event.stopPropagation();
             });
@@ -91,7 +91,7 @@ export class GLTFTab extends Tab {
                 const extensionDefaults = defaults.extensions[extensionName];
 
                 const extensionAction = Helpers.CreateDiv("gltf-action", importActions);
-                extensionAction.addEventListener("click", event => {
+                extensionAction.addEventListener("click", (event) => {
                     if (this._showLoaderExtensionDefaults(extensionDefaults)) {
                         event.stopPropagation();
                     }
@@ -115,14 +115,14 @@ export class GLTFTab extends Tab {
             let validationTitle: Nullable<HTMLDivElement> = null;
             let validationAction: Nullable<HTMLDivElement> = null;
 
-            GLTFTab._OnValidationResultsUpdated = results => {
+            GLTFTab._OnValidationResultsUpdated = (results) => {
                 if (!validationTitle) {
                     validationTitle = Helpers.CreateDiv("gltf-title", importActions) as HTMLDivElement;
                 }
 
                 if (!validationAction) {
                     validationAction = Helpers.CreateDiv("gltf-action", importActions) as HTMLDivElement;
-                    validationAction.addEventListener("click", event => {
+                    validationAction.addEventListener("click", (event) => {
                         GLTFTab._ShowValidationResults();
                         event.stopPropagation();
                     });
@@ -192,7 +192,7 @@ export class GLTFTab extends Tab {
                 }
             }
 
-            loader.onExtensionLoadedObservable.add(extension => {
+            loader.onExtensionLoadedObservable.add((extension) => {
                 const extensionDefaults = defaults.extensions[extension.name];
                 for (const key in extensionDefaults) {
                     (extension as any)[key] = extensionDefaults[key];
@@ -227,7 +227,7 @@ export class GLTFTab extends Tab {
 
         GLTFTab._LoaderDefaults = GLTFTab._GetPublic(loader);
         GLTFTab._LoaderDefaults.extensions = {};
-        loader.onExtensionLoadedObservable.add(extension => {
+        loader.onExtensionLoadedObservable.add((extension) => {
             GLTFTab._LoaderDefaults.extensions[extension.name] = GLTFTab._GetPublic(extension);
         });
 
@@ -308,7 +308,7 @@ export class GLTFTab extends Tab {
         button.innerText = "Export GLB";
         button.addEventListener("click", () => {
             GLTF2Export.GLBAsync(this._inspector.scene, name.value || "scene", {
-                shouldExportTransformNode: transformNode => !GLTFTab._IsSkyBox(transformNode)
+                shouldExportTransformNode: (transformNode) => !GLTFTab._IsSkyBox(transformNode)
             }).then((glb) => {
                 glb.downloadFiles();
             });

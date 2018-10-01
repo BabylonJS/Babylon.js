@@ -6,24 +6,21 @@ module BABYLON {
         /**
          * Base Url for the controller model.
          */
-        public static MODEL_BASE_URL:string = 'https://controllers.babylonjs.com/generic/';
+        public static MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/generic/';
         /**
          * File name for the controller model.
          */
-        public static MODEL_FILENAME:string = 'generic.babylon';
+        public static MODEL_FILENAME: string = 'generic.babylon';
 
-        private _maxRotationDistFromHeadset = Math.PI/5;
-        private _draggedRoomRotation = 0;
-        private _tmpVector = new BABYLON.Vector3();
         /**
          * Gamepad Id prefix used to identify this controller.
          */
         public static readonly GAMEPAD_ID_PREFIX: string = 'Gear VR'; // id is 'Gear VR Controller'
-        
+
         private readonly _buttonIndexToObservableNameMap = [
             'onTrackpadChangedObservable', // Trackpad
             'onTriggerStateChangedObservable' // Trigger
-        ]
+        ];
 
         /**
          * Creates a new GearVRController from a gamepad
@@ -33,35 +30,8 @@ module BABYLON {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.GEAR_VR;
             // Initial starting position defaults to where hand would be (incase of only 3dof controller)
-            this._calculatedPosition = new Vector3(this.hand == "left" ? -0.15 : 0.15,-0.5, 0.25)
-        }
-
-        /**
-         * Updates the state of the pose enbaled controller based on the raw pose data from the device
-         * @param poseData raw pose fromthe device
-         */
-        public updateFromDevice(poseData: DevicePose) {
-            super.updateFromDevice(poseData);
-            if(BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.activeCamera){
-                if((<WebVRFreeCamera>BABYLON.Engine.LastCreatedScene.activeCamera).deviceRotationQuaternion){
-                    var camera = (<WebVRFreeCamera>BABYLON.Engine.LastCreatedScene.activeCamera);
-                    camera._deviceRoomRotationQuaternion.toEulerAnglesToRef(this._tmpVector);
-                    
-                    // Find the radian distance away that the headset is from the controllers rotation
-                    var distanceAway = Math.atan2(Math.sin(this._tmpVector.y - this._draggedRoomRotation), Math.cos(this._tmpVector.y - this._draggedRoomRotation))
-                    if(Math.abs(distanceAway) > this._maxRotationDistFromHeadset){
-                        // Only rotate enouph to be within the _maxRotationDistFromHeadset
-                        var rotationAmount = distanceAway - (distanceAway < 0 ? -this._maxRotationDistFromHeadset : this._maxRotationDistFromHeadset);
-                        this._draggedRoomRotation += rotationAmount;
-                        
-                        // Rotate controller around headset
-                        var sin = Math.sin(-rotationAmount);
-                        var cos = Math.cos(-rotationAmount);
-                        this._calculatedPosition.x = this._calculatedPosition.x * cos - this._calculatedPosition.z * sin;
-                        this._calculatedPosition.z = this._calculatedPosition.x * sin + this._calculatedPosition.z * cos;
-                    }                  
-                }
-            }
+            this._calculatedPosition = new Vector3(this.hand == "left" ? -0.15 : 0.15, -0.5, 0.25);
+            this._disableTrackPosition(this._calculatedPosition);
         }
 
         /**
@@ -92,7 +62,7 @@ module BABYLON {
         protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
             if (buttonIdx < this._buttonIndexToObservableNameMap.length) {
                 const observableName : string = this._buttonIndexToObservableNameMap[buttonIdx];
-                
+
                 // Only emit events for buttons that we know how to map from index to observable
                 let observable = (<any>this)[observableName];
                 if (observable) {

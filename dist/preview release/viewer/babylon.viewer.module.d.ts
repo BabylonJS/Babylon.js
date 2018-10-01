@@ -160,14 +160,14 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
         * It uses the templating system to render a new canvas and controls.
         */
     export class DefaultViewer extends AbstractViewer {
-            containerElement: HTMLElement;
-            fullscreenElement?: HTMLElement;
+            containerElement: Element;
+            fullscreenElement?: Element;
             /**
                 * Create a new default viewer
                 * @param containerElement the element in which the templates will be rendered
                 * @param initialConfiguration the initial configuration. Defaults to extending the default configuration
                 */
-            constructor(containerElement: HTMLElement, initialConfiguration?: ViewerConfiguration);
+            constructor(containerElement: Element, initialConfiguration?: ViewerConfiguration);
             registerTemplatePlugin(plugin: IViewerTemplatePlugin): void;
             /**
                 * This will be executed when the templates initialize.
@@ -200,11 +200,11 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * Mainly used for help and errors
                 * @param subScreen the name of the subScreen. Those can be defined in the configuration object
                 */
-            showOverlayScreen(subScreen: string): Promise<string> | Promise<Template>;
+            showOverlayScreen(subScreen: string): Promise<Template> | Promise<string>;
             /**
                 * Hide the overlay screen.
                 */
-            hideOverlayScreen(): Promise<string> | Promise<Template>;
+            hideOverlayScreen(): Promise<Template> | Promise<string>;
             /**
                 * show the viewer (in case it was hidden)
                 *
@@ -221,11 +221,11 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * Show the loading screen.
                 * The loading screen can be configured using the configuration object
                 */
-            showLoadingScreen(): Promise<string> | Promise<Template>;
+            showLoadingScreen(): Promise<Template> | Promise<string>;
             /**
                 * Hide the loading screen
                 */
-            hideLoadingScreen(): Promise<string> | Promise<Template>;
+            hideLoadingScreen(): Promise<Template> | Promise<string>;
             dispose(): void;
             protected _onConfigurationLoaded(configuration: ViewerConfiguration): void;
     }
@@ -246,7 +246,7 @@ declare module 'babylonjs-viewer/viewer/viewer' {
         * It is the basic implementation of the default viewer and is responsible of loading and showing the model and the templates
         */
     export abstract class AbstractViewer {
-            containerElement: HTMLElement;
+            containerElement: Element;
             /**
                 * The corresponsing template manager of this viewer.
                 */
@@ -357,7 +357,7 @@ declare module 'babylonjs-viewer/viewer/viewer' {
             protected _isInit: boolean;
             protected _configurationContainer: ConfigurationContainer;
             readonly configurationContainer: ConfigurationContainer;
-            constructor(containerElement: HTMLElement, initialConfiguration?: ViewerConfiguration);
+            constructor(containerElement: Element, initialConfiguration?: ViewerConfiguration);
             /**
                 * get the baseId of this viewer
                 */
@@ -985,13 +985,14 @@ declare module 'babylonjs-viewer/templating/viewerTemplatePlugin' {
 }
 
 declare module 'babylonjs-viewer/optimizer/custom' {
+    import { extendedUpgrade } from "babylonjs-viewer/optimizer/custom/extended";
     import { SceneManager } from "babylonjs-viewer/managers/sceneManager";
     /**
       *
       * @param name the name of the custom optimizer configuration
       * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
       */
-    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): typeof extendedUpgrade;
     export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 
@@ -1131,7 +1132,7 @@ declare module 'babylonjs-viewer/templating/templateManager' {
         * The template manager managers a single viewer and can be seen as the collection of all sub-templates of the viewer.
         */
     export class TemplateManager {
-            containerElement: HTMLElement;
+            containerElement: Element;
             /**
                 * Will be triggered when any template is initialized
                 */
@@ -1156,7 +1157,7 @@ declare module 'babylonjs-viewer/templating/templateManager' {
                 * This template manager's event manager. In charge of callback registrations to native event types
                 */
             eventManager: EventManager;
-            constructor(containerElement: HTMLElement);
+            constructor(containerElement: Element);
             /**
                 * Initialize the template(s) for the viewer. Called bay the Viewer class
                 * @param templates the templates to be used to initialize the main template
@@ -1660,6 +1661,22 @@ declare module 'babylonjs-viewer/loader/plugins' {
         *
         */
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
+}
+
+declare module 'babylonjs-viewer/optimizer/custom/extended' {
+    import { SceneManager } from 'babylonjs-viewer/managers/sceneManager';
+    /**
+        * A custom upgrade-oriented function configuration for the scene optimizer.
+        *
+        * @param viewer the viewer to optimize
+        */
+    export function extendedUpgrade(sceneManager: SceneManager): boolean;
+    /**
+        * A custom degrade-oriented function configuration for the scene optimizer.
+        *
+        * @param viewer the viewer to optimize
+        */
+    export function extendedDegrade(sceneManager: SceneManager): boolean;
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces' {

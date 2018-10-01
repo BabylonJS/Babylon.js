@@ -33,14 +33,14 @@ module BABYLON {
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
          */
         public checkInputs() {
-            if (this._leftjoystick){
+            if (this._leftjoystick) {
                 var camera = this.camera;
                 var speed = camera._computeLocalCameraSpeed() * 50;
                 var cameraTransform = Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
                 var deltaTransform = Vector3.TransformCoordinates(new Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed), cameraTransform);
                 camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
                 camera.cameraRotation = camera.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
-                
+
                 if (!this._leftjoystick.pressed) {
                     this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);
                 }
@@ -93,6 +93,6 @@ module BABYLON {
             return "virtualJoystick";
         }
     }
-    
+
     (<any>CameraInputTypes)["FreeCameraVirtualJoystickInput"] = FreeCameraVirtualJoystickInput;
 }

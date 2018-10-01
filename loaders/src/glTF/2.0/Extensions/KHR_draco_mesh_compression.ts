@@ -1,6 +1,6 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
-module BABYLON.GLTF2.Extensions {
+module BABYLON.GLTF2.Loader.Extensions {
     const NAME = "KHR_draco_mesh_compression";
 
     interface IKHRDracoMeshCompression {
@@ -8,7 +8,7 @@ module BABYLON.GLTF2.Extensions {
         attributes: { [name: string]: number };
     }
 
-    interface ILoaderBufferViewDraco extends ILoaderBufferView {
+    interface IBufferViewDraco extends IBufferView {
         _dracoBabylonGeometry?: Promise<Geometry>;
     }
 
@@ -41,7 +41,7 @@ module BABYLON.GLTF2.Extensions {
         }
 
         /** @hidden */
-        public _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
+        public _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
             return GLTFLoader.LoadExtensionAsync<IKHRDracoMeshCompression, Geometry>(context, primitive, this.name, (extensionContext, extension) => {
                 if (primitive.mode != undefined) {
                     if (primitive.mode !== MeshPrimitiveMode.TRIANGLE_STRIP &&
@@ -79,18 +79,18 @@ module BABYLON.GLTF2.Extensions {
                 loadAttribute("WEIGHTS_0", VertexBuffer.MatricesWeightsKind);
                 loadAttribute("COLOR_0", VertexBuffer.ColorKind);
 
-                var bufferView = ArrayItem.Get(extensionContext, this._loader.gltf.bufferViews, extension.bufferView) as ILoaderBufferViewDraco;
+                var bufferView = ArrayItem.Get(extensionContext, this._loader.gltf.bufferViews, extension.bufferView) as IBufferViewDraco;
                 if (!bufferView._dracoBabylonGeometry) {
-                    bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`#/bufferViews/${bufferView.index}`, bufferView).then(data => {
+                    bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`#/bufferViews/${bufferView.index}`, bufferView).then((data) => {
                         if (!this._dracoCompression) {
                             this._dracoCompression = new DracoCompression();
                         }
 
-                        return this._dracoCompression.decodeMeshAsync(data, attributes).then(babylonVertexData => {
+                        return this._dracoCompression.decodeMeshAsync(data, attributes).then((babylonVertexData) => {
                             const babylonGeometry = new Geometry(babylonMesh.name, this._loader.babylonScene);
                             babylonVertexData.applyToGeometry(babylonGeometry);
                             return babylonGeometry;
-                        }).catch(error => {
+                        }).catch((error) => {
                             throw new Error(`${context}: ${error.message}`);
                         });
                     });
@@ -101,5 +101,5 @@ module BABYLON.GLTF2.Extensions {
         }
     }
 
-    GLTFLoader.RegisterExtension(NAME, loader => new KHR_draco_mesh_compression(loader));
+    GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_draco_mesh_compression(loader));
 }

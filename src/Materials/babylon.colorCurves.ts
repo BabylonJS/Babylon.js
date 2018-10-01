@@ -1,9 +1,9 @@
-﻿module BABYLON {
+module BABYLON {
 
     /**
-     * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
+     * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
      * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-     * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
+     * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
      * corresponding to low luminance, medium luminance, and high luminance areas respectively.
      */
     export class ColorCurves {
@@ -49,7 +49,7 @@
         }
         /**
          * Gets the global Density value.
-         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect. 
+         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
          * Values less than zero provide a filter of opposite hue.
          */
         public get globalDensity(): number {
@@ -57,7 +57,7 @@
         }
         /**
          * Sets the global Density value.
-         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect. 
+         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
          * Values less than zero provide a filter of opposite hue.
          */
         public set globalDensity(value: number) {
@@ -125,7 +125,7 @@
         }
         /**
          * Gets the highlights Density value.
-         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect. 
+         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
          * Values less than zero provide a filter of opposite hue.
          */
         public get highlightsDensity(): number {
@@ -133,7 +133,7 @@
         }
         /**
          * Sets the highlights Density value.
-         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect. 
+         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
          * Values less than zero provide a filter of opposite hue.
          */
         public set highlightsDensity(value: number) {
@@ -200,7 +200,7 @@
         }
         /**
          * Gets the midtones Density value.
-         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect. 
+         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
          * Values less than zero provide a filter of opposite hue.
          */
         public get midtonesDensity(): number {
@@ -208,7 +208,7 @@
         }
         /**
          * Sets the midtones Density value.
-         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect. 
+         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
          * Values less than zero provide a filter of opposite hue.
          */
         public set midtonesDensity(value: number) {
@@ -268,7 +268,7 @@
         }
         /**
          * Gets the shadows Density value.
-         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect. 
+         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
          * Values less than zero provide a filter of opposite hue.
          */
         public get shadowsDensity(): number {
@@ -276,7 +276,7 @@
         }
         /**
          * Sets the shadows Density value.
-         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect. 
+         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
          * Values less than zero provide a filter of opposite hue.
          */
         public set shadowsDensity(value: number) {
@@ -314,6 +314,10 @@
             this._dirty = true;
         }
 
+        /**
+         * Returns the class name
+         * @returns The class name
+         */
         public getClassName(): string {
             return "ColorCurves";
         }
@@ -322,6 +326,9 @@
          * Binds the color curves to the shader.
          * @param colorCurves The color curve to bind
          * @param effect The effect to bind to
+         * @param positiveUniform The positive uniform shader parameter
+         * @param neutralUniform The neutral uniform shader parameter
+         * @param negativeUniform The negative uniform shader parameter
          */
         public static Bind(colorCurves: ColorCurves, effect: Effect, positiveUniform = "vCameraColorCurvePositive", neutralUniform = "vCameraColorCurveNeutral", negativeUniform = "vCameraColorCurveNegative"): void {
             if (colorCurves._dirty) {
@@ -417,7 +424,7 @@
             exposure = ColorCurves.clamp(exposure, -100, 100);
 
             // Remap the slider/config filter density with non-linear mapping and also scale by half
-            // so that the maximum filter density is only 50% control. This provides fine control 
+            // so that the maximum filter density is only 50% control. This provides fine control
             // for small values and reasonable range.
             density = ColorCurves.applyColorGradingSliderNonlinear(density);
             density *= 0.5;
@@ -554,4 +561,4 @@
             return SerializationHelper.Parse(() => new ColorCurves(), source, null, null);
         }
     }
-} 
+}

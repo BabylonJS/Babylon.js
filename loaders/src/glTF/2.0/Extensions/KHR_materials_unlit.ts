@@ -1,6 +1,6 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
-module BABYLON.GLTF2.Extensions {
+module BABYLON.GLTF2.Loader.Extensions {
     const NAME = "KHR_materials_unlit";
 
     /**
@@ -26,13 +26,13 @@ module BABYLON.GLTF2.Extensions {
         }
 
         /** @hidden */
-        public loadMaterialPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
+        public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
             return GLTFLoader.LoadExtensionAsync(context, material, this.name, () => {
                 return this._loadUnlitPropertiesAsync(context, material, babylonMaterial);
             });
         }
 
-        private _loadUnlitPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: Material): Promise<void> {
+        private _loadUnlitPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
             if (!(babylonMaterial instanceof PBRMaterial)) {
                 throw new Error(`${context}: Material type not supported`);
             }
@@ -52,7 +52,7 @@ module BABYLON.GLTF2.Extensions {
                 }
 
                 if (properties.baseColorTexture) {
-                    promises.push(this._loader.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, texture => {
+                    promises.push(this._loader.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, (texture) => {
                         babylonMaterial.albedoTexture = texture;
                         return Promise.resolve();
                     }));
@@ -70,5 +70,5 @@ module BABYLON.GLTF2.Extensions {
         }
     }
 
-    GLTFLoader.RegisterExtension(NAME, loader => new KHR_materials_unlit(loader));
+    GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_unlit(loader));
 }

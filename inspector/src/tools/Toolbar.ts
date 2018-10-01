@@ -10,11 +10,10 @@ import { FullscreenTool } from "./FullscreenTool";
 import { PauseScheduleTool } from "./PauseScheduleTool";
 import { DisposeTool } from "./DisposeTool";
 
-
 export class Toolbar extends BasicElement {
 
     private _inspector: Inspector;
-    private _tools: Array<AbstractTool> = []
+    private _tools: Array<AbstractTool> = [];
 
     constructor(inspector: Inspector) {
         super();
@@ -25,11 +24,11 @@ export class Toolbar extends BasicElement {
     }
 
     // A toolbar cannot be updated
-    public update() { };
+    public update() { }
 
     protected _build() {
         this._div.className = 'toolbar';
-    };
+    }
 
     private _addTools() {
         // Refresh
@@ -40,7 +39,7 @@ export class Toolbar extends BasicElement {
         this._tools.push(new PickTool(this._div, this._inspector));
 
         // Add the popup mode only if the inspector is not in popup mode and if the brower is not edge
-        // Edge is 
+        // Edge is
         if (!this._inspector.popupMode && !Helpers.IsBrowserEdge()) {
             this._tools.push(new PopupTool(this._div, this._inspector));
         }
@@ -54,8 +53,8 @@ export class Toolbar extends BasicElement {
         this._tools.push(new DisposeTool(this._div, this._inspector));
     }
 
-    /** 
-     * Returns the total width in pixel of the tabbar, 
+    /**
+     * Returns the total width in pixel of the tabbar,
      * that corresponds to the sum of the width of each tab + toolbar width
     */
     public getPixelWidth(): number {

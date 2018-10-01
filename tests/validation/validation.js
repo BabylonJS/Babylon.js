@@ -304,7 +304,7 @@ function runTest(index, done) {
         var request = new XMLHttpRequest();
         request.open('GET', config.root + test.scriptToRun, true);
 
-        request.onreadystatechange = () => {
+        request.onreadystatechange = function() {
             if (request.readyState === 4) {
                 try {
                     request.onreadystatechange = null;

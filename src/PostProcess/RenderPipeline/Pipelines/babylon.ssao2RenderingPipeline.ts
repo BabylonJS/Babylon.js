@@ -1,24 +1,32 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * Render pipeline to produce ssao effect
+     */
     export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         // Members
 
         /**
+         * @ignore
         * The PassPostProcess id in the pipeline that contains the original scene color
         */
         public SSAOOriginalSceneColorEffect: string = "SSAOOriginalSceneColorEffect";
         /**
+         * @ignore
         * The SSAO PostProcess id in the pipeline
         */
         public SSAORenderEffect: string = "SSAORenderEffect";
         /**
+         * @ignore
         * The horizontal blur PostProcess id in the pipeline
         */
         public SSAOBlurHRenderEffect: string = "SSAOBlurHRenderEffect";
         /**
+         * @ignore
         * The vertical blur PostProcess id in the pipeline
         */
         public SSAOBlurVRenderEffect: string = "SSAOBlurVRenderEffect";
         /**
+         * @ignore
         * The PostProcess id in the pipeline that combines the SSAO-Blur output with the original scene color (SSAOOriginalSceneColorEffect)
         */
         public SSAOCombineRenderEffect: string = "SSAOCombineRenderEffect";
@@ -91,11 +99,11 @@
         */
         private _samplerOffsets: number[];
 
-        /**
-        * Are we using bilateral blur ?
-        */
         @serialize("expensiveBlur")
         private _expensiveBlur: boolean = true;
+        /**
+        * If bilateral blur should be used
+        */
         public set expensiveBlur(b: boolean) {
             this._blurHPostProcess.updateEffect("#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (b ? "1" : "0") + "\n",
                 null, ["textureSampler", "depthSampler"]);
@@ -148,10 +156,10 @@
 
         /**
          * @constructor
-         * @param {string} name - The rendering pipeline name
-         * @param {BABYLON.Scene} scene - The scene linked to this pipeline
-         * @param {any} ratio - The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, blurRatio: 1.0 }
-         * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
+         * @param name The rendering pipeline name
+         * @param scene The scene linked to this pipeline
+         * @param ratio The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, blurRatio: 1.0 }
+         * @param cameras The array of cameras that the rendering pipeline will be attached to
          */
         constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[]) {
             super(scene.getEngine(), name);
@@ -188,8 +196,9 @@
 
             // Finish
             scene.postProcessRenderPipelineManager.addPipeline(this);
-            if (cameras)
+            if (cameras) {
                 scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
+            }
 
         }
 
@@ -211,8 +220,9 @@
 
             this._randomTexture.dispose();
 
-            if (disableGeometryBufferRenderer)
+            if (disableGeometryBufferRenderer) {
                 this._scene.disableGeometryBufferRenderer();
+            }
 
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
 
@@ -294,9 +304,9 @@
         private _hemisphereSample_uniform(u: number, v: number): Vector3 {
             var phi = v * 2.0 * Math.PI;
             // rejecting samples that are close to tangent plane to avoid z-fighting artifacts
-            var cosTheta = 1.0 - (u * 0.85 + 0.15); 
+            var cosTheta = 1.0 - (u * 0.85 + 0.15);
             var sinTheta = Math.sqrt(1.0 - cosTheta * cosTheta);
-            return new Vector3(Math.cos(phi) * sinTheta, Math.sin(phi) * sinTheta, cosTheta );
+            return new Vector3(Math.cos(phi) * sinTheta, Math.sin(phi) * sinTheta, cosTheta);
         }
 
         private _generateHemisphere(): number[] {
@@ -390,7 +400,7 @@
 
             var rand = (min: number, max: number) => {
                 return Math.random() * (max - min) + min;
-            }
+            };
 
             var randVector = Vector3.Zero();
 

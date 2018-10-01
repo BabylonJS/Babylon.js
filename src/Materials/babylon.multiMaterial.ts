@@ -1,6 +1,16 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * A multi-material is used to apply different materials to different parts of the same object without the need of
+     * separate meshes. This can be use to improve performances.
+     * @see http://doc.babylonjs.com/how_to/multi_materials
+     */
     export class MultiMaterial extends Material {
         private _subMaterials: Nullable<Material>[];
+
+        /**
+         * Gets or Sets the list of Materials used within the multi material.
+         * They need to be ordered according to the submeshes order in the associated mesh
+         */
         public get subMaterials(): Nullable<Material>[] {
             return this._subMaterials;
         }
@@ -10,6 +20,14 @@
             this._hookArray(value);
         }
 
+        /**
+         * Instantiates a new Multi Material
+         * A multi-material is used to apply different materials to different parts of the same object without the need of
+         * separate meshes. This can be use to improve performances.
+         * @see http://doc.babylonjs.com/how_to/multi_materials
+         * @param name Define the name in the scene
+         * @param scene Define the scene the material belongs to
+         */
         constructor(name: string, scene: Scene) {
             super(name, scene, true);
 
@@ -28,7 +46,7 @@
                 this._markAllSubMeshesAsTexturesDirty();
 
                 return result;
-            }
+            };
 
             var oldSplice = array.splice;
             array.splice = (index: number, deleteCount?: number) => {
@@ -37,10 +55,14 @@
                 this._markAllSubMeshesAsTexturesDirty();
 
                 return deleted;
-            }
+            };
         }
 
-        // Properties
+        /**
+         * Get one of the submaterial by its index in the submaterials array
+         * @param index The index to look the sub material at
+         * @returns The Material if the index has been defined
+         */
         public getSubMaterial(index: number): Nullable<Material> {
             if (index < 0 || index >= this.subMaterials.length) {
                 return this.getScene().defaultMaterial;
@@ -49,8 +71,12 @@
             return this.subMaterials[index];
         }
 
+        /**
+         * Get the list of active textures for the whole sub materials list.
+         * @returns All the textures that will be used during the rendering
+         */
         public getActiveTextures(): BaseTexture[] {
-            return super.getActiveTextures().concat(...this.subMaterials.map(subMaterial => {
+            return super.getActiveTextures().concat(...this.subMaterials.map((subMaterial) => {
                 if (subMaterial) {
                     return subMaterial.getActiveTextures();
                 } else {
@@ -59,11 +85,22 @@
             }));
         }
 
-        // Methods
+        /**
+         * Gets the current class name of the material e.g. "MultiMaterial"
+         * Mainly use in serialization.
+         * @returns the class name
+         */
         public getClassName(): string {
             return "MultiMaterial";
         }
 
+        /**
+         * Checks if the material is ready to render the requested sub mesh
+         * @param mesh Define the mesh the submesh belongs to
+         * @param subMesh Define the sub mesh to look readyness for
+         * @param useInstances Define whether or not the material is used with instances
+         * @returns true if ready, otherwise false
+         */
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
             for (var index = 0; index < this.subMaterials.length; index++) {
                 var subMaterial = this.subMaterials[index];
@@ -84,6 +121,12 @@
             return true;
         }
 
+        /**
+         * Clones the current material and its related sub materials
+         * @param name Define the name of the newly cloned material
+         * @param cloneChildren Define if submaterial will be cloned or shared with the parent instance
+         * @returns the cloned material
+         */
         public clone(name: string, cloneChildren?: boolean): MultiMaterial {
             var newMultiMaterial = new MultiMaterial(name, this.getScene());
 
@@ -101,6 +144,10 @@
             return newMultiMaterial;
         }
 
+        /**
+         * Serializes the materials into a JSON representation.
+         * @returns the JSON representation
+         */
         public serialize(): any {
             var serializationObject: any = {};
 
@@ -124,6 +171,11 @@
             return serializationObject;
         }
 
+        /**
+         * Dispose the material and release its associated resources
+         * @param forceDisposeEffect Define if we want to force disposing the associated effect (if false the shader is not released and could be reuse later on)
+         * @param forceDisposeTextures Define if we want to force disposing the associated textures (if false, they will not be disposed and can still be use elsewhere in the app)
+         */
         public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
             var scene = this.getScene();
             if (!scene) {
@@ -138,4 +190,4 @@
             super.dispose(forceDisposeEffect, forceDisposeTextures);
         }
     }
-} 
+}

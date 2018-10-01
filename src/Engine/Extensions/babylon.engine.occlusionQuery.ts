@@ -1,5 +1,26 @@
 module BABYLON {
-    export interface Engine {       
+    /** @hidden */
+    class _OcclusionDataStorage {
+        /** @hidden */
+        public occlusionInternalRetryCounter = 0;
+
+        /** @hidden */
+        public isOcclusionQueryInProgress = false;
+
+        /** @hidden */
+        public isOccluded = false;
+
+        /** @hidden */
+        public occlusionRetryCount = -1;
+
+        /** @hidden */
+        public occlusionType = AbstractMesh.OCCLUSION_TYPE_NONE;
+
+        /** @hidden */
+        public occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
+    }
+
+    export interface Engine {
         /**
          * Create a new webGL query (you must be sure that queries are supported by checking getCaps() function)
          * @return the new query
@@ -25,7 +46,7 @@ module BABYLON {
          * @param query defines the query to check
          * @returns the value of the query
          */
-        getQueryResult(query: WebGLQuery): number;        
+        getQueryResult(query: WebGLQuery): number;
 
         /**
          * Initiates an occlusion query
@@ -42,7 +63,7 @@ module BABYLON {
          * @param algorithmType defines the algorithm to use
          * @returns the current engine
          */
-        endOcclusionQuery(algorithmType: number): Engine;   
+        endOcclusionQuery(algorithmType: number): Engine;
 
         /**
          * Starts a time query (used to measure time spent by the GPU on a specific frame)
@@ -60,7 +81,7 @@ module BABYLON {
 
         /** @hidden */
         _currentNonTimestampToken: Nullable<_TimeToken>;
-        
+
         /** @hidden */
         _createTimeQuery(): WebGLQuery;
 
@@ -79,35 +100,35 @@ module BABYLON {
 
     Engine.prototype.createQuery = function(): WebGLQuery {
         return this._gl.createQuery();
-    }
+    };
 
     Engine.prototype.deleteQuery = function(query: WebGLQuery): Engine {
         this._gl.deleteQuery(query);
 
         return this;
-    }
+    };
 
     Engine.prototype.isQueryResultAvailable = function(query: WebGLQuery): boolean {
         return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT_AVAILABLE) as boolean;
-    }
+    };
 
     Engine.prototype.getQueryResult = function(query: WebGLQuery): number {
         return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT) as number;
-    }
+    };
 
     Engine.prototype.beginOcclusionQuery = function(algorithmType: number, query: WebGLQuery): Engine {
         var glAlgorithm = this._getGlAlgorithmType(algorithmType);
         this._gl.beginQuery(glAlgorithm, query);
 
         return this;
-    }
+    };
 
     Engine.prototype.endOcclusionQuery = function(algorithmType: number): Engine {
         var glAlgorithm = this._getGlAlgorithmType(algorithmType);
         this._gl.endQuery(glAlgorithm);
 
         return this;
-    }
+    };
 
     Engine.prototype._createTimeQuery = function(): WebGLQuery {
         let timerQuery = <EXT_disjoint_timer_query>this.getCaps().timerQuery;
@@ -117,7 +138,7 @@ module BABYLON {
         }
 
         return this.createQuery();
-    }
+    };
 
     Engine.prototype._deleteTimeQuery = function(query: WebGLQuery): void {
         let timerQuery = <EXT_disjoint_timer_query>this.getCaps().timerQuery;
@@ -128,7 +149,7 @@ module BABYLON {
         }
 
         this.deleteQuery(query);
-    }
+    };
 
     Engine.prototype._getTimeQueryResult = function(query: WebGLQuery): any {
         let timerQuery = <EXT_disjoint_timer_query>this.getCaps().timerQuery;
@@ -137,7 +158,7 @@ module BABYLON {
             return timerQuery.getQueryObjectEXT(query, timerQuery.QUERY_RESULT_EXT);
         }
         return this.getQueryResult(query);
-    }
+    };
 
     Engine.prototype._getTimeQueryAvailability = function(query: WebGLQuery): any {
         let timerQuery = <EXT_disjoint_timer_query>this.getCaps().timerQuery;
@@ -146,7 +167,7 @@ module BABYLON {
             return timerQuery.getQueryObjectEXT(query, timerQuery.QUERY_RESULT_AVAILABLE_EXT);
         }
         return this.isQueryResultAvailable(query);
-    }
+    };
 
     Engine.prototype.startTimeQuery = function(): Nullable<_TimeToken> {
         let caps = this.getCaps();
@@ -176,7 +197,7 @@ module BABYLON {
             this._currentNonTimestampToken = token;
         }
         return token;
-    }
+    };
 
     Engine.prototype.endTimeQuery = function(token: _TimeToken): int {
         let caps = this.getCaps();
@@ -242,29 +263,144 @@ module BABYLON {
         }
 
         return -1;
-    }
+    };
 
     Engine.prototype._getGlAlgorithmType = function(algorithmType: number): number {
         return algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
+    };
+
+    export interface AbstractMesh {
+        /**
+         * Backing filed
+         * @hidden
+         */
+        __occlusionDataStorage: _OcclusionDataStorage;
+
+        /**
+         * Access property
+         * @hidden
+         */
+        _occlusionDataStorage: _OcclusionDataStorage;
+
+        /**
+        * This number indicates the number of allowed retries before stop the occlusion query, this is useful if the occlusion query is taking long time before to the query result is retireved, the query result indicates if the object is visible within the scene or not and based on that Babylon.Js engine decideds to show or hide the object.
+        * The default value is -1 which means don't break the query and wait till the result
+        * @see http://doc.babylonjs.com/features/occlusionquery
+        */
+        occlusionRetryCount: number;
+
+        /**
+         * This property is responsible for starting the occlusion query within the Mesh or not, this property is also used to determine what should happen when the occlusionRetryCount is reached. It has supports 3 values:
+         * * OCCLUSION_TYPE_NONE (Default Value): this option means no occlusion query whith the Mesh.
+         * * OCCLUSION_TYPE_OPTIMISTIC: this option is means use occlusion query and if occlusionRetryCount is reached and the query is broken show the mesh.
+         * * OCCLUSION_TYPE_STRICT: this option is means use occlusion query and if occlusionRetryCount is reached and the query is broken restore the last state of the mesh occlusion if the mesh was visible then show the mesh if was hidden then hide don't show.
+         * @see http://doc.babylonjs.com/features/occlusionquery
+         */
+        occlusionType: number;
+
+        /**
+        * This property determines the type of occlusion query algorithm to run in WebGl, you can use:
+        * * AbstractMesh.OCCLUSION_ALGORITHM_TYPE_ACCURATE which is mapped to GL_ANY_SAMPLES_PASSED.
+        * * AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE (Default Value) which is mapped to GL_ANY_SAMPLES_PASSED_CONSERVATIVE which is a false positive algorithm that is faster than GL_ANY_SAMPLES_PASSED but less accurate.
+        * @see http://doc.babylonjs.com/features/occlusionquery
+        */
+        occlusionQueryAlgorithmType: number;
+
+        /**
+        * Gets or sets whether the mesh is occluded or not, it is used also to set the intial state of the mesh to be occluded or not
+        * @see http://doc.babylonjs.com/features/occlusionquery
+        */
+       isOccluded: boolean;
+
+        /**
+         * Flag to check the progress status of the query
+         * @see http://doc.babylonjs.com/features/occlusionquery
+         */
+        isOcclusionQueryInProgress: boolean;
     }
+
+    Object.defineProperty(AbstractMesh.prototype, "isOcclusionQueryInProgress", {
+        get: function(this: AbstractMesh) {
+            return this._occlusionDataStorage.isOcclusionQueryInProgress;
+        },
+        enumerable: false,
+        configurable: true
+    });
+
+    Object.defineProperty(AbstractMesh.prototype, "_occlusionDataStorage", {
+        get: function(this: AbstractMesh) {
+            if (!this.__occlusionDataStorage) {
+                this.__occlusionDataStorage = new _OcclusionDataStorage();
+            }
+            return this.__occlusionDataStorage;
+        },
+        enumerable: false,
+        configurable: true
+    });
+
+    Object.defineProperty(AbstractMesh.prototype, "isOccluded", {
+        get: function(this: AbstractMesh) {
+            return this._occlusionDataStorage.isOccluded;
+        },
+        set: function(this: AbstractMesh, value: boolean) {
+            this._occlusionDataStorage.isOccluded = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+
+    Object.defineProperty(AbstractMesh.prototype, "occlusionQueryAlgorithmType", {
+        get: function(this: AbstractMesh) {
+            return this._occlusionDataStorage.occlusionQueryAlgorithmType;
+        },
+        set: function(this: AbstractMesh, value: number) {
+            this._occlusionDataStorage.occlusionQueryAlgorithmType = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+
+    Object.defineProperty(AbstractMesh.prototype, "occlusionType", {
+        get: function(this: AbstractMesh) {
+            return this._occlusionDataStorage.occlusionType;
+        },
+        set: function(this: AbstractMesh, value: number) {
+            this._occlusionDataStorage.occlusionType = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+
+    Object.defineProperty(AbstractMesh.prototype, "occlusionRetryCount", {
+        get: function(this: AbstractMesh) {
+            return this._occlusionDataStorage.occlusionRetryCount;
+        },
+        set: function(this: AbstractMesh, value: number) {
+            this._occlusionDataStorage.occlusionRetryCount = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
 
     // We also need to update AbstractMesh as there is a portion of the code there
     AbstractMesh.prototype._checkOcclusionQuery = function() {
-        if (this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
-            this._isOccluded = false;
-            return;
+        let dataStorage = this._occlusionDataStorage;
+
+        if (dataStorage.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
+            dataStorage.isOccluded = false;
+            return false;
         }
 
         var engine = this.getEngine();
 
         if (engine.webGLVersion < 2) {
-            this._isOccluded = false;
-            return;
+            dataStorage.isOccluded = false;
+            return false;
         }
 
         if (!engine.isQueryResultAvailable) { // Occlusion query where not referenced
-            this._isOccluded = false;
-            return;
+            dataStorage.isOccluded = false;
+            return false;
         }
 
         if (this.isOcclusionQueryInProgress && this._occlusionQuery) {
@@ -273,26 +409,25 @@ module BABYLON {
             if (isOcclusionQueryAvailable) {
                 var occlusionQueryResult = engine.getQueryResult(this._occlusionQuery);
 
-                this._isOcclusionQueryInProgress = false;
-                this._occlusionInternalRetryCounter = 0;
-                this._isOccluded = occlusionQueryResult === 1 ? false : true;
+                dataStorage.isOcclusionQueryInProgress = false;
+                dataStorage.occlusionInternalRetryCounter = 0;
+                dataStorage.isOccluded = occlusionQueryResult === 1 ? false : true;
             }
             else {
 
-                this._occlusionInternalRetryCounter++;
+                dataStorage.occlusionInternalRetryCounter++;
 
-                if (this.occlusionRetryCount !== -1 && this._occlusionInternalRetryCounter > this.occlusionRetryCount) {
-                    this._isOcclusionQueryInProgress = false;
-                    this._occlusionInternalRetryCounter = 0;
+                if (dataStorage.occlusionRetryCount !== -1 && dataStorage.occlusionInternalRetryCounter > dataStorage.occlusionRetryCount) {
+                    dataStorage.isOcclusionQueryInProgress = false;
+                    dataStorage.occlusionInternalRetryCounter = 0;
 
                     // if optimistic set isOccluded to false regardless of the status of isOccluded. (Render in the current render loop)
                     // if strict continue the last state of the object.
-                    this._isOccluded = this.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC ? false : this._isOccluded;
+                    dataStorage.isOccluded = dataStorage.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC ? false : dataStorage.isOccluded;
                 }
                 else {
-                    return;
+                    return false;
                 }
-
             }
         }
 
@@ -304,10 +439,12 @@ module BABYLON {
                 this._occlusionQuery = engine.createQuery();
             }
 
-            engine.beginOcclusionQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
+            engine.beginOcclusionQuery(dataStorage.occlusionQueryAlgorithmType, this._occlusionQuery);
             occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
-            engine.endOcclusionQuery(this.occlusionQueryAlgorithmType);
-            this._isOcclusionQueryInProgress = true;
+            engine.endOcclusionQuery(dataStorage.occlusionQueryAlgorithmType);
+            this._occlusionDataStorage.isOcclusionQueryInProgress = true;
         }
-    } 
+
+        return dataStorage.isOccluded;
+    };
 }

@@ -1,4 +1,35 @@
-﻿module BABYLON {
+module BABYLON {
+
+    /**
+     * @hidden
+     **/
+    export class _CreationDataStorage {
+        public closePath?: boolean;
+        public closeArray?: boolean;
+        public idx: number[];
+        public dashSize: number;
+        public gapSize: number;
+        public path3D: Path3D;
+        public pathArray: Vector3[][];
+        public arc: number;
+        public radius: number;
+        public cap: number;
+        public tessellation: number;
+    }
+
+    /**
+     * @hidden
+     **/
+    class _InstanceDataStorage {
+        public visibleInstances: any = {};
+        public renderIdForInstances = new Array<number>();
+        public batchCache = new _InstancesBatch();
+        public instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
+        public instancesBuffer: Nullable<Buffer>;
+        public instancesData: Float32Array;
+        public overridenInstanceCount: number;
+    }
+
     /**
      * @hidden
      **/
@@ -26,7 +57,7 @@
         /**
          * Mesh side orientation : both internal and external or front and back surfaces
          */
-        public static readonly DOUBLESIDE = 2
+        public static readonly DOUBLESIDE = 2;
         /**
          * Mesh side orientation : by default, `FRONTSIDE`
          */
@@ -48,7 +79,7 @@
          */
         public static readonly CAP_ALL = 3;
 
-        // Events 
+        // Events
         private _onBeforeRenderObservable: Nullable<Observable<Mesh>>;
         private _onAfterRenderObservable: Nullable<Observable<Mesh>>;
         private _onBeforeDrawObservable: Nullable<Observable<Mesh>>;
@@ -99,7 +130,7 @@
         }
 
         // Members
-        
+
         /**
          * Gets the delay loading state of the mesh (when delay loading is turned on)
          * @see http://doc.babylonjs.com/how_to/using_the_incremental_loading_system
@@ -148,6 +179,9 @@
 
         // Private
         /** @hidden */
+        public _creationDataStorage: Nullable<_CreationDataStorage>;
+
+        /** @hidden */
         public _geometry: Nullable<Geometry>;
         /** @hidden */
         public _delayInfo: Array<string>;
@@ -155,13 +189,7 @@
         public _delayLoadingFunction: (any: any, mesh: Mesh) => void;
 
         /** @hidden */
-        public _visibleInstances: any = {};
-        private _renderIdForInstances = new Array<number>();
-        private _batchCache = new _InstancesBatch();
-        private _instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
-        private _instancesBuffer: Nullable<Buffer>;
-        private _instancesData: Float32Array;
-        private _overridenInstanceCount: number;
+        public _instanceDataStorage = new _InstanceDataStorage();
 
         private _effectiveMaterial: Material;
 
@@ -242,16 +270,7 @@
                 // Construction Params
                 // Clone parameters allowing mesh to be updated in case of parametric shapes.
                 this._originalBuilderSideOrientation = source._originalBuilderSideOrientation;
-                const myAnyThis = this as any;
-                const myAnySource = source as any;
-                myAnyThis._closePath = myAnySource._closePath;
-                myAnyThis._idx = myAnySource._idx;
-                myAnyThis.dashSize = myAnySource.dashSize;
-                myAnyThis.gapSize = myAnySource.gapSize;
-                myAnyThis.path3D = myAnySource.path3D;
-                myAnyThis.pathArray = myAnySource.pathArray;
-                myAnyThis.arc = myAnySource.arc;
-                myAnyThis.radius = myAnySource.radius;
+                this._creationDataStorage = source._creationDataStorage;
 
                 // Animation ranges
                 if (this._source._ranges) {
@@ -304,7 +323,7 @@
                     }
                 }
 
-                // Physics clone  
+                // Physics clone
                 var physicsEngine = this.getScene().getPhysicsEngine();
                 if (clonePhysicsImpostor && physicsEngine) {
                     var impostor = physicsEngine.getImpostorForPhysicsObject(source);
@@ -336,14 +355,14 @@
 
         /**
          * Gets the class name
-         * @returns the string "Mesh".  
+         * @returns the string "Mesh".
          */
         public getClassName(): string {
             return "Mesh";
         }
 
         /**
-         * Returns a description of this mesh  
+         * Returns a description of this mesh
          * @param fullDetails define if full details about this mesh must be used
          * @returns a descriptive string representing this mesh
          */
@@ -384,7 +403,7 @@
         }
 
         /**
-         * Gets a boolean indicating if this mesh has LOD 
+         * Gets a boolean indicating if this mesh has LOD
          */
         public get hasLODLevels(): boolean {
             return this._LODLevels.length > 0;
@@ -437,7 +456,7 @@
         }
 
         /**
-         * Returns the LOD level mesh at the passed distance or null if not found.  
+         * Returns the LOD level mesh at the passed distance or null if not found.
          * @see https://doc.babylonjs.com/how_to/how_to_use_lod
          * @param distance The distance from the center of the object to show this level
          * @returns a Mesh or `null`
@@ -478,7 +497,7 @@
          * Returns the registered LOD mesh distant from the parameter `camera` position if any, else returns the current mesh.
          * @see https://doc.babylonjs.com/how_to/how_to_use_lod
          * @param camera defines the camera to use to compute distance
-         * @param boundingSphere defines a custom bounding sphere to use instead of the one from this mesh 
+         * @param boundingSphere defines a custom bounding sphere to use instead of the one from this mesh
          * @return This mesh (for chaining)
          */
         public getLOD(camera: Camera, boundingSphere?: BoundingSphere): Nullable<AbstractMesh> {
@@ -529,7 +548,7 @@
         }
 
         /**
-         * Gets the mesh internal Geometry object 
+         * Gets the mesh internal Geometry object
          */
         public get geometry(): Nullable<Geometry> {
             return this._geometry;
@@ -537,7 +556,7 @@
 
         /**
          * Returns the total number of vertices within the mesh geometry or zero if the mesh has no geometry.
-         * @returns the total number of vertices 
+         * @returns the total number of vertices
          */
         public getTotalVertices(): number {
             if (this._geometry === null || this._geometry === undefined) {
@@ -560,10 +579,10 @@
          * - BABYLON.VertexBuffer.MatricesIndicesKind
          * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
          * - BABYLON.VertexBuffer.MatricesWeightsKind
-         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
          * @param copyWhenShared defines a boolean indicating that if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one
          * @param forceCopy defines a boolean forcing the copy of the buffer no matter what the value of copyWhenShared is
-         * @returns a FloatArray or null if the mesh has no geometry or no vertex buffer for this kind.    
+         * @returns a FloatArray or null if the mesh has no geometry or no vertex buffer for this kind.
          */
         public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray> {
             if (!this._geometry) {
@@ -586,8 +605,8 @@
          * - BABYLON.VertexBuffer.MatricesIndicesKind
          * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
          * - BABYLON.VertexBuffer.MatricesWeightsKind
-         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
-         * @returns a FloatArray or null if the mesh has no vertex buffer for this kind. 
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
+         * @returns a FloatArray or null if the mesh has no vertex buffer for this kind.
          */
         public getVertexBuffer(kind: string): Nullable<VertexBuffer> {
             if (!this._geometry) {
@@ -610,7 +629,7 @@
          * - BABYLON.VertexBuffer.MatricesIndicesKind
          * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
          * - BABYLON.VertexBuffer.MatricesWeightsKind
-         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
          * @returns a boolean
          */
         public isVerticesDataPresent(kind: string): boolean {
@@ -622,7 +641,6 @@
             }
             return this._geometry.isVerticesDataPresent(kind);
         }
-
 
         /**
          * Returns a boolean defining if the vertex data for the requested `kind` is updatable.
@@ -638,7 +656,7 @@
          * - BABYLON.VertexBuffer.MatricesIndicesKind
          * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
          * - BABYLON.VertexBuffer.MatricesWeightsKind
-         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
          * @returns a boolean
          */
         public isVertexBufferUpdatable(kind: string): boolean {
@@ -652,7 +670,7 @@
         }
 
         /**
-         * Returns a string which contains the list of existing `kinds` of Vertex Data associated with this mesh.  
+         * Returns a string which contains the list of existing `kinds` of Vertex Data associated with this mesh.
          * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
          * - BABYLON.VertexBuffer.PositionKind
          * - BABYLON.VertexBuffer.UVKind
@@ -665,14 +683,14 @@
          * - BABYLON.VertexBuffer.MatricesIndicesKind
          * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
          * - BABYLON.VertexBuffer.MatricesWeightsKind
-         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
          * @returns an array of strings
          */
         public getVerticesDataKinds(): string[] {
             if (!this._geometry) {
                 var result = new Array<string>();
                 if (this._delayInfo) {
-                    this._delayInfo.forEach(function (kind, index, array) {
+                    this._delayInfo.forEach(function(kind, index, array) {
                         result.push(kind);
                     });
                 }
@@ -683,7 +701,7 @@
 
         /**
          * Returns a positive integer : the total number of indices in this mesh geometry.
-         * @returns the numner of indices or zero if the mesh has no geometry.  
+         * @returns the numner of indices or zero if the mesh has no geometry.
          */
         public getTotalIndices(): number {
             if (!this._geometry) {
@@ -693,7 +711,7 @@
         }
 
         /**
-         * Returns an array of integers or a typed array (Int32Array, Uint32Array, Uint16Array) populated with the mesh indices.  
+         * Returns an array of integers or a typed array (Int32Array, Uint32Array, Uint16Array) populated with the mesh indices.
          * @param copyWhenShared If true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
          * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
          * @returns the indices array or an empty array if the mesh has no geometry
@@ -794,7 +812,7 @@
             return this._areNormalsFrozen;
         }
 
-        /**  
+        /**
          * This function affects parametric shapes on vertex position update only : ribbons, tubes, etc. It has no effect at all on other shapes. It prevents the mesh normals from being recomputed on next `positions` array update.
          * @returns the current mesh
          */
@@ -803,9 +821,9 @@
             return this;
         }
 
-        /**  
+        /**
          * This function affects parametric shapes on vertex position update only : ribbons, tubes, etc. It has no effect at all on other shapes. It reactivates the mesh normals computation if it was previously frozen
-         * @returns the current mesh  
+         * @returns the current mesh
          */
         public unfreezeNormals(): Mesh {
             this._areNormalsFrozen = false;
@@ -816,7 +834,7 @@
          * Sets a value overriding the instance count. Only applicable when custom instanced InterleavedVertexBuffer are used rather than InstancedMeshs
          */
         public set overridenInstanceCount(count: number) {
-            this._overridenInstanceCount = count;
+            this._instanceDataStorage.overridenInstanceCount = count;
         }
 
         // Methods
@@ -828,31 +846,31 @@
             }
 
             this._preActivateId = sceneRenderId;
-            this._visibleInstances = null;
+            this._instanceDataStorage.visibleInstances = null;
             return this;
         }
 
         /** @hidden */
         public _preActivateForIntermediateRendering(renderId: number): Mesh {
-            if (this._visibleInstances) {
-                this._visibleInstances.intermediateDefaultRenderId = renderId;
+            if (this._instanceDataStorage.visibleInstances) {
+                this._instanceDataStorage.visibleInstances.intermediateDefaultRenderId = renderId;
             }
             return this;
         }
 
         /** @hidden */
         public _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): Mesh {
-            if (!this._visibleInstances) {
-                this._visibleInstances = {};
-                this._visibleInstances.defaultRenderId = renderId;
-                this._visibleInstances.selfDefaultRenderId = this._renderId;
+            if (!this._instanceDataStorage.visibleInstances) {
+                this._instanceDataStorage.visibleInstances = {};
+                this._instanceDataStorage.visibleInstances.defaultRenderId = renderId;
+                this._instanceDataStorage.visibleInstances.selfDefaultRenderId = this._renderId;
             }
 
-            if (!this._visibleInstances[renderId]) {
-                this._visibleInstances[renderId] = new Array<InstancedMesh>();
+            if (!this._instanceDataStorage.visibleInstances[renderId]) {
+                this._instanceDataStorage.visibleInstances[renderId] = new Array<InstancedMesh>();
             }
 
-            this._visibleInstances[renderId].push(instance);
+            this._instanceDataStorage.visibleInstances[renderId].push(instance);
             return this;
         }
 
@@ -1028,7 +1046,7 @@
          * - BABYLON.VertexBuffer.MatricesIndicesKind
          * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
          * - BABYLON.VertexBuffer.MatricesWeightsKind
-         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
          * @param data defines the data source
          * @param updatable defines if the updated vertex buffer must be flagged as updatable
          * @param stride defines the data stride size (can be null)
@@ -1063,7 +1081,7 @@
          * - BABYLON.VertexBuffer.MatricesIndicesKind
          * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
          * - BABYLON.VertexBuffer.MatricesWeightsKind
-         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
          * @param updatable defines if the updated vertex buffer must be flagged as updatable
          */
         public markVerticesDataAsUpdatable(kind: string, updatable = true) {
@@ -1079,7 +1097,7 @@
         /**
          * Sets the mesh global Vertex Buffer
          * @param buffer defines the buffer to use
-         * @returns the current mesh 
+         * @returns the current mesh
          */
         public setVerticesBuffer(buffer: VertexBuffer): Mesh {
             if (!this._geometry) {
@@ -1104,7 +1122,7 @@
          * - BABYLON.VertexBuffer.MatricesIndicesKind
          * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
          * - BABYLON.VertexBuffer.MatricesWeightsKind
-         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
          * @param data defines the data source
          * @param updateExtends defines if extends info of the mesh must be updated (can be null). This is mostly useful for "position" kind
          * @param makeItUnique defines if the geometry associated with the mesh must be cloned to make the change only for this mesh (and not all meshes associated with the same geometry)
@@ -1155,8 +1173,8 @@
         }
 
         /**
-         * Creates a un-shared specific occurence of the geometry for the mesh.  
-         * @returns the current mesh 
+         * Creates a un-shared specific occurence of the geometry for the mesh.
+         * @returns the current mesh
          */
         public makeGeometryUnique(): Mesh {
             if (!this._geometry) {
@@ -1174,7 +1192,7 @@
          * @param indices defines the source data
          * @param totalVertices defines the total number of vertices referenced by this index data (can be null)
          * @param updatable defines if the updated index buffer must be flagged as updatable (default is false)
-         * @returns the current mesh 
+         * @returns the current mesh
          */
         public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null, updatable: boolean = false): Mesh {
             if (!this._geometry) {
@@ -1195,7 +1213,7 @@
          * Update the current index buffer
          * @param indices defines the source data
          * @param offset defines the offset in the index buffer where to store the new data (can be null)
-         * @returns the current mesh 
+         * @returns the current mesh
          */
         public updateIndices(indices: IndicesArray, offset?: number): Mesh {
             if (!this._geometry) {
@@ -1206,10 +1224,9 @@
             return this;
         }
 
-
         /**
-         * Invert the geometry to move from a right handed system to a left handed one.  
-         * @returns the current mesh 
+         * Invert the geometry to move from a right handed system to a left handed one.
+         * @returns the current mesh
          */
         public toLeftHanded(): Mesh {
             if (!this._geometry) {
@@ -1238,7 +1255,7 @@
                         indexToBind = null;
                         break;
                     case Material.WireFrameFillMode:
-                        indexToBind = subMesh.getLinesIndexBuffer(<IndicesArray>this.getIndices(), engine);
+                        indexToBind = subMesh._getLinesIndexBuffer(<IndicesArray>this.getIndices(), engine);
                         break;
                     default:
                     case Material.TriangleFillMode:
@@ -1270,7 +1287,7 @@
                 engine.drawArraysType(fillMode, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
             } else if (fillMode == Material.WireFrameFillMode) {
                 // Triangles as wireframe
-                engine.drawElementsType(fillMode, 0, subMesh.linesIndexCount, instancesCount);
+                engine.drawElementsType(fillMode, 0, subMesh._linesIndexCount, instancesCount);
             } else {
                 engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
             }
@@ -1298,7 +1315,7 @@
         /**
          * Registers for this mesh a javascript function called just before the rendering process
          * @param func defines the function to call before rendering this mesh
-         * @returns the current mesh 
+         * @returns the current mesh
          */
         public registerBeforeRender(func: (mesh: AbstractMesh) => void): Mesh {
             this.onBeforeRenderObservable.add(func);
@@ -1308,7 +1325,7 @@
         /**
          * Disposes a previously registered javascript function called before the rendering
          * @param func defines the function to remove
-         * @returns the current mesh 
+         * @returns the current mesh
          */
         public unregisterBeforeRender(func: (mesh: AbstractMesh) => void): Mesh {
             this.onBeforeRenderObservable.removeCallback(func);
@@ -1318,7 +1335,7 @@
         /**
          * Registers for this mesh a javascript function called just after the rendering is complete
          * @param func defines the function to call after rendering this mesh
-         * @returns the current mesh   
+         * @returns the current mesh
          */
         public registerAfterRender(func: (mesh: AbstractMesh) => void): Mesh {
             this.onAfterRenderObservable.add(func);
@@ -1328,7 +1345,7 @@
         /**
          * Disposes a previously registered javascript function called after the rendering.
          * @param func defines the function to remove
-         * @returns the current mesh  
+         * @returns the current mesh
          */
         public unregisterAfterRender(func: (mesh: AbstractMesh) => void): Mesh {
             this.onAfterRenderObservable.removeCallback(func);
@@ -1338,38 +1355,40 @@
         /** @hidden */
         public _getInstancesRenderList(subMeshId: number): _InstancesBatch {
             var scene = this.getScene();
-            this._batchCache.mustReturn = false;
-            this._batchCache.renderSelf[subMeshId] = this.isEnabled() && this.isVisible;
-            this._batchCache.visibleInstances[subMeshId] = null;
+            let batchCache = this._instanceDataStorage.batchCache;
+            batchCache.mustReturn = false;
+            batchCache.renderSelf[subMeshId] = this.isEnabled() && this.isVisible;
+            batchCache.visibleInstances[subMeshId] = null;
 
-            if (this._visibleInstances) {
+            if (this._instanceDataStorage.visibleInstances) {
+                let visibleInstances = this._instanceDataStorage.visibleInstances;
                 var currentRenderId = scene.getRenderId();
-                var defaultRenderId = (scene._isInIntermediateRendering() ? this._visibleInstances.intermediateDefaultRenderId : this._visibleInstances.defaultRenderId);
-                this._batchCache.visibleInstances[subMeshId] = this._visibleInstances[currentRenderId];
+                var defaultRenderId = (scene._isInIntermediateRendering() ? visibleInstances.intermediateDefaultRenderId : visibleInstances.defaultRenderId);
+                batchCache.visibleInstances[subMeshId] = visibleInstances[currentRenderId];
                 var selfRenderId = this._renderId;
 
-                if (!this._batchCache.visibleInstances[subMeshId] && defaultRenderId) {
-                    this._batchCache.visibleInstances[subMeshId] = this._visibleInstances[defaultRenderId];
+                if (!batchCache.visibleInstances[subMeshId] && defaultRenderId) {
+                    batchCache.visibleInstances[subMeshId] = visibleInstances[defaultRenderId];
                     currentRenderId = Math.max(defaultRenderId, currentRenderId);
-                    selfRenderId = Math.max(this._visibleInstances.selfDefaultRenderId, currentRenderId);
+                    selfRenderId = Math.max(visibleInstances.selfDefaultRenderId, currentRenderId);
                 }
 
-                let visibleInstancesForSubMesh = this._batchCache.visibleInstances[subMeshId];
+                let visibleInstancesForSubMesh = batchCache.visibleInstances[subMeshId];
                 if (visibleInstancesForSubMesh && visibleInstancesForSubMesh.length) {
-                    if (this._renderIdForInstances[subMeshId] === currentRenderId) {
-                        this._batchCache.mustReturn = true;
-                        return this._batchCache;
+                    if (this._instanceDataStorage.renderIdForInstances[subMeshId] === currentRenderId) {
+                        batchCache.mustReturn = true;
+                        return batchCache;
                     }
 
                     if (currentRenderId !== selfRenderId) {
-                        this._batchCache.renderSelf[subMeshId] = false;
+                        batchCache.renderSelf[subMeshId] = false;
                     }
 
                 }
-                this._renderIdForInstances[subMeshId] = currentRenderId;
+                this._instanceDataStorage.renderIdForInstances[subMeshId] = currentRenderId;
             }
 
-            return this._batchCache;
+            return batchCache;
         }
 
         /** @hidden */
@@ -1382,15 +1401,16 @@
             var matricesCount = visibleInstances.length + 1;
             var bufferSize = matricesCount * 16 * 4;
 
-            var currentInstancesBufferSize = this._instancesBufferSize;
-            var instancesBuffer = this._instancesBuffer;
+            let instanceStorage = this._instanceDataStorage;
+            var currentInstancesBufferSize = instanceStorage.instancesBufferSize;
+            var instancesBuffer = instanceStorage.instancesBuffer;
 
-            while (this._instancesBufferSize < bufferSize) {
-                this._instancesBufferSize *= 2;
+            while (instanceStorage.instancesBufferSize < bufferSize) {
+                instanceStorage.instancesBufferSize *= 2;
             }
 
-            if (!this._instancesData || currentInstancesBufferSize != this._instancesBufferSize) {
-                this._instancesData = new Float32Array(this._instancesBufferSize / 4);
+            if (!instanceStorage.instancesData || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
+                instanceStorage.instancesData = new Float32Array(instanceStorage.instancesBufferSize / 4);
             }
 
             var offset = 0;
@@ -1398,7 +1418,7 @@
 
             var world = this.getWorldMatrix();
             if (batch.renderSelf[subMesh._id]) {
-                world.copyToArray(this._instancesData, offset);
+                world.copyToArray(instanceStorage.instancesData, offset);
                 offset += 16;
                 instancesCount++;
             }
@@ -1406,26 +1426,26 @@
             if (visibleInstances) {
                 for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
                     var instance = visibleInstances[instanceIndex];
-                    instance.getWorldMatrix().copyToArray(this._instancesData, offset);
+                    instance.getWorldMatrix().copyToArray(instanceStorage.instancesData, offset);
                     offset += 16;
                     instancesCount++;
                 }
             }
 
-            if (!instancesBuffer || currentInstancesBufferSize != this._instancesBufferSize) {
+            if (!instancesBuffer || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
                 if (instancesBuffer) {
                     instancesBuffer.dispose();
                 }
 
-                instancesBuffer = new Buffer(engine, this._instancesData, true, 16, false, true);
-                this._instancesBuffer = instancesBuffer;
+                instancesBuffer = new Buffer(engine, instanceStorage.instancesData, true, 16, false, true);
+                instanceStorage.instancesBuffer = instancesBuffer;
 
                 this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world0", 0, 4));
                 this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world1", 4, 4));
                 this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world2", 8, 4));
                 this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world3", 12, 4));
             } else {
-                instancesBuffer.updateDirectly(this._instancesData, 0, instancesCount);
+                instancesBuffer.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
             }
 
             this._bind(subMesh, effect, fillMode);
@@ -1450,7 +1470,7 @@
                         onBeforeDraw(false, this.getWorldMatrix(), effectiveMaterial);
                     }
 
-                    this._draw(subMesh, fillMode, this._overridenInstanceCount);
+                    this._draw(subMesh, fillMode, this._instanceDataStorage.overridenInstanceCount);
                 }
 
                 let visibleInstancesForSubMesh = batch.visibleInstances[subMesh._id];
@@ -1480,9 +1500,7 @@
          * @returns the current mesh
          */
         public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
-
-            this._checkOcclusionQuery();
-            if (this._isOccluded) {
+            if (this._checkOcclusionQuery()) {
                 return this;
             }
 
@@ -1601,79 +1619,164 @@
         }
 
         /**
-         * Normalize matrix weights so that all vertices have a total weight set to 1
+         *   Renormalize the mesh and patch it up if there are no weights
+         *   Similar to normalization by adding the weights compute the reciprocal and multiply all elements, this wil ensure that everything adds to 1.
+         *   However in the case of zero weights then we set just a single influence to 1.
+         *   We check in the function for extra's present and if so we use the normalizeSkinWeightsWithExtras rather than the FourWeights version.
          */
         public cleanMatrixWeights(): void {
-            const epsilon: number = 1e-3;
 
-            let noInfluenceBoneIndex = 0.0;
-            if (this.skeleton) {
-                noInfluenceBoneIndex = this.skeleton.bones.length;
-            } else {
-                return;
-            }
-
-            let matricesIndices = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesKind));
-            let matricesIndicesExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind));
-            let matricesWeights = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsKind));
-            let matricesWeightsExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind));
-            let influencers = this.numBoneInfluencers;
-            let size = matricesWeights.length;
-
-            for (var i = 0; i < size; i += 4) {
-                let weight = 0.0;
-                let firstZeroWeight = -1;
-                for (var j = 0; j < 4; j++) {
-                    let w = matricesWeights[i + j];
-                    weight += w;
-                    if (w < epsilon && firstZeroWeight < 0) {
-                        firstZeroWeight = j;
-                    }
+            if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
+                if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsExtraKind)) {
+                    this.normalizeSkinWeightsAndExtra();
                 }
-                if (matricesWeightsExtra) {
-                    for (var j = 0; j < 4; j++) {
-                        let w = matricesWeightsExtra[i + j];
-                        weight += w;
-                        if (w < epsilon && firstZeroWeight < 0) {
-                            firstZeroWeight = j + 4;
-                        }
-                    }
+                else {
+                    this.normalizeSkinFourWeights();
                 }
-                if (firstZeroWeight < 0 || firstZeroWeight > (influencers - 1)) {
-                    firstZeroWeight = influencers - 1;
-                }
-                if (weight > epsilon) {
-                    let mweight = 1.0 / weight;
-                    for (var j = 0; j < 4; j++) {
-                        matricesWeights[i + j] *= mweight;
-                    }
-                    if (matricesWeightsExtra) {
-                        for (var j = 0; j < 4; j++) {
-                            matricesWeightsExtra[i + j] *= mweight;
-                        }
-                    }
-                } else {
-                    if (firstZeroWeight >= 4) {
-                        matricesWeightsExtra[i + firstZeroWeight - 4] = 1.0 - weight;
-                        matricesIndicesExtra[i + firstZeroWeight - 4] = noInfluenceBoneIndex;
-                    } else {
-                        matricesWeights[i + firstZeroWeight] = 1.0 - weight;
-                        matricesIndices[i + firstZeroWeight] = noInfluenceBoneIndex;
-                    }
-                }
-            }
-
-            this.setVerticesData(VertexBuffer.MatricesIndicesKind, matricesIndices);
-            if (matricesIndicesExtra) {
-                this.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, matricesIndicesExtra);
-            }
-
-            this.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeights);
-            if (matricesWeightsExtra) {
-                this.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, matricesWeightsExtra);
             }
         }
 
+        // faster 4 weight version.
+        private normalizeSkinFourWeights(): void {
+
+            let matricesWeights = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsKind));
+            let numWeights = matricesWeights.length;
+
+            for (var a = 0; a < numWeights; a += 4) {
+                // accumulate weights
+                var t = matricesWeights[a] + matricesWeights[a + 1] + matricesWeights[a + 2] + matricesWeights[a + 3];
+                // check for invalid weight and just set it to 1.
+                if (t === 0) { matricesWeights[a] = 1; }
+                else {
+                    // renormalize so everything adds to 1 use reciprical
+                    let recip = 1 / t;
+                    matricesWeights[a] *= recip;
+                    matricesWeights[a + 1] *= recip;
+                    matricesWeights[a + 2] *= recip;
+                    matricesWeights[a + 3] *= recip;
+                }
+
+            }
+            this.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeights);
+        }
+        // handle special case of extra verts.  (in theory gltf can handle 12 influences)
+        private normalizeSkinWeightsAndExtra(): void {
+
+            let matricesWeightsExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind));
+            let matricesWeights = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsKind));
+            let numWeights = matricesWeights.length;
+
+            for (var a = 0; a  < numWeights; a += 4) {
+                // accumulate weights
+                var t = matricesWeights[a] + matricesWeights[a + 1] + matricesWeights[a + 2] + matricesWeights[a + 3];
+                t += matricesWeightsExtra[a] + matricesWeightsExtra[a + 1] + matricesWeightsExtra[a + 2] + matricesWeightsExtra[a + 3];
+                // check for invalid weight and just set it to 1.
+                if (t === 0) { matricesWeights[a] = 1; }
+                else {
+                    // renormalize so everything adds to 1 use reciprical
+                    let recip = 1 / t;
+                    matricesWeights[a] *= recip;
+                    matricesWeights[a + 1] *= recip;
+                    matricesWeights[a + 2] *= recip;
+                    matricesWeights[a + 3] *= recip;
+                    // same goes for extras
+                    matricesWeightsExtra[a] *= recip;
+                    matricesWeightsExtra[a + 1] *= recip;
+                    matricesWeightsExtra[a + 2] *= recip;
+                    matricesWeightsExtra[a + 3] *= recip;
+                }
+
+            }
+            this.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeights);
+            this.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeightsExtra);
+        }
+
+        /**
+         * ValidateSkinning is used to determine that a mesh has valid skinning data along with skin metrics, if missing weights,
+         * or not normalized it is returned as invalid mesh the string can be used for console logs, or on screen messages to let
+         * the user know there was an issue with importing the mesh
+         * @returns a validation object with skinned, valid and report string
+         */
+        public validateSkinning() : {skinned: boolean, valid: boolean, report: string} {
+
+            let matricesWeightsExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind));
+            let matricesWeights = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsKind));
+            if (matricesWeights === null || this.skeleton == null) {
+                return {skinned: false, valid: true, report: "not skinned"};
+            }
+
+            let numWeights = matricesWeights.length;
+            let numberNotSorted : number = 0;
+            let missingWeights : number  = 0;
+            let maxUsedWeights : number  = 0;
+            let numberNotNormalized : number  = 0;
+            let numInfluences : number  = matricesWeightsExtra === null ? 4 : 8;
+            var usedWeightCounts = new Array<number>();
+            for (var a = 0; a <= numInfluences; a++) {
+                usedWeightCounts[a] = 0;
+            }
+            const toleranceEpsilon : number = 0.001;
+
+            for (var a = 0; a < numWeights; a += 4) {
+
+                let lastWeight : number = matricesWeights[a];
+                var t = lastWeight;
+                let usedWeights : number = t === 0 ? 0 : 1;
+
+                for (var b = 1; b < numInfluences; b++) {
+                    var d = b < 4 ? matricesWeights[a + b] : matricesWeightsExtra[a + b - 4];
+                    if (d > lastWeight) { numberNotSorted++; }
+                    if (d !== 0) { usedWeights++; }
+                    t += d;
+                    lastWeight = d;
+                }
+                // count the buffer weights usage
+                usedWeightCounts[usedWeights]++;
+
+                // max influences
+                if (usedWeights > maxUsedWeights) { maxUsedWeights = usedWeights; }
+
+                // check for invalid weight and just set it to 1.
+                if (t === 0) {
+                    missingWeights++;
+                }
+                else {
+                    // renormalize so everything adds to 1 use reciprical
+                    let recip = 1 / t;
+                    let tolerance = 0;
+                    for (b = 0; b < numInfluences; b++) {
+                        if (b < 4) {
+                            tolerance += Math.abs(matricesWeights[a + b] - (matricesWeights[a + b] * recip));
+                        }
+                        else {
+                            tolerance += Math.abs(matricesWeightsExtra[a + b - 4] - (matricesWeightsExtra[a + b - 4] * recip));
+                        }
+                    }
+                    // arbitary epsilon value for dicdating not normalized
+                    if (tolerance > toleranceEpsilon) { numberNotNormalized++; }
+                }
+            }
+
+            // validate bone indices are in range of the skeleton
+            let numBones: number = this.skeleton.bones.length;
+            let matricesIndices = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesKind));
+            let matricesIndicesExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind));
+            let numBadBoneIndices : number = 0;
+            for (var a = 0; a < numWeights; a++) {
+                for (var b = 0; b < numInfluences; b++) {
+                    let index = b < 4 ? matricesIndices[b] : matricesIndicesExtra[b - 4];
+                    if (index >= numBones || index < 0) { numBadBoneIndices++; }
+                }
+            }
+
+            // log mesh stats
+            var output = "Number of Weights = " + numWeights / 4 + "\nMaximum influences = " + maxUsedWeights +
+                         "\nMissing Weights = " + missingWeights + "\nNot Sorted = " + numberNotSorted +
+                         "\nNot Normalized = " + numberNotNormalized + "\nWeightCounts = [" + usedWeightCounts + "]" +
+                         "\nNumber of bones = " + numBones + "\nBad Bone Indices = " + numBadBoneIndices ;
+
+            return {skinned: true, valid: missingWeights === 0 && numberNotNormalized === 0 && numBadBoneIndices === 0, report: output};
+        }
 
         /** @hidden */
         public _checkDelayState(): Mesh {
@@ -1694,7 +1797,7 @@
 
             var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1);
 
-            Tools.LoadFile(this.delayLoadingFile, data => {
+            Tools.LoadFile(this.delayLoadingFile, (data) => {
 
                 if (data instanceof ArrayBuffer) {
                     this._delayLoadingFunction(data, this);
@@ -1703,10 +1806,9 @@
                     this._delayLoadingFunction(JSON.parse(data), this);
                 }
 
-                this.instances.forEach(instance => {
+                this.instances.forEach((instance) => {
                     instance._syncSubMeshes();
                 });
-
 
                 this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
                 scene._removePendingData(this);
@@ -1716,10 +1818,10 @@
         }
 
         /**
-         * Returns `true` if the mesh is within the frustum defined by the passed array of planes.  
+         * Returns `true` if the mesh is within the frustum defined by the passed array of planes.
          * A mesh is in the frustum if its bounding box intersects the frustum
          * @param frustumPlanes defines the frustum to test
-         * @returns true if the mesh is in the frustum planes 
+         * @returns true if the mesh is in the frustum planes
          */
         public isInFrustum(frustumPlanes: Plane[]): boolean {
             if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
@@ -1737,7 +1839,7 @@
 
         /**
          * Sets the mesh material by the material or multiMaterial `id` property
-         * @param id is a string identifying the material or the multiMaterial 
+         * @param id is a string identifying the material or the multiMaterial
          * @returns the current mesh
          */
         public setMaterialByID(id: string): Mesh {
@@ -1780,12 +1882,12 @@
         }
 
         /**
-         * Modifies the mesh geometry according to the passed transformation matrix.  
-         * This method returns nothing but it really modifies the mesh even if it's originally not set as updatable. 
-         * The mesh normals are modified using the same transformation.  
+         * Modifies the mesh geometry according to the passed transformation matrix.
+         * This method returns nothing but it really modifies the mesh even if it's originally not set as updatable.
+         * The mesh normals are modified using the same transformation.
          * Note that, under the hood, this method sets a new VertexBuffer each call.
          * @param transform defines the transform matrix to use
-         * @see http://doc.babylonjs.com/resources/baking_transformations  
+         * @see http://doc.babylonjs.com/resources/baking_transformations
          * @returns the current mesh
          */
         public bakeTransformIntoVertices(transform: Matrix): Mesh {
@@ -1828,10 +1930,10 @@
         }
 
         /**
-         * Modifies the mesh geometry according to its own current World Matrix.  
+         * Modifies the mesh geometry according to its own current World Matrix.
          * The mesh World Matrix is then reset.
          * This method returns nothing but really modifies the mesh even if it's originally not set as updatable.
-         * Note that, under the hood, this method sets a new VertexBuffer each call.   
+         * Note that, under the hood, this method sets a new VertexBuffer each call.
          * @see http://doc.babylonjs.com/resources/baking_transformations
          * @returns the current mesh
          */
@@ -1879,7 +1981,7 @@
          * This method must not get confused with createInstance()
          * @param name is a string, the name given to the new mesh
          * @param newParent can be any Node object (default `null`)
-         * @param doNotCloneChildren allows/denies the recursive cloning of the original mesh children if any (default `false`) 
+         * @param doNotCloneChildren allows/denies the recursive cloning of the original mesh children if any (default `false`)
          * @param clonePhysicsImpostor allows/denies the cloning in the same time of the original mesh `body` used by the physics engine, if any (default `true`)
          * @returns a new mesh
          */
@@ -1922,9 +2024,9 @@
             this._source = null;
 
             // Instances
-            if (this._instancesBuffer) {
-                this._instancesBuffer.dispose();
-                this._instancesBuffer = null;
+            if (this._instanceDataStorage.instancesBuffer) {
+                this._instanceDataStorage.instancesBuffer.dispose();
+                this._instanceDataStorage.instancesBuffer = null;
             }
 
             while (this.instances.length) {
@@ -1936,16 +2038,16 @@
 
         /**
          * Modifies the mesh geometry according to a displacement map.
-         * A displacement map is a colored image. Each pixel color value (actually a gradient computed from red, green, blue values) will give the displacement to apply to each mesh vertex.  
+         * A displacement map is a colored image. Each pixel color value (actually a gradient computed from red, green, blue values) will give the displacement to apply to each mesh vertex.
          * The mesh must be set as updatable. Its internal geometry is directly modified, no new buffer are allocated.
          * @param url is a string, the URL from the image file is to be downloaded.
          * @param minHeight is the lower limit of the displacement.
          * @param maxHeight is the upper limit of the displacement.
          * @param onSuccess is an optional Javascript function to be called just after the mesh is modified. It is passed the modified mesh and must return nothing.
          * @param uvOffset is an optional vector2 used to offset UV.
-         * @param uvScale is an optional vector2 used to scale UV.  
+         * @param uvScale is an optional vector2 used to scale UV.
          * @param forceUpdate defines whether or not to force an update of the generated buffers. This is usefull to apply on a deserialized model for instance.
-         * @returns the Mesh.  
+         * @returns the Mesh.
          */
         public applyDisplacementMap(url: string, minHeight: number, maxHeight: number, onSuccess?: (mesh: Mesh) => void, uvOffset?: Vector2, uvScale?: Vector2, forceUpdate = false): Mesh {
             var scene = this.getScene();
@@ -1978,7 +2080,7 @@
 
         /**
          * Modifies the mesh geometry according to a displacementMap buffer.
-         * A displacement map is a colored image. Each pixel color value (actually a gradient computed from red, green, blue values) will give the displacement to apply to each mesh vertex.  
+         * A displacement map is a colored image. Each pixel color value (actually a gradient computed from red, green, blue values) will give the displacement to apply to each mesh vertex.
          * The mesh must be set as updatable. Its internal geometry is directly modified, no new buffer are allocated.
          * @param buffer is a `Uint8Array` buffer containing series of `Uint8` lower than 255, the red, green, blue and alpha values of each successive pixel.
          * @param heightMapWidth is the width of the buffer image.
@@ -1987,7 +2089,7 @@
          * @param maxHeight is the upper limit of the displacement.
          * @param onSuccess is an optional Javascript function to be called just after the mesh is modified. It is passed the modified mesh and must return nothing.
          * @param uvOffset is an optional vector2 used to offset UV.
-         * @param uvScale is an optional vector2 used to scale UV.  
+         * @param uvScale is an optional vector2 used to scale UV.
          * @param forceUpdate defines whether or not to force an update of the generated buffers. This is usefull to apply on a deserialized model for instance.
          * @returns the Mesh.
          */
@@ -2144,8 +2246,8 @@
         /**
          * This method removes all the mesh indices and add new vertices (duplication) in order to unfold facets into buffers.
          * In other words, more vertices, no more indices and a single bigger VBO.
-         * The mesh is really modified even if not set originally as updatable. Under the hood, a new VertexBuffer is allocated.  
-         * @returns current mesh 
+         * The mesh is really modified even if not set originally as updatable. Under the hood, a new VertexBuffer is allocated.
+         * @returns current mesh
          */
         public convertToUnIndexedMesh(): Mesh {
             var kinds = this.getVerticesDataKinds();
@@ -2267,10 +2369,10 @@
         }
 
         /**
-         * Optimization of the mesh's indices, in case a mesh has duplicated vertices.   
-         * The function will only reorder the indices and will not remove unused vertices to avoid problems with submeshes.   
-         * This should be used together with the simplification to avoid disappearing triangles.  
-         * @param successCallback an optional success callback to be called after the optimization finished.   
+         * Optimization of the mesh's indices, in case a mesh has duplicated vertices.
+         * The function will only reorder the indices and will not remove unused vertices to avoid problems with submeshes.
+         * This should be used together with the simplification to avoid disappearing triangles.
+         * @param successCallback an optional success callback to be called after the optimization finished.
          * @returns the current mesh
          */
         public optimizeIndices(successCallback?: (mesh?: Mesh) => void): Mesh {
@@ -2417,7 +2519,7 @@
                 if (instance.doNotSerialize) {
                     continue;
                 }
-                
+
                 var serializationInstance: any = {
                     name: instance.name,
                     id: instance.id,
@@ -2428,7 +2530,7 @@
                 if (instance.parent) {
                     serializationInstance.parentId = instance.parent.id;
                 }
-                
+
                 if (instance.rotationQuaternion) {
                     serializationInstance.rotationQuaternion = instance.rotationQuaternion.asArray();
                 } else if (instance.rotation) {
@@ -2441,7 +2543,7 @@
                 serializationInstance.ranges = instance.serializeAnimationRanges();
             }
 
-            // 
+            //
 
             // Animations
             Animation.AppendSerializedAnimations(this, serializationObject);
@@ -2526,7 +2628,7 @@
         // Statics
 
         /**
-         * Returns a new Mesh object parsed from the source provided.   
+         * Returns a new Mesh object parsed from the source provided.
          * @param parsedMesh is the source
          * @param scene defines the hosting scene
          * @param rootUrl is the root URL to prefix the `delayLoadingFile` property with
@@ -2771,22 +2873,22 @@
 
                     instance.scaling = Vector3.FromArray(parsedInstance.scaling);
 
-                    if(parsedInstance.checkCollisions != undefined && parsedInstance.checkCollisions != null){
+                    if (parsedInstance.checkCollisions != undefined && parsedInstance.checkCollisions != null) {
                         instance.checkCollisions = parsedInstance.checkCollisions;
                     }
-                    if(parsedInstance.pickable != undefined && parsedInstance.pickable != null){
+                    if (parsedInstance.pickable != undefined && parsedInstance.pickable != null) {
                         instance.isPickable = parsedInstance.pickable;
                     }
-                    if(parsedInstance.showBoundingBox != undefined && parsedInstance.showBoundingBox != null){
+                    if (parsedInstance.showBoundingBox != undefined && parsedInstance.showBoundingBox != null) {
                         instance.showBoundingBox = parsedInstance.showBoundingBox;
                     }
-                    if(parsedInstance.showSubMeshesBoundingBox != undefined && parsedInstance.showSubMeshesBoundingBox != null){
+                    if (parsedInstance.showSubMeshesBoundingBox != undefined && parsedInstance.showSubMeshesBoundingBox != null) {
                         instance.showSubMeshesBoundingBox = parsedInstance.showSubMeshesBoundingBox;
                     }
-                    if(parsedInstance.alphaIndex != undefined && parsedInstance.showSubMeshesBoundingBox != null){
+                    if (parsedInstance.alphaIndex != undefined && parsedInstance.showSubMeshesBoundingBox != null) {
                         instance.alphaIndex = parsedInstance.alphaIndex;
                     }
-                    
+
                     // Physics
                     if (parsedInstance.physicsImpostor) {
                         instance.physicsImpostor = new PhysicsImpostor(instance, parsedInstance.physicsImpostor, {
@@ -2819,7 +2921,7 @@
           * Creates a ribbon mesh. Please consider using the same method from the MeshBuilder class instead
           * @see http://doc.babylonjs.com/how_to/parametric_shapes
           * @param name defines the name of the mesh to create
-          * @param pathArray is a required array of paths, what are each an array of successive Vector3. The pathArray parameter depicts the ribbon geometry.    
+          * @param pathArray is a required array of paths, what are each an array of successive Vector3. The pathArray parameter depicts the ribbon geometry.
           * @param closeArray creates a seam between the first and the last paths of the path array (default is false)
           * @param closePath creates a seam between the first and the last points of each path of the path array
           * @param offset is taken in account only if the `pathArray` is containing a single path
@@ -2857,7 +2959,7 @@
                 tessellation: tessellation,
                 sideOrientation: sideOrientation,
                 updatable: updatable
-            }
+            };
 
             return MeshBuilder.CreateDisc(name, options, scene);
         }
@@ -2899,7 +3001,7 @@
                 diameterZ: diameter,
                 sideOrientation: sideOrientation,
                 updatable: updatable
-            }
+            };
 
             return MeshBuilder.CreateSphere(name, options, scene);
         }
@@ -2935,7 +3037,7 @@
                 subdivisions: subdivisions,
                 sideOrientation: sideOrientation,
                 updatable: updatable
-            }
+            };
 
             return MeshBuilder.CreateCylinder(name, options, scene);
         }
@@ -2959,7 +3061,7 @@
                 tessellation: tessellation,
                 sideOrientation: sideOrientation,
                 updatable: updatable
-            }
+            };
 
             return MeshBuilder.CreateTorus(name, options, scene);
         }
@@ -2976,7 +3078,7 @@
           * @param scene defines the hosting scene
           * @param updatable defines if the mesh must be flagged as updatable
           * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-          * @returns a new Mesh 
+          * @returns a new Mesh
           */
         public static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
             var options = {
@@ -2988,26 +3090,26 @@
                 q: q,
                 sideOrientation: sideOrientation,
                 updatable: updatable
-            }
+            };
 
             return MeshBuilder.CreateTorusKnot(name, options, scene);
         }
 
          /**
-          * Creates a line mesh. Please consider using the same method from the MeshBuilder class instead.  
+          * Creates a line mesh. Please consider using the same method from the MeshBuilder class instead.
           * @param name defines the name of the mesh to create
           * @param points is an array successive Vector3
           * @param scene defines the hosting scene
           * @param updatable defines if the mesh must be flagged as updatable
           * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (http://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines).
-          * @returns a new Mesh 
+          * @returns a new Mesh
           */
         public static CreateLines(name: string, points: Vector3[], scene: Nullable<Scene> = null, updatable: boolean = false, instance: Nullable<LinesMesh> = null): LinesMesh {
             var options = {
                 points: points,
                 updatable: updatable,
                 instance: instance
-            }
+            };
             return MeshBuilder.CreateLines(name, options, scene);
         }
 
@@ -3021,7 +3123,7 @@
           * @param scene defines the hosting scene
           * @param updatable defines if the mesh must be flagged as updatable
           * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (http://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines)
-          * @returns a new Mesh 
+          * @returns a new Mesh
           */
         public static CreateDashedLines(name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Nullable<Scene> = null, updatable?: boolean, instance?: LinesMesh): LinesMesh {
             var options = {
@@ -3031,13 +3133,13 @@
                 dashNb: dashNb,
                 updatable: updatable,
                 instance: instance
-            }
+            };
             return MeshBuilder.CreateDashedLines(name, options, scene);
         }
 
         /**
          * Creates a polygon mesh.
-         * Please consider using the same method from the MeshBuilder class instead. 
+         * Please consider using the same method from the MeshBuilder class instead.
          * The polygon's shape will depend on the input parameters and is constructed parallel to a ground mesh.
          * The parameter `shape` is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors.
          * You can set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
@@ -3054,7 +3156,7 @@
           * @param holes is a required array of arrays of successive Vector3 used to defines holes in the polygon
           * @param updatable defines if the mesh must be flagged as updatable
           * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-          * @returns a new Mesh 
+          * @returns a new Mesh
           */
         public static CreatePolygon(name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh {
             var options = {
@@ -3062,12 +3164,12 @@
                 holes: holes,
                 updatable: updatable,
                 sideOrientation: sideOrientation
-            }
+            };
             return MeshBuilder.CreatePolygon(name, options, scene);
         }
 
          /**
-          * Creates an extruded polygon mesh, with depth in the Y direction. Please consider using the same method from the MeshBuilder class instead. 
+          * Creates an extruded polygon mesh, with depth in the Y direction. Please consider using the same method from the MeshBuilder class instead.
           * @see http://doc.babylonjs.com/how_to/parametric_shapes#extruded-non-regular-polygon
           * @param name defines the name of the mesh to create
           * @param shape is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors
@@ -3076,7 +3178,7 @@
           * @param holes is a required array of arrays of successive Vector3 used to defines holes in the polygon
           * @param updatable defines if the mesh must be flagged as updatable
           * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-          * @returns a new Mesh 
+          * @returns a new Mesh
           */
         public static ExtrudePolygon(name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh {
             var options = {
@@ -3085,7 +3187,7 @@
                 depth: depth,
                 updatable: updatable,
                 sideOrientation: sideOrientation
-            }
+            };
             return MeshBuilder.ExtrudePolygon(name, options, scene);
         }
 
@@ -3104,7 +3206,7 @@
           * @param updatable defines if the mesh must be flagged as updatable
           * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
           * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (http://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#extruded-shape)
-          * @returns a new Mesh 
+          * @returns a new Mesh
           */
         public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
             var options = {
@@ -3116,7 +3218,7 @@
                 sideOrientation: sideOrientation,
                 instance: instance,
                 updatable: updatable
-            }
+            };
 
             return MeshBuilder.ExtrudeShape(name, options, scene);
         }
@@ -3139,7 +3241,7 @@
           * @param updatable defines if the mesh must be flagged as updatable
           * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
           * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (http://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape)
-          * @returns a new Mesh 
+          * @returns a new Mesh
           */
         public static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction: Function, rotationFunction: Function, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
             var options = {
@@ -3153,14 +3255,14 @@
                 sideOrientation: sideOrientation,
                 instance: instance,
                 updatable: updatable
-            }
+            };
 
             return MeshBuilder.ExtrudeShapeCustom(name, options, scene);
         }
 
          /**
           * Creates lathe mesh.
-          * The lathe is a shape with a symetry axis : a 2D model shape is rotated around this axis to design the lathe. 
+          * The lathe is a shape with a symetry axis : a 2D model shape is rotated around this axis to design the lathe.
           * Please consider using the same method from the MeshBuilder class instead
           * @param name defines the name of the mesh to create
           * @param shape is a required array of successive Vector3. This array depicts the shape to be rotated in its local space : the shape must be designed in the xOy plane and will be rotated around the Y axis. It's usually a 2D shape, so the Vector3 z coordinates are often set to zero
@@ -3169,7 +3271,7 @@
           * @param scene defines the hosting scene
           * @param updatable defines if the mesh must be flagged as updatable
           * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-          * @returns a new Mesh 
+          * @returns a new Mesh
           */
         public static CreateLathe(name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
             var options = {
@@ -3190,7 +3292,7 @@
           * @param scene defines the hosting scene
           * @param updatable defines if the mesh must be flagged as updatable
           * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-          * @returns a new Mesh 
+          * @returns a new Mesh
           */
         public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
             var options = {
@@ -3199,7 +3301,7 @@
                 height: size,
                 sideOrientation: sideOrientation,
                 updatable: updatable
-            }
+            };
 
             return MeshBuilder.CreatePlane(name, options, scene);
         }
@@ -3213,7 +3315,7 @@
           * @param subdivisions sets the number of subdivisions per side
           * @param scene defines the hosting scene
           * @param updatable defines if the mesh must be flagged as updatable
-          * @returns a new Mesh 
+          * @returns a new Mesh
           */
         public static CreateGround(name: string, width: number, height: number, subdivisions: number, scene?: Scene, updatable?: boolean): Mesh {
             var options = {
@@ -3221,13 +3323,13 @@
                 height: height,
                 subdivisions: subdivisions,
                 updatable: updatable
-            }
+            };
 
             return MeshBuilder.CreateGround(name, options, scene);
         }
 
          /**
-          * Creates a tiled ground mesh.  
+          * Creates a tiled ground mesh.
           * Please consider using the same method from the MeshBuilder class instead
           * @param name defines the name of the mesh to create
           * @param xmin set the ground minimum X coordinate
@@ -3238,7 +3340,7 @@
           * @param precision is an object `{w: positive integer, h: positive integer}` (default `{w: 2, h: 2}`). `w` and `h` are the numbers of subdivisions on the ground width and height of each tile
           * @param scene defines the hosting scene
           * @param updatable defines if the mesh must be flagged as updatable
-          * @returns a new Mesh 
+          * @returns a new Mesh
           */
         public static CreateTiledGround(name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: { w: number; h: number; }, precision: { w: number; h: number; }, scene: Scene, updatable?: boolean): Mesh {
             var options = {
@@ -3249,7 +3351,7 @@
                 subdivisions: subdivisions,
                 precision: precision,
                 updatable: updatable
-            }
+            };
 
             return MeshBuilder.CreateTiledGround(name, options, scene);
         }
@@ -3257,7 +3359,7 @@
          /**
           * Creates a ground mesh from a height map.
           * Please consider using the same method from the MeshBuilder class instead
-          * @see http://doc.babylonjs.com/babylon101/height_map   
+          * @see http://doc.babylonjs.com/babylon101/height_map
           * @param name defines the name of the mesh to create
           * @param url sets the URL of the height map image resource
           * @param width set the ground width size
@@ -3269,7 +3371,7 @@
           * @param updatable defines if the mesh must be flagged as updatable
           * @param onReady  is a callback function that will be called  once the mesh is built (the height map download can last some time)
           * @param alphaFilter will filter any data where the alpha channel is below this value, defaults 0 (all data visible)
-          * @returns a new Mesh 
+          * @returns a new Mesh
           */
         public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void, alphaFilter?: number): GroundMesh {
             var options = {
@@ -3302,7 +3404,7 @@
          * @param updatable defines if the mesh must be flagged as updatable
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
          * @param instance is an instance of an existing Tube object to be updated with the passed `pathArray` parameter (http://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#tube)
-         * @returns a new Mesh 
+         * @returns a new Mesh
          */
         public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
             var options = {
@@ -3315,28 +3417,28 @@
                 updatable: updatable,
                 sideOrientation: sideOrientation,
                 instance: instance
-            }
+            };
             return MeshBuilder.CreateTube(name, options, scene);
         }
 
         /**
           * Creates a polyhedron mesh.
-          * Please consider using the same method from the MeshBuilder class instead.   
+          * Please consider using the same method from the MeshBuilder class instead.
           * * The parameter `type` (positive integer, max 14, default 0) sets the polyhedron type to build among the 15 embbeded types. Please refer to the type sheet in the tutorial to choose the wanted type
           * * The parameter `size` (positive float, default 1) sets the polygon size
           * * You can overwrite the `size` on each dimension bu using the parameters `sizeX`, `sizeY` or `sizeZ` (positive floats, default to `size` value)
           * * You can build other polyhedron types than the 15 embbeded ones by setting the parameter `custom` (`polyhedronObject`, default null). If you set the parameter `custom`, this overwrittes the parameter `type`
-          * * A `polyhedronObject` is a formatted javascript object. You'll find a full file with pre-set polyhedra here : https://github.com/BabylonJS/Extensions/tree/master/Polyhedron    
+          * * A `polyhedronObject` is a formatted javascript object. You'll find a full file with pre-set polyhedra here : https://github.com/BabylonJS/Extensions/tree/master/Polyhedron
           * * You can set the color and the UV of each side of the polyhedron with the parameters `faceColors` (Color4, default `(1, 1, 1, 1)`) and faceUV (Vector4, default `(0, 0, 1, 1)`)
           * * To understand how to set `faceUV` or `faceColors`, please read this by considering the right number of faces of your polyhedron, instead of only 6 for the box : http://doc.babylonjs.com/tutorials/CreateBox_Per_Face_Textures_And_Colors
           * * The parameter `flat` (boolean, default true). If set to false, it gives the polyhedron a single global face, so less vertices and shared normals. In this case, `faceColors` and `faceUV` are ignored
-          * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
-          * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation    
+          * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+          * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
           * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
           * @param name defines the name of the mesh to create
-          * @param options defines the options used to create the mesh          
+          * @param options defines the options used to create the mesh
           * @param scene defines the hosting scene
-          * @returns a new Mesh 
+          * @returns a new Mesh
           */
         public static CreatePolyhedron(name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh {
             return MeshBuilder.CreatePolyhedron(name, options, scene);
@@ -3348,21 +3450,21 @@
          * * You can set some different icosphere dimensions, for instance to build an ellipsoid, by using the parameters `radiusX`, `radiusY` and `radiusZ` (all by default have the same value than `radius`)
          * * The parameter `subdivisions` sets the number of subdivisions (postive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size
          * * The parameter `flat` (boolean, default true) gives each side its own normals. Set it to false to get a smooth continuous light reflection on the surface
-         * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE  
-         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation    
+         * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
          * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
          * @param name defines the name of the mesh
          * @param options defines the options used to create the mesh
          * @param scene defines the hosting scene
-         * @returns a new Mesh 
-         * @see http://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere   
+         * @returns a new Mesh
+         * @see http://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere
          */
         public static CreateIcoSphere(name: string, options: { radius?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh {
             return MeshBuilder.CreateIcoSphere(name, options, scene);
         }
 
          /**
-          * Creates a decal mesh.  
+          * Creates a decal mesh.
           * Please consider using the same method from the MeshBuilder class instead.
           * A decal is a mesh usually applied as a model onto the surface of another mesh
           * @param name  defines the name of the mesh
@@ -3371,7 +3473,7 @@
           * @param normal sets the normal of the mesh where the decal is applied onto in world coordinates
           * @param size sets the decal scaling
           * @param angle sets the angle to rotate the decal
-          * @returns a new Mesh 
+          * @returns a new Mesh
           */
         public static CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): Mesh {
             var options = {
@@ -3379,7 +3481,7 @@
                 normal: normal,
                 size: size,
                 angle: angle
-            }
+            };
 
             return MeshBuilder.CreateDecal(name, sourceMesh, options);
         }
@@ -3552,7 +3654,7 @@
             var minVector: Nullable<Vector3> = null;
             var maxVector: Nullable<Vector3> = null;
 
-            meshes.forEach(function (mesh, index, array) {
+            meshes.forEach(function(mesh, index, array) {
                 let boundingInfo = mesh.getBoundingInfo();
 
                 let boundingBox = boundingInfo.boundingBox;
@@ -3569,7 +3671,7 @@
                 return {
                     min: Vector3.Zero(),
                     max: Vector3.Zero()
-                }
+                };
             }
 
             return {

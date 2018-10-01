@@ -257,7 +257,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._rootCanvas = scene.getEngine()!.getRenderingCanvas()!;
 
         this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
-        this._preKeyboardObserver = scene.onPreKeyboardObservable.add(info => {
+        this._preKeyboardObserver = scene.onPreKeyboardObservable.add((info) => {
             if (!this._focusedControl) {
                 return;
             }
@@ -307,12 +307,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      */
     public markAsDirty() {
         this._isDirty = true;
-
-        this.executeOnAllControls((control) => {
-            if (control._isFontSizeInPercentage) {
-                control._resetFontCache();
-            }
-        });
     }
 
     /**
@@ -623,9 +617,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             this._shouldBlockPointer = false;
             // Do picking modifies _shouldBlockPointer
             this._doPicking(x, y, pi.type, (pi.event as PointerEvent).pointerId || 0, pi.event.button);
-            
-            // Avoid overwriting a true skipOnPointerObservable to false 
-            if(this._shouldBlockPointer){
+
+            // Avoid overwriting a true skipOnPointerObservable to false
+            if (this._shouldBlockPointer) {
                 pi.skipOnPointerObservable = this._shouldBlockPointer;
             }
         });
@@ -666,7 +660,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
                 if (this.focusedControl) {
                     const friendlyControls = this.focusedControl.keepsFocusWith();
-                    
+
                     let canMoveFocus = true;
 
                     if (friendlyControls) {
@@ -766,10 +760,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (onlyAlphaTesting) {
             material.diffuseTexture = result;
             material.emissiveTexture = result;
-            result.hasAlpha = true;    
+            result.hasAlpha = true;
         } else {
             material.emissiveTexture = result;
-            material.opacityTexture = result;   
+            material.opacityTexture = result;
         }
 
         mesh.material = material;

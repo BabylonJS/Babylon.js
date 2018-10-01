@@ -6,7 +6,7 @@ export class Measure {
     /**
      * Creates a new measure
      * @param left defines left coordinate
-     * @param top defines top coordinate 
+     * @param top defines top coordinate
      * @param width defines width dimension
      * @param height defines height dimension
      */
@@ -66,4 +66,4 @@ export class Measure {
     public static Empty(): Measure {
         return new Measure(0, 0, 0, 0);
     }
-}   
+}

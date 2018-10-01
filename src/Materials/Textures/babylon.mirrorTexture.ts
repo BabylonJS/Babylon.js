@@ -1,18 +1,22 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * Mirror texture can be used to simulate the view from a mirror in a scene.
+     * It will dynamically be rendered every frame to adapt to the camera point of view.
+     * You can then easily use it as a reflectionTexture on a flat surface.
+     * In case the surface is not a plane, please consider relying on reflection probes.
+     * @see https://doc.babylonjs.com/how_to/reflect#mirrors
+     */
     export class MirrorTexture extends RenderTargetTexture {
+        /**
+         * Define the reflection plane we want to use. The mirrorPlane is usually set to the constructed reflector.
+         * It is possible to directly set the mirrorPlane by directly using a BABYLON.Plane(a, b, c, d) where a, b and c give the plane normal vector (a, b, c) and d is a scalar displacement from the mirrorPlane to the origin. However in all but the very simplest of situations it is more straight forward to set it to the reflector as stated in the doc.
+         * @see https://doc.babylonjs.com/how_to/reflect#mirrors
+         */
         public mirrorPlane = new Plane(0, 1, 0, 1);
 
-        private _transformMatrix = Matrix.Zero();
-        private _mirrorMatrix = Matrix.Zero();
-        private _savedViewMatrix: Matrix;
-
-        private _blurX: Nullable<BlurPostProcess>;
-        private _blurY: Nullable<BlurPostProcess>;
-        private _adaptiveBlurKernel = 0;
-        private _blurKernelX = 0;
-        private _blurKernelY = 0;
-        private _blurRatio = 1.0;
-
+        /**
+         * Define the blur ratio used to blur the reflection if needed.
+         */
         public set blurRatio(value: number) {
             if (this._blurRatio === value) {
                 return;
@@ -26,16 +30,28 @@
             return this._blurRatio;
         }
 
+        /**
+         * Define the adaptive blur kernel used to blur the reflection if needed.
+         * This will autocompute the closest best match for the `blurKernel`
+         */
         public set adaptiveBlurKernel(value: number) {
             this._adaptiveBlurKernel = value;
             this._autoComputeBlurKernel();
         }
 
+        /**
+         * Define the blur kernel used to blur the reflection if needed.
+         * Please consider using `adaptiveBlurKernel` as it could find the closest best value for you.
+         */
         public set blurKernel(value: number) {
             this.blurKernelX = value;
             this.blurKernelY = value;
         }
 
+        /**
+         * Define the blur kernel on the X Axis used to blur the reflection if needed.
+         * Please consider using `adaptiveBlurKernel` as it could find the closest best value for you.
+         */
         public set blurKernelX(value: number) {
             if (this._blurKernelX === value) {
                 return;
@@ -49,6 +65,10 @@
             return this._blurKernelX;
         }
 
+        /**
+         * Define the blur kernel on the Y Axis used to blur the reflection if needed.
+         * Please consider using `adaptiveBlurKernel` as it could find the closest best value for you.
+         */
         public set blurKernelY(value: number) {
             if (this._blurKernelY === value) {
                 return;
@@ -83,19 +103,47 @@
                 this._autoComputeBlurKernel();
             }
         }
-        private _updateGammaSpace(){
+
+        private _updateGammaSpace() {
             this.gammaSpace = !this.scene.imageProcessingConfiguration.isEnabled || !this.scene.imageProcessingConfiguration.applyByPostProcess;
         }
 
-        private _imageProcessingConfigChangeObserver:Nullable<Observer<ImageProcessingConfiguration>>;
+        private _imageProcessingConfigChangeObserver: Nullable<Observer<ImageProcessingConfiguration>>;
+
+        private _transformMatrix = Matrix.Zero();
+        private _mirrorMatrix = Matrix.Zero();
+        private _savedViewMatrix: Matrix;
+
+        private _blurX: Nullable<BlurPostProcess>;
+        private _blurY: Nullable<BlurPostProcess>;
+        private _adaptiveBlurKernel = 0;
+        private _blurKernelX = 0;
+        private _blurKernelY = 0;
+        private _blurRatio = 1.0;
+
+        /**
+         * Instantiates a Mirror Texture.
+         * Mirror texture can be used to simulate the view from a mirror in a scene.
+         * It will dynamically be rendered every frame to adapt to the camera point of view.
+         * You can then easily use it as a reflectionTexture on a flat surface.
+         * In case the surface is not a plane, please consider relying on reflection probes.
+         * @see https://doc.babylonjs.com/how_to/reflect#mirrors
+         * @param name
+         * @param size
+         * @param scene
+         * @param generateMipMaps
+         * @param type
+         * @param samplingMode
+         * @param generateDepthBuffer
+         */
         constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, private scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
             super(name, size, scene, generateMipMaps, true, type, false, samplingMode, generateDepthBuffer);
 
             this.ignoreCameraViewport = true;
-            
+
             this._updateGammaSpace();
             this._imageProcessingConfigChangeObserver = scene.imageProcessingConfiguration.onUpdateParameters.add(() => {
-                this._updateGammaSpace
+                this._updateGammaSpace;
             });
 
             this.onBeforeRenderObservable.add(() => {
@@ -160,6 +208,10 @@
             }
         }
 
+        /**
+         * Clone the mirror texture.
+         * @returns the cloned texture
+         */
         public clone(): MirrorTexture {
             let scene = this.getScene();
 
@@ -191,6 +243,10 @@
             return newTexture;
         }
 
+        /**
+         * Serialize the texture to a JSON representation you could use in Parse later on
+         * @returns the serialized JSON representation
+         */
         public serialize(): any {
             if (!this.name) {
                 return null;
@@ -203,9 +259,12 @@
             return serializationObject;
         }
 
-        public dispose(){
+        /**
+         * Dispose the texture and release its associated resources.
+         */
+        public dispose() {
             super.dispose();
             this.scene.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigChangeObserver);
         }
     }
-} 
+}

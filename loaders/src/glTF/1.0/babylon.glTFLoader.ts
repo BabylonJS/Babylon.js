@@ -1,4 +1,4 @@
-﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF1 {
     /**
@@ -28,7 +28,7 @@ module BABYLON.GLTF1 {
         }
 
         public getNextToken(): ETokenType {
-            if (this.isEnd()) return ETokenType.END_OF_INPUT;
+            if (this.isEnd()) { return ETokenType.END_OF_INPUT; }
 
             this.currentString = this.read();
             this.currentToken = ETokenType.UNKNOWN;
@@ -128,7 +128,6 @@ module BABYLON.GLTF1 {
 
         return null;
     };
-
 
     /**
     * Loads and creates animations
@@ -340,7 +339,7 @@ module BABYLON.GLTF1 {
         }
 
         return null;
-    }
+    };
 
     /**
     * Returns the appropriate root node
@@ -384,7 +383,7 @@ module BABYLON.GLTF1 {
         }
 
         return null;
-    }
+    };
 
     /**
     * Checks if a nodes is in joints
@@ -397,7 +396,7 @@ module BABYLON.GLTF1 {
         }
 
         return false;
-    }
+    };
 
     /**
     * Fills the nodes to root for bones and builds hierarchy
@@ -1092,7 +1091,7 @@ module BABYLON.GLTF1 {
                         shaderMaterial.setTexture(uniformName, texture);
                         delete unTreatedUniforms[uniformName];
                     }
-                }
+                };
             };
 
             // Texture (sampler2D)
@@ -1206,7 +1205,7 @@ module BABYLON.GLTF1 {
                 importOnlyMeshes: false,
 
                 dummyNodes: []
-            }
+            };
 
             // Parse
             if (parsedData.extensions) {
@@ -1299,7 +1298,7 @@ module BABYLON.GLTF1 {
                 setTimeout(() => onSuccess(new Uint8Array(Tools.DecodeBase64(buffer.uri))));
             }
             else {
-                Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, data => onSuccess(new Uint8Array(data as ArrayBuffer)), onProgress, undefined, true, request => {
+                Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, (data) => onSuccess(new Uint8Array(data as ArrayBuffer)), onProgress, undefined, true, (request) => {
                     if (request) {
                         onError(request.status + " " + request.statusText);
                     }
@@ -1326,7 +1325,7 @@ module BABYLON.GLTF1 {
                 setTimeout(() => onSuccess(new Uint8Array(Tools.DecodeBase64(source.uri))));
             }
             else {
-                Tools.LoadFile(gltfRuntime.rootUrl + source.uri, data => onSuccess(new Uint8Array(data as ArrayBuffer)), undefined, undefined, true, request => {
+                Tools.LoadFile(gltfRuntime.rootUrl + source.uri, (data) => onSuccess(new Uint8Array(data as ArrayBuffer)), undefined, undefined, true, (request) => {
                     if (request) {
                         onError(request.status + " " + request.statusText);
                     }
@@ -1378,7 +1377,7 @@ module BABYLON.GLTF1 {
                 }
             }
             else {
-                Tools.LoadFile(gltfRuntime.rootUrl + shader.uri, onSuccess, undefined, undefined, false, request => {
+                Tools.LoadFile(gltfRuntime.rootUrl + shader.uri, onSuccess, undefined, undefined, false, (request) => {
                     if (request && onError) {
                         onError(request.status + " " + request.statusText);
                     }
@@ -1416,9 +1415,9 @@ module BABYLON.GLTF1 {
             var pixelTokenizer = new Tokenizer(pixelShader);
 
             var unTreatedUniforms: { [key: string]: IGLTFTechniqueParameter } = {};
-            var uniforms = [];
-            var attributes = [];
-            var samplers = [];
+            var uniforms: string[] = [];
+            var attributes: string[] = [];
+            var samplers: string[] = [];
 
             // Fill uniform, sampler2D and attributes
             for (var unif in technique.uniforms) {
@@ -1450,7 +1449,10 @@ module BABYLON.GLTF1 {
                 var attributeParameter: IGLTFTechniqueParameter = technique.parameters[attribute];
 
                 if (attributeParameter.semantic) {
-                    attributes.push(getAttribute(attributeParameter));
+                    let name = getAttribute(attributeParameter);
+                    if (name) {
+                        attributes.push(name);
+                    }
                 }
             }
 
@@ -1571,7 +1573,7 @@ module BABYLON.GLTF1 {
         private _importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string) => void): boolean {
             scene.useRightHandedSystem = true;
 
-            GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
+            GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, (gltfRuntime) => {
                 gltfRuntime.importOnlyMeshes = true;
 
                 if (meshesNames === "") {
@@ -1649,7 +1651,7 @@ module BABYLON.GLTF1 {
                         skeletons: skeletons,
                         animationGroups: []
                     });
-                }, onProgress, message => {
+                }, onProgress, (message) => {
                     reject(new Error(message));
                 });
             });
@@ -1658,7 +1660,7 @@ module BABYLON.GLTF1 {
         private _loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string) => void): void {
             scene.useRightHandedSystem = true;
 
-            GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
+            GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, (gltfRuntime) => {
                 // Load runtime extensios
                 GLTFLoaderExtension.LoadRuntimeExtensionsAsync(gltfRuntime, () => {
                     // Create nodes
@@ -1695,7 +1697,7 @@ module BABYLON.GLTF1 {
             return new Promise((resolve, reject) => {
                 this._loadAsync(scene, data, rootUrl, () => {
                     resolve();
-                }, onProgress, message => {
+                }, onProgress, (message) => {
                     reject(new Error(message));
                 });
             });
@@ -1705,7 +1707,7 @@ module BABYLON.GLTF1 {
             var hasShaders = false;
 
             var processShader = (sha: string, shader: IGLTFShader) => {
-                GLTFLoaderExtension.LoadShaderStringAsync(gltfRuntime, sha, shaderString => {
+                GLTFLoaderExtension.LoadShaderStringAsync(gltfRuntime, sha, (shaderString) => {
                     if (shaderString instanceof ArrayBuffer) {
                         return;
                     }
@@ -1739,13 +1741,13 @@ module BABYLON.GLTF1 {
             if (!hasShaders) {
                 onload();
             }
-        };
+        }
 
         private _loadBuffersAsync(gltfRuntime: IGLTFRuntime, onLoad: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void): void {
             var hasBuffers = false;
 
             var processBuffer = (buf: string, buffer: IGLTFBuffer) => {
-                GLTFLoaderExtension.LoadBufferAsync(gltfRuntime, buf, bufferView => {
+                GLTFLoaderExtension.LoadBufferAsync(gltfRuntime, buf, (bufferView) => {
                     gltfRuntime.loadedBufferCount++;
 
                     if (bufferView) {
@@ -1801,7 +1803,7 @@ module BABYLON.GLTF1 {
                 }
             }
         }
-    };
+    }
 
     GLTFFileLoader._CreateGLTFLoaderV1 = () => new GLTFLoader();
 }

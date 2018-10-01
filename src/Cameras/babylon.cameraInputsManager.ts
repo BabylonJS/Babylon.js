@@ -1,5 +1,6 @@
 module BABYLON {
     /**
+     * @ignore
      * This is a list of all the different input types that are available in the application.
      * Fo instance: ArcRotateCameraGamepadInput...
      */
@@ -165,7 +166,7 @@ module BABYLON {
             return () => {
                 current();
                 fn();
-            }
+            };
         }
 
         /**
@@ -219,7 +220,7 @@ module BABYLON {
         }
 
         /**
-         * Rebuild the dynamic inputCheck function from the current list of 
+         * Rebuild the dynamic inputCheck function from the current list of
          * defined inputs in the manager.
          */
         public rebuildInputCheck(): void {
@@ -247,7 +248,7 @@ module BABYLON {
 
         /**
          * Serialize the current input manager attached to a camera.
-         * This ensures than once parsed, 
+         * This ensures than once parsed,
          * the input associated to the camera will be identical to the current ones
          * @param serializedCamera Defines the camera serialization JSON the input serialization should write to
          */
@@ -276,7 +277,7 @@ module BABYLON {
                     var construct = (<any>CameraInputTypes)[n];
                     if (construct) {
                         var parsedinput = parsedInputs[n];
-                        var input = SerializationHelper.Parse(() => { return new construct() }, parsedinput, null);
+                        var input = SerializationHelper.Parse(() => { return new construct(); }, parsedinput, null);
                         this.add(input as any);
                     }
                 }
@@ -285,7 +286,7 @@ module BABYLON {
                 for (var n in this.attached) {
                     var construct = (<any>CameraInputTypes)[this.attached[n].getClassName()];
                     if (construct) {
-                        var input = SerializationHelper.Parse(() => { return new construct() }, parsedCamera, null);
+                        var input = SerializationHelper.Parse(() => { return new construct(); }, parsedCamera, null);
                         this.remove(this.attached[n]);
                         this.add(input as any);
                     }
@@ -294,4 +295,3 @@ module BABYLON {
         }
     }
 }
-

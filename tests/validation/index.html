@@ -1,22 +1,24 @@
 ﻿<!DOCTYPE html>
 <html>
+
 <head>
 	<title>BabylonJS - Build validation page</title>
-	<link href="index.css" rel="stylesheet" />	
-    <script src="https://preview.babylonjs.com/draco_decoder.js"></script>
+	<link href="index.css" rel="stylesheet" />
+	<script src="https://preview.babylonjs.com/draco_decoder_gltf.js"></script>
 	<script src="https://unpkg.com/earcut@2.1.1/dist/earcut.min.js"></script>
 	<script src="../../Tools/DevLoader/BabylonLoader.js"></script>
 </head>
+
 <body>
 	<script>
-        BABYLONDEVTOOLS.Loader.require('validation.js')
+		BABYLONDEVTOOLS.Loader.require('validation.js')
 			.load(function() {
 				// Loading tests
 				var xhr = new XMLHttpRequest();
 
 				xhr.open("GET", "config.json", true);
 
-				xhr.addEventListener("load", function () {
+				xhr.addEventListener("load", function() {
 					if (xhr.status === 200) {
 
 						config = JSON.parse(xhr.responseText);
@@ -49,6 +51,7 @@
 
 				xhr.send();
 			});
-    </script>	
+	</script>
 </body>
+
 </html>

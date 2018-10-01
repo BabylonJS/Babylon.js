@@ -33,7 +33,7 @@ export class StackPanel3D extends Container3D {
 
     /**
      * Creates new StackPanel
-     * @param isVertical 
+     * @param isVertical
      */
     public constructor(isVertical = false) {
         super();
@@ -102,7 +102,7 @@ export class StackPanel3D extends Container3D {
                 offset += extendSize.x * 2;
             }
 
-            offset += (controlCount > 0 ? this.margin : 0)
+            offset += (controlCount > 0 ? this.margin : 0);
         }
     }
 }

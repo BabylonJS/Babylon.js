@@ -27,7 +27,7 @@ module BABYLON {
          */
         @serialize()
         public gamepadMoveSensibility = 40;
-        
+
         // private members
         private _onGamepadConnectedObserver : Nullable<Observer<Gamepad>>;
         private _onGamepadDisconnectedObserver : Nullable<Observer<Gamepad>>;
@@ -50,14 +50,14 @@ module BABYLON {
                         this.gamepad = gamepad;
                     }
                 }
-            });  
+            });
 
-            this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add((gamepad)=> {
+            this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add((gamepad) => {
                 if (this.gamepad === gamepad) {
                     this.gamepad = null;
                 }
             });
-            
+
             this.gamepad = manager.getGamepadByType(Gamepad.XBOX);
         }
 
@@ -92,7 +92,7 @@ module BABYLON {
                     RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
                 }
                 else {
-                    RSValues = {x:0, y:0};
+                    RSValues = {x: 0, y: 0};
                 }
 
                 if (!camera.rotationQuaternion) {
@@ -106,7 +106,7 @@ module BABYLON {
 
                 Vector3.TransformCoordinatesToRef(this._vector3, this._cameraTransform, this._deltaTransform);
                 camera.cameraDirection.addInPlace(this._deltaTransform);
-                this._vector2.copyFromFloats(RSValues.y, RSValues.x)
+                this._vector2.copyFromFloats(RSValues.y, RSValues.x);
                 camera.cameraRotation.addInPlace(this._vector2);
             }
         }

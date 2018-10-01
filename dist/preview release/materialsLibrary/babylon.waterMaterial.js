@@ -127,7 +127,6 @@ var BABYLON;
             _this._lastTime = 0;
             _this._lastDeltaTime = 0;
             _this._createRenderTargets(scene, renderTargetSize);
-            _this.hasRenderTargetTextures = true;
             // Create render targets
             _this.getRenderTargetTextures = function () {
                 _this._renderTargets.reset();
@@ -137,6 +136,16 @@ var BABYLON;
             };
             return _this;
         }
+        Object.defineProperty(WaterMaterial.prototype, "hasRenderTargetTextures", {
+            /**
+             * Gets a boolean indicating that current material needs to register RTT
+             */
+            get: function () {
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(WaterMaterial.prototype, "useLogarithmicDepth", {
             get: function () {
                 return this._useLogarithmicDepth;
@@ -260,7 +269,7 @@ var BABYLON;
                 }
                 this._waitingRenderList = null;
             }
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
                 scene.resetCachedMaterial();
@@ -347,13 +356,13 @@ var BABYLON;
                 return;
             }
             this._activeEffect = effect;
-            // Matrices        
+            // Matrices
             this.bindOnlyWorldMatrix(world);
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
             BABYLON.MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
             if (this._mustRebind(scene, effect)) {
-                // Textures        
+                // Textures
                 if (this.bumpTexture && BABYLON.StandardMaterial.BumpTextureEnabled) {
                     this._activeEffect.setTexture("normalSampler", this.bumpTexture);
                     this._activeEffect.setFloat2("vNormalInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);
@@ -428,17 +437,11 @@ var BABYLON;
                     isVisible = _this._mesh.isVisible;
                     _this._mesh.isVisible = false;
                 }
-                // Clip plane
-                clipPlane = scene.clipPlane;
-                var positiony = _this._mesh ? _this._mesh.position.y : 0.0;
-                scene.clipPlane = BABYLON.Plane.FromPositionAndNormal(new BABYLON.Vector3(0, positiony + 0.05, 0), new BABYLON.Vector3(0, 1, 0));
             };
             this._refractionRTT.onAfterRender = function () {
                 if (_this._mesh) {
                     _this._mesh.isVisible = isVisible;
                 }
-                // Clip plane 
-                scene.clipPlane = clipPlane;
             };
             this._reflectionRTT.onBeforeRender = function () {
                 if (_this._mesh) {

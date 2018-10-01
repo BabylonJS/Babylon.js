@@ -2,7 +2,6 @@ import { Inspector } from "../Inspector";
 import { Scheduler } from "../scheduler/Scheduler";
 import { AbstractTool } from "./AbstractTool";
 
-
 export class PauseScheduleTool extends AbstractTool {
 
     private _isPause: boolean = false;

@@ -3,7 +3,6 @@ import { ValueAndUnit } from "./valueAndUnit";
 import { Control } from "./controls/control";
 import { AbstractMesh, Nullable, Observer, Camera, Vector2 } from "babylonjs";
 
-
 /**
  * Class used to store a point for a MultiLine object.
  * The point can be pure 2D coordinates, a mesh or a control
@@ -114,7 +113,13 @@ export class MultiLinePoint {
         this._multiLine._markAsDirty();
     }
 
-    /** 
+    /** Resets links */
+    public resetLinks(): void {
+        this.control = null;
+        this.mesh = null;
+    }
+
+    /**
      * Gets a translation vector
      * @returns the translation vector
      */
@@ -143,8 +148,7 @@ export class MultiLinePoint {
 
     /** Release associated resources */
     public dispose(): void {
-        this.control = null;
-        this.mesh = null;
+        this.resetLinks();
     }
 
 }

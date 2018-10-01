@@ -5,7 +5,8 @@ module BABYLON {
      */
     export class MorphTargetManager {
         private _targets = new Array<MorphTarget>();
-        private _targetObservable = new Array<Nullable<Observer<boolean>>>();
+        private _targetInfluenceChangedObservers = new Array<Nullable<Observer<boolean>>>();
+        private _targetDataLayoutChangedObservers = new Array<Nullable<Observer<void>>>();
         private _activeTargets = new SmartArray<MorphTarget>(16);
         private _scene: Nullable<Scene>;
         private _influences: Float32Array;
@@ -44,7 +45,7 @@ module BABYLON {
          * Gets the number of vertices handled by this manager
          */
         public get vertexCount(): number {
-            return this._vertexCount
+            return this._vertexCount;
         }
 
         /**
@@ -56,7 +57,7 @@ module BABYLON {
 
         /**
          * Gets a boolean indicating if this manager supports morphing of tangents
-         */        
+         */
         public get supportsTangents(): boolean {
             return this._supportsTangents;
         }
@@ -106,8 +107,11 @@ module BABYLON {
          */
         public addTarget(target: MorphTarget): void {
             this._targets.push(target);
-            this._targetObservable.push(target.onInfluenceChanged.add(needUpdate => {
+            this._targetInfluenceChangedObservers.push(target.onInfluenceChanged.add((needUpdate) => {
                 this._syncActiveTargets(needUpdate);
+            }));
+            this._targetDataLayoutChangedObservers.push(target._onDataLayoutChanged.add(() => {
+                this._syncActiveTargets(true);
             }));
             this._syncActiveTargets(true);
         }
@@ -121,7 +125,8 @@ module BABYLON {
             if (index >= 0) {
                 this._targets.splice(index, 1);
 
-                target.onInfluenceChanged.remove(this._targetObservable.splice(index, 1)[0]);
+                target.onInfluenceChanged.remove(this._targetInfluenceChangedObservers.splice(index, 1)[0]);
+                target._onDataLayoutChanged.remove(this._targetDataLayoutChangedObservers.splice(index, 1)[0]);
                 this._syncActiveTargets(true);
             }
         }
@@ -131,7 +136,7 @@ module BABYLON {
          * @returns the serialized object
          */
         public serialize(): any {
-            var serializationObject:any = {};
+            var serializationObject: any = {};
 
             serializationObject.id = this.uniqueId;
 
@@ -150,14 +155,18 @@ module BABYLON {
             this._supportsTangents = true;
             this._vertexCount = 0;
             for (var target of this._targets) {
+                if (target.influence === 0) {
+                    continue;
+                }
+
                 this._activeTargets.push(target);
                 this._tempInfluences[influenceCount++] = target.influence;
 
+                this._supportsNormals = this._supportsNormals && target.hasNormals;
+                this._supportsTangents = this._supportsTangents && target.hasTangents;
+
                 const positions = target.getPositions();
                 if (positions) {
-                    this._supportsNormals = this._supportsNormals && target.hasNormals;
-                    this._supportsTangents = this._supportsTangents && target.hasTangents;
-
                     const vertexCount = positions.length / 3;
                     if (this._vertexCount === 0) {
                         this._vertexCount = vertexCount;

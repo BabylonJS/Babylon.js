@@ -3,7 +3,6 @@ BABYLON.Effect.ShadersStore['textureTransformPixelShader'] = "precision highp fl
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
-    ;
     /**
      * Class for generating glTF data from a Babylon scene.
      */
@@ -70,6 +69,9 @@ var BABYLON;
 //# sourceMappingURL=babylon.glTFSerializer.js.map
 
 /// <reference path="../../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"/>
+/**
+ * @hidden
+ */
 var BABYLON;
 (function (BABYLON) {
     var GLTF2;
@@ -1153,7 +1155,6 @@ var BABYLON;
                                     }
                                 }
                             }
-                            ;
                             if (scene.nodes.length) {
                                 _this._scenes.push(scene);
                             }
@@ -1203,7 +1204,6 @@ var BABYLON;
                         var babylonTransformNode = nodes_2[_i];
                         _loop_1(babylonTransformNode);
                     }
-                    ;
                     return promiseChain.then(function () {
                         if (runtimeGLTFAnimation.channels.length && runtimeGLTFAnimation.samplers.length) {
                             _this._animations.push(runtimeGLTFAnimation);
@@ -1887,20 +1887,26 @@ var BABYLON;
                             // Read data from WebGL
                             var canvas = engine.getRenderingCanvas();
                             if (canvas) {
-                                BABYLON.Tools.ToBlob(canvas, function (blob) {
-                                    if (blob) {
-                                        var fileReader = new FileReader();
-                                        fileReader.onload = function (event) {
-                                            var base64String = event.target.result;
-                                            hostingScene.dispose();
-                                            resolve(base64String);
-                                        };
-                                        fileReader.readAsDataURL(blob);
-                                    }
-                                    else {
-                                        reject("gltfMaterialExporter: Failed to get blob from image canvas!");
-                                    }
-                                });
+                                if (!canvas.toBlob) { // fallback for browsers without "canvas.toBlob"
+                                    var dataURL = canvas.toDataURL();
+                                    resolve(dataURL);
+                                }
+                                else {
+                                    BABYLON.Tools.ToBlob(canvas, function (blob) {
+                                        if (blob) {
+                                            var fileReader = new FileReader();
+                                            fileReader.onload = function (event) {
+                                                var base64String = event.target.result;
+                                                hostingScene.dispose();
+                                                resolve(base64String);
+                                            };
+                                            fileReader.readAsDataURL(blob);
+                                        }
+                                        else {
+                                            reject("gltfMaterialExporter: Failed to get blob from image canvas!");
+                                        }
+                                    });
+                                }
                             }
                             else {
                                 reject("Engine is missing a canvas!");
@@ -2743,7 +2749,6 @@ var BABYLON;
                                 }
                             }
                         }
-                        ;
                     }
                 };
                 /**
@@ -2781,12 +2786,10 @@ var BABYLON;
                                     }
                                 }
                             }
-                            ;
                             if (glTFAnimation.channels.length && glTFAnimation.samplers.length) {
                                 glTFAnimations.push(glTFAnimation);
                             }
                         }
-                        ;
                     }
                 };
                 _GLTFAnimation.AddAnimation = function (name, glTFAnimation, babylonTransformNode, animation, dataAccessorType, animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, useQuaternion, animationSampleRate) {
@@ -2998,7 +3001,6 @@ var BABYLON;
                         inputs.push(keyFrame.frame / animation.framePerSecond); // keyframes in seconds.
                         _GLTFAnimation._AddKeyframeValue(keyFrame, animation, outputs, animationChannelTargetPath, babylonTransformNode, convertToRightHandedSystem, useQuaternion);
                     }
-                    ;
                 };
                 /**
                  * Creates cubic spline animation from the animation key frames
@@ -3457,6 +3459,9 @@ var BABYLON;
 //# sourceMappingURL=babylon.glTFFileExporter.js.map
 
 /// <reference path="../../../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
+/**
+ * @hidden
+ */
 var BABYLON;
 (function (BABYLON) {
     var GLTF2;

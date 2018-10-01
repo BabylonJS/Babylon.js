@@ -1,6 +1,14 @@
 module BABYLON {
+    /**
+     * As raycast might be hard to debug, the RayHelper can help rendering the different rays
+     * in order to better appreciate the issue one might have.
+     * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
+     */
     export class RayHelper {
 
+        /**
+         * Defines the ray we are currently tryin to visualize.
+         */
         public ray: Nullable<Ray>;
 
         private _renderPoints: Vector3[];
@@ -13,6 +21,13 @@ module BABYLON {
         private _meshSpaceDirection: Vector3;
         private _meshSpaceOrigin: Vector3;
 
+        /**
+         * Helper function to create a colored helper in a scene in one line.
+         * @param ray Defines the ray we are currently tryin to visualize
+         * @param scene Defines the scene the ray is used in
+         * @param color Defines the color we want to see the ray in
+         * @returns The newly created ray helper.
+         */
         public static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper {
             var helper = new RayHelper(ray);
 
@@ -21,10 +36,22 @@ module BABYLON {
             return helper;
         }
 
+        /**
+         * Instantiate a new ray helper.
+         * As raycast might be hard to debug, the RayHelper can help rendering the different rays
+         * in order to better appreciate the issue one might have.
+         * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
+         * @param ray Defines the ray we are currently tryin to visualize
+         */
         constructor(ray: Ray) {
             this.ray = ray;
         }
 
+        /**
+         * Shows the ray we are willing to debug.
+         * @param scene Defines the scene the ray needs to be rendered in
+         * @param color Defines the color the ray needs to be rendered in
+         */
         public show(scene: Scene, color?: Color3): void {
 
             if (!this._renderFunction && this.ray) {
@@ -47,6 +74,9 @@ module BABYLON {
 
         }
 
+        /**
+         * Hides the ray we are debugging.
+         */
         public hide(): void {
 
             if (this._renderFunction && this._scene) {
@@ -82,6 +112,13 @@ module BABYLON {
 
         }
 
+        /**
+         * Attach a ray helper to a mesh so that we can easily see its orientation for instance or information like its normals.
+         * @param mesh Defines the mesh we want the helper attached to
+         * @param meshSpaceDirection Defines the direction of the Ray in mesh space (local space of the mesh node)
+         * @param meshSpaceOrigin Defines the origin of the Ray in mesh space (local space of the mesh node)
+         * @param length Defines the length of the ray
+         */
         public attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void {
 
             this._attachedToMesh = mesh;
@@ -127,9 +164,11 @@ module BABYLON {
             }
 
             this._updateToMesh();
-
         }
 
+        /**
+         * Detach the ray helper from the mesh it has previously been attached to.
+         */
         public detachFromMesh(): void {
 
             if (this._attachedToMesh) {
@@ -157,16 +196,16 @@ module BABYLON {
 
             this._attachedToMesh.getDirectionToRef(this._meshSpaceDirection, ray.direction);
             Vector3.TransformCoordinatesToRef(this._meshSpaceOrigin, this._attachedToMesh.getWorldMatrix(), ray.origin);
-
         }
 
+        /**
+         * Dispose the helper and release its associated resources.
+         */
         public dispose(): void {
 
             this.hide();
             this.detachFromMesh();
             this.ray = null;
-
         }
-
     }
 }

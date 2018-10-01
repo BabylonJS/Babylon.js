@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     export interface Scene {
         /** @hidden */
         _pointerOverSprite: Nullable<Sprite>;
@@ -49,13 +49,13 @@
          */
         pickSpriteWithRay(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo>;
 
-        /** 
+        /**
          * Force the sprite under the pointer
          * @param sprite defines the sprite to use
          */
         setPointerOverSprite(sprite: Nullable<Sprite>): void;
 
-        /** 
+        /**
          * Gets the sprite under the pointer
          * @returns a Sprite or null if no sprite is under the pointer
          */
@@ -85,11 +85,13 @@
                 }
 
                 var result = spriteManager.intersects(ray, camera, predicate, fastCheck);
-                if (!result || !result.hit)
+                if (!result || !result.hit) {
                     continue;
+                }
 
-                if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance)
+                if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance) {
                     continue;
+                }
 
                 pickingInfo = result;
 
@@ -100,13 +102,13 @@
         }
 
         return pickingInfo || new PickingInfo();
-    }
+    };
 
     Scene.prototype.pickSprite = function(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
         this.createPickingRayInCameraSpaceToRef(x, y, this._tempSpritePickingRay!, camera);
 
         return this._internalPickSprites(this._tempSpritePickingRay!, predicate, fastCheck, camera);
-    }
+    };
 
     Scene.prototype.pickSpriteWithRay = function(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
         if (!this._tempSpritePickingRay) {
@@ -123,7 +125,7 @@
         Ray.TransformToRef(ray, camera.getViewMatrix(), this._tempSpritePickingRay);
 
         return this._internalPickSprites(this._tempSpritePickingRay, predicate, fastCheck, camera);
-    }
+    };
 
     Scene.prototype.setPointerOverSprite = function(sprite: Nullable<Sprite>): void {
         if (this._pointerOverSprite === sprite) {
@@ -138,11 +140,11 @@
         if (this._pointerOverSprite && this._pointerOverSprite.actionManager) {
             this._pointerOverSprite.actionManager.processTrigger(ActionManager.OnPointerOverTrigger, ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
         }
-    }
+    };
 
     Scene.prototype.getPointerOverSprite = function(): Nullable<Sprite> {
         return this._pointerOverSprite;
-    }
+    };
 
     /**
      * Defines the sprite scene component responsible to manage sprites
@@ -173,7 +175,10 @@
             this.scene.onBeforeSpritesRenderingObservable = new Observable<Scene>();
             this.scene.onAfterSpritesRenderingObservable = new Observable<Scene>();
             this._spritePredicate = (sprite: Sprite): boolean => {
-                return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPointerTriggers;
+                if (!sprite.actionManager) {
+                    return false;
+                }
+                return sprite.isPickable && sprite.actionManager.hasPointerTriggers;
             };
         }
 

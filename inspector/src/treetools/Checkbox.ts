@@ -1,10 +1,10 @@
 import { AbstractTreeTool } from "./AbstractTreeTool";
 
-/** Any object implementing this interface should 
+/** Any object implementing this interface should
  * provide methods to toggle its visibility
  */
 export interface IToolVisible {
-    isVisible: () => boolean,
+    isVisible: () => boolean;
     setVisible: (b: boolean) => void;
 }
 /**

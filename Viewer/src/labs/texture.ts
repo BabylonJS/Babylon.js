@@ -184,7 +184,7 @@ export class TextureUtils {
      * @return Babylon cube texture
      */
     public static GetBabylonCubeTexture(scene: Scene, textureCube: TextureCube, automaticMipmaps: boolean, environment = false, singleLod = false): CubeTexture {
-        if (!textureCube) throw new Error("no texture cube provided");
+        if (!textureCube) { throw new Error("no texture cube provided"); }
 
         var parameters: SamplingParameters;
         if (environment) {
@@ -227,12 +227,12 @@ export class TextureUtils {
             let maxMipLevel = automaticMipmaps ? 0 : textureCube.source.length - 1;
             let texturesUploaded = 0;
 
-            var textureComplete = function () {
+            var textureComplete = function() {
                 return texturesUploaded === ((maxMipLevel + 1) * 6);
             };
 
-            var uploadFace = function (i: number, level: number, face: TextureSource) {
-                if (!glTexture) return;
+            var uploadFace = function(i: number, level: number, face: TextureSource) {
+                if (!glTexture) { return; }
 
                 if (i === 0 && level === 0) {
                     internalTexture.width = face.width;
@@ -340,20 +340,20 @@ export class TextureUtils {
      */
     public static ApplySamplingParameters(babylonTexture: BaseTexture, parameters: SamplingParameters) {
         let scene = babylonTexture.getScene();
-        if (!scene) return;
+        if (!scene) { return; }
         let gl = (<any>(scene.getEngine()))._gl;
 
         let target = babylonTexture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
 
         let internalTexture = babylonTexture._texture;
-        if (!internalTexture) return;
+        if (!internalTexture) { return; }
         let glTexture = internalTexture._webGLTexture;
         gl.bindTexture(target, glTexture);
 
-        if (parameters.magFilter != null) gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, parameters.magFilter);
-        if (parameters.minFilter != null) gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, parameters.minFilter);
-        if (parameters.wrapS != null) gl.texParameteri(target, gl.TEXTURE_WRAP_S, parameters.wrapS);
-        if (parameters.wrapT != null) gl.texParameteri(target, gl.TEXTURE_WRAP_T, parameters.wrapT);
+        if (parameters.magFilter != null) { gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, parameters.magFilter); }
+        if (parameters.minFilter != null) { gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, parameters.minFilter); }
+        if (parameters.wrapS != null) { gl.texParameteri(target, gl.TEXTURE_WRAP_S, parameters.wrapS); }
+        if (parameters.wrapT != null) { gl.texParameteri(target, gl.TEXTURE_WRAP_T, parameters.wrapT); }
 
         //set babylon wrap modes from sampling parameter
         switch (parameters.wrapS) {

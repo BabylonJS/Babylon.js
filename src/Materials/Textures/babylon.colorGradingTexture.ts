@@ -4,9 +4,9 @@ module BABYLON {
      * This represents a color grading texture. This acts as a lookup table LUT, useful during post process
      * It can help converting any input color in a desired output one. This can then be used to create effects
      * from sepia, black and white to sixties or futuristic rendering...
-     * 
+     *
      * The only supported format is currently 3dl.
-     * More information on LUT: https://en.wikipedia.org/wiki/3D_lookup_table/
+     * More information on LUT: https://en.wikipedia.org/wiki/3D_lookup_table
      */
     export class ColorGradingTexture extends BaseTexture {
         /**
@@ -28,7 +28,7 @@ module BABYLON {
 
         /**
          * Instantiates a ColorGradingTexture from the following parameters.
-         * 
+         *
          * @param url The location of the color gradind data (currently only supporting 3dl)
          * @param scene The scene the texture will be used in
          */
@@ -103,11 +103,13 @@ module BABYLON {
                 for (let i = 0; i < lines.length; i++) {
                     line = lines[i];
 
-                    if (!ColorGradingTexture._noneEmptyLineRegex.test(line))
+                    if (!ColorGradingTexture._noneEmptyLineRegex.test(line)) {
                         continue;
+                    }
 
-                    if (line.indexOf('#') === 0)
+                    if (line.indexOf('#') === 0) {
                         continue;
+                    }
 
                     var words = line.split(" ");
                     if (size === 0) {
@@ -135,13 +137,24 @@ module BABYLON {
                             tempData[pixelStorageIndex + 2] = b;
                         }
 
-                        pixelIndexSlice++;
-                        if (pixelIndexSlice % size == 0) {
-                            pixelIndexH++;
-                            pixelIndexSlice = 0;
-                            if (pixelIndexH % size == 0) {
+                        // Keep for reference in case of back compat problems.
+                        // pixelIndexSlice++;
+                        // if (pixelIndexSlice % size == 0) {
+                        //     pixelIndexH++;
+                        //     pixelIndexSlice = 0;
+                        //     if (pixelIndexH % size == 0) {
+                        //         pixelIndexW++;
+                        //         pixelIndexH = 0;
+                        //     }
+                        // }
+
+                        pixelIndexH++;
+                        if (pixelIndexH % size == 0) {
+                            pixelIndexSlice++;
+                            pixelIndexH = 0;
+                            if (pixelIndexSlice % size == 0) {
                                 pixelIndexW++;
-                                pixelIndexH = 0;
+                                pixelIndexSlice = 0;
                             }
                         }
                     }
@@ -167,7 +180,7 @@ module BABYLON {
                     texture.updateSize(size * size, size);
                     engine.updateRawTexture(texture, data, Engine.TEXTUREFORMAT_RGBA, false);
                 }
-            }
+            };
 
             let scene = this.getScene();
             if (scene) {
