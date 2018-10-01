@@ -7171,6 +7171,50 @@ module BABYLON {
         }
     }
 
+    export class Pool<T> {
+        private items: T[];
+        private currentIdx = 0;
+        constructor(public itemCreator : () => T, initCount: number = 0) {
+            this.items = [];
+            for (let i = 0; i < initCount; ++i) {
+                this.items.push(itemCreator());
+            }
+        }
+
+        public get itemUsedCount() {
+            return this.currentIdx;
+        }
+
+        public getTemp() : T {
+            if (this.currentIdx === this.items.length) {
+                this.items.push(this.itemCreator());
+            }
+            return this.items[this.currentIdx++];
+        }
+
+        public releaseTemp(releaseCount: number = 1)  {
+            this.currentIdx -= releaseCount;
+        }
+    }
+
+    export function automaticPoolRelease<T>(p: Pool<T>) {
+        return function(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+            const originalMethod = descriptor.value;
+            descriptor.value = function() {
+                const prevItemUsedCount = p.itemUsedCount;
+                try {
+                    originalMethod.apply(this, arguments);
+                }
+                finally {
+                    const newItemUsedCount = p.itemUsedCount;
+                    p.releaseTemp(newItemUsedCount - prevItemUsedCount);
+                }
+            };
+
+            return descriptor;
+        };
+    }
+
     // Temporary pre-allocated objects for engine internal use
     // usage in any internal function :
     // var tmp = Tmp.Vector3[0];   <= gets access to the first pre-created Vector3
@@ -7179,6 +7223,8 @@ module BABYLON {
      * @hidden
      */
     export class Tmp {
+        public static PoolVector3 = new Pool<Vector3>(Vector3.Zero, 9);
+        public static PoolMatrix = new Pool<Matrix>(Matrix.Identity, 6);
         public static Color3: Color3[] = [Color3.Black(), Color3.Black(), Color3.Black()];
         public static Color4: Color4[] = [new Color4(0, 0, 0, 0), new Color4(0, 0, 0, 0)];
         public static Vector2: Vector2[] = [Vector2.Zero(), Vector2.Zero(), Vector2.Zero()];  // 3 temp Vector2 at once should be enough

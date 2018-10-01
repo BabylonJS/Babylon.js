@@ -117,14 +117,15 @@ module BABYLON {
          * @param factor defines the scale factor to apply
          * @returns the current bounding box
          */
+        @automaticPoolRelease(Tmp.PoolVector3)
         public scale(factor: number): BoundingBox {
-            const diff = Tmp.Vector3[0].copyFrom(this.maximum).subtractInPlace(this.minimum);
+            const diff = Tmp.PoolVector3.getTemp().copyFrom(this.maximum).subtractInPlace(this.minimum);
             let distance = diff.length() * factor;
             diff.normalize();
             let newRadius = diff.scaleInPlace(distance * 0.5);
 
-            const min = Tmp.Vector3[1].copyFrom(this.center).subtractInPlace(newRadius);
-            const max = Tmp.Vector3[2].copyFrom(this.center).addInPlace(newRadius);
+            const min = Tmp.PoolVector3.getTemp().copyFrom(this.center).subtractInPlace(newRadius);
+            const max = Tmp.PoolVector3.getTemp().copyFrom(this.center).addInPlace(newRadius);
 
             this.reConstruct(min, max);
 
