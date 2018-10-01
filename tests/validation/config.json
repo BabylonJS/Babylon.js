@@ -4,7 +4,8 @@
     {
       "title": "Noise texture",
       "playgroundId": "#R1JWLA#4",
-      "referenceImage": "noiseTexture.png"
+      "referenceImage": "noiseTexture.png",
+      "excludeFromAutomaticTesting": true
     },
     {
       "title": "Simulate pointer",

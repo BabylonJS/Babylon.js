@@ -1,14 +1,23 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     var StarfieldProceduralTexture = /** @class */ (function (_super) {
@@ -163,6 +172,59 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Serializes this starfield procedural texture
+         * @returns a serialized starfield procedural texture object
+         */
+        StarfieldProceduralTexture.prototype.serialize = function () {
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+            serializationObject.customType = "BABYLON.StarfieldProceduralTexture";
+            return serializationObject;
+        };
+        /**
+         * Creates a Starfield Procedural Texture from parsed startfield procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing startfield procedural texture information
+         * @returns a parsed Starfield Procedural Texture
+         */
+        StarfieldProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
+            var texture = BABYLON.SerializationHelper.Parse(function () { return new StarfieldProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+            return texture;
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "time", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "alpha", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "beta", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "formuparam", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "stepsize", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "zoom", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "tile", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "brightness", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "darkmatter", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "distfading", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "saturation", null);
         return StarfieldProceduralTexture;
     }(BABYLON.ProceduralTexture));
     BABYLON.StarfieldProceduralTexture = StarfieldProceduralTexture;
