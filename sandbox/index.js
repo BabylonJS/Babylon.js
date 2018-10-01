@@ -120,9 +120,7 @@ if (BABYLON.Engine.isSupported()) {
                 var currentValue = slider.valueAsNumber;
                 var newValue = currentGroup.targetedAnimations[0].animation.runtimeAnimations[0].currentFrame;
                 var range = Math.abs(currentGroup.from - currentGroup.to);
-                if (Math.abs(currentValue - newValue) > range * 0.005) { // Only move if greater than a 0.5% change
-                    slider.value = newValue;
-                }
+                slider.value = newValue;
             }
         });
 
