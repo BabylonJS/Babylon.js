@@ -1625,7 +1625,10 @@ module BABYLON {
          * @returns the current updated Vector3
          */
         public addInPlace(otherVector: Vector3): Vector3 {
-            return this.addInPlaceFromFloats(otherVector.x, otherVector.y, otherVector.z);
+            this.x += otherVector.x;
+            this.y += otherVector.y;
+            this.z += otherVector.z;
+            return this;
         }
 
         /**
@@ -2045,7 +2048,10 @@ module BABYLON {
          * @returns the current updated Vector3
          */
         public copyFrom(source: Vector3): Vector3 {
-            return this.copyFromFloats(source.x, source.y, source.z);
+            this.x = source.x;
+            this.y = source.y;
+            this.z = source.z;
+            return this;
         }
 
         /**
@@ -7188,7 +7194,7 @@ module BABYLON {
      */
     export class Tmp {
         public static Color3: Color3[] = Tools.BuildArray(3, Color3);
-        public static Color4: Color4[] = Tools.BuildArray(3, Color4, 0, 0, 0, 0);
+        public static Color4: Color4[] = Tools.BuildArray(3, Color4);
         public static Vector2: Vector2[] = Tools.BuildArray(3, Vector2); // 3 temp Vector2 at once should be enough
         public static Vector3: Vector3[] = Tools.BuildArray(9, Vector3); // 9 temp Vector3 at once should be enough
         public static Vector4: Vector4[] = Tools.BuildArray(3, Vector4); // 3 temp Vector4 at once should be enough

@@ -518,8 +518,12 @@ module BABYLON {
             }
 
             if (bias) {
-                minimum.scaleInPlace(1 - bias.x).addInPlaceFromFloats(-bias.y, -bias.y, -bias.y);
-                maximum.scaleInPlace(1 + bias.x).addInPlaceFromFloats(bias.y, bias.y, bias.y);
+                minimum.x -= minimum.x * bias.x + bias.y;
+                minimum.y -= minimum.y * bias.x + bias.y;
+                minimum.z -= minimum.z * bias.x + bias.y;
+                maximum.x += maximum.x * bias.x + bias.y;
+                maximum.y += maximum.y * bias.x + bias.y;
+                maximum.z += maximum.z * bias.x + bias.y;
             }
 
             return {
@@ -554,8 +558,12 @@ module BABYLON {
             }
 
             if (bias) {
-                minimum.scaleInPlace(1 - bias.x).addInPlaceFromFloats(-bias.y, -bias.y, -bias.y);
-                maximum.scaleInPlace(1 + bias.x).addInPlaceFromFloats(bias.y, bias.y, bias.y);
+                minimum.x -= minimum.x * bias.x + bias.y;
+                minimum.y -= minimum.y * bias.x + bias.y;
+                minimum.z -= minimum.z * bias.x + bias.y;
+                maximum.x += maximum.x * bias.x + bias.y;
+                maximum.y += maximum.y * bias.x + bias.y;
+                maximum.z += maximum.z * bias.x + bias.y;
             }
 
             return {
@@ -585,7 +593,7 @@ module BABYLON {
          * @param kparams the arguments to pass to each call to the constructor
          * @returns a new array filled with new objects
          */
-        public static BuildArray = <T, P extends any[]>(size: number, konstructor: new (...p: P) => T, ...kparams: P): Array<T> => {
+        public static BuildArray<T, P extends any[]>(size: number, konstructor: new (...p: P) => T, ...kparams: P): Array<T> {
             const a: T[] = [];
             for (let i = 0; i < size; ++i) {
                 a.push(new konstructor(...kparams));
