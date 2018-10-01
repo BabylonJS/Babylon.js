@@ -44,6 +44,7 @@
         "all": [
             "pbrMaterial",
             "freeCamera",
+            "flyCamera",
             "arcRotateCamera",
             "hemisphericLight",
             "pointLight",
@@ -131,6 +132,7 @@
         "minimal": [
             "meshBuilder",
             "freeCamera",
+            "flyCamera",
             "hemisphericLight"
         ],
         "360Viewer": [
@@ -139,6 +141,13 @@
             "picking",
             "backgroundMaterial",
             "videoDome"
+        ],
+        "glTFViewer": [
+            "arcRotateCamera",
+            "imageProcessing",
+            "backgroundMaterial",
+            "pbrMaterial",
+            "hdr"
         ]
     },
     "workloads": {
@@ -528,6 +537,17 @@
                 "../../src/Cameras/Inputs/babylon.freeCameraKeyboardMoveInput.js",
                 "../../src/Cameras/babylon.freeCameraInputsManager.js",
                 "../../src/Cameras/babylon.freeCamera.js"
+            ],
+            "dependUpon": [
+                "targetCamera"
+            ]
+        },
+        "flyCamera": {
+            "files": [
+                "../../src/Cameras/Inputs/babylon.flyCameraMouseInput.js",
+                "../../src/Cameras/Inputs/babylon.flyCameraKeyboardInput.js",
+                "../../src/Cameras/babylon.flyCameraInputsManager.js",
+                "../../src/Cameras/babylon.flyCamera.js"
             ],
             "dependUpon": [
                 "targetCamera"
@@ -1436,7 +1456,6 @@
                 "core"
             ]
         }
-
     },
     "typescript": [
         "../../src/**/*.ts",
@@ -1992,6 +2011,7 @@
             }
         ],
         "build": {
+            "srcDirectory": "../../Viewer/src/",
             "srcOutputDirectory": "../../Viewer/",
             "distOutputDirectory": "/viewer/",
             "dtsBundle": {
@@ -2064,6 +2084,7 @@
             }
         ],
         "build": {
+            "srcDirectory": "../../Viewer/src/",
             "srcOutputDirectory": "../../Viewer/",
             "distOutputDirectory": "/viewer/",
             "dtsBundle": {
