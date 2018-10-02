@@ -160,9 +160,9 @@ module BABYLON {
         /** Function used to let the system compiles shaders in background */
         public parallelShaderCompile: {
             MAX_SHADER_COMPILER_THREADS_KHR: number;
-            maxShaderCompilerThreadsKHR: (thread: number) => void;           
+            maxShaderCompilerThreadsKHR: (thread: number) => void;
             COMPLETION_STATUS_KHR: number;
-        }
+        };
     }
 
     /** Interface defining initialization parameters for Engine class */

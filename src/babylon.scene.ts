@@ -1176,7 +1176,7 @@ module BABYLON {
         /**
          * an optional map from Geometry Id to Geometry index in the 'geometries' array
          */
-        private geometriesById: Nullable<{ [id: string] : number | undefined }> = null;
+        private geometriesById: Nullable<{ [id: string]: number | undefined }> = null;
 
         /**
          * Creates a new Scene
@@ -1820,7 +1820,7 @@ module BABYLON {
         /** @hidden */
         public _isPointerSwiping(): boolean {
             return Math.abs(this._startingPointerPosition.x - this._pointerX) > Scene.DragMovementThreshold ||
-                   Math.abs(this._startingPointerPosition.y - this._pointerY) > Scene.DragMovementThreshold;
+                Math.abs(this._startingPointerPosition.y - this._pointerY) > Scene.DragMovementThreshold;
         }
 
         /**
@@ -2215,20 +2215,8 @@ module BABYLON {
                 return false;
             }
 
-            if (this._pendingData.length > 0) {
-                return false;
-            }
             let index: number;
             let engine = this.getEngine();
-
-            // Geometries
-            for (index = 0; index < this.geometries.length; index++) {
-                var geometry = this.geometries[index];
-
-                if (geometry.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
-                    return false;
-                }
-            }
 
             // Meshes
             for (index = 0; index < this.meshes.length; index++) {
@@ -2252,6 +2240,20 @@ module BABYLON {
                     if (!step.action(mesh, hardwareInstancedRendering)) {
                         return false;
                     }
+                }
+            }
+
+            // Pending data
+            if (this._pendingData.length > 0) {
+                return false;
+            }
+
+            // Geometries
+            for (index = 0; index < this.geometries.length; index++) {
+                var geometry = this.geometries[index];
+
+                if (geometry.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
+                    return false;
                 }
             }
 

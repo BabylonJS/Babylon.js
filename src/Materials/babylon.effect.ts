@@ -793,22 +793,22 @@ module BABYLON {
                             this.bindUniformBlock(name, this._uniformBuffersNames[name]);
                         }
                     }
-    
+
                     this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
                     this._attributes = engine.getAttributes(this._program, attributesNames);
-    
+
                     var index: number;
                     for (index = 0; index < this._samplers.length; index++) {
                         var sampler = this.getUniform(this._samplers[index]);
-    
+
                         if (sampler == null) {
                             this._samplers.splice(index, 1);
                             index--;
                         }
                     }
-    
+
                     engine.bindSamplers(this);
-    
+
                     this._compilationError = "";
                     this._isReady = true;
                     if (this.onCompiled) {
@@ -816,12 +816,12 @@ module BABYLON {
                     }
                     this.onCompileObservable.notifyObservers(this);
                     this.onCompileObservable.clear();
-    
+
                     // Unbind mesh reference in fallbacks
                     if (this._fallbacks) {
                         this._fallbacks.unBindMesh();
                     }
-    
+
                     if (previousProgram) {
                         this.getEngine()._deleteProgram(previousProgram);
                     }
