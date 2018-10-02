@@ -363,6 +363,9 @@ module BABYLON {
          * @returns if the effect is compiled and prepared.
          */
         public isReady(): boolean {
+            if (!this._isReady && this._program && this._program.isParallelCompiled) {
+                return this._engine._isProgramCompiled(this._program);
+            }
             return this._isReady;
         }
 
@@ -784,43 +787,46 @@ module BABYLON {
                 }
                 this._program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
 
-                if (engine.supportsUniformBuffers) {
-                    for (var name in this._uniformBuffersNames) {
-                        this.bindUniformBlock(name, this._uniformBuffersNames[name]);
+                engine._executeWhenProgramIsCompiled(this._program, () => {
+                    if (engine.supportsUniformBuffers) {
+                        for (var name in this._uniformBuffersNames) {
+                            this.bindUniformBlock(name, this._uniformBuffersNames[name]);
+                        }
                     }
-                }
-
-                this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
-                this._attributes = engine.getAttributes(this._program, attributesNames);
-
-                var index: number;
-                for (index = 0; index < this._samplers.length; index++) {
-                    var sampler = this.getUniform(this._samplers[index]);
-
-                    if (sampler == null) {
-                        this._samplers.splice(index, 1);
-                        index--;
+    
+                    this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
+                    this._attributes = engine.getAttributes(this._program, attributesNames);
+    
+                    var index: number;
+                    for (index = 0; index < this._samplers.length; index++) {
+                        var sampler = this.getUniform(this._samplers[index]);
+    
+                        if (sampler == null) {
+                            this._samplers.splice(index, 1);
+                            index--;
+                        }
                     }
-                }
+    
+                    engine.bindSamplers(this);
+    
+                    this._compilationError = "";
+                    this._isReady = true;
+                    if (this.onCompiled) {
+                        this.onCompiled(this);
+                    }
+                    this.onCompileObservable.notifyObservers(this);
+                    this.onCompileObservable.clear();
+    
+                    // Unbind mesh reference in fallbacks
+                    if (this._fallbacks) {
+                        this._fallbacks.unBindMesh();
+                    }
+    
+                    if (previousProgram) {
+                        this.getEngine()._deleteProgram(previousProgram);
+                    }
+                });
 
-                engine.bindSamplers(this);
-
-                this._compilationError = "";
-                this._isReady = true;
-                if (this.onCompiled) {
-                    this.onCompiled(this);
-                }
-                this.onCompileObservable.notifyObservers(this);
-                this.onCompileObservable.clear();
-
-                // Unbind mesh reference in fallbacks
-                if (this._fallbacks) {
-                    this._fallbacks.unBindMesh();
-                }
-
-                if (previousProgram) {
-                    this.getEngine()._deleteProgram(previousProgram);
-                }
             } catch (e) {
                 this._compilationError = e.message;
 
