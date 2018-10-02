@@ -1632,20 +1632,6 @@ module BABYLON {
         }
 
         /**
-         * Adds the given coordinates to the current Vector3
-         * @param x defines the x coordinate of the operand
-         * @param y defines the y coordinate of the operand
-         * @param z defines the z coordinate of the operand
-         * @returns the current updated Vector3
-         */
-        public addInPlaceFromFloats(x: number, y: number, z: number): Vector3 {
-            this.x += x;
-            this.y += y;
-            this.z += z;
-            return this;
-        }
-
-        /**
          * Gets a new Vector3, result of the addition the current Vector3 and the given vector
          * @param otherVector defines the second operand
          * @returns the resulting Vector3
@@ -2708,13 +2694,13 @@ module BABYLON {
          */
         constructor(
             /** x value of the vector */
-            public x: number = 0,
+            public x: number,
             /** y value of the vector */
-            public y: number = 0,
+            public y: number,
             /** z value of the vector */
-            public z: number = 0,
+            public z: number,
             /** w value of the vector */
-            public w: number = 0
+            public w: number
         ) { }
 
         /**
@@ -7193,21 +7179,21 @@ module BABYLON {
      * @hidden
      */
     export class Tmp {
-        public static Color3: Color3[] = Tools.BuildArray(3, Color3);
-        public static Color4: Color4[] = Tools.BuildArray(3, Color4);
-        public static Vector2: Vector2[] = Tools.BuildArray(3, Vector2); // 3 temp Vector2 at once should be enough
-        public static Vector3: Vector3[] = Tools.BuildArray(9, Vector3); // 9 temp Vector3 at once should be enough
-        public static Vector4: Vector4[] = Tools.BuildArray(3, Vector4); // 3 temp Vector4 at once should be enough
-        public static Quaternion: Quaternion[] = Tools.BuildArray(2, Quaternion); // 2 temp Quaternion at once should be enough
-        public static Matrix: Matrix[] = Tools.BuildArray(6, Matrix); // 6 temp Matrices at once should be enough
+        public static Color3: Color3[] = Tools.BuildArray(3, Color3.Black);
+        public static Color4: Color4[] = Tools.BuildArray(3, () => new Color4(0, 0, 0, 0));
+        public static Vector2: Vector2[] = Tools.BuildArray(3, Vector2.Zero); // 3 temp Vector2 at once should be enough
+        public static Vector3: Vector3[] = Tools.BuildArray(9, Vector3.Zero); // 9 temp Vector3 at once should be enough
+        public static Vector4: Vector4[] = Tools.BuildArray(3, Vector4.Zero); // 3 temp Vector4 at once should be enough
+        public static Quaternion: Quaternion[] = Tools.BuildArray(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
+        public static Matrix: Matrix[] = Tools.BuildArray(6, Matrix.Identity); // 6 temp Matrices at once should be enough
     }
     /**
      * @hidden
      * Same as Tmp but not exported to keep it only for math functions to avoid conflicts
      */
     class MathTmp {
-        public static Vector3: Vector3[] = Tools.BuildArray(6, Vector3);
-        public static Matrix: Matrix[] = Tools.BuildArray(2, Matrix);
-        public static Quaternion: Quaternion[] = Tools.BuildArray(3, Quaternion);
+        public static Vector3: Vector3[] = Tools.BuildArray(6, Vector3.Zero);
+        public static Matrix: Matrix[] = Tools.BuildArray(2, Matrix.Identity);
+        public static Quaternion: Quaternion[] = Tools.BuildArray(3, Quaternion.Zero);
     }
 }
