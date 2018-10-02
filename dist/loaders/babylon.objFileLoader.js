@@ -231,6 +231,8 @@ var BABYLON;
             this.facePattern3 = /f\s+((([\d]{1,}\/[\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
             // f vertex//normal vertex//normal vertex//normal ...
             this.facePattern4 = /f\s+((([\d]{1,}\/\/[\d]{1,}[\s]?){3,})+)/;
+            // f -vertex/-uvs/-normal -vertex/-uvs/-normal -vertex/-uvs/-normal ...
+            this.facePattern5 = /f\s+(((-[\d]{1,}\/-[\d]{1,}\/-[\d]{1,}[\s]?){3,})+)/;
         }
         /**
          * Calls synchronously the MTL file attached to this obj.
@@ -249,26 +251,58 @@ var BABYLON;
             // Loads through the babylon tools to allow fileInput search.
             BABYLON.Tools.LoadFile(pathOfFile, onSuccess, undefined, undefined, false, function () { console.warn("Error - Unable to load " + pathOfFile); });
         };
-        OBJFileLoader.prototype.importMesh = function (meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons) {
+        /**
+         * Imports one or more meshes from the loaded glTF data and adds them to the scene
+         * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
+         * @param scene the scene the meshes should be added to
+         * @param data the glTF data to load
+         * @param rootUrl root url to load from
+         * @param onProgress event that fires when loading progress has occured
+         * @param fileName Defines the name of the file to load
+         * @returns a promise containg the loaded meshes, particles, skeletons and animations
+         */
+        OBJFileLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onProgress, fileName) {
             //get the meshes from OBJ file
-            var loadedMeshes = this._parseSolid(meshesNames, scene, data, rootUrl);
-            //Push meshes from OBJ file into the variable mesh of this function
-            if (meshes) {
-                loadedMeshes.forEach(function (mesh) {
-                    meshes.push(mesh);
-                });
-            }
-            return true;
+            return this._parseSolid(meshesNames, scene, data, rootUrl).then(function (meshes) {
+                return {
+                    meshes: meshes,
+                    particleSystems: [],
+                    skeletons: [],
+                    animationGroups: []
+                };
+            });
         };
-        OBJFileLoader.prototype.load = function (scene, data, rootUrl) {
+        /**
+         * Imports all objects from the loaded glTF data and adds them to the scene
+         * @param scene the scene the objects should be added to
+         * @param data the glTF data to load
+         * @param rootUrl root url to load from
+         * @param onProgress event that fires when loading progress has occured
+         * @param fileName Defines the name of the file to load
+         * @returns a promise which completes when objects have been loaded to the scene
+         */
+        OBJFileLoader.prototype.loadAsync = function (scene, data, rootUrl, onProgress, fileName) {
             //Get the 3D model
-            return this.importMesh(null, scene, data, rootUrl, null, null, null);
+            return this.importMeshAsync(null, scene, data, rootUrl, onProgress).then(function () {
+                // return void
+            });
         };
-        OBJFileLoader.prototype.loadAssetContainer = function (scene, data, rootUrl, onError) {
-            var container = new BABYLON.AssetContainer(scene);
-            this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
-            container.removeAllFromScene();
-            return container;
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @param fileName Defines the name of the file to load
+         * @returns The loaded asset container
+         */
+        OBJFileLoader.prototype.loadAssetContainerAsync = function (scene, data, rootUrl, onProgress, fileName) {
+            return this.importMeshAsync(null, scene, data, rootUrl).then(function (result) {
+                var container = new BABYLON.AssetContainer(scene);
+                result.meshes.forEach(function (mesh) { return container.meshes.push(mesh); });
+                container.removeAllFromScene();
+                return container;
+            });
         };
         /**
          * Read the OBJ file and create an Array of meshes.
@@ -283,6 +317,7 @@ var BABYLON;
          * @private
          */
         OBJFileLoader.prototype._parseSolid = function (meshesNames, scene, data, rootUrl) {
+            var _this = this;
             var positions = []; //values for the positions of vertices
             var normals = []; //Values for the normals
             var uvs = []; //Values for the textures
@@ -315,14 +350,16 @@ var BABYLON;
              * @returns {boolean}
              */
             var isInArray = function (arr, obj) {
-                if (!arr[obj[0]])
+                if (!arr[obj[0]]) {
                     arr[obj[0]] = { normals: [], idx: [] };
+                }
                 var idx = arr[obj[0]].normals.indexOf(obj[1]);
                 return idx === -1 ? -1 : arr[obj[0]].idx[idx];
             };
             var isInArrayUV = function (arr, obj) {
-                if (!arr[obj[0]])
+                if (!arr[obj[0]]) {
                     arr[obj[0]] = { normals: [], idx: [], uv: [] };
+                }
                 var idx = arr[obj[0]].normals.indexOf(obj[1]);
                 if (idx != 1 && (obj[2] == arr[obj[0]].uv[idx])) {
                     return arr[obj[0]].idx[idx];
@@ -376,8 +413,9 @@ var BABYLON;
                     //Add the tuple in the comparison list
                     tuplePosNorm[indicePositionFromObj].normals.push(indiceNormalFromObj);
                     tuplePosNorm[indicePositionFromObj].idx.push(curPositionInIndices++);
-                    if (OBJFileLoader.OPTIMIZE_WITH_UV)
+                    if (OBJFileLoader.OPTIMIZE_WITH_UV) {
                         tuplePosNorm[indicePositionFromObj].uv.push(indiceUvsFromObj);
+                    }
                 }
                 else {
                     //The tuple already exists
@@ -408,11 +446,12 @@ var BABYLON;
              * Create triangles from polygons by recursion
              * The best to understand how it works is to draw it in the same time you get the recursion.
              * It is important to notice that a triangle is a polygon
-             * We get 4 patterns of face defined in OBJ File :
+             * We get 5 patterns of face defined in OBJ File :
              * facePattern1 = ["1","2","3","4","5","6"]
              * facePattern2 = ["1/1","2/2","3/3","4/4","5/5","6/6"]
              * facePattern3 = ["1/1/1","2/2/2","3/3/3","4/4/4","5/5/5","6/6/6"]
              * facePattern4 = ["1//1","2//2","3//3","4//4","5//5","6//6"]
+             * facePattern5 = ["-1/-1/-1","-2/-2/-2","-3/-3/-3","-4/-4/-4","-5/-5/-5","-6/-6/-6"]
              * Each pattern is divided by the same method
              * @param face Array[String] The indices of elements
              * @param v Integer The variable to increment
@@ -432,6 +471,7 @@ var BABYLON;
                 //Pattern2 => triangle = ["1/1","2/2","3/3","1/1","3/3","4/4"];
                 //Pattern3 => triangle = ["1/1/1","2/2/2","3/3/3","1/1/1","3/3/3","4/4/4"];
                 //Pattern4 => triangle = ["1//1","2//2","3//3","1//1","3//3","4//4"];
+                //Pattern5 => triangle = ["-1/-1/-1","-2/-2/-2","-3/-3/-3","-1/-1/-1","-3/-3/-3","-4/-4/-4"];
             };
             /**
              * Create triangles and push the data for each polygon for the pattern 1
@@ -527,6 +567,31 @@ var BABYLON;
                 //Reset variable for the next line
                 triangles = [];
             };
+            /**
+             * Create triangles and push the data for each polygon for the pattern 3
+             * In this pattern we get vertice positions, uvs and normals
+             * @param face
+             * @param v
+             */
+            var setDataForCurrentFaceWithPattern5 = function (face, v) {
+                //Get the indices of triangles for each polygon
+                getTriangles(face, v);
+                for (var k = 0; k < triangles.length; k++) {
+                    //triangle[k] = "-1/-1/-1"
+                    //Split the data for getting position, uv, and normals
+                    var point = triangles[k].split("/"); // ["-1", "-1", "-1"]
+                    // Set position indice
+                    var indicePositionFromObj = positions.length + parseInt(point[0]);
+                    // Set uv indice
+                    var indiceUvsFromObj = uvs.length + parseInt(point[1]);
+                    // Set normal indice
+                    var indiceNormalFromObj = normals.length + parseInt(point[2]);
+                    setData(indicePositionFromObj, indiceUvsFromObj, indiceNormalFromObj, positions[indicePositionFromObj], uvs[indiceUvsFromObj], normals[indiceNormalFromObj] //Set the vector for each component
+                    );
+                }
+                //Reset variable for the next line
+                triangles = [];
+            };
             var addPreviousObjMesh = function () {
                 //Check if it is not the first mesh. Otherwise we don't have data.
                 if (meshesFromObj.length > 0) {
@@ -597,6 +662,13 @@ var BABYLON;
                     //["f 1//1 2//2 3//3", "1//1 2//2 3//3"...]
                     //Set the data for this face
                     setDataForCurrentFaceWithPattern4(result[1].trim().split(" "), // ["1//1", "2//2", "3//3"]
+                    1);
+                }
+                else if ((result = this.facePattern5.exec(line)) !== null) {
+                    //Value of result:
+                    //["f -1/-1/-1 -2/-2/-2 -3/-3/-3", "-1/-1/-1 -2/-2/-2 -3/-3/-3"...]
+                    //Set the data for this face
+                    setDataForCurrentFaceWithPattern5(result[1].trim().split(" "), // ["-1/-1/-1", "-2/-2/-2", "-3/-3/-3"]
                     1);
                 }
                 else if ((result = this.facePattern2.exec(line)) !== null) {
@@ -752,42 +824,53 @@ var BABYLON;
                 //Push the mesh into an array
                 babylonMeshesArray.push(babylonMesh);
             }
+            var mtlPromises = [];
             //load the materials
             //Check if we have a file to load
             if (fileToLoad !== "") {
                 //Load the file synchronously
-                this._loadMTL(fileToLoad, rootUrl, function (dataLoaded) {
-                    //Create materials thanks MTLLoader function
-                    materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl);
-                    //Look at each material loaded in the mtl file
-                    for (var n = 0; n < materialsFromMTLFile.materials.length; n++) {
-                        //Three variables to get all meshes with the same material
-                        var startIndex = 0;
-                        var _indices = [];
-                        var _index;
-                        //The material from MTL file is used in the meshes loaded
-                        //Push the indice in an array
-                        //Check if the material is not used for another mesh
-                        while ((_index = materialToUse.indexOf(materialsFromMTLFile.materials[n].name, startIndex)) > -1) {
-                            _indices.push(_index);
-                            startIndex = _index + 1;
-                        }
-                        //If the material is not used dispose it
-                        if (_index == -1 && _indices.length == 0) {
-                            //If the material is not needed, remove it
-                            materialsFromMTLFile.materials[n].dispose();
-                        }
-                        else {
-                            for (var o = 0; o < _indices.length; o++) {
-                                //Apply the material to the BABYLON.Mesh for each mesh with the material
-                                babylonMeshesArray[_indices[o]].material = materialsFromMTLFile.materials[n];
+                mtlPromises.push(new Promise(function (resolve, reject) {
+                    _this._loadMTL(fileToLoad, rootUrl, function (dataLoaded) {
+                        try {
+                            //Create materials thanks MTLLoader function
+                            materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl);
+                            //Look at each material loaded in the mtl file
+                            for (var n = 0; n < materialsFromMTLFile.materials.length; n++) {
+                                //Three variables to get all meshes with the same material
+                                var startIndex = 0;
+                                var _indices = [];
+                                var _index;
+                                //The material from MTL file is used in the meshes loaded
+                                //Push the indice in an array
+                                //Check if the material is not used for another mesh
+                                while ((_index = materialToUse.indexOf(materialsFromMTLFile.materials[n].name, startIndex)) > -1) {
+                                    _indices.push(_index);
+                                    startIndex = _index + 1;
+                                }
+                                //If the material is not used dispose it
+                                if (_index == -1 && _indices.length == 0) {
+                                    //If the material is not needed, remove it
+                                    materialsFromMTLFile.materials[n].dispose();
+                                }
+                                else {
+                                    for (var o = 0; o < _indices.length; o++) {
+                                        //Apply the material to the BABYLON.Mesh for each mesh with the material
+                                        babylonMeshesArray[_indices[o]].material = materialsFromMTLFile.materials[n];
+                                    }
+                                }
                             }
+                            resolve();
                         }
-                    }
-                });
+                        catch (e) {
+                            reject(e);
+                        }
+                    });
+                }));
             }
             //Return an array with all BABYLON.Mesh
-            return babylonMeshesArray;
+            return Promise.all(mtlPromises).then(function () {
+                return babylonMeshesArray;
+            });
         };
         OBJFileLoader.OPTIMIZE_WITH_UV = false;
         OBJFileLoader.INVERT_Y = false;

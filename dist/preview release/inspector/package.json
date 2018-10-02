@@ -4,7 +4,7 @@
     },
     "name": "babylonjs-inspector",
     "description": "The Babylon.js inspector.",
-    "version": "3.3.0-rc.4",
+    "version": "3.3.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
@@ -28,10 +28,10 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
-        "babylonjs": "3.3.0-rc.4",
-        "babylonjs-gui": "3.3.0-rc.4",
-        "babylonjs-loaders": "3.3.0-rc.4",
-        "babylonjs-serializers": "3.3.0-rc.4"
+        "babylonjs": "3.3.0",
+        "babylonjs-gui": "3.3.0",
+        "babylonjs-loaders": "3.3.0",
+        "babylonjs-serializers": "3.3.0"
     },
     "engines": {
         "node": "*"

@@ -1911,17 +1911,11 @@ var BABYLON;
                     isVisible = _this._mesh.isVisible;
                     _this._mesh.isVisible = false;
                 }
-                // Clip plane
-                clipPlane = scene.clipPlane;
-                var positiony = _this._mesh ? _this._mesh.position.y : 0.0;
-                scene.clipPlane = BABYLON.Plane.FromPositionAndNormal(new BABYLON.Vector3(0, positiony + 0.05, 0), new BABYLON.Vector3(0, 1, 0));
             };
             this._refractionRTT.onAfterRender = function () {
                 if (_this._mesh) {
                     _this._mesh.isVisible = isVisible;
                 }
-                // Clip plane
-                scene.clipPlane = clipPlane;
             };
             this._reflectionRTT.onBeforeRender = function () {
                 if (_this._mesh) {
