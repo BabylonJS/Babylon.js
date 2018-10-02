@@ -3,7 +3,6 @@
     var currentSnippetToken;
     var engine;
     var fpsLabel = document.getElementById("fpsLabel");
-    var btnFullScreen = document.getElementById("btnFullscreen");
     var refreshAnchor = document.getElementById("refresh");
     var editAnchor = document.getElementById("edit");
     var scripts;
@@ -150,15 +149,7 @@
         }
     });
 
-    btnFullScreen.addEventListener('click', function() {
-        if (engine) {
-            engine.switchFullscreen(true);
-        }
-    }, false);
-
-
     // UI
-
     var cleanHash = function () {
         var splits = decodeURIComponent(location.hash.substr(1)).split("#");
 
