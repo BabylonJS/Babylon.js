@@ -68,7 +68,7 @@ module BABYLON {
                 this._keys = [];
             });
 
-            this._onKeyboardObserver = this._scene.onKeyboardObservable.add(info => {
+            this._onKeyboardObserver = this._scene.onKeyboardObservable.add((info) => {
                 let evt = info.event;
 
                 if (info.type === KeyboardEventTypes.KEYDOWN) {
