@@ -164,7 +164,7 @@ module BABYLON {
                 LinesMesh._shaderScene = scene;
             }
 
-            const index = (useVertexAlpha ? 1 : 0) + 2*(useVertexColor? 1 : 0)
+            const index = (useVertexAlpha ? 1 : 0) + 2 * (useVertexColor ? 1 : 0);
             let material = LinesMesh._shaders[index];
             if (!material) {
                 material = LinesMesh.createColorShader(scene, useVertexAlpha, useVertexColor);
