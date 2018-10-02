@@ -76,10 +76,17 @@
     <body>
         <canvas touch-action="none" id="renderCanvas" tabindex="1"></canvas>
 
-        <span class="label" id="fpsLabel">FPS</span>
-
-        <a class="link" id="refresh" href="#">Reload</a>
-        <a class="link" id="link" href="#" target="_blank">Edit</a>
+        <div class="footer">
+        <span id="fpsLabel">FPS</span>
+        <div class="footerRight">
+                <a href="javascript:void(null);">
+                    <img id="refresh" src="textures/icons/refresh.png"  width="36" height="36" alt="Reload page" title="Reload page"/>
+                </a>
+                <a id="edit" href="#" target="_blank">
+                    <img src="textures/icons/edit.png" width="36" height="36" alt="Edit in playground" title="Edit in playground"/>
+                </a>
+        </div>
+        </div>
 
         <script src="https://code.jquery.com/jquery.js"></script>
         <script src="js/frame.js"></script>
