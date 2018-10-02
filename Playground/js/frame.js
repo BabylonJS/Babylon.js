@@ -152,7 +152,7 @@
 
     btnFullScreen.addEventListener('click', function() {
         if (engine) {
-        engine.switchFullscreen(true);
+            engine.switchFullscreen(true);
         }
     }, false);
 
