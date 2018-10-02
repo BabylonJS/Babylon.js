@@ -1616,7 +1616,7 @@ module BABYLON {
          * @returns a new Quaternion object, computed from the Vector3 coordinates
          */
         public toQuaternion(): Quaternion {
-            return BABYLON.Quaternion.RotationYawPitchRoll(this.x, this.y, this.z);
+            return BABYLON.Quaternion.RotationYawPitchRoll(this.y, this.x, this.z);
         }
 
         /**
