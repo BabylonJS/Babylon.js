@@ -46,7 +46,6 @@ if (BABYLON.Engine.isSupported()) {
     var engine = new BABYLON.Engine(canvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
     var htmlInput = document.getElementById("files");
     var footer = document.getElementById("footer");
-    var btnFullScreen = document.getElementById("btnFullscreen");
     var btnInspector = document.getElementById("btnInspector");
     var errorZone = document.getElementById("errorZone");
     var filesInput;
@@ -59,7 +58,6 @@ if (BABYLON.Engine.isSupported()) {
 
     engine.loadingUIBackgroundColor = "#a9b5bc";
 
-    btnFullScreen.classList.add("hidden");
     btnInspector.classList.add("hidden");
 
     canvas.addEventListener("contextmenu", function(evt) {
@@ -127,7 +125,6 @@ if (BABYLON.Engine.isSupported()) {
         // Clear the error
         errorZone.style.display = 'none';
 
-        btnFullScreen.classList.remove("hidden");
         btnInspector.classList.remove("hidden");
 
         currentScene = babylonScene;
@@ -304,10 +301,6 @@ if (BABYLON.Engine.isSupported()) {
     if (kiosk) {
         footer.style.display = "none";
     }
-
-    btnFullScreen.addEventListener('click', function() {
-        engine.switchFullscreen(true);
-    }, false);
 
     btnInspector.addEventListener('click', function() {
         if (currentScene) {
