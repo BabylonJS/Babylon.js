@@ -10,16 +10,29 @@ module BABYLON {
         public camera: FlyCamera;
 
         /**
+         * Defines if touch is enabled. (Default is true.)
+         */
+        public touchEnabled: boolean;
+
+        /**
          * Defines the buttons associated with the input to handle camera rotation.
          */
         @serialize()
         public buttons = [0, 1, 2];
 
         /**
-         * Assign buttons for rotation control.
+         * Assign buttons for Yaw control.
          */
         public buttonsYaw: number[]    = [-1, 0, 1];
+
+        /**
+        * Assign buttons for Pitch control.
+        */
         public buttonsPitch: number[]  = [-1, 0, 1];
+
+        /**
+        * Assign buttons for Roll control.
+        */
         public buttonsRoll: number[]   = [2];
 
         /**
@@ -42,15 +55,15 @@ module BABYLON {
         private _observer: Nullable<Observer<PointerInfo>>;
         private _rollObserver: Nullable<Observer<Scene>>;
         private previousPosition: Nullable<{ x: number, y: number }> = null;
-        private noPreventDefault: boolean|undefined;
+        private noPreventDefault: boolean | undefined;
         private element: HTMLElement;
 
         /**
          * Listen to mouse events to control the camera.
-         * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
          * @param touchEnabled Define if touch is enabled. (Default is true.)
+         * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
          */
-        constructor(public touchEnabled = true) {
+        constructor(touchEnabled = true) {
         }
 
         /**
@@ -59,29 +72,29 @@ module BABYLON {
          * @param noPreventDefault Defines whether events caught by the controls should call preventdefault().
          */
         public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
-            var _this = this;
-
             this.element = element;
             this.noPreventDefault = noPreventDefault;
 
             this._observer = this.camera.getScene().onPointerObservable.add(
-                (p: any, s: any) => { _this._pointerInput(p, s); },
+                (p: any, s: any) => {
+                    this._pointerInput(p, s);
+                },
                 PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE
             );
 
             // Correct Roll by rate, if enabled.
             this._rollObserver = this.camera.getScene().onBeforeRenderObservable.add(
                 () => {
-                    if (_this.camera.rollCorrect) {
-                        _this.camera.restoreRoll(_this.camera.rollCorrect);
+                    if (this.camera.rollCorrect) {
+                        this.camera.restoreRoll(this.camera.rollCorrect);
                     }
                 }
             );
 
             // Helper function to keep 'this'.
-            this._mousemoveCallback = function (e: any) {
-                _this._onMouseMove(e);
-            }
+            this._mousemoveCallback = (e: any) => {
+                this._onMouseMove(e);
+            };
             element.addEventListener("mousemove", this._mousemoveCallback, false);
         }
 
@@ -188,7 +201,7 @@ module BABYLON {
                 var offsetX = e.clientX - this.previousPosition.x;
                 var offsetY = e.clientY - this.previousPosition.y;
 
-                this.rotateCamera(offsetX, offsetY)
+                this.rotateCamera(offsetX, offsetY);
 
                 this.previousPosition = {
                     x: e.clientX,
@@ -213,7 +226,7 @@ module BABYLON {
             var offsetX = e.movementX || e.mozMovementX || e.webkitMovementX || e.msMovementX || 0;
             var offsetY = e.movementY || e.mozMovementY || e.webkitMovementY || e.msMovementY || 0;
 
-            this.rotateCamera(offsetX, offsetY)
+            this.rotateCamera(offsetX, offsetY);
 
             this.previousPosition = null;
 
@@ -229,11 +242,13 @@ module BABYLON {
             let camera = this.camera;
             let scene = this.camera.getScene();
 
-            if (scene.useRightHandedSystem)
+            if (scene.useRightHandedSystem) {
               offsetX *= -1;
+            }
 
-            if (camera.parent && camera.parent._getWorldMatrixDeterminant() < 0)
+            if (camera.parent && camera.parent._getWorldMatrixDeterminant() < 0) {
                 offsetX *= -1;
+            }
 
             var x = offsetX / this.angularSensibility;
             var y = offsetY / this.angularSensibility;
@@ -247,7 +262,7 @@ module BABYLON {
             var rotationChange: BABYLON.Quaternion;
 
             // Pitch.
-            if (this.buttonsPitch.some((v) => { return v === this.activeButton })) {
+            if (this.buttonsPitch.some((v) => { return v === this.activeButton; })) {
                 // Apply change in Radians to vector Angle.
                 rotationChange = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, y);
                 // Apply Pitch to quaternion.
@@ -255,7 +270,7 @@ module BABYLON {
             }
 
             // Yaw.
-            if (this.buttonsYaw.some((v) => { return v === this.activeButton })) {
+            if (this.buttonsYaw.some((v) => { return v === this.activeButton; })) {
                 // Apply change in Radians to vector Angle.
                 rotationChange = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, x);
                 // Apply Yaw to quaternion.
@@ -273,7 +288,7 @@ module BABYLON {
             }
 
             // Roll.
-            if (this.buttonsRoll.some((v) => { return v === this.activeButton })) {
+            if (this.buttonsRoll.some((v) => { return v === this.activeButton; })) {
                 // Apply change in Radians to vector Angle.
                 rotationChange = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -x);
                 // Track Rolling.

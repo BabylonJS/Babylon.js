@@ -59,10 +59,15 @@
          */
         public bankedTurn: boolean = false;
 
-        // Limit in radians for how much Roll banking will add. (Default: 90°)
+        /**
+         * Limit in radians for how much Roll banking will add. (Default: 90°)
+         */
         public bankedTurnLimit: number = Math.PI / 4;
 
-        // 0 disables the banked Roll. 1 is equal to the Yaw angle in radians.
+        /**
+         * Value of 0 disables the banked Roll.
+         * Value of 1 is equal to the Yaw angle in radians.
+         */
         public bankedTurnMultiplier: number = 1;
 
         /**
@@ -76,8 +81,9 @@
          */
         public get angularSensibility(): number {
             var mouse = <FlyCameraMouseInput>this.inputs.attached["mouse"];
-            if (mouse)
+            if (mouse) {
                 return mouse.angularSensibility;
+            }
 
             return 0;
         }
@@ -88,8 +94,9 @@
          */
         public set angularSensibility(value: number) {
             var mouse = <FlyCameraMouseInput>this.inputs.attached["mouse"];
-            if (mouse)
+            if (mouse) {
                 mouse.angularSensibility = value;
+            }
         }
 
         /**
@@ -97,8 +104,9 @@
          */
         public get keysForward(): number[] {
             var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 return keyboard.keysForward;
+            }
 
             return [];
         }
@@ -108,8 +116,9 @@
         */
         public set keysForward(value: number[]) {
             var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 keyboard.keysForward = value;
+            }
         }
 
         /**
@@ -117,16 +126,18 @@
          */
         public get keysBackward(): number[] {
             var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 return keyboard.keysBackward;
+            }
 
             return [];
         }
 
         public set keysBackward(value: number[]) {
             var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 keyboard.keysBackward = value;
+            }
         }
 
         /**
@@ -134,8 +145,9 @@
          */
         public get keysUp(): number[] {
             var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 return keyboard.keysUp;
+            }
 
             return [];
         }
@@ -145,8 +157,9 @@
         */
         public set keysUp(value: number[]) {
             var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 keyboard.keysUp = value;
+            }
         }
 
         /**
@@ -154,8 +167,9 @@
          */
         public get keysDown(): number[] {
             var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 return keyboard.keysDown;
+            }
 
             return [];
         }
@@ -165,8 +179,9 @@
         */
         public set keysDown(value: number[]) {
             var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 keyboard.keysDown = value;
+            }
         }
 
         /**
@@ -174,8 +189,9 @@
          */
         public get keysLeft(): number[] {
             var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 return keyboard.keysLeft;
+            }
 
             return [];
         }
@@ -185,8 +201,9 @@
         */
         public set keysLeft(value: number[]) {
             var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 keyboard.keysLeft = value;
+            }
         }
 
         /**
@@ -194,8 +211,9 @@
          */
         public get keysRight(): number[] {
             var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 return keyboard.keysRight;
+            }
 
             return [];
         }
@@ -205,8 +223,9 @@
         */
         public set keysRight(value: number[]) {
             var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
-            if (keyboard)
+            if (keyboard) {
                 keyboard.keysRight = value;
+            }
         }
 
         /**
@@ -312,8 +331,9 @@
         /** @hidden */
         private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
             // TODO Move this to the collision coordinator!
-            if (this.getScene().workerCollisions)
+            if (this.getScene().workerCollisions) {
                 newPosition.multiplyInPlace(this._collider._radius);
+            }
 
             var updatePosition = (newPos: Vector3) => {
                 this._newPosition.copyFrom(newPos);
@@ -326,7 +346,7 @@
                         this.onCollide(collidedMesh);
                     }
                 }
-            }
+            };
 
             updatePosition(newPosition);
         }
