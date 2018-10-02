@@ -9,38 +9,66 @@
 }
 
 canvas {
+    height: calc(100% - 56px);
     border:none !important;
     outline:none !important;
 }
 
+.footerLeft{
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
 #fpsLabel {
-    position: absolute;
-    right: 10px;
-    top: 20px;
     cursor: default;
     z-index:10;
-    background-color: #7283a0;
     color:white;
-    padding:5px;
-    font-family: 'Segoe UI';
     pointer-events: none;
     user-select: none;
+    line-height: 56px;
+    vertical-align: middle;
+    margin: auto 0px auto 15px;
 }
 
-.refreshlabel, .editlabel{
+
+.footer {
     position: absolute;
-    left: 0px;
-    cursor: pointer;    
-    color: white;
-    background-color: #7283a0;
-    color:white;
-    padding:5px;
-    
+    width: 100%;
+    height: 56px;
+    bottom: 0;
+    margin: 0;
+    padding: 0;
+    right: 0;
+    left: 0;
+    background-color: #3B789A;
 }
 
-.refreshlabel {
-    top: 20px;
+.footerRight {
+    display: inline;
+    position: absolute;
+    bottom: 0;
+    right: 0px;
+    top: 0px;
 }
-.editlabel {
-    top: 75px;
+
+.footerRight a {
+    float: left; /* Float links side by side */
+    width: 56px; 
+    height: 56px;
+    margin: 0px;
+    padding: 0;
+    transition: all 0.3s ease; /* Add transition for hover effects */
+}
+
+.footerRight a img {
+    margin: 10px;
+}
+
+.footerRight a:hover {
+    background-color: #2c5a74; /* Add a hover color */    
+}
+
+.footerRight a:active{
+    background-color: #162D3A; /* Add a hover color */
 }
