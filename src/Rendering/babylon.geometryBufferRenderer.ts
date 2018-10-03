@@ -57,14 +57,14 @@ module BABYLON {
         }
 
         /**
-         * Gets wether or not position are enabled for the G buffer.
+         * Gets a boolean indicating if objects positions are enabled for the G buffer.
          */
         public get enablePosition(): boolean {
             return this._enablePosition;
         }
 
         /**
-         * Sets wether or not position are enabled for the G buffer.
+         * Sets whether or not objects positions are enabled for the G buffer.
          */
         public set enablePosition(enable: boolean) {
             this._enablePosition = enable;
@@ -73,14 +73,14 @@ module BABYLON {
         }
 
         /**
-         * Gets wether or not objects velocities are enabled for the G buffer
+         * Gets a boolean indicating if objects velocities are enabled for the G buffer.
          */
         public get enableVelocity(): boolean {
             return this._enableVelocity;
         }
 
         /**
-         * Sets wether or not objects velocities are enabled for the G buffer
+         * Sets wether or not objects velocities are enabled for the G buffer.
          */
         public set enableVelocity(enable: boolean) {
             this._enableVelocity = enable;
