@@ -1,8 +1,8 @@
-import { ViewerConfiguration, getConfigurationKey } from './configuration'
+import { ViewerConfiguration, getConfigurationKey } from './configuration';
 /**
  * This function will make sure the configuration file is taking deprecated fields into account
  * and is setting them to the correct keys and values.
- * 
+ *
  * @param configuration The configuration to process. Mutable!
  */
 export function processConfigurationCompatibility(configuration: ViewerConfiguration) {
@@ -53,14 +53,14 @@ export function processConfigurationCompatibility(configuration: ViewerConfigura
 
 function setKeyInObject(object: any, keys: string, value: any, shouldOverwrite?: boolean) {
     let keySplit = keys.split(".");
-    if (keySplit.length === 0) return;
+    if (keySplit.length === 0) { return; }
     let lastKey = keySplit.pop();
-    if (!lastKey) return;
+    if (!lastKey) { return; }
     let curObj = object;
-    keySplit.forEach(key => {
+    keySplit.forEach((key) => {
         curObj[key] = curObj[key] || {};
         curObj = curObj[key];
     });
-    if (curObj[lastKey] !== undefined && !shouldOverwrite) return;
+    if (curObj[lastKey] !== undefined && !shouldOverwrite) { return; }
     curObj[lastKey] = value;
 }

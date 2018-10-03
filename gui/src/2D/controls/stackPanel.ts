@@ -150,4 +150,4 @@ export class StackPanel extends Container {
 
         super._preMeasure(parentMeasure, context);
     }
-}  
+}

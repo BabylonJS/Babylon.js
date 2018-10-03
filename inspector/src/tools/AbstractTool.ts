@@ -23,7 +23,7 @@ export abstract class AbstractTool {
         return this._elem;
     }
 
-    /** 
+    /**
      * Returns the total width in pixel of this tool, 0 by default
     */
     public getPixelWidth(): number {
@@ -38,7 +38,7 @@ export abstract class AbstractTool {
         return (this._elem.clientWidth || 0) + left + right;
     }
 
-    /** 
+    /**
      * Updates the icon of this tool with the given string
      */
     protected _updateIcon(icon: string) {

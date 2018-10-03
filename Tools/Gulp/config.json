@@ -44,6 +44,7 @@
         "all": [
             "pbrMaterial",
             "freeCamera",
+            "flyCamera",
             "arcRotateCamera",
             "hemisphericLight",
             "pointLight",
@@ -131,6 +132,7 @@
         "minimal": [
             "meshBuilder",
             "freeCamera",
+            "flyCamera",
             "hemisphericLight"
         ],
         "360Viewer": [
@@ -145,7 +147,7 @@
             "imageProcessing",
             "backgroundMaterial",
             "pbrMaterial",
-            "hdr"        
+            "hdr"
         ]
     },
     "workloads": {
@@ -155,6 +157,7 @@
                 "../../src/babylon.types.js",
                 "../../src/Events/babylon.keyboardEvents.js",
                 "../../src/Events/babylon.pointerEvents.js",
+                "../../src/Tools/babylon.tools.js",
                 "../../src/Math/babylon.math.js",
                 "../../src/Math/babylon.math.scalar.js",
                 "../../src/babylon.mixins.js",
@@ -163,7 +166,6 @@
                 "../../src/Tools/babylon.deferred.js",
                 "../../src/Tools/babylon.observable.js",
                 "../../src/Tools/babylon.smartArray.js",
-                "../../src/Tools/babylon.tools.js",
                 "../../src/Tools/babylon.promise.js",
                 "../../src/Tools/babylon.workerPool.js",
                 "../../src/States/babylon.alphaCullingState.js",
@@ -535,6 +537,17 @@
                 "../../src/Cameras/Inputs/babylon.freeCameraKeyboardMoveInput.js",
                 "../../src/Cameras/babylon.freeCameraInputsManager.js",
                 "../../src/Cameras/babylon.freeCamera.js"
+            ],
+            "dependUpon": [
+                "targetCamera"
+            ]
+        },
+        "flyCamera": {
+            "files": [
+                "../../src/Cameras/Inputs/babylon.flyCameraMouseInput.js",
+                "../../src/Cameras/Inputs/babylon.flyCameraKeyboardInput.js",
+                "../../src/Cameras/babylon.flyCameraInputsManager.js",
+                "../../src/Cameras/babylon.flyCamera.js"
             ],
             "dependUpon": [
                 "targetCamera"
@@ -1443,7 +1456,6 @@
                 "core"
             ]
         }
-
     },
     "typescript": [
         "../../src/**/*.ts",
@@ -1999,6 +2011,7 @@
             }
         ],
         "build": {
+            "srcDirectory": "../../Viewer/src/",
             "srcOutputDirectory": "../../Viewer/",
             "distOutputDirectory": "/viewer/",
             "dtsBundle": {
@@ -2071,6 +2084,7 @@
             }
         ],
         "build": {
+            "srcDirectory": "../../Viewer/src/",
             "srcOutputDirectory": "../../Viewer/",
             "distOutputDirectory": "/viewer/",
             "dtsBundle": {

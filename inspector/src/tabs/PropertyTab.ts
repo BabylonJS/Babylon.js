@@ -10,8 +10,8 @@ import { TabBar } from "./TabBar";
 import * as Split from "Split";
 
 /**
- * A Property tab can creates two panels: 
- * a tree panel and a detail panel, 
+ * A Property tab can creates two panels:
+ * a tree panel and a detail panel,
  * in which properties will be displayed.
  * Both panels are separated by a resize bar
  */
@@ -73,7 +73,6 @@ export abstract class PropertyTab extends Tab {
         Helpers.CleanDiv(this._treePanel);
         // Clean the detail properties
         this._detailsPanel.clean();
-
 
         // Sort items alphabetically
         items.sort((item1, item2) => {
@@ -137,7 +136,7 @@ export abstract class PropertyTab extends Tab {
             }
 
             return null;
-        }
+        };
 
         for (let item of this._treeItems) {
             let it = searchObjectInTree(obj, item);

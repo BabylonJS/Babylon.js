@@ -5,7 +5,6 @@ import { AbstractTreeTool } from "../treetools/AbstractTreeTool";
 import { Checkbox, IToolVisible } from "../treetools/Checkbox";
 import { Adapter } from "./Adapter";
 
-
 export class GUIAdapter
     extends Adapter
     implements IToolVisible {
@@ -19,7 +18,7 @@ export class GUIAdapter
         let str = '';
         if (this._obj.name) {
             str = this._obj.name;
-        } // otherwise nothing displayed        
+        } // otherwise nothing displayed
         return str;
     }
 

@@ -167,7 +167,7 @@ module BABYLON {
 
         private _isDisposed = false;
 
-        private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
+        private static _tmpVecs: Vector3[] = Tools.BuildArray(3, Vector3.Zero);
         private static _tmpQuat: Quaternion = Quaternion.Identity();
 
         /**

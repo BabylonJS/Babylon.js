@@ -549,13 +549,13 @@ module BABYLON {
                 stride = 3;
             }
 
-            for (var index = start, offset = start * stride; index < start + count; index++, offset += stride) {
+            for (var index = start, offset = start * stride; index < start + count; index++ , offset += stride) {
                 const x = positions[offset];
                 const y = positions[offset + 1];
                 const z = positions[offset + 2];
                 minimum.minimizeInPlaceFromFloats(x, y, z);
                 maximum.maximizeInPlaceFromFloats(x, y, z);
-              }
+            }
 
             if (bias) {
                 minimum.x -= minimum.x * bias.x + bias.y;
@@ -584,6 +584,20 @@ module BABYLON {
             }
 
             return Array.isArray(obj) ? obj : [obj];
+        }
+
+        /**
+         * Returns an array of the given size filled with element built from the given constructor and the paramters
+         * @param size the number of element to construct and put in the array
+         * @param itemBuilder a callback responsible for creating new instance of item. Called once per array entry.
+         * @returns a new array filled with new objects
+         */
+        public static BuildArray<T>(size: number, itemBuilder: () => T): Array<T> {
+            const a: T[] = [];
+            for (let i = 0; i < size; ++i) {
+                a.push(itemBuilder());
+            }
+            return a;
         }
 
         /**
@@ -641,7 +655,7 @@ module BABYLON {
          * @param element defines the DOM element to promote
          */
         public static RequestFullscreen(element: HTMLElement): void {
-            var requestFunction = element.requestFullscreen || (<any>element).msRequestFullscreen || element.webkitRequestFullscreen || (<any>element).mozRequestFullScreen;
+            var requestFunction = element.requestFullscreen || (<any>element).msRequestFullscreen || (<any>element).webkitRequestFullscreen || (<any>element).mozRequestFullScreen;
             if (!requestFunction) { return; }
             requestFunction.call(element);
         }
@@ -960,13 +974,13 @@ module BABYLON {
             return fileRequest;
         }
 
-         /**
-          * Load a script (identified by an url). When the url returns, the
-          * content of this file is added into a new script element, attached to the DOM (body element)
-          * @param scriptUrl defines the url of the script to laod
-          * @param onSuccess defines the callback called when the script is loaded
-          * @param onError defines the callback to call if an error occurs
-          */
+        /**
+         * Load a script (identified by an url). When the url returns, the
+         * content of this file is added into a new script element, attached to the DOM (body element)
+         * @param scriptUrl defines the url of the script to laod
+         * @param onSuccess defines the callback called when the script is loaded
+         * @param onError defines the callback to call if an error occurs
+         */
         public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void) {
             if (!Tools.IsWindowObjectExist()) {
                 return;
@@ -1089,25 +1103,8 @@ module BABYLON {
          * @param max defines the maximum range
          */
         public static CheckExtends(v: Vector3, min: Vector3, max: Vector3): void {
-            if (v.x < min.x) {
-                min.x = v.x;
-            }
-            if (v.y < min.y) {
-                min.y = v.y;
-            }
-            if (v.z < min.z) {
-                min.z = v.z;
-            }
-
-            if (v.x > max.x) {
-                max.x = v.x;
-            }
-            if (v.y > max.y) {
-                max.y = v.y;
-            }
-            if (v.z > max.z) {
-                max.z = v.z;
-            }
+            min.minimizeInPlace(v);
+            max.maximizeInPlace(v);
         }
 
         /**
@@ -1973,10 +1970,10 @@ module BABYLON {
                 let nextGradient = gradients[gradientIndex + 1];
 
                 if (ratio >= currentGradient.gradient && ratio <= nextGradient.gradient) {
-                    let scale =  (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
+                    let scale = (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
                     updateFunc(currentGradient, nextGradient, scale);
                     return;
-               }
+                }
             }
 
             // Use last index if over
