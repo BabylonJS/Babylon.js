@@ -141,9 +141,6 @@ export class NullEngineAbstractViewer extends AbstractViewer {
 
         this.sceneManager = new SceneManager(this.engine, this.configurationContainer, this.observablesManager);
 
-        // Disable manifest checking
-        BABYLON.Database.IDBStorageEnabled = false;
-
         if (!config.disableResize) {
             window.addEventListener('resize', this._resize);
         }
@@ -182,9 +179,6 @@ export class NullEngineDefaultViewer extends DefaultViewer {
         };
 
         this.sceneManager = new SceneManager(this.engine, this.configurationContainer, this.observablesManager);
-
-        // Disable manifest checking
-        BABYLON.Database.IDBStorageEnabled = false;
 
         if (!config.disableResize) {
             window.addEventListener('resize', this._resize);

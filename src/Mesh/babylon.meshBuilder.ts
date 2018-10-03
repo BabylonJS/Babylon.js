@@ -204,7 +204,7 @@ module BABYLON {
                 instance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
                 if (options.colors) {
                     var colors = <FloatArray>instance.getVerticesData(VertexBuffer.ColorKind);
-                    for (var c = 0, colorIndex = 0; c < options.colors.length; c++, colorIndex += 4) {
+                    for (var c = 0, colorIndex = 0; c < options.colors.length; c++ , colorIndex += 4) {
                         const color = options.colors[c];
                         colors[colorIndex] = color.r;
                         colors[colorIndex + 1] = color.g;
@@ -635,7 +635,7 @@ module BABYLON {
             var shape = options.shape;
             var radius = options.radius || 1;
             var tessellation = options.tessellation || 64;
-        var clip = options.clip || 0;
+            var clip = options.clip || 0;
             var updatable = options.updatable;
             var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
             var cap = options.cap || Mesh.NO_CAP;
@@ -846,7 +846,7 @@ module BABYLON {
                 ground._setReady(true);
             };
 
-            Tools.LoadImage(url, onload, () => { }, scene.database);
+            Tools.LoadImage(url, onload, () => { }, scene.offlineProvider);
 
             return ground;
         }
@@ -1017,7 +1017,7 @@ module BABYLON {
             if (instance) { // tube update
                 let storage = instance._creationDataStorage!;
                 var arc = options.arc || storage.arc;
-                path3D =  storage.path3D.update(path);
+                path3D = storage.path3D.update(path);
                 pathArray = tubePathArray(path, path3D, storage.pathArray, radius, storage.tessellation, radiusFunction, storage.cap, arc);
                 instance = MeshBuilder.CreateRibbon("", { pathArray: pathArray, instance: instance });
                 // Update mode, no need to recreate the storage.
@@ -1382,7 +1382,7 @@ module BABYLON {
             var pathArray;
             if (instance) { // instance update
                 let storage = instance._creationDataStorage!;
-                path3D =  storage.path3D.update(curve);
+                path3D = storage.path3D.update(curve);
                 pathArray = extrusionPathArray(shape, curve, storage.path3D, storage.pathArray, scale, rotation, scaleFunction, rotateFunction, storage.cap, custom);
                 instance = Mesh.CreateRibbon("", pathArray, false, false, 0, scene || undefined, false, 0, instance);
 
