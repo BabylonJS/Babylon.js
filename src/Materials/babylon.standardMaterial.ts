@@ -839,9 +839,9 @@ module BABYLON {
                                 case Texture.CUBIC_MODE:
                                 case Texture.INVCUBIC_MODE:
                                 default:
-                                        defines.setReflectionMode("REFLECTIONMAP_CUBIC");
-                                        break;
-                                }
+                                    defines.setReflectionMode("REFLECTIONMAP_CUBIC");
+                                    break;
+                            }
 
                             defines.USE_LOCAL_REFLECTIONMAP_CUBIC = (<any>this._reflectionTexture).boundingBoxSize ? true : false;
                         }
@@ -1225,8 +1225,7 @@ module BABYLON {
             this.bindOnlyWorldMatrix(world);
 
             // Normal Matrix
-            if (defines.OBJECTSPACE_NORMALMAP)
-            {
+            if (defines.OBJECTSPACE_NORMALMAP) {
                 world.toNormalMatrix(this._normalMatrix);
                 this.bindOnlyNormalMatrix(this._normalMatrix);
             }
