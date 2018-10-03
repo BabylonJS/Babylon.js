@@ -251,86 +251,72 @@
     },
     {
       "title": "GLTF Buffer Interleaved",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createBufferInterleavedScene",
+      "playgroundId": "#a68vz0#3",
       "referenceImage": "gltfBufferInterleaved.png"
     },
     {
       "title": "GLTF Material",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialScene",
+      "playgroundId": "#a68vz0#2",
       "referenceImage": "gltfMaterial.png"
     },
     {
       "title": "GLTF Material Alpha Blend",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialAlphaBlendScene",
+      "playgroundId": "#a68vz0#4",
       "referenceImage": "gltfMaterialAlphaBlend.png"
     },
     {
       "title": "GLTF Material Alpha Mask",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialAlphaMaskScene",
+      "playgroundId": "#a68vz0#5",
       "referenceImage": "gltfMaterialAlphaMask.png"
     },
     {
       "title": "GLTF Material Double Sided",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialDoubleSidedScene",
+      "playgroundId": "#a68vz0#7",
       "referenceImage": "gltfMaterialDoubleSided.png"
     },
     {
       "title": "GLTF Material Double Sided (Back)",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialDoubleSidedBackScene",
+      "playgroundId": "#a68vz0#6",
       "referenceImage": "gltfMaterialDoubleSidedBack.png"
     },
     {
       "title": "GLTF Material Mixed",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialMixedScene",
+      "playgroundId": "#a68vz0#8",
       "referenceImage": "gltfMaterialMixed.png"
     },
     {
       "title": "GLTF Mesh Primitives",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMeshPrimitivesScene",
+      "playgroundId": "#a68vz0#9",
       "referenceImage": "gltfMeshPrimitives.png"
     },
     {
       "title": "GLTF Mesh Primitive Mode",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMeshPrimitiveModeScene",
+      "playgroundId": "#a68vz0#10",
       "referenceImage": "gltfMeshPrimitiveMode.png"
     },
     {
       "title": "GLTF Mesh Primitive Vertex Color",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createPrimitiveVertexColorScene",
+      "playgroundId": "#a68vz0#11",
       "referenceImage": "gltfMeshPrimitiveVertexColor.png"
     },
     {
       "title": "GLTF Mesh Primitives UV",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMeshPrimitivesUVScene",
+      "playgroundId": "#a68vz0#12",
       "referenceImage": "gltfMeshPrimitivesUV.png"
     },
     {
       "title": "GLTF Primitive Attribute",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createPrimitiveAttributeScene",
+      "playgroundId": "#a68vz0#13",
       "referenceImage": "gltfPrimitiveAttribute.png"
     },
     {
       "title": "GLTF Metallic Roughness",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialMetallicRoughnessScene",
+      "playgroundId": "#a68vz0#14",
       "referenceImage": "gltfMaterialMetallicRoughness.png"
     },
     {
       "title": "GLTF Specular Glossiness",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialSpecularGlossinessScene",
+      "playgroundId": "#a68vz0#15",
       "referenceImage": "gltfMaterialSpecularGlossiness.png"
     },
     {
@@ -340,8 +326,7 @@
     },
     {
       "title": "GLTF Texture Sampler",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createTextureSamplerScene",
+      "playgroundId": "#a68vz0#16",
       "referenceImage": "gltfTextureSampler.png"
     },
     {
