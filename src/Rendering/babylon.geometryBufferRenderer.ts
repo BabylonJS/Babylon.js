@@ -14,6 +14,13 @@ module BABYLON {
          */
         public static readonly VELOCITY_TEXTURE_TYPE = 2;
 
+        /**
+         * Dictionary used to store the previous transformation matrices of each rendered mesh
+         * in order to compute objects velocities when enableVelocity is set to "true"
+         * @hidden
+         */
+        public _previousTransformationMatrices: { [index: number]: Matrix } = { };
+
         private _scene: Scene;
         private _multiRenderTarget: MultiRenderTarget;
         private _ratio: number;
@@ -22,8 +29,6 @@ module BABYLON {
 
         private _positionIndex: number = -1;
         private _velocityIndex: number = -1;
-
-        private _previousWorldMatrices: { [index: number]: Matrix } = { };
 
         protected _effect: Effect;
         protected _cachedDefines: string;
@@ -279,8 +284,8 @@ module BABYLON {
                 }
 
                 // Velocity
-                if (!this._previousWorldMatrices[mesh.uniqueId]) {
-                    this._previousWorldMatrices[mesh.uniqueId] = Matrix.Identity();
+                if (!this._previousTransformationMatrices[mesh.uniqueId]) {
+                    this._previousTransformationMatrices[mesh.uniqueId] = Matrix.Identity();
                 }
 
                 // Culling
@@ -318,7 +323,7 @@ module BABYLON {
                     }
 
                     // Velocity
-                    this._effect.setMatrix("previousWorldViewProjection", this._previousWorldMatrices[mesh.uniqueId]);
+                    this._effect.setMatrix("previousWorldViewProjection", this._previousTransformationMatrices[mesh.uniqueId]);
 
                     // Draw
                     mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
@@ -326,7 +331,7 @@ module BABYLON {
                 }
 
                 // Velocity
-                this._previousWorldMatrices[mesh.uniqueId] = mesh.getWorldMatrix().multiply(this._scene.getTransformMatrix());
+                this._previousTransformationMatrices[mesh.uniqueId] = mesh.getWorldMatrix().multiply(this._scene.getTransformMatrix());
             };
 
             this._multiRenderTarget.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
