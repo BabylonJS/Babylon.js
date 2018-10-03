@@ -2,6 +2,8 @@
 
 ## Major updates
 
+- Added support for [parallel shader compilation](https://www.khronos.org/registry/webgl/extensions/KHR_parallel_shader_compile/) ([Deltakosh](https://github.com/deltakosh))
+
 ## Updates
 
 ### GUI
