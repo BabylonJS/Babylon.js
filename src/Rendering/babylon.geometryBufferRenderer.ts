@@ -23,7 +23,7 @@ module BABYLON {
         private _positionIndex: number = -1;
         private _velocityIndex: number = -1;
 
-        private _previousWorldMatrices: { [index: string]: Matrix } = { };
+        private _previousWorldMatrices: { [index: number]: Matrix } = { };
 
         protected _effect: Effect;
         protected _cachedDefines: string;
@@ -279,12 +279,8 @@ module BABYLON {
                 }
 
                 // Velocity
-                if (!mesh.id) {
-                    mesh.id = Tools.RandomId();
-                }
-
-                if (!this._previousWorldMatrices[mesh.id]) {
-                    this._previousWorldMatrices[mesh.id] = Matrix.Identity();
+                if (!this._previousWorldMatrices[mesh.uniqueId]) {
+                    this._previousWorldMatrices[mesh.uniqueId] = Matrix.Identity();
                 }
 
                 // Culling
@@ -322,7 +318,7 @@ module BABYLON {
                     }
 
                     // Velocity
-                    this._effect.setMatrix("previousWorldViewProjection", this._previousWorldMatrices[mesh.id]);
+                    this._effect.setMatrix("previousWorldViewProjection", this._previousWorldMatrices[mesh.uniqueId]);
 
                     // Draw
                     mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
@@ -330,7 +326,7 @@ module BABYLON {
                 }
 
                 // Velocity
-                this._previousWorldMatrices[mesh.id] = mesh.getWorldMatrix().multiply(this._scene.getTransformMatrix());
+                this._previousWorldMatrices[mesh.uniqueId] = mesh.getWorldMatrix().multiply(this._scene.getTransformMatrix());
             };
 
             this._multiRenderTarget.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
