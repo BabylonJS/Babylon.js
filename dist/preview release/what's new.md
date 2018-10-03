@@ -24,6 +24,8 @@
 
 ### Core Engine
 
+- Added FlyCamera for free navigation in 3D space, with a limited set of settings.
+
 ### Viewer
 
 ### Loaders
