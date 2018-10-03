@@ -833,6 +833,7 @@ declare module 'babylonjs-gui/2D/controls/container' {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
+            _flagDescendantsAsMatrixDirty(): void;
             /**
                 * Gets a child using its name
                 * @param name defines the child name to look for
@@ -871,8 +872,6 @@ declare module 'babylonjs-gui/2D/controls/container' {
             removeControl(control: Control): Container;
             /** @hidden */
             _reOrderControl(control: Control): void;
-            /** @hidden */
-            _markMatrixAsDirty(): void;
             /** @hidden */
             _markAllAsDirty(): void;
             /** @hidden */
@@ -1230,6 +1229,8 @@ declare module 'babylonjs-gui/2D/controls/control' {
             _moveToProjectedPosition(projectedPosition: Vector3): void;
             /** @hidden */
             _markMatrixAsDirty(): void;
+            /** @hidden */
+            _flagDescendantsAsMatrixDirty(): void;
             /** @hidden */
             _markAsDirty(force?: boolean): void;
             /** @hidden */
@@ -3564,6 +3565,7 @@ declare module BABYLON.GUI {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
+            _flagDescendantsAsMatrixDirty(): void;
             /**
                 * Gets a child using its name
                 * @param name defines the child name to look for
@@ -3602,8 +3604,6 @@ declare module BABYLON.GUI {
             removeControl(control: Control): Container;
             /** @hidden */
             _reOrderControl(control: Control): void;
-            /** @hidden */
-            _markMatrixAsDirty(): void;
             /** @hidden */
             _markAllAsDirty(): void;
             /** @hidden */
@@ -3953,6 +3953,8 @@ declare module BABYLON.GUI {
             _moveToProjectedPosition(projectedPosition: BABYLON.Vector3): void;
             /** @hidden */
             _markMatrixAsDirty(): void;
+            /** @hidden */
+            _flagDescendantsAsMatrixDirty(): void;
             /** @hidden */
             _markAsDirty(force?: boolean): void;
             /** @hidden */

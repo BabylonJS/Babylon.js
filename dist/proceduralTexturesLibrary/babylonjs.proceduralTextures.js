@@ -25,6 +25,7 @@ var __decorate=this&&this.__decorate||function(e,t,r,c){var o,f=arguments.length
 var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,o){t.__proto__=o}||function(t,o){for(var n in o)o.hasOwnProperty(n)&&(t[n]=o[n])};return function(o,n){function r(){this.constructor=o}t(o,n),o.prototype=null===n?Object.create(n):(r.prototype=n.prototype,new r)}}();
 
 
+
 var BABYLON;
 (function (BABYLON) {
     var WoodProceduralTexture = /** @class */ (function (_super) {
@@ -62,6 +63,32 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Serializes this wood procedural texture
+         * @returns a serialized wood procedural texture object
+         */
+        WoodProceduralTexture.prototype.serialize = function () {
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+            serializationObject.customType = "BABYLON.WoodProceduralTexture";
+            return serializationObject;
+        };
+        /**
+         * Creates a Wood Procedural Texture from parsed wood procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing wood procedural texture information
+         * @returns a parsed Wood Procedural Texture
+         */
+        WoodProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
+            var texture = BABYLON.SerializationHelper.Parse(function () { return new WoodProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+            return texture;
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], WoodProceduralTexture.prototype, "ampScale", null);
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], WoodProceduralTexture.prototype, "woodColor", null);
         return WoodProceduralTexture;
     }(BABYLON.ProceduralTexture));
     BABYLON.WoodProceduralTexture = WoodProceduralTexture;
@@ -70,6 +97,7 @@ var BABYLON;
 //# sourceMappingURL=babylon.woodProceduralTexture.js.map
 
 BABYLON.Effect.ShadersStore['woodProceduralTexturePixelShader'] = "precision highp float;\nvarying vec2 vPosition;\nvarying vec2 vUV;\nuniform float ampScale;\nuniform vec3 woodColor;\nfloat rand(vec2 n) {\nreturn fract(cos(dot(n,vec2(12.9898,4.1414)))*43758.5453);\n}\nfloat noise(vec2 n) {\nconst vec2 d=vec2(0.0,1.0);\nvec2 b=floor(n),f=smoothstep(vec2(0.0),vec2(1.0),fract(n));\nreturn mix(mix(rand(b),rand(b+d.yx),f.x),mix(rand(b+d.xy),rand(b+d.yy),f.x),f.y);\n}\nfloat fbm(vec2 n) {\nfloat total=0.0,amplitude=1.0;\nfor (int i=0; i<4; i++) {\ntotal+=noise(n)*amplitude;\nn+=n;\namplitude*=0.5;\n}\nreturn total;\n}\nvoid main(void) {\nfloat ratioy=mod(vUV.x*ampScale,2.0+fbm(vUV*0.8));\nvec3 wood=woodColor*ratioy;\ngl_FragColor=vec4(wood,1.0);\n}";
+
 
 
 
@@ -162,6 +190,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(FireProceduralTexture.prototype, "autoGenerateTime", {
+            get: function () {
+                return this._autoGenerateTime;
+            },
+            set: function (value) {
+                this._autoGenerateTime = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(FireProceduralTexture.prototype, "fireColors", {
             get: function () {
                 return this._fireColors;
@@ -206,6 +244,47 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Serializes this fire procedural texture
+         * @returns a serialized fire procedural texture object
+         */
+        FireProceduralTexture.prototype.serialize = function () {
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+            serializationObject.customType = "BABYLON.FireProceduralTexture";
+            serializationObject.fireColors = [];
+            for (var i = 0; i < this._fireColors.length; i++) {
+                serializationObject.fireColors.push(this._fireColors[i].asArray());
+            }
+            return serializationObject;
+        };
+        /**
+         * Creates a Fire Procedural Texture from parsed fire procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing fire procedural texture information
+         * @returns a parsed Fire Procedural Texture
+         */
+        FireProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
+            var texture = BABYLON.SerializationHelper.Parse(function () { return new FireProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+            var colors = [];
+            for (var i = 0; i < parsedTexture.fireColors.length; i++) {
+                colors.push(BABYLON.Color3.FromArray(parsedTexture.fireColors[i]));
+            }
+            texture.fireColors = colors;
+            return texture;
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], FireProceduralTexture.prototype, "autoGenerateTime", null);
+        __decorate([
+            BABYLON.serialize()
+        ], FireProceduralTexture.prototype, "time", null);
+        __decorate([
+            BABYLON.serializeAsVector2()
+        ], FireProceduralTexture.prototype, "speed", null);
+        __decorate([
+            BABYLON.serialize()
+        ], FireProceduralTexture.prototype, "alphaThreshold", null);
         return FireProceduralTexture;
     }(BABYLON.ProceduralTexture));
     BABYLON.FireProceduralTexture = FireProceduralTexture;
@@ -214,6 +293,7 @@ var BABYLON;
 //# sourceMappingURL=babylon.fireProceduralTexture.js.map
 
 BABYLON.Effect.ShadersStore['fireProceduralTexturePixelShader'] = "precision highp float;\nuniform float time;\nuniform vec3 c1;\nuniform vec3 c2;\nuniform vec3 c3;\nuniform vec3 c4;\nuniform vec3 c5;\nuniform vec3 c6;\nuniform vec2 speed;\nuniform float shift;\nuniform float alphaThreshold;\nvarying vec2 vUV;\nfloat rand(vec2 n) {\nreturn fract(cos(dot(n,vec2(12.9898,4.1414)))*43758.5453);\n}\nfloat noise(vec2 n) {\nconst vec2 d=vec2(0.0,1.0);\nvec2 b=floor(n),f=smoothstep(vec2(0.0),vec2(1.0),fract(n));\nreturn mix(mix(rand(b),rand(b+d.yx),f.x),mix(rand(b+d.xy),rand(b+d.yy),f.x),f.y);\n}\nfloat fbm(vec2 n) {\nfloat total=0.0,amplitude=1.0;\nfor (int i=0; i<4; i++) {\ntotal+=noise(n)*amplitude;\nn+=n;\namplitude*=0.5;\n}\nreturn total;\n}\nvoid main() {\nvec2 p=vUV*8.0;\nfloat q=fbm(p-time*0.1);\nvec2 r=vec2(fbm(p+q+time*speed.x-p.x-p.y),fbm(p+q-time*speed.y));\nvec3 c=mix(c1,c2,fbm(p+r))+mix(c3,c4,r.x)-mix(c5,c6,r.y);\nvec3 color=c*cos(shift*vUV.y);\nfloat luminance=dot(color.rgb,vec3(0.3,0.59,0.11));\ngl_FragColor=vec4(color,luminance*alphaThreshold+(1.0-alphaThreshold));\n}";
+
 
 
 
@@ -254,6 +334,32 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Serializes this cloud procedural texture
+         * @returns a serialized cloud procedural texture object
+         */
+        CloudProceduralTexture.prototype.serialize = function () {
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+            serializationObject.customType = "BABYLON.CloudProceduralTexture";
+            return serializationObject;
+        };
+        /**
+         * Creates a Cloud Procedural Texture from parsed cloud procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing cloud procedural texture information
+         * @returns a parsed Cloud Procedural Texture
+         */
+        CloudProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
+            var texture = BABYLON.SerializationHelper.Parse(function () { return new CloudProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+            return texture;
+        };
+        __decorate([
+            BABYLON.serializeAsColor4()
+        ], CloudProceduralTexture.prototype, "skyColor", null);
+        __decorate([
+            BABYLON.serializeAsColor4()
+        ], CloudProceduralTexture.prototype, "cloudColor", null);
         return CloudProceduralTexture;
     }(BABYLON.ProceduralTexture));
     BABYLON.CloudProceduralTexture = CloudProceduralTexture;
@@ -262,6 +368,7 @@ var BABYLON;
 //# sourceMappingURL=babylon.cloudProceduralTexture.js.map
 
 BABYLON.Effect.ShadersStore['cloudProceduralTexturePixelShader'] = "precision highp float;\nvarying vec2 vUV;\nuniform vec4 skyColor;\nuniform vec4 cloudColor;\nfloat rand(vec2 n) {\nreturn fract(cos(dot(n,vec2(12.9898,4.1414)))*43758.5453);\n}\nfloat noise(vec2 n) {\nconst vec2 d=vec2(0.0,1.0);\nvec2 b=floor(n),f=smoothstep(vec2(0.0),vec2(1.0),fract(n));\nreturn mix(mix(rand(b),rand(b+d.yx),f.x),mix(rand(b+d.xy),rand(b+d.yy),f.x),f.y);\n}\nfloat fbm(vec2 n) {\nfloat total=0.0,amplitude=1.0;\nfor (int i=0; i<4; i++) {\ntotal+=noise(n)*amplitude;\nn+=n;\namplitude*=0.5;\n}\nreturn total;\n}\nvoid main() {\nvec2 p=vUV*12.0;\nvec4 c=mix(skyColor,cloudColor,fbm(p));\ngl_FragColor=c;\n}\n";
+
 
 
 
@@ -308,6 +415,38 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Serializes this grass procedural texture
+         * @returns a serialized grass procedural texture object
+         */
+        GrassProceduralTexture.prototype.serialize = function () {
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+            serializationObject.customType = "BABYLON.GrassProceduralTexture";
+            serializationObject.grassColors = [];
+            for (var i = 0; i < this._grassColors.length; i++) {
+                serializationObject.grassColors.push(this._grassColors[i].asArray());
+            }
+            return serializationObject;
+        };
+        /**
+         * Creates a Grass Procedural Texture from parsed grass procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing grass procedural texture information
+         * @returns a parsed Grass Procedural Texture
+         */
+        GrassProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
+            var texture = BABYLON.SerializationHelper.Parse(function () { return new GrassProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+            var colors = [];
+            for (var i = 0; i < parsedTexture.grassColors.length; i++) {
+                colors.push(BABYLON.Color3.FromArray(parsedTexture.grassColors[i]));
+            }
+            texture.grassColors = colors;
+            return texture;
+        };
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], GrassProceduralTexture.prototype, "groundColor", null);
         return GrassProceduralTexture;
     }(BABYLON.ProceduralTexture));
     BABYLON.GrassProceduralTexture = GrassProceduralTexture;
@@ -316,6 +455,7 @@ var BABYLON;
 //# sourceMappingURL=babylon.grassProceduralTexture.js.map
 
 BABYLON.Effect.ShadersStore['grassProceduralTexturePixelShader'] = "precision highp float;\nvarying vec2 vPosition;\nvarying vec2 vUV;\nuniform vec3 herb1Color;\nuniform vec3 herb2Color;\nuniform vec3 herb3Color;\nuniform vec3 groundColor;\nfloat rand(vec2 n) {\nreturn fract(cos(dot(n,vec2(12.9898,4.1414)))*43758.5453);\n}\nfloat noise(vec2 n) {\nconst vec2 d=vec2(0.0,1.0);\nvec2 b=floor(n),f=smoothstep(vec2(0.0),vec2(1.0),fract(n));\nreturn mix(mix(rand(b),rand(b+d.yx),f.x),mix(rand(b+d.xy),rand(b+d.yy),f.x),f.y);\n}\nfloat fbm(vec2 n) {\nfloat total=0.0,amplitude=1.0;\nfor (int i=0; i<4; i++) {\ntotal+=noise(n)*amplitude;\nn+=n;\namplitude*=0.5;\n}\nreturn total;\n}\nvoid main(void) {\nvec3 color=mix(groundColor,herb1Color,rand(gl_FragCoord.xy*4.0));\ncolor=mix(color,herb2Color,rand(gl_FragCoord.xy*8.0));\ncolor=mix(color,herb3Color,rand(gl_FragCoord.xy));\ncolor=mix(color,herb1Color,fbm(gl_FragCoord.xy*16.0));\ngl_FragColor=vec4(color,1.0);\n}";
+
 
 
 
@@ -343,6 +483,29 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Serializes this road procedural texture
+         * @returns a serialized road procedural texture object
+         */
+        RoadProceduralTexture.prototype.serialize = function () {
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+            serializationObject.customType = "BABYLON.RoadProceduralTexture";
+            return serializationObject;
+        };
+        /**
+         * Creates a Road Procedural Texture from parsed road procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing road procedural texture information
+         * @returns a parsed Road Procedural Texture
+         */
+        RoadProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
+            var texture = BABYLON.SerializationHelper.Parse(function () { return new RoadProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+            return texture;
+        };
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], RoadProceduralTexture.prototype, "roadColor", null);
         return RoadProceduralTexture;
     }(BABYLON.ProceduralTexture));
     BABYLON.RoadProceduralTexture = RoadProceduralTexture;
@@ -351,6 +514,7 @@ var BABYLON;
 //# sourceMappingURL=babylon.roadProceduralTexture.js.map
 
 BABYLON.Effect.ShadersStore['roadProceduralTexturePixelShader'] = "precision highp float;\nvarying vec2 vUV; \nuniform vec3 roadColor;\nfloat rand(vec2 n) {\nreturn fract(cos(dot(n,vec2(12.9898,4.1414)))*43758.5453);\n}\nfloat noise(vec2 n) {\nconst vec2 d=vec2(0.0,1.0);\nvec2 b=floor(n),f=smoothstep(vec2(0.0),vec2(1.0),fract(n));\nreturn mix(mix(rand(b),rand(b+d.yx),f.x),mix(rand(b+d.xy),rand(b+d.yy),f.x),f.y);\n}\nfloat fbm(vec2 n) {\nfloat total=0.0,amplitude=1.0;\nfor (int i=0; i<4; i++) {\ntotal+=noise(n)*amplitude;\nn+=n;\namplitude*=0.5;\n}\nreturn total;\n}\nvoid main(void) {\nfloat ratioy=mod(gl_FragCoord.y*100.0 ,fbm(vUV*2.0));\nvec3 color=roadColor*ratioy;\ngl_FragColor=vec4(color,1.0);\n}";
+
 
 
 
@@ -417,6 +581,38 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Serializes this brick procedural texture
+         * @returns a serialized brick procedural texture object
+         */
+        BrickProceduralTexture.prototype.serialize = function () {
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+            serializationObject.customType = "BABYLON.BrickProceduralTexture";
+            return serializationObject;
+        };
+        /**
+         * Creates a Brick Procedural Texture from parsed brick procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing brick procedural texture information
+         * @returns a parsed Brick Procedural Texture
+         */
+        BrickProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
+            var texture = BABYLON.SerializationHelper.Parse(function () { return new BrickProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+            return texture;
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], BrickProceduralTexture.prototype, "numberOfBricksHeight", null);
+        __decorate([
+            BABYLON.serialize()
+        ], BrickProceduralTexture.prototype, "numberOfBricksWidth", null);
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], BrickProceduralTexture.prototype, "jointColor", null);
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], BrickProceduralTexture.prototype, "brickColor", null);
         return BrickProceduralTexture;
     }(BABYLON.ProceduralTexture));
     BABYLON.BrickProceduralTexture = BrickProceduralTexture;
@@ -425,6 +621,7 @@ var BABYLON;
 //# sourceMappingURL=babylon.brickProceduralTexture.js.map
 
 BABYLON.Effect.ShadersStore['brickProceduralTexturePixelShader'] = "precision highp float;\nvarying vec2 vPosition;\nvarying vec2 vUV;\nuniform float numberOfBricksHeight;\nuniform float numberOfBricksWidth;\nuniform vec3 brickColor;\nuniform vec3 jointColor;\nfloat rand(vec2 n) {\nreturn fract(cos(dot(n,vec2(12.9898,4.1414)))*43758.5453);\n}\nfloat noise(vec2 n) {\nconst vec2 d=vec2(0.0,1.0);\nvec2 b=floor(n),f=smoothstep(vec2(0.0),vec2(1.0),fract(n));\nreturn mix(mix(rand(b),rand(b+d.yx),f.x),mix(rand(b+d.xy),rand(b+d.yy),f.x),f.y);\n}\nfloat fbm(vec2 n) {\nfloat total=0.0,amplitude=1.0;\nfor (int i=0; i<4; i++) {\ntotal+=noise(n)*amplitude;\nn+=n;\namplitude*=0.5;\n}\nreturn total;\n}\nfloat roundF(float number){\nreturn sign(number)*floor(abs(number)+0.5);\n}\nvoid main(void)\n{\nfloat brickW=1.0/numberOfBricksWidth;\nfloat brickH=1.0/numberOfBricksHeight;\nfloat jointWPercentage=0.01;\nfloat jointHPercentage=0.05;\nvec3 color=brickColor;\nfloat yi=vUV.y/brickH;\nfloat nyi=roundF(yi);\nfloat xi=vUV.x/brickW;\nif (mod(floor(yi),2.0) == 0.0){\nxi=xi-0.5;\n}\nfloat nxi=roundF(xi);\nvec2 brickvUV=vec2((xi-floor(xi))/brickH,(yi-floor(yi))/brickW);\nif (yi<nyi+jointHPercentage && yi>nyi-jointHPercentage){\ncolor=mix(jointColor,vec3(0.37,0.25,0.25),(yi-nyi)/jointHPercentage+0.2);\n}\nelse if (xi<nxi+jointWPercentage && xi>nxi-jointWPercentage){\ncolor=mix(jointColor,vec3(0.44,0.44,0.44),(xi-nxi)/jointWPercentage+0.2);\n}\nelse {\nfloat brickColorSwitch=mod(floor(yi)+floor(xi),3.0);\nif (brickColorSwitch == 0.0)\ncolor=mix(color,vec3(0.33,0.33,0.33),0.3);\nelse if (brickColorSwitch == 2.0)\ncolor=mix(color,vec3(0.11,0.11,0.11),0.3);\n}\ngl_FragColor=vec4(color,1.0);\n}";
+
 
 
 
@@ -491,6 +688,38 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Serializes this marble procedural texture
+         * @returns a serialized marble procedural texture object
+         */
+        MarbleProceduralTexture.prototype.serialize = function () {
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+            serializationObject.customType = "BABYLON.MarbleProceduralTexture";
+            return serializationObject;
+        };
+        /**
+         * Creates a Marble Procedural Texture from parsed marble procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing marble procedural texture information
+         * @returns a parsed Marble Procedural Texture
+         */
+        MarbleProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
+            var texture = BABYLON.SerializationHelper.Parse(function () { return new MarbleProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+            return texture;
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], MarbleProceduralTexture.prototype, "numberOfTilesHeight", null);
+        __decorate([
+            BABYLON.serialize()
+        ], MarbleProceduralTexture.prototype, "amplitude", null);
+        __decorate([
+            BABYLON.serialize()
+        ], MarbleProceduralTexture.prototype, "numberOfTilesWidth", null);
+        __decorate([
+            BABYLON.serialize()
+        ], MarbleProceduralTexture.prototype, "jointColor", null);
         return MarbleProceduralTexture;
     }(BABYLON.ProceduralTexture));
     BABYLON.MarbleProceduralTexture = MarbleProceduralTexture;
@@ -499,6 +728,7 @@ var BABYLON;
 //# sourceMappingURL=babylon.marbleProceduralTexture.js.map
 
 BABYLON.Effect.ShadersStore['marbleProceduralTexturePixelShader'] = "precision highp float;\nvarying vec2 vPosition;\nvarying vec2 vUV;\nuniform float numberOfTilesHeight;\nuniform float numberOfTilesWidth;\nuniform float amplitude;\nuniform vec3 marbleColor;\nuniform vec3 jointColor;\nconst vec3 tileSize=vec3(1.1,1.0,1.1);\nconst vec3 tilePct=vec3(0.98,1.0,0.98);\nfloat rand(vec2 n) {\nreturn fract(cos(dot(n,vec2(12.9898,4.1414)))*43758.5453);\n}\nfloat noise(vec2 n) {\nconst vec2 d=vec2(0.0,1.0);\nvec2 b=floor(n),f=smoothstep(vec2(0.0),vec2(1.0),fract(n));\nreturn mix(mix(rand(b),rand(b+d.yx),f.x),mix(rand(b+d.xy),rand(b+d.yy),f.x),f.y);\n}\nfloat turbulence(vec2 P)\n{\nfloat val=0.0;\nfloat freq=1.0;\nfor (int i=0; i<4; i++)\n{\nval+=abs(noise(P*freq)/freq);\nfreq*=2.07;\n}\nreturn val;\n}\nfloat roundF(float number){\nreturn sign(number)*floor(abs(number)+0.5);\n}\nvec3 marble_color(float x)\n{\nvec3 col;\nx=0.5*(x+1.);\nx=sqrt(x); \nx=sqrt(x);\nx=sqrt(x);\ncol=vec3(.2+.75*x); \ncol.b*=0.95; \nreturn col;\n}\nvoid main()\n{\nfloat brickW=1.0/numberOfTilesWidth;\nfloat brickH=1.0/numberOfTilesHeight;\nfloat jointWPercentage=0.01;\nfloat jointHPercentage=0.01;\nvec3 color=marbleColor;\nfloat yi=vUV.y/brickH;\nfloat nyi=roundF(yi);\nfloat xi=vUV.x/brickW;\nif (mod(floor(yi),2.0) == 0.0){\nxi=xi-0.5;\n}\nfloat nxi=roundF(xi);\nvec2 brickvUV=vec2((xi-floor(xi))/brickH,(yi-floor(yi))/brickW);\nif (yi<nyi+jointHPercentage && yi>nyi-jointHPercentage){\ncolor=mix(jointColor,vec3(0.37,0.25,0.25),(yi-nyi)/jointHPercentage+0.2);\n}\nelse if (xi<nxi+jointWPercentage && xi>nxi-jointWPercentage){\ncolor=mix(jointColor,vec3(0.44,0.44,0.44),(xi-nxi)/jointWPercentage+0.2);\n}\nelse {\nfloat t=6.28*brickvUV.x/(tileSize.x+noise(vec2(vUV)*6.0));\nt+=amplitude*turbulence(brickvUV.xy);\nt=sin(t);\ncolor=marble_color(t);\n}\ngl_FragColor=vec4(color,0.0);\n}";
+
 
 
 
@@ -656,6 +886,59 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Serializes this starfield procedural texture
+         * @returns a serialized starfield procedural texture object
+         */
+        StarfieldProceduralTexture.prototype.serialize = function () {
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+            serializationObject.customType = "BABYLON.StarfieldProceduralTexture";
+            return serializationObject;
+        };
+        /**
+         * Creates a Starfield Procedural Texture from parsed startfield procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing startfield procedural texture information
+         * @returns a parsed Starfield Procedural Texture
+         */
+        StarfieldProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
+            var texture = BABYLON.SerializationHelper.Parse(function () { return new StarfieldProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+            return texture;
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "time", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "alpha", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "beta", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "formuparam", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "stepsize", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "zoom", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "tile", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "brightness", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "darkmatter", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "distfading", null);
+        __decorate([
+            BABYLON.serialize()
+        ], StarfieldProceduralTexture.prototype, "saturation", null);
         return StarfieldProceduralTexture;
     }(BABYLON.ProceduralTexture));
     BABYLON.StarfieldProceduralTexture = StarfieldProceduralTexture;
@@ -664,6 +947,7 @@ var BABYLON;
 //# sourceMappingURL=babylon.starfieldProceduralTexture.js.map
 
 BABYLON.Effect.ShadersStore['starfieldProceduralTexturePixelShader'] = "precision highp float;\n\n#define volsteps 20\n#define iterations 15\nvarying vec2 vPosition;\nvarying vec2 vUV;\nuniform float time;\nuniform float alpha;\nuniform float beta;\nuniform float zoom;\nuniform float formuparam;\nuniform float stepsize;\nuniform float tile;\nuniform float brightness;\nuniform float darkmatter;\nuniform float distfading;\nuniform float saturation;\nvoid main()\n{\nvec3 dir=vec3(vUV*zoom,1.);\nfloat localTime=time*0.0001;\n\nmat2 rot1=mat2(cos(alpha),sin(alpha),-sin(alpha),cos(alpha));\nmat2 rot2=mat2(cos(beta),sin(beta),-sin(beta),cos(beta));\ndir.xz*=rot1;\ndir.xy*=rot2;\nvec3 from=vec3(1.,.5,0.5);\nfrom+=vec3(-2.,localTime*2.,localTime);\nfrom.xz*=rot1;\nfrom.xy*=rot2;\n\nfloat s=0.1,fade=1.;\nvec3 v=vec3(0.);\nfor (int r=0; r<volsteps; r++) {\nvec3 p=from+s*dir*.5;\np=abs(vec3(tile)-mod(p,vec3(tile*2.))); \nfloat pa,a=pa=0.;\nfor (int i=0; i<iterations; i++) {\np=abs(p)/dot(p,p)-formuparam; \na+=abs(length(p)-pa); \npa=length(p);\n}\nfloat dm=max(0.,darkmatter-a*a*.001); \na*=a*a; \nif (r>6) fade*=1.-dm; \n\nv+=fade;\nv+=vec3(s,s*s,s*s*s*s)*a*brightness*fade; \nfade*=distfading; \ns+=stepsize;\n}\nv=mix(vec3(length(v)),v,saturation); \ngl_FragColor=vec4(v*.01,1.);\n}";
+
 
 
 
@@ -699,6 +983,29 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Serializes this normal map procedural texture
+         * @returns a serialized normal map procedural texture object
+         */
+        NormalMapProceduralTexture.prototype.serialize = function () {
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+            serializationObject.customType = "BABYLON.NormalMapProceduralTexture";
+            return serializationObject;
+        };
+        /**
+         * Creates a Normal Map Procedural Texture from parsed normal map procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing normal map procedural texture information
+         * @returns a parsed Normal Map Procedural Texture
+         */
+        NormalMapProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
+            var texture = BABYLON.SerializationHelper.Parse(function () { return new NormalMapProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+            return texture;
+        };
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], NormalMapProceduralTexture.prototype, "baseTexture", null);
         return NormalMapProceduralTexture;
     }(BABYLON.ProceduralTexture));
     BABYLON.NormalMapProceduralTexture = NormalMapProceduralTexture;
@@ -710,6 +1017,7 @@ BABYLON.Effect.ShadersStore['normalMapProceduralTexturePixelShader'] = "precisio
 
 
 
+
 var BABYLON;
 (function (BABYLON) {
     var PerlinNoiseProceduralTexture = /** @class */ (function (_super) {
@@ -717,7 +1025,7 @@ var BABYLON;
         function PerlinNoiseProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "perlinNoiseProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
             _this.time = 0.0;
-            _this.speed = 1.0;
+            _this.timeScale = 1.0;
             _this.translationSpeed = 1.0;
             _this._currentTranslation = 0;
             _this.updateShaderUniforms();
@@ -731,7 +1039,7 @@ var BABYLON;
             }
             var deltaTime = scene.getEngine().getDeltaTime();
             this.time += deltaTime;
-            this.setFloat("time", this.time * this.speed / 1000);
+            this.setFloat("time", this.time * this.timeScale / 1000);
             this._currentTranslation += deltaTime * this.translationSpeed / 1000.0;
             this.setFloat("translationSpeed", this._currentTranslation);
         };
@@ -742,6 +1050,35 @@ var BABYLON;
         PerlinNoiseProceduralTexture.prototype.resize = function (size, generateMipMaps) {
             _super.prototype.resize.call(this, size, generateMipMaps);
         };
+        /**
+         * Serializes this perlin noise procedural texture
+         * @returns a serialized perlin noise procedural texture object
+         */
+        PerlinNoiseProceduralTexture.prototype.serialize = function () {
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+            serializationObject.customType = "BABYLON.PerlinNoiseProceduralTexture";
+            return serializationObject;
+        };
+        /**
+         * Creates a Perlin Noise Procedural Texture from parsed perlin noise procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing perlin noise procedural texture information
+         * @returns a parsed Perlin Noise Procedural Texture
+         */
+        PerlinNoiseProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
+            var texture = BABYLON.SerializationHelper.Parse(function () { return new PerlinNoiseProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+            return texture;
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], PerlinNoiseProceduralTexture.prototype, "time", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], PerlinNoiseProceduralTexture.prototype, "timeScale", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], PerlinNoiseProceduralTexture.prototype, "translationSpeed", void 0);
         return PerlinNoiseProceduralTexture;
     }(BABYLON.ProceduralTexture));
     BABYLON.PerlinNoiseProceduralTexture = PerlinNoiseProceduralTexture;

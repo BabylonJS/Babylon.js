@@ -103,7 +103,7 @@ export class FluentMaterial extends PushMaterial {
 
     /** Gets or sets the texture to use for albedo color */
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
-    public albedoTexture: Nullable<BaseTexture>;    
+    public albedoTexture: Nullable<BaseTexture>;
 
     /**
      * Creates a new Fluent material
@@ -162,7 +162,7 @@ export class FluentMaterial extends PushMaterial {
         }
 
         var engine = scene.getEngine();
-        // Get correct effect      
+        // Get correct effect
         if (defines.isDirty) {
             defines.markAsProcessed();
             scene.resetCachedMaterial();
@@ -229,10 +229,9 @@ export class FluentMaterial extends PushMaterial {
         }
         this._activeEffect = effect;
 
-        // Matrices        
+        // Matrices
         this.bindOnlyWorldMatrix(world);
         this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
-
 
         if (this._mustRebind(scene, effect)) {
             this._activeEffect.setColor4("albedoColor", this.albedoColor, this.alpha);
@@ -257,7 +256,7 @@ export class FluentMaterial extends PushMaterial {
             }
 
             if (defines.TEXTURE) {
-                this._activeEffect.setTexture("albedoSampler", this._albedoTexture)
+                this._activeEffect.setTexture("albedoSampler", this._albedoTexture);
             }
         }
 

@@ -9,8 +9,8 @@ For usage documentation please visit http://doc.babylonjs.com/extensions and cho
 
 Compiled js files (minified and source) are offered on our public CDN here:
 
-* https://preview.babylonjs.com/loaders/babylonjs.loaders.js
-* https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js
+* https://cdn.babylonjs.com/loaders/babylonjs.loaders.js
+* https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js
 
 ## NPM
 

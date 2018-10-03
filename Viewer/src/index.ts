@@ -13,7 +13,7 @@ import { registerCustomOptimizer } from './optimizer/custom';
 
 /**
  * BabylonJS Viewer
- * 
+ *
  * An HTML-Based viewer for 3D models, based on BabylonJS and its extensions.
  */
 

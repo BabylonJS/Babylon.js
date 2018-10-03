@@ -1,15 +1,14 @@
 import { AbstractTreeTool } from "./AbstractTreeTool";
 import { Inspector } from "../Inspector";
 
-
 export interface ICameraPOV {
-    setPOV: () => void,
-    getCurrentActiveCamera: () => string,
-    id: () => string
+    setPOV: () => void;
+    getCurrentActiveCamera: () => string;
+    id: () => string;
 }
 
 /**
- * 
+ *
  */
 export class CameraPOV extends AbstractTreeTool {
     private cameraPOV: ICameraPOV;
@@ -21,7 +20,7 @@ export class CameraPOV extends AbstractTreeTool {
         // Setting the id of the line with the name of the camera
         this._elem.id = this.cameraPOV.id();
 
-        // Put the right icon 
+        // Put the right icon
         if (this._elem.id == this.cameraPOV.getCurrentActiveCamera()) {
             this._elem.classList.add('fa-check-circle');
         } else {

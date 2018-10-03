@@ -17,7 +17,7 @@ export function loadGUIProperties(GUI: GUITyping) {
             'ValueAndUnit': {
                 type: GUI.ValueAndUnit,
                 properties: ['_value', 'unit'],
-                format: (valueAndUnit: import("babylonjs-gui").ValueAndUnit) => { return valueAndUnit }
+                format: (valueAndUnit: import("babylonjs-gui").ValueAndUnit) => { return valueAndUnit; }
             },
             'Control': {
                 type: GUI.Control,
@@ -37,27 +37,27 @@ export function loadGUIProperties(GUI: GUITyping) {
                     'isHitTestVisible',
                     'isPointerBlocker',
                 ],
-                format: (control: import("babylonjs-gui").Control) => { return control.name }
+                format: (control: import("babylonjs-gui").Control) => { return control.name; }
             },
             'Button': {
                 type: GUI.Button,
                 properties: new Array(),
-                format: (button: import("babylonjs-gui").Button) => { return button.name }
+                format: (button: import("babylonjs-gui").Button) => { return button.name; }
             },
             'ColorPicker': {
                 type: GUI.ColorPicker,
                 properties: ['_value'],
-                format: (colorPicker: import("babylonjs-gui").ColorPicker) => { return colorPicker.name }
+                format: (colorPicker: import("babylonjs-gui").ColorPicker) => { return colorPicker.name; }
             },
             'Checkbox': {
                 type: GUI.Checkbox,
                 properties: ['_isChecked', '_background'],
-                format: (checkbox: import("babylonjs-gui").Checkbox) => { return checkbox.name }
+                format: (checkbox: import("babylonjs-gui").Checkbox) => { return checkbox.name; }
             },
             'Ellipse': {
                 type: GUI.Ellipse,
                 properties: ['_thickness'],
-                format: (ellipse: import("babylonjs-gui").Ellipse) => { return ellipse.name }
+                format: (ellipse: import("babylonjs-gui").Ellipse) => { return ellipse.name; }
             },
             'Image': {
                 type: GUI.Image,
@@ -67,7 +67,7 @@ export function loadGUIProperties(GUI: GUITyping) {
                     '_loaded',
                     '_source',
                 ],
-                format: (image: import("babylonjs-gui").Image) => { return image.name }
+                format: (image: import("babylonjs-gui").Image) => { return image.name; }
             },
             'Line': {
                 type: GUI.Line,
@@ -78,17 +78,17 @@ export function loadGUIProperties(GUI: GUITyping) {
                     '_x2',
                     '_y2',
                 ],
-                format: (line: import("babylonjs-gui").Line) => { return line.name }
+                format: (line: import("babylonjs-gui").Line) => { return line.name; }
             },
             'RadioButton': {
                 type: GUI.RadioButton,
                 properties: ['_isChecked', '_background'],
-                format: (radioButton: import("babylonjs-gui").RadioButton) => { return radioButton.name }
+                format: (radioButton: import("babylonjs-gui").RadioButton) => { return radioButton.name; }
             },
             'Rectangle': {
                 type: GUI.Rectangle,
                 properties: ['_thickness', '_cornerRadius'],
-                format: (rectangle: import("babylonjs-gui").Rectangle) => { return rectangle.name }
+                format: (rectangle: import("babylonjs-gui").Rectangle) => { return rectangle.name; }
             },
             'Slider': {
                 type: GUI.Slider,
@@ -99,27 +99,27 @@ export function loadGUIProperties(GUI: GUITyping) {
                     '_background',
                     '_borderColor',
                 ],
-                format: (slider: import("babylonjs-gui").Slider) => { return slider.name }
+                format: (slider: import("babylonjs-gui").Slider) => { return slider.name; }
             },
             'StackPanel': {
                 type: GUI.StackPanel,
                 properties: ['_isVertical'],
-                format: (stackPanel: import("babylonjs-gui").StackPanel) => { return stackPanel.name }
+                format: (stackPanel: import("babylonjs-gui").StackPanel) => { return stackPanel.name; }
             },
             'TextBlock': {
                 type: GUI.TextBlock,
                 properties: ['_text', '_textWrapping'],
-                format: (textBlock: import("babylonjs-gui").TextBlock) => { return textBlock.name }
+                format: (textBlock: import("babylonjs-gui").TextBlock) => { return textBlock.name; }
             },
             'Container': {
                 type: GUI.Container,
                 properties: ['_background'],
-                format: (container: import("babylonjs-gui").Container) => { return container.name }
+                format: (container: import("babylonjs-gui").Container) => { return container.name; }
             },
-        }
+        };
 
         for (let prop in PROPERTIES_GUI) {
             (<any>PROPERTIES)[prop] = (<any>PROPERTIES_GUI)[prop];
         }
     }
-} 
+}

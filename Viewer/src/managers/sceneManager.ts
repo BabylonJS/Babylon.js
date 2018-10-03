@@ -82,7 +82,6 @@ export class SceneManager {
 
     private _animationBlendingEnabled: boolean = true;
 
-
     //The following are configuration objects, default values.
     protected _defaultHighpTextureType: number;
     protected _shadowGeneratorBias: number;
@@ -114,7 +113,6 @@ export class SceneManager {
     public get defaultRenderingPipeline() {
         return this._defaultRenderingPipeline;
     }
-
 
     protected _vrHelper?: VRExperienceHelper;
 
@@ -154,7 +152,7 @@ export class SceneManager {
                         }
                     }
                 }
-            }
+            };
             scene.registerBeforeRender(() => {
                 if (this._forceShadowUpdate || (scene.animatables && scene.animatables.length > 0)) {
                     // make sure all models are loaded
@@ -165,7 +163,7 @@ export class SceneManager {
                         model.shadowsRenderedAfterLoad = true;
                         return false;
                     }
-                    return model.state === ModelState.COMPLETE && !model.currentAnimation
+                    return model.state === ModelState.COMPLETE && !model.currentAnimation;
                 }))) {
                     updateShadows();
                 }
@@ -187,12 +185,12 @@ export class SceneManager {
                 this._focusOnModel(model);
             });
 
-            this._observablesManager.onModelAddedObservable.add(model => {
+            this._observablesManager.onModelAddedObservable.add((model) => {
                 this.models.push(model);
             });
-            this._observablesManager.onModelRemovedObservable.add(model => {
+            this._observablesManager.onModelRemovedObservable.add((model) => {
                 this.models.splice(this.models.indexOf(model), 1);
-            })
+            });
 
         }
 
@@ -240,7 +238,7 @@ export class SceneManager {
     /**
      * Should shadows be rendered every frame, or only once and stop.
      * This can be used to optimize a scene.
-     * 
+     *
      * Not that the shadows will NOT disapear but will remain in place.
      * @param process if true shadows will be updated once every frame. if false they will stop being updated.
      */
@@ -269,7 +267,7 @@ export class SceneManager {
     }
 
     public set groundEnabled(newValue: boolean) {
-        if (newValue === this._groundEnabled) return;
+        if (newValue === this._groundEnabled) { return; }
 
         this._groundEnabled = newValue;
 
@@ -389,11 +387,11 @@ export class SceneManager {
 
     public clearScene(clearModels: boolean = true, clearLights: boolean = false) {
         if (clearModels) {
-            this.models.forEach(m => m.dispose());
+            this.models.forEach((m) => m.dispose());
             this.models.length = 0;
         }
         if (clearLights) {
-            this.scene.lights.forEach(l => l.dispose());
+            this.scene.lights.forEach((l) => l.dispose());
         }
     }
 
@@ -465,7 +463,7 @@ export class SceneManager {
 
             if (newConfiguration.lab.globalLightRotation !== undefined) {
                 // rotate all lights that are shadow lights
-                this.scene.lights.filter(light => light instanceof ShadowLight).forEach(light => {
+                this.scene.lights.filter((light) => light instanceof ShadowLight).forEach((light) => {
                     // casting and '!' are safe, due to the constraints tested before
                     this.labs.rotateShadowLight(<ShadowLight>light, newConfiguration.lab!.globalLightRotation!);
                 });
@@ -586,13 +584,13 @@ export class SceneManager {
                 oldcc.r = cc.r;
             }
             if (cc.g !== undefined) {
-                oldcc.g = cc.g
+                oldcc.g = cc.g;
             }
             if (cc.b !== undefined) {
-                oldcc.b = cc.b
+                oldcc.b = cc.b;
             }
             if (cc.a !== undefined) {
-                oldcc.a = cc.a
+                oldcc.a = cc.a;
             }
         }
 
@@ -705,7 +703,7 @@ export class SceneManager {
             }
             if (this.sceneOptimizer) {
                 this.sceneOptimizer.stop();
-                this.sceneOptimizer.dispose()
+                this.sceneOptimizer.dispose();
             }
             if (optimizerConfig.custom) {
                 let customOptimizer = getCustomOptimizerByName(optimizerConfig.custom, optimizerConfig.improvementMode);
@@ -834,14 +832,13 @@ export class SceneManager {
                 this.mainColor.r = mc.r;
             }
             if (mc.g !== undefined) {
-                this.mainColor.g = mc.g
+                this.mainColor.g = mc.g;
             }
             if (mc.b !== undefined) {
-                this.mainColor.b = mc.b
+                this.mainColor.b = mc.b;
             }
 
             this.reflectionColor.copyFrom(this.mainColor);
-
 
             let environmentTint = getConfigurationKey("environmentMap.tintLevel", this._globalConfiguration) || 0;
 
@@ -897,7 +894,7 @@ export class SceneManager {
         }*/
 
         if (cameraConfig.rotation) {
-            this.camera.rotationQuaternion = new Quaternion(cameraConfig.rotation.x || 0, cameraConfig.rotation.y || 0, cameraConfig.rotation.z || 0, cameraConfig.rotation.w || 0)
+            this.camera.rotationQuaternion = new Quaternion(cameraConfig.rotation.x || 0, cameraConfig.rotation.y || 0, cameraConfig.rotation.z || 0, cameraConfig.rotation.w || 0);
         }
 
         if (cameraConfig.behaviors) {
@@ -906,7 +903,7 @@ export class SceneManager {
                     this._setCameraBehavior(name, cameraConfig.behaviors[name]);
                 }
             }
-        };
+        }
 
         const sceneExtends = this.scene.getWorldExtends((mesh) => {
             return !this.environmentHelper || (mesh !== this.environmentHelper.ground && mesh !== this.environmentHelper.rootMesh && mesh !== this.environmentHelper.skybox);
@@ -944,11 +941,13 @@ export class SceneManager {
         this.camera.radius = (this._globalConfiguration.camera && this._globalConfiguration.camera.radius) || this.camera.radius;
 
         const sceneDiagonalLenght = sizeVec.length();
-        if (isFinite(sceneDiagonalLenght))
+        if (isFinite(sceneDiagonalLenght)) {
             this.camera.upperRadiusLimit = sceneDiagonalLenght * 4;
+        }
 
-        if (this._configurationContainer.configuration)
+        if (this._configurationContainer.configuration) {
             this._configureEnvironment(this._configurationContainer.configuration.skybox, this._configurationContainer.configuration.ground);
+        }
         /*this.scene.lights.filter(light => light instanceof ShadowLight).forEach(light => {
             // casting ais safe, due to the constraints tested before
             (<ShadowLight>light).setDirectionToTarget(center);
@@ -960,9 +959,8 @@ export class SceneManager {
             if (this.environmentHelper) {
                 this.environmentHelper.dispose();
                 this.environmentHelper = undefined;
-            };
+            }
         } else {
-
 
             const options: Partial<IEnvironmentHelperOptions> = {
                 createGround: !!groundConfiguration && this._groundEnabled,
@@ -996,7 +994,7 @@ export class SceneManager {
                     options.groundTexture = this._getAssetUrl(groundConfig.texture);
                 }
                 if (groundConfig.color) {
-                    options.groundColor = new Color3(groundConfig.color.r, groundConfig.color.g, groundConfig.color.b)
+                    options.groundColor = new Color3(groundConfig.color.r, groundConfig.color.g, groundConfig.color.b);
                 }
 
                 if (groundConfig.opacity !== undefined) {
@@ -1007,18 +1005,24 @@ export class SceneManager {
                     options.enableGroundMirror = true;
                     // to prevent undefines
                     if (typeof groundConfig.mirror === "object") {
-                        if (groundConfig.mirror.amount !== undefined)
+                        if (groundConfig.mirror.amount !== undefined) {
                             options.groundMirrorAmount = groundConfig.mirror.amount;
-                        if (groundConfig.mirror.sizeRatio !== undefined)
+                        }
+                        if (groundConfig.mirror.sizeRatio !== undefined) {
                             options.groundMirrorSizeRatio = groundConfig.mirror.sizeRatio;
-                        if (groundConfig.mirror.blurKernel !== undefined)
+                        }
+                        if (groundConfig.mirror.blurKernel !== undefined) {
                             options.groundMirrorBlurKernel = groundConfig.mirror.blurKernel;
-                        if (groundConfig.mirror.fresnelWeight !== undefined)
+                        }
+                        if (groundConfig.mirror.fresnelWeight !== undefined) {
                             options.groundMirrorFresnelWeight = groundConfig.mirror.fresnelWeight;
-                        if (groundConfig.mirror.fallOffDistance !== undefined)
+                        }
+                        if (groundConfig.mirror.fallOffDistance !== undefined) {
                             options.groundMirrorFallOffDistance = groundConfig.mirror.fallOffDistance;
-                        if (this._defaultPipelineTextureType !== undefined)
+                        }
+                        if (this._defaultPipelineTextureType !== undefined) {
                             options.groundMirrorTextureType = this._defaultPipelineTextureType;
+                        }
                     }
                 }
             }
@@ -1035,7 +1039,7 @@ export class SceneManager {
                 }
                 options.sizeAuto = !options.skyboxSize;
                 if (conf.color) {
-                    options.skyboxColor = new Color3(conf.color.r, conf.color.g, conf.color.b)
+                    options.skyboxColor = new Color3(conf.color.r, conf.color.g, conf.color.b);
                 }
                 if (conf.cubeTexture && conf.cubeTexture.url) {
                     if (typeof conf.cubeTexture.url === "string") {
@@ -1109,7 +1113,6 @@ export class SceneManager {
                 }
             }
 
-
             let skyboxMaterial = this.environmentHelper.skyboxMaterial;
             if (skyboxMaterial) {
                 skyboxMaterial._perceptualColor = this.mainColor;
@@ -1127,7 +1130,6 @@ export class SceneManager {
             this._updateGroundMirrorRenderList(model);
         });
 
-
         this.onEnvironmentConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this.environmentHelper!,
@@ -1140,25 +1142,26 @@ export class SceneManager {
 
     /**
      * configure the lights.
-     * 
+     *
      * @param lightsConfiguration the (new) light(s) configuration
      * @param model optionally use the model to configure the camera.
      */
     protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean | number } = {}) {
 
         // sanity check!
-        let lightKeys = Object.keys(lightsConfiguration).filter(name => name !== 'globalRotation');
+        let lightKeys = Object.keys(lightsConfiguration).filter((name) => name !== 'globalRotation');
 
         if (!lightKeys.length) {
-            if (!this.scene.lights.length)
+            if (!this.scene.lights.length) {
                 this.scene.createDefaultLight(true);
+            }
         } else {
 
-            let lightsAvailable: Array<string> = this.scene.lights.map(light => light.name);
+            let lightsAvailable: Array<string> = this.scene.lights.map((light) => light.name);
             // compare to the global (!) configuration object and dispose unneeded:
             let lightsToConfigure = Object.keys(this._globalConfiguration.lights || []);
             if (Object.keys(lightsToConfigure).length !== lightsAvailable.length) {
-                lightsAvailable.forEach(lName => {
+                lightsAvailable.forEach((lName) => {
                     if (lightsToConfigure.indexOf(lName) === -1) {
                         this.scene.getLightByName(lName)!.dispose();
                     }
@@ -1180,7 +1183,7 @@ export class SceneManager {
                 // light is not already available
                 if (lightsAvailable.indexOf(name) === -1) {
                     let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
-                    if (!constructor) return;
+                    if (!constructor) { return; }
                     light = constructor();
                 } else {
                     // available? get it from the scene
@@ -1188,11 +1191,11 @@ export class SceneManager {
                     if (typeof lightsConfiguration[name] === 'boolean') {
                         lightConfig.type = light.getTypeID();
                     }
-                    lightsAvailable = lightsAvailable.filter(ln => ln !== name);
+                    lightsAvailable = lightsAvailable.filter((ln) => ln !== name);
                     if (lightConfig.type !== undefined && light.getTypeID() !== lightConfig.type) {
                         light.dispose();
                         let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
-                        if (!constructor) return;
+                        if (!constructor) { return; }
                         light = constructor();
                     }
                 }
@@ -1207,10 +1210,7 @@ export class SceneManager {
                 var enabled = lightConfig.enabled !== undefined ? lightConfig.enabled : !lightConfig.disabled;
                 light.setEnabled(enabled);
 
-
                 extendClassWithConfig(light, lightConfig);
-
-
 
                 //position. Some lights don't support shadows
                 if (light instanceof ShadowLight) {
@@ -1284,7 +1284,7 @@ export class SceneManager {
                 let configuration = globalLightsConfiguration[name];
                 let light = this.scene.getLightByName(name);
                 // sanity check
-                if (!light) return;
+                if (!light) { return; }
                 light.renderPriority = -idx;
             });
         }
@@ -1302,11 +1302,11 @@ export class SceneManager {
         let focusMeshes = model ? model.meshes : this.scene.meshes;
         // add the focues meshes to the shadow list
         let shadownMap = shadowGenerator.getShadowMap();
-        if (!shadownMap) return;
+        if (!shadownMap) { return; }
         if (resetList && shadownMap.renderList) {
             shadownMap.renderList.length = 0;
         } else {
-            shadownMap.renderList = shadownMap.renderList || []
+            shadownMap.renderList = shadownMap.renderList || [];
         }
         for (var index = 0; index < focusMeshes.length; index++) {
             let mesh = focusMeshes[index];
@@ -1439,7 +1439,7 @@ export class SceneManager {
             this.environmentHelper.dispose();
         }
 
-        this.models.forEach(model => {
+        this.models.forEach((model) => {
             model.dispose();
         });
 
@@ -1483,14 +1483,14 @@ export class SceneManager {
         let behavior: Behavior<ArcRotateCamera> | null;
         let type: number;
         if (typeof behaviorConfig === 'object') {
-            type = behaviorConfig.type
+            type = behaviorConfig.type;
         } else if (typeof behaviorConfig === 'number') {
             type = behaviorConfig;
         } else {
             type = this._cameraBehaviorMapping[name];
         }
 
-        if (type === undefined) return;
+        if (type === undefined) { return; }
 
         let config: { [propName: string]: any } = (typeof behaviorConfig === "object") ? behaviorConfig : {};
 

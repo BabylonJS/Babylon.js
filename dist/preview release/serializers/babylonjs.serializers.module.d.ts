@@ -61,6 +61,9 @@ declare module BABYLON {
 }
 
 
+/**
+ * @hidden
+ */
 declare module BABYLON.GLTF2.Exporter {
     /**
      * Converts Babylon Scene into glTF 2.0.

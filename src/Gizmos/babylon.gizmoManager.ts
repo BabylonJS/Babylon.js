@@ -64,8 +64,10 @@ module BABYLON {
                             }
                         }
                         if (node instanceof AbstractMesh) {
-                            this.attachToMesh(node);
-                        }else {
+                            if (this._attachedMesh != node) {
+                                this.attachToMesh(node);
+                            }
+                        } else {
                             this.attachToMesh(null);
                         }
                     }else {

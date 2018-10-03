@@ -4,7 +4,7 @@ import { DefaultViewer, AbstractViewer, Version, viewerManager } from "../../../
 
 export let name = "scene manager";
 
-describe(name, function () {
+describe(name, function() {
 
     it("should be initialized when an engine is created", (done) => {
         let viewer = Helper.getNewViewerInstance();
@@ -16,7 +16,7 @@ describe(name, function () {
             viewer.dispose();
             done();
         });
-    })
+    });
 
     it("should have objects initialized after init", (done) => {
         let viewer = Helper.getNewViewerInstance();
@@ -28,7 +28,7 @@ describe(name, function () {
             assert.isDefined(viewer.sceneManager.mainColor);
             assert.isDefined(viewer.sceneManager.reflectionColor);
             // default is white
-            ["r", "g", "b"].forEach(l => {
+            ["r", "g", "b"].forEach((l) => {
                 assert.equal(viewer.sceneManager.mainColor[l], 1);
                 assert.equal(viewer.sceneManager.reflectionColor[l], 1);
             });
@@ -65,8 +65,6 @@ describe(name, function () {
                 sceneInitCalled = true;
             });
 
-
-
             let update = (str: string, data) => {
                 if (s.indexOf(str) !== -1) {
                     assert.fail(false, true, str + " observer already called");
@@ -75,7 +73,7 @@ describe(name, function () {
                     s.push(str);
                     return true;
                 }
-            }
+            };
 
             viewer.sceneManager.onCameraConfiguredObservable.add(update.bind(null, "camera"));
             viewer.sceneManager.onLightsConfiguredObservable.add(update.bind(null, "light"));

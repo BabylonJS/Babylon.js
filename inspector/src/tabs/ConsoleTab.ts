@@ -6,8 +6,8 @@ import { TabBar } from "./TabBar";
 
 import * as Split from "Split";
 
-/** 
- * The console tab will have two features : 
+/**
+ * The console tab will have two features :
  * - hook all console.log call and display them in this panel (and in the browser console as well)
  * - display all Babylon logs (called with Tools.Log...)
  */
@@ -21,7 +21,6 @@ export class ConsoleTab extends Tab {
     private _oldConsoleLog: any;
     private _oldConsoleWarn: any;
     private _oldConsoleError: any;
-
 
     constructor(tabbar: TabBar, insp: Inspector) {
         super(tabbar, 'Console');
@@ -112,7 +111,7 @@ export class ConsoleTab extends Tab {
 
         for (var i = 0; i < params.length; i++) {
             this._message('log', params[i], caller);
-            // Write again in console does not work on edge, as the console object                 
+            // Write again in console does not work on edge, as the console object
             // is not instantiate if debugger tools is not open
             if (!Helpers.IsBrowserEdge()) {
                 this._oldConsoleLog(params[i]);
@@ -128,7 +127,7 @@ export class ConsoleTab extends Tab {
 
         for (var i = 0; i < params.length; i++) {
             this._message('warn', params[i], caller);
-            // Write again in console does not work on edge, as the console object 
+            // Write again in console does not work on edge, as the console object
             // is not instantiate if debugger tools is not open
             if (!Helpers.IsBrowserEdge()) {
                 this._oldConsoleWarn(params[i]);
@@ -144,7 +143,7 @@ export class ConsoleTab extends Tab {
 
         for (var i = 0; i < params.length; i++) {
             this._message('error', params[i], caller);
-            // Write again in console does not work on edge, as the console object 
+            // Write again in console does not work on edge, as the console object
             // is not instantiate if debugger tools is not open
             if (!Helpers.IsBrowserEdge()) {
                 this._oldConsoleError(params[i]);
