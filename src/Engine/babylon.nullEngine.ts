@@ -173,7 +173,8 @@ module BABYLON {
         public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram {
             return {
                 transformFeedback: null,
-                __SPECTOR_rebuildProgram: null
+                __SPECTOR_rebuildProgram: null,
+                isParallelCompiled: false
             };
         }
 
@@ -432,6 +433,10 @@ module BABYLON {
 
         public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
 
+        }
+
+        public areAllEffectsReady(): boolean {
+            return true;
         }
 
         /**
