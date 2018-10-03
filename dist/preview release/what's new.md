@@ -11,6 +11,7 @@
 
 ### Core Engine
 
+- Refactor of the SolidParticleSystem code for performance and code quality improvement ([barroij](https://github.com/barroij))
 - Added utility function `Tools.BuildArray` for array initialisation ([barroij](https://github.com/barroij))
 
 ### glTF Loader

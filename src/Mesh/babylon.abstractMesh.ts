@@ -1031,8 +1031,12 @@ module BABYLON {
 
         /** @hidden */
         public _updateBoundingInfo(): AbstractMesh {
-            this._boundingInfo = this._boundingInfo || new BoundingInfo(this.absolutePosition, this.absolutePosition);
-            this._boundingInfo.update(this.worldMatrixFromCache);
+            if (this._boundingInfo) {
+                this._boundingInfo.update(this.worldMatrixFromCache);
+            }
+            else {
+                this._boundingInfo = new BoundingInfo(this.absolutePosition, this.absolutePosition, this.worldMatrixFromCache);
+            }
             this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
             return this;
         }
