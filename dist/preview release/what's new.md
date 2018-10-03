@@ -10,6 +10,8 @@
 
 ### Core Engine
 
+- Added utility function `Tools.BuildArray` for array initialisation ([barroij](https://github.com/barroij))
+
 ### glTF Loader
 
 ### glTF Serializer
