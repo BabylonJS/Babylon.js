@@ -11,7 +11,7 @@
 
 ### Core Engine
 
-- Refactor of the SolidParticleSystem code. Significant performance on Chrome when the numnber of particle becomes important (20k+) ([barroij](https://github.com/barroij))
+- Refactor of the SolidParticleSystem code for performance and code quality improvement ([barroij](https://github.com/barroij))
 - Added utility function `Tools.BuildArray` for array initialisation ([barroij](https://github.com/barroij))
 
 ### glTF Loader
