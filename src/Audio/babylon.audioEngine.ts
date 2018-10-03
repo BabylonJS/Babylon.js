@@ -70,7 +70,7 @@ module BABYLON {
         unlock(): void;
     }
 
-    // Sets the default audio engine to Babylon JS.
+    // Sets the default audio engine to Babylon.js
     Engine.AudioEngineFactory = (hostElement: Nullable<HTMLElement>) => { return new AudioEngine(hostElement); };
 
     /**
@@ -78,7 +78,7 @@ module BABYLON {
      * It is responsible to play, synchronize and analyse sounds throughout the  application.
      * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
      */
-    export class AudioEngine implements IAudioEngine{
+    export class AudioEngine implements IAudioEngine {
         private _audioContext: Nullable<AudioContext> = null;
         private _audioContextInitialized = false;
         private _muteButton: Nullable<HTMLButtonElement> = null;

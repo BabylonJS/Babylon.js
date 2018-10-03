@@ -355,7 +355,7 @@ module BABYLON {
             }
 
             let useArrayBuffer = registeredPlugin.isBinary;
-            let database: Database;
+            let offlineProvider: IOfflineProvider;
 
             SceneLoader.OnPluginActivatedObservable.notifyObservers(plugin);
 
@@ -365,7 +365,7 @@ module BABYLON {
                     return;
                 }
 
-                scene.database = database;
+                scene.offlineProvider = offlineProvider;
 
                 onSuccess(plugin, data, responseURL);
             };
@@ -393,7 +393,7 @@ module BABYLON {
 
                 request = Tools.LoadFile(fileInfo.url, dataCallback, onProgress ? (event) => {
                     onProgress(SceneLoaderProgressEvent.FromProgressEvent(event));
-                } : undefined, database, useArrayBuffer, (request, exception) => {
+                } : undefined, offlineProvider, useArrayBuffer, (request, exception) => {
                     onError("Failed to load scene." + (exception ? " " + exception.message : ""), exception);
                 });
             };
@@ -419,9 +419,9 @@ module BABYLON {
                     canUseOfflineSupport = !exceptionFound;
                 }
 
-                if (canUseOfflineSupport) {
+                if (canUseOfflineSupport && Engine.OfflineProviderFactory) {
                     // Checking if a manifest file has been set for this scene and if offline mode has been requested
-                    database = new Database(fileInfo.url, manifestChecked, engine.disableManifestCheck);
+                    offlineProvider = Engine.OfflineProviderFactory(fileInfo.url, manifestChecked, engine.disableManifestCheck);
                 }
                 else {
                     manifestChecked();

@@ -30,7 +30,7 @@ module BABYLON.GLTF2 {
                 throw new Error(`${context}: Failed to find index (${index})`);
             }
 
-           return array[index];
+            return array[index];
         }
 
         /**
@@ -431,7 +431,7 @@ module BABYLON.GLTF2 {
 
             this.logClose();
 
-            return Promise.all(promises).then(() => {});
+            return Promise.all(promises).then(() => { });
         }
 
         private _forEachPrimitive(node: Loader.INode, callback: (babylonMesh: Mesh) => void): void {
@@ -533,7 +533,7 @@ module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded Babylon mesh when the load is complete
          */
-        public loadNodeAsync(context: string, node: Loader.INode, assign: (babylonMesh: Mesh) => void = () => {}): Promise<Mesh> {
+        public loadNodeAsync(context: string, node: Loader.INode, assign: (babylonMesh: Mesh) => void = () => { }): Promise<Mesh> {
             const extensionPromise = this._extensionsLoadNodeAsync(context, node, assign);
             if (extensionPromise) {
                 return extensionPromise;
@@ -661,7 +661,7 @@ module BABYLON.GLTF2 {
 
             this.logClose();
 
-            return Promise.all(promises).then(() => {});
+            return Promise.all(promises).then(() => { });
         }
 
         private _loadVertexDataAsync(context: string, primitive: Loader.IMeshPrimitive, babylonMesh: Mesh): Promise<Geometry> {
@@ -760,7 +760,7 @@ module BABYLON.GLTF2 {
                 promises.push(this._loadMorphTargetVertexDataAsync(`${context}/targets/${index}`, babylonGeometry, primitive.targets[index], babylonMorphTarget));
             }
 
-            return Promise.all(promises).then(() => {});
+            return Promise.all(promises).then(() => { });
         }
 
         private _loadMorphTargetVertexDataAsync(context: string, babylonGeometry: Geometry, attributes: { [name: string]: number }, babylonMorphTarget: MorphTarget): Promise<void> {
@@ -811,7 +811,7 @@ module BABYLON.GLTF2 {
                 babylonMorphTarget.setTangents(data);
             });
 
-            return Promise.all(promises).then(() => {});
+            return Promise.all(promises).then(() => { });
         }
 
         private static _LoadTransform(node: Loader.INode, babylonNode: TransformNode): void {
@@ -938,7 +938,7 @@ module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded Babylon camera when the load is complete
          */
-        public loadCameraAsync(context: string, camera: Loader.ICamera, assign: (babylonCamera: Camera) => void = () => {}): Promise<Camera> {
+        public loadCameraAsync(context: string, camera: Loader.ICamera, assign: (babylonCamera: Camera) => void = () => { }): Promise<Camera> {
             const extensionPromise = this._extensionsLoadCameraAsync(context, camera, assign);
             if (extensionPromise) {
                 return extensionPromise;
@@ -1003,7 +1003,7 @@ module BABYLON.GLTF2 {
                 promises.push(this.loadAnimationAsync(`#/animations/${animation.index}`, animation));
             }
 
-            return Promise.all(promises).then(() => {});
+            return Promise.all(promises).then(() => { });
         }
 
         /**
@@ -1415,11 +1415,11 @@ module BABYLON.GLTF2 {
                 }
             }
 
-            return Promise.all(promises).then(() => {});
+            return Promise.all(promises).then(() => { });
         }
 
         /** @hidden */
-        public _loadMaterialAsync(context: string, material: Loader.IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void = () => {}): Promise<Material> {
+        public _loadMaterialAsync(context: string, material: Loader.IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void = () => { }): Promise<Material> {
             const extensionPromise = this._extensionsLoadMaterialAsync(context, material, babylonMesh, babylonDrawMode, assign);
             if (extensionPromise) {
                 return extensionPromise;
@@ -1514,7 +1514,7 @@ module BABYLON.GLTF2 {
 
             this.loadMaterialAlphaProperties(context, material, babylonMaterial);
 
-            return Promise.all(promises).then(() => {});
+            return Promise.all(promises).then(() => { });
         }
 
         /**
@@ -1566,7 +1566,7 @@ module BABYLON.GLTF2 {
                 }));
             }
 
-            return Promise.all(promises).then(() => {});
+            return Promise.all(promises).then(() => { });
         }
 
         /**
@@ -1616,7 +1616,7 @@ module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded Babylon texture when the load is complete
          */
-        public loadTextureInfoAsync(context: string, textureInfo: Loader.ITextureInfo, assign: (babylonTexture: BaseTexture) => void = () => {}): Promise<BaseTexture> {
+        public loadTextureInfoAsync(context: string, textureInfo: Loader.ITextureInfo, assign: (babylonTexture: BaseTexture) => void = () => { }): Promise<BaseTexture> {
             const extensionPromise = this._extensionsLoadTextureInfoAsync(context, textureInfo, assign);
             if (extensionPromise) {
                 return extensionPromise;
@@ -1635,7 +1635,7 @@ module BABYLON.GLTF2 {
             return promise;
         }
 
-        private _loadTextureAsync(context: string, texture: Loader.ITexture, assign: (babylonTexture: BaseTexture) => void = () => {}): Promise<BaseTexture> {
+        private _loadTextureAsync(context: string, texture: Loader.ITexture, assign: (babylonTexture: BaseTexture) => void = () => { }): Promise<BaseTexture> {
             const promises = new Array<Promise<any>>();
 
             this.logOpen(`${context} ${texture.name || ""}`);
@@ -1763,7 +1763,7 @@ module BABYLON.GLTF2 {
                                     }
                                 }
                             }
-                        }, this.babylonScene.database, true, (request, exception) => {
+                        }, this.babylonScene.offlineProvider, true, (request, exception) => {
                             if (!this._disposed) {
                                 reject(new LoadFileError(`${context}: Failed to load '${uri}'${request ? ": " + request.status + " " + request.statusText : ""}`, request));
                             }

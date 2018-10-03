@@ -676,7 +676,7 @@
         },
         "offline": {
             "files": [
-                "../../src/Tools/babylon.database.js"
+                "../../src/Offline/babylon.database.js"
             ],
             "dependUpon": [
                 "core"
