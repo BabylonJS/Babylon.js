@@ -3,6 +3,7 @@
 ## Major updates
 
 - Added support for [parallel shader compilation](https://www.khronos.org/registry/webgl/extensions/KHR_parallel_shader_compile/) ([Deltakosh](https://github.com/deltakosh))
+- Added FlyCamera for free navigation in 3D space, with a limited set of settings ([Phuein](https://github.com/phuein))
 
 ## Updates
 
@@ -24,7 +25,7 @@
 
 ### Core Engine
 
-- Added FlyCamera for free navigation in 3D space, with a limited set of settings.
+
 
 ### Viewer
 
