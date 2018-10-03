@@ -157,6 +157,12 @@ module BABYLON {
         public timerQuery: EXT_disjoint_timer_query;
         /** Defines if timestamp can be used with timer query */
         public canUseTimestampForTimerQuery: boolean;
+        /** Function used to let the system compiles shaders in background */
+        public parallelShaderCompile: {
+            MAX_SHADER_COMPILER_THREADS_KHR: number;
+            maxShaderCompilerThreadsKHR: (thread: number) => void;
+            COMPLETION_STATUS_KHR: number;
+        };
     }
 
     /** Interface defining initialization parameters for Engine class */
@@ -475,7 +481,7 @@ module BABYLON {
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "3.3.0";
+            return "4.0.0-alpha.0";
         }
 
         // Updatable statics so stick with vars here
@@ -1237,6 +1243,22 @@ module BABYLON {
             Effect.ResetCache();
         }
 
+        /**
+         * Gets a boolean indicating if all created effects are ready
+         * @returns true if all effects are ready
+         */
+        public areAllEffectsReady(): boolean {
+            for (var key in this._compiledEffects) {
+                let effect = <Effect>this._compiledEffects[key];
+
+                if (!effect.isReady()) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         private _rebuildBuffers(): void {
             // Index / Vertex
             for (var scene of this.scenes) {
@@ -1352,6 +1374,13 @@ module BABYLON {
                 }
             }
 
+            // Shader compiler threads
+            this._caps.parallelShaderCompile = this._gl.getExtension('KHR_parallel_shader_compile');
+            if (this._caps.parallelShaderCompile) {
+                const threads = this._gl.getParameter(this._caps.parallelShaderCompile.MAX_SHADER_COMPILER_THREADS_KHR);
+                this._caps.parallelShaderCompile.maxShaderCompilerThreadsKHR(threads);
+            }
+
             // Depth Texture
             if (this._webGLVersion > 1) {
                 this._caps.depthTextureExtension = true;
@@ -1379,6 +1408,7 @@ module BABYLON {
                     this._caps.vertexArrayObject = false;
                 }
             }
+
             // Instances count
             if (this._webGLVersion > 1) {
                 this._caps.instancedArrays = true;
@@ -3305,6 +3335,24 @@ module BABYLON {
                 this.bindTransformFeedback(null);
             }
 
+            shaderProgram.context = context;
+            shaderProgram.vertexShader = vertexShader;
+            shaderProgram.fragmentShader = fragmentShader;
+
+            if (!this._caps.parallelShaderCompile) {
+                this._finalizeProgram(shaderProgram);
+            } else {
+                shaderProgram.isParallelCompiled = true;
+            }
+
+            return shaderProgram;
+        }
+
+        private _finalizeProgram(shaderProgram: WebGLProgram) {
+            const context = shaderProgram.context!;
+            const vertexShader = shaderProgram.vertexShader!;
+            const fragmentShader = shaderProgram.fragmentShader!;
+
             var linked = context.getProgramParameter(shaderProgram, context.LINK_STATUS);
 
             if (!linked) {
@@ -3329,7 +3377,38 @@ module BABYLON {
             context.deleteShader(vertexShader);
             context.deleteShader(fragmentShader);
 
-            return shaderProgram;
+            shaderProgram.context = undefined;
+            shaderProgram.vertexShader = undefined;
+            shaderProgram.fragmentShader = undefined;
+
+            if (shaderProgram.onCompiled) {
+                shaderProgram.onCompiled();
+                shaderProgram.onCompiled = undefined;
+            }
+        }
+
+        /** @hidden */
+        public _isProgramCompiled(shaderProgram: WebGLProgram): boolean {
+            if (!shaderProgram.isParallelCompiled) {
+                return true;
+            }
+
+            if (this._gl.getProgramParameter(shaderProgram, this._caps.parallelShaderCompile.COMPLETION_STATUS_KHR)) {
+                this._finalizeProgram(shaderProgram);
+                return true;
+            }
+
+            return false;
+        }
+
+        /** @hidden */
+        public _executeWhenProgramIsCompiled(shaderProgram: WebGLProgram, action: () => void) {
+            if (!shaderProgram.isParallelCompiled) {
+                action();
+                return;
+            }
+
+            shaderProgram.onCompiled = action;
         }
 
         /**
