@@ -1,4 +1,4 @@
-import { Database, Effect, Engine, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Observable, RenderingManager, Scene, SceneLoaderProgressEvent, TargetCamera, Tools, Vector3, Observer } from 'babylonjs';
+import { Effect, Engine, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Observable, RenderingManager, Scene, SceneLoaderProgressEvent, TargetCamera, Tools, Vector3, Observer } from 'babylonjs';
 import { IModelConfiguration, IObserversConfiguration, ViewerConfiguration } from '../configuration/';
 import { processConfigurationCompatibility } from '../configuration/configurationCompatibility';
 import { ConfigurationContainer } from '../configuration/configurationContainer';
@@ -14,7 +14,7 @@ import { TemplateManager } from '../templating/templateManager';
 import { viewerManager } from './viewerManager';
 
 /**
- * The AbstractViewr is the center of Babylon's viewer.
+ * The AbstractViewer is the center of Babylon's viewer.
  * It is the basic implementation of the default viewer and is responsible of loading and showing the model and the templates
  */
 export abstract class AbstractViewer {
@@ -648,9 +648,6 @@ export abstract class AbstractViewer {
         }
 
         this.engine = new Engine(this.canvas, !!config.antialiasing, config.engineOptions);
-
-        // Disable manifest checking
-        Database.IDBStorageEnabled = false;
 
         if (!config.disableResize) {
             window.addEventListener('resize', this._resize);

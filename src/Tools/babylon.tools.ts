@@ -725,10 +725,10 @@ module BABYLON {
          * @param input url string, ArrayBuffer, or Blob to load
          * @param onLoad callback called when the image successfully loads
          * @param onError callback called when the image fails to load
-         * @param database database for caching
+         * @param offlineProvider offline provider for caching
          * @returns the HTMLImageElement of the loaded image
          */
-        public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, database: Nullable<Database>): HTMLImageElement {
+        public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement {
             let url: string;
             let usingObjectURL = false;
 
@@ -776,19 +776,18 @@ module BABYLON {
             img.addEventListener("load", loadHandler);
             img.addEventListener("error", errorHandler);
 
-            var noIndexedDB = () => {
+            var noOfflineSupport = () => {
                 img.src = url;
             };
 
-            var loadFromIndexedDB = () => {
-                if (database) {
-                    database.loadImageFromDB(url, img);
+            var loadFromOfflineSupport = () => {
+                if (offlineProvider) {
+                    offlineProvider.loadImage(url, img);
                 }
             };
 
-            //ANY database to do!
-            if (url.substr(0, 5) !== "data:" && database && database.enableTexturesOffline && Database.IsUASupportingBlobStorage) {
-                database.openAsync(loadFromIndexedDB, noIndexedDB);
+            if (url.substr(0, 5) !== "data:" && offlineProvider && offlineProvider.enableTexturesOffline) {
+                offlineProvider.open(loadFromOfflineSupport, noOfflineSupport);
             }
             else {
                 if (url.indexOf("file:") !== -1) {
@@ -813,7 +812,7 @@ module BABYLON {
                     }
                 }
 
-                noIndexedDB();
+                noOfflineSupport();
             }
 
             return img;
@@ -824,12 +823,12 @@ module BABYLON {
          * @param url url string, ArrayBuffer, or Blob to load
          * @param onSuccess callback called when the file successfully loads
          * @param onProgress callback called while file is loading (if the server supports this mode)
-         * @param database  database for caching
+         * @param offlineProvider defines the offline provider for caching
          * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
          * @param onError callback called when the file fails to load
          * @returns a file request object
          */
-        public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
+        public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
             url = Tools.CleanUrl(url);
 
             url = Tools.PreprocessUrl(url);
@@ -931,8 +930,8 @@ module BABYLON {
             };
 
             // Caching all files
-            if (database && database.enableSceneOffline) {
-                const noIndexedDB = (request?: any) => {
+            if (offlineProvider && offlineProvider.enableSceneOffline) {
+                const noOfflineSupport = (request?: any) => {
                     if (request && request.status > 400) {
                         if (onError) {
                             onError(request);
@@ -944,14 +943,14 @@ module BABYLON {
                     }
                 };
 
-                const loadFromIndexedDB = () => {
+                const loadFromOfflineSupport = () => {
                     // TODO: database needs to support aborting and should return a IFileRequest
                     if (aborted) {
                         return;
                     }
 
-                    if (database) {
-                        database.loadFileFromDB(url, (data) => {
+                    if (offlineProvider) {
+                        offlineProvider.loadFile(url, (data) => {
                             if (!aborted) {
                                 onSuccess(data);
                             }
@@ -961,11 +960,11 @@ module BABYLON {
                             if (!aborted) {
                                 onProgress(event);
                             }
-                        } : undefined, noIndexedDB, useArrayBuffer);
+                        } : undefined, noOfflineSupport, useArrayBuffer);
                     }
                 };
 
-                database.openAsync(loadFromIndexedDB, noIndexedDB);
+                offlineProvider.open(loadFromOfflineSupport, noOfflineSupport);
             }
             else {
                 requestFile();

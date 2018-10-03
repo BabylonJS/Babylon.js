@@ -200,7 +200,7 @@ declare module BabylonViewer {
 }
 declare module BabylonViewer {
     /**
-        * The AbstractViewr is the center of Babylon's viewer.
+        * The AbstractViewer is the center of Babylon's viewer.
         * It is the basic implementation of the default viewer and is responsible of loading and showing the model and the templates
         */
     export abstract class AbstractViewer {

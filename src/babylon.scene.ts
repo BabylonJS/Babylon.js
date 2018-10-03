@@ -890,11 +890,12 @@ module BABYLON {
         */
         public probesEnabled = true;
 
-        // Database
+        // Offline support
         /**
-         * @hidden
+         * Gets or sets the current offline provider to use to store scene data
+         * @see http://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
          */
-        public database: Database;
+        public offlineProvider: IOfflineProvider;
 
         /**
          * Gets or sets the action manager associated with the scene
@@ -5388,8 +5389,8 @@ module BABYLON {
         }
 
         /** @hidden */
-        public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useDatabase?: boolean, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
-            let request = Tools.LoadFile(url, onSuccess, onProgress, useDatabase ? this.database : undefined, useArrayBuffer, onError);
+        public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
+            let request = Tools.LoadFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError);
             this._activeRequests.push(request);
             request.onCompleteObservable.add((request) => {
                 this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
@@ -5398,11 +5399,11 @@ module BABYLON {
         }
 
         /** @hidden */
-        public _loadFileAsync(url: string, useDatabase?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+        public _loadFileAsync(url: string, useOfflineSupport?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
             return new Promise((resolve, reject) => {
                 this._loadFile(url, (data) => {
                     resolve(data);
-                }, undefined, useDatabase, useArrayBuffer, (request, exception) => {
+                }, undefined, useOfflineSupport, useArrayBuffer, (request, exception) => {
                     reject(exception);
                 });
             });

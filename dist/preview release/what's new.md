@@ -14,6 +14,7 @@
 
 - Refactor of the SolidParticleSystem code for performance and code quality improvement ([barroij](https://github.com/barroij))
 - Added utility function `Tools.BuildArray` for array initialisation ([barroij](https://github.com/barroij))
+- Introduced a new `IOfflineSupport` interface to hide IndexedDB ([Deltakosh](https://github.com/deltakosh))
 
 ### glTF Loader
 
@@ -34,3 +35,6 @@
 ### Loaders
 
 ## Breaking changes
+
+- `Database.IDBStorageEnabled` is now false by default ([Deltakosh](https://github.com/deltakosh))
+- `Database.openAsync` was renamed by `Database.open`

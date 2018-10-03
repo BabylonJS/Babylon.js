@@ -4475,7 +4475,7 @@ var BABYLON;
                                         }
                                     }
                                 }
-                            }, _this.babylonScene.database, true, function (request, exception) {
+                            }, _this.babylonScene.offlineProvider, true, function (request, exception) {
                                 if (!_this._disposed) {
                                     reject(new BABYLON.LoadFileError(context + ": Failed to load '" + uri + "'" + (request ? ": " + request.status + " " + request.statusText : ""), request));
                                 }
