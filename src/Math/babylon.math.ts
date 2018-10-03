@@ -2089,10 +2089,10 @@ module BABYLON {
          * @return the angle between vector0 and vector1
          */
         public static GetAngleBetweenVectors(vector0: Vector3, vector1: Vector3, normal: Vector3): number {
-            const v0: Vector3 = vector0.normalizeToRef(MathTmp.Vector3[0]);
-            const v1: Vector3 = vector1.normalizeToRef(MathTmp.Vector3[1]);
+            const v0: Vector3 = vector0.normalizeToRef(MathTmp.Vector3[1]);
+            const v1: Vector3 = vector1.normalizeToRef(MathTmp.Vector3[2]);
             const dot: number = Vector3.Dot(v0, v1);
-            const n = MathTmp.Vector3[2];
+            const n = MathTmp.Vector3[3];
             Vector3.CrossToRef(v0, v1, n);
             if (Vector3.Dot(n, normal) > 0) {
                 return Math.acos(dot);
