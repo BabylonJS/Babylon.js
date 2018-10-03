@@ -62,7 +62,7 @@
         /**
          * Limit in radians for how much Roll banking will add. (Default: 90°)
          */
-        public bankedTurnLimit: number = Math.PI / 4;
+        public bankedTurnLimit: number = Math.PI / 2;
 
         /**
          * Value of 0 disables the banked Roll.
