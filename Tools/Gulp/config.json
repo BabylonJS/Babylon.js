@@ -89,6 +89,7 @@
             "additionalPostProcess_depthOfFieldEffect",
             "additionalPostProcess_bloomEffect",
             "additionalPostProcess_imageProcessing",
+            "additionalPostProcess_motionBlur",
             "bones",
             "hdr",
             "polygonMesh",
@@ -966,6 +967,17 @@
             ],
             "shaderIncludes": []
         },
+        "additionalPostProcess_motionBlur": {
+            "files": [
+                "../../src/PostProcess/babylon.motionBlurPostProcess.js"
+            ],
+            "dependUpon": [
+                "postProcesses"
+            ],
+            "shaders": [
+                "motionBlur.fragment"
+            ]
+        },
         "additionalPostProcesses": {
             "files": [
                 "../../src/PostProcess/babylon.refractionPostProcess.js",
@@ -982,7 +994,8 @@
                 "../../src/PostProcess/babylon.displayPassPostProcess.js",
                 "../../src/PostProcess/babylon.highlightsPostProcess.js",
                 "../../src/PostProcess/babylon.extractHighlightsPostProcess.js",
-                "../../src/PostProcess/babylon.imageProcessingPostProcess.js"
+                "../../src/PostProcess/babylon.imageProcessingPostProcess.js",
+                "../../src/PostProcess/babylon.motionBlurPostProcess.js"
             ],
             "dependUpon": [
                 "postProcesses",
@@ -1001,7 +1014,8 @@
                 "tonemap.fragment",
                 "displayPass.fragment",
                 "highlights.fragment",
-                "imageProcessing.fragment"
+                "imageProcessing.fragment",
+                "motionBlur.fragment"
             ]
         },
         "renderingPipeline": {
