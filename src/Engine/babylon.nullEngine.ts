@@ -435,6 +435,10 @@ module BABYLON {
 
         }
 
+        public areAllEffectsReady(): boolean {
+            return true;
+        }
+
         /**
          * @hidden
          * Get the current error code of the webGL context

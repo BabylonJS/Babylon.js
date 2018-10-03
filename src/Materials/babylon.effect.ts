@@ -196,6 +196,7 @@ module BABYLON {
         public uniqueId = 0;
         /**
          * Observable that will be called when the shader is compiled.
+         * It is recommended to use executeWhenCompile() or to make sure that scene.isReady() is called to get this observable raised.
          */
         public onCompileObservable = new Observable<Effect>();
         /**
@@ -468,6 +469,21 @@ module BABYLON {
             this.onCompileObservable.add((effect) => {
                 func(effect);
             });
+
+            if (!this._program || this._program.isParallelCompiled) {
+                setTimeout(() => {
+                    this._checkIsReady();
+                }, 16);
+            }
+        }
+
+        private _checkIsReady() {
+            if (this.isReady()) {
+                return;
+            }
+            setTimeout(() => {
+                this._checkIsReady();
+            }, 16);
         }
 
         /** @hidden */
@@ -826,6 +842,10 @@ module BABYLON {
                         this.getEngine()._deleteProgram(previousProgram);
                     }
                 });
+
+                if (this._program.isParallelCompiled) {
+                    this._checkIsReady();
+                }
 
             } catch (e) {
                 this._compilationError = e.message;
