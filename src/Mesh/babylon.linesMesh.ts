@@ -41,6 +41,9 @@ module BABYLON {
         private _intersectionThreshold: number;
         private _colorShader: ShaderMaterial;
 
+        private static _shaderScene: Nullable<Scene>;
+        private static _shaders: Nullable<ShaderMaterial>[];
+
         /**
          * Creates a new LinesMesh
          * @param name defines the name
@@ -71,7 +74,7 @@ module BABYLON {
             super(name, scene, parent, source, doNotCloneChildren);
 
             if (source) {
-                this.color = source.color.clone();
+                this.color.copyFrom(source.color);
                 this.alpha = source.alpha;
                 this.useVertexColor = source.useVertexColor;
                 this.useVertexAlpha = source.useVertexAlpha;
@@ -79,27 +82,7 @@ module BABYLON {
 
             this._intersectionThreshold = 0.1;
 
-            var defines: string[] = [];
-            var options = {
-                attributes: [VertexBuffer.PositionKind, "world0", "world1", "world2", "world3"],
-                uniforms: ["world", "viewProjection"],
-                needAlphaBlending: true,
-                defines: defines
-            };
-
-            if (useVertexAlpha === false) {
-                options.needAlphaBlending = false;
-            }
-
-            if (!useVertexColor) {
-                options.uniforms.push("color");
-            }
-            else {
-                options.defines.push("#define VERTEXCOLOR");
-                options.attributes.push(VertexBuffer.ColorKind);
-            }
-
-            this._colorShader = new ShaderMaterial("colorShader", this.getScene(), "color", options);
+            this._colorShader = LinesMesh.getColorShader(this.getScene(), this.useVertexAlpha, this.useVertexColor);
         }
 
         /**
@@ -173,6 +156,45 @@ module BABYLON {
          */
         public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh {
             return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
+        }
+
+        private static getColorShader(scene: Scene, useVertexAlpha: boolean | undefined, useVertexColor: boolean | undefined) : ShaderMaterial {
+            if (LinesMesh._shaderScene !== scene) {
+                LinesMesh._shaders = [null, null, null, null];
+                LinesMesh._shaderScene = scene;
+            }
+
+            const index = (useVertexAlpha ? 1 : 0) + 2 * (useVertexColor ? 1 : 0);
+            let material = LinesMesh._shaders[index];
+            if (!material) {
+                material = LinesMesh.createColorShader(scene, useVertexAlpha, useVertexColor);
+                LinesMesh._shaders[index] = material;
+            }
+
+            return material;
+        }
+
+        private static createColorShader(scene: Scene, useVertexAlpha: boolean | undefined, useVertexColor: boolean | undefined) : ShaderMaterial {
+            const options = {
+                attributes: [VertexBuffer.PositionKind, "world0", "world1", "world2", "world3"],
+                uniforms: ["world", "viewProjection"],
+                needAlphaBlending: true,
+                defines: [] as string[]
+            };
+
+            if (useVertexAlpha === false) {
+                options.needAlphaBlending = false;
+            }
+
+            if (!useVertexColor) {
+                options.uniforms.push("color");
+            }
+            else {
+                options.defines.push("#define VERTEXCOLOR");
+                options.attributes.push(VertexBuffer.ColorKind);
+            }
+
+            return new ShaderMaterial("colorShader", scene, "color", options);
         }
     }
 }
