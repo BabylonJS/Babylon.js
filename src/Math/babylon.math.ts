@@ -7179,25 +7179,21 @@ module BABYLON {
      * @hidden
      */
     export class Tmp {
-        public static Color3: Color3[] = [Color3.Black(), Color3.Black(), Color3.Black()];
-        public static Color4: Color4[] = [new Color4(0, 0, 0, 0), new Color4(0, 0, 0, 0)];
-        public static Vector2: Vector2[] = [Vector2.Zero(), Vector2.Zero(), Vector2.Zero()];  // 3 temp Vector2 at once should be enough
-        public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),
-        Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];    // 9 temp Vector3 at once should be enough
-        public static Vector4: Vector4[] = [Vector4.Zero(), Vector4.Zero(), Vector4.Zero()];  // 3 temp Vector4 at once should be enough
-        public static Quaternion: Quaternion[] = [Quaternion.Zero(), Quaternion.Zero()];                // 2 temp Quaternion at once should be enough
-        public static Matrix: Matrix[] = [Matrix.Zero(), Matrix.Zero(),
-        Matrix.Zero(), Matrix.Zero(),
-        Matrix.Zero(), Matrix.Zero(),
-        Matrix.Zero(), Matrix.Zero()];                      // 6 temp Matrices at once should be enough
+        public static Color3: Color3[] = Tools.BuildArray(3, Color3.Black);
+        public static Color4: Color4[] = Tools.BuildArray(3, () => new Color4(0, 0, 0, 0));
+        public static Vector2: Vector2[] = Tools.BuildArray(3, Vector2.Zero); // 3 temp Vector2 at once should be enough
+        public static Vector3: Vector3[] = Tools.BuildArray(9, Vector3.Zero); // 9 temp Vector3 at once should be enough
+        public static Vector4: Vector4[] = Tools.BuildArray(3, Vector4.Zero); // 3 temp Vector4 at once should be enough
+        public static Quaternion: Quaternion[] = Tools.BuildArray(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
+        public static Matrix: Matrix[] = Tools.BuildArray(6, Matrix.Identity); // 6 temp Matrices at once should be enough
     }
     /**
      * @hidden
      * Same as Tmp but not exported to keep it only for math functions to avoid conflicts
      */
     class MathTmp {
-        public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
-        public static Matrix: Matrix[] = [Matrix.Zero(), Matrix.Zero()];
-        public static Quaternion: Quaternion[] = [Quaternion.Zero(), Quaternion.Zero(), Quaternion.Zero()];
+        public static Vector3: Vector3[] = Tools.BuildArray(6, Vector3.Zero);
+        public static Matrix: Matrix[] = Tools.BuildArray(2, Matrix.Identity);
+        public static Quaternion: Quaternion[] = Tools.BuildArray(3, Quaternion.Zero);
     }
 }
