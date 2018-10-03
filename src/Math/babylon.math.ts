@@ -534,10 +534,7 @@ module BABYLON {
          * @param index defines an optional index in the target array to define where to start storing values
          * @returns the current Color4 object
          */
-        public toArray(array: number[], index?: number): Color4 {
-            if (index === undefined) {
-                index = 0;
-            }
+        public toArray(array: number[], index: number = 0): Color4 {
             array[index] = this.r;
             array[index + 1] = this.g;
             array[index + 2] = this.b;
@@ -1454,8 +1451,9 @@ module BABYLON {
          * @param result defines the target vector
          */
         public static TransformToRef(vector: Vector2, transformation: Matrix, result: Vector2) {
-            var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + transformation.m[12];
-            var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + transformation.m[13];
+            const m = transformation.m;
+            var x = (vector.x * m[0]) + (vector.y * m[4]) + m[12];
+            var y = (vector.x * m[1]) + (vector.y * m[5]) + m[13];
             result.x = x;
             result.y = y;
         }
@@ -1625,9 +1623,20 @@ module BABYLON {
          * @returns the current updated Vector3
          */
         public addInPlace(otherVector: Vector3): Vector3 {
-            this.x += otherVector.x;
-            this.y += otherVector.y;
-            this.z += otherVector.z;
+            return this.addInPlaceFromFloats(otherVector.x, otherVector.y, otherVector.z);
+        }
+
+        /**
+         * Adds the given coordinates to the current Vector3
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns the current updated Vector3
+         */
+        public addInPlaceFromFloats(x: number, y: number, z: number): Vector3 {
+            this.x += x;
+            this.y += y;
+            this.z += z;
             return this;
         }
 
@@ -1647,10 +1656,7 @@ module BABYLON {
          * @returns the current Vector3
          */
         public addToRef(otherVector: Vector3, result: Vector3): Vector3 {
-            result.x = this.x + otherVector.x;
-            result.y = this.y + otherVector.y;
-            result.z = this.z + otherVector.z;
-            return this;
+            return result.copyFromFloats(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z);
         }
 
         /**
@@ -1681,10 +1687,7 @@ module BABYLON {
          * @returns the current Vector3
          */
         public subtractToRef(otherVector: Vector3, result: Vector3): Vector3 {
-            result.x = this.x - otherVector.x;
-            result.y = this.y - otherVector.y;
-            result.z = this.z - otherVector.z;
-            return this;
+            return this.subtractFromFloatsToRef(otherVector.x, otherVector.y, otherVector.z, result);
         }
 
         /**
@@ -1707,10 +1710,7 @@ module BABYLON {
          * @returns the current Vector3
          */
         public subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3 {
-            result.x = this.x - x;
-            result.y = this.y - y;
-            result.z = this.z - z;
-            return this;
+            return result.copyFromFloats(this.x - x, this.y - y, this.z - z);
         }
 
         /**
@@ -1749,10 +1749,7 @@ module BABYLON {
          * @returns the current Vector3
          */
         public scaleToRef(scale: number, result: Vector3): Vector3 {
-            result.x = this.x * scale;
-            result.y = this.y * scale;
-            result.z = this.z * scale;
-            return this;
+            return result.copyFromFloats(this.x * scale, this.y * scale, this.z * scale);
         }
 
         /**
@@ -1762,10 +1759,7 @@ module BABYLON {
          * @returns the unmodified current Vector3
          */
         public scaleAndAddToRef(scale: number, result: Vector3): Vector3 {
-            result.x += this.x * scale;
-            result.y += this.y * scale;
-            result.z += this.z * scale;
-            return this;
+            return result.addInPlaceFromFloats(this.x * scale, this.y * scale, this.z * scale);
         }
 
         /**
@@ -1816,7 +1810,7 @@ module BABYLON {
          * @returns the new Vector3
          */
         public multiply(otherVector: Vector3): Vector3 {
-            return new Vector3(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z);
+            return this.multiplyByFloats(otherVector.x, otherVector.y, otherVector.z);
         }
 
         /**
@@ -1826,10 +1820,7 @@ module BABYLON {
          * @returns the current Vector3
          */
         public multiplyToRef(otherVector: Vector3, result: Vector3): Vector3 {
-            result.x = this.x * otherVector.x;
-            result.y = this.y * otherVector.y;
-            result.z = this.z * otherVector.z;
-            return this;
+            return result.copyFromFloats(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z);
         }
 
         /**
@@ -1859,10 +1850,7 @@ module BABYLON {
          * @returns the current Vector3
          */
         public divideToRef(otherVector: Vector3, result: Vector3): Vector3 {
-            result.x = this.x / otherVector.x;
-            result.y = this.y / otherVector.y;
-            result.z = this.z / otherVector.z;
-            return this;
+            return result.copyFromFloats(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z);
         }
 
         /**
@@ -1981,16 +1969,21 @@ module BABYLON {
          * @returns the current updated Vector3
          */
         public normalize(): Vector3 {
-            var len = this.length();
+            return this.normalizeFromLength(this.length());
+        }
+
+        /**
+         * Normalize the current Vector3 with the given input length.
+         * Please note that this is an in place operation.
+         * @param len the length of the vector
+         * @returns the current updated Vector3
+         */
+        public normalizeFromLength(len : number): Vector3 {
             if (len === 0 || len === 1.0) {
                 return this;
             }
 
-            var num = 1.0 / len;
-            this.x *= num;
-            this.y *= num;
-            this.z *= num;
-            return this;
+            return this.scaleInPlace(1.0 / len);
         }
 
         /**
@@ -2011,13 +2004,10 @@ module BABYLON {
         public normalizeToRef(reference: Vector3): Vector3 {
             var len = this.length();
             if (len === 0 || len === 1.0) {
-                reference.set(this.x, this.y, this.z);
-                return reference;
+                return reference.copyFromFloats(this.x, this.y, this.z);
             }
 
-            const scale = 1.0 / len;
-            this.scaleToRef(scale, reference);
-            return reference;
+            return this.scaleToRef(1.0 / len, reference);
         }
 
         /**
@@ -2034,10 +2024,7 @@ module BABYLON {
          * @returns the current updated Vector3
          */
         public copyFrom(source: Vector3): Vector3 {
-            this.x = source.x;
-            this.y = source.y;
-            this.z = source.z;
-            return this;
+            return this.copyFromFloats(source.x, source.y, source.z);
         }
 
         /**
@@ -2063,6 +2050,16 @@ module BABYLON {
          */
         public set(x: number, y: number, z: number): Vector3 {
             return this.copyFromFloats(x, y, z);
+        }
+
+        /**
+         * Copies the given float to the current Vector3 coordinates
+         * @param v defines the x, y and z coordinates of the operand
+         * @returns the current updated Vector3
+         */
+        public setAll(v: number): Vector3 {
+            this.x = this.y = this.z = v;
+            return this;
         }
 
         // Statics
@@ -2092,10 +2089,10 @@ module BABYLON {
          * @return the angle between vector0 and vector1
          */
         public static GetAngleBetweenVectors(vector0: Vector3, vector1: Vector3, normal: Vector3): number {
-            const v0: Vector3 = MathTmp.Vector3[1].copyFrom(vector0).normalize();
-            const v1: Vector3 = MathTmp.Vector3[2].copyFrom(vector1).normalize();
+            const v0: Vector3 = vector0.normalizeToRef(MathTmp.Vector3[0]);
+            const v1: Vector3 = vector1.normalizeToRef(MathTmp.Vector3[1]);
             const dot: number = Vector3.Dot(v0, v1);
-            const n = MathTmp.Vector3[3];
+            const n = MathTmp.Vector3[2];
             Vector3.CrossToRef(v0, v1, n);
             if (Vector3.Dot(n, normal) > 0) {
                 return Math.acos(dot);
@@ -2158,9 +2155,7 @@ module BABYLON {
          * @param result defines the Vector3 where to store the result
          */
         public static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): void {
-            result.x = x;
-            result.y = y;
-            result.z = z;
+            result.copyFromFloats(x, y, z);
         }
 
         /**
@@ -2241,14 +2236,7 @@ module BABYLON {
          * @param result defines the Vector3 where to store the result
          */
         public static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
-            var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + (vector.z * transformation.m[8]) + transformation.m[12];
-            var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + (vector.z * transformation.m[9]) + transformation.m[13];
-            var z = (vector.x * transformation.m[2]) + (vector.y * transformation.m[6]) + (vector.z * transformation.m[10]) + transformation.m[14];
-            var w = (vector.x * transformation.m[3]) + (vector.y * transformation.m[7]) + (vector.z * transformation.m[11]) + transformation.m[15];
-
-            result.x = x / w;
-            result.y = y / w;
-            result.z = z / w;
+            return Vector3.TransformCoordinatesFromFloatsToRef(vector.x, vector.y, vector.z, transformation, result);
         }
 
         /**
@@ -2261,14 +2249,15 @@ module BABYLON {
          * @param result defines the Vector3 where to store the result
          */
         public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
-            var rx = (x * transformation.m[0]) + (y * transformation.m[4]) + (z * transformation.m[8]) + transformation.m[12];
-            var ry = (x * transformation.m[1]) + (y * transformation.m[5]) + (z * transformation.m[9]) + transformation.m[13];
-            var rz = (x * transformation.m[2]) + (y * transformation.m[6]) + (z * transformation.m[10]) + transformation.m[14];
-            var rw = (x * transformation.m[3]) + (y * transformation.m[7]) + (z * transformation.m[11]) + transformation.m[15];
+            const m = transformation.m;
+            var rx = x * m[0] + y * m[4] + z * m[8] + m[12];
+            var ry = x * m[1] + y * m[5] + z * m[9] + m[13];
+            var rz = x * m[2] + y * m[6] + z * m[10] + m[14];
+            var rw = 1 / (x * m[3] + y * m[7] + z * m[11] + m[15]);
 
-            result.x = rx / rw;
-            result.y = ry / rw;
-            result.z = rz / rw;
+            result.x = rx * rw;
+            result.y = ry * rw;
+            result.z = rz * rw;
         }
 
         /**
@@ -2292,12 +2281,7 @@ module BABYLON {
          * @param result defines the Vector3 where to store the result
          */
         public static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
-            var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + (vector.z * transformation.m[8]);
-            var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + (vector.z * transformation.m[9]);
-            var z = (vector.x * transformation.m[2]) + (vector.y * transformation.m[6]) + (vector.z * transformation.m[10]);
-            result.x = x;
-            result.y = y;
-            result.z = z;
+            this.TransformNormalFromFloatsToRef(vector.x, vector.y, vector.z, transformation, result);
         }
 
         /**
@@ -2310,9 +2294,10 @@ module BABYLON {
          * @param result defines the Vector3 where to store the result
          */
         public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
-            result.x = (x * transformation.m[0]) + (y * transformation.m[4]) + (z * transformation.m[8]);
-            result.y = (x * transformation.m[1]) + (y * transformation.m[5]) + (z * transformation.m[9]);
-            result.z = (x * transformation.m[2]) + (y * transformation.m[6]) + (z * transformation.m[10]);
+            const m = transformation.m;
+            result.x = x * m[0] + y * m[4] + z * m[8];
+            result.y = x * m[1] + y * m[5] + z * m[9];
+            result.z = x * m[2] + y * m[6] + z * m[10];
         }
 
         /**
@@ -2471,8 +2456,7 @@ module BABYLON {
          * @param result defines the Vector3 where to store the result
          */
         public static NormalizeToRef(vector: Vector3, result: Vector3): void {
-            result.copyFrom(vector);
-            result.normalize();
+            vector.normalizeToRef(result);
         }
 
         private static _viewportMatrixCache: Matrix;
@@ -3103,14 +3087,7 @@ module BABYLON {
                 return this;
             }
 
-            var num = 1.0 / len;
-
-            this.x *= num;
-            this.y *= num;
-            this.z *= num;
-            this.w *= num;
-
-            return this;
+            return this.scaleInPlace(1.0 / len);
         }
 
         /**
@@ -3164,6 +3141,16 @@ module BABYLON {
          */
         public set(x: number, y: number, z: number, w: number): Vector4 {
             return this.copyFromFloats(x, y, z, w);
+        }
+
+        /**
+         * Copies the given float to the current Vector3 coordinates
+         * @param v defines the x, y, z and w coordinates of the operand
+         * @returns the current updated Vector3
+         */
+        public setAll(v: number): Vector4 {
+            this.x = this.y = this.z = this.w = v;
+            return this;
         }
 
         // Statics
@@ -3327,9 +3314,10 @@ module BABYLON {
          * @param result the vector to store the result in
          */
         public static TransformNormalToRef(vector: Vector4, transformation: Matrix, result: Vector4): void {
-            var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + (vector.z * transformation.m[8]);
-            var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + (vector.z * transformation.m[9]);
-            var z = (vector.x * transformation.m[2]) + (vector.y * transformation.m[6]) + (vector.z * transformation.m[10]);
+            const m = transformation.m;
+            var x = (vector.x * m[0]) + (vector.y * m[4]) + (vector.z * m[8]);
+            var y = (vector.x * m[1]) + (vector.y * m[5]) + (vector.z * m[9]);
+            var z = (vector.x * m[2]) + (vector.y * m[6]) + (vector.z * m[10]);
             result.x = x;
             result.y = y;
             result.z = z;
@@ -3347,9 +3335,10 @@ module BABYLON {
          * @param result the vector to store the results in
          */
         public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: Matrix, result: Vector4): void {
-            result.x = (x * transformation.m[0]) + (y * transformation.m[4]) + (z * transformation.m[8]);
-            result.y = (x * transformation.m[1]) + (y * transformation.m[5]) + (z * transformation.m[9]);
-            result.z = (x * transformation.m[2]) + (y * transformation.m[6]) + (z * transformation.m[10]);
+            const m = transformation.m;
+            result.x = (x * m[0]) + (y * m[4]) + (z * m[8]);
+            result.y = (x * m[1]) + (y * m[5]) + (z * m[9]);
+            result.z = (x * m[2]) + (y * m[6]) + (z * m[10]);
             result.w = w;
         }
     }
@@ -7179,10 +7168,11 @@ module BABYLON {
      * @hidden
      */
     export class Tmp {
+
         public static Color3: Color3[] = Tools.BuildArray(3, Color3.Black);
         public static Color4: Color4[] = Tools.BuildArray(3, () => new Color4(0, 0, 0, 0));
         public static Vector2: Vector2[] = Tools.BuildArray(3, Vector2.Zero); // 3 temp Vector2 at once should be enough
-        public static Vector3: Vector3[] = Tools.BuildArray(9, Vector3.Zero); // 9 temp Vector3 at once should be enough
+        public static Vector3: Vector3[] = Tools.BuildArray(13, Vector3.Zero); // 13 temp Vector3 at once should be enough
         public static Vector4: Vector4[] = Tools.BuildArray(3, Vector4.Zero); // 3 temp Vector4 at once should be enough
         public static Quaternion: Quaternion[] = Tools.BuildArray(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
         public static Matrix: Matrix[] = Tools.BuildArray(6, Matrix.Identity); // 6 temp Matrices at once should be enough
