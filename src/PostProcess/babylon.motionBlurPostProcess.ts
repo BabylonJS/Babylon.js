@@ -74,5 +74,18 @@ module BABYLON {
                 }
             };
         }
+
+        /**
+         * Disposes the post process.
+         * @param camera The camera to dispose the post process on.
+         */
+        public dispose(camera?: Camera): void {
+            if (this._geometryBufferRenderer) {
+                // Clear previous transformation matrices dictionary used to compute objects velocities
+                this._geometryBufferRenderer._previousTransformationMatrices = { };
+            }
+
+            super.dispose(camera);
+        }
     }
 }
