@@ -2218,6 +2218,16 @@ module BABYLON {
             let index: number;
             let engine = this.getEngine();
 
+            // Effects
+            if (!engine.areAllEffectsReady()) {
+                return false;
+            }
+
+            // Pending data
+            if (this._pendingData.length > 0) {
+                return false;
+            }
+
             // Meshes
             for (index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
@@ -2241,11 +2251,6 @@ module BABYLON {
                         return false;
                     }
                 }
-            }
-
-            // Pending data
-            if (this._pendingData.length > 0) {
-                return false;
             }
 
             // Geometries

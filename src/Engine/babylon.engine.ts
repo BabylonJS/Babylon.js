@@ -1243,6 +1243,22 @@ module BABYLON {
             Effect.ResetCache();
         }
 
+        /**
+         * Gets a boolean indicating if all created effects are ready
+         * @returns true if all effects are ready
+         */
+        public areAllEffectsReady(): boolean {
+            for (var key in this._compiledEffects) {
+                let effect = <Effect>this._compiledEffects[key];
+
+                if (!effect.isReady()) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         private _rebuildBuffers(): void {
             // Index / Vertex
             for (var scene of this.scenes) {
@@ -3373,16 +3389,16 @@ module BABYLON {
 
         /** @hidden */
         public _isProgramCompiled(shaderProgram: WebGLProgram): boolean {
-           if (!shaderProgram.isParallelCompiled) {
-               return true;
-           }
+            if (!shaderProgram.isParallelCompiled) {
+                return true;
+            }
 
-           if (this._gl.getProgramParameter(shaderProgram, this._caps.parallelShaderCompile.COMPLETION_STATUS_KHR)) {
-               this._finalizeProgram(shaderProgram);
-               return true;
-           }
+            if (this._gl.getProgramParameter(shaderProgram, this._caps.parallelShaderCompile.COMPLETION_STATUS_KHR)) {
+                this._finalizeProgram(shaderProgram);
+                return true;
+            }
 
-           return false;
+            return false;
         }
 
         /** @hidden */

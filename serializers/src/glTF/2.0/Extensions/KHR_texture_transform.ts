@@ -99,8 +99,8 @@ module BABYLON.GLTF2.Exporter.Extensions {
                 if (proceduralTexture.isReady()) {
                     proceduralTexture.render();
                     resolve(proceduralTexture);
-                }else {
-                    (proceduralTexture as any)._effect.onCompileObservable.add(() => {
+                } else {
+                    (proceduralTexture as any).getEffect().executeWhenCompiled(() => {
                         proceduralTexture.render();
                         resolve(proceduralTexture);
                     });
