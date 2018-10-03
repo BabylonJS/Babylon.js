@@ -33,7 +33,6 @@ module BABYLON {
         }
 
         private _motionBlurSamples: number = 32;
-        private _motionScale: number = 1;
         private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
 
         /**
@@ -66,8 +65,7 @@ module BABYLON {
             this.onApply = (effect: Effect) => {
                 effect.setVector2("screenSize", new Vector2(this.width, this.height));
 
-                this._motionScale = scene.getEngine().getFps() / 60.0;
-                effect.setFloat("motionScale", this._motionScale);
+                effect.setFloat("motionScale", scene.getAnimationRatio());
                 effect.setFloat("motionStrength", this.motionStrength);
 
                 if (this._geometryBufferRenderer) {
