@@ -671,7 +671,18 @@ var buildExternalLibrary = function(library, settings, watch) {
                 });
             } else {
                 console.log(library.output)
-                var wpConfig = require(library.webpack);
+
+                var wpConfig;
+                if (library.entry) {
+                    wpConfig = require(settings.build.webpack);
+                    wpConfig.entry = {
+                        'main': path.resolve(wpConfig.context, library.entry),
+                    };
+                    wpConfig.output.filename = library.output;
+                }
+                else {
+                    wpConfig = require(library.webpack);
+                }
 
                 let wpBuild = webpackStream(wpConfig, webpack);
 
@@ -730,14 +741,38 @@ gulp.task("mainBuild", gulp.series("buildWorker", "build"));
 gulp.task("typescript", gulp.series("typescript-compile", "mainBuild"));
 
 /**
+ * Dynamic module creation In Serie for WebPack leaks.
+ */
+function buildExternalLibrariesInSeries(settings) {
+    var tasks = settings.libraries.map(function(library) {
+        var build = function(cb) {
+            return buildExternalLibrary(library, settings, false);
+        }
+        return build;
+    });
+
+    return gulp.series.apply(this, tasks);
+}
+
+/**
  * Dynamic module creation.
  */
 config.modules.map(function(module) {
-    gulp.task(module, function() {
-        return buildExternalLibraries(config[module]);
-    });
+    // New Way
+    if (!config[module].buildAsModule) {
+        gulp.task(module, buildExternalLibrariesInSeries(config[module]));
+    }
+    // Soon To Be Gone
+    else {
+        gulp.task(module, function() {
+            return buildExternalLibraries(config[module]);
+        });
+    }
 });
 
+/**
+ * Build all libs.
+ */
 gulp.task("typescript-libraries", gulp.series(config.modules));
 
 /**

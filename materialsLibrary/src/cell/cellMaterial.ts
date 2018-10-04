@@ -1,4 +1,4 @@
-import { Effect, MaterialDefines, PushMaterial, serializeAsTexture, expandToProperty, BaseTexture, serializeAsColor3, Scene, Color3, serialize, AbstractMesh, Nullable, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs"
+import { Effect, MaterialDefines, PushMaterial, serializeAsTexture, expandToProperty, BaseTexture, serializeAsColor3, Scene, Color3, serialize, AbstractMesh, Nullable, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
 
 Effect.ShadersStore["cellPixelShader"] = require("./cell.fragment.fx");
 Effect.ShadersStore["cellVertexShader"] = require("./cell.vertex.fx");
@@ -260,7 +260,6 @@ export class CellMaterial extends PushMaterial {
             this._activeEffect.setMatrix("view", scene.getViewMatrix());
         }
 
-        console.log("TOTO")
         // Fog
         MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
 
