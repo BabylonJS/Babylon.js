@@ -765,6 +765,9 @@ module BABYLON {
          */
         protected _uniformBuffer: UniformBuffer;
 
+        /** @hidden */
+        public _indexInSceneMaterialArray = -1;
+
         /**
          * Creates a material instance
          * @param name defines the name of the material
@@ -788,8 +791,7 @@ module BABYLON {
             this._useUBO = this.getScene().getEngine().supportsUniformBuffers;
 
             if (!doNotAdd) {
-                this._scene.materials.push(this);
-                this._scene.onNewMaterialAddedObservable.notifyObservers(this);
+                this._scene.addMaterial(this);
             }
         }
 
@@ -1261,20 +1263,17 @@ module BABYLON {
          * @param forceDisposeTextures specifies if textures should be forcefully disposed
          */
         public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
+            const scene = this.getScene();
             // Animations
-            this.getScene().stopAnimation(this);
-            this.getScene().freeProcessedMaterials();
+            scene.stopAnimation(this);
+            scene.freeProcessedMaterials();
 
             // Remove from scene
-            var index = this._scene.materials.indexOf(this);
-            if (index >= 0) {
-                this._scene.materials.splice(index, 1);
-            }
-            this._scene.onMaterialRemovedObservable.notifyObservers(this);
+            scene.removeMaterial(this);
 
             // Remove from meshes
-            for (index = 0; index < this._scene.meshes.length; index++) {
-                var mesh = this._scene.meshes[index];
+            for (let index = 0; index < scene.meshes.length; index++) {
+                var mesh = scene.meshes[index];
 
                 if (mesh.material === this) {
                     mesh.material = null;
@@ -1286,7 +1285,7 @@ module BABYLON {
                             for (var subMesh of mesh.subMeshes) {
                                 geometry._releaseVertexArrayObject(subMesh._materialEffect);
                                 if (forceDisposeEffect && subMesh._materialEffect) {
-                                    this._scene.getEngine()._releaseEffect(subMesh._materialEffect);
+                                    scene.getEngine()._releaseEffect(subMesh._materialEffect);
                                 }
                             }
                         } else {
@@ -1301,7 +1300,7 @@ module BABYLON {
             // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
             if (forceDisposeEffect && this._effect) {
                 if (!this.storeEffectOnSubMeshes) {
-                    this._scene.getEngine()._releaseEffect(this._effect);
+                    scene.getEngine()._releaseEffect(this._effect);
                 }
 
                 this._effect = null;
