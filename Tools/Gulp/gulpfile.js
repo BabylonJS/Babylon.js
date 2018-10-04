@@ -772,36 +772,50 @@ gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
     var tasks = [];
 
     config.modules.map(function(module) {
-
-        config[module].libraries.map(function(library) {
-            if (library.webpack) {
-                if (library.noWatch) return;
-                var outputDirectory = config.build.tempDirectory + config[module].build.distOutputDirectory;
-                let wpconfig = require(library.webpack);
-                wpconfig.watch = true;
-                // dev mode and absolute path sourcemaps for debugging
-                wpconfig.mode = "development";
-                wpconfig.output.devtoolModuleFilenameTemplate = "[absolute-resource-path]";
-                //config.stats = "minimal";
-                tasks.push(webpackStream(wpconfig, webpack).pipe(gulp.dest(outputDirectory)))
-            } else {
-                tasks.push(gulp.watch(library.files, { interval: interval }, function() {
-                    console.log(library.output);
-                    return buildExternalLibrary(library, config[module], true)
-                        .pipe(debug());
-                }));
-                tasks.push(gulp.watch(library.shaderFiles, { interval: interval }, function() {
-                    console.log(library.output);
-                    return buildExternalLibrary(library, config[module], true)
-                        .pipe(debug())
-                }));
-                tasks.push(gulp.watch(library.sassFiles, { interval: interval }, function() {
-                    console.log(library.output);
-                    return buildExternalLibrary(library, config[module], true)
-                        .pipe(debug())
-                }));
-            }
-        });
+        if (config[module].build && config[module].build.webpack) {
+            var library = config[module].libraries[0];
+            if (library.noWatch) return;
+            var outputDirectory = config.build.tempDirectory + config[module].build.distOutputDirectory;
+            let wpconfig = require(config[module].build.webpack);
+            wpconfig.watch = true;
+            // dev mode and absolute path sourcemaps for debugging
+            wpconfig.mode = "development";
+            wpconfig.output.devtoolModuleFilenameTemplate = "[absolute-resource-path]";
+            //config.stats = "minimal";
+            tasks.push(webpackStream(wpconfig, webpack).pipe(gulp.dest(outputDirectory)))
+        }
+        else {
+            // Soon To Be Gone
+            config[module].libraries.map(function(library) {
+                if (library.webpack) {
+                    if (library.noWatch) return;
+                    var outputDirectory = config.build.tempDirectory + config[module].build.distOutputDirectory;
+                    let wpconfig = require(library.webpack);
+                    wpconfig.watch = true;
+                    // dev mode and absolute path sourcemaps for debugging
+                    wpconfig.mode = "development";
+                    wpconfig.output.devtoolModuleFilenameTemplate = "[absolute-resource-path]";
+                    //config.stats = "minimal";
+                    tasks.push(webpackStream(wpconfig, webpack).pipe(gulp.dest(outputDirectory)))
+                } else {
+                    tasks.push(gulp.watch(library.files, { interval: interval }, function() {
+                        console.log(library.output);
+                        return buildExternalLibrary(library, config[module], true)
+                            .pipe(debug());
+                    }));
+                    tasks.push(gulp.watch(library.shaderFiles, { interval: interval }, function() {
+                        console.log(library.output);
+                        return buildExternalLibrary(library, config[module], true)
+                            .pipe(debug())
+                    }));
+                    tasks.push(gulp.watch(library.sassFiles, { interval: interval }, function() {
+                        console.log(library.output);
+                        return buildExternalLibrary(library, config[module], true)
+                            .pipe(debug())
+                    }));
+                }
+            });
+        }
     });
 
     console.log(tasks.length);
@@ -1498,4 +1512,4 @@ gulp.task("typescript-all", gulp.series("typescript", "typescript-libraries", "n
 /**
  * The default task, concat and min the main BJS files.
  */
-gulp.task("default", gulp.series("tsLint", "typescript-all", "intellisense", "typedoc-all", "tests-unit", "tests-modules", "tests-validation-virtualscreen", "tests-validation-browserstack"));
+gulp.task("default", gulp.series("tsLint", "typescript-all", "intellisense", "tests-unit", "tests-modules", "tests-validation-virtualscreen", "tests-validation-browserstack"));
