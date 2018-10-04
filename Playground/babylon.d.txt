@@ -41067,192 +41067,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new AnaglyphArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphFreeCamera extends FreeCamera {
-        /**
-         * Creates a new AnaglyphFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new AnaglyphGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new AnaglyphUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphUniversalCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new StereoscopicArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicFreeCamera extends FreeCamera {
-        /**
-         * Creates a new StereoscopicFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new StereoscopicGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new StereoscopicUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicUniversalCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
      * This represents all the required metrics to create a VR camera.
      * @see http://doc.babylonjs.com/babylon101/cameras#device-orientation-camera
      */
@@ -42294,6 +42108,192 @@ declare module BABYLON {
          * Disposes the component and the associated ressources.
          */
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new AnaglyphArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphFreeCamera extends FreeCamera {
+        /**
+         * Creates a new AnaglyphFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new AnaglyphGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new AnaglyphUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphUniversalCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new StereoscopicArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicFreeCamera extends FreeCamera {
+        /**
+         * Creates a new StereoscopicFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new StereoscopicGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new StereoscopicUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicUniversalCamera
+         */
+        getClassName(): string;
     }
 }
 
@@ -55229,172 +55229,858 @@ declare var GLTFValidator: {
     validateString: (json: string, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
 };
 
+/*BabylonJS Materials*/
+// Dependencies for this module:
+//   ../../../../Tools/Gulp/babylonjs
+export declare class CellMaterial extends BABYLON.PushMaterial {
+    diffuseTexture: BABYLON.BaseTexture;
+    diffuseColor: BABYLON.Color3;
+    computeHighLevel: boolean;
+    disableLighting: boolean;
+    maxSimultaneousLights: number;
+    constructor(name: string, scene: BABYLON.Scene);
+    needAlphaBlending(): boolean;
+    needAlphaTesting(): boolean;
+    getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+    isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+    bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+    getAnimatables(): BABYLON.IAnimatable[];
+    getActiveTextures(): BABYLON.BaseTexture[];
+    hasTexture(texture: BABYLON.BaseTexture): boolean;
+    dispose(forceDisposeEffect?: boolean): void;
+    getClassName(): string;
+    clone(name: string): CellMaterial;
+    serialize(): any;
+    static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): CellMaterial;
+}
+export declare class CustomShaderStructure {
+    FragmentStore: string;
+    VertexStore: string;
+    constructor();
+}
+export declare class ShaderSpecialParts {
+    constructor();
+    Fragment_Begin: string;
+    Fragment_Definitions: string;
+    Fragment_MainBegin: string;
+    Fragment_Custom_Diffuse: string;
+    Fragment_Custom_Alpha: string;
+    Fragment_Before_FragColor: string;
+    Vertex_Begin: string;
+    Vertex_Definitions: string;
+    Vertex_MainBegin: string;
+    Vertex_Before_PositionUpdated: string;
+    Vertex_Before_NormalUpdated: string;
+}
+export declare class CustomMaterial extends BABYLON.StandardMaterial {
+    static ShaderIndexer: number;
+    CustomParts: ShaderSpecialParts;
+    FragmentShader: string;
+    VertexShader: string;
+    AttachAfterBind(mesh: BABYLON.Mesh, effect: BABYLON.Effect): void;
+    ReviewUniform(name: string, arr: string[]): string[];
+    Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.StandardMaterialDefines): string;
+    constructor(name: string, scene: BABYLON.Scene);
+    AddUniform(name: string, kind: string, param: any): CustomMaterial;
+    Fragment_Begin(shaderPart: string): CustomMaterial;
+    Fragment_Definitions(shaderPart: string): CustomMaterial;
+    Fragment_MainBegin(shaderPart: string): CustomMaterial;
+    Fragment_Custom_Diffuse(shaderPart: string): CustomMaterial;
+    Fragment_Custom_Alpha(shaderPart: string): CustomMaterial;
+    Fragment_Before_FragColor(shaderPart: string): CustomMaterial;
+    Vertex_Begin(shaderPart: string): CustomMaterial;
+    Vertex_Definitions(shaderPart: string): CustomMaterial;
+    Vertex_MainBegin(shaderPart: string): CustomMaterial;
+    Vertex_Before_PositionUpdated(shaderPart: string): CustomMaterial;
+    Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial;
+}
+export declare class FireMaterial extends BABYLON.PushMaterial {
+    diffuseTexture: BABYLON.Nullable<BABYLON.BaseTexture>;
+    distortionTexture: BABYLON.Nullable<BABYLON.BaseTexture>;
+    opacityTexture: BABYLON.Nullable<BABYLON.BaseTexture>;
+    diffuseColor: BABYLON.Color3;
+    speed: number;
+    constructor(name: string, scene: BABYLON.Scene);
+    needAlphaBlending(): boolean;
+    needAlphaTesting(): boolean;
+    getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+    isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+    bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+    getAnimatables(): BABYLON.IAnimatable[];
+    getActiveTextures(): BABYLON.BaseTexture[];
+    hasTexture(texture: BABYLON.BaseTexture): boolean;
+    getClassName(): string;
+    dispose(forceDisposeEffect?: boolean): void;
+    clone(name: string): FireMaterial;
+    serialize(): any;
+    static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): FireMaterial;
+}
+export declare class FurMaterial extends BABYLON.PushMaterial {
+    diffuseTexture: BABYLON.BaseTexture;
+    heightTexture: BABYLON.BaseTexture;
+    diffuseColor: BABYLON.Color3;
+    furLength: number;
+    furAngle: number;
+    furColor: BABYLON.Color3;
+    furOffset: number;
+    furSpacing: number;
+    furGravity: BABYLON.Vector3;
+    furSpeed: number;
+    furDensity: number;
+    furOcclusion: number;
+    furTexture: BABYLON.DynamicTexture;
+    disableLighting: boolean;
+    maxSimultaneousLights: number;
+    highLevelFur: boolean;
+    constructor(name: string, scene: BABYLON.Scene);
+    furTime: number;
+    needAlphaBlending(): boolean;
+    needAlphaTesting(): boolean;
+    getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+    updateFur(): void;
+    isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+    bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+    getAnimatables(): BABYLON.IAnimatable[];
+    getActiveTextures(): BABYLON.BaseTexture[];
+    hasTexture(texture: BABYLON.BaseTexture): boolean;
+    dispose(forceDisposeEffect?: boolean): void;
+    clone(name: string): FurMaterial;
+    serialize(): any;
+    getClassName(): string;
+    static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): FurMaterial;
+    static GenerateTexture(name: string, scene: BABYLON.Scene): BABYLON.DynamicTexture;
+    static FurifyMesh(sourceMesh: BABYLON.Mesh, quality: number): BABYLON.Mesh[];
+}
+export declare class GradientMaterial extends BABYLON.PushMaterial {
+    maxSimultaneousLights: number;
+    topColor: BABYLON.Color3;
+    topColorAlpha: number;
+    bottomColor: BABYLON.Color3;
+    bottomColorAlpha: number;
+    offset: number;
+    scale: number;
+    smoothness: number;
+    disableLighting: boolean;
+    constructor(name: string, scene: BABYLON.Scene);
+    needAlphaBlending(): boolean;
+    needAlphaTesting(): boolean;
+    getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+    isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+    bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+    getAnimatables(): BABYLON.IAnimatable[];
+    dispose(forceDisposeEffect?: boolean): void;
+    clone(name: string): GradientMaterial;
+    serialize(): any;
+    getClassName(): string;
+    static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): GradientMaterial;
+}
+/**
+    * The grid materials allows you to wrap any shape with a grid.
+    * Colors are customizable.
+    */
+export declare class GridMaterial extends BABYLON.PushMaterial {
+        /**
+            * Main color of the grid (e.g. between lines)
+            */
+        mainColor: BABYLON.Color3;
+        /**
+            * Color of the grid lines.
+            */
+        lineColor: BABYLON.Color3;
+        /**
+            * The scale of the grid compared to unit.
+            */
+        gridRatio: number;
+        /**
+            * Allows setting an offset for the grid lines.
+            */
+        gridOffset: BABYLON.Vector3;
+        /**
+            * The frequency of thicker lines.
+            */
+        majorUnitFrequency: number;
+        /**
+            * The visibility of minor units in the grid.
+            */
+        minorUnitVisibility: number;
+        /**
+            * The grid opacity outside of the lines.
+            */
+        opacity: number;
+        /**
+            * Determine RBG output is premultiplied by alpha value.
+            */
+        preMultiplyAlpha: boolean;
+        /**
+            * constructor
+            * @param name The name given to the material in order to identify it afterwards.
+            * @param scene The scene the material is used in.
+            */
+        constructor(name: string, scene: BABYLON.Scene);
+        /**
+            * Returns wehter or not the grid requires alpha blending.
+            */
+        needAlphaBlending(): boolean;
+        needAlphaBlendingForMesh(mesh: BABYLON.AbstractMesh): boolean;
+        isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): GridMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): GridMaterial;
+}
+export declare class LavaMaterial extends BABYLON.PushMaterial {
+    diffuseTexture: BABYLON.BaseTexture;
+    noiseTexture: BABYLON.BaseTexture;
+    fogColor: BABYLON.Color3;
+    speed: number;
+    movingSpeed: number;
+    lowFrequencySpeed: number;
+    fogDensity: number;
+    diffuseColor: BABYLON.Color3;
+    disableLighting: boolean;
+    unlit: boolean;
+    maxSimultaneousLights: number;
+    constructor(name: string, scene: BABYLON.Scene);
+    needAlphaBlending(): boolean;
+    needAlphaTesting(): boolean;
+    getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+    isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+    bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+    getAnimatables(): BABYLON.IAnimatable[];
+    getActiveTextures(): BABYLON.BaseTexture[];
+    hasTexture(texture: BABYLON.BaseTexture): boolean;
+    dispose(forceDisposeEffect?: boolean): void;
+    clone(name: string): LavaMaterial;
+    serialize(): any;
+    getClassName(): string;
+    static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): LavaMaterial;
+}
+export declare class MixMaterial extends BABYLON.PushMaterial {
+        mixTexture1: BABYLON.BaseTexture;
+        mixTexture2: BABYLON.BaseTexture;
+        diffuseTexture1: BABYLON.Texture;
+        diffuseTexture2: BABYLON.Texture;
+        diffuseTexture3: BABYLON.Texture;
+        diffuseTexture4: BABYLON.Texture;
+        diffuseTexture5: BABYLON.Texture;
+        diffuseTexture6: BABYLON.Texture;
+        diffuseTexture7: BABYLON.Texture;
+        diffuseTexture8: BABYLON.Texture;
+        /**
+            * Uniforms
+            */
+        diffuseColor: BABYLON.Color3;
+        specularColor: BABYLON.Color3;
+        specularPower: number;
+        disableLighting: boolean;
+        maxSimultaneousLights: number;
+        constructor(name: string, scene: BABYLON.Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+        isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+        getAnimatables(): BABYLON.IAnimatable[];
+        getActiveTextures(): BABYLON.BaseTexture[];
+        hasTexture(texture: BABYLON.BaseTexture): boolean;
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): MixMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): MixMaterial;
+}
+export declare class NormalMaterial extends BABYLON.PushMaterial {
+    diffuseTexture: BABYLON.BaseTexture;
+    diffuseColor: BABYLON.Color3;
+    disableLighting: boolean;
+    maxSimultaneousLights: number;
+    constructor(name: string, scene: BABYLON.Scene);
+    needAlphaBlending(): boolean;
+    needAlphaTesting(): boolean;
+    getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+    isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+    bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+    getAnimatables(): BABYLON.IAnimatable[];
+    getActiveTextures(): BABYLON.BaseTexture[];
+    hasTexture(texture: BABYLON.BaseTexture): boolean;
+    dispose(forceDisposeEffect?: boolean): void;
+    clone(name: string): NormalMaterial;
+    serialize(): any;
+    getClassName(): string;
+    static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): NormalMaterial;
+}
+export declare class ShadowOnlyMaterial extends BABYLON.PushMaterial {
+    constructor(name: string, scene: BABYLON.Scene);
+    shadowColor: BABYLON.Color3;
+    needAlphaBlending(): boolean;
+    needAlphaTesting(): boolean;
+    getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+    activeLight: BABYLON.IShadowLight;
+    isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+    bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+    clone(name: string): ShadowOnlyMaterial;
+    serialize(): any;
+    getClassName(): string;
+    static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): ShadowOnlyMaterial;
+}
+export declare class SimpleMaterial extends BABYLON.PushMaterial {
+    diffuseTexture: BABYLON.BaseTexture;
+    diffuseColor: BABYLON.Color3;
+    disableLighting: boolean;
+    maxSimultaneousLights: number;
+    constructor(name: string, scene: BABYLON.Scene);
+    needAlphaBlending(): boolean;
+    needAlphaTesting(): boolean;
+    getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+    isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+    bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+    getAnimatables(): BABYLON.IAnimatable[];
+    getActiveTextures(): BABYLON.BaseTexture[];
+    hasTexture(texture: BABYLON.BaseTexture): boolean;
+    dispose(forceDisposeEffect?: boolean): void;
+    clone(name: string): SimpleMaterial;
+    serialize(): any;
+    getClassName(): string;
+    static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): SimpleMaterial;
+}
+export declare class SkyMaterial extends BABYLON.PushMaterial {
+    luminance: number;
+    turbidity: number;
+    rayleigh: number;
+    mieCoefficient: number;
+    mieDirectionalG: number;
+    distance: number;
+    inclination: number;
+    azimuth: number;
+    sunPosition: BABYLON.Vector3;
+    useSunPosition: boolean;
+    constructor(name: string, scene: BABYLON.Scene);
+    needAlphaBlending(): boolean;
+    needAlphaTesting(): boolean;
+    getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+    isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+    bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+    getAnimatables(): BABYLON.IAnimatable[];
+    dispose(forceDisposeEffect?: boolean): void;
+    clone(name: string): SkyMaterial;
+    serialize(): any;
+    getClassName(): string;
+    static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): SkyMaterial;
+}
+export declare class TerrainMaterial extends BABYLON.PushMaterial {
+    mixTexture: BABYLON.BaseTexture;
+    diffuseTexture1: BABYLON.Texture;
+    diffuseTexture2: BABYLON.Texture;
+    diffuseTexture3: BABYLON.Texture;
+    bumpTexture1: BABYLON.Texture;
+    bumpTexture2: BABYLON.Texture;
+    bumpTexture3: BABYLON.Texture;
+    diffuseColor: BABYLON.Color3;
+    specularColor: BABYLON.Color3;
+    specularPower: number;
+    disableLighting: boolean;
+    maxSimultaneousLights: number;
+    constructor(name: string, scene: BABYLON.Scene);
+    needAlphaBlending(): boolean;
+    needAlphaTesting(): boolean;
+    getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+    isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+    bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+    getAnimatables(): BABYLON.IAnimatable[];
+    getActiveTextures(): BABYLON.BaseTexture[];
+    hasTexture(texture: BABYLON.BaseTexture): boolean;
+    dispose(forceDisposeEffect?: boolean): void;
+    clone(name: string): TerrainMaterial;
+    serialize(): any;
+    getClassName(): string;
+    static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): TerrainMaterial;
+}
+export declare class TriPlanarMaterial extends BABYLON.PushMaterial {
+    mixTexture: BABYLON.BaseTexture;
+    diffuseTextureX: BABYLON.BaseTexture;
+    diffuseTextureY: BABYLON.BaseTexture;
+    diffuseTextureZ: BABYLON.BaseTexture;
+    normalTextureX: BABYLON.BaseTexture;
+    normalTextureY: BABYLON.BaseTexture;
+    normalTextureZ: BABYLON.BaseTexture;
+    tileSize: number;
+    diffuseColor: BABYLON.Color3;
+    specularColor: BABYLON.Color3;
+    specularPower: number;
+    disableLighting: boolean;
+    maxSimultaneousLights: number;
+    constructor(name: string, scene: BABYLON.Scene);
+    needAlphaBlending(): boolean;
+    needAlphaTesting(): boolean;
+    getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+    isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+    bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+    getAnimatables(): BABYLON.IAnimatable[];
+    getActiveTextures(): BABYLON.BaseTexture[];
+    hasTexture(texture: BABYLON.BaseTexture): boolean;
+    dispose(forceDisposeEffect?: boolean): void;
+    clone(name: string): TriPlanarMaterial;
+    serialize(): any;
+    getClassName(): string;
+    static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): TriPlanarMaterial;
+}
+export declare class WaterMaterial extends BABYLON.PushMaterial {
+        renderTargetSize: BABYLON.Vector2;
+        bumpTexture: BABYLON.BaseTexture;
+        diffuseColor: BABYLON.Color3;
+        specularColor: BABYLON.Color3;
+        specularPower: number;
+        disableLighting: boolean;
+        maxSimultaneousLights: number;
+        /**
+         * @param {number}: Represents the wind force
+         */
+        windForce: number;
+        /**
+         * @param {Vector2}: The direction of the wind in the plane (X, Z)
+         */
+        windDirection: BABYLON.Vector2;
+        /**
+         * @param {number}: Wave height, represents the height of the waves
+         */
+        waveHeight: number;
+        /**
+         * @param {number}: Bump height, represents the bump height related to the bump map
+         */
+        bumpHeight: number;
+        bumpSuperimpose: boolean;
+        fresnelSeparate: boolean;
+        bumpAffectsReflection: boolean;
+        /**
+         * @param {number}: The water color blended with the refraction (near)
+         */
+        waterColor: BABYLON.Color3;
+        /**
+         * @param {number}: The blend factor related to the water color
+         */
+        colorBlendFactor: number;
+        /**
+            * @param {number}: The water color blended with the reflection (far)
+            */
+        waterColor2: BABYLON.Color3;
+        /**
+            * @param {number}: The blend factor related to the water color (reflection, far)
+            */
+        colorBlendFactor2: number;
+        /**
+         * @param {number}: Represents the maximum length of a wave
+         */
+        waveLength: number;
+        /**
+         * @param {number}: Defines the waves speed
+         */
+        waveSpeed: number;
+        protected _renderTargets: BABYLON.SmartArray<BABYLON.RenderTargetTexture>;
+        /**
+            * Gets a boolean indicating that current material needs to register RTT
+            */
+        readonly hasRenderTargetTextures: boolean;
+        /**
+         * Constructor
+         */
+        constructor(name: string, scene: BABYLON.Scene, renderTargetSize?: BABYLON.Vector2);
+        useLogarithmicDepth: boolean;
+        readonly refractionTexture: BABYLON.Nullable<BABYLON.RenderTargetTexture>;
+        readonly reflectionTexture: BABYLON.Nullable<BABYLON.RenderTargetTexture>;
+        addToRenderList(node: any): void;
+        enableRenderTargets(enable: boolean): void;
+        getRenderList(): BABYLON.Nullable<BABYLON.AbstractMesh[]>;
+        readonly renderTargetsEnabled: boolean;
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+        isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+        getAnimatables(): BABYLON.IAnimatable[];
+        getActiveTextures(): BABYLON.BaseTexture[];
+        hasTexture(texture: BABYLON.BaseTexture): boolean;
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): WaterMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): WaterMaterial;
+        static CreateDefaultMesh(name: string, scene: BABYLON.Scene): BABYLON.Mesh;
+}
 /*BabylonJS Postprocess library*/
 // Dependencies for this module:
 //   ../../../../Tools/Gulp/babylonjs
-declare module BABYLON {
+/**
+    * AsciiArtFontTexture is the helper class used to easily create your ascii art font texture.
+    *
+    * It basically takes care rendering the font front the given font size to a texture.
+    * This is used later on in the postprocess.
+    */
+export declare class AsciiArtFontTexture extends BABYLON.BaseTexture {
+        /**
+            * Gets the size of one char in the texture (each char fits in size * size space in the texture).
+            */
+        readonly charSize: number;
+        /**
+            * Create a new instance of the Ascii Art FontTexture class
+            * @param name the name of the texture
+            * @param font the font to use, use the W3C CSS notation
+            * @param text the caracter set to use in the rendering.
+            * @param scene the scene that owns the texture
+            */
+        constructor(name: string, font: string, text: string, scene?: BABYLON.Nullable<BABYLON.Scene>);
+        /**
+            * Clones the current AsciiArtTexture.
+            * @return the clone of the texture.
+            */
+        clone(): AsciiArtFontTexture;
+        /**
+            * Parses a json object representing the texture and returns an instance of it.
+            * @param source the source JSON representation
+            * @param scene the scene to create the texture for
+            * @return the parsed texture
+            */
+        static Parse(source: any, scene: BABYLON.Scene): AsciiArtFontTexture;
 }
-declare module BABYLON {
+/**
+    * Option available in the Ascii Art Post Process.
+    */
+export interface IAsciiArtPostProcessOptions {
+        /**
+            * The font to use following the w3c font definition.
+            */
+        font?: string;
+        /**
+            * The character set to use in the postprocess.
+            */
+        characterSet?: string;
+        /**
+            * This defines the amount you want to mix the "tile" or caracter space colored in the ascii art.
+            * This number is defined between 0 and 1;
+            */
+        mixToTile?: number;
+        /**
+            * This defines the amount you want to mix the normal rendering pass in the ascii art.
+            * This number is defined between 0 and 1;
+            */
+        mixToNormal?: number;
 }
-declare module BABYLON {
+/**
+    * AsciiArtPostProcess helps rendering everithing in Ascii Art.
+    *
+    * Simmply add it to your scene and let the nerd that lives in you have fun.
+    * Example usage: var pp = new AsciiArtPostProcess("myAscii", "20px Monospace", camera);
+    */
+export declare class AsciiArtPostProcess extends BABYLON.PostProcess {
+        /**
+            * This defines the amount you want to mix the "tile" or caracter space colored in the ascii art.
+            * This number is defined between 0 and 1;
+            */
+        mixToTile: number;
+        /**
+            * This defines the amount you want to mix the normal rendering pass in the ascii art.
+            * This number is defined between 0 and 1;
+            */
+        mixToNormal: number;
+        /**
+            * Instantiates a new Ascii Art Post Process.
+            * @param name the name to give to the postprocess
+            * @camera the camera to apply the post process to.
+            * @param options can either be the font name or an option object following the IAsciiArtPostProcessOptions format
+            */
+        constructor(name: string, camera: BABYLON.Camera, options?: string | IAsciiArtPostProcessOptions);
 }
-declare module BABYLON {
-    /**
-        * AsciiArtFontTexture is the helper class used to easily create your ascii art font texture.
-        *
-        * It basically takes care rendering the font front the given font size to a texture.
-        * This is used later on in the postprocess.
-        */
-    export class AsciiArtFontTexture extends BABYLON.BaseTexture {
-            /**
-                * Gets the size of one char in the texture (each char fits in size * size space in the texture).
-                */
-            readonly charSize: number;
-            /**
-                * Create a new instance of the Ascii Art FontTexture class
-                * @param name the name of the texture
-                * @param font the font to use, use the W3C CSS notation
-                * @param text the caracter set to use in the rendering.
-                * @param scene the scene that owns the texture
-                */
-            constructor(name: string, font: string, text: string, scene?: BABYLON.Nullable<BABYLON.Scene>);
-            /**
-                * Clones the current AsciiArtTexture.
-                * @return the clone of the texture.
-                */
-            clone(): AsciiArtFontTexture;
-            /**
-                * Parses a json object representing the texture and returns an instance of it.
-                * @param source the source JSON representation
-                * @param scene the scene to create the texture for
-                * @return the parsed texture
-                */
-            static Parse(source: any, scene: BABYLON.Scene): AsciiArtFontTexture;
-    }
-    /**
-        * Option available in the Ascii Art Post Process.
-        */
-    export interface IAsciiArtPostProcessOptions {
-            /**
-                * The font to use following the w3c font definition.
-                */
-            font?: string;
-            /**
-                * The character set to use in the postprocess.
-                */
-            characterSet?: string;
-            /**
-                * This defines the amount you want to mix the "tile" or caracter space colored in the ascii art.
-                * This number is defined between 0 and 1;
-                */
-            mixToTile?: number;
-            /**
-                * This defines the amount you want to mix the normal rendering pass in the ascii art.
-                * This number is defined between 0 and 1;
-                */
-            mixToNormal?: number;
-    }
-    /**
-        * AsciiArtPostProcess helps rendering everithing in Ascii Art.
-        *
-        * Simmply add it to your scene and let the nerd that lives in you have fun.
-        * Example usage: var pp = new AsciiArtPostProcess("myAscii", "20px Monospace", camera);
-        */
-    export class AsciiArtPostProcess extends BABYLON.PostProcess {
-            /**
-                * This defines the amount you want to mix the "tile" or caracter space colored in the ascii art.
-                * This number is defined between 0 and 1;
-                */
-            mixToTile: number;
-            /**
-                * This defines the amount you want to mix the normal rendering pass in the ascii art.
-                * This number is defined between 0 and 1;
-                */
-            mixToNormal: number;
-            /**
-                * Instantiates a new Ascii Art Post Process.
-                * @param name the name to give to the postprocess
-                * @camera the camera to apply the post process to.
-                * @param options can either be the font name or an option object following the IAsciiArtPostProcessOptions format
-                */
-            constructor(name: string, camera: BABYLON.Camera, options?: string | IAsciiArtPostProcessOptions);
-    }
+/**
+    * DigitalRainFontTexture is the helper class used to easily create your digital rain font texture.
+    *
+    * It basically takes care rendering the font front the given font size to a texture.
+    * This is used later on in the postprocess.
+    */
+export declare class DigitalRainFontTexture extends BABYLON.BaseTexture {
+        /**
+            * Gets the size of one char in the texture (each char fits in size * size space in the texture).
+            */
+        readonly charSize: number;
+        /**
+            * Create a new instance of the Digital Rain FontTexture class
+            * @param name the name of the texture
+            * @param font the font to use, use the W3C CSS notation
+            * @param text the caracter set to use in the rendering.
+            * @param scene the scene that owns the texture
+            */
+        constructor(name: string, font: string, text: string, scene?: BABYLON.Nullable<BABYLON.Scene>);
+        /**
+            * Clones the current DigitalRainFontTexture.
+            * @return the clone of the texture.
+            */
+        clone(): DigitalRainFontTexture;
+        /**
+            * Parses a json object representing the texture and returns an instance of it.
+            * @param source the source JSON representation
+            * @param scene the scene to create the texture for
+            * @return the parsed texture
+            */
+        static Parse(source: any, scene: BABYLON.Scene): DigitalRainFontTexture;
 }
-declare module BABYLON {
-    /**
-        * DigitalRainFontTexture is the helper class used to easily create your digital rain font texture.
-        *
-        * It basically takes care rendering the font front the given font size to a texture.
-        * This is used later on in the postprocess.
-        */
-    export class DigitalRainFontTexture extends BABYLON.BaseTexture {
-            /**
-                * Gets the size of one char in the texture (each char fits in size * size space in the texture).
-                */
-            readonly charSize: number;
-            /**
-                * Create a new instance of the Digital Rain FontTexture class
-                * @param name the name of the texture
-                * @param font the font to use, use the W3C CSS notation
-                * @param text the caracter set to use in the rendering.
-                * @param scene the scene that owns the texture
-                */
-            constructor(name: string, font: string, text: string, scene?: BABYLON.Nullable<BABYLON.Scene>);
-            /**
-                * Clones the current DigitalRainFontTexture.
-                * @return the clone of the texture.
-                */
-            clone(): DigitalRainFontTexture;
-            /**
-                * Parses a json object representing the texture and returns an instance of it.
-                * @param source the source JSON representation
-                * @param scene the scene to create the texture for
-                * @return the parsed texture
-                */
-            static Parse(source: any, scene: BABYLON.Scene): DigitalRainFontTexture;
-    }
-    /**
-        * Option available in the Digital Rain Post Process.
-        */
-    export interface IDigitalRainPostProcessOptions {
-            /**
-                * The font to use following the w3c font definition.
-                */
-            font?: string;
-            /**
-                * This defines the amount you want to mix the "tile" or caracter space colored in the digital rain.
-                * This number is defined between 0 and 1;
-                */
-            mixToTile?: number;
-            /**
-                * This defines the amount you want to mix the normal rendering pass in the digital rain.
-                * This number is defined between 0 and 1;
-                */
-            mixToNormal?: number;
-    }
-    /**
-        * DigitalRainPostProcess helps rendering everithing in digital rain.
-        *
-        * Simmply add it to your scene and let the nerd that lives in you have fun.
-        * Example usage: var pp = new DigitalRainPostProcess("digitalRain", "20px Monospace", camera);
-        */
-    export class DigitalRainPostProcess extends BABYLON.PostProcess {
-            /**
-                * This defines the amount you want to mix the "tile" or caracter space colored in the digital rain.
-                * This number is defined between 0 and 1;
-                */
-            mixToTile: number;
-            /**
-                * This defines the amount you want to mix the normal rendering pass in the digital rain.
-                * This number is defined between 0 and 1;
-                */
-            mixToNormal: number;
-            /**
-                * Instantiates a new Digital Rain Post Process.
-                * @param name the name to give to the postprocess
-                * @camera the camera to apply the post process to.
-                * @param options can either be the font name or an option object following the IDigitalRainPostProcessOptions format
-                */
-            constructor(name: string, camera: BABYLON.Camera, options?: string | IDigitalRainPostProcessOptions);
-    }
+/**
+    * Option available in the Digital Rain Post Process.
+    */
+export interface IDigitalRainPostProcessOptions {
+        /**
+            * The font to use following the w3c font definition.
+            */
+        font?: string;
+        /**
+            * This defines the amount you want to mix the "tile" or caracter space colored in the digital rain.
+            * This number is defined between 0 and 1;
+            */
+        mixToTile?: number;
+        /**
+            * This defines the amount you want to mix the normal rendering pass in the digital rain.
+            * This number is defined between 0 and 1;
+            */
+        mixToNormal?: number;
+}
+/**
+    * DigitalRainPostProcess helps rendering everithing in digital rain.
+    *
+    * Simmply add it to your scene and let the nerd that lives in you have fun.
+    * Example usage: var pp = new DigitalRainPostProcess("digitalRain", "20px Monospace", camera);
+    */
+export declare class DigitalRainPostProcess extends BABYLON.PostProcess {
+        /**
+            * This defines the amount you want to mix the "tile" or caracter space colored in the digital rain.
+            * This number is defined between 0 and 1;
+            */
+        mixToTile: number;
+        /**
+            * This defines the amount you want to mix the normal rendering pass in the digital rain.
+            * This number is defined between 0 and 1;
+            */
+        mixToNormal: number;
+        /**
+            * Instantiates a new Digital Rain Post Process.
+            * @param name the name to give to the postprocess
+            * @camera the camera to apply the post process to.
+            * @param options can either be the font name or an option object following the IDigitalRainPostProcessOptions format
+            */
+        constructor(name: string, camera: BABYLON.Camera, options?: string | IDigitalRainPostProcessOptions);
+}
+/*BabylonJS Procedural Textures*/
+// Dependencies for this module:
+//   ../../../../Tools/Gulp/babylonjs
+export declare class BrickProceduralTexture extends BABYLON.ProceduralTexture {
+        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        updateShaderUniforms(): void;
+        numberOfBricksHeight: number;
+        numberOfBricksWidth: number;
+        jointColor: BABYLON.Color3;
+        brickColor: BABYLON.Color3;
+        /**
+            * Serializes this brick procedural texture
+            * @returns a serialized brick procedural texture object
+            */
+        serialize(): any;
+        /**
+            * Creates a Brick Procedural BABYLON.Texture from parsed brick procedural texture data
+            * @param parsedTexture defines parsed texture data
+            * @param scene defines the current scene
+            * @param rootUrl defines the root URL containing brick procedural texture information
+            * @returns a parsed Brick Procedural BABYLON.Texture
+            */
+        static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): BrickProceduralTexture;
+}
+export declare class CloudProceduralTexture extends BABYLON.ProceduralTexture {
+        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        updateShaderUniforms(): void;
+        skyColor: BABYLON.Color4;
+        cloudColor: BABYLON.Color4;
+        /**
+            * Serializes this cloud procedural texture
+            * @returns a serialized cloud procedural texture object
+            */
+        serialize(): any;
+        /**
+            * Creates a Cloud Procedural BABYLON.Texture from parsed cloud procedural texture data
+            * @param parsedTexture defines parsed texture data
+            * @param scene defines the current scene
+            * @param rootUrl defines the root URL containing cloud procedural texture information
+            * @returns a parsed Cloud Procedural BABYLON.Texture
+            */
+        static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): CloudProceduralTexture;
+}
+export declare class FireProceduralTexture extends BABYLON.ProceduralTexture {
+        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        updateShaderUniforms(): void;
+        render(useCameraPostProcess?: boolean): void;
+        static readonly PurpleFireColors: BABYLON.Color3[];
+        static readonly GreenFireColors: BABYLON.Color3[];
+        static readonly RedFireColors: BABYLON.Color3[];
+        static readonly BlueFireColors: BABYLON.Color3[];
+        autoGenerateTime: boolean;
+        fireColors: BABYLON.Color3[];
+        time: number;
+        speed: BABYLON.Vector2;
+        alphaThreshold: number;
+        /**
+            * Serializes this fire procedural texture
+            * @returns a serialized fire procedural texture object
+            */
+        serialize(): any;
+        /**
+            * Creates a Fire Procedural BABYLON.Texture from parsed fire procedural texture data
+            * @param parsedTexture defines parsed texture data
+            * @param scene defines the current scene
+            * @param rootUrl defines the root URL containing fire procedural texture information
+            * @returns a parsed Fire Procedural BABYLON.Texture
+            */
+        static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): FireProceduralTexture;
+}
+export declare class GrassProceduralTexture extends BABYLON.ProceduralTexture {
+        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        updateShaderUniforms(): void;
+        grassColors: BABYLON.Color3[];
+        groundColor: BABYLON.Color3;
+        /**
+            * Serializes this grass procedural texture
+            * @returns a serialized grass procedural texture object
+            */
+        serialize(): any;
+        /**
+            * Creates a Grass Procedural BABYLON.Texture from parsed grass procedural texture data
+            * @param parsedTexture defines parsed texture data
+            * @param scene defines the current scene
+            * @param rootUrl defines the root URL containing grass procedural texture information
+            * @returns a parsed Grass Procedural BABYLON.Texture
+            */
+        static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): GrassProceduralTexture;
+}
+export declare class MarbleProceduralTexture extends BABYLON.ProceduralTexture {
+        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        updateShaderUniforms(): void;
+        numberOfTilesHeight: number;
+        amplitude: number;
+        numberOfTilesWidth: number;
+        jointColor: BABYLON.Color3;
+        /**
+            * Serializes this marble procedural texture
+            * @returns a serialized marble procedural texture object
+            */
+        serialize(): any;
+        /**
+            * Creates a Marble Procedural BABYLON.Texture from parsed marble procedural texture data
+            * @param parsedTexture defines parsed texture data
+            * @param scene defines the current scene
+            * @param rootUrl defines the root URL containing marble procedural texture information
+            * @returns a parsed Marble Procedural BABYLON.Texture
+            */
+        static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): MarbleProceduralTexture;
+}
+export declare class NormalMapProceduralTexture extends BABYLON.ProceduralTexture {
+        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        updateShaderUniforms(): void;
+        render(useCameraPostProcess?: boolean): void;
+        resize(size: any, generateMipMaps: any): void;
+        baseTexture: BABYLON.Texture;
+        /**
+            * Serializes this normal map procedural texture
+            * @returns a serialized normal map procedural texture object
+            */
+        serialize(): any;
+        /**
+            * Creates a Normal Map Procedural BABYLON.Texture from parsed normal map procedural texture data
+            * @param parsedTexture defines parsed texture data
+            * @param scene defines the current scene
+            * @param rootUrl defines the root URL containing normal map procedural texture information
+            * @returns a parsed Normal Map Procedural BABYLON.Texture
+            */
+        static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): NormalMapProceduralTexture;
+}
+export declare class PerlinNoiseProceduralTexture extends BABYLON.ProceduralTexture {
+        time: number;
+        timeScale: number;
+        translationSpeed: number;
+        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        updateShaderUniforms(): void;
+        render(useCameraPostProcess?: boolean): void;
+        resize(size: any, generateMipMaps: any): void;
+        /**
+            * Serializes this perlin noise procedural texture
+            * @returns a serialized perlin noise procedural texture object
+            */
+        serialize(): any;
+        /**
+            * Creates a Perlin Noise Procedural BABYLON.Texture from parsed perlin noise procedural texture data
+            * @param parsedTexture defines parsed texture data
+            * @param scene defines the current scene
+            * @param rootUrl defines the root URL containing perlin noise procedural texture information
+            * @returns a parsed Perlin Noise Procedural BABYLON.Texture
+            */
+        static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): PerlinNoiseProceduralTexture;
+}
+export declare class RoadProceduralTexture extends BABYLON.ProceduralTexture {
+        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        updateShaderUniforms(): void;
+        roadColor: BABYLON.Color3;
+        /**
+            * Serializes this road procedural texture
+            * @returns a serialized road procedural texture object
+            */
+        serialize(): any;
+        /**
+            * Creates a Road Procedural BABYLON.Texture from parsed road procedural texture data
+            * @param parsedTexture defines parsed texture data
+            * @param scene defines the current scene
+            * @param rootUrl defines the root URL containing road procedural texture information
+            * @returns a parsed Road Procedural BABYLON.Texture
+            */
+        static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): RoadProceduralTexture;
+}
+export declare class StarfieldProceduralTexture extends BABYLON.ProceduralTexture {
+        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        updateShaderUniforms(): void;
+        time: number;
+        alpha: number;
+        beta: number;
+        formuparam: number;
+        stepsize: number;
+        zoom: number;
+        tile: number;
+        brightness: number;
+        darkmatter: number;
+        distfading: number;
+        saturation: number;
+        /**
+            * Serializes this starfield procedural texture
+            * @returns a serialized starfield procedural texture object
+            */
+        serialize(): any;
+        /**
+            * Creates a Starfield Procedural BABYLON.Texture from parsed startfield procedural texture data
+            * @param parsedTexture defines parsed texture data
+            * @param scene defines the current scene
+            * @param rootUrl defines the root URL containing startfield procedural texture information
+            * @returns a parsed Starfield Procedural BABYLON.Texture
+            */
+        static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): StarfieldProceduralTexture;
+}
+export declare class WoodProceduralTexture extends BABYLON.ProceduralTexture {
+        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        updateShaderUniforms(): void;
+        ampScale: number;
+        woodColor: BABYLON.Color3;
+        /**
+            * Serializes this wood procedural texture
+            * @returns a serialized wood procedural texture object
+            */
+        serialize(): any;
+        /**
+            * Creates a Wood Procedural BABYLON.Texture from parsed wood procedural texture data
+            * @param parsedTexture defines parsed texture data
+            * @param scene defines the current scene
+            * @param rootUrl defines the root URL containing wood procedural texture information
+            * @returns a parsed Wood Procedural BABYLON.Texture
+            */
+        static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): WoodProceduralTexture;
 }
