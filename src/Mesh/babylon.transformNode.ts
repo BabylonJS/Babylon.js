@@ -31,7 +31,6 @@ module BABYLON {
         private _up = new Vector3(0, 1, 0);
         private _right = new Vector3(1, 0, 0);
         private _rightInverted = new Vector3(-1, 0, 0);
-        private static TmpVector3 = Tools.BuildArray(5, Vector3.Zero);
 
         // Properties
         @serializeAsVector3("position")
@@ -572,8 +571,8 @@ module BABYLON {
             }
 
             var quatRotation = Tmp.Quaternion[0];
-            var position = TransformNode.TmpVector3[0];
-            var scale = TransformNode.TmpVector3[1];
+            var position = Tmp.Vector3[0];
+            var scale = Tmp.Vector3[1];
 
             if (!node) {
                 if (this.parent && this.parent.computeWorldMatrix) {
@@ -708,9 +707,9 @@ module BABYLON {
                 this.rotation.setAll(0);
             }
 
-            const tmpVector = TransformNode.TmpVector3[0];
-            const finalScale = TransformNode.TmpVector3[1];
-            const finalTranslation = TransformNode.TmpVector3[2];
+            const tmpVector = Tmp.Vector3[0];
+            const finalScale = Tmp.Vector3[1];
+            const finalTranslation = Tmp.Vector3[2];
 
             const finalRotation = Tmp.Quaternion[0];
 
@@ -859,7 +858,7 @@ module BABYLON {
             if (this.billboardMode !== TransformNode.BILLBOARDMODE_NONE && camera) {
                 if ((this.billboardMode & TransformNode.BILLBOARDMODE_ALL) !== TransformNode.BILLBOARDMODE_ALL) {
                     // Need to decompose each rotation here
-                    var currentPosition = TransformNode.TmpVector3[3];
+                    var currentPosition = Tmp.Vector3[3];
 
                     if (this.parent && this.parent.getWorldMatrix) {
                         if (this._transformToBoneReferal) {
@@ -874,7 +873,7 @@ module BABYLON {
 
                     currentPosition.subtractInPlace(camera.globalPosition);
 
-                    var finalEuler = TransformNode.TmpVector3[4].copyFromFloats(0, 0, 0);
+                    var finalEuler = Tmp.Vector3[4].copyFromFloats(0, 0, 0);
                     if ((this.billboardMode & TransformNode.BILLBOARDMODE_X) === TransformNode.BILLBOARDMODE_X) {
                         finalEuler.x = Math.atan2(-currentPosition.y, currentPosition.z);
                     }
@@ -917,10 +916,10 @@ module BABYLON {
                         Tmp.Matrix[5].copyFrom(this.parent.getWorldMatrix());
                     }
 
-                    this._localWorld.getTranslationToRef(TransformNode.TmpVector3[5]);
-                    Vector3.TransformCoordinatesToRef(TransformNode.TmpVector3[5], Tmp.Matrix[5], TransformNode.TmpVector3[5]);
+                    this._localWorld.getTranslationToRef(Tmp.Vector3[5]);
+                    Vector3.TransformCoordinatesToRef(Tmp.Vector3[5], Tmp.Matrix[5], Tmp.Vector3[5]);
                     this._worldMatrix.copyFrom(this._localWorld);
-                    this._worldMatrix.setTranslation(TransformNode.TmpVector3[5]);
+                    this._worldMatrix.setTranslation(Tmp.Vector3[5]);
 
                 } else {
                     if (this._transformToBoneReferal) {
