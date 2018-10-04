@@ -16,7 +16,7 @@ module BABYLON {
          * You can pass this value to cancelAnimationFrame() to cancel the refresh callback request
          * @see https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame#Return_value
          */
-        requestID: Nullable<number>;
+        requestID?: number;
     }
 
     /**
