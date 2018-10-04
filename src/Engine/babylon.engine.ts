@@ -623,11 +623,11 @@ module BABYLON {
          * Observable raised when the engine begins a new frame
          */
         public onBeginFrameObservable = new Observable<Engine>();
-        
+
         /**
          * If set, will be used to request the next animation frame for the render loop
          */
-        public customAnimationFrameRequester:Nullable<ICustomAnimationFrameRequester> = null;
+        public customAnimationFrameRequester: Nullable<ICustomAnimationFrameRequester> = null;
 
         /**
          * Observable raised when the engine ends the current frame
@@ -1899,12 +1899,12 @@ module BABYLON {
 
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                if(this.customAnimationFrameRequester){
+                if (this.customAnimationFrameRequester) {
                     this.customAnimationFrameRequester.requestID = Tools.QueueNewFrame(this.customAnimationFrameRequester.renderFunction || this._bindedRenderFunction, this.customAnimationFrameRequester);
                     this._frameHandler = this.customAnimationFrameRequester.requestID;
-                }else if (this._vrDisplay && this._vrDisplay.isPresenting){
+                } else if (this._vrDisplay && this._vrDisplay.isPresenting) {
                     this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplay);
-                }else{
+                } else {
                     this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
                 }
             } else {
@@ -4421,7 +4421,7 @@ module BABYLON {
             }
 
             this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
-                this._rescalePostProcess.onApply = function(effect) {
+                this._rescalePostProcess.onApply = function (effect) {
                     effect._bindTexture("textureSampler", source);
                 };
 
