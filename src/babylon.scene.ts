@@ -3167,10 +3167,18 @@ module BABYLON {
          * @returns The index of the removed material
          */
         public removeMaterial(toRemove: Material): number {
-            var index = this.materials.indexOf(toRemove);
+            var index = toRemove._indexInSceneMaterialArray;
             if (index !== -1) {
-                this.materials.splice(index, 1);
+                if (index !== this.materials.length - 1) {
+                    const lastMaterial = this.materials[this.materials.length - 1];
+                    this.materials[index] = lastMaterial;
+                    lastMaterial._indexInSceneMaterialArray = index;
+                }
+
+                toRemove._indexInSceneMaterialArray = -1;
+                this.materials.pop();
             }
+
             this.onMaterialRemovedObservable.notifyObservers(toRemove);
 
             return index;
@@ -3286,6 +3294,7 @@ module BABYLON {
          * @param newMaterial The material to add
          */
         public addMaterial(newMaterial: Material): void {
+            newMaterial._indexInSceneMaterialArray = this.materials.length;
             this.materials.push(newMaterial);
             this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
         }
