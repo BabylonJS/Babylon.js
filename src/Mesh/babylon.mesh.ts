@@ -213,6 +213,8 @@ module BABYLON {
 
         // Will be used to save a source mesh reference, If any
         private _source: Nullable<Mesh> = null;
+        // Will be used to for fast cloned mesh lookup
+        private meshMap: Nullable<{[id: string]: Mesh | undefined}>;
 
         /**
          * Gets the source mesh (the one used to clone this one from)
@@ -266,6 +268,12 @@ module BABYLON {
 
                 // Source mesh
                 this._source = source;
+                if (scene.useClonedMeshhMap) {
+                    if (!source.meshMap) {
+                        source.meshMap = {};
+                    }
+                    source.meshMap[this.uniqueId] = this;
+                }
 
                 // Construction Params
                 // Clone parameters allowing mesh to be updated in case of parametric shapes.
@@ -2014,13 +2022,31 @@ module BABYLON {
             }
 
             // Sources
-            var meshes = this.getScene().meshes;
-            meshes.forEach((abstractMesh: AbstractMesh) => {
-                let mesh = abstractMesh as Mesh;
-                if (mesh._source && mesh._source === this) {
-                    mesh._source = null;
+            if (this._scene.useClonedMeshhMap) {
+                if (this.meshMap) {
+                    for (const uniqueId in this.meshMap) {
+                        const mesh = this.meshMap[uniqueId];
+                        if (mesh) {
+                            mesh._source = null;
+                            this.meshMap[uniqueId] = undefined;
+                        }
+                    }
                 }
-            });
+
+                if (this._source && this._source.meshMap) {
+                    this._source.meshMap[this.uniqueId] = undefined;
+                }
+            }
+            else {
+                var meshes = this.getScene().meshes;
+                for (const abstractMesh of meshes) {
+                    let mesh = abstractMesh as Mesh;
+                    if (mesh._source && mesh._source === this) {
+                        mesh._source = null;
+                    }
+                }
+            }
+
             this._source = null;
 
             // Instances
@@ -3779,6 +3805,28 @@ module BABYLON {
             }
 
             return meshSubclass;
+        }
+
+        /** @hidden */
+        public addInstance(instance: InstancedMesh) {
+            instance._indexInSourceMeshInstanceArray = this.instances.length;
+            this.instances.push(instance);
+        }
+
+        /** @hidden */
+        public removeInstance(instance: InstancedMesh) {
+            // Remove from mesh
+            const index = instance._indexInSourceMeshInstanceArray;
+            if (index != -1) {
+                if (index !== this.instances.length - 1) {
+                    const last = this.instances[this.instances.length - 1];
+                    this.instances[index] = last;
+                    last._indexInSourceMeshInstanceArray = index;
+                }
+
+                instance._indexInSourceMeshInstanceArray = -1;
+                this.instances.pop();
+            }
         }
     }
 }

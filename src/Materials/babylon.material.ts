@@ -768,6 +768,12 @@ module BABYLON {
         /** @hidden */
         public _indexInSceneMaterialArray = -1;
 
+        /** @hidden */
+        public disposingLineMeshColorShader: boolean = false;
+
+        /** @hidden */
+        public meshMap: Nullable<{[id: string]: AbstractMesh | undefined}>;
+
         /**
          * Creates a material instance
          * @param name defines the name of the material
@@ -792,6 +798,10 @@ module BABYLON {
 
             if (!doNotAdd) {
                 this._scene.addMaterial(this);
+            }
+
+            if (scene.useMaterialMeshMap) {
+                this.meshMap = {};
             }
         }
 
@@ -1059,17 +1069,20 @@ module BABYLON {
          * @returns an array of meshes bound to the material
          */
         public getBindedMeshes(): AbstractMesh[] {
-            var result = new Array<AbstractMesh>();
-
-            for (var index = 0; index < this._scene.meshes.length; index++) {
-                var mesh = this._scene.meshes[index];
-
-                if (mesh.material === this) {
-                    result.push(mesh);
+            if (this.meshMap) {
+                var result = new Array<AbstractMesh>();
+                for (let meshId in this.meshMap) {
+                    const mesh = this.meshMap[meshId];
+                    if (mesh) {
+                        result.push(mesh);
+                    }
                 }
+                return result;
             }
-
-            return result;
+            else {
+                const meshes = this._scene.meshes;
+                return meshes.filter((mesh) => mesh.material === this);
+            }
         }
 
         /**
@@ -1271,25 +1284,23 @@ module BABYLON {
             // Remove from scene
             scene.removeMaterial(this);
 
-            // Remove from meshes
-            for (let index = 0; index < scene.meshes.length; index++) {
-                var mesh = scene.meshes[index];
-
-                if (mesh.material === this) {
-                    mesh.material = null;
-
-                    if ((<Mesh>mesh).geometry) {
-                        var geometry = <Geometry>((<Mesh>mesh).geometry);
-
-                        if (this.storeEffectOnSubMeshes) {
-                            for (var subMesh of mesh.subMeshes) {
-                                geometry._releaseVertexArrayObject(subMesh._materialEffect);
-                                if (forceDisposeEffect && subMesh._materialEffect) {
-                                    scene.getEngine()._releaseEffect(subMesh._materialEffect);
-                                }
-                            }
-                        } else {
-                            geometry._releaseVertexArrayObject(this._effect);
+            if (!this.disposingLineMeshColorShader) {
+                // Remove from meshes
+                if (this.meshMap) {
+                    for (let meshId in this.meshMap) {
+                        const mesh = this.meshMap[meshId];
+                        if (mesh) {
+                            mesh.material = null; // will set the entry in the map to undefined
+                            this.releaseVertexArrayObject(mesh, forceDisposeEffect);
+                        }
+                    }
+                }
+                else {
+                    const meshes = scene.meshes;
+                    for (let mesh of meshes) {
+                        if (mesh.material === this) {
+                            mesh.material = null;
+                            this.releaseVertexArrayObject(mesh, forceDisposeEffect);
                         }
                     }
                 }
@@ -1316,6 +1327,24 @@ module BABYLON {
 
             if (this._onUnBindObservable) {
                 this._onUnBindObservable.clear();
+            }
+        }
+
+        /** @hidden */
+        private  releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {
+            if ((<Mesh>mesh).geometry) {
+                var geometry = <Geometry>((<Mesh>mesh).geometry);
+                const scene = this.getScene();
+                if (this.storeEffectOnSubMeshes) {
+                    for (var subMesh of mesh.subMeshes) {
+                        geometry._releaseVertexArrayObject(subMesh._materialEffect);
+                        if (forceDisposeEffect && subMesh._materialEffect) {
+                            scene.getEngine()._releaseEffect(subMesh._materialEffect);
+                        }
+                    }
+                } else {
+                    geometry._releaseVertexArrayObject(this._effect);
+                }
             }
         }
 
