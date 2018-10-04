@@ -47,6 +47,7 @@
         "all": [
             "pbrMaterial",
             "freeCamera",
+            "flyCamera",
             "arcRotateCamera",
             "hemisphericLight",
             "pointLight",
@@ -91,6 +92,7 @@
             "additionalPostProcess_depthOfFieldEffect",
             "additionalPostProcess_bloomEffect",
             "additionalPostProcess_imageProcessing",
+            "additionalPostProcess_motionBlur",
             "bones",
             "hdr",
             "polygonMesh",
@@ -134,6 +136,7 @@
         "minimal": [
             "meshBuilder",
             "freeCamera",
+            "flyCamera",
             "hemisphericLight"
         ],
         "360Viewer": [
@@ -158,6 +161,7 @@
                 "../../src/babylon.types.js",
                 "../../src/Events/babylon.keyboardEvents.js",
                 "../../src/Events/babylon.pointerEvents.js",
+                "../../src/Tools/babylon.tools.js",
                 "../../src/Math/babylon.math.js",
                 "../../src/Math/babylon.math.scalar.js",
                 "../../src/babylon.mixins.js",
@@ -166,7 +170,6 @@
                 "../../src/Tools/babylon.deferred.js",
                 "../../src/Tools/babylon.observable.js",
                 "../../src/Tools/babylon.smartArray.js",
-                "../../src/Tools/babylon.tools.js",
                 "../../src/Tools/babylon.promise.js",
                 "../../src/Tools/babylon.workerPool.js",
                 "../../src/States/babylon.alphaCullingState.js",
@@ -543,6 +546,17 @@
                 "targetCamera"
             ]
         },
+        "flyCamera": {
+            "files": [
+                "../../src/Cameras/Inputs/babylon.flyCameraMouseInput.js",
+                "../../src/Cameras/Inputs/babylon.flyCameraKeyboardInput.js",
+                "../../src/Cameras/babylon.flyCameraInputsManager.js",
+                "../../src/Cameras/babylon.flyCamera.js"
+            ],
+            "dependUpon": [
+                "targetCamera"
+            ]
+        },
         "arcRotateCamera": {
             "files": [
                 "../../src/Cameras/Inputs/babylon.arcRotateCameraKeyboardMoveInput.js",
@@ -665,7 +679,7 @@
         },
         "offline": {
             "files": [
-                "../../src/Tools/babylon.database.js"
+                "../../src/Offline/babylon.database.js"
             ],
             "dependUpon": [
                 "core"
@@ -956,6 +970,17 @@
             ],
             "shaderIncludes": []
         },
+        "additionalPostProcess_motionBlur": {
+            "files": [
+                "../../src/PostProcess/babylon.motionBlurPostProcess.js"
+            ],
+            "dependUpon": [
+                "postProcesses"
+            ],
+            "shaders": [
+                "motionBlur.fragment"
+            ]
+        },
         "additionalPostProcesses": {
             "files": [
                 "../../src/PostProcess/babylon.refractionPostProcess.js",
@@ -972,7 +997,8 @@
                 "../../src/PostProcess/babylon.displayPassPostProcess.js",
                 "../../src/PostProcess/babylon.highlightsPostProcess.js",
                 "../../src/PostProcess/babylon.extractHighlightsPostProcess.js",
-                "../../src/PostProcess/babylon.imageProcessingPostProcess.js"
+                "../../src/PostProcess/babylon.imageProcessingPostProcess.js",
+                "../../src/PostProcess/babylon.motionBlurPostProcess.js"
             ],
             "dependUpon": [
                 "postProcesses",
@@ -991,7 +1017,8 @@
                 "tonemap.fragment",
                 "displayPass.fragment",
                 "highlights.fragment",
-                "imageProcessing.fragment"
+                "imageProcessing.fragment",
+                "motionBlur.fragment"
             ]
         },
         "renderingPipeline": {

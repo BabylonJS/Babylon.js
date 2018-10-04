@@ -20,6 +20,9 @@ module BABYLON {
          */
         public onInfluenceChanged = new Observable<boolean>();
 
+        /** @hidden */
+        public _onDataLayoutChanged = new Observable<void>();
+
         /**
          * Gets or sets the influence of this target (ie. its weight in the overall morphing)
          */
@@ -94,7 +97,13 @@ module BABYLON {
          * @param data defines the position data to use
          */
         public setPositions(data: Nullable<FloatArray>) {
+            const hadPositions = this.hasPositions;
+
             this._positions = data;
+
+            if (hadPositions !== this.hasPositions) {
+                this._onDataLayoutChanged.notifyObservers(undefined);
+            }
         }
 
         /**
@@ -110,7 +119,13 @@ module BABYLON {
          * @param data defines the normal data to use
          */
         public setNormals(data: Nullable<FloatArray>) {
+            const hadNormals = this.hasNormals;
+
             this._normals = data;
+
+            if (hadNormals !== this.hasNormals) {
+                this._onDataLayoutChanged.notifyObservers(undefined);
+            }
         }
 
         /**
@@ -126,7 +141,13 @@ module BABYLON {
          * @param data defines the tangent data to use
          */
         public setTangents(data: Nullable<FloatArray>) {
+            const hadTangents = this.hasTangents;
+
             this._tangents = data;
+
+            if (hadTangents !== this.hasTangents) {
+                this._onDataLayoutChanged.notifyObservers(undefined);
+            }
         }
 
         /**

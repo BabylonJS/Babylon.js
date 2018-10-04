@@ -230,6 +230,9 @@ var BABYLON;
 //# sourceMappingURL=babylon.glTFSerializer.js.map
 
 
+/**
+ * @hidden
+ */
 var BABYLON;
 (function (BABYLON) {
     var GLTF2;
@@ -3698,7 +3701,7 @@ var BABYLON;
                                 resolve(proceduralTexture);
                             }
                             else {
-                                proceduralTexture._effect.onCompileObservable.add(function () {
+                                proceduralTexture.getEffect().executeWhenCompiled(function () {
                                     proceduralTexture.render();
                                     resolve(proceduralTexture);
                                 });

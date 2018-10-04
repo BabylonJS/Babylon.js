@@ -5,9 +5,9 @@ module BABYLON {
      */
     export class BoneLookController {
 
-        private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
+        private static _tmpVecs: Vector3[] = Tools.BuildArray(10, Vector3.Zero);
         private static _tmpQuat = Quaternion.Identity();
-        private static _tmpMats: Matrix[] = [Matrix.Identity(), Matrix.Identity(), Matrix.Identity(), Matrix.Identity(), Matrix.Identity()];
+        private static _tmpMats: Matrix[] = Tools.BuildArray(5, Matrix.Identity);
 
         /**
          * The target Vector3 that the bone will look at

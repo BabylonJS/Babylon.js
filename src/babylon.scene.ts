@@ -63,6 +63,15 @@ module BABYLON {
         renderingGroupId: number;
     }
 
+    /** Interface defining initialization parameters for Scene class */
+    export interface SceneOptions {
+        /**
+         * Defines that scene should keep up-to-date a map of geometry to enable fast look-up by Id
+         * It will improve performance when the number of geometries becomes important.
+         */
+        useGeometryIdsMap?: boolean;
+    }
+
     /**
      * Represents a scene to be rendered by the engine.
      * @see http://doc.babylonjs.com/features/scene
@@ -881,11 +890,12 @@ module BABYLON {
         */
         public probesEnabled = true;
 
-        // Database
+        // Offline support
         /**
-         * @hidden
+         * Gets or sets the current offline provider to use to store scene data
+         * @see http://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
          */
-        public database: Database;
+        public offlineProvider: IOfflineProvider;
 
         /**
          * Gets or sets the action manager associated with the scene
@@ -1165,10 +1175,15 @@ module BABYLON {
         public _pointerUpStage = Stage.Create<PointerUpDownStageAction>();
 
         /**
+         * an optional map from Geometry Id to Geometry index in the 'geometries' array
+         */
+        private geometriesById: Nullable<{ [id: string]: number | undefined }> = null;
+
+        /**
          * Creates a new Scene
          * @param engine defines the engine to use to render this scene
          */
-        constructor(engine: Engine) {
+        constructor(engine: Engine, options?: SceneOptions) {
             super();
             this._engine = engine || Engine.LastCreatedEngine;
 
@@ -1197,6 +1212,10 @@ module BABYLON {
             }
 
             this.setDefaultCandidateProviders();
+
+            if (options && options.useGeometryIdsMap === true) {
+                this.geometriesById = {};
+            }
         }
 
         private _defaultMeshCandidates: ISmartArrayLike<AbstractMesh> = {
@@ -1802,7 +1821,7 @@ module BABYLON {
         /** @hidden */
         public _isPointerSwiping(): boolean {
             return Math.abs(this._startingPointerPosition.x - this._pointerX) > Scene.DragMovementThreshold ||
-                   Math.abs(this._startingPointerPosition.y - this._pointerY) > Scene.DragMovementThreshold;
+                Math.abs(this._startingPointerPosition.y - this._pointerY) > Scene.DragMovementThreshold;
         }
 
         /**
@@ -2197,19 +2216,17 @@ module BABYLON {
                 return false;
             }
 
-            if (this._pendingData.length > 0) {
-                return false;
-            }
             let index: number;
             let engine = this.getEngine();
 
-            // Geometries
-            for (index = 0; index < this.geometries.length; index++) {
-                var geometry = this.geometries[index];
+            // Effects
+            if (!engine.areAllEffectsReady()) {
+                return false;
+            }
 
-                if (geometry.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
-                    return false;
-                }
+            // Pending data
+            if (this._pendingData.length > 0) {
+                return false;
             }
 
             // Meshes
@@ -2234,6 +2251,15 @@ module BABYLON {
                     if (!step.action(mesh, hardwareInstancedRendering)) {
                         return false;
                     }
+                }
+            }
+
+            // Geometries
+            for (index = 0; index < this.geometries.length; index++) {
+                var geometry = this.geometries[index];
+
+                if (geometry.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
+                    return false;
                 }
             }
 
@@ -3270,6 +3296,10 @@ module BABYLON {
          * @param newGeometry The geometry to add
          */
         public addGeometry(newGeometry: Geometry): void {
+            if (this.geometriesById) {
+                this.geometriesById[newGeometry.id] = this.geometries.length;
+            }
+
             this.geometries.push(newGeometry);
         }
 
@@ -3535,9 +3565,17 @@ module BABYLON {
          * @return the geometry or null if none found.
          */
         public getGeometryByID(id: string): Nullable<Geometry> {
-            for (var index = 0; index < this.geometries.length; index++) {
-                if (this.geometries[index].id === id) {
+            if (this.geometriesById) {
+                const index = this.geometriesById[id];
+                if (index !== undefined) {
                     return this.geometries[index];
+                }
+            }
+            else {
+                for (var index = 0; index < this.geometries.length; index++) {
+                    if (this.geometries[index].id === id) {
+                        return this.geometries[index];
+                    }
                 }
             }
 
@@ -3555,7 +3593,7 @@ module BABYLON {
                 return false;
             }
 
-            this.geometries.push(geometry);
+            this.addGeometry(geometry);
 
             //notify the collision coordinator
             if (this.collisionCoordinator) {
@@ -3573,20 +3611,38 @@ module BABYLON {
          * @return a boolean defining if the geometry was removed or not
          */
         public removeGeometry(geometry: Geometry): boolean {
-            var index = this.geometries.indexOf(geometry);
-
-            if (index > -1) {
-                this.geometries.splice(index, 1);
-
-                //notify the collision coordinator
-                if (this.collisionCoordinator) {
-                    this.collisionCoordinator.onGeometryDeleted(geometry);
+            let index;
+            if (this.geometriesById) {
+                index = this.geometriesById[geometry.id];
+                if (index === undefined) {
+                    return false;
                 }
-
-                this.onGeometryRemovedObservable.notifyObservers(geometry);
-                return true;
             }
-            return false;
+            else {
+                index = this.geometries.indexOf(geometry);
+                if (index < 0) {
+                    return false;
+                }
+            }
+
+            if (index !== this.geometries.length - 1) {
+                const lastGeometry = this.geometries[this.geometries.length - 1];
+                this.geometries[index] = lastGeometry;
+                if (this.geometriesById) {
+                    this.geometriesById[lastGeometry.id] = index;
+                    this.geometriesById[geometry.id] = undefined;
+                }
+            }
+
+            this.geometries.pop();
+
+            //notify the collision coordinator
+            if (this.collisionCoordinator) {
+                this.collisionCoordinator.onGeometryDeleted(geometry);
+            }
+
+            this.onGeometryRemovedObservable.notifyObservers(geometry);
+            return true;
         }
 
         /**
@@ -5333,8 +5389,8 @@ module BABYLON {
         }
 
         /** @hidden */
-        public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useDatabase?: boolean, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
-            let request = Tools.LoadFile(url, onSuccess, onProgress, useDatabase ? this.database : undefined, useArrayBuffer, onError);
+        public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
+            let request = Tools.LoadFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError);
             this._activeRequests.push(request);
             request.onCompleteObservable.add((request) => {
                 this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
@@ -5343,11 +5399,11 @@ module BABYLON {
         }
 
         /** @hidden */
-        public _loadFileAsync(url: string, useDatabase?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+        public _loadFileAsync(url: string, useOfflineSupport?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
             return new Promise((resolve, reject) => {
                 this._loadFile(url, (data) => {
                     resolve(data);
-                }, undefined, useDatabase, useArrayBuffer, (request, exception) => {
+                }, undefined, useOfflineSupport, useArrayBuffer, (request, exception) => {
                     reject(exception);
                 });
             });

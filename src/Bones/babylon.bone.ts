@@ -5,9 +5,9 @@ module BABYLON {
      */
     export class Bone extends Node {
 
-        private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero()];
+        private static _tmpVecs: Vector3[] = Tools.BuildArray(2, Vector3.Zero);
         private static _tmpQuat = Quaternion.Identity();
-        private static _tmpMats: Matrix[] = [Matrix.Identity(), Matrix.Identity(), Matrix.Identity(), Matrix.Identity(), Matrix.Identity()];
+        private static _tmpMats: Matrix[] = Tools.BuildArray(5, Matrix.Identity);
 
         /**
          * Gets the list of child bones
