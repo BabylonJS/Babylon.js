@@ -158,6 +158,9 @@ module BABYLON {
 
         /**
         * All of the tranform nodes added to this scene
+        * In the context a the Scene, it is not supposed to be modified manually.
+        * Any addition or removal should be done using the addTransformNode and removeTransformNode Scene methods.
+        * Note also that the order of the TransformNode wihin the array is not significant and might change.
         * @see http://doc.babylonjs.com/how_to/transformnode
         */
         public transformNodes = new Array<TransformNode>();
