@@ -88,6 +88,9 @@ export class Control {
     /** Gets or sets a boolean indicating if the control can be focusable */
     public isFocusInvisible = false;
 
+    /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
+    public clipChildren = true;
+
     /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
     public shadowOffsetX = 0;
     /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
@@ -1040,8 +1043,10 @@ export class Control {
         }
 
         // Clip
-        this._clip(context);
-        context.clip();
+        if (this.clipChildren) {
+            this._clip(context);
+            context.clip();
+        }
 
         return true;
     }
