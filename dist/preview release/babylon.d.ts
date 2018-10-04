@@ -41071,192 +41071,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new AnaglyphArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphFreeCamera extends FreeCamera {
-        /**
-         * Creates a new AnaglyphFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new AnaglyphGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new AnaglyphUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphUniversalCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new StereoscopicArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicFreeCamera extends FreeCamera {
-        /**
-         * Creates a new StereoscopicFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new StereoscopicGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new StereoscopicUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicUniversalCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
      * This represents all the required metrics to create a VR camera.
      * @see http://doc.babylonjs.com/babylon101/cameras#device-orientation-camera
      */
@@ -42298,6 +42112,192 @@ declare module BABYLON {
          * Disposes the component and the associated ressources.
          */
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new AnaglyphArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphFreeCamera extends FreeCamera {
+        /**
+         * Creates a new AnaglyphFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new AnaglyphGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new AnaglyphUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphUniversalCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new StereoscopicArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicFreeCamera extends FreeCamera {
+        /**
+         * Creates a new StereoscopicFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new StereoscopicGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new StereoscopicUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicUniversalCamera
+         */
+        getClassName(): string;
     }
 }
 
