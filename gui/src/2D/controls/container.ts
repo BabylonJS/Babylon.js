@@ -266,7 +266,9 @@ export class Container extends Control {
         if (this._processMeasures(parentMeasure, context)) {
             this._localDraw(context);
 
-            this._clipForChildren(context);
+            if (this.clipChildren) {
+                this._clipForChildren(context);
+            }
 
             let computedWidth = -1;
             let computedHeight = -1;
