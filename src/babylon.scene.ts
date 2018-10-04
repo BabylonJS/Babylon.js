@@ -70,6 +70,18 @@ module BABYLON {
          * It will improve performance when the number of geometries becomes important.
          */
         useGeometryIdsMap?: boolean;
+
+        /**
+         * Defines that each material of the scene should keep up-to-date a map of referencing meshes for fast diposing
+         * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
+         */
+        useMaterialMeshMap?: boolean;
+
+        /**
+         * Defines that each mesh of the scene should keep up-to-date a map of referencing cloned meshes for fast diposing
+         * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
+         */
+        useClonedMeshhMap?: boolean;
     }
 
     /**
@@ -1009,6 +1021,11 @@ module BABYLON {
          */
         public requireLightSorting = false;
 
+        /** @hidden */
+        public readonly useMaterialMeshMap: boolean;
+        /** @hidden */
+        public readonly useClonedMeshhMap: boolean;
+
         private _pointerOverMesh: Nullable<AbstractMesh>;
 
         private _pickedDownMesh: Nullable<AbstractMesh>;
@@ -1216,6 +1233,9 @@ module BABYLON {
             if (options && options.useGeometryIdsMap === true) {
                 this.geometriesById = {};
             }
+
+            this.useMaterialMeshMap = options && options.useGeometryIdsMap || false;
+            this.useClonedMeshhMap = options && options.useClonedMeshhMap || false;
         }
 
         private _defaultMeshCandidates: ISmartArrayLike<AbstractMesh> = {
@@ -2983,7 +3003,8 @@ module BABYLON {
             var index = this.meshes.indexOf(toRemove);
             if (index !== -1) {
                 // Remove from the scene if mesh found
-                this.meshes.splice(index, 1);
+                this.meshes[index] = this.meshes[this.meshes.length - 1];
+                this.meshes.pop();
             }
 
             this.onMeshRemovedObservable.notifyObservers(toRemove);
