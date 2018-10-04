@@ -10,7 +10,7 @@ module BABYLON {
         protected _normalMatrix: Matrix = new Matrix();
 
         /**
-         * Gets or sets a boolean indicating that the material is allowed to do shader hot swapping. 
+         * Gets or sets a boolean indicating that the material is allowed to do shader hot swapping.
          * This means that the material can keep using a previous shader while a new one is being compiled.
          * This is mostly used when shader parallel compilation is supported (true by default)
          */
