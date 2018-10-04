@@ -157,6 +157,12 @@ module BABYLON {
         public timerQuery: EXT_disjoint_timer_query;
         /** Defines if timestamp can be used with timer query */
         public canUseTimestampForTimerQuery: boolean;
+        /** Function used to let the system compiles shaders in background */
+        public parallelShaderCompile: {
+            MAX_SHADER_COMPILER_THREADS_KHR: number;
+            maxShaderCompilerThreadsKHR: (thread: number) => void;
+            COMPLETION_STATUS_KHR: number;
+        };
     }
 
     /** Interface defining initialization parameters for Engine class */
@@ -475,7 +481,7 @@ module BABYLON {
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "3.3.0-rc.5";
+            return "4.0.0-alpha.0";
         }
 
         // Updatable statics so stick with vars here
@@ -656,7 +662,7 @@ module BABYLON {
         public _badDesktopOS = false;
 
         /**
-         * Gets or sets a value indicating if we want to disable texture binding optmization.
+         * Gets or sets a value indicating if we want to disable texture binding optimization.
          * This could be required on some buggy drivers which wants to have textures bound in a progressive order.
          * By default Babylon.js will try to let textures bound where they are and only update the samplers to point where the texture is
          */
@@ -670,11 +676,16 @@ module BABYLON {
         public static audioEngine: IAudioEngine;
 
         /**
-         * Default AudioEngine Factory responsible of creating the Audio Engine.
-         * By default, this will create a BabylonJS Audio Engine if the workload
-         * has been embedded.
+         * Default AudioEngine factory responsible of creating the Audio Engine.
+         * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
          */
         public static AudioEngineFactory: (hostElement: Nullable<HTMLElement>) => IAudioEngine;
+
+        /**
+         * Default offline support factory responsible of creating a tool used to store data locally.
+         * By default, this will create a Database object if the workload has been embedded.
+         */
+        public static OfflineProviderFactory: (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck: boolean) => IOfflineProvider;
 
         // Focus
         private _onFocus: () => void;
@@ -1216,7 +1227,7 @@ module BABYLON {
 
             console.log("Babylon.js engine (v" + Engine.Version + ") launched");
 
-            this.enableOfflineSupport = (Database !== undefined);
+            this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
         }
 
         private _rebuildInternalTextures(): void {
@@ -1235,6 +1246,22 @@ module BABYLON {
             }
 
             Effect.ResetCache();
+        }
+
+        /**
+         * Gets a boolean indicating if all created effects are ready
+         * @returns true if all effects are ready
+         */
+        public areAllEffectsReady(): boolean {
+            for (var key in this._compiledEffects) {
+                let effect = <Effect>this._compiledEffects[key];
+
+                if (!effect.isReady()) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private _rebuildBuffers(): void {
@@ -1352,6 +1379,13 @@ module BABYLON {
                 }
             }
 
+            // Shader compiler threads
+            this._caps.parallelShaderCompile = this._gl.getExtension('KHR_parallel_shader_compile');
+            if (this._caps.parallelShaderCompile) {
+                const threads = this._gl.getParameter(this._caps.parallelShaderCompile.MAX_SHADER_COMPILER_THREADS_KHR);
+                this._caps.parallelShaderCompile.maxShaderCompilerThreadsKHR(threads);
+            }
+
             // Depth Texture
             if (this._webGLVersion > 1) {
                 this._caps.depthTextureExtension = true;
@@ -1379,6 +1413,7 @@ module BABYLON {
                     this._caps.vertexArrayObject = false;
                 }
             }
+
             // Instances count
             if (this._webGLVersion > 1) {
                 this._caps.instancedArrays = true;
@@ -3305,6 +3340,24 @@ module BABYLON {
                 this.bindTransformFeedback(null);
             }
 
+            shaderProgram.context = context;
+            shaderProgram.vertexShader = vertexShader;
+            shaderProgram.fragmentShader = fragmentShader;
+
+            if (!this._caps.parallelShaderCompile) {
+                this._finalizeProgram(shaderProgram);
+            } else {
+                shaderProgram.isParallelCompiled = true;
+            }
+
+            return shaderProgram;
+        }
+
+        private _finalizeProgram(shaderProgram: WebGLProgram) {
+            const context = shaderProgram.context!;
+            const vertexShader = shaderProgram.vertexShader!;
+            const fragmentShader = shaderProgram.fragmentShader!;
+
             var linked = context.getProgramParameter(shaderProgram, context.LINK_STATUS);
 
             if (!linked) {
@@ -3329,7 +3382,38 @@ module BABYLON {
             context.deleteShader(vertexShader);
             context.deleteShader(fragmentShader);
 
-            return shaderProgram;
+            shaderProgram.context = undefined;
+            shaderProgram.vertexShader = undefined;
+            shaderProgram.fragmentShader = undefined;
+
+            if (shaderProgram.onCompiled) {
+                shaderProgram.onCompiled();
+                shaderProgram.onCompiled = undefined;
+            }
+        }
+
+        /** @hidden */
+        public _isProgramCompiled(shaderProgram: WebGLProgram): boolean {
+            if (!shaderProgram.isParallelCompiled) {
+                return true;
+            }
+
+            if (this._gl.getProgramParameter(shaderProgram, this._caps.parallelShaderCompile.COMPLETION_STATUS_KHR)) {
+                this._finalizeProgram(shaderProgram);
+                return true;
+            }
+
+            return false;
+        }
+
+        /** @hidden */
+        public _executeWhenProgramIsCompiled(shaderProgram: WebGLProgram, action: () => void) {
+            if (!shaderProgram.isParallelCompiled) {
+                action();
+                return;
+            }
+
+            shaderProgram.onCompiled = action;
         }
 
         /**
@@ -4092,7 +4176,7 @@ module BABYLON {
                 }
             };
 
-            img = Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
+            img = Tools.LoadImage(url, onload, onerror, scene ? scene.offlineProvider : null);
             if (scene) {
                 scene._addPendingData(img);
             }
@@ -4228,7 +4312,7 @@ module BABYLON {
                 };
 
                 if (!buffer) {
-                    this._loadFile(url, callback, undefined, scene ? scene.database : undefined, true, (request?: XMLHttpRequest, exception?: any) => {
+                    this._loadFile(url, callback, undefined, scene ? scene.offlineProvider : undefined, true, (request?: XMLHttpRequest, exception?: any) => {
                         onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
                     });
                 } else {
@@ -4297,11 +4381,11 @@ module BABYLON {
                     if (buffer instanceof HTMLImageElement) {
                         onload(buffer);
                     } else {
-                        Tools.LoadImage(url, onload, onInternalError, scene ? scene.database : null);
+                        Tools.LoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null);
                     }
                 }
                 else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || buffer instanceof Blob) {
-                    Tools.LoadImage(buffer, onload, onInternalError, scene ? scene.database : null);
+                    Tools.LoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null);
                 }
                 else {
                     onload(<HTMLImageElement>buffer);
@@ -5936,7 +6020,7 @@ module BABYLON {
 
             this._loadFile(url, (data) => {
                 internalCallback(data);
-            }, undefined, scene.database, true, onerror);
+            }, undefined, scene.offlineProvider, true, onerror);
 
             return texture;
         }
@@ -7383,8 +7467,8 @@ module BABYLON {
         }
 
         /** @hidden */
-        public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
-            let request = Tools.LoadFile(url, onSuccess, onProgress, database, useArrayBuffer, onError);
+        public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
+            let request = Tools.LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
             this._activeRequests.push(request);
             request.onCompleteObservable.add((request) => {
                 this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
@@ -7393,11 +7477,11 @@ module BABYLON {
         }
 
         /** @hidden */
-        public _loadFileAsync(url: string, database?: Database, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+        public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
             return new Promise((resolve, reject) => {
                 this._loadFile(url, (data) => {
                     resolve(data);
-                }, undefined, database, useArrayBuffer, (request, exception) => {
+                }, undefined, offlineProvider, useArrayBuffer, (request, exception) => {
                     reject(exception);
                 });
             });

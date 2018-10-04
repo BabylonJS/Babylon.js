@@ -12,6 +12,12 @@ module BABYLON {
         public isEnabled = true;
 
         /**
+         * Define if the texture must be cleared before rendering (default is true)
+         */
+        @serialize()
+        public autoClear = true;
+
+        /**
          * Callback called when the texture is generated
          */
         public onGenerated: () => void;
@@ -96,11 +102,11 @@ module BABYLON {
             this._fallbackTexture = fallbackTexture;
 
             if (isCube) {
-                this._texture = this._engine.createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
+                this._texture = this._engine.createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false });
                 this.setFloat("face", 0);
             }
             else {
-                this._texture = this._engine.createRenderTargetTexture(size, generateMipMaps);
+                this._texture = this._engine.createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false });
             }
 
             // VBO
@@ -113,6 +119,14 @@ module BABYLON {
             this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(this._engine, vertices, VertexBuffer.PositionKind, false, false, 2);
 
             this._createIndexBuffer();
+        }
+
+        /**
+         * The effect that is created when initializing the post process.
+         * @returns The created effect corrisponding the the postprocess.
+         */
+        public getEffect(): Effect {
+            return this._effect;
         }
 
         /**
@@ -514,7 +528,9 @@ module BABYLON {
                     this._effect.setFloat("face", face);
 
                     // Clear
-                    engine.clear(scene.clearColor, true, true, true);
+                    if (this.autoClear) {
+                        engine.clear(scene.clearColor, true, false, false);
+                    }
 
                     // Draw order
                     engine.drawElementsType(Material.TriangleFillMode, 0, 6);
@@ -531,7 +547,9 @@ module BABYLON {
                 engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
 
                 // Clear
-                engine.clear(scene.clearColor, true, true, true);
+                if (this.autoClear) {
+                    engine.clear(scene.clearColor, true, false, false);
+                }
 
                 // Draw order
                 engine.drawElementsType(Material.TriangleFillMode, 0, 6);
