@@ -2675,1019 +2675,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * The action to be carried out following a trigger
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#available-actions
-     */
-    class Action {
-        /** the trigger, with or without parameters, for the action */
-        triggerOptions: any;
-        /**
-         * Trigger for the action
-         */
-        trigger: number;
-        /**
-         * Internal only - manager for action
-         * @hidden
-         */
-
-        private _nextActiveAction;
-        private _child;
-        private _condition?;
-        private _triggerParameter;
-        /**
-        * An event triggered prior to action being executed.
-        */
-        onBeforeExecuteObservable: Observable<Action>;
-        /**
-         * Creates a new Action
-         * @param triggerOptions the trigger, with or without parameters, for the action
-         * @param condition an optional determinant of action
-         */
-        constructor(
-        /** the trigger, with or without parameters, for the action */
-        triggerOptions: any, condition?: Condition);
-        /**
-         * Internal only
-         * @hidden
-         */
-
-        /**
-         * Gets the trigger parameters
-         * @returns the trigger parameters
-         */
-        getTriggerParameter(): any;
-        /**
-         * Internal only - executes current action event
-         * @hidden
-         */
-
-        /**
-         * Execute placeholder for child classes
-         * @param evt optional action event
-         */
-        execute(evt?: ActionEvent): void;
-        /**
-         * Skips to next active action
-         */
-        skipToNextActiveAction(): void;
-        /**
-         * Adds action to chain of actions, may be a DoNothingAction
-         * @param action defines the next action to execute
-         * @returns The action passed in
-         * @see https://www.babylonjs-playground.com/#1T30HR#0
-         */
-        then(action: Action): Action;
-        /**
-         * Internal only
-         * @hidden
-         */
-
-        /**
-         * Internal only
-         * @hidden
-         */
-
-        /**
-         * Serialize placeholder for child classes
-         * @param parent of child
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-        /**
-         * Internal only called by serialize
-         * @hidden
-         */
-        protected _serialize(serializedAction: any, parent?: any): any;
-        /**
-         * Internal only
-         * @hidden
-         */
-private static _SerializeValueAsString: (value: any) => string;
-        /**
-         * Internal only
-         * @hidden
-         */
-private static _GetTargetProperty: (target: Scene | Node) => {
-            name: string;
-            targetType: string;
-            value: string;
-        };
-    }
-}
-
-declare module BABYLON {
-    /**
-     * ActionEvent is the event being sent when an action is triggered.
-     */
-    class ActionEvent {
-        /** The mesh or sprite that triggered the action */
-        source: any;
-        /** The X mouse cursor position at the time of the event */
-        pointerX: number;
-        /** The Y mouse cursor position at the time of the event */
-        pointerY: number;
-        /** The mesh that is currently pointed at (can be null) */
-        meshUnderPointer: Nullable<AbstractMesh>;
-        /** the original (browser) event that triggered the ActionEvent */
-        sourceEvent?: any;
-        /** additional data for the event */
-        additionalData?: any;
-        /**
-         * Creates a new ActionEvent
-         * @param source The mesh or sprite that triggered the action
-         * @param pointerX The X mouse cursor position at the time of the event
-         * @param pointerY The Y mouse cursor position at the time of the event
-         * @param meshUnderPointer The mesh that is currently pointed at (can be null)
-         * @param sourceEvent the original (browser) event that triggered the ActionEvent
-         * @param additionalData additional data for the event
-         */
-        constructor(
-        /** The mesh or sprite that triggered the action */
-        source: any, 
-        /** The X mouse cursor position at the time of the event */
-        pointerX: number, 
-        /** The Y mouse cursor position at the time of the event */
-        pointerY: number, 
-        /** The mesh that is currently pointed at (can be null) */
-        meshUnderPointer: Nullable<AbstractMesh>, 
-        /** the original (browser) event that triggered the ActionEvent */
-        sourceEvent?: any, 
-        /** additional data for the event */
-        additionalData?: any);
-        /**
-         * Helper function to auto-create an ActionEvent from a source mesh.
-         * @param source The source mesh that triggered the event
-         * @param evt The original (browser) event
-         * @param additionalData additional data for the event
-         * @returns the new ActionEvent
-         */
-        static CreateNew(source: AbstractMesh, evt?: Event, additionalData?: any): ActionEvent;
-        /**
-         * Helper function to auto-create an ActionEvent from a source sprite
-         * @param source The source sprite that triggered the event
-         * @param scene Scene associated with the sprite
-         * @param evt The original (browser) event
-         * @param additionalData additional data for the event
-         * @returns the new ActionEvent
-         */
-        static CreateNewFromSprite(source: Sprite, scene: Scene, evt?: Event, additionalData?: any): ActionEvent;
-        /**
-         * Helper function to auto-create an ActionEvent from a scene. If triggered by a mesh use ActionEvent.CreateNew
-         * @param scene the scene where the event occurred
-         * @param evt The original (browser) event
-         * @returns the new ActionEvent
-         */
-        static CreateNewFromScene(scene: Scene, evt: Event): ActionEvent;
-        /**
-         * Helper function to auto-create an ActionEvent from a primitive
-         * @param prim defines the target primitive
-         * @param pointerPos defines the pointer position
-         * @param evt The original (browser) event
-         * @param additionalData additional data for the event
-         * @returns the new ActionEvent
-         */
-        static CreateNewFromPrimitive(prim: any, pointerPos: Vector2, evt?: Event, additionalData?: any): ActionEvent;
-    }
-    /**
-     * Action Manager manages all events to be triggered on a given mesh or the global scene.
-     * A single scene can have many Action Managers to handle predefined actions on specific meshes.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    class ActionManager {
-        /**
-         * Nothing
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly NothingTrigger: number;
-        /**
-         * On pick
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnPickTrigger: number;
-        /**
-         * On left pick
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnLeftPickTrigger: number;
-        /**
-         * On right pick
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnRightPickTrigger: number;
-        /**
-         * On center pick
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnCenterPickTrigger: number;
-        /**
-         * On pick down
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnPickDownTrigger: number;
-        /**
-         * On double pick
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnDoublePickTrigger: number;
-        /**
-         * On pick up
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnPickUpTrigger: number;
-        /**
-         * On pick out.
-         * This trigger will only be raised if you also declared a OnPickDown
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnPickOutTrigger: number;
-        /**
-         * On long press
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnLongPressTrigger: number;
-        /**
-         * On pointer over
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnPointerOverTrigger: number;
-        /**
-         * On pointer out
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnPointerOutTrigger: number;
-        /**
-         * On every frame
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnEveryFrameTrigger: number;
-        /**
-         * On intersection enter
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnIntersectionEnterTrigger: number;
-        /**
-         * On intersection exit
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnIntersectionExitTrigger: number;
-        /**
-         * On key down
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnKeyDownTrigger: number;
-        /**
-         * On key up
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnKeyUpTrigger: number;
-        /** Gets the list of active triggers */
-        static Triggers: {
-            [key: string]: number;
-        };
-        /** Gets the list of actions */
-        actions: Action[];
-        /** Gets the cursor to use when hovering items */
-        hoverCursor: string;
-        private _scene;
-        /**
-         * Creates a new action manager
-         * @param scene defines the hosting scene
-         */
-        constructor(scene: Scene);
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
-        /**
-         * Gets hosting scene
-         * @returns the hosting scene
-         */
-        getScene(): Scene;
-        /**
-         * Does this action manager handles actions of any of the given triggers
-         * @param triggers defines the triggers to be tested
-         * @return a boolean indicating whether one (or more) of the triggers is handled
-         */
-        hasSpecificTriggers(triggers: number[]): boolean;
-        /**
-         * Does this action manager handles actions of any of the given triggers. This function takes two arguments for
-         * speed.
-         * @param triggerA defines the trigger to be tested
-         * @param triggerB defines the trigger to be tested
-         * @return a boolean indicating whether one (or more) of the triggers is handled
-         */
-        hasSpecificTriggers2(triggerA: number, triggerB: number): boolean;
-        /**
-         * Does this action manager handles actions of a given trigger
-         * @param trigger defines the trigger to be tested
-         * @param parameterPredicate defines an optional predicate to filter triggers by parameter
-         * @return whether the trigger is handled
-         */
-        hasSpecificTrigger(trigger: number, parameterPredicate?: (parameter: any) => boolean): boolean;
-        /**
-         * Does this action manager has pointer triggers
-         */
-        readonly hasPointerTriggers: boolean;
-        /**
-         * Does this action manager has pick triggers
-         */
-        readonly hasPickTriggers: boolean;
-        /**
-         * Does exist one action manager with at least one trigger
-         **/
-        static readonly HasTriggers: boolean;
-        /**
-         * Does exist one action manager with at least one pick trigger
-         **/
-        static readonly HasPickTriggers: boolean;
-        /**
-         * Does exist one action manager that handles actions of a given trigger
-         * @param trigger defines the trigger to be tested
-         * @return a boolean indicating whether the trigger is handeled by at least one action manager
-        **/
-        static HasSpecificTrigger(trigger: number): boolean;
-        /**
-         * Registers an action to this action manager
-         * @param action defines the action to be registered
-         * @return the action amended (prepared) after registration
-         */
-        registerAction(action: Action): Nullable<Action>;
-        /**
-         * Unregisters an action to this action manager
-         * @param action defines the action to be unregistered
-         * @return a boolean indicating whether the action has been unregistered
-         */
-        unregisterAction(action: Action): Boolean;
-        /**
-         * Process a specific trigger
-         * @param trigger defines the trigger to process
-         * @param evt defines the event details to be processed
-         */
-        processTrigger(trigger: number, evt?: ActionEvent): void;
-        /** @hidden */
-
-        /** @hidden */
-
-        /**
-         * Serialize this manager to a JSON object
-         * @param name defines the property name to store this manager
-         * @returns a JSON representation of this manager
-         */
-        serialize(name: string): any;
-        /**
-         * Creates a new ActionManager from a JSON data
-         * @param parsedActions defines the JSON data to read from
-         * @param object defines the hosting mesh
-         * @param scene defines the hosting scene
-         */
-        static Parse(parsedActions: any, object: Nullable<AbstractMesh>, scene: Scene): void;
-        /**
-         * Get a trigger name by index
-         * @param trigger defines the trigger index
-         * @returns a trigger name
-         */
-        static GetTriggerName(trigger: number): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * A Condition applied to an Action
-     */
-    class Condition {
-        /**
-         * Internal only - manager for action
-         * @hidden
-         */
-
-        /**
-         * Internal only
-         * @hidden
-         */
-
-        /**
-         * Internal only
-         * @hidden
-         */
-
-        /**
-         * Creates a new Condition
-         * @param actionManager the manager of the action the condition is applied to
-         */
-        constructor(actionManager: ActionManager);
-        /**
-         * Check if the current condition is valid
-         * @returns a boolean
-         */
-        isValid(): boolean;
-        /**
-         * Internal only
-         * @hidden
-         */
-
-        /**
-         * Internal only
-         * @hidden
-         */
-
-        /**
-         * Serialize placeholder for child classes
-         * @returns the serialized object
-         */
-        serialize(): any;
-        /**
-         * Internal only
-         * @hidden
-         */
-        protected _serialize(serializedCondition: any): any;
-    }
-    /**
-     * Defines specific conditional operators as extensions of Condition
-     */
-    class ValueCondition extends Condition {
-        /** path to specify the property of the target the conditional operator uses  */
-        propertyPath: string;
-        /** the value compared by the conditional operator against the current value of the property */
-        value: any;
-        /** the conditional operator, default ValueCondition.IsEqual */
-        operator: number;
-        /**
-         * Internal only
-         * @hidden
-         */
-        private static _IsEqual;
-        /**
-         * Internal only
-         * @hidden
-         */
-        private static _IsDifferent;
-        /**
-         * Internal only
-         * @hidden
-         */
-        private static _IsGreater;
-        /**
-         * Internal only
-         * @hidden
-         */
-        private static _IsLesser;
-        /**
-         * returns the number for IsEqual
-         */
-        static readonly IsEqual: number;
-        /**
-         * Returns the number for IsDifferent
-         */
-        static readonly IsDifferent: number;
-        /**
-         * Returns the number for IsGreater
-         */
-        static readonly IsGreater: number;
-        /**
-         * Returns the number for IsLesser
-         */
-        static readonly IsLesser: number;
-        /**
-         * Internal only The action manager for the condition
-         * @hidden
-         */
-
-        /**
-         * Internal only
-         * @hidden
-         */
-        private _target;
-        /**
-         * Internal only
-         * @hidden
-         */
-        private _effectiveTarget;
-        /**
-         * Internal only
-         * @hidden
-         */
-        private _property;
-        /**
-         * Creates a new ValueCondition
-         * @param actionManager manager for the action the condition applies to
-         * @param target for the action
-         * @param propertyPath path to specify the property of the target the conditional operator uses
-         * @param value the value compared by the conditional operator against the current value of the property
-         * @param operator the conditional operator, default ValueCondition.IsEqual
-         */
-        constructor(actionManager: ActionManager, target: any, 
-        /** path to specify the property of the target the conditional operator uses  */
-        propertyPath: string, 
-        /** the value compared by the conditional operator against the current value of the property */
-        value: any, 
-        /** the conditional operator, default ValueCondition.IsEqual */
-        operator?: number);
-        /**
-         * Compares the given value with the property value for the specified conditional operator
-         * @returns the result of the comparison
-         */
-        isValid(): boolean;
-        /**
-         * Serialize the ValueCondition into a JSON compatible object
-         * @returns serialization object
-         */
-        serialize(): any;
-        /**
-         * Gets the name of the conditional operator for the ValueCondition
-         * @param operator the conditional operator
-         * @returns the name
-         */
-        static GetOperatorName(operator: number): string;
-    }
-    /**
-     * Defines a predicate condition as an extension of Condition
-     */
-    class PredicateCondition extends Condition {
-        /** defines the predicate function used to validate the condition */
-        predicate: () => boolean;
-        /**
-         * Internal only - manager for action
-         * @hidden
-         */
-
-        /**
-         * Creates a new PredicateCondition
-         * @param actionManager manager for the action the condition applies to
-         * @param predicate defines the predicate function used to validate the condition
-         */
-        constructor(actionManager: ActionManager, 
-        /** defines the predicate function used to validate the condition */
-        predicate: () => boolean);
-        /**
-         * @returns the validity of the predicate condition
-         */
-        isValid(): boolean;
-    }
-    /**
-     * Defines a state condition as an extension of Condition
-     */
-    class StateCondition extends Condition {
-        /** Value to compare with target state  */
-        value: string;
-        /**
-         * Internal only - manager for action
-         * @hidden
-         */
-
-        /**
-         * Internal only
-         * @hidden
-         */
-        private _target;
-        /**
-         * Creates a new StateCondition
-         * @param actionManager manager for the action the condition applies to
-         * @param target of the condition
-         * @param value to compare with target state
-         */
-        constructor(actionManager: ActionManager, target: any, 
-        /** Value to compare with target state  */
-        value: string);
-        /**
-         * Gets a boolean indicating if the current condition is met
-         * @returns the validity of the state
-         */
-        isValid(): boolean;
-        /**
-         * Serialize the StateCondition into a JSON compatible object
-         * @returns serialization object
-         */
-        serialize(): any;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This defines an action responsible to toggle a boolean once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    class SwitchBooleanAction extends Action {
-        /**
-         * The path to the boolean property in the target object
-         */
-        propertyPath: string;
-        private _target;
-        private _effectiveTarget;
-        private _property;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param target defines the object containing the boolean
-         * @param propertyPath defines the path to the boolean property in the target object
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, target: any, propertyPath: string, condition?: Condition);
-        /** @hidden */
-
-        /**
-         * Execute the action toggle the boolean value.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-    /**
-     * This defines an action responsible to set a the state field of the target
-     *  to a desired value once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    class SetStateAction extends Action {
-        /**
-         * The value to store in the state field.
-         */
-        value: string;
-        private _target;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param target defines the object containing the state property
-         * @param value defines the value to store in the state field
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, target: any, value: string, condition?: Condition);
-        /**
-         * Execute the action and store the value on the target state property.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-    /**
-     * This defines an action responsible to set a property of the target
-     *  to a desired value once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    class SetValueAction extends Action {
-        /**
-         * The path of the property to set in the target.
-         */
-        propertyPath: string;
-        /**
-         * The value to set in the property
-         */
-        value: any;
-        private _target;
-        private _effectiveTarget;
-        private _property;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param target defines the object containing the property
-         * @param propertyPath defines the path of the property to set in the target
-         * @param value defines the value to set in the property
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, condition?: Condition);
-        /** @hidden */
-
-        /**
-         * Execute the action and set the targetted property to the desired value.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-    /**
-     * This defines an action responsible to increment the target value
-     *  to a desired value once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    class IncrementValueAction extends Action {
-        /**
-         * The path of the property to increment in the target.
-         */
-        propertyPath: string;
-        /**
-         * The value we should increment the property by.
-         */
-        value: any;
-        private _target;
-        private _effectiveTarget;
-        private _property;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param target defines the object containing the property
-         * @param propertyPath defines the path of the property to increment in the target
-         * @param value defines the value value we should increment the property by
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, condition?: Condition);
-        /** @hidden */
-
-        /**
-         * Execute the action and increment the target of the value amount.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-    /**
-     * This defines an action responsible to start an animation once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    class PlayAnimationAction extends Action {
-        /**
-         * Where the animation should start (animation frame)
-         */
-        from: number;
-        /**
-         * Where the animation should stop (animation frame)
-         */
-        to: number;
-        /**
-         * Define if the animation should loop or stop after the first play.
-         */
-        loop?: boolean;
-        private _target;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param target defines the target animation or animation name
-         * @param from defines from where the animation should start (animation frame)
-         * @param end defines where the animation should stop (animation frame)
-         * @param loop defines if the animation should loop or stop after the first play
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, target: any, from: number, to: number, loop?: boolean, condition?: Condition);
-        /** @hidden */
-
-        /**
-         * Execute the action and play the animation.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-    /**
-     * This defines an action responsible to stop an animation once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    class StopAnimationAction extends Action {
-        private _target;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param target defines the target animation or animation name
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, target: any, condition?: Condition);
-        /** @hidden */
-
-        /**
-         * Execute the action and stop the animation.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-    /**
-     * This defines an action responsible that does nothing once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    class DoNothingAction extends Action {
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions?: any, condition?: Condition);
-        /**
-         * Execute the action and do nothing.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-    /**
-     * This defines an action responsible to trigger several actions once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    class CombineAction extends Action {
-        /**
-         * The list of aggregated animations to run.
-         */
-        children: Action[];
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param children defines the list of aggregated animations to run
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, children: Action[], condition?: Condition);
-        /** @hidden */
-
-        /**
-         * Execute the action and executes all the aggregated actions.
-         */
-        execute(evt: ActionEvent): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-    /**
-     * This defines an action responsible to run code (external event) once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    class ExecuteCodeAction extends Action {
-        /**
-         * The callback function to run.
-         */
-        func: (evt: ActionEvent) => void;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param func defines the callback function to run
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, func: (evt: ActionEvent) => void, condition?: Condition);
-        /**
-         * Execute the action and run the attached code.
-         */
-        execute(evt: ActionEvent): void;
-    }
-    /**
-     * This defines an action responsible to set the parent property of the target once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    class SetParentAction extends Action {
-        private _parent;
-        private _target;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param target defines the target containing the parent property
-         * @param parent defines from where the animation should start (animation frame)
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, target: any, parent: any, condition?: Condition);
-        /** @hidden */
-
-        /**
-         * Execute the action and set the parent property.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This defines an action helpful to play a defined sound on a triggered action.
-     */
-    class PlaySoundAction extends Action {
-        private _sound;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param sound defines the sound to play
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, sound: Sound, condition?: Condition);
-        /** @hidden */
-
-        /**
-         * Execute the action and play the sound.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-    /**
-     * This defines an action helpful to stop a defined sound on a triggered action.
-     */
-    class StopSoundAction extends Action {
-        private _sound;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param sound defines the sound to stop
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, sound: Sound, condition?: Condition);
-        /** @hidden */
-
-        /**
-         * Execute the action and stop the sound.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This defines an action responsible to change the value of a property
-     * by interpolating between its current value and the newly set one once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    class InterpolateValueAction extends Action {
-        /**
-         * Defines the path of the property where the value should be interpolated
-         */
-        propertyPath: string;
-        /**
-         * Defines the target value at the end of the interpolation.
-         */
-        value: any;
-        /**
-         * Defines the time it will take for the property to interpolate to the value.
-         */
-        duration: number;
-        /**
-         * Defines if the other scene animations should be stopped when the action has been triggered
-         */
-        stopOtherAnimations?: boolean;
-        /**
-         * Defines a callback raised once the interpolation animation has been done.
-         */
-        onInterpolationDone?: () => void;
-        /**
-         * Observable triggered once the interpolation animation has been done.
-         */
-        onInterpolationDoneObservable: Observable<InterpolateValueAction>;
-        private _target;
-        private _effectiveTarget;
-        private _property;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param target defines the object containing the value to interpolate
-         * @param propertyPath defines the path to the property in the target object
-         * @param value defines the target value at the end of the interpolation
-         * @param duration deines the time it will take for the property to interpolate to the value.
-         * @param condition defines the trigger related conditions
-         * @param stopOtherAnimations defines if the other scene animations should be stopped when the action has been triggered
-         * @param onInterpolationDone defines a callback raised once the interpolation animation has been done
-         */
-        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, duration?: number, condition?: Condition, stopOtherAnimations?: boolean, onInterpolationDone?: () => void);
-        /** @hidden */
-
-        /**
-         * Execute the action starts the value interpolation.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-}
-
-declare module BABYLON {
-    /**
      * Class used to store an actual running animation
      */
     class Animatable {
@@ -5038,6 +4025,1019 @@ declare module BABYLON {
          * @returns a boolean indicating if the animation is running
          */
         animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number): boolean;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * The action to be carried out following a trigger
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#available-actions
+     */
+    class Action {
+        /** the trigger, with or without parameters, for the action */
+        triggerOptions: any;
+        /**
+         * Trigger for the action
+         */
+        trigger: number;
+        /**
+         * Internal only - manager for action
+         * @hidden
+         */
+
+        private _nextActiveAction;
+        private _child;
+        private _condition?;
+        private _triggerParameter;
+        /**
+        * An event triggered prior to action being executed.
+        */
+        onBeforeExecuteObservable: Observable<Action>;
+        /**
+         * Creates a new Action
+         * @param triggerOptions the trigger, with or without parameters, for the action
+         * @param condition an optional determinant of action
+         */
+        constructor(
+        /** the trigger, with or without parameters, for the action */
+        triggerOptions: any, condition?: Condition);
+        /**
+         * Internal only
+         * @hidden
+         */
+
+        /**
+         * Gets the trigger parameters
+         * @returns the trigger parameters
+         */
+        getTriggerParameter(): any;
+        /**
+         * Internal only - executes current action event
+         * @hidden
+         */
+
+        /**
+         * Execute placeholder for child classes
+         * @param evt optional action event
+         */
+        execute(evt?: ActionEvent): void;
+        /**
+         * Skips to next active action
+         */
+        skipToNextActiveAction(): void;
+        /**
+         * Adds action to chain of actions, may be a DoNothingAction
+         * @param action defines the next action to execute
+         * @returns The action passed in
+         * @see https://www.babylonjs-playground.com/#1T30HR#0
+         */
+        then(action: Action): Action;
+        /**
+         * Internal only
+         * @hidden
+         */
+
+        /**
+         * Internal only
+         * @hidden
+         */
+
+        /**
+         * Serialize placeholder for child classes
+         * @param parent of child
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+        /**
+         * Internal only called by serialize
+         * @hidden
+         */
+        protected _serialize(serializedAction: any, parent?: any): any;
+        /**
+         * Internal only
+         * @hidden
+         */
+private static _SerializeValueAsString: (value: any) => string;
+        /**
+         * Internal only
+         * @hidden
+         */
+private static _GetTargetProperty: (target: Scene | Node) => {
+            name: string;
+            targetType: string;
+            value: string;
+        };
+    }
+}
+
+declare module BABYLON {
+    /**
+     * ActionEvent is the event being sent when an action is triggered.
+     */
+    class ActionEvent {
+        /** The mesh or sprite that triggered the action */
+        source: any;
+        /** The X mouse cursor position at the time of the event */
+        pointerX: number;
+        /** The Y mouse cursor position at the time of the event */
+        pointerY: number;
+        /** The mesh that is currently pointed at (can be null) */
+        meshUnderPointer: Nullable<AbstractMesh>;
+        /** the original (browser) event that triggered the ActionEvent */
+        sourceEvent?: any;
+        /** additional data for the event */
+        additionalData?: any;
+        /**
+         * Creates a new ActionEvent
+         * @param source The mesh or sprite that triggered the action
+         * @param pointerX The X mouse cursor position at the time of the event
+         * @param pointerY The Y mouse cursor position at the time of the event
+         * @param meshUnderPointer The mesh that is currently pointed at (can be null)
+         * @param sourceEvent the original (browser) event that triggered the ActionEvent
+         * @param additionalData additional data for the event
+         */
+        constructor(
+        /** The mesh or sprite that triggered the action */
+        source: any, 
+        /** The X mouse cursor position at the time of the event */
+        pointerX: number, 
+        /** The Y mouse cursor position at the time of the event */
+        pointerY: number, 
+        /** The mesh that is currently pointed at (can be null) */
+        meshUnderPointer: Nullable<AbstractMesh>, 
+        /** the original (browser) event that triggered the ActionEvent */
+        sourceEvent?: any, 
+        /** additional data for the event */
+        additionalData?: any);
+        /**
+         * Helper function to auto-create an ActionEvent from a source mesh.
+         * @param source The source mesh that triggered the event
+         * @param evt The original (browser) event
+         * @param additionalData additional data for the event
+         * @returns the new ActionEvent
+         */
+        static CreateNew(source: AbstractMesh, evt?: Event, additionalData?: any): ActionEvent;
+        /**
+         * Helper function to auto-create an ActionEvent from a source sprite
+         * @param source The source sprite that triggered the event
+         * @param scene Scene associated with the sprite
+         * @param evt The original (browser) event
+         * @param additionalData additional data for the event
+         * @returns the new ActionEvent
+         */
+        static CreateNewFromSprite(source: Sprite, scene: Scene, evt?: Event, additionalData?: any): ActionEvent;
+        /**
+         * Helper function to auto-create an ActionEvent from a scene. If triggered by a mesh use ActionEvent.CreateNew
+         * @param scene the scene where the event occurred
+         * @param evt The original (browser) event
+         * @returns the new ActionEvent
+         */
+        static CreateNewFromScene(scene: Scene, evt: Event): ActionEvent;
+        /**
+         * Helper function to auto-create an ActionEvent from a primitive
+         * @param prim defines the target primitive
+         * @param pointerPos defines the pointer position
+         * @param evt The original (browser) event
+         * @param additionalData additional data for the event
+         * @returns the new ActionEvent
+         */
+        static CreateNewFromPrimitive(prim: any, pointerPos: Vector2, evt?: Event, additionalData?: any): ActionEvent;
+    }
+    /**
+     * Action Manager manages all events to be triggered on a given mesh or the global scene.
+     * A single scene can have many Action Managers to handle predefined actions on specific meshes.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    class ActionManager {
+        /**
+         * Nothing
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly NothingTrigger: number;
+        /**
+         * On pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnPickTrigger: number;
+        /**
+         * On left pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnLeftPickTrigger: number;
+        /**
+         * On right pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnRightPickTrigger: number;
+        /**
+         * On center pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnCenterPickTrigger: number;
+        /**
+         * On pick down
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnPickDownTrigger: number;
+        /**
+         * On double pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnDoublePickTrigger: number;
+        /**
+         * On pick up
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnPickUpTrigger: number;
+        /**
+         * On pick out.
+         * This trigger will only be raised if you also declared a OnPickDown
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnPickOutTrigger: number;
+        /**
+         * On long press
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnLongPressTrigger: number;
+        /**
+         * On pointer over
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnPointerOverTrigger: number;
+        /**
+         * On pointer out
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnPointerOutTrigger: number;
+        /**
+         * On every frame
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnEveryFrameTrigger: number;
+        /**
+         * On intersection enter
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnIntersectionEnterTrigger: number;
+        /**
+         * On intersection exit
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnIntersectionExitTrigger: number;
+        /**
+         * On key down
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnKeyDownTrigger: number;
+        /**
+         * On key up
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnKeyUpTrigger: number;
+        /** Gets the list of active triggers */
+        static Triggers: {
+            [key: string]: number;
+        };
+        /** Gets the list of actions */
+        actions: Action[];
+        /** Gets the cursor to use when hovering items */
+        hoverCursor: string;
+        private _scene;
+        /**
+         * Creates a new action manager
+         * @param scene defines the hosting scene
+         */
+        constructor(scene: Scene);
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+        /**
+         * Gets hosting scene
+         * @returns the hosting scene
+         */
+        getScene(): Scene;
+        /**
+         * Does this action manager handles actions of any of the given triggers
+         * @param triggers defines the triggers to be tested
+         * @return a boolean indicating whether one (or more) of the triggers is handled
+         */
+        hasSpecificTriggers(triggers: number[]): boolean;
+        /**
+         * Does this action manager handles actions of any of the given triggers. This function takes two arguments for
+         * speed.
+         * @param triggerA defines the trigger to be tested
+         * @param triggerB defines the trigger to be tested
+         * @return a boolean indicating whether one (or more) of the triggers is handled
+         */
+        hasSpecificTriggers2(triggerA: number, triggerB: number): boolean;
+        /**
+         * Does this action manager handles actions of a given trigger
+         * @param trigger defines the trigger to be tested
+         * @param parameterPredicate defines an optional predicate to filter triggers by parameter
+         * @return whether the trigger is handled
+         */
+        hasSpecificTrigger(trigger: number, parameterPredicate?: (parameter: any) => boolean): boolean;
+        /**
+         * Does this action manager has pointer triggers
+         */
+        readonly hasPointerTriggers: boolean;
+        /**
+         * Does this action manager has pick triggers
+         */
+        readonly hasPickTriggers: boolean;
+        /**
+         * Does exist one action manager with at least one trigger
+         **/
+        static readonly HasTriggers: boolean;
+        /**
+         * Does exist one action manager with at least one pick trigger
+         **/
+        static readonly HasPickTriggers: boolean;
+        /**
+         * Does exist one action manager that handles actions of a given trigger
+         * @param trigger defines the trigger to be tested
+         * @return a boolean indicating whether the trigger is handeled by at least one action manager
+        **/
+        static HasSpecificTrigger(trigger: number): boolean;
+        /**
+         * Registers an action to this action manager
+         * @param action defines the action to be registered
+         * @return the action amended (prepared) after registration
+         */
+        registerAction(action: Action): Nullable<Action>;
+        /**
+         * Unregisters an action to this action manager
+         * @param action defines the action to be unregistered
+         * @return a boolean indicating whether the action has been unregistered
+         */
+        unregisterAction(action: Action): Boolean;
+        /**
+         * Process a specific trigger
+         * @param trigger defines the trigger to process
+         * @param evt defines the event details to be processed
+         */
+        processTrigger(trigger: number, evt?: ActionEvent): void;
+        /** @hidden */
+
+        /** @hidden */
+
+        /**
+         * Serialize this manager to a JSON object
+         * @param name defines the property name to store this manager
+         * @returns a JSON representation of this manager
+         */
+        serialize(name: string): any;
+        /**
+         * Creates a new ActionManager from a JSON data
+         * @param parsedActions defines the JSON data to read from
+         * @param object defines the hosting mesh
+         * @param scene defines the hosting scene
+         */
+        static Parse(parsedActions: any, object: Nullable<AbstractMesh>, scene: Scene): void;
+        /**
+         * Get a trigger name by index
+         * @param trigger defines the trigger index
+         * @returns a trigger name
+         */
+        static GetTriggerName(trigger: number): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * A Condition applied to an Action
+     */
+    class Condition {
+        /**
+         * Internal only - manager for action
+         * @hidden
+         */
+
+        /**
+         * Internal only
+         * @hidden
+         */
+
+        /**
+         * Internal only
+         * @hidden
+         */
+
+        /**
+         * Creates a new Condition
+         * @param actionManager the manager of the action the condition is applied to
+         */
+        constructor(actionManager: ActionManager);
+        /**
+         * Check if the current condition is valid
+         * @returns a boolean
+         */
+        isValid(): boolean;
+        /**
+         * Internal only
+         * @hidden
+         */
+
+        /**
+         * Internal only
+         * @hidden
+         */
+
+        /**
+         * Serialize placeholder for child classes
+         * @returns the serialized object
+         */
+        serialize(): any;
+        /**
+         * Internal only
+         * @hidden
+         */
+        protected _serialize(serializedCondition: any): any;
+    }
+    /**
+     * Defines specific conditional operators as extensions of Condition
+     */
+    class ValueCondition extends Condition {
+        /** path to specify the property of the target the conditional operator uses  */
+        propertyPath: string;
+        /** the value compared by the conditional operator against the current value of the property */
+        value: any;
+        /** the conditional operator, default ValueCondition.IsEqual */
+        operator: number;
+        /**
+         * Internal only
+         * @hidden
+         */
+        private static _IsEqual;
+        /**
+         * Internal only
+         * @hidden
+         */
+        private static _IsDifferent;
+        /**
+         * Internal only
+         * @hidden
+         */
+        private static _IsGreater;
+        /**
+         * Internal only
+         * @hidden
+         */
+        private static _IsLesser;
+        /**
+         * returns the number for IsEqual
+         */
+        static readonly IsEqual: number;
+        /**
+         * Returns the number for IsDifferent
+         */
+        static readonly IsDifferent: number;
+        /**
+         * Returns the number for IsGreater
+         */
+        static readonly IsGreater: number;
+        /**
+         * Returns the number for IsLesser
+         */
+        static readonly IsLesser: number;
+        /**
+         * Internal only The action manager for the condition
+         * @hidden
+         */
+
+        /**
+         * Internal only
+         * @hidden
+         */
+        private _target;
+        /**
+         * Internal only
+         * @hidden
+         */
+        private _effectiveTarget;
+        /**
+         * Internal only
+         * @hidden
+         */
+        private _property;
+        /**
+         * Creates a new ValueCondition
+         * @param actionManager manager for the action the condition applies to
+         * @param target for the action
+         * @param propertyPath path to specify the property of the target the conditional operator uses
+         * @param value the value compared by the conditional operator against the current value of the property
+         * @param operator the conditional operator, default ValueCondition.IsEqual
+         */
+        constructor(actionManager: ActionManager, target: any, 
+        /** path to specify the property of the target the conditional operator uses  */
+        propertyPath: string, 
+        /** the value compared by the conditional operator against the current value of the property */
+        value: any, 
+        /** the conditional operator, default ValueCondition.IsEqual */
+        operator?: number);
+        /**
+         * Compares the given value with the property value for the specified conditional operator
+         * @returns the result of the comparison
+         */
+        isValid(): boolean;
+        /**
+         * Serialize the ValueCondition into a JSON compatible object
+         * @returns serialization object
+         */
+        serialize(): any;
+        /**
+         * Gets the name of the conditional operator for the ValueCondition
+         * @param operator the conditional operator
+         * @returns the name
+         */
+        static GetOperatorName(operator: number): string;
+    }
+    /**
+     * Defines a predicate condition as an extension of Condition
+     */
+    class PredicateCondition extends Condition {
+        /** defines the predicate function used to validate the condition */
+        predicate: () => boolean;
+        /**
+         * Internal only - manager for action
+         * @hidden
+         */
+
+        /**
+         * Creates a new PredicateCondition
+         * @param actionManager manager for the action the condition applies to
+         * @param predicate defines the predicate function used to validate the condition
+         */
+        constructor(actionManager: ActionManager, 
+        /** defines the predicate function used to validate the condition */
+        predicate: () => boolean);
+        /**
+         * @returns the validity of the predicate condition
+         */
+        isValid(): boolean;
+    }
+    /**
+     * Defines a state condition as an extension of Condition
+     */
+    class StateCondition extends Condition {
+        /** Value to compare with target state  */
+        value: string;
+        /**
+         * Internal only - manager for action
+         * @hidden
+         */
+
+        /**
+         * Internal only
+         * @hidden
+         */
+        private _target;
+        /**
+         * Creates a new StateCondition
+         * @param actionManager manager for the action the condition applies to
+         * @param target of the condition
+         * @param value to compare with target state
+         */
+        constructor(actionManager: ActionManager, target: any, 
+        /** Value to compare with target state  */
+        value: string);
+        /**
+         * Gets a boolean indicating if the current condition is met
+         * @returns the validity of the state
+         */
+        isValid(): boolean;
+        /**
+         * Serialize the StateCondition into a JSON compatible object
+         * @returns serialization object
+         */
+        serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This defines an action responsible to toggle a boolean once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    class SwitchBooleanAction extends Action {
+        /**
+         * The path to the boolean property in the target object
+         */
+        propertyPath: string;
+        private _target;
+        private _effectiveTarget;
+        private _property;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the object containing the boolean
+         * @param propertyPath defines the path to the boolean property in the target object
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, propertyPath: string, condition?: Condition);
+        /** @hidden */
+
+        /**
+         * Execute the action toggle the boolean value.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+    /**
+     * This defines an action responsible to set a the state field of the target
+     *  to a desired value once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    class SetStateAction extends Action {
+        /**
+         * The value to store in the state field.
+         */
+        value: string;
+        private _target;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the object containing the state property
+         * @param value defines the value to store in the state field
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, value: string, condition?: Condition);
+        /**
+         * Execute the action and store the value on the target state property.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+    /**
+     * This defines an action responsible to set a property of the target
+     *  to a desired value once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    class SetValueAction extends Action {
+        /**
+         * The path of the property to set in the target.
+         */
+        propertyPath: string;
+        /**
+         * The value to set in the property
+         */
+        value: any;
+        private _target;
+        private _effectiveTarget;
+        private _property;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the object containing the property
+         * @param propertyPath defines the path of the property to set in the target
+         * @param value defines the value to set in the property
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, condition?: Condition);
+        /** @hidden */
+
+        /**
+         * Execute the action and set the targetted property to the desired value.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+    /**
+     * This defines an action responsible to increment the target value
+     *  to a desired value once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    class IncrementValueAction extends Action {
+        /**
+         * The path of the property to increment in the target.
+         */
+        propertyPath: string;
+        /**
+         * The value we should increment the property by.
+         */
+        value: any;
+        private _target;
+        private _effectiveTarget;
+        private _property;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the object containing the property
+         * @param propertyPath defines the path of the property to increment in the target
+         * @param value defines the value value we should increment the property by
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, condition?: Condition);
+        /** @hidden */
+
+        /**
+         * Execute the action and increment the target of the value amount.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+    /**
+     * This defines an action responsible to start an animation once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    class PlayAnimationAction extends Action {
+        /**
+         * Where the animation should start (animation frame)
+         */
+        from: number;
+        /**
+         * Where the animation should stop (animation frame)
+         */
+        to: number;
+        /**
+         * Define if the animation should loop or stop after the first play.
+         */
+        loop?: boolean;
+        private _target;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the target animation or animation name
+         * @param from defines from where the animation should start (animation frame)
+         * @param end defines where the animation should stop (animation frame)
+         * @param loop defines if the animation should loop or stop after the first play
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, from: number, to: number, loop?: boolean, condition?: Condition);
+        /** @hidden */
+
+        /**
+         * Execute the action and play the animation.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+    /**
+     * This defines an action responsible to stop an animation once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    class StopAnimationAction extends Action {
+        private _target;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the target animation or animation name
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, condition?: Condition);
+        /** @hidden */
+
+        /**
+         * Execute the action and stop the animation.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+    /**
+     * This defines an action responsible that does nothing once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    class DoNothingAction extends Action {
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions?: any, condition?: Condition);
+        /**
+         * Execute the action and do nothing.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+    /**
+     * This defines an action responsible to trigger several actions once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    class CombineAction extends Action {
+        /**
+         * The list of aggregated animations to run.
+         */
+        children: Action[];
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param children defines the list of aggregated animations to run
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, children: Action[], condition?: Condition);
+        /** @hidden */
+
+        /**
+         * Execute the action and executes all the aggregated actions.
+         */
+        execute(evt: ActionEvent): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+    /**
+     * This defines an action responsible to run code (external event) once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    class ExecuteCodeAction extends Action {
+        /**
+         * The callback function to run.
+         */
+        func: (evt: ActionEvent) => void;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param func defines the callback function to run
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, func: (evt: ActionEvent) => void, condition?: Condition);
+        /**
+         * Execute the action and run the attached code.
+         */
+        execute(evt: ActionEvent): void;
+    }
+    /**
+     * This defines an action responsible to set the parent property of the target once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    class SetParentAction extends Action {
+        private _parent;
+        private _target;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the target containing the parent property
+         * @param parent defines from where the animation should start (animation frame)
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, parent: any, condition?: Condition);
+        /** @hidden */
+
+        /**
+         * Execute the action and set the parent property.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This defines an action helpful to play a defined sound on a triggered action.
+     */
+    class PlaySoundAction extends Action {
+        private _sound;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param sound defines the sound to play
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, sound: Sound, condition?: Condition);
+        /** @hidden */
+
+        /**
+         * Execute the action and play the sound.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+    /**
+     * This defines an action helpful to stop a defined sound on a triggered action.
+     */
+    class StopSoundAction extends Action {
+        private _sound;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param sound defines the sound to stop
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, sound: Sound, condition?: Condition);
+        /** @hidden */
+
+        /**
+         * Execute the action and stop the sound.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This defines an action responsible to change the value of a property
+     * by interpolating between its current value and the newly set one once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    class InterpolateValueAction extends Action {
+        /**
+         * Defines the path of the property where the value should be interpolated
+         */
+        propertyPath: string;
+        /**
+         * Defines the target value at the end of the interpolation.
+         */
+        value: any;
+        /**
+         * Defines the time it will take for the property to interpolate to the value.
+         */
+        duration: number;
+        /**
+         * Defines if the other scene animations should be stopped when the action has been triggered
+         */
+        stopOtherAnimations?: boolean;
+        /**
+         * Defines a callback raised once the interpolation animation has been done.
+         */
+        onInterpolationDone?: () => void;
+        /**
+         * Observable triggered once the interpolation animation has been done.
+         */
+        onInterpolationDoneObservable: Observable<InterpolateValueAction>;
+        private _target;
+        private _effectiveTarget;
+        private _property;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the object containing the value to interpolate
+         * @param propertyPath defines the path to the property in the target object
+         * @param value defines the target value at the end of the interpolation
+         * @param duration deines the time it will take for the property to interpolate to the value.
+         * @param condition defines the trigger related conditions
+         * @param stopOtherAnimations defines if the other scene animations should be stopped when the action has been triggered
+         * @param onInterpolationDone defines a callback raised once the interpolation animation has been done
+         */
+        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, duration?: number, condition?: Condition, stopOtherAnimations?: boolean, onInterpolationDone?: () => void);
+        /** @hidden */
+
+        /**
+         * Execute the action starts the value interpolation.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
     }
 }
 
@@ -40399,6 +40399,192 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new AnaglyphArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphFreeCamera extends FreeCamera {
+        /**
+         * Creates a new AnaglyphFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new AnaglyphGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new AnaglyphUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphUniversalCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new StereoscopicArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicFreeCamera extends FreeCamera {
+        /**
+         * Creates a new StereoscopicFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new StereoscopicGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new StereoscopicUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicUniversalCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
      * Manage the gamepad inputs to control an arc rotate camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
      */
@@ -42108,192 +42294,6 @@ declare module BABYLON {
          * Disposes the component and the associated ressources.
          */
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new AnaglyphArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphFreeCamera extends FreeCamera {
-        /**
-         * Creates a new AnaglyphFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new AnaglyphGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new AnaglyphUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphUniversalCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new StereoscopicArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicFreeCamera extends FreeCamera {
-        /**
-         * Creates a new StereoscopicFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new StereoscopicGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new StereoscopicUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicUniversalCamera
-         */
-        getClassName(): string;
     }
 }
 
@@ -48453,18 +48453,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-}
-
-declare module BABYLON {
-}
-
-declare module BABYLON {
-}
-
-declare module BABYLON {
-}
-
-declare module BABYLON {
     /**
      * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
      * Custom Procedural textures are the easiest way to create your own procedural in your application.
@@ -48788,6 +48776,18 @@ declare module BABYLON {
         dispose(): void;
         private _beforeClear;
     }
+}
+
+declare module BABYLON {
+}
+
+declare module BABYLON {
+}
+
+declare module BABYLON {
+}
+
+declare module BABYLON {
 }
 
 declare module BABYLON {
