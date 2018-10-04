@@ -983,7 +983,6 @@ module BABYLON {
             // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
-                scene.resetCachedMaterial();
 
                 // Fallbacks
                 var fallbacks = new EffectFallbacks();
@@ -1106,7 +1105,9 @@ module BABYLON {
                 }
 
                 var join = defines.toString();
-                subMesh.setEffect(scene.getEngine().createEffect(shaderName, <EffectCreationOptions>{
+
+                let previousEffect = subMesh.effect;
+                let effect = scene.getEngine().createEffect(shaderName, <EffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
@@ -1116,9 +1117,19 @@ module BABYLON {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }
-                }, engine), defines);
+                }, engine);
 
-                this.buildUniformLayout();
+                if (effect) {
+                    // Use previous effect while new one is compiling
+                    if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
+                        effect = previousEffect;
+                        defines.markAsUnprocessed();
+                    } else {
+                        scene.resetCachedMaterial();
+                        subMesh.setEffect(effect, defines);
+                        this.buildUniformLayout();
+                    }
+                }
             }
 
             if (!subMesh.effect || !subMesh.effect.isReady()) {
