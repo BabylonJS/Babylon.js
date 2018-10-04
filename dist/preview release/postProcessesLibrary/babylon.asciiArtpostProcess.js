@@ -8,7 +8,7 @@
 	else
 		root["POSTPROCESSLIBRARY"] = factory(root["BABYLON"]);
 })(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs__) {
-return /******/ (function(modules) { // webpackBootst rap
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
