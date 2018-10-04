@@ -139,6 +139,8 @@ module BABYLON {
 
         /**
          * Gets the list of instances created from this mesh
+         * it is not supposed to be modified manually.
+         * Note also that the order of the InstancedMesh wihin the array is not significant and might change.
          * @see http://doc.babylonjs.com/how_to/how_to_use_instances
          */
         public instances = new Array<InstancedMesh>();
