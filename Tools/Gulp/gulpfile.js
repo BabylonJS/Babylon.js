@@ -444,14 +444,14 @@ var buildExternalLibrary = function(library, settings, watch) {
 
     let shaderTask;
 
-    let shadersIndlueTask;
+    let shadersInclueTask;
 
     if (library.shadersIncludeFiles && library.shadersIncludeFiles.length) {
-        shadersIndlueTask = gulp.src(library.shadersIncludeFiles, { base: settings.build.srcOutputDirectory })
+        shadersInclueTask = gulp.src(library.shadersIncludeFiles, { base: settings.build.srcOutputDirectory })
             .pipe(uncommentShader())
             .pipe(appendSrcToVariable("BABYLON.Effect.IncludesShadersStore", includeShadersName, library.output + ".include.fx"))
             .pipe(gulp.dest(settings.build.srcOutputDirectory));
-        tasks.push(shadersIndlueTask);
+        tasks.push(shadersInclueTask);
     }
 
     if (library.shaderFiles && library.shaderFiles.length) {
@@ -478,37 +478,10 @@ var buildExternalLibrary = function(library, settings, watch) {
 
     var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
 
-    /*let cssTask;
-
-    if (library.sassFiles && library.sassFiles.length) {
-        cssTask = gulp.src(library.sassFiles)
-            .pipe(sass().on("error", sass.logError))
-            .pipe(concat(library.output.replace(".js", ".css")))
-            .pipe(gulp.dest(outputDirectory));
-        tasks.push(cssTask);
-    }*/
-
-
     if (watch) {
         return merge2(tasks);
     }
     else {
-        /*if (library.bundle) {
-            // Don't remove extends and decorate functions
-            var code = merge2([tsProcess.js, shader, includeShader])
-                .pipe(concat(library.output));
-
-            if (library.buildAsModule) {
-                code = code.pipe(addModuleExports(library.moduleDeclaration, true))
-            }
-
-            code.pipe(gulp.dest(outputDirectory))
-                .pipe(cleants())
-                .pipe(rename({ extname: ".min.js" }))
-                .pipe(uglify())
-                .pipe(optimisejs())
-                .pipe(gulp.dest(outputDirectory));
-        } else {*/
         let currentTasks = [];
         if (tsProcess) {
             currentTasks.push(tsProcess.js);
@@ -516,8 +489,8 @@ var buildExternalLibrary = function(library, settings, watch) {
         if (shaderTask) {
             currentTasks.push(shaderTask);
         }
-        if (shadersIndlueTask) {
-            currentTasks.push(shadersIndlueTask);
+        if (shadersInclueTask) {
+            currentTasks.push(shadersInclueTask);
         }
         var code;
 
@@ -557,9 +530,7 @@ var buildExternalLibrary = function(library, settings, watch) {
 
         var waitAll;
         let waitAllTasks = [];
-        /*if (cssTask) {
-            waitAllTasks.push(cssTask);
-        }*/
+
 
         if (dev) {
             waitAllTasks.push(dev);
