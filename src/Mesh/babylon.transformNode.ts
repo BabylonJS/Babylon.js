@@ -31,6 +31,7 @@ module BABYLON {
         private _up = new Vector3(0, 1, 0);
         private _right = new Vector3(1, 0, 0);
         private _rightInverted = new Vector3(-1, 0, 0);
+        private static TmpVector3 = Tools.BuildArray(5, Vector3.Zero);
 
         // Properties
         @serializeAsVector3("position")
@@ -162,8 +163,8 @@ module BABYLON {
         public set rotationQuaternion(quaternion: Nullable<Quaternion>) {
             this._rotationQuaternion = quaternion;
             //reset the rotation vector.
-            if (quaternion && this.rotation.length()) {
-                this.rotation.copyFromFloats(0.0, 0.0, 0.0);
+            if (quaternion) {
+                this.rotation.setAll(0.0);
             }
         }
 
@@ -304,7 +305,7 @@ module BABYLON {
          * @returns the current TransformNode
         */
         public setPivotMatrix(matrix: Matrix, postMultiplyPivotMatrix = true): TransformNode {
-            this._pivotMatrix = matrix.clone();
+            this._pivotMatrix.copyFrom(matrix);
             this._cache.pivotMatrixUpdated = true;
             this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
 
@@ -391,10 +392,9 @@ module BABYLON {
                 absolutePositionZ = absolutePosition.z;
             }
             if (this.parent) {
-                var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
-                invertParentWorldMatrix.invert();
-                var worldPosition = new Vector3(absolutePositionX, absolutePositionY, absolutePositionZ);
-                this.position = Vector3.TransformCoordinates(worldPosition, invertParentWorldMatrix);
+                const invertParentWorldMatrix = Tmp.Matrix[0];
+                this.parent.getWorldMatrix().invertToRef(invertParentWorldMatrix);
+                Vector3.TransformCoordinatesFromFloatsToRef(absolutePositionX, absolutePositionY, absolutePositionZ, invertParentWorldMatrix, this.position);
             } else {
                 this.position.x = absolutePositionX;
                 this.position.y = absolutePositionY;
@@ -420,9 +420,8 @@ module BABYLON {
          */
         public getPositionExpressedInLocalSpace(): Vector3 {
             this.computeWorldMatrix();
-            var invLocalWorldMatrix = this._localWorld.clone();
-            invLocalWorldMatrix.invert();
-
+            const invLocalWorldMatrix = Tmp.Matrix[0];
+            this._localWorld.invertToRef(invLocalWorldMatrix);
             return Vector3.TransformNormal(this.position, invLocalWorldMatrix);
         }
 
@@ -571,34 +570,18 @@ module BABYLON {
             if (!node && !this.parent) {
                 return this;
             }
-            if (!node) {
-                var rotation = Tmp.Quaternion[0];
-                var position = Tmp.Vector3[0];
-                var scale = Tmp.Vector3[1];
 
+            var quatRotation = Tmp.Quaternion[0];
+            var position = TransformNode.TmpVector3[0];
+            var scale = TransformNode.TmpVector3[1];
+
+            if (!node) {
                 if (this.parent && this.parent.computeWorldMatrix) {
                     this.parent.computeWorldMatrix(true);
                 }
                 this.computeWorldMatrix(true);
-                this.getWorldMatrix().decompose(scale, rotation, position);
-
-                if (this.rotationQuaternion) {
-                    this.rotationQuaternion.copyFrom(rotation);
-                } else {
-                    rotation.toEulerAnglesToRef(this.rotation);
-                }
-
-                this.scaling.x = scale.x;
-                this.scaling.y = scale.y;
-                this.scaling.z = scale.z;
-
-                this.position.x = position.x;
-                this.position.y = position.y;
-                this.position.z = position.z;
+                this.getWorldMatrix().decompose(scale, quatRotation, position);
             } else {
-                var rotation = Tmp.Quaternion[0];
-                var position = Tmp.Vector3[0];
-                var scale = Tmp.Vector3[1];
                 var diffMatrix = Tmp.Matrix[0];
                 var invParentMatrix = Tmp.Matrix[1];
 
@@ -607,22 +590,17 @@ module BABYLON {
 
                 node.getWorldMatrix().invertToRef(invParentMatrix);
                 this.getWorldMatrix().multiplyToRef(invParentMatrix, diffMatrix);
-                diffMatrix.decompose(scale, rotation, position);
-
-                if (this.rotationQuaternion) {
-                    this.rotationQuaternion.copyFrom(rotation);
-                } else {
-                    rotation.toEulerAnglesToRef(this.rotation);
-                }
-
-                this.position.x = position.x;
-                this.position.y = position.y;
-                this.position.z = position.z;
-
-                this.scaling.x = scale.x;
-                this.scaling.y = scale.y;
-                this.scaling.z = scale.z;
+                diffMatrix.decompose(scale, quatRotation, position);
             }
+
+            if (this.rotationQuaternion) {
+                this.rotationQuaternion.copyFrom(quatRotation);
+            } else {
+                quatRotation.toEulerAnglesToRef(this.rotation);
+            }
+
+            this.scaling.copyFrom(scale);
+            this.position.copyFrom(position);
 
             this.parent = node;
             return this;
@@ -693,8 +671,8 @@ module BABYLON {
         public rotate(axis: Vector3, amount: number, space?: Space): TransformNode {
             axis.normalize();
             if (!this.rotationQuaternion) {
-                this.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
-                this.rotation = Vector3.Zero();
+                this.rotationQuaternion = this.rotation.toQuaternion();
+                this.rotation.setAll(0);
             }
             var rotationQuaternion: Quaternion;
             if (!space || (space as any) === Space.LOCAL) {
@@ -703,8 +681,8 @@ module BABYLON {
             }
             else {
                 if (this.parent) {
-                    var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
-                    invertParentWorldMatrix.invert();
+                    const invertParentWorldMatrix = Tmp.Matrix[0];
+                    this.parent.getWorldMatrix().invertToRef(invertParentWorldMatrix);
                     axis = Vector3.TransformNormal(axis, invertParentWorldMatrix);
                 }
                 rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, TransformNode._rotationAxisCache);
@@ -727,19 +705,32 @@ module BABYLON {
             axis.normalize();
             if (!this.rotationQuaternion) {
                 this.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
-                this.rotation.copyFromFloats(0, 0, 0);
+                this.rotation.setAll(0);
             }
-            point.subtractToRef(this.position, Tmp.Vector3[0]);
-            Matrix.TranslationToRef(Tmp.Vector3[0].x, Tmp.Vector3[0].y, Tmp.Vector3[0].z, Tmp.Matrix[0]);
-            Tmp.Matrix[0].invertToRef(Tmp.Matrix[2]);
-            Matrix.RotationAxisToRef(axis, amount, Tmp.Matrix[1]);
-            Tmp.Matrix[2].multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[2]);
-            Tmp.Matrix[2].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[2]);
 
-            Tmp.Matrix[2].decompose(Tmp.Vector3[0], Tmp.Quaternion[0], Tmp.Vector3[1]);
+            const tmpVector = TransformNode.TmpVector3[0];
+            const finalScale = TransformNode.TmpVector3[1];
+            const finalTranslation = TransformNode.TmpVector3[2];
 
-            this.position.addInPlace(Tmp.Vector3[1]);
-            Tmp.Quaternion[0].multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
+            const finalRotation = Tmp.Quaternion[0];
+
+            const translationMatrix = Tmp.Matrix[0]; // T
+            const translationMatrixInv = Tmp.Matrix[1]; // T'
+            const rotationMatrix = Tmp.Matrix[2]; // R
+            const finalMatrix = Tmp.Matrix[3]; // T' x R x T
+
+            point.subtractToRef(this.position, tmpVector);
+            Matrix.TranslationToRef(tmpVector.x, tmpVector.y, tmpVector.z, translationMatrix); // T
+            Matrix.TranslationToRef(-tmpVector.x, -tmpVector.y, -tmpVector.z, translationMatrixInv); // T'
+            Matrix.RotationAxisToRef(axis, amount, rotationMatrix); // R
+
+            translationMatrixInv.multiplyToRef(rotationMatrix, finalMatrix); // T' x R
+            finalMatrix.multiplyToRef(translationMatrix, finalMatrix);  // T' x R x T
+
+            finalMatrix.decompose(finalScale, finalRotation, finalTranslation);
+
+            this.position.addInPlace(finalTranslation);
+            finalRotation.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
 
             return this;
         }
@@ -868,7 +859,7 @@ module BABYLON {
             if (this.billboardMode !== TransformNode.BILLBOARDMODE_NONE && camera) {
                 if ((this.billboardMode & TransformNode.BILLBOARDMODE_ALL) !== TransformNode.BILLBOARDMODE_ALL) {
                     // Need to decompose each rotation here
-                    var currentPosition = Tmp.Vector3[3];
+                    var currentPosition = TransformNode.TmpVector3[3];
 
                     if (this.parent && this.parent.getWorldMatrix) {
                         if (this._transformToBoneReferal) {
@@ -883,7 +874,7 @@ module BABYLON {
 
                     currentPosition.subtractInPlace(camera.globalPosition);
 
-                    var finalEuler = Tmp.Vector3[4].copyFromFloats(0, 0, 0);
+                    var finalEuler = TransformNode.TmpVector3[4].copyFromFloats(0, 0, 0);
                     if ((this.billboardMode & TransformNode.BILLBOARDMODE_X) === TransformNode.BILLBOARDMODE_X) {
                         finalEuler.x = Math.atan2(-currentPosition.y, currentPosition.z);
                     }
@@ -926,10 +917,10 @@ module BABYLON {
                         Tmp.Matrix[5].copyFrom(this.parent.getWorldMatrix());
                     }
 
-                    this._localWorld.getTranslationToRef(Tmp.Vector3[5]);
-                    Vector3.TransformCoordinatesToRef(Tmp.Vector3[5], Tmp.Matrix[5], Tmp.Vector3[5]);
+                    this._localWorld.getTranslationToRef(TransformNode.TmpVector3[5]);
+                    Vector3.TransformCoordinatesToRef(TransformNode.TmpVector3[5], Tmp.Matrix[5], TransformNode.TmpVector3[5]);
                     this._worldMatrix.copyFrom(this._localWorld);
-                    this._worldMatrix.setTranslation(Tmp.Vector3[5]);
+                    this._worldMatrix.setTranslation(TransformNode.TmpVector3[5]);
 
                 } else {
                     if (this._transformToBoneReferal) {
