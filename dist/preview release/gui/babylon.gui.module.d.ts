@@ -2829,14 +2829,6 @@ declare module 'babylonjs-gui/3D/materials/fluentMaterial' {
 // Dependencies for this module:
 //   ../../../../Tools/Gulp/babylonjs
 declare module BABYLON.GUI {
-}
-declare module BABYLON.GUI {
-}
-declare module BABYLON.GUI {
-}
-declare module BABYLON.GUI {
-}
-declare module BABYLON.GUI {
     /**
         * Interface used to define a control that can receive focus
         */
@@ -3315,10 +3307,6 @@ declare module BABYLON.GUI {
             /** UNITMODE_PIXEL */
             static readonly UNITMODE_PIXEL: number;
     }
-}
-declare module BABYLON.GUI {
-}
-declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**

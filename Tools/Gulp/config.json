@@ -2060,6 +2060,12 @@
                 "filename": "babylon.gui.module.d.ts",
                 "packageName": "babylonjs-gui",
                 "moduleName": "BABYLON.GUI",
+                "moduleSpecifics": [
+                    {
+                        "path": "babylonjs-loaders/glTF/2.0/Extensions",
+                        "namespace": "BABYLON.GLTF2.Loader.Extensions"
+                    }
+                ],
                 "importsToRemove": [],
                 "classMap": {
                     "babylonjs": "BABYLON",

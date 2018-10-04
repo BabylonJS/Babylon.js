@@ -941,8 +941,6 @@ declare module BabylonViewer {
     export function InitTags(selector?: string): void;
 }
 declare module BabylonViewer {
-}
-declare module BabylonViewer {
     export function getConfigurationKey(key: string, configObject: any): any;
     export interface ViewerConfiguration {
             version?: string;
@@ -1556,8 +1554,6 @@ declare module BabylonViewer {
         *
         */
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
-}
-declare module BabylonViewer {
 }
 declare module BabylonViewer {
     export interface IEnvironmentMapConfiguration {

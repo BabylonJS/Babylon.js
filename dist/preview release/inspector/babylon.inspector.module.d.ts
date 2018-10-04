@@ -1345,26 +1345,6 @@ declare module 'babylonjs-inspector/treetools/SoundInteractions' {
 // Dependencies for this module:
 //   ../../../../Tools/Gulp/babylonjs
 declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
     export class Inspector {
             /** The HTML document relative to this inspector (the window or the popup depending on its mode) */
             static DOCUMENT: HTMLDocument;
