@@ -1,26 +1,37 @@
-module.exports = function (data, options) {
-
-    /*
-    {
-        packageName: string,
-        moduleName: string,
-        importsToRemove: Array<string>,
-        classMap
-    }
-    */
-
+module.exports = function(data, options) {
     var str = "" + data;
 
-    // this regex is not working on node 6 for some reason:
-    // str = str.replace(/declare module 'babylonjs-viewer\/' {((?!(declare))(.|\n))*\n}/g, '');
-
+    // Start process
     let lines = str.split('\n');
     var firstIndex = lines.findIndex((line => { return line.indexOf(`'${options.packageName}/'`) !== -1 }));
     var lastIndex = lines.findIndex(((line, idx) => { return line.trim() === '}' && idx > firstIndex }));
     lines.splice(firstIndex, lastIndex - firstIndex + 1);
-    str = lines.join('\n');
 
-    str = str.replace(/declare module (.*) {/g, `declare module ${options.moduleName} {`);
+    // Let's go line by line and check if we have special folder replacements
+    for (var index = 0; index < lines.length; index++) {
+        var namespace = options.moduleName;
+        var regex = /declare module '(.*)' {/g;
+
+        if (options.moduleSpecifics) {
+            var match = regex.exec(lines[index]);
+
+            if (!match) {
+                continue;
+            }
+
+            var module = match[1];
+
+            options.moduleSpecifics.forEach(function(specific) {
+                if (module.indexOf(specific.path) > -1) {
+                    namespace = specific.namespace;
+                }
+            });
+        }
+
+        lines[index] = lines[index].replace(regex, `declare module ${namespace} {`);
+    }
+
+    str = lines.join('\n');
 
     str = str.replace("import * as BABYLON from 'babylonjs';", "");
     let regexp = new RegExp(`import {(.*)} from ['"]${options.packageName}(.*)['"];`, 'g');
@@ -33,8 +44,7 @@ module.exports = function (data, options) {
         }
     }
 
-    //find all used BABYLON and BABYLON-Loaders classes:
-
+    // Find all used BABYLON and BABYLON-Loaders classes:
     if ((options.classMap)) {
         Object.keys(options.classMap).forEach(package => {
             var babylonRegex = new RegExp(`import {(.*)} from ['"](${package})['"];`, "g");
@@ -63,10 +73,24 @@ module.exports = function (data, options) {
 
     str = str.split("\n").filter(line => line.trim()).filter(line => line.indexOf("export * from") === -1).join("\n");
 
-    //empty declare regex
-    let emptyDeclareRegexp = new RegExp("declare module " + options.moduleName + " {\n}", "g");
+    // Remove empty module declaration
 
-    str = str.replace(emptyDeclareRegexp, "");
+    var cleanEmptyNamespace = function(str, moduleName) {
+        let emptyDeclareRegexp = new RegExp("declare module " + moduleName + " {\n}\n", "g");
+        str = str.replace(emptyDeclareRegexp, "");
+        emptyDeclareRegexp = new RegExp("declare module " + moduleName + " {\r\n}\r\n", "g");
+        str = str.replace(emptyDeclareRegexp, "");
+
+        return str;
+    }
+
+    str = cleanEmptyNamespace(str, options.moduleName);
+
+    if (options.moduleSpecifics) {
+        options.moduleSpecifics.forEach(function(specific) {
+            str = cleanEmptyNamespace(str, specific.namespace);
+        });
+    }
 
     return str;
 }
