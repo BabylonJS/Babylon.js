@@ -33,7 +33,7 @@ gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
             var library = config[module].libraries[0];
             if (library.noWatch) return;
             var outputDirectory = config.build.tempDirectory + config[module].build.distOutputDirectory;
-            let wpconfig = require(config[module].build.webpack);
+            let wpconfig = require("../" + config[module].build.webpack);
             wpconfig.watch = true;
             // dev mode and absolute path sourcemaps for debugging
             wpconfig.mode = "development";
@@ -47,7 +47,7 @@ gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
                 if (library.webpack) {
                     if (library.noWatch) return;
                     var outputDirectory = config.build.tempDirectory + config[module].build.distOutputDirectory;
-                    let wpconfig = require(library.webpack);
+                    let wpconfig = require("../" + library.webpack);
                     wpconfig.watch = true;
                     // dev mode and absolute path sourcemaps for debugging
                     wpconfig.mode = "development";
