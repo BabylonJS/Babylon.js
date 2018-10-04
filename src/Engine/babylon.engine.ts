@@ -4421,7 +4421,7 @@ module BABYLON {
             }
 
             this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
-                this._rescalePostProcess.onApply = function (effect) {
+                this._rescalePostProcess.onApply = function(effect) {
                     effect._bindTexture("textureSampler", source);
                 };
 
