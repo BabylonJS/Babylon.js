@@ -7,7 +7,7 @@ var config;
 var justOnce;
 
 var threshold = 25;
-var errorRatio = 2.5;
+var errorCountThreshold = 400;
 
 // Overload the random to make it deterministic
 var seed = 100000,
@@ -15,7 +15,7 @@ var seed = 100000,
     prime = 37,
     maximum = Math.pow(2, 50);
 
-Math.random = function () {
+Math.random = function() {
     seed *= constant;
     seed += prime;
     seed %= maximum;
@@ -49,9 +49,10 @@ function compare(renderData, referenceCanvas) {
     referenceContext.putImageData(referenceData, 0, 0);
 
     if (differencesCount) {
-        console.log("Pixel difference: " + differencesCount + " pixels.")
+        console.log("Pixel difference: " + differencesCount + " pixels.");
     }
-    return (differencesCount * 100) / (width * height) > errorRatio;
+
+    return differencesCount > errorCountThreshold;
 }
 
 function getRenderData(canvas, engine) {
@@ -137,12 +138,12 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done
 function processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done) {
     currentScene.useConstantAnimationDeltaTime = true;
     var renderCount = test.renderCount || 1;
-   
-    currentScene.executeWhenReady(function () {
+
+    currentScene.executeWhenReady(function() {
         if (currentScene.activeCamera && currentScene.activeCamera.useAutoRotationBehavior) {
             currentScene.activeCamera.useAutoRotationBehavior = false;
         }
-        engine.runRenderLoop(function () {
+        engine.runRenderLoop(function() {
             try {
                 currentScene.render();
                 renderCount--;
@@ -199,7 +200,7 @@ function runTest(index, done) {
 
     var resultContext = resultCanvas.getContext("2d");
     var img = new Image();
-    img.onload = function () {
+    img.onload = function() {
         resultCanvas.width = img.width;
         resultCanvas.height = img.height;
         resultContext.drawImage(img, 0, 0);
@@ -214,12 +215,12 @@ function runTest(index, done) {
     location.href = "#" + container.id;
 
     if (test.sceneFolder) {
-        BABYLON.SceneLoader.Load(config.root + test.sceneFolder, test.sceneFilename, engine, function (newScene) {
+        BABYLON.SceneLoader.Load(config.root + test.sceneFolder, test.sceneFilename, engine, function(newScene) {
             currentScene = newScene;
             processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
         },
             null,
-            function (loadedScene, msg) {
+            function(loadedScene, msg) {
                 console.error(msg);
                 done(false);
             });
@@ -234,7 +235,7 @@ function runTest(index, done) {
         var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
         var pgRoot = "/Playground"
 
-        var retryTime = 30*1000;
+        var retryTime = 30 * 1000;
         var maxRetry = 2;
         var retry = 0;
 
@@ -253,7 +254,7 @@ function runTest(index, done) {
 
         var loadPG = function() {
             var xmlHttp = new XMLHttpRequest();
-            xmlHttp.onreadystatechange = function () {
+            xmlHttp.onreadystatechange = function() {
                 if (xmlHttp.readyState === 4) {
                     try {
                         xmlHttp.onreadystatechange = null;
@@ -265,16 +266,16 @@ function runTest(index, done) {
                         code = code.replace(/"scenes\//g, "\"" + pgRoot + "/scenes/");
                         currentScene = eval(code + "\r\ncreateScene(engine)");
 
-                        if(currentScene.then){
+                        if (currentScene.then) {
                             // Handle if createScene returns a promise
-                            currentScene.then(function(scene){
+                            currentScene.then(function(scene) {
                                 currentScene = scene;
                                 processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
-                            }).catch(function(e){
+                            }).catch(function(e) {
                                 console.error(e);
                                 onError();
                             })
-                        }else{
+                        } else {
                             // Handle if createScene returns a scene
                             processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
                         }
@@ -285,7 +286,7 @@ function runTest(index, done) {
                     }
                 }
             }
-            xmlHttp.onerror = function () {
+            xmlHttp.onerror = function() {
                 console.error("Network error during test load.");
                 onError();
             }
@@ -341,7 +342,7 @@ function runTest(index, done) {
                 }
             }
         };
-        request.onerror = function () {
+        request.onerror = function() {
             console.error("Network error during test load.");
             done(false);
         }

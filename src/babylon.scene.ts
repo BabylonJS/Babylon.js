@@ -3000,6 +3000,7 @@ module BABYLON {
          * @param newTransformNode defines the transform node to add
          */
         public addTransformNode(newTransformNode: TransformNode) {
+            newTransformNode._indexInSceneTransformNodesArray = this.transformNodes.length;
             this.transformNodes.push(newTransformNode);
 
             this.onNewTransformNodeAddedObservable.notifyObservers(newTransformNode);
@@ -3011,10 +3012,16 @@ module BABYLON {
          * @returns the index where the transform node was in the transform node list
          */
         public removeTransformNode(toRemove: TransformNode): number {
-            var index = this.transformNodes.indexOf(toRemove);
+            var index = toRemove._indexInSceneTransformNodesArray;
             if (index !== -1) {
-                // Remove from the scene if found
-                this.transformNodes.splice(index, 1);
+                if (index !== this.transformNodes.length - 1) {
+                    const lastNode = this.transformNodes[this.transformNodes.length - 1];
+                    this.transformNodes[index] = lastNode;
+                    lastNode._indexInSceneTransformNodesArray = index;
+                }
+
+                toRemove._indexInSceneTransformNodesArray = -1;
+                this.transformNodes.pop();
             }
 
             this.onTransformNodeRemovedObservable.notifyObservers(toRemove);
