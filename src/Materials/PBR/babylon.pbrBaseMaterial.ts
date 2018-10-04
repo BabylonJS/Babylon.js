@@ -861,13 +861,21 @@ module BABYLON {
             if (!engine.getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 mesh.createNormals(true);
                 Tools.Warn("PBRMaterial: Normals have been created for the mesh: " + mesh.name);
-                }
+            }
 
-            const effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances);
+            let previousEffect = subMesh.effect;
+            let effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances);
+
             if (effect) {
-                scene.resetCachedMaterial();
-                subMesh.setEffect(effect, defines);
-                this.buildUniformLayout();
+                // Use previous effect while new one is compiling
+                if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
+                    effect = previousEffect;
+                    defines.markAsUnprocessed();
+                } else {
+                    scene.resetCachedMaterial();
+                    subMesh.setEffect(effect, defines);
+                    this.buildUniformLayout();
+                }
             }
 
             if (!subMesh.effect || !subMesh.effect.isReady()) {
@@ -1134,10 +1142,10 @@ module BABYLON {
                             case Texture.CUBIC_MODE:
                             case Texture.INVCUBIC_MODE:
                             default:
-                                    defines.REFLECTIONMAP_CUBIC = true;
-                                    defines.USE_LOCAL_REFLECTIONMAP_CUBIC = (<any>reflectionTexture).boundingBoxSize ? true : false;
-                                    break;
-                            }
+                                defines.REFLECTIONMAP_CUBIC = true;
+                                defines.USE_LOCAL_REFLECTIONMAP_CUBIC = (<any>reflectionTexture).boundingBoxSize ? true : false;
+                                break;
+                        }
 
                         if (reflectionTexture.coordinatesMode !== Texture.SKYBOX_MODE) {
                             if (reflectionTexture.sphericalPolynomial) {
@@ -1424,8 +1432,7 @@ module BABYLON {
             this.bindOnlyWorldMatrix(world);
 
             // Normal Matrix
-            if (defines.OBJECTSPACE_NORMALMAP)
-            {
+            if (defines.OBJECTSPACE_NORMALMAP) {
                 world.toNormalMatrix(this._normalMatrix);
                 this.bindOnlyNormalMatrix(this._normalMatrix);
             }
