@@ -377,7 +377,6 @@ var CellMaterial = /** @class */ (function (_super) {
         if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== babylonjs_1.Scene.FOGMODE_NONE) {
             this._activeEffect.setMatrix("view", scene.getViewMatrix());
         }
-        console.log("TOTO");
         // Fog
         babylonjs_1.MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
         this._afterBind(mesh, this._activeEffect);
@@ -6136,4 +6135,4 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs__;
 
 /******/ });
 });
-//# sourceMappingURL=babylon.materials.js.map
+//# sourceMappingURL=babylonjs.materials.js.map

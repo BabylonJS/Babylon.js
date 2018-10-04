@@ -91,15 +91,15 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy-cell.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy/legacy-cell.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "../../Tools/Gulp/node_modules/webpack/buildin/global.js":
-/*!***********************************!*\
-  !*** (webpack)/buildin/global.js ***!
-  \***********************************/
+/***/ "../Tools/Gulp/node_modules/webpack/buildin/global.js":
+/*!************************************************************!*\
+  !*** ../Tools/Gulp/node_modules/webpack/buildin/global.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -127,10 +127,40 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "../src/cell/cell.fragment.fx":
-/*!************************************!*\
-  !*** ../src/cell/cell.fragment.fx ***!
-  \************************************/
+/***/ "./legacy/legacy-cell.ts":
+/*!*******************************!*\
+  !*** ./legacy/legacy-cell.ts ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+var MatLib = __webpack_require__(/*! ../src/cell/index */ "./src/cell/index.ts");
+/**
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    for (var key in MatLib) {
+        globalObject.BABYLON[key] = MatLib[key];
+    }
+}
+__export(__webpack_require__(/*! ../src/cell/index */ "./src/cell/index.ts"));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../Tools/Gulp/node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./src/cell/cell.fragment.fx":
+/*!***********************************!*\
+  !*** ./src/cell/cell.fragment.fx ***!
+  \***********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -138,10 +168,10 @@ module.exports = "precision highp float;\n\nuniform vec3 vEyePosition;\nuniform 
 
 /***/ }),
 
-/***/ "../src/cell/cell.vertex.fx":
-/*!**********************************!*\
-  !*** ../src/cell/cell.vertex.fx ***!
-  \**********************************/
+/***/ "./src/cell/cell.vertex.fx":
+/*!*********************************!*\
+  !*** ./src/cell/cell.vertex.fx ***!
+  \*********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -149,10 +179,10 @@ module.exports = "precision highp float;\n\nattribute vec3 position;\n#ifdef NOR
 
 /***/ }),
 
-/***/ "../src/cell/cellMaterial.ts":
-/*!***********************************!*\
-  !*** ../src/cell/cellMaterial.ts ***!
-  \***********************************/
+/***/ "./src/cell/cellMaterial.ts":
+/*!**********************************!*\
+  !*** ./src/cell/cellMaterial.ts ***!
+  \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -179,8 +209,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-babylonjs_1.Effect.ShadersStore["cellPixelShader"] = __webpack_require__(/*! ./cell.fragment.fx */ "../src/cell/cell.fragment.fx");
-babylonjs_1.Effect.ShadersStore["cellVertexShader"] = __webpack_require__(/*! ./cell.vertex.fx */ "../src/cell/cell.vertex.fx");
+babylonjs_1.Effect.ShadersStore["cellPixelShader"] = __webpack_require__(/*! ./cell.fragment.fx */ "./src/cell/cell.fragment.fx");
+babylonjs_1.Effect.ShadersStore["cellVertexShader"] = __webpack_require__(/*! ./cell.vertex.fx */ "./src/cell/cell.vertex.fx");
 var CellMaterialDefines = /** @class */ (function (_super) {
     __extends(CellMaterialDefines, _super);
     function CellMaterialDefines() {
@@ -377,7 +407,6 @@ var CellMaterial = /** @class */ (function (_super) {
         if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== babylonjs_1.Scene.FOGMODE_NONE) {
             this._activeEffect.setMatrix("view", scene.getViewMatrix());
         }
-        console.log("TOTO");
         // Fog
         babylonjs_1.MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
         this._afterBind(mesh, this._activeEffect);
@@ -458,10 +487,10 @@ exports.CellMaterial = CellMaterial;
 
 /***/ }),
 
-/***/ "../src/cell/index.ts":
-/*!****************************!*\
-  !*** ../src/cell/index.ts ***!
-  \****************************/
+/***/ "./src/cell/index.ts":
+/*!***************************!*\
+  !*** ./src/cell/index.ts ***!
+  \***************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -471,38 +500,8 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./cellMaterial */ "../src/cell/cellMaterial.ts"));
+__export(__webpack_require__(/*! ./cellMaterial */ "./src/cell/cellMaterial.ts"));
 
-
-/***/ }),
-
-/***/ "./legacy-cell.ts":
-/*!************************!*\
-  !*** ./legacy-cell.ts ***!
-  \************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-var MatLib = __webpack_require__(/*! ../src/cell/index */ "../src/cell/index.ts");
-/**
- * This is the entry point for the UMD module.
- * The entry point for a future ESM package should be index.ts
- */
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
-if (typeof globalObject !== "undefined") {
-    for (var key in MatLib) {
-        globalObject.BABYLON[key] = MatLib[key];
-    }
-}
-__export(__webpack_require__(/*! ../src/cell/index */ "../src/cell/index.ts"));
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../../Tools/Gulp/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 

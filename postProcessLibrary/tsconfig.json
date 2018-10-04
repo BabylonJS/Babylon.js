@@ -1,31 +1,38 @@
 {
-  "compilerOptions": {
-    "experimentalDecorators": true,
-    "module": "commonjs",
-    "target": "es5",
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noUnusedLocals": true,
-    "strictNullChecks": true,
-    "declaration": true,
-    "sourceMap": true,
-    "lib": [
-      "es5",
-      "dom",
-      "es2015.promise",
-      "es2015.collection",
-      "es2015.iterable"
-    ],
-    "skipDefaultLibCheck": true,
-    "skipLibCheck": true,
-    "baseUrl": "./src/",
-    "rootDir": "./",
-    "paths": {
-      "babylonjs": [
-        "../../dist/preview release/babylon.d.ts"
-      ]
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "module": "commonjs",
+        "target": "es5",
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "noUnusedLocals": true,
+        "strictNullChecks": true,
+        "declaration": true,
+        "sourceMap": true,
+        "lib": [
+            "es5",
+            "dom",
+            "es2015.promise",
+            "es2015.collection",
+            "es2015.iterable"
+        ],
+        "skipDefaultLibCheck": true,
+        "skipLibCheck": true,
+        "baseUrl": "./src/",
+        "rootDir": "./",
+        "paths": {
+            "babylonjs": [
+                "../../dist/preview release/babylon.d.ts"
+            ]
+        },
+        "outDir": "./build"
     },
-    "outDir": "./build"
-  }
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/*.spec.ts"
+    ]
 }

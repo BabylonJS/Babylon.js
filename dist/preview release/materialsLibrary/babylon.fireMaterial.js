@@ -91,15 +91,15 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy-fire.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy/legacy-fire.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "../../Tools/Gulp/node_modules/webpack/buildin/global.js":
-/*!***********************************!*\
-  !*** (webpack)/buildin/global.js ***!
-  \***********************************/
+/***/ "../Tools/Gulp/node_modules/webpack/buildin/global.js":
+/*!************************************************************!*\
+  !*** ../Tools/Gulp/node_modules/webpack/buildin/global.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -127,10 +127,40 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "../src/fire/fire.fragment.fx":
-/*!************************************!*\
-  !*** ../src/fire/fire.fragment.fx ***!
-  \************************************/
+/***/ "./legacy/legacy-fire.ts":
+/*!*******************************!*\
+  !*** ./legacy/legacy-fire.ts ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+var MatLib = __webpack_require__(/*! ../src/fire/index */ "./src/fire/index.ts");
+/**
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    for (var key in MatLib) {
+        globalObject.BABYLON[key] = MatLib[key];
+    }
+}
+__export(__webpack_require__(/*! ../src/fire/index */ "./src/fire/index.ts"));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../Tools/Gulp/node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./src/fire/fire.fragment.fx":
+/*!***********************************!*\
+  !*** ./src/fire/fire.fragment.fx ***!
+  \***********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -138,10 +168,10 @@ module.exports = "precision highp float;\n\nuniform vec3 vEyePosition;\n\nvaryin
 
 /***/ }),
 
-/***/ "../src/fire/fire.vertex.fx":
-/*!**********************************!*\
-  !*** ../src/fire/fire.vertex.fx ***!
-  \**********************************/
+/***/ "./src/fire/fire.vertex.fx":
+/*!*********************************!*\
+  !*** ./src/fire/fire.vertex.fx ***!
+  \*********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -149,10 +179,10 @@ module.exports = "precision highp float;\n\nattribute vec3 position;\n#ifdef UV1
 
 /***/ }),
 
-/***/ "../src/fire/fireMaterial.ts":
-/*!***********************************!*\
-  !*** ../src/fire/fireMaterial.ts ***!
-  \***********************************/
+/***/ "./src/fire/fireMaterial.ts":
+/*!**********************************!*\
+  !*** ./src/fire/fireMaterial.ts ***!
+  \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -179,8 +209,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-babylonjs_1.Effect.ShadersStore["firePixelShader"] = __webpack_require__(/*! ./fire.fragment.fx */ "../src/fire/fire.fragment.fx");
-babylonjs_1.Effect.ShadersStore["fireVertexShader"] = __webpack_require__(/*! ./fire.vertex.fx */ "../src/fire/fire.vertex.fx");
+babylonjs_1.Effect.ShadersStore["firePixelShader"] = __webpack_require__(/*! ./fire.fragment.fx */ "./src/fire/fire.fragment.fx");
+babylonjs_1.Effect.ShadersStore["fireVertexShader"] = __webpack_require__(/*! ./fire.vertex.fx */ "./src/fire/fire.vertex.fx");
 var FireMaterialDefines = /** @class */ (function (_super) {
     __extends(FireMaterialDefines, _super);
     function FireMaterialDefines() {
@@ -495,10 +525,10 @@ exports.FireMaterial = FireMaterial;
 
 /***/ }),
 
-/***/ "../src/fire/index.ts":
-/*!****************************!*\
-  !*** ../src/fire/index.ts ***!
-  \****************************/
+/***/ "./src/fire/index.ts":
+/*!***************************!*\
+  !*** ./src/fire/index.ts ***!
+  \***************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -508,38 +538,8 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./fireMaterial */ "../src/fire/fireMaterial.ts"));
+__export(__webpack_require__(/*! ./fireMaterial */ "./src/fire/fireMaterial.ts"));
 
-
-/***/ }),
-
-/***/ "./legacy-fire.ts":
-/*!************************!*\
-  !*** ./legacy-fire.ts ***!
-  \************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-var MatLib = __webpack_require__(/*! ../src/fire/index */ "../src/fire/index.ts");
-/**
- * This is the entry point for the UMD module.
- * The entry point for a future ESM package should be index.ts
- */
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
-if (typeof globalObject !== "undefined") {
-    for (var key in MatLib) {
-        globalObject.BABYLON[key] = MatLib[key];
-    }
-}
-__export(__webpack_require__(/*! ../src/fire/index */ "../src/fire/index.ts"));
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../../Tools/Gulp/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 

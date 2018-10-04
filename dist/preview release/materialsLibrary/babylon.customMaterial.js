@@ -91,15 +91,15 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy-custom.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy/legacy-custom.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "../../Tools/Gulp/node_modules/webpack/buildin/global.js":
-/*!***********************************!*\
-  !*** (webpack)/buildin/global.js ***!
-  \***********************************/
+/***/ "../Tools/Gulp/node_modules/webpack/buildin/global.js":
+/*!************************************************************!*\
+  !*** ../Tools/Gulp/node_modules/webpack/buildin/global.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -127,10 +127,40 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "../src/custom/customMaterial.ts":
-/*!***************************************!*\
-  !*** ../src/custom/customMaterial.ts ***!
-  \***************************************/
+/***/ "./legacy/legacy-custom.ts":
+/*!*********************************!*\
+  !*** ./legacy/legacy-custom.ts ***!
+  \*********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+var MatLib = __webpack_require__(/*! ../src/custom/index */ "./src/custom/index.ts");
+/**
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    for (var key in MatLib) {
+        globalObject.BABYLON[key] = MatLib[key];
+    }
+}
+__export(__webpack_require__(/*! ../src/custom/index */ "./src/custom/index.ts"));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../Tools/Gulp/node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./src/custom/customMaterial.ts":
+/*!**************************************!*\
+  !*** ./src/custom/customMaterial.ts ***!
+  \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -328,10 +358,10 @@ exports.CustomMaterial = CustomMaterial;
 
 /***/ }),
 
-/***/ "../src/custom/index.ts":
-/*!******************************!*\
-  !*** ../src/custom/index.ts ***!
-  \******************************/
+/***/ "./src/custom/index.ts":
+/*!*****************************!*\
+  !*** ./src/custom/index.ts ***!
+  \*****************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -341,38 +371,8 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./customMaterial */ "../src/custom/customMaterial.ts"));
+__export(__webpack_require__(/*! ./customMaterial */ "./src/custom/customMaterial.ts"));
 
-
-/***/ }),
-
-/***/ "./legacy-custom.ts":
-/*!**************************!*\
-  !*** ./legacy-custom.ts ***!
-  \**************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-var MatLib = __webpack_require__(/*! ../src/custom/index */ "../src/custom/index.ts");
-/**
- * This is the entry point for the UMD module.
- * The entry point for a future ESM package should be index.ts
- */
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
-if (typeof globalObject !== "undefined") {
-    for (var key in MatLib) {
-        globalObject.BABYLON[key] = MatLib[key];
-    }
-}
-__export(__webpack_require__(/*! ../src/custom/index */ "../src/custom/index.ts"));
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../../Tools/Gulp/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 

@@ -34,8 +34,19 @@ module.exports = {
     module: {
         rules: [{
             test: /\.tsx?$/,
-            loader: "ts-loader",
-            exclude: /node_modules/
+            exclude: /node_modules/,
+            use: [
+            {
+                // loader: 'ts-loader',
+                // options: {
+                //     onlyCompileBundledFiles: true,
+                //     experimentalFileCaching: true
+                // }
+                loader: 'awesome-typescript-loader',
+                options: {
+                    configFileName: '../../materialsLibrary/tsconfig.json'
+                }
+            }]
         },
         {
             test: /\.fx$/,

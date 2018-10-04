@@ -9,7 +9,7 @@ module.exports = {
         'babylonjs-postProcessesLibrary': path.resolve(__dirname, './src/legacy.ts'),
     },
     output: {
-        path: path.resolve(__dirname, '../dist/preview release/postProcessesLibrary'),
+        path: path.resolve(__dirname, '../dist/preview release/postProcessLibrary'),
         filename: 'babylon.postProcesses.min.js',
         libraryTarget: 'umd',
         library: {
@@ -34,8 +34,10 @@ module.exports = {
     module: {
         rules: [{
             test: /\.tsx?$/,
-            loader: "ts-loader",
-            exclude: /node_modules/
+            loader: 'awesome-typescript-loader',
+            options: {
+                configFileName: '../../postProcessLibrary/tsconfig.json'
+            }
         },
         {
             test: /\.fx$/,

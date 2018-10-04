@@ -1476,8 +1476,9 @@
             {
                 "files": [],
                 "noBundleInName": true,
-                "output": "babylon.materials.min.js",
+                "output": "babylonjs.materials.min.js",
                 "webpack": "../../materialsLibrary/webpack.config.js",
+                "entry": "./src/legacy.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true,
@@ -1488,6 +1489,7 @@
                 "noBundleInName": true,
                 "output": "babylon.cellMaterial.min.js",
                 "webpack": "../../materialsLibrary/legacy/webpack.cell.config.js",
+                "entry": "./legacy/legacy-cell.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true
@@ -1496,6 +1498,7 @@
                 "noBundleInName": true,
                 "output": "babylon.customMaterial.min.js",
                 "webpack": "../../materialsLibrary/legacy/webpack.custom.config.js",
+                "entry": "./legacy/legacy-custom.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true
@@ -1504,6 +1507,7 @@
                 "noBundleInName": true,
                 "output": "babylon.fireMaterial.min.js",
                 "webpack": "../../materialsLibrary/legacy/webpack.fire.config.js",
+                "entry": "./legacy/legacy-fire.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true
@@ -1512,6 +1516,7 @@
                 "noBundleInName": true,
                 "output": "babylon.gradientMaterial.min.js",
                 "webpack": "../../materialsLibrary/legacy/webpack.gradient.config.js",
+                "entry": "./legacy/legacy-gradient.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true
@@ -1520,6 +1525,7 @@
                 "noBundleInName": true,
                 "output": "babylon.lavaMaterial.min.js",
                 "webpack": "../../materialsLibrary/legacy/webpack.lava.config.js",
+                "entry": "./legacy/legacy-lava.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true
@@ -1528,6 +1534,7 @@
                 "noBundleInName": true,
                 "output": "babylon.mixMaterial.min.js",
                 "webpack": "../../materialsLibrary/legacy/webpack.mix.config.js",
+                "entry": "./legacy/legacy-mix.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true
@@ -1536,6 +1543,7 @@
                 "noBundleInName": true,
                 "output": "babylon.normalMaterial.min.js",
                 "webpack": "../../materialsLibrary/legacy/webpack.normal.config.js",
+                "entry": "./legacy/legacy-normal.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true
@@ -1544,23 +1552,25 @@
                 "noBundleInName": true,
                 "output": "babylon.shadowOnlyMaterial.min.js",
                 "webpack": "../../materialsLibrary/legacy/webpack.shadowOnly.config.js",
+                "entry": "./legacy/legacy-shadowOnly.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true
             }
         ],
         "build": {
+            "webpack": "../../materialsLibrary/webpack.config.js",
             "srcOutputDirectory": "../../materialsLibrary/src/",
             "distOutputDirectory": "/materialsLibrary/",
             "dtsBundle": {
                 "name": "babylonjs-materials",
-                "main": "../../dist/preview release/materialsLibrary/build/src/index.d.ts",
-                "out": "../babylon.materials.module.d.ts",
+                "main": "../../materialsLibrary/build/src/index.d.ts",
+                "out": "../babylonjs.materials.module.d.ts",
                 "baseDir": "../../dist/preview release/materialsLibrary/build/",
                 "headerText": "BabylonJS Materials"
             },
             "processDeclaration": {
-                "filename": "babylon.materials.module.d.ts",
+                "filename": "babylonjs.materials.module.d.ts",
                 "packageName": "babylonjs-materials",
                 "moduleName": "BABYLON",
                 "importsToRemove": [],
@@ -1577,8 +1587,9 @@
             {
                 "files": [],
                 "noBundleInName": true,
-                "output": "babylon.postProcesses.min.js",
+                "output": "babylonjs.postProcess.min.js",
                 "webpack": "../../postProcessLibrary/webpack.config.js",
+                "entry": "./src/legacy.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true,
@@ -1590,6 +1601,7 @@
                 "noBundleInName": true,
                 "output": "babylon.asciiArtPostProcess.min.js",
                 "webpack": "../../postProcessLibrary/legacy/webpack.asciiArt.config.js",
+                "entry": "./legacy/legacy-asciiArt.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true
@@ -1599,23 +1611,25 @@
                 "noBundleInName": true,
                 "output": "babylon.digitalRainPostProcess.min.js",
                 "webpack": "../../postProcessLibrary/legacy/webpack.digitalRain.config.js",
+                "entry": "./legacy/legacy-digitalRain.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true
             }
         ],
         "build": {
+            "webpack": "../../postProcessLibrary/webpack.config.js",
             "srcOutputDirectory": "../../postProcessLibrary/src/",
             "distOutputDirectory": "/postProcessesLibrary/",
             "dtsBundle": {
                 "name": "babylonjs-postProcessLibrary",
-                "main": "../../dist/preview release/postProcessesLibrary/build/src/index.d.ts",
-                "out": "../babylon.postProcesses.module.d.ts",
+                "main": "../../postProcessLibrary/build/src/index.d.ts",
+                "out": "../babylonjs.postProcess.module.d.ts",
                 "baseDir": "../../dist/preview release/postProcessesLibrary/build/",
                 "headerText": "BabylonJS Postprocess library"
             },
             "processDeclaration": {
-                "filename": "babylon.postProcesses.module.d.ts",
+                "filename": "babylonjs.postProcess.module.d.ts",
                 "packageName": "babylonjs-postProcessLibrary",
                 "moduleName": "BABYLON",
                 "importsToRemove": [],
@@ -1632,26 +1646,129 @@
             {
                 "files": [],
                 "noBundleInName": true,
-                "output": "babylon.proceduralTextures.min.js",
+                "output": "babylonjs.proceduralTextures.min.js",
                 "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "entry": "./src/legacy.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true,
+                "preventLoadLibrary": true,
                 "isMain": true
+            },
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.brickProceduralTexture.min.js",
+                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "entry": "./legacy/legacy-brick.ts",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
+            },
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.cloudProceduralTexture.min.js",
+                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "entry": "./legacy/legacy-cloud.ts",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
+            },
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.fireProceduralTexture.min.js",
+                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "entry": "./legacy/legacy-fire.ts",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
+            },
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.grassProceduralTexture.min.js",
+                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "entry": "./legacy/legacy-grass.ts",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
+            },
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.marbleProceduralTexture.min.js",
+                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "entry": "./legacy/legacy-marble.ts",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
+            },
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.normalMapProceduralTexture.min.js",
+                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "entry": "./legacy/legacy-normalMap.ts",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
+            },
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.perlinNoiseProceduralTexture.min.js",
+                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "entry": "./legacy/legacy-perlinNoise.ts",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
+            },
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.roadProceduralTexture.min.js",
+                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "entry": "./legacy/legacy-road.ts",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
+            },
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.starfieldProceduralTexture.min.js",
+                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "entry": "./legacy/legacy-starfield.ts",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
+            },
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.woodProceduralTexture.min.js",
+                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "entry": "./legacy/legacy-wood.ts",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
             }
         ],
         "build": {
+            "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
             "srcOutputDirectory": "../../proceduralTexturesLibrary/src/",
             "distOutputDirectory": "/proceduralTexturesLibrary/",
             "dtsBundle": {
                 "name": "babylonjs-procedural-textures",
-                "main": "../../dist/preview release/proceduralTexturesLibrary/build/index.d.ts",
-                "out": "../babylon.proceduralTextures.module.d.ts",
+                "main": "../../proceduralTexturesLibrary/build/src/index.d.ts",
+                "out": "../babylonjs.proceduralTextures.module.d.ts",
                 "baseDir": "../../dist/preview release/proceduralTexturesLibrary/build/",
                 "headerText": "BabylonJS Procedural Textures"
             },
             "processDeclaration": {
-                "filename": "babylon.proceduralTextures.module.d.ts",
+                "filename": "babylonjs.proceduralTextures.module.d.ts",
                 "packageName": "babylonjs-procedural-textures",
                 "moduleName": "BABYLON.PROCEDURALTEXTURES",
                 "importsToRemove": [],

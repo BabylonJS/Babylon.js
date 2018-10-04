@@ -91,15 +91,15 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy-gradient.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy/legacy-gradient.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "../../Tools/Gulp/node_modules/webpack/buildin/global.js":
-/*!***********************************!*\
-  !*** (webpack)/buildin/global.js ***!
-  \***********************************/
+/***/ "../Tools/Gulp/node_modules/webpack/buildin/global.js":
+/*!************************************************************!*\
+  !*** ../Tools/Gulp/node_modules/webpack/buildin/global.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -127,10 +127,40 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "../src/gradient/gradient.fragment.fx":
-/*!********************************************!*\
-  !*** ../src/gradient/gradient.fragment.fx ***!
-  \********************************************/
+/***/ "./legacy/legacy-gradient.ts":
+/*!***********************************!*\
+  !*** ./legacy/legacy-gradient.ts ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+var MatLib = __webpack_require__(/*! ../src/gradient/index */ "./src/gradient/index.ts");
+/**
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    for (var key in MatLib) {
+        globalObject.BABYLON[key] = MatLib[key];
+    }
+}
+__export(__webpack_require__(/*! ../src/gradient/index */ "./src/gradient/index.ts"));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../Tools/Gulp/node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./src/gradient/gradient.fragment.fx":
+/*!*******************************************!*\
+  !*** ./src/gradient/gradient.fragment.fx ***!
+  \*******************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -138,10 +168,10 @@ module.exports = "precision highp float;\n\nuniform vec3 vEyePosition;\nuniform 
 
 /***/ }),
 
-/***/ "../src/gradient/gradient.vertex.fx":
-/*!******************************************!*\
-  !*** ../src/gradient/gradient.vertex.fx ***!
-  \******************************************/
+/***/ "./src/gradient/gradient.vertex.fx":
+/*!*****************************************!*\
+  !*** ./src/gradient/gradient.vertex.fx ***!
+  \*****************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -149,10 +179,10 @@ module.exports = "precision highp float;\n\nattribute vec3 position;\n#ifdef NOR
 
 /***/ }),
 
-/***/ "../src/gradient/gradientMaterial.ts":
-/*!*******************************************!*\
-  !*** ../src/gradient/gradientMaterial.ts ***!
-  \*******************************************/
+/***/ "./src/gradient/gradientMaterial.ts":
+/*!******************************************!*\
+  !*** ./src/gradient/gradientMaterial.ts ***!
+  \******************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -179,8 +209,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-babylonjs_1.Effect.ShadersStore["gradientPixelShader"] = __webpack_require__(/*! ./gradient.fragment.fx */ "../src/gradient/gradient.fragment.fx");
-babylonjs_1.Effect.ShadersStore["gradientVertexShader"] = __webpack_require__(/*! ./gradient.vertex.fx */ "../src/gradient/gradient.vertex.fx");
+babylonjs_1.Effect.ShadersStore["gradientPixelShader"] = __webpack_require__(/*! ./gradient.fragment.fx */ "./src/gradient/gradient.fragment.fx");
+babylonjs_1.Effect.ShadersStore["gradientVertexShader"] = __webpack_require__(/*! ./gradient.vertex.fx */ "./src/gradient/gradient.vertex.fx");
 var GradientMaterialDefines = /** @class */ (function (_super) {
     __extends(GradientMaterialDefines, _super);
     function GradientMaterialDefines() {
@@ -467,10 +497,10 @@ exports.GradientMaterial = GradientMaterial;
 
 /***/ }),
 
-/***/ "../src/gradient/index.ts":
-/*!********************************!*\
-  !*** ../src/gradient/index.ts ***!
-  \********************************/
+/***/ "./src/gradient/index.ts":
+/*!*******************************!*\
+  !*** ./src/gradient/index.ts ***!
+  \*******************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -480,38 +510,8 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./gradientMaterial */ "../src/gradient/gradientMaterial.ts"));
+__export(__webpack_require__(/*! ./gradientMaterial */ "./src/gradient/gradientMaterial.ts"));
 
-
-/***/ }),
-
-/***/ "./legacy-gradient.ts":
-/*!****************************!*\
-  !*** ./legacy-gradient.ts ***!
-  \****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-var MatLib = __webpack_require__(/*! ../src/gradient/index */ "../src/gradient/index.ts");
-/**
- * This is the entry point for the UMD module.
- * The entry point for a future ESM package should be index.ts
- */
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
-if (typeof globalObject !== "undefined") {
-    for (var key in MatLib) {
-        globalObject.BABYLON[key] = MatLib[key];
-    }
-}
-__export(__webpack_require__(/*! ../src/gradient/index */ "../src/gradient/index.ts"));
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../../Tools/Gulp/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 

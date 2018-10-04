@@ -91,15 +91,15 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy-mix.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy/legacy-mix.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "../../Tools/Gulp/node_modules/webpack/buildin/global.js":
-/*!***********************************!*\
-  !*** (webpack)/buildin/global.js ***!
-  \***********************************/
+/***/ "../Tools/Gulp/node_modules/webpack/buildin/global.js":
+/*!************************************************************!*\
+  !*** ../Tools/Gulp/node_modules/webpack/buildin/global.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -127,10 +127,40 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "../src/mix/index.ts":
-/*!***************************!*\
-  !*** ../src/mix/index.ts ***!
-  \***************************/
+/***/ "./legacy/legacy-mix.ts":
+/*!******************************!*\
+  !*** ./legacy/legacy-mix.ts ***!
+  \******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+var MatLib = __webpack_require__(/*! ../src/mix/index */ "./src/mix/index.ts");
+/**
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    for (var key in MatLib) {
+        globalObject.BABYLON[key] = MatLib[key];
+    }
+}
+__export(__webpack_require__(/*! ../src/mix/index */ "./src/mix/index.ts"));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../Tools/Gulp/node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./src/mix/index.ts":
+/*!**************************!*\
+  !*** ./src/mix/index.ts ***!
+  \**************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -140,15 +170,15 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./mixMaterial */ "../src/mix/mixMaterial.ts"));
+__export(__webpack_require__(/*! ./mixMaterial */ "./src/mix/mixMaterial.ts"));
 
 
 /***/ }),
 
-/***/ "../src/mix/mix.fragment.fx":
-/*!**********************************!*\
-  !*** ../src/mix/mix.fragment.fx ***!
-  \**********************************/
+/***/ "./src/mix/mix.fragment.fx":
+/*!*********************************!*\
+  !*** ./src/mix/mix.fragment.fx ***!
+  \*********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -156,10 +186,10 @@ module.exports = "precision highp float;\n\nuniform vec3 vEyePosition;\nuniform 
 
 /***/ }),
 
-/***/ "../src/mix/mix.vertex.fx":
-/*!********************************!*\
-  !*** ../src/mix/mix.vertex.fx ***!
-  \********************************/
+/***/ "./src/mix/mix.vertex.fx":
+/*!*******************************!*\
+  !*** ./src/mix/mix.vertex.fx ***!
+  \*******************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -167,10 +197,10 @@ module.exports = "precision highp float;\n\nattribute vec3 position;\n#ifdef NOR
 
 /***/ }),
 
-/***/ "../src/mix/mixMaterial.ts":
-/*!*********************************!*\
-  !*** ../src/mix/mixMaterial.ts ***!
-  \*********************************/
+/***/ "./src/mix/mixMaterial.ts":
+/*!********************************!*\
+  !*** ./src/mix/mixMaterial.ts ***!
+  \********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -197,8 +227,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-babylonjs_1.Effect.ShadersStore["mixPixelShader"] = __webpack_require__(/*! ./mix.fragment.fx */ "../src/mix/mix.fragment.fx");
-babylonjs_1.Effect.ShadersStore["mixVertexShader"] = __webpack_require__(/*! ./mix.vertex.fx */ "../src/mix/mix.vertex.fx");
+babylonjs_1.Effect.ShadersStore["mixPixelShader"] = __webpack_require__(/*! ./mix.fragment.fx */ "./src/mix/mix.fragment.fx");
+babylonjs_1.Effect.ShadersStore["mixVertexShader"] = __webpack_require__(/*! ./mix.vertex.fx */ "./src/mix/mix.vertex.fx");
 var MixMaterialDefines = /** @class */ (function (_super) {
     __extends(MixMaterialDefines, _super);
     function MixMaterialDefines() {
@@ -647,36 +677,6 @@ var MixMaterial = /** @class */ (function (_super) {
 }(babylonjs_1.PushMaterial));
 exports.MixMaterial = MixMaterial;
 
-
-/***/ }),
-
-/***/ "./legacy-mix.ts":
-/*!***********************!*\
-  !*** ./legacy-mix.ts ***!
-  \***********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-var MatLib = __webpack_require__(/*! ../src/mix/index */ "../src/mix/index.ts");
-/**
- * This is the entry point for the UMD module.
- * The entry point for a future ESM package should be index.ts
- */
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
-if (typeof globalObject !== "undefined") {
-    for (var key in MatLib) {
-        globalObject.BABYLON[key] = MatLib[key];
-    }
-}
-__export(__webpack_require__(/*! ../src/mix/index */ "../src/mix/index.ts"));
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../../Tools/Gulp/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 

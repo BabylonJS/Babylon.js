@@ -91,15 +91,15 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy-lava.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy/legacy-lava.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "../../Tools/Gulp/node_modules/webpack/buildin/global.js":
-/*!***********************************!*\
-  !*** (webpack)/buildin/global.js ***!
-  \***********************************/
+/***/ "../Tools/Gulp/node_modules/webpack/buildin/global.js":
+/*!************************************************************!*\
+  !*** ../Tools/Gulp/node_modules/webpack/buildin/global.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -127,10 +127,40 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "../src/lava/index.ts":
-/*!****************************!*\
-  !*** ../src/lava/index.ts ***!
-  \****************************/
+/***/ "./legacy/legacy-lava.ts":
+/*!*******************************!*\
+  !*** ./legacy/legacy-lava.ts ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+var MatLib = __webpack_require__(/*! ../src/lava/index */ "./src/lava/index.ts");
+/**
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    for (var key in MatLib) {
+        globalObject.BABYLON[key] = MatLib[key];
+    }
+}
+__export(__webpack_require__(/*! ../src/lava/index */ "./src/lava/index.ts"));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../Tools/Gulp/node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./src/lava/index.ts":
+/*!***************************!*\
+  !*** ./src/lava/index.ts ***!
+  \***************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -140,15 +170,15 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./lavaMaterial */ "../src/lava/lavaMaterial.ts"));
+__export(__webpack_require__(/*! ./lavaMaterial */ "./src/lava/lavaMaterial.ts"));
 
 
 /***/ }),
 
-/***/ "../src/lava/lava.fragment.fx":
-/*!************************************!*\
-  !*** ../src/lava/lava.fragment.fx ***!
-  \************************************/
+/***/ "./src/lava/lava.fragment.fx":
+/*!***********************************!*\
+  !*** ./src/lava/lava.fragment.fx ***!
+  \***********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -156,10 +186,10 @@ module.exports = "precision highp float;\n\nuniform vec3 vEyePosition;\nuniform 
 
 /***/ }),
 
-/***/ "../src/lava/lava.vertex.fx":
-/*!**********************************!*\
-  !*** ../src/lava/lava.vertex.fx ***!
-  \**********************************/
+/***/ "./src/lava/lava.vertex.fx":
+/*!*********************************!*\
+  !*** ./src/lava/lava.vertex.fx ***!
+  \*********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -167,10 +197,10 @@ module.exports = "precision highp float;\n\nuniform float time;\nuniform float l
 
 /***/ }),
 
-/***/ "../src/lava/lavaMaterial.ts":
-/*!***********************************!*\
-  !*** ../src/lava/lavaMaterial.ts ***!
-  \***********************************/
+/***/ "./src/lava/lavaMaterial.ts":
+/*!**********************************!*\
+  !*** ./src/lava/lavaMaterial.ts ***!
+  \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -197,8 +227,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-babylonjs_1.Effect.ShadersStore["lavaPixelShader"] = __webpack_require__(/*! ./lava.fragment.fx */ "../src/lava/lava.fragment.fx");
-babylonjs_1.Effect.ShadersStore["lavaVertexShader"] = __webpack_require__(/*! ./lava.vertex.fx */ "../src/lava/lava.vertex.fx");
+babylonjs_1.Effect.ShadersStore["lavaPixelShader"] = __webpack_require__(/*! ./lava.fragment.fx */ "./src/lava/lava.fragment.fx");
+babylonjs_1.Effect.ShadersStore["lavaVertexShader"] = __webpack_require__(/*! ./lava.vertex.fx */ "./src/lava/lava.vertex.fx");
 var LavaMaterialDefines = /** @class */ (function (_super) {
     __extends(LavaMaterialDefines, _super);
     function LavaMaterialDefines() {
@@ -560,36 +590,6 @@ var LavaMaterial = /** @class */ (function (_super) {
 }(babylonjs_1.PushMaterial));
 exports.LavaMaterial = LavaMaterial;
 
-
-/***/ }),
-
-/***/ "./legacy-lava.ts":
-/*!************************!*\
-  !*** ./legacy-lava.ts ***!
-  \************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-var MatLib = __webpack_require__(/*! ../src/lava/index */ "../src/lava/index.ts");
-/**
- * This is the entry point for the UMD module.
- * The entry point for a future ESM package should be index.ts
- */
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
-if (typeof globalObject !== "undefined") {
-    for (var key in MatLib) {
-        globalObject.BABYLON[key] = MatLib[key];
-    }
-}
-__export(__webpack_require__(/*! ../src/lava/index */ "../src/lava/index.ts"));
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../../Tools/Gulp/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
