@@ -5,6 +5,8 @@
 - Added support for [parallel shader compilation](https://www.khronos.org/registry/webgl/extensions/KHR_parallel_shader_compile/) ([Deltakosh](https://github.com/deltakosh))
 - Added FlyCamera for free navigation in 3D space, with a limited set of settings ([Phuein](https://github.com/phuein))
 - Added Object Based Motion Blur post-process ([julien-moreau](https://github.com/julien-moreau))
+- WebXR ([TrevorDev](https://github.com/TrevorDev))
+  - customAnimationFrameRequester to allow sessions to hook into engine's render loop ([TrevorDev](https://github.com/TrevorDev))
 
 ## Updates
 
