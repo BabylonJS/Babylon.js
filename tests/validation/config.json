@@ -3,7 +3,7 @@
   "tests": [
     {
       "title": "Solid particle system",
-      "playgroundId": "#WCDZS#2",
+      "playgroundId": "#WCDZS#92",
       "renderCount": 150,
       "referenceImage": "sps.png"
     },
