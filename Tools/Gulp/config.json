@@ -1511,7 +1511,6 @@
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true,
-                "preventLoadLibrary": true,
                 "isMain": true
             },
             {
@@ -1521,7 +1520,8 @@
                 "entry": "./legacy/legacy-cell.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "noBundleInName": true,
@@ -1530,7 +1530,8 @@
                 "entry": "./legacy/legacy-custom.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "noBundleInName": true,
@@ -1539,7 +1540,8 @@
                 "entry": "./legacy/legacy-fire.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "noBundleInName": true,
@@ -1548,7 +1550,8 @@
                 "entry": "./legacy/legacy-fur.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "noBundleInName": true,
@@ -1557,7 +1560,8 @@
                 "entry": "./legacy/legacy-gradient.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "noBundleInName": true,
@@ -1566,7 +1570,8 @@
                 "entry": "./legacy/legacy-grid.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "noBundleInName": true,
@@ -1575,7 +1580,8 @@
                 "entry": "./legacy/legacy-lava.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "noBundleInName": true,
@@ -1584,7 +1590,8 @@
                 "entry": "./legacy/legacy-mix.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "noBundleInName": true,
@@ -1593,7 +1600,8 @@
                 "entry": "./legacy/legacy-normal.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "noBundleInName": true,
@@ -1602,7 +1610,8 @@
                 "entry": "./legacy/legacy-shadowOnly.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "noBundleInName": true,
@@ -1611,7 +1620,8 @@
                 "entry": "./legacy/legacy-simple.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "noBundleInName": true,
@@ -1620,7 +1630,8 @@
                 "entry": "./legacy/legacy-sky.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "noBundleInName": true,
@@ -1629,7 +1640,8 @@
                 "entry": "./legacy/legacy-terrain.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "noBundleInName": true,
@@ -1638,7 +1650,8 @@
                 "entry": "./legacy/legacy-triPlanar.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "noBundleInName": true,
@@ -1647,7 +1660,8 @@
                 "entry": "./legacy/legacy-water.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             }
         ],
         "build": {
@@ -1685,7 +1699,6 @@
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true,
-                "preventLoadLibrary": true,
                 "isMain": true
             },
             {
@@ -1696,7 +1709,8 @@
                 "entry": "./legacy/legacy-asciiArt.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "files": [],
@@ -1706,7 +1720,8 @@
                 "entry": "./legacy/legacy-digitalRain.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             }
         ],
         "build": {
@@ -1744,7 +1759,6 @@
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true,
-                "preventLoadLibrary": true,
                 "isMain": true
             },
             {
@@ -1755,7 +1769,8 @@
                 "entry": "./legacy/legacy-brick.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "files": [],
@@ -1765,7 +1780,8 @@
                 "entry": "./legacy/legacy-cloud.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "files": [],
@@ -1775,7 +1791,8 @@
                 "entry": "./legacy/legacy-fire.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "files": [],
@@ -1785,7 +1802,8 @@
                 "entry": "./legacy/legacy-grass.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "files": [],
@@ -1795,7 +1813,8 @@
                 "entry": "./legacy/legacy-marble.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "files": [],
@@ -1805,7 +1824,8 @@
                 "entry": "./legacy/legacy-normalMap.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "files": [],
@@ -1815,7 +1835,8 @@
                 "entry": "./legacy/legacy-perlinNoise.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "files": [],
@@ -1825,7 +1846,8 @@
                 "entry": "./legacy/legacy-road.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "files": [],
@@ -1835,7 +1857,8 @@
                 "entry": "./legacy/legacy-starfield.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             },
             {
                 "files": [],
@@ -1845,7 +1868,8 @@
                 "entry": "./legacy/legacy-wood.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
-                "useOutputForDebugging": true
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             }
         ],
         "build": {

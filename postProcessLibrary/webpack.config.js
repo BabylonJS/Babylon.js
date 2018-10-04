@@ -10,7 +10,7 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, '../dist/preview release/postProcessLibrary'),
-        filename: 'babylon.postProcesses.min.js',
+        filename: 'babylonjs.postProcess.min.js',
         libraryTarget: 'umd',
         library: {
             root: ["POSTPROCESSLIBRARY"],

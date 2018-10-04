@@ -10,7 +10,7 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, '../dist/preview release/gui'),
-        filename: 'babylon.proceduralTextures.min.js',
+        filename: 'babylonjs.proceduralTextures.min.js',
         libraryTarget: 'umd',
         library: {
             root: ["PROCEDURALTEXTURESLIB"],

@@ -10,7 +10,7 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, '../dist/preview release/materialsLibrary'),
-        filename: 'babylon.materials.min.js',
+        filename: 'babylonjs.materials.min.js',
         libraryTarget: 'umd',
         library: {
             root: ["MATLIB"],
