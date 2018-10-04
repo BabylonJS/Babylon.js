@@ -49,6 +49,7 @@
         public maximum: Vector3 = Vector3.Zero();
 
         private _worldMatrix: Matrix;
+        private static TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
 
         /**
          * @hidden
@@ -89,8 +90,8 @@
             vectors[7].copyFromFloats(maxX, minY, maxZ);
 
             // OBB
-            this.maximum.addToRef(min, this.center).scaleInPlace(0.5);
-            this.maximum.subtractToRef(max, this.extendSize).scaleInPlace(0.5);
+            max.addToRef(min, this.center).scaleInPlace(0.5);
+            max.subtractToRef(max, this.extendSize).scaleInPlace(0.5);
 
             this._update(worldMatrix || this._worldMatrix || Matrix.Identity());
         }
@@ -101,7 +102,7 @@
          * @returns the current bounding box
          */
         public scale(factor: number): BoundingBox {
-            const tmpVectors = Tmp.Vector3;
+            const tmpVectors = BoundingBox.TmpVector3;
             const diff = this.maximum.subtractToRef(this.minimum, tmpVectors[0]);
             const len = diff.length();
             diff.normalizeFromLength(len);

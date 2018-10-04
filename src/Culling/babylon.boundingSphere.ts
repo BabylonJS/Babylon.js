@@ -31,6 +31,8 @@ module BABYLON {
          */
         public maximum = Vector3.Zero();
 
+        private static TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
+
         /**
          * Creates a new bounding sphere
          * @param min defines the minimum vector (in local space)
@@ -53,7 +55,7 @@ module BABYLON {
 
             var distance = Vector3.Distance(min, max);
 
-            Vector3.LerpToRef(min, max, 0.5, this.center);
+            max.addToRef(min, this.center).scaleInPlace(0.5);
             this.radius = distance * 0.5;
 
             this._update(worldMatrix || _identityMatrix);
@@ -65,11 +67,11 @@ module BABYLON {
          * @returns the current bounding box
          */
         public scale(factor: number): BoundingSphere {
-            let newRadius = this.radius * factor;
-            const tmpVectors = Tmp.Vector3;
-            const tempRadiusVector = tmpVectors[0].copyFromFloats(newRadius, newRadius, newRadius);
-            let min = this.center.subtractToRef(tempRadiusVector, tmpVectors[1]);
-            let max = this.center.addToRef(tempRadiusVector, tmpVectors[2]);
+            const newRadius = this.radius * factor;
+            const tmpVectors = BoundingSphere.TmpVector3;
+            const tempRadiusVector = tmpVectors[0].setAll(newRadius);
+            const min = this.center.subtractToRef(tempRadiusVector, tmpVectors[1]);
+            const max = this.center.addToRef(tempRadiusVector, tmpVectors[2]);
 
             this.reConstruct(min, max);
 
@@ -80,7 +82,7 @@ module BABYLON {
         /** @hidden */
         public _update(world: Matrix): void {
             Vector3.TransformCoordinatesToRef(this.center, world, this.centerWorld);
-            const tempVector = Tmp.Vector3[0];
+            const tempVector = BoundingSphere.TmpVector3[0];
             Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, world, tempVector);
             this.radiusWorld = Math.max(Math.abs(tempVector.x), Math.abs(tempVector.y), Math.abs(tempVector.z)) * this.radius;
         }
@@ -106,13 +108,8 @@ module BABYLON {
          * @returns true if the point is inside the bounding sphere
          */
         public intersectsPoint(point: Vector3): boolean {
-            var x = this.centerWorld.x - point.x;
-            var y = this.centerWorld.y - point.y;
-            var z = this.centerWorld.z - point.z;
-
-            var distance = Math.sqrt((x * x) + (y * y) + (z * z));
-
-            if (this.radiusWorld < distance) {
+            const squareDistance = Vector3.DistanceSquared(this.centerWorld, point);
+            if (this.radiusWorld * this.radiusWorld < squareDistance) {
                 return false;
             }
 
@@ -127,13 +124,10 @@ module BABYLON {
          * @returns true if the speres intersect
          */
         public static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean {
-            var x = sphere0.centerWorld.x - sphere1.centerWorld.x;
-            var y = sphere0.centerWorld.y - sphere1.centerWorld.y;
-            var z = sphere0.centerWorld.z - sphere1.centerWorld.z;
+            const squareDistance = Vector3.DistanceSquared(sphere0.centerWorld, sphere1.centerWorld);
+            const radiusSum = sphere0.radiusWorld + sphere1.radiusWorld;
 
-            var distance = Math.sqrt((x * x) + (y * y) + (z * z));
-
-            if (sphere0.radiusWorld + sphere1.radiusWorld < distance) {
+            if (radiusSum * radiusSum < squareDistance) {
                 return false;
             }
 
