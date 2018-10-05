@@ -51,7 +51,7 @@
         "webpack-stream": "5.0.0"
     },
     "scripts": {
-        "install": "cd ../../proceduralTexturesLibrary && npm install && cd ../materialsLibrary && npm install && cd ../postProcessLibrary && npm install && cd ../gui && npm install && cd ../inspector && npm install && cd ../Playground/ && npm install && cd ../tests/unit/ && npm install && cd ../../Viewer/tests/ && npm install && cd ../../Viewer && npm install && cd ../Tools/Gulp/"
+        "install": "cd ../../ && npm install && cd Playground/ && npm install && cd ../tests/unit/ && npm install && cd ../../Viewer/tests/ && npm install && cd ../../Viewer && npm install && cd ../Tools/Gulp/"
     },
     "dependencies": {
         "dts-bundle": "^0.7.3",

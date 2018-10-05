@@ -41,6 +41,19 @@
     "dependencies": {},
     "devDependencies": {
         "base64-font-loader": "0.0.4",
-        "typescript": "~3.0.1"
+        "typescript": "~3.0.1",
+        "@types/node": "^10.5.3",
+        "clean-webpack-plugin": "^0.1.19",
+        "ts-loader": "^5.2.1",
+        "webpack": "^4.20.2",
+        "webpack-cli": "^3.1.1",
+        "webpack-dev-server": "^3.1.5",
+        "dts-bundle-webpack": "^1.0.0",
+        "css-loader": "^1.0.0",
+        "mini-css-extract-plugin": "^0.4.1",
+        "node-sass": "^4.9.2",
+        "sass-loader": "^7.0.3",
+        "style-loader": "^0.21.0",
+        "awesome-typescript-loader": "^5.2.1"
     }
 }
