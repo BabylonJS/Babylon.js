@@ -13,7 +13,7 @@ module.exports = {
         filename: 'babylonjs.proceduralTextures.min.js',
         libraryTarget: 'umd',
         library: {
-            root: ["BABYLON"],
+            root: ["PTLIB"],
             amd: "babylonjs-procedural-textures",
             commonjs: "babylonjs-procedural-textures"
         },

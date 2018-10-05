@@ -56,8 +56,11 @@ module.exports = {
     module: {
         rules: [{
             test: /\.tsx?$/,
-            loader: "ts-loader",
-            exclude: /node_modules/
+            loader: 'awesome-typescript-loader',
+            options: {
+                configFileName: '../../inspector/tsconfig.json',
+                declarationDir: '../../dist/preview release/inspector/build'
+            }
         },
         {
             test: /\.scss$/,
