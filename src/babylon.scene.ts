@@ -1874,6 +1874,7 @@ module BABYLON {
                         checkPicking = act.hasPickTriggers;
                     }
                 }
+                let eventRaised = false;
                 if (checkPicking) {
                     let btn = evt.button;
                     clickInfo.hasSwiped = this._isPointerSwiping();
@@ -1898,7 +1899,7 @@ module BABYLON {
                             if (Date.now() - this._previousStartingPointerTime > Scene.DoubleClickDelay ||
                                 btn !== this._previousButtonPressed) {
                                 clickInfo.singleClick = true;
-
+                                eventRaised = true;
                                 cb(clickInfo, this._currentPickResult);
                             }
                         }
@@ -1966,7 +1967,9 @@ module BABYLON {
                             }
                         }
                     }
-                } else {
+                }
+
+                if (!eventRaised) {
                     clickInfo.ignore = true;
                     cb(clickInfo, this._currentPickResult);
                 }
