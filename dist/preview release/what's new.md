@@ -18,9 +18,9 @@
 - Added utility function `Tools.BuildArray` for array initialisation ([barroij](https://github.com/barroij))
 - Introduced a new `IOfflineSupport` interface to hide IndexedDB ([Deltakosh](https://github.com/deltakosh))
 - `PBRMaterial` and `StandardMaterial` now use hot swapping feature for shaders. This means they can keep using a previous shader while a new one is being compiled ([Deltakosh](https://github.com/deltakosh))
-- Performance oriented changes ([barroij](https://github.com/barroij))
-  - prevent avoidable matrix inversion or square root computation.
-  - enable a removal in O(1) from the `transformNodes`array of the Scene.
+- Performance oriented updates ([barroij](https://github.com/barroij))
+  - Prevent avoidable matrix inversion or square root computation
+  - Enable a removal in O(1) from the `transformNodes`array of the Scene
 
 ### glTF Loader
 
