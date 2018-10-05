@@ -1960,9 +1960,10 @@ module BABYLON {
                             }
                         }
                     }
+                } else {
+                    clickInfo.ignore = true;
+                    cb(clickInfo, this._currentPickResult);
                 }
-                clickInfo.ignore = true;
-                cb(clickInfo, this._currentPickResult);
             };
 
             this._onPointerMove = (evt: PointerEvent) => {
