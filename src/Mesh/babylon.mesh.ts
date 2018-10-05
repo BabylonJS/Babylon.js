@@ -889,11 +889,17 @@ module BABYLON {
                 return this;
             }
 
+            let extraWorldExtent = this.geometry ? this.geometry._boundingWorldExtraExtent : undefined;
             var data = this._getPositionData(applySkeleton);
             if (data) {
                 const bias = this.geometry ? this.geometry.boundingBias : null;
                 var extend = Tools.ExtractMinAndMax(data, 0, this.getTotalVertices(), bias);
-                this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
+                if (this._boundingInfo) {
+                    this._boundingInfo.reConstruct(extend.minimum, extend.maximum, undefined, extraWorldExtent);
+                }
+                else {
+                    this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum, undefined, extraWorldExtent);
+                }
             }
 
             if (this.subMeshes) {

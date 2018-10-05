@@ -34,7 +34,7 @@ module BABYLON {
 
             this._intersectionThreshold = value;
             if (this.geometry) {
-                this.geometry.boundingBias = new Vector2(0, value);
+                this.geometry._boundingWorldExtraExtent = value;
             }
         }
 

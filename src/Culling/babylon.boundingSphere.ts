@@ -31,6 +31,13 @@ module BABYLON {
          */
         public maximum = Vector3.Zero();
 
+        /**
+         * an optional extra extent that will be added in all diretionsto the world BoundingBox.
+         * Note that vectorsWorld value is not impacted by this, only minimumWorld, maximumWorld and extendSizeWorld.
+         */
+        private _extraWorldExtent: number | undefined;
+        private _worldMatrix: Matrix;
+
         private static TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
 
         /**
@@ -38,18 +45,20 @@ module BABYLON {
          * @param min defines the minimum vector (in local space)
          * @param max defines the maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
+         * @param extraWorldExtent an extra extent that will be added in all diretionsto the world BoundingSphere
          */
-        constructor(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
-            this.reConstruct(min, max, worldMatrix);
+        constructor(min: Vector3, max: Vector3, worldMatrix?: Matrix, extraWorldExtent?: number) {
+            this.reConstruct(min, max, worldMatrix, extraWorldExtent);
         }
 
         /**
-         * Recreates the entire bounding sphere from scratch
+         * Recreates the entire bounding sphere from scratch, producing same values as if the constructor was called.
          * @param min defines the new minimum vector (in local space)
          * @param max defines the new maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
+         * @param extraWorldExtent an extra extent that will be added in all diretionsto the world BoundingSphere
          */
-        public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
+        public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix, extraWorldExtent?: number) {
             this.minimum.copyFrom(min);
             this.maximum.copyFrom(max);
 
@@ -58,7 +67,7 @@ module BABYLON {
             max.addToRef(min, this.center).scaleInPlace(0.5);
             this.radius = distance * 0.5;
 
-            this._update(worldMatrix || _identityMatrix);
+            this._update(worldMatrix || _identityMatrix, extraWorldExtent);
         }
 
         /**
@@ -73,18 +82,31 @@ module BABYLON {
             const min = this.center.subtractToRef(tempRadiusVector, tmpVectors[1]);
             const max = this.center.addToRef(tempRadiusVector, tmpVectors[2]);
 
-            this.reConstruct(min, max);
+            this.reConstruct(min, max, this._worldMatrix, this._extraWorldExtent);
 
             return this;
         }
 
         // Methods
         /** @hidden */
-        public _update(world: Matrix): void {
-            Vector3.TransformCoordinatesToRef(this.center, world, this.centerWorld);
-            const tempVector = BoundingSphere.TmpVector3[0];
-            Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, world, tempVector);
-            this.radiusWorld = Math.max(Math.abs(tempVector.x), Math.abs(tempVector.y), Math.abs(tempVector.z)) * this.radius;
+        public _update(worldMatrix: Matrix, extraWorldExtent?: number): void {
+            this._worldMatrix = worldMatrix;
+            this._extraWorldExtent = extraWorldExtent;
+
+            if (this._worldMatrix !== _identityMatrix) {
+                Vector3.TransformCoordinatesToRef(this.center, worldMatrix, this.centerWorld);
+                const tempVector = BoundingSphere.TmpVector3[0];
+                Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, worldMatrix, tempVector);
+                this.radiusWorld = Math.max(Math.abs(tempVector.x), Math.abs(tempVector.y), Math.abs(tempVector.z)) * this.radius;
+            }
+            else {
+                this.centerWorld.copyFrom(this.center);
+                this.radiusWorld = this.radius;
+            }
+
+            if (extraWorldExtent) {
+                this.radiusWorld += extraWorldExtent;
+            }
         }
 
         /**
@@ -132,6 +154,15 @@ module BABYLON {
             }
 
             return true;
+        }
+
+        /**
+         * Gets the world matrix of the bounding box.
+         * must not be modified
+         * @returns a matrix
+         */
+        public getWorldMatrix(): Matrix {
+            return this._worldMatrix;
         }
 
     }

@@ -1,4 +1,7 @@
-﻿module BABYLON {
+module BABYLON {
+
+    const _identityMatrix = Matrix.Identity();
+
     /**
      * Class used to store bounding box information
      */
@@ -48,6 +51,11 @@
          */
         public maximum: Vector3 = Vector3.Zero();
 
+        /**
+         * an optional extra extent that will be added in all diretionsto the world BoundingBox.
+         * Note that vectorsWorld value is not impacted by this, only minimumWorld, maximumWorld and extendSizeWorld.
+         */
+        public extraWorldExtent: number;
         private _worldMatrix: Matrix;
         private static TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
 
@@ -61,20 +69,21 @@
          * @param min defines the minimum vector (in local space)
          * @param max defines the maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
+         * @param extraWorldExtent an extra extent that will be added in all diretionsto the world BoundingBox
          */
-        constructor(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
-            this.reConstruct(min, max, worldMatrix);
+        constructor(min: Vector3, max: Vector3, worldMatrix?: Matrix, extraWorldExtent?: number) {
+            this.reConstruct(min, max, worldMatrix, extraWorldExtent);
         }
 
         // Methods
 
         /**
-         * Recreates the entire bounding box from scratch
+         * Recreates the entire bounding box from scratch, producing same values as if the constructor was called.
          * @param min defines the new minimum vector (in local space)
          * @param max defines the new maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
          */
-        public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
+        public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix, extraWorldExtent?: number) {
             const minX = min.x, minY = min.y, minZ = min.z, maxX = max.x, maxY = max.y, maxZ = max.z;
             const vectors = this.vectors;
 
@@ -93,7 +102,7 @@
             max.addToRef(min, this.center).scaleInPlace(0.5);
             max.subtractToRef(max, this.extendSize).scaleInPlace(0.5);
 
-            this._update(worldMatrix || this._worldMatrix || Matrix.Identity());
+            this._update(worldMatrix || _identityMatrix, extraWorldExtent || 0);
         }
 
         /**
@@ -112,13 +121,14 @@
             const min = this.center.subtractToRef(newRadius, tmpVectors[1]);
             const max = this.center.addToRef(newRadius, tmpVectors[2]);
 
-            this.reConstruct(min, max);
+            this.reConstruct(min, max, this._worldMatrix, this.extraWorldExtent);
 
             return this;
         }
 
         /**
-         * Gets the world matrix of the bounding box
+         * Gets the world matrix of the bounding box.
+         * must not be modified
          * @returns a matrix
          */
         public getWorldMatrix(): Matrix {
@@ -131,37 +141,50 @@
          * @returns current bounding box
          */
         public setWorldMatrix(matrix: Matrix): BoundingBox {
-            this._worldMatrix.copyFrom(matrix);
+            this._worldMatrix = matrix;
             return this;
         }
 
         /** @hidden */
-        public _update(world: Matrix): void {
+        public _update(world: Matrix, extraWorldExtent: number): void {
             const minWorld = this.minimumWorld;
             const maxWorld = this.maximumWorld;
             const directions = this.directions;
-
-            minWorld.setAll(Number.MAX_VALUE);
-            maxWorld.setAll(-Number.MAX_VALUE);
-
             const vectorsWorld = this.vectorsWorld;
             const vectors = this.vectors;
-            for (let index = 0; index < 8; ++index) {
-                const v = vectorsWorld[index];
-                Vector3.TransformCoordinatesToRef(vectors[index], world, v);
-                minWorld.minimizeInPlace(v);
-                maxWorld.maximizeInPlace(v);
+
+            if (world !== _identityMatrix) {
+                minWorld.setAll(Number.MAX_VALUE);
+                maxWorld.setAll(-Number.MAX_VALUE);
+
+                for (let index = 0; index < 8; ++index) {
+                    const v = vectorsWorld[index];
+                    Vector3.TransformCoordinatesToRef(vectors[index], world, v);
+                    minWorld.minimizeInPlace(v);
+                    maxWorld.maximizeInPlace(v);
+                }
+            }
+            else {
+                minWorld.copyFrom(this.minimum);
+                maxWorld.copyFrom(this.maximum);
+                for (let index = 0; index < 8; ++index) {
+                    vectorsWorld[index].copyFrom(vectors[index]);
+                }
             }
 
-            // Extend
-            maxWorld.subtractToRef(minWorld, this.extendSizeWorld).scaleInPlace(0.5);
-            // OOBB
-            maxWorld.addToRef(minWorld, this.centerWorld).scaleInPlace(0.5);
+            if (extraWorldExtent) {
+                minWorld.addInPlaceFromFloats(-extraWorldExtent, -extraWorldExtent, -extraWorldExtent);
+                maxWorld.addInPlaceFromFloats(extraWorldExtent, extraWorldExtent, extraWorldExtent);
+            }
 
             Vector3.FromArrayToRef(world.m, 0, directions[0]);
             Vector3.FromArrayToRef(world.m, 4, directions[1]);
             Vector3.FromArrayToRef(world.m, 8, directions[2]);
 
+            maxWorld.subtractToRef(minWorld, this.extendSizeWorld).scaleInPlace(0.5);
+            maxWorld.addToRef(minWorld, this.centerWorld).scaleInPlace(0.5);
+
+            this.extraWorldExtent = extraWorldExtent;
             this._worldMatrix = world;
         }
 

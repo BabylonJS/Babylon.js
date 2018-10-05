@@ -62,21 +62,23 @@ module BABYLON {
          * @param minimum min vector of the bounding box/sphere
          * @param maximum max vector of the bounding box/sphere
          * @param worldMatrix defines the new world matrix
+         * @param extraWorldExtent an extra extent that will be added in all diretionsto the world BoundingInfo only
          */
-        constructor(minimum: Vector3, maximum: Vector3, worldMatrix?: Matrix) {
-            this.boundingBox = new BoundingBox(minimum, maximum, worldMatrix);
-            this.boundingSphere = new BoundingSphere(minimum, maximum, worldMatrix);
+        constructor(minimum: Vector3, maximum: Vector3, worldMatrix?: Matrix, extraWorldExtent?: number) {
+            this.boundingBox = new BoundingBox(minimum, maximum, worldMatrix, extraWorldExtent);
+            this.boundingSphere = new BoundingSphere(minimum, maximum, worldMatrix, extraWorldExtent);
         }
 
         /**
-         * Recreates the entire bounding info from scratch
+         * Recreates the entire bounding info from scratch, producing same values as if the constructor was called.
          * @param min defines the new minimum vector (in local space)
          * @param max defines the new maximum vector (in local space)
-         * @param worldMatrix defines the new world matrix
+         * @param worldMatrix defines the new world matrix.
+         * @param extraWorldExtent an extra extent that will be added in all diretionsto the world BoundingInfo only
          */
-        public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
-            this.boundingBox.reConstruct(min, max, worldMatrix);
-            this.boundingSphere.reConstruct(min, max, worldMatrix);
+        public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix, extraWorldExtent?: number) {
+            this.boundingBox.reConstruct(min, max, worldMatrix, extraWorldExtent);
+            this.boundingSphere.reConstruct(min, max, worldMatrix, extraWorldExtent);
         }
 
         /**
@@ -94,6 +96,13 @@ module BABYLON {
         }
 
         /**
+         * extra extent added to the world BoundingBox and BoundingSphere
+         */
+        public get extraWorldExtent(): number | undefined {
+            return this.boundingBox.extraWorldExtent;
+        }
+
+        /**
          * If the info is locked and won't be updated to avoid perf overhead
          */
         public get isLocked(): boolean {
@@ -106,15 +115,16 @@ module BABYLON {
 
         // Methods
         /**
-         * Updates the boudning sphere and box
+         * Updates the bounding sphere and box
          * @param world world matrix to be used to update
          */
         public update(world: Matrix) {
             if (this._isLocked) {
                 return;
             }
-            this.boundingBox._update(world);
-            this.boundingSphere._update(world);
+            const extraWorldExtent = this.boundingBox.extraWorldExtent;
+            this.boundingBox._update(world, extraWorldExtent);
+            this.boundingSphere._update(world, extraWorldExtent);
         }
 
         /**
@@ -128,8 +138,9 @@ module BABYLON {
             const minimum = Tmp.Vector3[0].copyFrom(center).subtractInPlace(extend);
             const maximum = Tmp.Vector3[1].copyFrom(center).addInPlace(extend);
 
-            this.boundingBox.reConstruct(minimum, maximum);
-            this.boundingSphere.reConstruct(minimum, maximum);
+            const extraWorldExtent = this.boundingBox.extraWorldExtent;
+            this.boundingBox.reConstruct(minimum, maximum, this.boundingBox.getWorldMatrix(), extraWorldExtent);
+            this.boundingSphere.reConstruct(minimum, maximum, this.boundingSphere.getWorldMatrix(), extraWorldExtent);
 
             return this;
         }
@@ -167,9 +178,9 @@ module BABYLON {
 		 * Gets the world distance between the min and max points of the bounding box
 		 */
         public get diagonalLength(): number {
-            let boundingBox = this.boundingBox;
-            let size = boundingBox.maximumWorld.subtract(boundingBox.minimumWorld);
-            return size.length();
+            const boundingBox = this.boundingBox;
+            const diag = boundingBox.maximumWorld.subtractToRef(boundingBox.minimumWorld, Tmp.Vector3[0]);
+            return diag.length();
         }
 
         /**
