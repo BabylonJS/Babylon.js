@@ -625,6 +625,11 @@ module BABYLON {
         public onBeginFrameObservable = new Observable<Engine>();
 
         /**
+         * If set, will be used to request the next animation frame for the render loop
+         */
+        public customAnimationFrameRequester: Nullable<ICustomAnimationFrameRequester> = null;
+
+        /**
          * Observable raised when the engine ends the current frame
          */
         public onEndFrameObservable = new Observable<Engine>();
@@ -1894,11 +1899,14 @@ module BABYLON {
 
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                var requester = null;
-                if (this._vrDisplay && this._vrDisplay.isPresenting) {
-                    requester = this._vrDisplay;
+                if (this.customAnimationFrameRequester) {
+                    this.customAnimationFrameRequester.requestID = Tools.QueueNewFrame(this.customAnimationFrameRequester.renderFunction || this._bindedRenderFunction, this.customAnimationFrameRequester);
+                    this._frameHandler = this.customAnimationFrameRequester.requestID;
+                } else if (this._vrDisplay && this._vrDisplay.isPresenting) {
+                    this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplay);
+                } else {
+                    this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
                 }
-                this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, requester);
             } else {
                 this._renderingQueueLaunched = false;
             }
