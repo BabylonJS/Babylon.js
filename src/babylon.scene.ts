@@ -253,6 +253,12 @@ module BABYLON {
          */
         public preventDefaultOnPointerDown = true;
 
+        /**
+         * This is used to call preventDefault() on pointer up
+         * in order to block unwanted artifacts like system double clicks
+         */
+        public preventDefaultOnPointerUp = true;
+
         // Metadata
         /**
          * Gets or sets user defined metadata
@@ -2038,6 +2044,12 @@ module BABYLON {
                 this._meshPickProceed = false;
 
                 this._updatePointerPosition(evt);
+
+                if (this.preventDefaultOnPointerUp && canvas) {
+                    evt.preventDefault();
+                    canvas.focus();
+                }
+
                 this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => {
                     // PreObservable support
                     if (this.onPrePointerObservable.hasObservers()) {
