@@ -13,7 +13,7 @@ module.exports = {
         filename: 'babylonjs.postProcess.min.js',
         libraryTarget: 'umd',
         library: {
-            root: ["POSTPROCESSLIBRARY"],
+            root: ["BABYLON"],
             amd: "babylonjs-postProcessesLibrary",
             commonjs: "babylonjs-postProcessesLibrary"
         },
@@ -36,7 +36,8 @@ module.exports = {
             test: /\.tsx?$/,
             loader: 'awesome-typescript-loader',
             options: {
-                configFileName: '../../postProcessLibrary/tsconfig.json'
+                configFileName: '../../postProcessLibrary/tsconfig.json',
+                declarationDir: '../../dist/preview release/postProcessesLibrary/build'
             }
         },
         {
