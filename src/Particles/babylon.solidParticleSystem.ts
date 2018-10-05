@@ -301,13 +301,23 @@ module BABYLON {
             var index = 0;
             var idx = 0;
             const tmpNormal = Tmp.Vector3[0];
-            const rotMatrix = Tmp.Matrix[0];
-            const invertedRotMatrix = Tmp.Matrix[1];
+            const quaternion = Tmp.Quaternion[0];
+            const invertedRotMatrix = Tmp.Matrix[0];
             for (var p = 0; p < this.particles.length; p++) {
                 const particle = this.particles[p];
                 const shape = particle._model._shape;
-                particle.getRotationMatrix(rotMatrix);
-                rotMatrix.invertToRef(invertedRotMatrix);
+
+                // computing the inverse of the rotation matrix from the quaternion
+                // is equivalent to computing the matrix of the inverse quaternion, i.e of the conjugate quaternion
+                if (particle.rotationQuaternion) {
+                    particle.rotationQuaternion.conjugateToRef(quaternion);
+                }
+                else {
+                    const rotation = particle.rotation;
+                    Quaternion.RotationYawPitchRollToRef(rotation.y, rotation.x, rotation.z, quaternion);
+                    quaternion.conjugateInPlace();
+                }
+                quaternion.toRotationMatrix(invertedRotMatrix);
 
                 for (var pt = 0; pt < shape.length; pt++) {
                     idx = index + pt * 3;

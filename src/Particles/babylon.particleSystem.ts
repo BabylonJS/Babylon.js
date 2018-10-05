@@ -206,181 +206,181 @@ module BABYLON {
                 for (var index = 0; index < particles.length; index++) {
                     var particle = particles[index];
 
-                        let scaledUpdateSpeed = this._scaledUpdateSpeed;
-                        let previousAge = particle.age;
-                        particle.age += scaledUpdateSpeed;
+                    let scaledUpdateSpeed = this._scaledUpdateSpeed;
+                    let previousAge = particle.age;
+                    particle.age += scaledUpdateSpeed;
 
-                        // Evaluate step to death
-                        if (particle.age > particle.lifeTime) {
-                            let diff = particle.age - previousAge;
-                            let oldDiff = particle.lifeTime - previousAge;
+                    // Evaluate step to death
+                    if (particle.age > particle.lifeTime) {
+                        let diff = particle.age - previousAge;
+                        let oldDiff = particle.lifeTime - previousAge;
 
-                            scaledUpdateSpeed = (oldDiff * scaledUpdateSpeed) / diff;
+                        scaledUpdateSpeed = (oldDiff * scaledUpdateSpeed) / diff;
 
-                            particle.age = particle.lifeTime;
-                        }
+                        particle.age = particle.lifeTime;
+                    }
 
-                        let ratio = particle.age / particle.lifeTime;
+                    let ratio = particle.age / particle.lifeTime;
 
-                        // Color
-                        if (this._colorGradients && this._colorGradients.length > 0) {
-                            Tools.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
-                                if (currentGradient !== particle._currentColorGradient) {
-                                    particle._currentColor1.copyFrom(particle._currentColor2);
-                                    (<ColorGradient>nextGradient).getColorToRef(particle._currentColor2);
-                                    particle._currentColorGradient = (<ColorGradient>currentGradient);
-                                }
-                                Color4.LerpToRef(particle._currentColor1, particle._currentColor2, scale, particle.color);
-                            });
-                        }
-                        else {
-                            particle.colorStep.scaleToRef(scaledUpdateSpeed, this._scaledColorStep);
-                            particle.color.addInPlace(this._scaledColorStep);
-
-                            if (particle.color.a < 0) {
-                                particle.color.a = 0;
+                    // Color
+                    if (this._colorGradients && this._colorGradients.length > 0) {
+                        Tools.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
+                            if (currentGradient !== particle._currentColorGradient) {
+                                particle._currentColor1.copyFrom(particle._currentColor2);
+                                (<ColorGradient>nextGradient).getColorToRef(particle._currentColor2);
+                                particle._currentColorGradient = (<ColorGradient>currentGradient);
                             }
+                            Color4.LerpToRef(particle._currentColor1, particle._currentColor2, scale, particle.color);
+                        });
+                    }
+                    else {
+                        particle.colorStep.scaleToRef(scaledUpdateSpeed, this._scaledColorStep);
+                        particle.color.addInPlace(this._scaledColorStep);
+
+                        if (particle.color.a < 0) {
+                            particle.color.a = 0;
                         }
+                    }
 
-                        // Angular speed
-                        if (this._angularSpeedGradients && this._angularSpeedGradients.length > 0) {
-                            Tools.GetCurrentGradient(ratio, this._angularSpeedGradients, (currentGradient, nextGradient, scale) => {
-                                if (currentGradient !== particle._currentAngularSpeedGradient) {
-                                    particle._currentAngularSpeed1 = particle._currentAngularSpeed2;
-                                    particle._currentAngularSpeed2 = (<FactorGradient>nextGradient).getFactor();
-                                    particle._currentAngularSpeedGradient = (<FactorGradient>currentGradient);
-                                }
-                                particle.angularSpeed = Scalar.Lerp(particle._currentAngularSpeed1, particle._currentAngularSpeed2, scale);
-                            });
-                        }
-                        particle.angle += particle.angularSpeed * scaledUpdateSpeed;
+                    // Angular speed
+                    if (this._angularSpeedGradients && this._angularSpeedGradients.length > 0) {
+                        Tools.GetCurrentGradient(ratio, this._angularSpeedGradients, (currentGradient, nextGradient, scale) => {
+                            if (currentGradient !== particle._currentAngularSpeedGradient) {
+                                particle._currentAngularSpeed1 = particle._currentAngularSpeed2;
+                                particle._currentAngularSpeed2 = (<FactorGradient>nextGradient).getFactor();
+                                particle._currentAngularSpeedGradient = (<FactorGradient>currentGradient);
+                            }
+                            particle.angularSpeed = Scalar.Lerp(particle._currentAngularSpeed1, particle._currentAngularSpeed2, scale);
+                        });
+                    }
+                    particle.angle += particle.angularSpeed * scaledUpdateSpeed;
 
-                        // Direction
-                        let directionScale = scaledUpdateSpeed;
+                    // Direction
+                    let directionScale = scaledUpdateSpeed;
 
-                        /// Velocity
-                        if (this._velocityGradients && this._velocityGradients.length > 0) {
-                            Tools.GetCurrentGradient(ratio, this._velocityGradients, (currentGradient, nextGradient, scale) => {
-                                if (currentGradient !== particle._currentVelocityGradient) {
-                                    particle._currentVelocity1 = particle._currentVelocity2;
-                                    particle._currentVelocity2 = (<FactorGradient>nextGradient).getFactor();
-                                    particle._currentVelocityGradient = (<FactorGradient>currentGradient);
-                                }
-                                directionScale *= Scalar.Lerp(particle._currentVelocity1, particle._currentVelocity2, scale);
-                            });
-                        }
+                    /// Velocity
+                    if (this._velocityGradients && this._velocityGradients.length > 0) {
+                        Tools.GetCurrentGradient(ratio, this._velocityGradients, (currentGradient, nextGradient, scale) => {
+                            if (currentGradient !== particle._currentVelocityGradient) {
+                                particle._currentVelocity1 = particle._currentVelocity2;
+                                particle._currentVelocity2 = (<FactorGradient>nextGradient).getFactor();
+                                particle._currentVelocityGradient = (<FactorGradient>currentGradient);
+                            }
+                            directionScale *= Scalar.Lerp(particle._currentVelocity1, particle._currentVelocity2, scale);
+                        });
+                    }
 
-                        particle.direction.scaleToRef(directionScale, this._scaledDirection);
+                    particle.direction.scaleToRef(directionScale, this._scaledDirection);
 
-                        /// Limit velocity
-                        if (this._limitVelocityGradients && this._limitVelocityGradients.length > 0) {
-                            Tools.GetCurrentGradient(ratio, this._limitVelocityGradients, (currentGradient, nextGradient, scale) => {
-                                if (currentGradient !== particle._currentLimitVelocityGradient) {
-                                    particle._currentLimitVelocity1 = particle._currentLimitVelocity2;
-                                    particle._currentLimitVelocity2 = (<FactorGradient>nextGradient).getFactor();
-                                    particle._currentLimitVelocityGradient = (<FactorGradient>currentGradient);
-                                }
-
-                                let limitVelocity = Scalar.Lerp(particle._currentLimitVelocity1, particle._currentLimitVelocity2, scale);
-                                let currentVelocity = particle.direction.length();
-
-                                if (currentVelocity > limitVelocity) {
-                                    particle.direction.scaleInPlace(this.limitVelocityDamping);
-                                }
-                            });
-                        }
-
-                        /// Drag
-                        if (this._dragGradients && this._dragGradients.length > 0) {
-                            Tools.GetCurrentGradient(ratio, this._dragGradients, (currentGradient, nextGradient, scale) => {
-                                if (currentGradient !== particle._currentDragGradient) {
-                                    particle._currentDrag1 = particle._currentDrag2;
-                                    particle._currentDrag2 = (<FactorGradient>nextGradient).getFactor();
-                                    particle._currentDragGradient = (<FactorGradient>currentGradient);
-                                }
-
-                                let drag = Scalar.Lerp(particle._currentDrag1, particle._currentDrag2, scale);
-
-                                this._scaledDirection.scaleInPlace(1.0 - drag);
-                            });
-                        }
-
-                        particle.position.addInPlace(this._scaledDirection);
-
-                        // Noise
-                        if (noiseTextureData && noiseTextureSize) {
-                            let fetchedColorR = this._fetchR(particle._randomNoiseCoordinates1.x, particle._randomNoiseCoordinates1.y, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
-                            let fetchedColorG = this._fetchR(particle._randomNoiseCoordinates1.z, particle._randomNoiseCoordinates2.x, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
-                            let fetchedColorB = this._fetchR(particle._randomNoiseCoordinates2.y, particle._randomNoiseCoordinates2.z, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
-
-                            let force = Tmp.Vector3[0];
-                            let scaledForce = Tmp.Vector3[1];
-
-                            force.copyFromFloats((2 * fetchedColorR - 1) * this.noiseStrength.x, (2 * fetchedColorG - 1) * this.noiseStrength.y, (2 * fetchedColorB - 1) * this.noiseStrength.z);
-
-                            force.scaleToRef(scaledUpdateSpeed, scaledForce);
-                            particle.direction.addInPlace(scaledForce);
-                        }
-
-                        // Gravity
-                        this.gravity.scaleToRef(scaledUpdateSpeed, this._scaledGravity);
-                        particle.direction.addInPlace(this._scaledGravity);
-
-                        // Size
-                        if (this._sizeGradients && this._sizeGradients.length > 0) {
-                            Tools.GetCurrentGradient(ratio, this._sizeGradients, (currentGradient, nextGradient, scale) => {
-                                if (currentGradient !== particle._currentSizeGradient) {
-                                    particle._currentSize1 = particle._currentSize2;
-                                    particle._currentSize2 = (<FactorGradient>nextGradient).getFactor();
-                                    particle._currentSizeGradient = (<FactorGradient>currentGradient);
-                                }
-                                particle.size = Scalar.Lerp(particle._currentSize1, particle._currentSize2, scale);
-                            });
-                        }
-
-                        // Remap data
-                        if (this._useRampGradients) {
-                            if (this._colorRemapGradients && this._colorRemapGradients.length > 0) {
-                                Tools.GetCurrentGradient(ratio, this._colorRemapGradients, (currentGradient, nextGradient, scale) => {
-                                    let min = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
-                                    let max = Scalar.Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
-
-                                    particle.remapData.x = min;
-                                    particle.remapData.y = max - min;
-                                });
+                    /// Limit velocity
+                    if (this._limitVelocityGradients && this._limitVelocityGradients.length > 0) {
+                        Tools.GetCurrentGradient(ratio, this._limitVelocityGradients, (currentGradient, nextGradient, scale) => {
+                            if (currentGradient !== particle._currentLimitVelocityGradient) {
+                                particle._currentLimitVelocity1 = particle._currentLimitVelocity2;
+                                particle._currentLimitVelocity2 = (<FactorGradient>nextGradient).getFactor();
+                                particle._currentLimitVelocityGradient = (<FactorGradient>currentGradient);
                             }
 
-                            if (this._alphaRemapGradients && this._alphaRemapGradients.length > 0) {
-                                Tools.GetCurrentGradient(ratio, this._alphaRemapGradients, (currentGradient, nextGradient, scale) => {
-                                    let min = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
-                                    let max = Scalar.Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
+                            let limitVelocity = Scalar.Lerp(particle._currentLimitVelocity1, particle._currentLimitVelocity2, scale);
+                            let currentVelocity = particle.direction.length();
 
-                                    particle.remapData.z = min;
-                                    particle.remapData.w = max - min;
-                                });
+                            if (currentVelocity > limitVelocity) {
+                                particle.direction.scaleInPlace(this.limitVelocityDamping);
                             }
-                        }
+                        });
+                    }
 
-                        if (this._isAnimationSheetEnabled) {
-                            particle.updateCellIndex();
-                        }
-
-                        // Update the position of the attached sub-emitters to match their attached particle
-                        particle._inheritParticleInfoToSubEmitters();
-
-                        if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
-                            this._emitFromParticle(particle);
-                            if (particle._attachedSubEmitters) {
-                                particle._attachedSubEmitters.forEach((subEmitter) => {
-                                    subEmitter.particleSystem.disposeOnStop = true;
-                                    subEmitter.particleSystem.stop();
-                                });
-                                particle._attachedSubEmitters = null;
+                    /// Drag
+                    if (this._dragGradients && this._dragGradients.length > 0) {
+                        Tools.GetCurrentGradient(ratio, this._dragGradients, (currentGradient, nextGradient, scale) => {
+                            if (currentGradient !== particle._currentDragGradient) {
+                                particle._currentDrag1 = particle._currentDrag2;
+                                particle._currentDrag2 = (<FactorGradient>nextGradient).getFactor();
+                                particle._currentDragGradient = (<FactorGradient>currentGradient);
                             }
-                            this.recycleParticle(particle);
-                            index--;
-                            continue;
+
+                            let drag = Scalar.Lerp(particle._currentDrag1, particle._currentDrag2, scale);
+
+                            this._scaledDirection.scaleInPlace(1.0 - drag);
+                        });
+                    }
+
+                    particle.position.addInPlace(this._scaledDirection);
+
+                    // Noise
+                    if (noiseTextureData && noiseTextureSize) {
+                        let fetchedColorR = this._fetchR(particle._randomNoiseCoordinates1.x, particle._randomNoiseCoordinates1.y, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+                        let fetchedColorG = this._fetchR(particle._randomNoiseCoordinates1.z, particle._randomNoiseCoordinates2.x, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+                        let fetchedColorB = this._fetchR(particle._randomNoiseCoordinates2.y, particle._randomNoiseCoordinates2.z, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+
+                        let force = Tmp.Vector3[0];
+                        let scaledForce = Tmp.Vector3[1];
+
+                        force.copyFromFloats((2 * fetchedColorR - 1) * this.noiseStrength.x, (2 * fetchedColorG - 1) * this.noiseStrength.y, (2 * fetchedColorB - 1) * this.noiseStrength.z);
+
+                        force.scaleToRef(scaledUpdateSpeed, scaledForce);
+                        particle.direction.addInPlace(scaledForce);
+                    }
+
+                    // Gravity
+                    this.gravity.scaleToRef(scaledUpdateSpeed, this._scaledGravity);
+                    particle.direction.addInPlace(this._scaledGravity);
+
+                    // Size
+                    if (this._sizeGradients && this._sizeGradients.length > 0) {
+                        Tools.GetCurrentGradient(ratio, this._sizeGradients, (currentGradient, nextGradient, scale) => {
+                            if (currentGradient !== particle._currentSizeGradient) {
+                                particle._currentSize1 = particle._currentSize2;
+                                particle._currentSize2 = (<FactorGradient>nextGradient).getFactor();
+                                particle._currentSizeGradient = (<FactorGradient>currentGradient);
+                            }
+                            particle.size = Scalar.Lerp(particle._currentSize1, particle._currentSize2, scale);
+                        });
+                    }
+
+                    // Remap data
+                    if (this._useRampGradients) {
+                        if (this._colorRemapGradients && this._colorRemapGradients.length > 0) {
+                            Tools.GetCurrentGradient(ratio, this._colorRemapGradients, (currentGradient, nextGradient, scale) => {
+                                let min = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
+                                let max = Scalar.Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
+
+                                particle.remapData.x = min;
+                                particle.remapData.y = max - min;
+                            });
                         }
+
+                        if (this._alphaRemapGradients && this._alphaRemapGradients.length > 0) {
+                            Tools.GetCurrentGradient(ratio, this._alphaRemapGradients, (currentGradient, nextGradient, scale) => {
+                                let min = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
+                                let max = Scalar.Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
+
+                                particle.remapData.z = min;
+                                particle.remapData.w = max - min;
+                            });
+                        }
+                    }
+
+                    if (this._isAnimationSheetEnabled) {
+                        particle.updateCellIndex();
+                    }
+
+                    // Update the position of the attached sub-emitters to match their attached particle
+                    particle._inheritParticleInfoToSubEmitters();
+
+                    if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
+                        this._emitFromParticle(particle);
+                        if (particle._attachedSubEmitters) {
+                            particle._attachedSubEmitters.forEach((subEmitter) => {
+                                subEmitter.particleSystem.disposeOnStop = true;
+                                subEmitter.particleSystem.stop();
+                            });
+                            particle._attachedSubEmitters = null;
+                        }
+                        this.recycleParticle(particle);
+                        index--;
+                        continue;
+                    }
                 }
             };
         }
@@ -1138,14 +1138,14 @@ module BABYLON {
                     }
                     else if (offsetX === 1) {
                         offsetX = 1 - this._epsilon;
-                         }
+                    }
 
                     if (offsetY === 0) {
                         offsetY = this._epsilon;
                     }
                     else if (offsetY === 1) {
                         offsetY = 1 - this._epsilon;
-                         }
+                    }
                 }
 
                 this._vertexData[offset++] = offsetX;
@@ -1565,10 +1565,10 @@ module BABYLON {
                     return;
                 }
 
-                if (this._currentRenderId === this._scene.getRenderId()) {
+                if (this._currentRenderId === this._scene.getFrameId()) {
                     return;
                 }
-                this._currentRenderId = this._scene.getRenderId();
+                this._currentRenderId = this._scene.getFrameId();
             }
 
             this._scaledUpdateSpeed = this.updateSpeed * (preWarmOnly ? this.preWarmStepOffset : this._scene.getAnimationRatio());
