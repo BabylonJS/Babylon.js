@@ -1,7 +1,7 @@
 module BABYLON {
     /**
      * WebXR Camera which holds the views for the xrSession
-     * @see https://immersive-web.github.io/webxr/
+     * @see https://doc.babylonjs.com/how_to/webxr
      */
     export class WebXRCamera extends FreeCamera {
         /**
