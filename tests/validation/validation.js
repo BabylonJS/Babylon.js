@@ -235,7 +235,7 @@ function runTest(index, done) {
         var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
         var pgRoot = "/Playground"
 
-        var retryTime = 30 * 1000;
+        var retryTime = 500;
         var maxRetry = 2;
         var retry = 0;
 
