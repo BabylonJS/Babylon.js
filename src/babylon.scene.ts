@@ -4053,10 +4053,38 @@ module BABYLON {
             this._processedMaterials.dispose();
         }
 
+        private _preventFreeActiveMeshesAndRenderingGroups = false;
+
+        /** Gets or sets a boolean blocking all the calls to freeActiveMeshes and freeRenderingGroups
+         * It can be used in order to prevent going through methods freeRenderingGroups and freeActiveMeshes several times to improve performance
+         * when disposing several meshes in a row or a hierarchy of meshes.
+         * When used, it is the responsability of the user to blockfreeActiveMeshesAndRenderingGroups back to false.
+         */
+        public get blockfreeActiveMeshesAndRenderingGroups(): boolean {
+            return this._preventFreeActiveMeshesAndRenderingGroups;
+        }
+
+        public set blockfreeActiveMeshesAndRenderingGroups(value: boolean) {
+            if (this._preventFreeActiveMeshesAndRenderingGroups === value) {
+                return;
+            }
+
+            if (value) {
+                this.freeActiveMeshes();
+                this.freeRenderingGroups();
+            }
+
+            this._preventFreeActiveMeshesAndRenderingGroups = value;
+        }
+
         /**
          * Clear the active meshes smart array preventing retention point in mesh dispose.
          */
         public freeActiveMeshes(): void {
+            if (this.blockfreeActiveMeshesAndRenderingGroups) {
+                return;
+            }
+
             this._activeMeshes.dispose();
             if (this.activeCamera && this.activeCamera._activeMeshes) {
                 this.activeCamera._activeMeshes.dispose();
@@ -4075,6 +4103,10 @@ module BABYLON {
          * Clear the info related to rendering groups preventing retention points during dispose.
          */
         public freeRenderingGroups(): void {
+            if (this.blockfreeActiveMeshesAndRenderingGroups) {
+                return;
+            }
+
             if (this._renderingManager) {
                 this._renderingManager.freeRenderingGroups();
             }
