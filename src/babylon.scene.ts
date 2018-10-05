@@ -4341,8 +4341,8 @@ module BABYLON {
 
                 this._intermediateRendering = false;
 
-                if (this.activeCamera.customDefaultRenderTarget) {
-                    var internalTexture = this.activeCamera.customDefaultRenderTarget.getInternalTexture();
+                if (this.activeCamera.renderTarget) {
+                    var internalTexture = this.activeCamera.renderTarget.getInternalTexture();
                     if (internalTexture) {
                         engine.bindFramebuffer(internalTexture);
                     }else {

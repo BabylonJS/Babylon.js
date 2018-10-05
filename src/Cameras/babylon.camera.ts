@@ -207,7 +207,7 @@ module BABYLON {
         /**
          * When set, the camera will render to this render target instead of the default canvas
          */
-        public customDefaultRenderTarget: Nullable<RenderTargetTexture> = null;
+        public renderTarget: Nullable<RenderTargetTexture> = null;
 
         /**
          * Observable triggered when the camera view matrix has changed.
@@ -250,7 +250,8 @@ module BABYLON {
 
         protected _globalPosition = Vector3.Zero();
 
-        private _computedViewMatrix = Matrix.Identity();
+        /** hidden */
+        public _computedViewMatrix = Matrix.Identity();
         private _doNotComputeProjectionMatrix = false;
         private _transformMatrix = Matrix.Zero();
         private _frustumPlanes: Plane[];

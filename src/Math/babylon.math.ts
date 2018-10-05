@@ -4881,6 +4881,19 @@ module BABYLON {
         }
 
         // Statics
+        /** @hidden */
+        public static _ToggleModelMatrixHandInPlace(matrix:Matrix){
+            [2, 6, 8, 9, 14].forEach((num) => {
+                matrix.m[num] *= -1;
+            });
+        }
+
+        /** @hidden */
+        public static _ToggleProjectionMatrixHandInPlace(matrix:Matrix){
+            [8, 9, 10, 11].forEach((num) => {
+                matrix.m[num] *= -1;
+            });
+        }
 
         /**
          * Creates a matrix from an array
