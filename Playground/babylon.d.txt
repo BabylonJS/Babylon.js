@@ -12135,193 +12135,6 @@ declare var WebGLVertexArrayObject: {
 
 declare module BABYLON {
     /**
-     * Gather the list of keyboard event types as constants.
-     */
-    class KeyboardEventTypes {
-        /**
-         * The keydown event is fired when a key becomes active (pressed).
-         */
-        static readonly KEYDOWN: number;
-        /**
-         * The keyup event is fired when a key has been released.
-         */
-        static readonly KEYUP: number;
-    }
-    /**
-     * This class is used to store keyboard related info for the onKeyboardObservable event.
-     */
-    class KeyboardInfo {
-        /**
-         * Defines the type of event (BABYLON.KeyboardEventTypes)
-         */
-        type: number;
-        /**
-         * Defines the related dom event
-         */
-        event: KeyboardEvent;
-        /**
-         * Instantiates a new keyboard info.
-         * This class is used to store keyboard related info for the onKeyboardObservable event.
-         * @param type Defines the type of event (BABYLON.KeyboardEventTypes)
-         * @param event Defines the related dom event
-         */
-        constructor(
-        /**
-         * Defines the type of event (BABYLON.KeyboardEventTypes)
-         */
-        type: number, 
-        /**
-         * Defines the related dom event
-         */
-        event: KeyboardEvent);
-    }
-    /**
-     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
-     */
-    class KeyboardInfoPre extends KeyboardInfo {
-        /**
-         * Defines the type of event (BABYLON.KeyboardEventTypes)
-         */
-        type: number;
-        /**
-         * Defines the related dom event
-         */
-        event: KeyboardEvent;
-        /**
-         * Defines whether the engine should skip the next onKeyboardObservable associated to this pre.
-         */
-        skipOnPointerObservable: boolean;
-        /**
-         * Instantiates a new keyboard pre info.
-         * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-         * @param type Defines the type of event (BABYLON.KeyboardEventTypes)
-         * @param event Defines the related dom event
-         */
-        constructor(
-        /**
-         * Defines the type of event (BABYLON.KeyboardEventTypes)
-         */
-        type: number, 
-        /**
-         * Defines the related dom event
-         */
-        event: KeyboardEvent);
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Gather the list of pointer event types as constants.
-     */
-    class PointerEventTypes {
-        /**
-         * The pointerdown event is fired when a pointer becomes active. For mouse, it is fired when the device transitions from no buttons depressed to at least one button depressed. For touch, it is fired when physical contact is made with the digitizer. For pen, it is fired when the stylus makes physical contact with the digitizer.
-         */
-        static readonly POINTERDOWN: number;
-        /**
-         * The pointerup event is fired when a pointer is no longer active.
-         */
-        static readonly POINTERUP: number;
-        /**
-         * The pointermove event is fired when a pointer changes coordinates.
-         */
-        static readonly POINTERMOVE: number;
-        /**
-         * The pointerwheel event is fired when a mouse wheel has been rotated.
-         */
-        static readonly POINTERWHEEL: number;
-        /**
-         * The pointerpick event is fired when a mesh or sprite has been picked by the pointer.
-         */
-        static readonly POINTERPICK: number;
-        /**
-         * The pointertap event is fired when a the object has been touched and released without drag.
-         */
-        static readonly POINTERTAP: number;
-        /**
-         * The pointerdoubletap event is fired when a the object has been touched and released twice without drag.
-         */
-        static readonly POINTERDOUBLETAP: number;
-    }
-    /**
-     * Base class of pointer info types.
-     */
-    class PointerInfoBase {
-        /**
-         * Defines the type of event (BABYLON.PointerEventTypes)
-         */
-        type: number;
-        /**
-         * Defines the related dom event
-         */
-        event: PointerEvent | MouseWheelEvent;
-        /**
-         * Instantiates the base class of pointers info.
-         * @param type Defines the type of event (BABYLON.PointerEventTypes)
-         * @param event Defines the related dom event
-         */
-        constructor(
-        /**
-         * Defines the type of event (BABYLON.PointerEventTypes)
-         */
-        type: number, 
-        /**
-         * Defines the related dom event
-         */
-        event: PointerEvent | MouseWheelEvent);
-    }
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    class PointerInfoPre extends PointerInfoBase {
-        /**
-         * Ray from a pointer if availible (eg. 6dof controller)
-         */
-        ray: Nullable<Ray>;
-        /**
-         * Defines the local position of the pointer on the canvas.
-         */
-        localPosition: Vector2;
-        /**
-         * Defines whether the engine should skip the next OnPointerObservable associated to this pre.
-         */
-        skipOnPointerObservable: boolean;
-        /**
-         * Instantiates a PointerInfoPre to store pointer related info to the onPrePointerObservable event.
-         * @param type Defines the type of event (BABYLON.PointerEventTypes)
-         * @param event Defines the related dom event
-         * @param localX Defines the local x coordinates of the pointer when the event occured
-         * @param localY Defines the local y coordinates of the pointer when the event occured
-         */
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
-    }
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    class PointerInfo extends PointerInfoBase {
-        /**
-         * Defines the picking info associated to the info (if any)\
-         */
-        pickInfo: Nullable<PickingInfo>;
-        /**
-         * Instantiates a PointerInfo to store pointer related info to the onPointerObservable event.
-         * @param type Defines the type of event (BABYLON.PointerEventTypes)
-         * @param event Defines the related dom event
-         * @param pickInfo Defines the picking info associated to the info (if any)\
-         */
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, 
-        /**
-         * Defines the picking info associated to the info (if any)\
-         */
-        pickInfo: Nullable<PickingInfo>);
-    }
-}
-
-declare module BABYLON {
-    /**
      * Represents a gamepad control stick position
      */
     class StickValues {
@@ -12875,6 +12688,193 @@ declare module BABYLON {
          * Disposes the gamepad
          */
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Gather the list of keyboard event types as constants.
+     */
+    class KeyboardEventTypes {
+        /**
+         * The keydown event is fired when a key becomes active (pressed).
+         */
+        static readonly KEYDOWN: number;
+        /**
+         * The keyup event is fired when a key has been released.
+         */
+        static readonly KEYUP: number;
+    }
+    /**
+     * This class is used to store keyboard related info for the onKeyboardObservable event.
+     */
+    class KeyboardInfo {
+        /**
+         * Defines the type of event (BABYLON.KeyboardEventTypes)
+         */
+        type: number;
+        /**
+         * Defines the related dom event
+         */
+        event: KeyboardEvent;
+        /**
+         * Instantiates a new keyboard info.
+         * This class is used to store keyboard related info for the onKeyboardObservable event.
+         * @param type Defines the type of event (BABYLON.KeyboardEventTypes)
+         * @param event Defines the related dom event
+         */
+        constructor(
+        /**
+         * Defines the type of event (BABYLON.KeyboardEventTypes)
+         */
+        type: number, 
+        /**
+         * Defines the related dom event
+         */
+        event: KeyboardEvent);
+    }
+    /**
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
+     */
+    class KeyboardInfoPre extends KeyboardInfo {
+        /**
+         * Defines the type of event (BABYLON.KeyboardEventTypes)
+         */
+        type: number;
+        /**
+         * Defines the related dom event
+         */
+        event: KeyboardEvent;
+        /**
+         * Defines whether the engine should skip the next onKeyboardObservable associated to this pre.
+         */
+        skipOnPointerObservable: boolean;
+        /**
+         * Instantiates a new keyboard pre info.
+         * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+         * @param type Defines the type of event (BABYLON.KeyboardEventTypes)
+         * @param event Defines the related dom event
+         */
+        constructor(
+        /**
+         * Defines the type of event (BABYLON.KeyboardEventTypes)
+         */
+        type: number, 
+        /**
+         * Defines the related dom event
+         */
+        event: KeyboardEvent);
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Gather the list of pointer event types as constants.
+     */
+    class PointerEventTypes {
+        /**
+         * The pointerdown event is fired when a pointer becomes active. For mouse, it is fired when the device transitions from no buttons depressed to at least one button depressed. For touch, it is fired when physical contact is made with the digitizer. For pen, it is fired when the stylus makes physical contact with the digitizer.
+         */
+        static readonly POINTERDOWN: number;
+        /**
+         * The pointerup event is fired when a pointer is no longer active.
+         */
+        static readonly POINTERUP: number;
+        /**
+         * The pointermove event is fired when a pointer changes coordinates.
+         */
+        static readonly POINTERMOVE: number;
+        /**
+         * The pointerwheel event is fired when a mouse wheel has been rotated.
+         */
+        static readonly POINTERWHEEL: number;
+        /**
+         * The pointerpick event is fired when a mesh or sprite has been picked by the pointer.
+         */
+        static readonly POINTERPICK: number;
+        /**
+         * The pointertap event is fired when a the object has been touched and released without drag.
+         */
+        static readonly POINTERTAP: number;
+        /**
+         * The pointerdoubletap event is fired when a the object has been touched and released twice without drag.
+         */
+        static readonly POINTERDOUBLETAP: number;
+    }
+    /**
+     * Base class of pointer info types.
+     */
+    class PointerInfoBase {
+        /**
+         * Defines the type of event (BABYLON.PointerEventTypes)
+         */
+        type: number;
+        /**
+         * Defines the related dom event
+         */
+        event: PointerEvent | MouseWheelEvent;
+        /**
+         * Instantiates the base class of pointers info.
+         * @param type Defines the type of event (BABYLON.PointerEventTypes)
+         * @param event Defines the related dom event
+         */
+        constructor(
+        /**
+         * Defines the type of event (BABYLON.PointerEventTypes)
+         */
+        type: number, 
+        /**
+         * Defines the related dom event
+         */
+        event: PointerEvent | MouseWheelEvent);
+    }
+    /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    class PointerInfoPre extends PointerInfoBase {
+        /**
+         * Ray from a pointer if availible (eg. 6dof controller)
+         */
+        ray: Nullable<Ray>;
+        /**
+         * Defines the local position of the pointer on the canvas.
+         */
+        localPosition: Vector2;
+        /**
+         * Defines whether the engine should skip the next OnPointerObservable associated to this pre.
+         */
+        skipOnPointerObservable: boolean;
+        /**
+         * Instantiates a PointerInfoPre to store pointer related info to the onPrePointerObservable event.
+         * @param type Defines the type of event (BABYLON.PointerEventTypes)
+         * @param event Defines the related dom event
+         * @param localX Defines the local x coordinates of the pointer when the event occured
+         * @param localY Defines the local y coordinates of the pointer when the event occured
+         */
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
+    }
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    class PointerInfo extends PointerInfoBase {
+        /**
+         * Defines the picking info associated to the info (if any)\
+         */
+        pickInfo: Nullable<PickingInfo>;
+        /**
+         * Instantiates a PointerInfo to store pointer related info to the onPointerObservable event.
+         * @param type Defines the type of event (BABYLON.PointerEventTypes)
+         * @param event Defines the related dom event
+         * @param pickInfo Defines the picking info associated to the info (if any)\
+         */
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, 
+        /**
+         * Defines the picking info associated to the info (if any)\
+         */
+        pickInfo: Nullable<PickingInfo>);
     }
 }
 
@@ -15273,6 +15273,404 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * Interface used to present a loading screen while loading a scene
+     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     */
+    interface ILoadingScreen {
+        /**
+         * Function called to display the loading screen
+         */
+        displayLoadingUI: () => void;
+        /**
+         * Function called to hide the loading screen
+         */
+        hideLoadingUI: () => void;
+        /**
+         * Gets or sets the color to use for the background
+         */
+        loadingUIBackgroundColor: string;
+        /**
+         * Gets or sets the text to display while loading
+         */
+        loadingUIText: string;
+    }
+    /**
+     * Class used for the default loading screen
+     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     */
+    class DefaultLoadingScreen implements ILoadingScreen {
+        private _renderingCanvas;
+        private _loadingText;
+        private _loadingDivBackgroundColor;
+        private _loadingDiv;
+        private _loadingTextDiv;
+        /**
+         * Creates a new default loading screen
+         * @param _renderingCanvas defines the canvas used to render the scene
+         * @param _loadingText defines the default text to display
+         * @param _loadingDivBackgroundColor defines the default background color
+         */
+        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
+        /**
+         * Function called to display the loading screen
+         */
+        displayLoadingUI(): void;
+        /**
+         * Function called to hide the loading screen
+         */
+        hideLoadingUI(): void;
+        /**
+         * Gets or sets the text to display while loading
+         */
+        loadingUIText: string;
+        /**
+         * Gets or sets the color to use for the background
+         */
+        loadingUIBackgroundColor: string;
+        private _resizeLoadingUI;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class used to represent data loading progression
+     */
+    class SceneLoaderProgressEvent {
+        /** defines if data length to load can be evaluated */
+        readonly lengthComputable: boolean;
+        /** defines the loaded data length */
+        readonly loaded: number;
+        /** defines the data length to load */
+        readonly total: number;
+        /**
+         * Create a new progress event
+         * @param lengthComputable defines if data length to load can be evaluated
+         * @param loaded defines the loaded data length
+         * @param total defines the data length to load
+         */
+        constructor(
+        /** defines if data length to load can be evaluated */
+        lengthComputable: boolean, 
+        /** defines the loaded data length */
+        loaded: number, 
+        /** defines the data length to load */
+        total: number);
+        /**
+         * Creates a new SceneLoaderProgressEvent from a ProgressEvent
+         * @param event defines the source event
+         * @returns a new SceneLoaderProgressEvent
+         */
+        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
+    }
+    /**
+     * Interface used by SceneLoader plugins to define supported file extensions
+     */
+    interface ISceneLoaderPluginExtensions {
+        /**
+         * Defines the list of supported extensions
+         */
+        [extension: string]: {
+            isBinary: boolean;
+        };
+    }
+    /**
+     * Interface used by SceneLoader plugin factory
+     */
+    interface ISceneLoaderPluginFactory {
+        /**
+         * Defines the name of the factory
+         */
+        name: string;
+        /**
+         * Function called to create a new plugin
+         * @return the new plugin
+         */
+        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        /**
+         * Boolean indicating if the plugin can direct load specific data
+         */
+        canDirectLoad?: (data: string) => boolean;
+    }
+    /**
+     * Interface used to define a SceneLoader plugin
+     */
+    interface ISceneLoaderPlugin {
+        /**
+         * The friendly name of this plugin.
+         */
+        name: string;
+        /**
+         * The file extensions supported by this plugin.
+         */
+        extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param meshes The meshes array to import into
+         * @param particleSystems The particle systems array to import into
+         * @param skeletons The skeletons array to import into
+         * @param onError The callback when import fails
+         * @returns True if successful or false otherwise
+         */
+        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean;
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns true if successful or false otherwise
+         */
+        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
+        canDirectLoad?: (data: string) => boolean;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns The loaded asset container
+         */
+        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
+    }
+    /**
+     * Interface used to define an async SceneLoader plugin
+     */
+    interface ISceneLoaderPluginAsync {
+        /**
+         * The friendly name of this plugin.
+         */
+        name: string;
+        /**
+         * The file extensions supported by this plugin.
+         */
+        extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @param fileName Defines the name of the file to load
+         * @returns The loaded meshes, particle systems, skeletons, and animation groups
+         */
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: IParticleSystem[];
+            skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
+        }>;
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @param fileName Defines the name of the file to load
+         * @returns Nothing
+         */
+        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
+        canDirectLoad?: (data: string) => boolean;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @param fileName Defines the name of the file to load
+         * @returns The loaded asset container
+         */
+        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
+    }
+    /**
+     * Class used to load scene from various file formats using registered plugins
+     * @see http://doc.babylonjs.com/how_to/load_from_any_file_type
+     */
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        private static _CleanBoneMatrixWeights;
+        /**
+         * No logging while loading
+         */
+        static readonly NO_LOGGING: number;
+        /**
+         * Minimal logging while loading
+         */
+        static readonly MINIMAL_LOGGING: number;
+        /**
+         * Summary logging while loading
+         */
+        static readonly SUMMARY_LOGGING: number;
+        /**
+         * Detailled logging while loading
+         */
+        static readonly DETAILED_LOGGING: number;
+        private static _loggingLevel;
+        /**
+         * Gets or sets a boolean indicating if entire scene must be loaded even if scene contains incremental data
+         */
+        static ForceFullSceneLoadingForIncremental: boolean;
+        /**
+         * Gets or sets a boolean indicating if loading screen must be displayed while loading a scene
+         */
+        static ShowLoadingScreen: boolean;
+        /**
+         * Defines the current logging level (while loading the scene)
+         * @ignorenaming
+         */
+        static loggingLevel: number;
+        /**
+         * Gets or set a boolean indicating if matrix weights must be cleaned upon loading
+         */
+        static CleanBoneMatrixWeights: boolean;
+        /**
+         * Event raised when a plugin is used to load a scene
+         */
+        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        private static _registeredPlugins;
+        private static _getDefaultPlugin;
+        private static _getPluginForExtension;
+        private static _getPluginForDirectLoad;
+        private static _getPluginForFilename;
+        private static _getDirectLoad;
+        private static _loadData;
+        private static _getFileInfo;
+        /**
+         * Gets a plugin that can load the given extension
+         * @param extension defines the extension to load
+         * @returns a plugin or null if none works
+         */
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
+        /**
+         * Gets a boolean indicating that the given extension can be loaded
+         * @param extension defines the extension to load
+         * @returns true if the extension is supported
+         */
+        static IsPluginForExtensionAvailable(extension: string): boolean;
+        /**
+         * Adds a new plugin to the list of registered plugins
+         * @param plugin defines the plugin to add
+         */
+        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+        /**
+         * Import meshes into a scene
+         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param scene the instance of BABYLON.Scene to append to
+         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+         * Import meshes into a scene
+         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param scene the instance of BABYLON.Scene to append to
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
+         */
+        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: IParticleSystem[];
+            skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
+        }>;
+        /**
+         * Load a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param engine is the instance of BABYLON.Engine to use to create the scene
+         * @param onSuccess a callback with the scene when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static Load(rootUrl: string, sceneFilename: string, engine: Engine, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+         * Load a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param engine is the instance of BABYLON.Engine to use to create the scene
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded scene
+         */
+        static LoadAsync(rootUrl: string, sceneFilename: string, engine: Engine, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        /**
+         * Append a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to
+         * @param onSuccess a callback with the scene when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static Append(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+         * Append a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The given scene
+         */
+        static AppendAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        /**
+         * Load a scene into an asset container
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+         * @param onSuccess a callback with the scene when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static LoadAssetContainer(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+         * Load a scene into an asset container
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded asset container
+         */
+        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
+    }
+}
+
+declare module BABYLON {
+    /**
      * A directional light is defined by a direction (what a surprise!).
      * The light is emitted from everywhere in the specified direction, and has an infinite range.
      * An example of a directional light is when a distance planet is lit by the apparently parallel lines of light from its sun. Light in a downward direction will light the top of an object.
@@ -16272,404 +16670,6 @@ declare module BABYLON {
          * @param lightIndex defines the index of the light for the effect
          */
         prepareLightSpecificDefines(defines: any, lightIndex: number): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Interface used to present a loading screen while loading a scene
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-     */
-    interface ILoadingScreen {
-        /**
-         * Function called to display the loading screen
-         */
-        displayLoadingUI: () => void;
-        /**
-         * Function called to hide the loading screen
-         */
-        hideLoadingUI: () => void;
-        /**
-         * Gets or sets the color to use for the background
-         */
-        loadingUIBackgroundColor: string;
-        /**
-         * Gets or sets the text to display while loading
-         */
-        loadingUIText: string;
-    }
-    /**
-     * Class used for the default loading screen
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-     */
-    class DefaultLoadingScreen implements ILoadingScreen {
-        private _renderingCanvas;
-        private _loadingText;
-        private _loadingDivBackgroundColor;
-        private _loadingDiv;
-        private _loadingTextDiv;
-        /**
-         * Creates a new default loading screen
-         * @param _renderingCanvas defines the canvas used to render the scene
-         * @param _loadingText defines the default text to display
-         * @param _loadingDivBackgroundColor defines the default background color
-         */
-        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
-        /**
-         * Function called to display the loading screen
-         */
-        displayLoadingUI(): void;
-        /**
-         * Function called to hide the loading screen
-         */
-        hideLoadingUI(): void;
-        /**
-         * Gets or sets the text to display while loading
-         */
-        loadingUIText: string;
-        /**
-         * Gets or sets the color to use for the background
-         */
-        loadingUIBackgroundColor: string;
-        private _resizeLoadingUI;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Class used to represent data loading progression
-     */
-    class SceneLoaderProgressEvent {
-        /** defines if data length to load can be evaluated */
-        readonly lengthComputable: boolean;
-        /** defines the loaded data length */
-        readonly loaded: number;
-        /** defines the data length to load */
-        readonly total: number;
-        /**
-         * Create a new progress event
-         * @param lengthComputable defines if data length to load can be evaluated
-         * @param loaded defines the loaded data length
-         * @param total defines the data length to load
-         */
-        constructor(
-        /** defines if data length to load can be evaluated */
-        lengthComputable: boolean, 
-        /** defines the loaded data length */
-        loaded: number, 
-        /** defines the data length to load */
-        total: number);
-        /**
-         * Creates a new SceneLoaderProgressEvent from a ProgressEvent
-         * @param event defines the source event
-         * @returns a new SceneLoaderProgressEvent
-         */
-        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
-    }
-    /**
-     * Interface used by SceneLoader plugins to define supported file extensions
-     */
-    interface ISceneLoaderPluginExtensions {
-        /**
-         * Defines the list of supported extensions
-         */
-        [extension: string]: {
-            isBinary: boolean;
-        };
-    }
-    /**
-     * Interface used by SceneLoader plugin factory
-     */
-    interface ISceneLoaderPluginFactory {
-        /**
-         * Defines the name of the factory
-         */
-        name: string;
-        /**
-         * Function called to create a new plugin
-         * @return the new plugin
-         */
-        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        /**
-         * Boolean indicating if the plugin can direct load specific data
-         */
-        canDirectLoad?: (data: string) => boolean;
-    }
-    /**
-     * Interface used to define a SceneLoader plugin
-     */
-    interface ISceneLoaderPlugin {
-        /**
-         * The friendly name of this plugin.
-         */
-        name: string;
-        /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
-        /**
-         * Import meshes into a scene.
-         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param scene The scene to import into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param meshes The meshes array to import into
-         * @param particleSystems The particle systems array to import into
-         * @param skeletons The skeletons array to import into
-         * @param onError The callback when import fails
-         * @returns True if successful or false otherwise
-         */
-        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * Load into a scene.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onError The callback when import fails
-         * @returns true if successful or false otherwise
-         */
-        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        /**
-         * Load into an asset container.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onError The callback when import fails
-         * @returns The loaded asset container
-         */
-        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
-    }
-    /**
-     * Interface used to define an async SceneLoader plugin
-     */
-    interface ISceneLoaderPluginAsync {
-        /**
-         * The friendly name of this plugin.
-         */
-        name: string;
-        /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
-        /**
-         * Import meshes into a scene.
-         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param scene The scene to import into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @param fileName Defines the name of the file to load
-         * @returns The loaded meshes, particle systems, skeletons, and animation groups
-         */
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
-        /**
-         * Load into a scene.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @param fileName Defines the name of the file to load
-         * @returns Nothing
-         */
-        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        /**
-         * Load into an asset container.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @param fileName Defines the name of the file to load
-         * @returns The loaded asset container
-         */
-        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
-    }
-    /**
-     * Class used to load scene from various file formats using registered plugins
-     * @see http://doc.babylonjs.com/how_to/load_from_any_file_type
-     */
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        private static _CleanBoneMatrixWeights;
-        /**
-         * No logging while loading
-         */
-        static readonly NO_LOGGING: number;
-        /**
-         * Minimal logging while loading
-         */
-        static readonly MINIMAL_LOGGING: number;
-        /**
-         * Summary logging while loading
-         */
-        static readonly SUMMARY_LOGGING: number;
-        /**
-         * Detailled logging while loading
-         */
-        static readonly DETAILED_LOGGING: number;
-        private static _loggingLevel;
-        /**
-         * Gets or sets a boolean indicating if entire scene must be loaded even if scene contains incremental data
-         */
-        static ForceFullSceneLoadingForIncremental: boolean;
-        /**
-         * Gets or sets a boolean indicating if loading screen must be displayed while loading a scene
-         */
-        static ShowLoadingScreen: boolean;
-        /**
-         * Defines the current logging level (while loading the scene)
-         * @ignorenaming
-         */
-        static loggingLevel: number;
-        /**
-         * Gets or set a boolean indicating if matrix weights must be cleaned upon loading
-         */
-        static CleanBoneMatrixWeights: boolean;
-        /**
-         * Event raised when a plugin is used to load a scene
-         */
-        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        private static _registeredPlugins;
-        private static _getDefaultPlugin;
-        private static _getPluginForExtension;
-        private static _getPluginForDirectLoad;
-        private static _getPluginForFilename;
-        private static _getDirectLoad;
-        private static _loadData;
-        private static _getFileInfo;
-        /**
-         * Gets a plugin that can load the given extension
-         * @param extension defines the extension to load
-         * @returns a plugin or null if none works
-         */
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
-        /**
-         * Gets a boolean indicating that the given extension can be loaded
-         * @param extension defines the extension to load
-         * @returns true if the extension is supported
-         */
-        static IsPluginForExtensionAvailable(extension: string): boolean;
-        /**
-         * Adds a new plugin to the list of registered plugins
-         * @param plugin defines the plugin to add
-         */
-        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
-        /**
-         * Import meshes into a scene
-         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene the instance of BABYLON.Scene to append to
-         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-         * Import meshes into a scene
-         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene the instance of BABYLON.Scene to append to
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
-         */
-        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
-        /**
-         * Load a scene
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param engine is the instance of BABYLON.Engine to use to create the scene
-         * @param onSuccess a callback with the scene when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static Load(rootUrl: string, sceneFilename: string, engine: Engine, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-         * Load a scene
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param engine is the instance of BABYLON.Engine to use to create the scene
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded scene
-         */
-        static LoadAsync(rootUrl: string, sceneFilename: string, engine: Engine, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
-        /**
-         * Append a scene
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to
-         * @param onSuccess a callback with the scene when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static Append(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-         * Append a scene
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The given scene
-         */
-        static AppendAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
-        /**
-         * Load a scene into an asset container
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
-         * @param onSuccess a callback with the scene when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static LoadAssetContainer(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-         * Load a scene into an asset container
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded asset container
-         */
-        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
     }
 }
 
@@ -33960,6 +33960,73 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface Scene {
+        /**
+         * The list of reflection probes added to the scene
+         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+         */
+        reflectionProbes: Array<ReflectionProbe>;
+    }
+    /**
+     * Class used to generate realtime reflection / refraction cube textures
+     * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+     */
+    class ReflectionProbe {
+        /** defines the name of the probe */
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        private _invertYAxis;
+        /** Gets or sets probe position (center of the cube map) */
+        position: Vector3;
+        /**
+         * Creates a new reflection probe
+         * @param name defines the name of the probe
+         * @param size defines the texture resolution (for each face)
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
+         * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
+         */
+        constructor(
+        /** defines the name of the probe */
+        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean);
+        /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
+        samples: number;
+        /** Gets or sets the refresh rate to use (on every frame by default) */
+        refreshRate: number;
+        /**
+         * Gets the hosting scene
+         * @returns a Scene
+         */
+        getScene(): Scene;
+        /** Gets the internal CubeTexture used to render to */
+        readonly cubeTexture: RenderTargetTexture;
+        /** Gets the list of meshes to render */
+        readonly renderList: Nullable<AbstractMesh[]>;
+        /**
+         * Attach the probe to a specific mesh (Rendering will be done from attached mesh's position)
+         * @param mesh defines the mesh to attach to
+         */
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        /**
+         * Clean all associated resources
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     /**
      * Postprocess used to generate anaglyphic rendering
      */
@@ -35415,73 +35482,6 @@ declare module BABYLON {
          * @param vrMetrics All the required metrics for the VR camera
          */
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
-    }
-}
-
-declare module BABYLON {
-    interface Scene {
-        /**
-         * The list of reflection probes added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
-         */
-        reflectionProbes: Array<ReflectionProbe>;
-    }
-    /**
-     * Class used to generate realtime reflection / refraction cube textures
-     * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
-     */
-    class ReflectionProbe {
-        /** defines the name of the probe */
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        private _invertYAxis;
-        /** Gets or sets probe position (center of the cube map) */
-        position: Vector3;
-        /**
-         * Creates a new reflection probe
-         * @param name defines the name of the probe
-         * @param size defines the texture resolution (for each face)
-         * @param scene defines the hosting scene
-         * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
-         * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
-         */
-        constructor(
-        /** defines the name of the probe */
-        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean);
-        /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
-        samples: number;
-        /** Gets or sets the refresh rate to use (on every frame by default) */
-        refreshRate: number;
-        /**
-         * Gets the hosting scene
-         * @returns a Scene
-         */
-        getScene(): Scene;
-        /** Gets the internal CubeTexture used to render to */
-        readonly cubeTexture: RenderTargetTexture;
-        /** Gets the list of meshes to render */
-        readonly renderList: Nullable<AbstractMesh[]>;
-        /**
-         * Attach the probe to a specific mesh (Rendering will be done from attached mesh's position)
-         * @param mesh defines the mesh to attach to
-         */
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        /**
-         * Clean all associated resources
-         */
-        dispose(): void;
     }
 }
 
@@ -41607,6 +41607,192 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new AnaglyphArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphFreeCamera extends FreeCamera {
+        /**
+         * Creates a new AnaglyphFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new AnaglyphGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new AnaglyphUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphUniversalCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new StereoscopicArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicFreeCamera extends FreeCamera {
+        /**
+         * Creates a new StereoscopicFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new StereoscopicGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new StereoscopicUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicUniversalCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
      * This represents all the required metrics to create a VR camera.
      * @see http://doc.babylonjs.com/babylon101/cameras#device-orientation-camera
      */
@@ -42379,192 +42565,6 @@ declare module BABYLON {
          * Initializes the controllers and their meshes
          */
         initControllers(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new AnaglyphArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphFreeCamera extends FreeCamera {
-        /**
-         * Creates a new AnaglyphFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new AnaglyphGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new AnaglyphUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphUniversalCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new StereoscopicArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicFreeCamera extends FreeCamera {
-        /**
-         * Creates a new StereoscopicFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new StereoscopicGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new StereoscopicUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicUniversalCamera
-         */
-        getClassName(): string;
     }
 }
 
@@ -43626,6 +43626,9 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+}
+
+declare module BABYLON {
     /**
      * Interface to implement to create a shadow generator compatible with BJS.
      */
@@ -44167,9 +44170,6 @@ declare module BABYLON {
         dispose(): void;
         private _gatherRenderTargets;
     }
-}
-
-declare module BABYLON {
 }
 
 declare module BABYLON {
