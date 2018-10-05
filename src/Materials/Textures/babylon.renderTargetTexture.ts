@@ -260,8 +260,9 @@ module BABYLON {
          * @param generateStencilBuffer True to generate a stencil buffer
          * @param isMulti True if multiple textures need to be created (Draw Buffers)
          * @param format The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...)
+         * @param delayAllocation if the texture allocation should be delayed (default: false)
          */
-        constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Engine.TEXTUREFORMAT_RGBA) {
+        constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Engine.TEXTUREFORMAT_RGBA, delayAllocation = false) {
             super(null, scene, !generateMipMaps);
             scene = this.getScene();
 
@@ -305,14 +306,15 @@ module BABYLON {
                 this.wrapV = Texture.CLAMP_ADDRESSMODE;
             }
 
-            if (isCube) {
-                this._texture = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
-                this.coordinatesMode = Texture.INVCUBIC_MODE;
-                this._textureMatrix = Matrix.Identity();
-            } else {
-                this._texture = scene.getEngine().createRenderTargetTexture(this._size, this._renderTargetOptions);
+            if(!delayAllocation){
+                if (isCube) {
+                    this._texture = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
+                    this.coordinatesMode = Texture.INVCUBIC_MODE;
+                    this._textureMatrix = Matrix.Identity();
+                } else {
+                    this._texture = scene.getEngine().createRenderTargetTexture(this._size, this._renderTargetOptions);
+                }
             }
-
         }
 
         /**
