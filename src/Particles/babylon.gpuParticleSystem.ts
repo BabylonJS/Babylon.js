@@ -591,9 +591,9 @@ module BABYLON {
          * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
          */
         constructor(name: string, options: Partial<{
-                        capacity: number,
-                        randomTextureSize: number
-                    }>, scene: Scene, isAnimationSheetEnabled: boolean = false) {
+            capacity: number,
+            randomTextureSize: number
+        }>, scene: Scene, isAnimationSheetEnabled: boolean = false) {
             super(name);
             this._scene = scene || Engine.LastCreatedScene;
             // Setup the default processing configuration to the scene.
@@ -626,8 +626,8 @@ module BABYLON {
             this._updateEffectOptions = {
                 attributes: ["position", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle", "cellIndex", "cellStartOffset", "noiseCoordinates1", "noiseCoordinates2"],
                 uniformsNames: ["currentCount", "timeDelta", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "scaleRange", "gravity", "emitPower",
-                                "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "coneAngle", "stopFactor",
-                                "angleRange", "radiusRange", "cellInfos", "noiseStrength", "limitVelocityDamping"],
+                    "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "coneAngle", "stopFactor",
+                    "angleRange", "radiusRange", "cellInfos", "noiseStrength", "limitVelocityDamping"],
                 uniformBuffersNames: [],
                 samplers: ["randomSampler", "randomSampler2", "sizeGradientSampler", "angularSpeedGradientSampler", "velocityGradientSampler", "limitVelocityGradientSampler", "noiseSampler", "dragGradientSampler"],
                 defines: "",
@@ -673,7 +673,7 @@ module BABYLON {
         }
 
         private _createUpdateVAO(source: Buffer): WebGLVertexArrayObject {
-            let updateVertexBuffers: {[key: string]: VertexBuffer} = {};
+            let updateVertexBuffers: { [key: string]: VertexBuffer } = {};
             updateVertexBuffers["position"] = source.createVertexBuffer("position", 0, 3);
             updateVertexBuffers["age"] = source.createVertexBuffer("age", 3, 1);
             updateVertexBuffers["life"] = source.createVertexBuffer("life", 4, 1);
@@ -725,7 +725,7 @@ module BABYLON {
         }
 
         private _createRenderVAO(source: Buffer, spriteSource: Buffer): WebGLVertexArrayObject {
-            let renderVertexBuffers: {[key: string]: VertexBuffer} = {};
+            let renderVertexBuffers: { [key: string]: VertexBuffer } = {};
             renderVertexBuffers["position"] = source.createVertexBuffer("position", 0, 3, this._attributesStrideSize, true);
             renderVertexBuffers["age"] = source.createVertexBuffer("age", 3, 1, this._attributesStrideSize, true);
             renderVertexBuffers["life"] = source.createVertexBuffer("life", 4, 1, this._attributesStrideSize, true);
@@ -877,10 +877,10 @@ module BABYLON {
             }
 
             // Sprite data
-            var spriteData = new Float32Array([0.5, 0.5,  1, 1,
-                                              -0.5, 0.5,  0, 1,
-                                             -0.5, -0.5,  0, 0,
-                                             0.5, -0.5,  1, 0]);
+            var spriteData = new Float32Array([0.5, 0.5, 1, 1,
+                -0.5, 0.5, 0, 1,
+                -0.5, -0.5, 0, 0,
+                0.5, -0.5, 1, 0]);
 
             // Buffers
             this._buffer0 = new Buffer(engine, data, false, this._attributesStrideSize);
@@ -1042,9 +1042,9 @@ module BABYLON {
             }
 
             this._renderEffect = new Effect("gpuRenderParticles",
-                                            ["position", "age", "life", "size", "color", "offset", "uv", "direction", "initialDirection", "angle", "cellIndex"],
-                                            uniforms,
-                                            samplers, this._scene.getEngine(), defines);
+                ["position", "age", "life", "size", "color", "offset", "uv", "direction", "initialDirection", "angle", "cellIndex"],
+                uniforms,
+                samplers, this._scene.getEngine(), defines);
         }
 
         /**
@@ -1161,11 +1161,11 @@ module BABYLON {
                     this._preWarmDone = true;
                 }
 
-                if (this._currentRenderId === this._scene.getRenderId()) {
+                if (this._currentRenderId === this._scene.getFrameId()) {
                     return 0;
                 }
 
-                this._currentRenderId = this._scene.getRenderId();
+                this._currentRenderId = this._scene.getFrameId();
             }
 
             // Get everything ready to render
@@ -1294,8 +1294,7 @@ module BABYLON {
                 }
 
                 // Draw order
-                switch (this.blendMode)
-                {
+                switch (this.blendMode) {
                     case ParticleSystem.BLENDMODE_ADD:
                         this._engine.setAlphaMode(Engine.ALPHA_ADD);
                         break;
@@ -1447,7 +1446,7 @@ module BABYLON {
          * @returns the cloned particle system
          */
         public clone(name: string, newEmitter: any): GPUParticleSystem {
-            var result = new GPUParticleSystem(name, {capacity: this._capacity, randomTextureSize: this._randomTextureSize}, this._scene);
+            var result = new GPUParticleSystem(name, { capacity: this._capacity, randomTextureSize: this._randomTextureSize }, this._scene);
 
             Tools.DeepCopy(this, result);
 
@@ -1486,7 +1485,7 @@ module BABYLON {
          */
         public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string, doNotStart = false): GPUParticleSystem {
             var name = parsedParticleSystem.name;
-            var particleSystem = new GPUParticleSystem(name, {capacity: parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize}, scene);
+            var particleSystem = new GPUParticleSystem(name, { capacity: parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize }, scene);
 
             if (parsedParticleSystem.activeParticleCount) {
                 particleSystem.activeParticleCount = parsedParticleSystem.activeParticleCount;

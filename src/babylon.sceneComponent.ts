@@ -138,7 +138,7 @@ module BABYLON {
     /**
      * Strong typing of a Active Mesh related stage step action
      */
-    export type ActiveMeshStageAction =  (sourceMesh: AbstractMesh, mesh: AbstractMesh) => void;
+    export type ActiveMeshStageAction = (sourceMesh: AbstractMesh, mesh: AbstractMesh) => void;
 
     /**
      * Strong typing of a Camera related stage step action

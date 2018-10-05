@@ -759,11 +759,11 @@ module BABYLON {
 
             let mat = this.material || scene.defaultMaterial;
             if (mat) {
-                if (mat.storeEffectOnSubMeshes) {
+                if (mat._storeEffectOnSubMeshes) {
                     for (var subMesh of this.subMeshes) {
                         let effectiveMaterial = subMesh.getMaterial();
                         if (effectiveMaterial) {
-                            if (effectiveMaterial.storeEffectOnSubMeshes) {
+                            if (effectiveMaterial._storeEffectOnSubMeshes) {
                                 if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
                                     return false;
                                 }
@@ -1533,7 +1533,7 @@ module BABYLON {
 
             this._effectiveMaterial = material;
 
-            if (this._effectiveMaterial.storeEffectOnSubMeshes) {
+            if (this._effectiveMaterial._storeEffectOnSubMeshes) {
                 if (!this._effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
                     return this;
                 }
@@ -1551,7 +1551,7 @@ module BABYLON {
             }
 
             var effect: Nullable<Effect>;
-            if (this._effectiveMaterial.storeEffectOnSubMeshes) {
+            if (this._effectiveMaterial._storeEffectOnSubMeshes) {
                 effect = subMesh.effect;
             } else {
                 effect = this._effectiveMaterial.getEffect();
@@ -1584,7 +1584,7 @@ module BABYLON {
 
             var world = this.getWorldMatrix();
 
-            if (this._effectiveMaterial.storeEffectOnSubMeshes) {
+            if (this._effectiveMaterial._storeEffectOnSubMeshes) {
                 this._effectiveMaterial.bindForSubMesh(world, this, subMesh);
             } else {
                 this._effectiveMaterial.bind(world, this);
