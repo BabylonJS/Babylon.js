@@ -7761,13 +7761,13 @@ var TextBlock = /** @class */ (function (_super) {
      */
     TextBlock.prototype.computeExpectedHeight = function () {
         if (this.text && this.widthInPixels) {
-            var context = document.createElement('canvas').getContext('2d');
-            if (context) {
-                this._applyStates(context);
+            var context_1 = document.createElement('canvas').getContext('2d');
+            if (context_1) {
+                this._applyStates(context_1);
                 if (!this._fontOffset) {
-                    this._fontOffset = control_1.Control._GetFontOffset(context.font);
+                    this._fontOffset = control_1.Control._GetFontOffset(context_1.font);
                 }
-                var lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this.paddingLeftInPixels - this.paddingRightInPixels, context);
+                var lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this.paddingLeftInPixels - this.paddingRightInPixels, context_1);
                 return this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
             }
         }

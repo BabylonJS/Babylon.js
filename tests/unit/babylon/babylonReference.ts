@@ -3,9 +3,9 @@
 /// <reference path="../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"/>
 /// <reference path="../../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts" />
 
-/// <reference path="../node_modules/@types/chai/index.d.ts" />
-/// <reference path="../node_modules/@types/mocha/index.d.ts" />
-/// <reference path="../node_modules/@types/sinon/index.d.ts" />
+/// <reference path="../../../node_modules/@types/chai/index.d.ts" />
+/// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
+/// <reference path="../../../node_modules/@types/sinon/index.d.ts" />
 
 /*
  * Create a constant with the ChaiJS' expect module just to make the code more readable.
