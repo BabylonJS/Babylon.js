@@ -25,6 +25,7 @@ var addDecorateAndExtends = require("./helpers/gulp-decorateAndExtends");
 var addModuleExports = require("./helpers/gulp-addModuleExports");
 var addES6Exports = require("./helpers/gulp-addES6Exports");
 var uncommentShader = require("./helpers/gulp-removeShaderComments");
+var processDeclaration = require('./helpers/gulp-processTypescriptDeclaration');
 
 // Import Gulp Tasks
 require("./tasks/gulpTasks-tsLint");
@@ -36,8 +37,7 @@ require("./tasks/gulpTasks-typedoc");
 require("./tasks/gulpTasks-intellisense");
 require("./tasks/gulpTasks-tests");
 
-var processDeclaration = require('./helpers/processViewerDeclaration');
-
+// Import Build Config
 var config = require("./config.json");
 
 var includeShadersStream;
