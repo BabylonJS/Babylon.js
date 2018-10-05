@@ -3,7 +3,7 @@ module BABYLON {
      * The Motion Blur Post Process which blurs an image based on the objects velocity in scene.
      * Velocity can be affected by each object's rotation, position and scale depending on the transformation speed.
      * As an example, all you have to do is to create the post-process:
-     *  var mb = new BABYLON.MotionBlurProcess(
+     *  var mb = new BABYLON.MotionBlurPostProcess(
      *      'mb', // The name of the effect.
      *      scene, // The scene containing the objects to blur according to their velocity.
      *      1.0, // The required width/height ratio to downsize to before computing the render pass.
@@ -11,7 +11,7 @@ module BABYLON {
      * );
      * Then, all objects moving, rotating and/or scaling will be blurred depending on the transformation speed.
      */
-    export class MotionBlurProcess extends PostProcess {
+    export class MotionBlurPostProcess extends PostProcess {
         /**
          * Defines how much the image is blurred by the movement. Default value is equal to 1
          */
