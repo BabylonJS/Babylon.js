@@ -13,7 +13,7 @@ module.exports = {
         filename: 'babylonjs.materials.min.js',
         libraryTarget: 'umd',
         library: {
-            root: ["MATLIB"],
+            root: ["BABYLON"],
             amd: "babylonjs-materials",
             commonjs: "babylonjs-materials"
         },
@@ -37,14 +37,10 @@ module.exports = {
             exclude: /node_modules/,
             use: [
             {
-                // loader: 'ts-loader',
-                // options: {
-                //     onlyCompileBundledFiles: true,
-                //     experimentalFileCaching: true
-                // }
                 loader: 'awesome-typescript-loader',
                 options: {
-                    configFileName: '../../materialsLibrary/tsconfig.json'
+                    configFileName: '../../materialsLibrary/tsconfig.json',
+                    declarationDir: '../../dist/preview release/materialsLibrary/build'
                 }
             }]
         },

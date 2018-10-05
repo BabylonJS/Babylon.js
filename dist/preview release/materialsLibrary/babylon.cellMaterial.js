@@ -6,7 +6,7 @@
 	else if(typeof exports === 'object')
 		exports["babylonjs-materials"] = factory(require("babylonjs"));
 	else
-		root["MATLIB"] = factory(root["BABYLON"]);
+		root["BABYLON"] = factory(root["BABYLON"]);
 })(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache

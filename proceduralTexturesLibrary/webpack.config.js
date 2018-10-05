@@ -13,7 +13,7 @@ module.exports = {
         filename: 'babylonjs.proceduralTextures.min.js',
         libraryTarget: 'umd',
         library: {
-            root: ["PROCEDURALTEXTURESLIB"],
+            root: ["BABYLON"],
             amd: "babylonjs-procedural-textures",
             commonjs: "babylonjs-procedural-textures"
         },
@@ -37,7 +37,8 @@ module.exports = {
             test: /\.tsx?$/,
             loader: 'awesome-typescript-loader',
             options: {
-                configFileName: '../../proceduralTexturesLibrary/tsconfig.json'
+                configFileName: '../../proceduralTexturesLibrary/tsconfig.json',
+                declarationDir: '../../dist/preview release/proceduralTexturesLibrary/build'
             }
         },
         {

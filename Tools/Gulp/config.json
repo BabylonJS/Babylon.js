@@ -1670,7 +1670,7 @@
             "distOutputDirectory": "/materialsLibrary/",
             "dtsBundle": {
                 "name": "babylonjs-materials",
-                "main": "../../materialsLibrary/build/src/index.d.ts",
+                "main": "../../dist/preview release/materialsLibrary/build/src/index.d.ts",
                 "out": "../babylonjs.materials.module.d.ts",
                 "baseDir": "../../dist/preview release/materialsLibrary/build/",
                 "headerText": "BabylonJS Materials"
@@ -1730,7 +1730,7 @@
             "distOutputDirectory": "/postProcessesLibrary/",
             "dtsBundle": {
                 "name": "babylonjs-postProcessLibrary",
-                "main": "../../postProcessLibrary/build/src/index.d.ts",
+                "main": "../../dist/preview release/postProcessesLibrary/build/src/index.d.ts",
                 "out": "../babylonjs.postProcess.module.d.ts",
                 "baseDir": "../../dist/preview release/postProcessesLibrary/build/",
                 "headerText": "BabylonJS Postprocess library"
@@ -1878,7 +1878,7 @@
             "distOutputDirectory": "/proceduralTexturesLibrary/",
             "dtsBundle": {
                 "name": "babylonjs-procedural-textures",
-                "main": "../../proceduralTexturesLibrary/build/src/index.d.ts",
+                "main": "../../dist/preview release/proceduralTexturesLibrary/build/src/index.d.ts",
                 "out": "../babylonjs.proceduralTextures.module.d.ts",
                 "baseDir": "../../dist/preview release/proceduralTexturesLibrary/build/",
                 "headerText": "BabylonJS Procedural Textures"

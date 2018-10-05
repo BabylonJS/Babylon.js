@@ -6,7 +6,7 @@
 	else if(typeof exports === 'object')
 		exports["babylonjs-postProcessesLibrary"] = factory(require("babylonjs"));
 	else
-		root["POSTPROCESSLIBRARY"] = factory(root["BABYLON"]);
+		root["BABYLON"] = factory(root["BABYLON"]);
 })(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
