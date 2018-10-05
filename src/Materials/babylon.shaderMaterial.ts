@@ -656,6 +656,7 @@ module BABYLON {
          * Disposes the material
          * @param forceDisposeEffect specifies if effects should be forcefully disposed
          * @param forceDisposeTextures specifies if textures should be forcefully disposed
+         * @param isLineMeshColorShader specifies if the material that is being disposed is the ShaderMaterial of a LinesMesh
          */
         public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, isLineMeshColorShader?: boolean): void {
 

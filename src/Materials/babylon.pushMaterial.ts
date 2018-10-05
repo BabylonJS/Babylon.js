@@ -18,7 +18,7 @@ module BABYLON {
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
-            this.storeEffectOnSubMeshes = true;
+            this._storeEffectOnSubMeshes = true;
         }
 
         public getEffect(): Effect {

@@ -265,6 +265,12 @@ module BABYLON {
          */
         public preventDefaultOnPointerDown = true;
 
+        /**
+         * This is used to call preventDefault() on pointer up
+         * in order to block unwanted artifacts like system double clicks
+         */
+        public preventDefaultOnPointerUp = true;
+
         // Metadata
         /**
          * Gets or sets user defined metadata
@@ -1980,9 +1986,10 @@ module BABYLON {
                             }
                         }
                     }
+                } else {
+                    clickInfo.ignore = true;
+                    cb(clickInfo, this._currentPickResult);
                 }
-                clickInfo.ignore = true;
-                cb(clickInfo, this._currentPickResult);
             };
 
             this._onPointerMove = (evt: PointerEvent) => {
@@ -2057,6 +2064,12 @@ module BABYLON {
                 this._meshPickProceed = false;
 
                 this._updatePointerPosition(evt);
+
+                if (this.preventDefaultOnPointerUp && canvas) {
+                    evt.preventDefault();
+                    canvas.focus();
+                }
+
                 this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => {
                     // PreObservable support
                     if (this.onPrePointerObservable.hasObservers()) {
@@ -4228,7 +4241,7 @@ module BABYLON {
 
                 mesh._preActivate();
 
-                if (mesh.isVisible && mesh.visibility > 0 && (mesh.alwaysSelectAsActiveMesh || ((mesh.layerMask & this.activeCamera.layerMask) !== 0 && mesh.isInFrustum(this._frustumPlanes)))) {
+                if (mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && (mesh.alwaysSelectAsActiveMesh || mesh.isInFrustum(this._frustumPlanes))) {
                     this._activeMeshes.push(mesh);
                     this.activeCamera._activeMeshes.push(mesh);
 

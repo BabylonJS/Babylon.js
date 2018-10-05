@@ -952,6 +952,8 @@ declare module 'babylonjs-gui/2D/controls/control' {
             isPointerBlocker: boolean;
             /** Gets or sets a boolean indicating if the control can be focusable */
             isFocusInvisible: boolean;
+            /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
+            clipChildren: boolean;
             /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
             shadowOffsetX: number;
             /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
@@ -3676,6 +3678,8 @@ declare module BABYLON.GUI {
             isPointerBlocker: boolean;
             /** Gets or sets a boolean indicating if the control can be focusable */
             isFocusInvisible: boolean;
+            /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
+            clipChildren: boolean;
             /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
             shadowOffsetX: number;
             /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */

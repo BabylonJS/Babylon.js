@@ -467,7 +467,7 @@ module BABYLON {
          * Gets a boolean indicating that current material needs to register RTT
          */
         public get hasRenderTargetTextures(): boolean {
-          return false;
+            return false;
         }
 
         /**
@@ -476,9 +476,9 @@ module BABYLON {
         public doNotSerialize = false;
 
         /**
-         * Specifies if the effect should be stored on sub meshes
+         * @hidden
          */
-        public storeEffectOnSubMeshes = false;
+        public _storeEffectOnSubMeshes = false;
 
         /**
          * Stores the animations for the material
@@ -1112,7 +1112,7 @@ module BABYLON {
                     scene.clipPlane = new Plane(0, 0, 0, 1);
                 }
 
-                if (this.storeEffectOnSubMeshes) {
+                if (this._storeEffectOnSubMeshes) {
                     if (this.isReadyForSubMesh(mesh, subMesh)) {
                         if (onCompiled) {
                             onCompiled(this);
@@ -1271,6 +1271,7 @@ module BABYLON {
          * Disposes the material
          * @param forceDisposeEffect specifies if effects should be forcefully disposed
          * @param forceDisposeTextures specifies if textures should be forcefully disposed
+         * @param isLineMeshColorShader specifies if the material that is being disposed is the ShaderMaterial of a LinesMesh
          */
         public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, isLineMeshColorShader?: boolean): void {
             const scene = this.getScene();
@@ -1307,7 +1308,7 @@ module BABYLON {
 
             // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
             if (forceDisposeEffect && this._effect) {
-                if (!this.storeEffectOnSubMeshes) {
+                if (!this._storeEffectOnSubMeshes) {
                     scene.getEngine()._releaseEffect(this._effect);
                 }
 
@@ -1332,7 +1333,7 @@ module BABYLON {
             if ((<Mesh>mesh).geometry) {
                 var geometry = <Geometry>((<Mesh>mesh).geometry);
                 const scene = this.getScene();
-                if (this.storeEffectOnSubMeshes) {
+                if (this._storeEffectOnSubMeshes) {
                     for (var subMesh of mesh.subMeshes) {
                         geometry._releaseVertexArrayObject(subMesh._materialEffect);
                         if (forceDisposeEffect && subMesh._materialEffect) {
