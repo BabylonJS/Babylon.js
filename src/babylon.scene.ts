@@ -4341,7 +4341,16 @@ module BABYLON {
 
                 this._intermediateRendering = false;
 
-                engine.restoreDefaultFramebuffer(); // Restore back buffer if needed
+                if (this.activeCamera.customDefaultRenderTarget) {
+                    var internalTexture = this.activeCamera.customDefaultRenderTarget.getInternalTexture();
+                    if (internalTexture) {
+                        engine.bindFramebuffer(internalTexture);
+                    }else {
+                        Tools.Error("Camera contains invalid customDefaultRenderTarget");
+                    }
+                }else {
+                    engine.restoreDefaultFramebuffer(); // Restore back buffer if needed
+                }
             }
 
             this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
