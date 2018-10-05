@@ -3,21 +3,21 @@
 //   ../../../../Tools/Gulp/babylonjs
 
 declare module 'babylonjs-inspector' {
-    export * from 'babylonjs-inspector/adapters';
-    export * from 'babylonjs-inspector/details';
-    export * from 'babylonjs-inspector/gui';
-    export * from 'babylonjs-inspector/helpers';
-    export * from 'babylonjs-inspector/scheduler';
-    export * from 'babylonjs-inspector/tabs';
-    export * from 'babylonjs-inspector/tools';
-    export * from 'babylonjs-inspector/tree';
-    export * from 'babylonjs-inspector/treetools';
+    export * from 'babylonjs-inspector/adapters/index';
+    export * from 'babylonjs-inspector/details/index';
+    export * from 'babylonjs-inspector/gui/index';
+    export * from 'babylonjs-inspector/helpers/index';
+    export * from 'babylonjs-inspector/scheduler/index';
+    export * from 'babylonjs-inspector/tabs/index';
+    export * from 'babylonjs-inspector/tools/index';
+    export * from 'babylonjs-inspector/tree/index';
+    export * from 'babylonjs-inspector/treetools/index';
     export * from 'babylonjs-inspector/Inspector';
     export * from 'babylonjs-inspector/properties';
     export * from 'babylonjs-inspector/properties_gui';
 }
 
-declare module 'babylonjs-inspector/adapters' {
+declare module 'babylonjs-inspector/adapters/index' {
     export * from 'babylonjs-inspector/adapters/Adapter';
     export * from 'babylonjs-inspector/adapters/CameraAdapter';
     export * from 'babylonjs-inspector/adapters/GUIAdapter';
@@ -29,13 +29,13 @@ declare module 'babylonjs-inspector/adapters' {
     export * from 'babylonjs-inspector/adapters/TextureAdapter';
 }
 
-declare module 'babylonjs-inspector/details' {
+declare module 'babylonjs-inspector/details/index' {
     export * from 'babylonjs-inspector/details/DetailPanel';
     export * from 'babylonjs-inspector/details/Property';
     export * from 'babylonjs-inspector/details/PropertyLine';
 }
 
-declare module 'babylonjs-inspector/gui' {
+declare module 'babylonjs-inspector/gui/index' {
     export * from 'babylonjs-inspector/gui/BasicElement';
     export * from 'babylonjs-inspector/gui/ColorElement';
     export * from 'babylonjs-inspector/gui/ColorPickerElement';
@@ -46,15 +46,15 @@ declare module 'babylonjs-inspector/gui' {
     export * from 'babylonjs-inspector/gui/Tooltip';
 }
 
-declare module 'babylonjs-inspector/helpers' {
+declare module 'babylonjs-inspector/helpers/index' {
     export * from 'babylonjs-inspector/helpers/Helpers';
 }
 
-declare module 'babylonjs-inspector/scheduler' {
+declare module 'babylonjs-inspector/scheduler/index' {
     export * from 'babylonjs-inspector/scheduler/Scheduler';
 }
 
-declare module 'babylonjs-inspector/tabs' {
+declare module 'babylonjs-inspector/tabs/index' {
     export * from 'babylonjs-inspector/tabs/CameraTab';
     export * from 'babylonjs-inspector/tabs/ConsoleTab';
     export * from 'babylonjs-inspector/tabs/GLTFTab';
@@ -73,7 +73,7 @@ declare module 'babylonjs-inspector/tabs' {
     export * from 'babylonjs-inspector/tabs/ToolsTab';
 }
 
-declare module 'babylonjs-inspector/tools' {
+declare module 'babylonjs-inspector/tools/index' {
     export * from 'babylonjs-inspector/tools/AbstractTool';
     export * from 'babylonjs-inspector/tools/DisposeTool';
     export * from 'babylonjs-inspector/tools/FullscreenTool';
@@ -85,11 +85,11 @@ declare module 'babylonjs-inspector/tools' {
     export * from 'babylonjs-inspector/tools/Toolbar';
 }
 
-declare module 'babylonjs-inspector/tree' {
+declare module 'babylonjs-inspector/tree/index' {
     export * from 'babylonjs-inspector/tree/TreeItem';
 }
 
-declare module 'babylonjs-inspector/treetools' {
+declare module 'babylonjs-inspector/treetools/index' {
     export * from 'babylonjs-inspector/treetools/AbstractTreeTool';
     export * from 'babylonjs-inspector/treetools/BoundingBox';
     export * from 'babylonjs-inspector/treetools/CameraPOV';

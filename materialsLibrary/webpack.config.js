@@ -13,7 +13,7 @@ module.exports = {
         filename: 'babylonjs.materials.min.js',
         libraryTarget: 'umd',
         library: {
-            root: ["BABYLON"],
+            root: ["MATLIB"],
             amd: "babylonjs-materials",
             commonjs: "babylonjs-materials"
         },

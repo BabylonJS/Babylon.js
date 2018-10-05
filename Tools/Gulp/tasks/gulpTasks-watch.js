@@ -16,7 +16,7 @@ gulp.task("srcTscWatch", function() {
     process.argv[2] = "-w";
     process.argv[3] = "-p";
     process.argv[4] = "../../src/tsconfig.json";
-    require("../node_modules/typescript/lib/tsc.js");
+    require("../../../node_modules/typescript/lib/tsc.js");
     return Promise.resolve();
 });
 

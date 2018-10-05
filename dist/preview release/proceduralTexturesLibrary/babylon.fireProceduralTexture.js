@@ -6,7 +6,7 @@
 	else if(typeof exports === 'object')
 		exports["babylonjs-procedural-textures"] = factory(require("babylonjs"));
 	else
-		root["BABYLON"] = factory(root["BABYLON"]);
+		root["PTLIB"] = factory(root["BABYLON"]);
 })(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -96,10 +96,10 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ({
 
-/***/ "../Tools/Gulp/node_modules/webpack/buildin/global.js":
-/*!************************************************************!*\
-  !*** ../Tools/Gulp/node_modules/webpack/buildin/global.js ***!
-  \************************************************************/
+/***/ "../node_modules/webpack/buildin/global.js":
+/*!*************************************************!*\
+  !*** ../node_modules/webpack/buildin/global.js ***!
+  \*************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -153,7 +153,7 @@ if (typeof globalObject !== "undefined") {
 }
 __export(__webpack_require__(/*! ../src/fire */ "./src/fire/index.ts"));
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../Tools/Gulp/node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 

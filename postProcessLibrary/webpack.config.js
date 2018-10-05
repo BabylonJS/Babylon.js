@@ -13,7 +13,7 @@ module.exports = {
         filename: 'babylonjs.postProcess.min.js',
         libraryTarget: 'umd',
         library: {
-            root: ["BABYLON"],
+            root: ["PPLIB"],
             amd: "babylonjs-postProcessesLibrary",
             commonjs: "babylonjs-postProcessesLibrary"
         },
