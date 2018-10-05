@@ -125,7 +125,7 @@ module BABYLON {
             this._sps = sps;
             if (modelBoundingInfo) {
                 this._modelBoundingInfo = modelBoundingInfo;
-                this._boundingInfo = new BoundingInfo(modelBoundingInfo.minimum, modelBoundingInfo.maximum);
+                this._boundingInfo = new BoundingInfo(modelBoundingInfo.minimum, modelBoundingInfo.maximum, undefined, modelBoundingInfo.extraWorldExtent);
             }
         }
 

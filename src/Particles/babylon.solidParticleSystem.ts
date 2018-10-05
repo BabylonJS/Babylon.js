@@ -891,7 +891,7 @@ module BABYLON {
                             tempMax.maximizeInPlaceFromFloats(x, y, z);
                         }
 
-                        bBox.reConstruct(tempMin, tempMax, mesh._worldMatrix);
+                        bBox.reConstruct(tempMin, tempMax, mesh._worldMatrix, bInfo.extraWorldExtent);
                     }
 
                     // place and scale the particle bouding sphere in the SPS local system, then update it
@@ -902,7 +902,7 @@ module BABYLON {
                     const halfDiag = maxBbox.subtractToRef(minBbox, tempVectors[4]).scaleInPlace(0.5 * this._bSphereRadiusFactor);
                     const bSphereMinBbox = bSphereCenter.subtractToRef(halfDiag, tempVectors[1]);
                     const bSphereMaxBbox = bSphereCenter.addToRef(halfDiag, tempVectors[2]);
-                    bSphere.reConstruct(bSphereMinBbox, bSphereMaxBbox, mesh._worldMatrix);
+                    bSphere.reConstruct(bSphereMinBbox, bSphereMaxBbox, mesh._worldMatrix, bInfo.extraWorldExtent);
                 }
 
                 // increment indexes for the next particle

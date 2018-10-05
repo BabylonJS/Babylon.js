@@ -33,6 +33,7 @@ module BABYLON {
         private _isDisposed = false;
         private _extend: { minimum: Vector3, maximum: Vector3 };
         private _boundingBias: Vector2;
+        public _boundingWorldExtraExtent: number = 0;
         /** @hidden */
         public _delayInfo: Array<string>;
         private _indexBuffer: Nullable<WebGLBuffer>;
@@ -62,9 +63,6 @@ module BABYLON {
          */
         public set boundingBias(value: Vector2) {
             if (this._boundingBias) {
-                if (this._boundingBias.equals(value)) {
-                    return;
-                }
                 this._boundingBias.copyFrom(value);
             }
             else {
@@ -121,8 +119,7 @@ module BABYLON {
             // applyToMesh
             if (mesh) {
                 if (mesh.getClassName() === "LinesMesh") {
-                    this.boundingBias = new Vector2(0, (<LinesMesh>mesh).intersectionThreshold);
-                    this._updateExtend();
+                    this._boundingWorldExtraExtent = (<LinesMesh>mesh).intersectionThreshold;
                 }
 
                 this.applyToMesh(mesh);
@@ -256,7 +253,7 @@ module BABYLON {
 
                 for (var index = 0; index < numOfMeshes; index++) {
                     var mesh = meshes[index];
-                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
+                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum, undefined, this._boundingWorldExtraExtent);
                     mesh._createGlobalSubMesh(false);
                     mesh.computeWorldMatrix(true);
                 }
@@ -317,18 +314,20 @@ module BABYLON {
                 this._updateExtend(data);
             }
 
-            var meshes = this._meshes;
-            var numOfMeshes = meshes.length;
             this._resetPointsArrayCache();
 
-            for (var index = 0; index < numOfMeshes; index++) {
-                var mesh = meshes[index];
-                if (updateExtends) {
-                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
+            if (updateExtends) {
+                var meshes = this._meshes;
+                for (const mesh of meshes) {
+                    if (mesh._boundingInfo) {
+                        mesh._boundingInfo.reConstruct(this._extend.minimum, this._extend.maximum, undefined, this._boundingWorldExtraExtent);
+                    }
+                    else {
+                        mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum, undefined, this._boundingWorldExtraExtent);
+                    }
 
-                    for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                        var subMesh = mesh.subMeshes[subIndex];
-
+                    const subMeshes = mesh.subMeshes;
+                    for (const subMesh of subMeshes) {
                         subMesh.refreshBoundingInfo();
                     }
                 }
@@ -688,7 +687,7 @@ module BABYLON {
                     if (!this._extend) {
                         this._updateExtend();
                     }
-                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
+                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum, undefined, this._boundingWorldExtraExtent);
 
                     mesh._createGlobalSubMesh(false);
 
@@ -938,7 +937,7 @@ module BABYLON {
             }
 
             // Bounding info
-            geometry._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
+            geometry._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum, undefined, this._boundingWorldExtraExtent);
 
             return geometry;
         }

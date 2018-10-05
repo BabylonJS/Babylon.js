@@ -211,13 +211,18 @@ module BABYLON {
         }
 
         /**
-         * Sets a new updated BoundingInfo to the mesh.
+         * reconstructs and updates the BoundingInfo of the mesh.
          * @returns the mesh.
          */
         public refreshBoundingInfo(): InstancedMesh {
             var meshBB = this._sourceMesh.getBoundingInfo();
 
-            this._boundingInfo = new BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
+            if (this._boundingInfo) {
+                this._boundingInfo.reConstruct(meshBB.minimum, meshBB.maximum, undefined, meshBB.extraWorldExtent);
+            }
+            else {
+                this._boundingInfo = new BoundingInfo(meshBB.minimum, meshBB.maximum, undefined, meshBB.extraWorldExtent);
+            }
 
             this._updateBoundingInfo();
             return this;

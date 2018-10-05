@@ -214,7 +214,15 @@ module BABYLON {
             } else {
                 extend = Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount, this._renderingMesh.geometry.boundingBias);
             }
-            this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
+
+            const extraWorldExtent = this._renderingMesh.geometry ? this._renderingMesh.geometry._boundingWorldExtraExtent : undefined;
+
+            if (this._boundingInfo) {
+                this._boundingInfo.reConstruct(extend.minimum, extend.maximum, undefined, extraWorldExtent);
+            }
+            else {
+                this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum, undefined, extraWorldExtent);
+            }
             return this;
         }
 
@@ -426,7 +434,7 @@ module BABYLON {
                     return result;
                 }
 
-                result._boundingInfo = new BoundingInfo(boundingInfo.minimum, boundingInfo.maximum);
+                result._boundingInfo = new BoundingInfo(boundingInfo.minimum, boundingInfo.maximum, undefined, boundingInfo.extraWorldExtent);
             }
 
             return result;
