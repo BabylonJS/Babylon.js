@@ -769,9 +769,6 @@ module BABYLON {
         public _indexInSceneMaterialArray = -1;
 
         /** @hidden */
-        public disposingLineMeshColorShader: boolean = false;
-
-        /** @hidden */
         public meshMap: Nullable<{[id: string]: AbstractMesh | undefined}>;
 
         /**
@@ -1275,7 +1272,7 @@ module BABYLON {
          * @param forceDisposeEffect specifies if effects should be forcefully disposed
          * @param forceDisposeTextures specifies if textures should be forcefully disposed
          */
-        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
+        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, isLineMeshColorShader?: boolean): void {
             const scene = this.getScene();
             // Animations
             scene.stopAnimation(this);
@@ -1284,7 +1281,7 @@ module BABYLON {
             // Remove from scene
             scene.removeMaterial(this);
 
-            if (!this.disposingLineMeshColorShader) {
+            if (isLineMeshColorShader !== true) {
                 // Remove from meshes
                 if (this.meshMap) {
                     for (let meshId in this.meshMap) {

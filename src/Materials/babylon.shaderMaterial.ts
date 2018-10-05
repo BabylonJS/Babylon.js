@@ -657,7 +657,7 @@ module BABYLON {
          * @param forceDisposeEffect specifies if effects should be forcefully disposed
          * @param forceDisposeTextures specifies if textures should be forcefully disposed
          */
-        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
+        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, isLineMeshColorShader?: boolean): void {
 
             if (forceDisposeTextures) {
                 var name: string;
@@ -675,7 +675,7 @@ module BABYLON {
 
             this._textures = {};
 
-            super.dispose(forceDisposeEffect, forceDisposeTextures);
+            super.dispose(forceDisposeEffect, forceDisposeTextures, isLineMeshColorShader);
         }
 
         /**
