@@ -1785,14 +1785,12 @@ module BABYLON {
 
             let type = PointerEventTypes.POINTERUP;
             if (this.onPointerObservable.hasObservers()) {
-                if (!clickInfo.ignore) {
-                    if (!clickInfo.hasSwiped) {
-                        if (clickInfo.singleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
-                            type = PointerEventTypes.POINTERTAP;
-                        }
-                        if (clickInfo.doubleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
-                            type = PointerEventTypes.POINTERDOUBLETAP;
-                        }
+                if (!clickInfo.ignore && !clickInfo.hasSwiped) {
+                    if (clickInfo.singleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
+                        type = PointerEventTypes.POINTERTAP;
+                    }
+                    else if (clickInfo.doubleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
+                        type = PointerEventTypes.POINTERDOUBLETAP;
                     }
                 }
                 let pi = new PointerInfo(type, evt, pickResult);
