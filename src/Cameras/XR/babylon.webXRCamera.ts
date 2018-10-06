@@ -4,7 +4,7 @@ module BABYLON {
      * @see https://doc.babylonjs.com/how_to/webxr
      */
     export class WebXRCamera extends FreeCamera {
-        private _tmpMatrix = new BABYLON.Matrix();
+        private static _TmpMatrix = new BABYLON.Matrix();
 
         /**
          * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
@@ -42,10 +42,10 @@ module BABYLON {
             this._updateNumberOfRigCameras(2);
             this.rigCameras[0].viewport = new BABYLON.Viewport(0, 0, 0.5, 1.0);
             this.rigCameras[0].position.x = -pupilDistance / 2;
-            this.rigCameras[0].renderTarget = null;
+            this.rigCameras[0].outputRenderTarget = null;
             this.rigCameras[1].viewport = new BABYLON.Viewport(0.5, 0, 0.5, 1.0);
             this.rigCameras[1].position.x = pupilDistance / 2;
-            this.rigCameras[1].renderTarget = null;
+            this.rigCameras[1].outputRenderTarget = null;
         }
 
         /**
@@ -53,7 +53,7 @@ module BABYLON {
          * @param xrSessionManager the session containing pose information
          */
         public updateFromXRSessionManager(xrSessionManager: WebXRSessionManager) {
-            // Ensure all frame data is availible
+            // Ensure all frame data is available
             if (!xrSessionManager._currentXRFrame || !xrSessionManager._currentXRFrame.getDevicePose) {
                 return;
             }
@@ -63,13 +63,13 @@ module BABYLON {
             }
 
             // Update the parent cameras matrix
-            BABYLON.Matrix.FromFloat32ArrayToRefScaled(pose.poseModelMatrix, 0, 1, this._tmpMatrix);
+            BABYLON.Matrix.FromFloat32ArrayToRefScaled(pose.poseModelMatrix, 0, 1, WebXRCamera._TmpMatrix);
             if (!this._scene.useRightHandedSystem) {
-                BABYLON.Matrix._ToggleModelMatrixHandInPlace(this._tmpMatrix);
+                WebXRCamera._TmpMatrix.toggleModelMatrixHandInPlace();
             }
-            this._tmpMatrix.getTranslationToRef(this.position);
-            this._tmpMatrix.getRotationMatrixToRef(this._tmpMatrix);
-            BABYLON.Quaternion.FromRotationMatrixToRef(this._tmpMatrix, this.rotationQuaternion);
+            WebXRCamera._TmpMatrix.getTranslationToRef(this.position);
+            WebXRCamera._TmpMatrix.getRotationMatrixToRef(WebXRCamera._TmpMatrix);
+            BABYLON.Quaternion.FromRotationMatrixToRef(WebXRCamera._TmpMatrix, this.rotationQuaternion);
             this.computeWorldMatrix();
 
             // Update camera rigs
@@ -79,8 +79,8 @@ module BABYLON {
                 BABYLON.Matrix.FromFloat32ArrayToRefScaled(pose.getViewMatrix(view), 0, 1, this.rigCameras[i]._computedViewMatrix);
                 BABYLON.Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, this.rigCameras[i]._projectionMatrix);
                 if (!this._scene.useRightHandedSystem) {
-                    BABYLON.Matrix._ToggleModelMatrixHandInPlace(this.rigCameras[i]._computedViewMatrix);
-                    BABYLON.Matrix._ToggleProjectionMatrixHandInPlace(this.rigCameras[i]._projectionMatrix);
+                    this.rigCameras[i]._computedViewMatrix.toggleModelMatrixHandInPlace();
+                    this.rigCameras[i]._projectionMatrix.toggleProjectionMatrixHandInPlace();
                 }
 
                 // Update viewport
@@ -93,7 +93,7 @@ module BABYLON {
                 this.rigCameras[i].viewport.y = viewport.y / height;
 
                 // Set cameras to render to the session's render target
-                this.rigCameras[i].renderTarget = xrSessionManager._sessionRenderTargetTexture;
+                this.rigCameras[i].outputRenderTarget = xrSessionManager._sessionRenderTargetTexture;
             });
         }
     }

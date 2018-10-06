@@ -199,7 +199,7 @@ module BABYLON {
         public isStereoscopicSideBySide: boolean;
 
         /**
-         * Defines the list of custom render target the camera should render to.
+         * Defines the list of custom render target which are rendered to and then used as the input to this camera's render. Eg. display another camera view on a TV in the main scene
          * This is pretty helpfull if you wish to make a camera render to a texture you could reuse somewhere
          * else in the scene.
          */
@@ -207,7 +207,7 @@ module BABYLON {
         /**
          * When set, the camera will render to this render target instead of the default canvas
          */
-        public renderTarget: Nullable<RenderTargetTexture> = null;
+        public outputRenderTarget: Nullable<RenderTargetTexture> = null;
 
         /**
          * Observable triggered when the camera view matrix has changed.
