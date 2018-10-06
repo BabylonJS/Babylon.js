@@ -71,13 +71,13 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], PerlinNoiseProceduralTexture.prototype, "time", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], PerlinNoiseProceduralTexture.prototype, "timeScale", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], PerlinNoiseProceduralTexture.prototype, "translationSpeed", void 0);
         return PerlinNoiseProceduralTexture;
     }(BABYLON.ProceduralTexture));

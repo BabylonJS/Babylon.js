@@ -191,16 +191,16 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], FireProceduralTexture.prototype, "autoGenerateTime", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], FireProceduralTexture.prototype, "time", null);
         __decorate([
-            BABYLON.serializeAsVector2()
+            serializeAsVector2()
         ], FireProceduralTexture.prototype, "speed", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], FireProceduralTexture.prototype, "alphaThreshold", null);
         return FireProceduralTexture;
     }(BABYLON.ProceduralTexture));

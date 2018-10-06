@@ -270,34 +270,34 @@ var BABYLON;
             return BABYLON.SerializationHelper.Parse(function () { return new GradientMaterial(source.name, scene); }, source, scene, rootUrl);
         };
         __decorate([
-            BABYLON.serialize("maxSimultaneousLights")
+            serialize("maxSimultaneousLights")
         ], GradientMaterial.prototype, "_maxSimultaneousLights", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+            expandToProperty("_markAllSubMeshesAsLightsDirty")
         ], GradientMaterial.prototype, "maxSimultaneousLights", void 0);
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], GradientMaterial.prototype, "topColor", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], GradientMaterial.prototype, "topColorAlpha", void 0);
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], GradientMaterial.prototype, "bottomColor", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], GradientMaterial.prototype, "bottomColorAlpha", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], GradientMaterial.prototype, "offset", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], GradientMaterial.prototype, "scale", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], GradientMaterial.prototype, "smoothness", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], GradientMaterial.prototype, "disableLighting", void 0);
         return GradientMaterial;
     }(BABYLON.PushMaterial));

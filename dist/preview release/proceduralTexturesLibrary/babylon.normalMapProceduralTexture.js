@@ -71,7 +71,7 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serializeAsTexture()
+            serializeAsTexture()
         ], NormalMapProceduralTexture.prototype, "baseTexture", null);
         return NormalMapProceduralTexture;
     }(BABYLON.ProceduralTexture));

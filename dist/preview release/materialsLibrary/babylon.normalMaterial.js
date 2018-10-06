@@ -301,25 +301,25 @@ var BABYLON;
             return BABYLON.SerializationHelper.Parse(function () { return new NormalMaterial(source.name, scene); }, source, scene, rootUrl);
         };
         __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture")
+            serializeAsTexture("diffuseTexture")
         ], NormalMaterial.prototype, "_diffuseTexture", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], NormalMaterial.prototype, "diffuseTexture", void 0);
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], NormalMaterial.prototype, "diffuseColor", void 0);
         __decorate([
-            BABYLON.serialize("disableLighting")
+            serialize("disableLighting")
         ], NormalMaterial.prototype, "_disableLighting", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+            expandToProperty("_markAllSubMeshesAsLightsDirty")
         ], NormalMaterial.prototype, "disableLighting", void 0);
         __decorate([
-            BABYLON.serialize("maxSimultaneousLights")
+            serialize("maxSimultaneousLights")
         ], NormalMaterial.prototype, "_maxSimultaneousLights", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+            expandToProperty("_markAllSubMeshesAsLightsDirty")
         ], NormalMaterial.prototype, "maxSimultaneousLights", void 0);
         return NormalMaterial;
     }(BABYLON.PushMaterial));

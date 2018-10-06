@@ -304,28 +304,28 @@ var BABYLON;
             return material;
         };
         __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture")
+            serializeAsTexture("diffuseTexture")
         ], FireMaterial.prototype, "_diffuseTexture", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], FireMaterial.prototype, "diffuseTexture", void 0);
         __decorate([
-            BABYLON.serializeAsTexture("distortionTexture")
+            serializeAsTexture("distortionTexture")
         ], FireMaterial.prototype, "_distortionTexture", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], FireMaterial.prototype, "distortionTexture", void 0);
         __decorate([
-            BABYLON.serializeAsTexture("opacityTexture")
+            serializeAsTexture("opacityTexture")
         ], FireMaterial.prototype, "_opacityTexture", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], FireMaterial.prototype, "opacityTexture", void 0);
         __decorate([
-            BABYLON.serializeAsColor3("diffuse")
+            serializeAsColor3("diffuse")
         ], FireMaterial.prototype, "diffuseColor", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], FireMaterial.prototype, "speed", void 0);
         return FireMaterial;
     }(BABYLON.PushMaterial));

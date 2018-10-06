@@ -91,7 +91,7 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], GrassProceduralTexture.prototype, "groundColor", null);
         return GrassProceduralTexture;
     }(BABYLON.ProceduralTexture));

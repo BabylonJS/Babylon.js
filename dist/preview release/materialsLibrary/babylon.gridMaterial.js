@@ -181,28 +181,28 @@ var BABYLON;
             return BABYLON.SerializationHelper.Parse(function () { return new GridMaterial(source.name, scene); }, source, scene, rootUrl);
         };
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], GridMaterial.prototype, "mainColor", void 0);
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], GridMaterial.prototype, "lineColor", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], GridMaterial.prototype, "gridRatio", void 0);
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], GridMaterial.prototype, "gridOffset", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], GridMaterial.prototype, "majorUnitFrequency", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], GridMaterial.prototype, "minorUnitVisibility", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], GridMaterial.prototype, "opacity", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], GridMaterial.prototype, "preMultiplyAlpha", void 0);
         return GridMaterial;
     }(BABYLON.PushMaterial));

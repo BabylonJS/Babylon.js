@@ -193,37 +193,37 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "time", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "alpha", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "beta", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "formuparam", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "stepsize", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "zoom", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "tile", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "brightness", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "darkmatter", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "distfading", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "saturation", null);
         return StarfieldProceduralTexture;
     }(BABYLON.ProceduralTexture));

@@ -102,16 +102,16 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], MarbleProceduralTexture.prototype, "numberOfTilesHeight", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], MarbleProceduralTexture.prototype, "amplitude", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], MarbleProceduralTexture.prototype, "numberOfTilesWidth", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], MarbleProceduralTexture.prototype, "jointColor", null);
         return MarbleProceduralTexture;
     }(BABYLON.ProceduralTexture));

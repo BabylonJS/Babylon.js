@@ -190,34 +190,34 @@ var BABYLON;
             return BABYLON.SerializationHelper.Parse(function () { return new SkyMaterial(source.name, scene); }, source, scene, rootUrl);
         };
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], SkyMaterial.prototype, "luminance", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], SkyMaterial.prototype, "turbidity", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], SkyMaterial.prototype, "rayleigh", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], SkyMaterial.prototype, "mieCoefficient", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], SkyMaterial.prototype, "mieDirectionalG", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], SkyMaterial.prototype, "distance", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], SkyMaterial.prototype, "inclination", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], SkyMaterial.prototype, "azimuth", void 0);
         __decorate([
-            BABYLON.serializeAsVector3()
+            serializeAsVector3()
         ], SkyMaterial.prototype, "sunPosition", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], SkyMaterial.prototype, "useSunPosition", void 0);
         return SkyMaterial;
     }(BABYLON.PushMaterial));
