@@ -797,7 +797,7 @@ module BABYLON {
                 this._scene.addMaterial(this);
             }
 
-            if (scene.useMaterialMeshMap) {
+            if (this._scene.useMaterialMeshMap) {
                 this.meshMap = {};
             }
         }
