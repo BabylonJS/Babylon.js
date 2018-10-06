@@ -515,167 +515,10 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
-    /**
-        * The current state of the model
-        */
-    export enum ModelState {
-            INIT = 0,
-            LOADING = 1,
-            LOADED = 2,
-            ENTRY = 3,
-            ENTRYDONE = 4,
-            COMPLETE = 5,
-            CANCELED = 6,
-            ERROR = 7
-    }
-    /**
-        * The viewer model is a container for all assets representing a sngle loaded model.
-        */
-    export class ViewerModel implements BABYLON.IDisposable {
-            /**
-                * The loader used to load this model.
-                */
-            loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync;
-            /**
-                * This model's root mesh (the parent of all other meshes).
-                * This mesh does not(!) exist in the meshes array.
-                */
-            rootMesh: BABYLON.AbstractMesh;
-            /**
-                * ParticleSystems connected to this model
-                */
-            particleSystems: Array<BABYLON.IParticleSystem>;
-            /**
-                * Skeletons defined in this model
-                */
-            skeletons: Array<BABYLON.Skeleton>;
-            /**
-                * The current model animation.
-                * On init, this will be undefined.
-                */
-            currentAnimation: IModelAnimation;
-            /**
-                * Observers registered here will be executed when the model is done loading
-                */
-            onLoadedObservable: BABYLON.Observable<ViewerModel>;
-            /**
-                * Observers registered here will be executed when the loader notified of a progress event
-                */
-            onLoadProgressObservable: BABYLON.Observable<BABYLON.SceneLoaderProgressEvent>;
-            /**
-                * Observers registered here will be executed when the loader notified of an error.
-                */
-            onLoadErrorObservable: BABYLON.Observable<{
-                    message: string;
-                    exception: any;
-            }>;
-            /**
-                * Will be executed after the model finished loading and complete, including entry animation and lod
-                */
-            onCompleteObservable: BABYLON.Observable<ViewerModel>;
-            /**
-                * Observers registered here will be executed every time the model is being configured.
-                * This can be used to extend the model's configuration without extending the class itself
-                */
-            onAfterConfigure: BABYLON.Observable<ViewerModel>;
-            /**
-                * The current model state (loaded, error, etc)
-                */
-            state: ModelState;
-            /**
-                * A loadID provided by the modelLoader, unique to ths (Abstract)Viewer instance.
-                */
-            loadId: number;
-            loadInfo: BABYLON.GLTF2.IAsset;
-            constructor(_observablesManager: ObservablesManager, modelConfiguration: IModelConfiguration, _configurationContainer?: ConfigurationContainer | undefined);
-            shadowsRenderedAfterLoad: boolean;
-            getViewerId(): string | undefined;
-            /**
-             * Set whether this model is enabled or not.
-             */
-            enabled: boolean;
-            loaderDone: boolean;
-            /**
-                * Add a mesh to this model.
-                * Any mesh that has no parent will be provided with the root mesh as its new parent.
-                *
-                * @param mesh the new mesh to add
-                * @param triggerLoaded should this mesh trigger the onLoaded observable. Used when adding meshes manually.
-                */
-            addMesh(mesh: BABYLON.AbstractMesh, triggerLoaded?: boolean): Promise<ViewerModel> | undefined;
-            /**
-                * get the list of meshes (excluding the root mesh)
-                */
-            readonly meshes: BABYLON.AbstractMesh[];
-            /**
-             * (Re-)set the model's entire configuration
-             * @param newConfiguration the new configuration to replace the new one
-             */
-            configuration: IModelConfiguration;
-            /**
-                * Update the current configuration with new values.
-                * Configuration will not be overwritten, but merged with the new configuration.
-                * Priority is to the new configuration
-                * @param newConfiguration the configuration to be merged into the current configuration;
-                */
-            updateConfiguration(newConfiguration: Partial<IModelConfiguration>): void;
-            /**
-                * Add a new animation group to this model.
-                * @param animationGroup the new animation group to be added
-                */
-            addAnimationGroup(animationGroup: BABYLON.AnimationGroup): void;
-            /**
-                * Get the ModelAnimation array
-                */
-            getAnimations(): Array<IModelAnimation>;
-            /**
-                * Get the animations' names. Using the names you can play a specific animation.
-                */
-            getAnimationNames(): Array<string>;
-            /**
-                * Get an animation by the provided name. Used mainly when playing n animation.
-                * @param name the name of the animation to find
-                */
-            protected _getAnimationByName(name: string): BABYLON.Nullable<IModelAnimation>;
-            /**
-                * Choose an initialized animation using its name and start playing it
-                * @param name the name of the animation to play
-                * @returns The model aniamtion to be played.
-                */
-            playAnimation(name: string): IModelAnimation;
-            setCurrentAnimationByName(name: string): IModelAnimation;
-            /**
-                * Apply a material configuration to a material
-                * @param material BABYLON.Material to apply configuration to
-                * @hidden
-                */
-            _applyModelMaterialConfiguration(material: BABYLON.Material): void;
-            /**
-             * Begin @animations with the specified @easingFunction
-             * @param animations The BABYLON Animations to begin
-             * @param duration of transition, in seconds
-             * @param easingFunction An easing function to apply
-             * @param easingMode A easing mode to apply to the easingFunction
-             * @param onAnimationEnd Call back trigger at the end of the animation.
-             */
-            transitionTo(animations: BABYLON.Animation[], duration: number, easingFunction: any, easingMode: number | undefined, onAnimationEnd: () => void): void;
-            /**
-                * Stops and removes all animations that have been applied to the model
-                */
-            stopAllAnimations(): void;
-            /**
-                * Will remove this model from the viewer (but NOT dispose it).
-                */
-            remove(): void;
-            /**
-                * Dispose this model, including all of its associated assets.
-                */
-            dispose(): void;
-    }
 }
 declare module BabylonViewer {
     /**
-        * BABYLON.Animation play mode enum - is the animation looping or playing once
+        * Animation play mode enum - is the animation looping or playing once
         */
     export const enum AnimationPlayMode {
             ONCE = 0,
@@ -757,7 +600,7 @@ declare module BabylonViewer {
                 */
             readonly currentFrame: number;
             /**
-                * BABYLON.Animation's FPS value
+                * Animation's FPS value
                 */
             readonly fps: number;
             /**
@@ -1298,6 +1141,185 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
+    /**
+        * This interface describes the structure of the variable sent with the configuration observables of the scene manager.
+        * O - the type of object we are dealing with (Light, BABYLON.ArcRotateCamera, BABYLON.Scene, etc')
+        * T - the configuration type
+        */
+    export interface IPostConfigurationCallback<OBJ, CONF> {
+            newConfiguration: CONF;
+            sceneManager: SceneManager;
+            object: OBJ;
+            model?: ViewerModel;
+    }
+    export class SceneManager {
+            /**
+                * Will notify when the scene was initialized
+                */
+            onSceneInitObservable: BABYLON.Observable<BABYLON.Scene>;
+            /**
+                * Will notify after the scene was configured. Can be used to further configure the scene
+                */
+            onSceneConfiguredObservable: BABYLON.Observable<IPostConfigurationCallback<BABYLON.Scene, ISceneConfiguration>>;
+            /**
+                * Will notify after the scene optimized was configured. Can be used to further configure the scene optimizer
+                */
+            onSceneOptimizerConfiguredObservable: BABYLON.Observable<IPostConfigurationCallback<BABYLON.SceneOptimizer, ISceneOptimizerConfiguration | boolean>>;
+            /**
+                * Will notify after the camera was configured. Can be used to further configure the camera
+                */
+            onCameraConfiguredObservable: BABYLON.Observable<IPostConfigurationCallback<BABYLON.ArcRotateCamera, ICameraConfiguration>>;
+            /**
+                * Will notify after the lights were configured. Can be used to further configure lights
+                */
+            onLightsConfiguredObservable: BABYLON.Observable<IPostConfigurationCallback<Array<BABYLON.Light>, {
+                    [name: string]: ILightConfiguration | boolean | number;
+            }>>;
+            /**
+                * Will notify after the model(s) were configured. Can be used to further configure models
+                */
+            onModelsConfiguredObservable: BABYLON.Observable<IPostConfigurationCallback<Array<ViewerModel>, IModelConfiguration>>;
+            /**
+                * Will notify after the envirnoment was configured. Can be used to further configure the environment
+                */
+            onEnvironmentConfiguredObservable: BABYLON.Observable<IPostConfigurationCallback<BABYLON.EnvironmentHelper, {
+                    skybox?: ISkyboxConfiguration | boolean;
+                    ground?: IGroundConfiguration | boolean;
+            }>>;
+            /**
+                * Will notify after the model(s) were configured. Can be used to further configure models
+                */
+            onVRConfiguredObservable: BABYLON.Observable<IPostConfigurationCallback<BABYLON.VRExperienceHelper, IVRConfiguration>>;
+            /**
+                * The Babylon BABYLON.Scene of this viewer
+                */
+            scene: BABYLON.Scene;
+            /**
+                * The camera used in this viewer
+                */
+            camera: BABYLON.ArcRotateCamera;
+            /**
+                * Babylon's scene optimizer
+                */
+            sceneOptimizer: BABYLON.SceneOptimizer;
+            /**
+                * Models displayed in this viewer.
+                */
+            models: Array<ViewerModel>;
+            /**
+                * Babylon's environment helper of this viewer
+                */
+            environmentHelper?: BABYLON.EnvironmentHelper;
+            protected _defaultHighpTextureType: number;
+            protected _shadowGeneratorBias: number;
+            protected _defaultPipelineTextureType: number;
+            /**
+                * The maximum number of shadows supported by the curent viewer
+                */
+            protected _maxShadows: number;
+            /**
+                * The labs variable consists of objects that will have their API change.
+                * Please be careful when using labs in production.
+                */
+            labs: ViewerLabs;
+            readonly defaultRenderingPipeline: BABYLON.Nullable<BABYLON.DefaultRenderingPipeline>;
+            protected _vrHelper?: BABYLON.VRExperienceHelper;
+            readonly vrHelper: BABYLON.VRExperienceHelper | undefined;
+            constructor(_engine: BABYLON.Engine, _configurationContainer: ConfigurationContainer, _observablesManager?: ObservablesManager | undefined);
+            /**
+                * Returns a boolean representing HDR support
+                */
+            readonly isHdrSupported: boolean;
+            /**
+                * Return the main color defined in the configuration.
+                */
+            readonly mainColor: BABYLON.Color3;
+            readonly reflectionColor: BABYLON.Color3;
+            animationBlendingEnabled: boolean;
+            readonly observablesManager: ObservablesManager | undefined;
+            /**
+             * Should shadows be rendered every frame, or only once and stop.
+             * This can be used to optimize a scene.
+             *
+             * Not that the shadows will NOT disapear but will remain in place.
+             * @param process if true shadows will be updated once every frame. if false they will stop being updated.
+             */
+            processShadows: boolean;
+            groundEnabled: boolean;
+            /**
+             * sets wether the reflection is disabled.
+             */
+            groundMirrorEnabled: boolean;
+            defaultRenderingPipelineEnabled: boolean;
+            /**
+                * Sets the engine flags to unlock all babylon features.
+                * Can also be configured using the scene.flags configuration object
+                */
+            unlockBabylonFeatures(): void;
+            /**
+                * initialize the scene. Calling this function again will dispose the old scene, if exists.
+                */
+            initScene(sceneConfiguration?: ISceneConfiguration, optimizerConfiguration?: boolean | ISceneOptimizerConfiguration): Promise<BABYLON.Scene>;
+            clearScene(clearModels?: boolean, clearLights?: boolean): void;
+            /**
+                * This will update the scene's configuration, including camera, lights, environment.
+                * @param newConfiguration the delta that should be configured. This includes only the changes
+                * @param globalConfiguration The global configuration object, after the new configuration was merged into it
+                */
+            updateConfiguration(newConfiguration: Partial<ViewerConfiguration>): void;
+            bloomEnabled: boolean;
+            fxaaEnabled: boolean;
+            /**
+                * internally configure the scene using the provided configuration.
+                * The scene will not be recreated, but just updated.
+                * @param sceneConfig the (new) scene configuration
+                */
+            protected _configureScene(sceneConfig: ISceneConfiguration): void;
+            /**
+                * Configure the scene optimizer.
+                * The existing scene optimizer will be disposed and a new one will be created.
+                * @param optimizerConfig the (new) optimizer configuration
+                */
+            protected _configureOptimizer(optimizerConfig: ISceneOptimizerConfiguration | boolean): void;
+            /**
+                * configure all models using the configuration.
+                * @param modelConfiguration the configuration to use to reconfigure the models
+                */
+            protected _configureVR(vrConfig: IVRConfiguration): void;
+            protected _configureEnvironmentMap(environmentMapConfiguration: IEnvironmentMapConfiguration): any;
+            /**
+                * (Re) configure the camera. The camera will only be created once and from this point will only be reconfigured.
+                * @param cameraConfig the new camera configuration
+                * @param model optionally use the model to configure the camera.
+                */
+            protected _configureCamera(cameraConfig?: ICameraConfiguration): void;
+            protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean): void;
+            /**
+                * configure the lights.
+                *
+                * @param lightsConfiguration the (new) light(s) configuration
+                * @param model optionally use the model to configure the camera.
+                */
+            protected _configureLights(lightsConfiguration?: {
+                    [name: string]: ILightConfiguration | boolean | number;
+            }): void;
+            /**
+                * Gets the shadow map blur kernel according to the light configuration.
+                * @param light The light used to generate the shadows
+                * @param bufferSize The size of the shadow map
+                * @return the kernel blur size
+                */
+            getBlurKernel(light: BABYLON.IShadowLight, bufferSize: number): number;
+            /**
+                * Alters render settings to reduce features based on hardware feature limitations
+                * @param enableHDR Allows the viewer to run in HDR mode.
+                */
+            protected _handleHardwareLimitations(enableHDR?: boolean): void;
+            /**
+                * Dispoe the entire viewer including the scene and the engine
+                */
+            dispose(): void;
+    }
 }
 declare module BabylonViewer {
     export interface IModelConfiguration {
@@ -1435,6 +1457,54 @@ declare module BabylonViewer {
                 * Dispose the event manager
                 */
             dispose(): void;
+    }
+}
+declare module BabylonViewer {
+    /**
+        * The ViewerLabs class will hold functions that are not (!) backwards compatible.
+        * The APIs in all labs-related classes and configuration  might change.
+        * Once stable, lab features will be moved to the publis API and configuration object.
+        */
+    export class ViewerLabs {
+            constructor(_scene: BABYLON.Scene);
+            assetsRootURL: string;
+            environment: PBREnvironment;
+            /**
+                        * Loads an environment map from a given URL
+                        * @param url URL of environment map
+                        * @param onSuccess Callback fired after environment successfully applied to the scene
+                        * @param onProgress Callback fired at progress events while loading the environment map
+                        * @param onError Callback fired when the load fails
+                        */
+            loadEnvironment(url: string, onSuccess?: (env: PBREnvironment) => void, onProgress?: (bytesLoaded: number, bytesTotal: number) => void, onError?: (e: any) => void): void;
+            /**
+                * Loads an environment map from a given URL
+                * @param buffer ArrayBuffer containing environment map
+                * @param onSuccess Callback fired after environment successfully applied to the scene
+                * @param onProgress Callback fired at progress events while loading the environment map
+                * @param onError Callback fired when the load fails
+                */
+            loadEnvironment(buffer: ArrayBuffer, onSuccess?: (env: PBREnvironment) => void, onProgress?: (bytesLoaded: number, bytesTotal: number) => void, onError?: (e: any) => void): void;
+            /**
+                * Sets the environment to an already loaded environment
+                * @param env PBREnvironment instance
+                * @param onSuccess Callback fired after environment successfully applied to the scene
+                * @param onProgress Callback fired at progress events while loading the environment map
+                * @param onError Callback fired when the load fails
+                */
+            loadEnvironment(env: PBREnvironment, onSuccess?: (env: PBREnvironment) => void, onProgress?: (bytesLoaded: number, bytesTotal: number) => void, onError?: (e: any) => void): void;
+            /**
+                * Applies an `EnvironmentMapConfiguration` to the scene
+                * @param environmentMapConfiguration Environment map configuration to apply
+                */
+            applyEnvironmentMapConfiguration(rotationY?: number): void;
+            /**
+                * Get an environment asset url by using the configuration if the path is not absolute.
+                * @param url Asset url
+                * @returns The Asset url using the `environmentAssetsRootURL` if the url is not an absolute path.
+                */
+            getAssetUrl(url: string): string;
+            rotateShadowLight(shadowLight: BABYLON.ShadowLight, amount: number, point?: BABYLON.Vector3, axis?: BABYLON.Vector3, target?: BABYLON.Vector3): void;
     }
 }
 declare module BabylonViewer {
@@ -1957,5 +2027,292 @@ declare module BabylonViewer {
             y: number;
             z: number;
         };
+    }
+}
+declare module BabylonViewer {
+    /**
+        * Spherical polynomial coefficients (counter part to spherical harmonic coefficients used in shader irradiance calculation)
+        * @ignoreChildren
+        */
+    export interface SphericalPolynomalCoefficients {
+            x: BABYLON.Vector3;
+            y: BABYLON.Vector3;
+            z: BABYLON.Vector3;
+            xx: BABYLON.Vector3;
+            yy: BABYLON.Vector3;
+            zz: BABYLON.Vector3;
+            yz: BABYLON.Vector3;
+            zx: BABYLON.Vector3;
+            xy: BABYLON.Vector3;
+    }
+    /**
+        * Wraps data and maps required for environments with physically based rendering
+        */
+    export interface PBREnvironment {
+            /**
+                * Spherical Polynomial Coefficients representing an irradiance map
+                */
+            irradiancePolynomialCoefficients: SphericalPolynomalCoefficients;
+            /**
+                * Specular cubemap
+                */
+            specularTexture?: TextureCube;
+            /**
+                * A scale factor applied to RGB values after reading from environment maps
+                */
+            textureIntensityScale: number;
+    }
+    /**
+                        * Environment map representations: layouts, projections and approximations
+                        */
+    export type MapType = 'irradiance_sh_coefficients_9' | 'cubemap_faces';
+    /**
+        * Image type used for environment map
+        */
+    export type ImageType = 'png';
+    /**
+        * A generic field in JSON that report's its type
+        */
+    export interface TypedObject<T> {
+            type: T;
+    }
+    /**
+        * Describes a range of bytes starting at byte pos (inclusive) and finishing at byte pos + length - 1
+        */
+    export interface ByteRange {
+            pos: number;
+            length: number;
+    }
+    /**
+        * Complete Spectre Environment JSON Descriptor
+        */
+    export interface EnvJsonDescriptor {
+            radiance: TypedObject<MapType>;
+            irradiance: TypedObject<MapType>;
+            specular: TypedObject<MapType>;
+    }
+    /**
+        * Spherical harmonic coefficients to provide an irradiance map
+        */
+    export interface IrradianceSHCoefficients9 extends TypedObject<MapType> {
+            l00: Array<number>;
+            l1_1: Array<number>;
+            l10: Array<number>;
+            l11: Array<number>;
+            l2_2: Array<number>;
+            l2_1: Array<number>;
+            l20: Array<number>;
+            l21: Array<number>;
+            l22: Array<number>;
+    }
+    /**
+        * A generic set of images, where the image content is specified by byte ranges in the mipmaps field
+        */
+    export interface ImageSet<T> extends TypedObject<MapType> {
+            imageType: ImageType;
+            width: number;
+            height: number;
+            mipmaps: Array<T>;
+            multiplier: number;
+    }
+    /**
+        * A set of cubemap faces
+        */
+    export type CubemapFaces = ImageSet<Array<ByteRange>>;
+    /**
+        * A single image containing an atlas of equirectangular-projection maps across all mip levels
+        */
+    export type EquirectangularMipmapAtlas = ImageSet<ByteRange>;
+    /**
+        * A static class proving methods to aid parsing Spectre environment files
+        */
+    export class EnvironmentDeserializer {
+            /**
+                * Parses an arraybuffer into a new PBREnvironment object
+                * @param arrayBuffer The arraybuffer of the Spectre environment file
+                * @return a PBREnvironment object
+                */
+            static Parse(arrayBuffer: ArrayBuffer): PBREnvironment;
+    }
+}
+declare module BabylonViewer {
+    /**
+        * WebGL Pixel Formats
+        */
+    export const enum PixelFormat {
+            DEPTH_COMPONENT = 6402,
+            ALPHA = 6406,
+            RGB = 6407,
+            RGBA = 6408,
+            LUMINANCE = 6409,
+            LUMINANCE_ALPHA = 6410
+    }
+    /**
+        * WebGL Pixel Types
+        */
+    export const enum PixelType {
+            UNSIGNED_BYTE = 5121,
+            UNSIGNED_SHORT_4_4_4_4 = 32819,
+            UNSIGNED_SHORT_5_5_5_1 = 32820,
+            UNSIGNED_SHORT_5_6_5 = 33635
+    }
+    /**
+        * WebGL Texture Magnification Filter
+        */
+    export const enum TextureMagFilter {
+            NEAREST = 9728,
+            LINEAR = 9729
+    }
+    /**
+        * WebGL Texture Minification Filter
+        */
+    export const enum TextureMinFilter {
+            NEAREST = 9728,
+            LINEAR = 9729,
+            NEAREST_MIPMAP_NEAREST = 9984,
+            LINEAR_MIPMAP_NEAREST = 9985,
+            NEAREST_MIPMAP_LINEAR = 9986,
+            LINEAR_MIPMAP_LINEAR = 9987
+    }
+    /**
+        * WebGL Texture Wrap Modes
+        */
+    export const enum TextureWrapMode {
+            REPEAT = 10497,
+            CLAMP_TO_EDGE = 33071,
+            MIRRORED_REPEAT = 33648
+    }
+    /**
+        * Raw texture data and descriptor sufficient for WebGL texture upload
+        */
+    export interface TextureData {
+            /**
+                * Width of image
+                */
+            width: number;
+            /**
+                * Height of image
+                */
+            height: number;
+            /**
+                * Format of pixels in data
+                */
+            format: PixelFormat;
+            /**
+                * Row byte alignment of pixels in data
+                */
+            alignment: number;
+            /**
+                * Pixel data
+                */
+            data: ArrayBufferView;
+    }
+    /**
+        * Wraps sampling parameters for a WebGL texture
+        */
+    export interface SamplingParameters {
+            /**
+                * Magnification mode when upsampling from a WebGL texture
+                */
+            magFilter?: TextureMagFilter;
+            /**
+                * Minification mode when upsampling from a WebGL texture
+                */
+            minFilter?: TextureMinFilter;
+            /**
+                * X axis wrapping mode when sampling out of a WebGL texture bounds
+                */
+            wrapS?: TextureWrapMode;
+            /**
+                * Y axis wrapping mode when sampling out of a WebGL texture bounds
+                */
+            wrapT?: TextureWrapMode;
+            /**
+             * Anisotropic filtering samples
+             */
+            maxAnisotropy?: number;
+    }
+    /**
+        * Represents a valid WebGL texture source for use in texImage2D
+        */
+    export type TextureSource = TextureData | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement;
+    /**
+        * A generic set of texture mipmaps (where index 0 has the largest dimension)
+        */
+    export type Mipmaps<T> = Array<T>;
+    /**
+        * A set of 6 cubemap arranged in the order [+x, -x, +y, -y, +z, -z]
+        */
+    export type Faces<T> = Array<T>;
+    /**
+        * A set of texture mipmaps specifically for 2D textures in WebGL (where index 0 has the largest dimension)
+        */
+    export type Mipmaps2D = Mipmaps<TextureSource>;
+    /**
+        * A set of texture mipmaps specifically for cubemap textures in WebGL (where index 0 has the largest dimension)
+        */
+    export type MipmapsCube = Mipmaps<Faces<TextureSource>>;
+    /**
+        * A minimal WebGL cubemap descriptor
+        */
+    export class TextureCube {
+            internalFormat: PixelFormat;
+            type: PixelType;
+            source: MipmapsCube;
+            /**
+                * Returns the width of a face of the texture or 0 if not available
+                */
+            readonly Width: number;
+            /**
+                * Returns the height of a face of the texture or 0 if not available
+                */
+            readonly Height: number;
+            /**
+                * constructor
+                * @param internalFormat WebGL pixel format for the texture on the GPU
+                * @param type WebGL pixel type of the supplied data and texture on the GPU
+                * @param source An array containing mipmap levels of faces, where each mipmap level is an array of faces and each face is a TextureSource object
+                */
+            constructor(internalFormat: PixelFormat, type: PixelType, source?: MipmapsCube);
+    }
+    /**
+                * A static class providing methods to aid working with Bablyon textures.
+                */
+    export class TextureUtils {
+            /**
+                * A prefix used when storing a babylon texture object reference on a Spectre texture object
+                */
+            static BabylonTextureKeyPrefix: string;
+            /**
+                * Controls anisotropic filtering for deserialized textures.
+                */
+            static MaxAnisotropy: number;
+            /**
+                * Returns a BabylonCubeTexture instance from a Spectre texture cube, subject to sampling parameters.
+                * If such a texture has already been requested in the past, this texture will be returned, otherwise a new one will be created.
+                * The advantage of this is to enable working with texture objects without the need to initialize on the GPU until desired.
+                * @param scene A Babylon BABYLON.Scene instance
+                * @param textureCube A Spectre TextureCube object
+                * @param parameters WebGL texture sampling parameters
+                * @param automaticMipmaps Pass true to enable automatic mipmap generation where possible (requires power of images)
+                * @param environment Specifies that the texture will be used as an environment
+                * @param singleLod Specifies that the texture will be a singleLod (for environment)
+                * @return Babylon cube texture
+                */
+            static GetBabylonCubeTexture(scene: BABYLON.Scene, textureCube: TextureCube, automaticMipmaps: boolean, environment?: boolean, singleLod?: boolean): BABYLON.CubeTexture;
+            /**
+                * Applies Spectre SamplingParameters to a Babylon texture by directly setting texture parameters on the internal WebGLTexture as well as setting Babylon fields
+                * @param babylonTexture Babylon texture to apply texture to (requires the Babylon texture has an initialize _texture field)
+                * @param parameters Spectre SamplingParameters to apply
+                */
+            static ApplySamplingParameters(babylonTexture: BABYLON.BaseTexture, parameters: SamplingParameters): void;
+            /**
+                * Environment preprocessing dedicated value (Internal Use or Advanced only).
+                */
+            static EnvironmentLODScale: number;
+            /**
+                * Environment preprocessing dedicated value (Internal Use or Advanced only)..
+                */
+            static EnvironmentLODOffset: number;
     }
 }
