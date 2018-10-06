@@ -1808,7 +1808,7 @@ module BABYLON {
                 }
             }
 
-            if (this.onPointerUp) {
+            if (this.onPointerUp && !clickInfo.ignore) {
                 this.onPointerUp(evt, pickResult, type);
             }
 
@@ -1899,7 +1899,6 @@ module BABYLON {
                             if (Date.now() - this._previousStartingPointerTime > Scene.DoubleClickDelay ||
                                 btn !== this._previousButtonPressed) {
                                 clickInfo.singleClick = true;
-                                eventRaised = true;
                                 cb(clickInfo, this._currentPickResult);
                             }
                         }
@@ -1969,10 +1968,8 @@ module BABYLON {
                     }
                 }
 
-                if (!eventRaised) {
-                    clickInfo.ignore = true;
-                    cb(clickInfo, this._currentPickResult);
-                }
+                clickInfo.ignore = true;
+                cb(clickInfo, this._currentPickResult);
             };
 
             this._onPointerMove = (evt: PointerEvent) => {
