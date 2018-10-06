@@ -656,9 +656,9 @@ module BABYLON {
          * Disposes the material
          * @param forceDisposeEffect specifies if effects should be forcefully disposed
          * @param forceDisposeTextures specifies if textures should be forcefully disposed
-         * @param isLineMeshColorShader specifies if the material that is being disposed is the ShaderMaterial of a LinesMesh
+         * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to any mesh
          */
-        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, isLineMeshColorShader?: boolean): void {
+        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
 
             if (forceDisposeTextures) {
                 var name: string;
@@ -676,7 +676,7 @@ module BABYLON {
 
             this._textures = {};
 
-            super.dispose(forceDisposeEffect, forceDisposeTextures, isLineMeshColorShader);
+            super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
         }
 
         /**
