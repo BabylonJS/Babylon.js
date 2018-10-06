@@ -28,6 +28,7 @@ module BABYLON {
          * Initializes the manager, this must be done with a user action (eg. button click event)
          * After initialization enterXR can be called to start an XR session
          * @param scene
+         * @returns Promise which resolves after it is initialized
          */
         public initialize(): Promise<void> {
              // Check if the browser supports webXR
@@ -45,6 +46,7 @@ module BABYLON {
         /**
          * Enters XR with the desired XR session options
          * @param sessionCreationOptions
+         * @returns Promise which resolves after it enters XR
          */
         public enterXR(sessionCreationOptions: XRSessionCreationOptions, frameOfReferenceType: XRFrameOfReferenceType): Promise<void> {
             // initialize session
@@ -70,6 +72,7 @@ module BABYLON {
 
         /**
          * Stops the xrSession and restores the renderloop
+         * @returns Promise which resolves after it exits XR
          */
         public exitXR() {
             return new Promise((res) => {
@@ -86,6 +89,7 @@ module BABYLON {
         /**
          * Fires a ray and returns the closest hit in the xr sessions enviornment, useful to place objects in AR
          * @param ray ray to cast into the environment
+         * @returns Promise which resolves with a collision point in the environment if it exists
          */
         public environmentPointHitTest(ray: BABYLON.Ray): Promise<Nullable<Vector3>> {
             return new Promise((res, rej) => {
@@ -118,7 +122,9 @@ module BABYLON {
 
         /**
          * @hidden
-         * Converts the render layer of xrSession to a render target
+         * Converts the render layer of xrSession to a render target 
+         * @param session session to create render target for
+         * @param scene scene the new render target should be created for
          */
         public static _CreateRenderTargetTextureFromSession(session: XRSession, scene: BABYLON.Scene) {
             // Create internal texture
