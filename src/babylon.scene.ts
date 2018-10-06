@@ -253,6 +253,12 @@ module BABYLON {
          */
         public preventDefaultOnPointerDown = true;
 
+        /**
+         * This is used to call preventDefault() on pointer up
+         * in order to block unwanted artifacts like system double clicks
+         */
+        public preventDefaultOnPointerUp = true;
+
         // Metadata
         /**
          * Gets or sets user defined metadata
@@ -1868,6 +1874,7 @@ module BABYLON {
                         checkPicking = act.hasPickTriggers;
                     }
                 }
+                let eventRaised = false;
                 if (checkPicking) {
                     let btn = evt.button;
                     clickInfo.hasSwiped = this._isPointerSwiping();
@@ -1892,7 +1899,7 @@ module BABYLON {
                             if (Date.now() - this._previousStartingPointerTime > Scene.DoubleClickDelay ||
                                 btn !== this._previousButtonPressed) {
                                 clickInfo.singleClick = true;
-
+                                eventRaised = true;
                                 cb(clickInfo, this._currentPickResult);
                             }
                         }
@@ -1961,8 +1968,11 @@ module BABYLON {
                         }
                     }
                 }
-                clickInfo.ignore = true;
-                cb(clickInfo, this._currentPickResult);
+
+                if (!eventRaised) {
+                    clickInfo.ignore = true;
+                    cb(clickInfo, this._currentPickResult);
+                }
             };
 
             this._onPointerMove = (evt: PointerEvent) => {
@@ -2037,6 +2047,12 @@ module BABYLON {
                 this._meshPickProceed = false;
 
                 this._updatePointerPosition(evt);
+
+                if (this.preventDefaultOnPointerUp && canvas) {
+                    evt.preventDefault();
+                    canvas.focus();
+                }
+
                 this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => {
                     // PreObservable support
                     if (this.onPrePointerObservable.hasObservers()) {
@@ -4166,7 +4182,7 @@ module BABYLON {
 
                 mesh._preActivate();
 
-                if (mesh.isVisible && mesh.visibility > 0 && (mesh.alwaysSelectAsActiveMesh || ((mesh.layerMask & this.activeCamera.layerMask) !== 0 && mesh.isInFrustum(this._frustumPlanes)))) {
+                if (mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && (mesh.alwaysSelectAsActiveMesh || mesh.isInFrustum(this._frustumPlanes))) {
                     this._activeMeshes.push(mesh);
                     this.activeCamera._activeMeshes.push(mesh);
 
@@ -4328,7 +4344,16 @@ module BABYLON {
 
                 this._intermediateRendering = false;
 
-                engine.restoreDefaultFramebuffer(); // Restore back buffer if needed
+                if (this.activeCamera.customDefaultRenderTarget) {
+                    var internalTexture = this.activeCamera.customDefaultRenderTarget.getInternalTexture();
+                    if (internalTexture) {
+                        engine.bindFramebuffer(internalTexture);
+                    }else {
+                        Tools.Error("Camera contains invalid customDefaultRenderTarget");
+                    }
+                }else {
+                    engine.restoreDefaultFramebuffer(); // Restore back buffer if needed
+                }
             }
 
             this.onAfterRenderTargetsRenderObservable.notifyObservers(this);

@@ -56,6 +56,10 @@ module BABYLON {
          * Defines that both eyes of the camera should be renderered in a VR mode (webVR).
          */
         public static readonly RIG_MODE_WEBVR = 21;
+        /**
+         * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
+         */
+        public static readonly RIG_MODE_CUSTOM = 22;
 
         /**
          * Defines if by default attaching controls should prevent the default javascript event to continue.
@@ -200,6 +204,10 @@ module BABYLON {
          * else in the scene.
          */
         public customRenderTargets = new Array<RenderTargetTexture>();
+        /**
+         * When set, the camera will render to this render target instead of the default canvas
+         */
+        public customDefaultRenderTarget: Nullable<RenderTargetTexture> = null;
 
         /**
          * Observable triggered when the camera view matrix has changed.

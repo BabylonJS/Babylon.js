@@ -7,7 +7,7 @@ var config;
 var justOnce;
 
 var threshold = 25;
-var errorCountThreshold = 400;
+var errorRatio = 2.5;
 
 // Overload the random to make it deterministic
 var seed = 100000,
@@ -52,7 +52,7 @@ function compare(renderData, referenceCanvas) {
         console.log("Pixel difference: " + differencesCount + " pixels.");
     }
 
-    return differencesCount > errorCountThreshold;
+    return (differencesCount * 100) / (width * height) > errorRatio;
 }
 
 function getRenderData(canvas, engine) {
@@ -235,7 +235,7 @@ function runTest(index, done) {
         var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
         var pgRoot = "/Playground"
 
-        var retryTime = 30 * 1000;
+        var retryTime = 500;
         var maxRetry = 2;
         var retry = 0;
 
