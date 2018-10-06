@@ -27,7 +27,6 @@ module BABYLON {
         /**
          * Initializes the manager, this must be done with a user action (eg. button click event)
          * After initialization enterXR can be called to start an XR session
-         * @param scene
          * @returns Promise which resolves after it is initialized
          */
         public initialize(): Promise<void> {
@@ -45,7 +44,8 @@ module BABYLON {
 
         /**
          * Enters XR with the desired XR session options
-         * @param sessionCreationOptions
+         * @param sessionCreationOptions xr options to create the session with
+         * @param frameOfReferenceType option to configure how the xr pose is expressed
          * @returns Promise which resolves after it enters XR
          */
         public enterXR(sessionCreationOptions: XRSessionCreationOptions, frameOfReferenceType: XRFrameOfReferenceType): Promise<void> {
@@ -122,7 +122,7 @@ module BABYLON {
 
         /**
          * @hidden
-         * Converts the render layer of xrSession to a render target 
+         * Converts the render layer of xrSession to a render target
          * @param session session to create render target for
          * @param scene scene the new render target should be created for
          */

@@ -4879,7 +4879,7 @@ module BABYLON {
 
             return this;
         }
-        
+
         /**
          * Toggles model matrix from being right handed to left handed in place and vice versa
          */
