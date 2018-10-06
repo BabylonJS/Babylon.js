@@ -14,7 +14,7 @@ export class FullscreenTool extends AbstractTool {
 
         function requestFullScreen(element: HTMLElement) {
             // Supports most browsers and their versions.
-            var requestMethod = element.requestFullscreen || element.webkitRequestFullScreen;
+            var requestMethod = element.requestFullscreen || (<any>element).webkitRequestFullScreen;
             requestMethod.call(element);
         }
 

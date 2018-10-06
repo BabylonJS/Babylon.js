@@ -7,6 +7,8 @@
 - Added Object Based Motion Blur post-process ([julien-moreau](https://github.com/julien-moreau))
 - WebXR ([TrevorDev](https://github.com/TrevorDev))
   - Add customAnimationFrameRequester to allow sessions to hook into engine's render loop ([TrevorDev](https://github.com/TrevorDev))
+  - camera customDefaultRenderTarget to allow cameras to render to a custom render target (eg. xr framebuffer) instead of the canvas ([TrevorDev](https://github.com/TrevorDev))
+  - webXR camera which can be updated by a webXRSession ([TrevorDev](https://github.com/TrevorDev))
 
 ## Updates
 
