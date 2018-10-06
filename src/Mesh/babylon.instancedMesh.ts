@@ -7,10 +7,13 @@ module BABYLON {
         private _sourceMesh: Mesh;
         private _currentLOD: Mesh;
 
+        /** @hidden */
+        public _indexInSourceMeshInstanceArray = -1;
+
         constructor(name: string, source: Mesh) {
             super(name, source.getScene());
 
-            source.instances.push(this);
+            source.addInstance(this);
 
             this._sourceMesh = source;
 
@@ -317,11 +320,8 @@ module BABYLON {
          * Returns nothing.
          */
         public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
-
             // Remove from mesh
-            var index = this._sourceMesh.instances.indexOf(this);
-            this._sourceMesh.instances.splice(index, 1);
-
+            this._sourceMesh.removeInstance(this);
             super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
     }
