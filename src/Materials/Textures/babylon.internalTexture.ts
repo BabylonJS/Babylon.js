@@ -242,7 +242,7 @@ module BABYLON {
             this._engine = engine;
             this._dataSource = dataSource;
 
-            if(!delayAllocation){
+            if (!delayAllocation) {
                 this._webGLTexture = engine._createTexture();
             }
         }

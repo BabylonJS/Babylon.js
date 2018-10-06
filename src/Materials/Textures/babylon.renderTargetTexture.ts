@@ -306,7 +306,7 @@ module BABYLON {
                 this.wrapV = Texture.CLAMP_ADDRESSMODE;
             }
 
-            if(!delayAllocation){
+            if (!delayAllocation) {
                 if (isCube) {
                     this._texture = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
                     this.coordinatesMode = Texture.INVCUBIC_MODE;

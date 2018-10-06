@@ -5,7 +5,7 @@ module BABYLON {
      */
     export class WebXRCamera extends FreeCamera {
         private _tmpMatrix = new BABYLON.Matrix();
-        
+
         /**
          * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
          * @param name the name of the camera
@@ -50,20 +50,20 @@ module BABYLON {
 
         /**
          * Updates the cameras position from the current pose information of the  XR session
-         * @param xrSessionManager the session containing pose information 
+         * @param xrSessionManager the session containing pose information
          */
-        public updateFromXRSessionManager(xrSessionManager:WebXRSessionManager){
+        public updateFromXRSessionManager(xrSessionManager: WebXRSessionManager) {
             // Ensure all frame data is availible
-            if(!xrSessionManager._currentXRFrame || !xrSessionManager._currentXRFrame.getDevicePose){
+            if (!xrSessionManager._currentXRFrame || !xrSessionManager._currentXRFrame.getDevicePose) {
                 return;
             }
             var pose = xrSessionManager._currentXRFrame.getDevicePose(xrSessionManager._frameOfReference);
-            if(!pose || !pose.poseModelMatrix){
+            if (!pose || !pose.poseModelMatrix) {
                 return;
             }
 
             // Update the parent cameras matrix
-            BABYLON.Matrix.FromFloat32ArrayToRefScaled(pose.poseModelMatrix,0,1,this._tmpMatrix);
+            BABYLON.Matrix.FromFloat32ArrayToRefScaled(pose.poseModelMatrix, 0, 1, this._tmpMatrix);
             if (!this._scene.useRightHandedSystem) {
                 BABYLON.Matrix._ToggleModelMatrixHandInPlace(this._tmpMatrix);
             }
@@ -71,13 +71,13 @@ module BABYLON {
             this._tmpMatrix.getRotationMatrixToRef(this._tmpMatrix);
             BABYLON.Quaternion.FromRotationMatrixToRef(this._tmpMatrix, this.rotationQuaternion);
             this.computeWorldMatrix();
-            
+
             // Update camera rigs
             this._updateNumberOfRigCameras(xrSessionManager._currentXRFrame.views.length);
-            xrSessionManager._currentXRFrame.views.forEach((view, i)=>{
+            xrSessionManager._currentXRFrame.views.forEach((view, i) => {
                 // Update view/projection matrix
-                BABYLON.Matrix.FromFloat32ArrayToRefScaled(pose.getViewMatrix(view), 0, 1, this.rigCameras[i]._computedViewMatrix)                                    
-                BABYLON.Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, this.rigCameras[i]._projectionMatrix)
+                BABYLON.Matrix.FromFloat32ArrayToRefScaled(pose.getViewMatrix(view), 0, 1, this.rigCameras[i]._computedViewMatrix);
+                BABYLON.Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, this.rigCameras[i]._projectionMatrix);
                 if (!this._scene.useRightHandedSystem) {
                     BABYLON.Matrix._ToggleModelMatrixHandInPlace(this.rigCameras[i]._computedViewMatrix);
                     BABYLON.Matrix._ToggleProjectionMatrixHandInPlace(this.rigCameras[i]._projectionMatrix);
@@ -87,11 +87,11 @@ module BABYLON {
                 var viewport  = xrSessionManager._xrSession.baseLayer.getViewport(view);
                 var width = xrSessionManager._xrSession.baseLayer.framebufferWidth;
                 var height = xrSessionManager._xrSession.baseLayer.framebufferHeight;
-                this.rigCameras[i].viewport.width = viewport.width/width;
-                this.rigCameras[i].viewport.height = viewport.height/height;
-                this.rigCameras[i].viewport.x = viewport.x/width;
-                this.rigCameras[i].viewport.y = viewport.y/height;
-                
+                this.rigCameras[i].viewport.width = viewport.width / width;
+                this.rigCameras[i].viewport.height = viewport.height / height;
+                this.rigCameras[i].viewport.x = viewport.x / width;
+                this.rigCameras[i].viewport.y = viewport.y / height;
+
                 // Set cameras to render to the session's render target
                 this.rigCameras[i].renderTarget = xrSessionManager._sessionRenderTargetTexture;
             });
