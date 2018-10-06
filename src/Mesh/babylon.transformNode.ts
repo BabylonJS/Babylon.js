@@ -95,6 +95,7 @@ module BABYLON {
 
         /** @hidden */
         public _indexInSceneTransformNodesArray = -1;
+
         /**
         * An event triggered after the world matrix is updated
         */

@@ -264,7 +264,16 @@ module BABYLON {
                 return;
             }
 
+            // remove from material mesh map id needed
+            if (this._material && this._material.meshMap) {
+                this._material.meshMap[this.uniqueId] = undefined;
+            }
+
             this._material = value;
+
+            if (value && value.meshMap) {
+                value.meshMap[this.uniqueId] = this;
+            }
 
             if (this.onMaterialChangedObservable.hasObservers) {
                 this.onMaterialChangedObservable.notifyObservers(this);
