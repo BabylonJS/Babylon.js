@@ -263,31 +263,31 @@ var BABYLON;
             return BABYLON.SerializationHelper.Parse(function () { return new CellMaterial(source.name, scene); }, source, scene, rootUrl);
         };
         __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture")
+            serializeAsTexture("diffuseTexture")
         ], CellMaterial.prototype, "_diffuseTexture", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], CellMaterial.prototype, "diffuseTexture", void 0);
         __decorate([
-            BABYLON.serializeAsColor3("diffuse")
+            serializeAsColor3("diffuse")
         ], CellMaterial.prototype, "diffuseColor", void 0);
         __decorate([
-            BABYLON.serialize("computeHighLevel")
+            serialize("computeHighLevel")
         ], CellMaterial.prototype, "_computeHighLevel", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], CellMaterial.prototype, "computeHighLevel", void 0);
         __decorate([
-            BABYLON.serialize("disableLighting")
+            serialize("disableLighting")
         ], CellMaterial.prototype, "_disableLighting", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+            expandToProperty("_markAllSubMeshesAsLightsDirty")
         ], CellMaterial.prototype, "disableLighting", void 0);
         __decorate([
-            BABYLON.serialize("maxSimultaneousLights")
+            serialize("maxSimultaneousLights")
         ], CellMaterial.prototype, "_maxSimultaneousLights", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+            expandToProperty("_markAllSubMeshesAsLightsDirty")
         ], CellMaterial.prototype, "maxSimultaneousLights", void 0);
         return CellMaterial;
     }(BABYLON.PushMaterial));

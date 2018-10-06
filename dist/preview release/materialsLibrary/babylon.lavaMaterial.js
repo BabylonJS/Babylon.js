@@ -333,49 +333,49 @@ var BABYLON;
             return BABYLON.SerializationHelper.Parse(function () { return new LavaMaterial(source.name, scene); }, source, scene, rootUrl);
         };
         __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture")
+            serializeAsTexture("diffuseTexture")
         ], LavaMaterial.prototype, "_diffuseTexture", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], LavaMaterial.prototype, "diffuseTexture", void 0);
         __decorate([
-            BABYLON.serializeAsTexture()
+            serializeAsTexture()
         ], LavaMaterial.prototype, "noiseTexture", void 0);
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], LavaMaterial.prototype, "fogColor", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], LavaMaterial.prototype, "speed", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], LavaMaterial.prototype, "movingSpeed", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], LavaMaterial.prototype, "lowFrequencySpeed", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], LavaMaterial.prototype, "fogDensity", void 0);
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], LavaMaterial.prototype, "diffuseColor", void 0);
         __decorate([
-            BABYLON.serialize("disableLighting")
+            serialize("disableLighting")
         ], LavaMaterial.prototype, "_disableLighting", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+            expandToProperty("_markAllSubMeshesAsLightsDirty")
         ], LavaMaterial.prototype, "disableLighting", void 0);
         __decorate([
-            BABYLON.serialize("unlit")
+            serialize("unlit")
         ], LavaMaterial.prototype, "_unlit", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+            expandToProperty("_markAllSubMeshesAsLightsDirty")
         ], LavaMaterial.prototype, "unlit", void 0);
         __decorate([
-            BABYLON.serialize("maxSimultaneousLights")
+            serialize("maxSimultaneousLights")
         ], LavaMaterial.prototype, "_maxSimultaneousLights", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+            expandToProperty("_markAllSubMeshesAsLightsDirty")
         ], LavaMaterial.prototype, "maxSimultaneousLights", void 0);
         return LavaMaterial;
     }(BABYLON.PushMaterial));

@@ -162,10 +162,10 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serialize("font")
+            serialize("font")
         ], AsciiArtFontTexture.prototype, "_font", void 0);
         __decorate([
-            BABYLON.serialize("text")
+            serialize("text")
         ], AsciiArtFontTexture.prototype, "_text", void 0);
         return AsciiArtFontTexture;
     }(BABYLON.BaseTexture));
@@ -371,10 +371,10 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serialize("font")
+            serialize("font")
         ], DigitalRainFontTexture.prototype, "_font", void 0);
         __decorate([
-            BABYLON.serialize("text")
+            serialize("text")
         ], DigitalRainFontTexture.prototype, "_text", void 0);
         return DigitalRainFontTexture;
     }(BABYLON.BaseTexture));

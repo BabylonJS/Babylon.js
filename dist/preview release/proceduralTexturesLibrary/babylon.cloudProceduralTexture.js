@@ -76,10 +76,10 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serializeAsColor4()
+            serializeAsColor4()
         ], CloudProceduralTexture.prototype, "skyColor", null);
         __decorate([
-            BABYLON.serializeAsColor4()
+            serializeAsColor4()
         ], CloudProceduralTexture.prototype, "cloudColor", null);
         return CloudProceduralTexture;
     }(BABYLON.ProceduralTexture));

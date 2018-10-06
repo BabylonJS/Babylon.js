@@ -76,10 +76,10 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], WoodProceduralTexture.prototype, "ampScale", null);
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], WoodProceduralTexture.prototype, "woodColor", null);
         return WoodProceduralTexture;
     }(BABYLON.ProceduralTexture));

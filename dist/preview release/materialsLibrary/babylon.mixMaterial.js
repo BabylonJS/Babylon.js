@@ -384,85 +384,85 @@ var BABYLON;
             return BABYLON.SerializationHelper.Parse(function () { return new MixMaterial(source.name, scene); }, source, scene, rootUrl);
         };
         __decorate([
-            BABYLON.serializeAsTexture("mixTexture1")
+            serializeAsTexture("mixTexture1")
         ], MixMaterial.prototype, "_mixTexture1", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], MixMaterial.prototype, "mixTexture1", void 0);
         __decorate([
-            BABYLON.serializeAsTexture("mixTexture2")
+            serializeAsTexture("mixTexture2")
         ], MixMaterial.prototype, "_mixTexture2", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], MixMaterial.prototype, "mixTexture2", void 0);
         __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture1")
+            serializeAsTexture("diffuseTexture1")
         ], MixMaterial.prototype, "_diffuseTexture1", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], MixMaterial.prototype, "diffuseTexture1", void 0);
         __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture2")
+            serializeAsTexture("diffuseTexture2")
         ], MixMaterial.prototype, "_diffuseTexture2", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], MixMaterial.prototype, "diffuseTexture2", void 0);
         __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture3")
+            serializeAsTexture("diffuseTexture3")
         ], MixMaterial.prototype, "_diffuseTexture3", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], MixMaterial.prototype, "diffuseTexture3", void 0);
         __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture4")
+            serializeAsTexture("diffuseTexture4")
         ], MixMaterial.prototype, "_diffuseTexture4", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], MixMaterial.prototype, "diffuseTexture4", void 0);
         __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture1")
+            serializeAsTexture("diffuseTexture1")
         ], MixMaterial.prototype, "_diffuseTexture5", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], MixMaterial.prototype, "diffuseTexture5", void 0);
         __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture2")
+            serializeAsTexture("diffuseTexture2")
         ], MixMaterial.prototype, "_diffuseTexture6", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], MixMaterial.prototype, "diffuseTexture6", void 0);
         __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture3")
+            serializeAsTexture("diffuseTexture3")
         ], MixMaterial.prototype, "_diffuseTexture7", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], MixMaterial.prototype, "diffuseTexture7", void 0);
         __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture4")
+            serializeAsTexture("diffuseTexture4")
         ], MixMaterial.prototype, "_diffuseTexture8", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], MixMaterial.prototype, "diffuseTexture8", void 0);
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], MixMaterial.prototype, "diffuseColor", void 0);
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], MixMaterial.prototype, "specularColor", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], MixMaterial.prototype, "specularPower", void 0);
         __decorate([
-            BABYLON.serialize("disableLighting")
+            serialize("disableLighting")
         ], MixMaterial.prototype, "_disableLighting", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+            expandToProperty("_markAllSubMeshesAsLightsDirty")
         ], MixMaterial.prototype, "disableLighting", void 0);
         __decorate([
-            BABYLON.serialize("maxSimultaneousLights")
+            serialize("maxSimultaneousLights")
         ], MixMaterial.prototype, "_maxSimultaneousLights", void 0);
         __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+            expandToProperty("_markAllSubMeshesAsLightsDirty")
         ], MixMaterial.prototype, "maxSimultaneousLights", void 0);
         return MixMaterial;
     }(BABYLON.PushMaterial));

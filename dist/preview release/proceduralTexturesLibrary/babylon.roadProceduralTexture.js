@@ -63,7 +63,7 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], RoadProceduralTexture.prototype, "roadColor", null);
         return RoadProceduralTexture;
     }(BABYLON.ProceduralTexture));

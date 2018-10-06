@@ -84,10 +84,10 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], WoodProceduralTexture.prototype, "ampScale", null);
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], WoodProceduralTexture.prototype, "woodColor", null);
         return WoodProceduralTexture;
     }(BABYLON.ProceduralTexture));
@@ -274,16 +274,16 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], FireProceduralTexture.prototype, "autoGenerateTime", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], FireProceduralTexture.prototype, "time", null);
         __decorate([
-            BABYLON.serializeAsVector2()
+            serializeAsVector2()
         ], FireProceduralTexture.prototype, "speed", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], FireProceduralTexture.prototype, "alphaThreshold", null);
         return FireProceduralTexture;
     }(BABYLON.ProceduralTexture));
@@ -355,10 +355,10 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serializeAsColor4()
+            serializeAsColor4()
         ], CloudProceduralTexture.prototype, "skyColor", null);
         __decorate([
-            BABYLON.serializeAsColor4()
+            serializeAsColor4()
         ], CloudProceduralTexture.prototype, "cloudColor", null);
         return CloudProceduralTexture;
     }(BABYLON.ProceduralTexture));
@@ -445,7 +445,7 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], GrassProceduralTexture.prototype, "groundColor", null);
         return GrassProceduralTexture;
     }(BABYLON.ProceduralTexture));
@@ -504,7 +504,7 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], RoadProceduralTexture.prototype, "roadColor", null);
         return RoadProceduralTexture;
     }(BABYLON.ProceduralTexture));
@@ -602,16 +602,16 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], BrickProceduralTexture.prototype, "numberOfBricksHeight", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], BrickProceduralTexture.prototype, "numberOfBricksWidth", null);
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], BrickProceduralTexture.prototype, "jointColor", null);
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], BrickProceduralTexture.prototype, "brickColor", null);
         return BrickProceduralTexture;
     }(BABYLON.ProceduralTexture));
@@ -709,16 +709,16 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], MarbleProceduralTexture.prototype, "numberOfTilesHeight", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], MarbleProceduralTexture.prototype, "amplitude", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], MarbleProceduralTexture.prototype, "numberOfTilesWidth", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], MarbleProceduralTexture.prototype, "jointColor", null);
         return MarbleProceduralTexture;
     }(BABYLON.ProceduralTexture));
@@ -907,37 +907,37 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "time", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "alpha", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "beta", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "formuparam", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "stepsize", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "zoom", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "tile", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "brightness", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "darkmatter", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "distfading", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], StarfieldProceduralTexture.prototype, "saturation", null);
         return StarfieldProceduralTexture;
     }(BABYLON.ProceduralTexture));
@@ -1004,7 +1004,7 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serializeAsTexture()
+            serializeAsTexture()
         ], NormalMapProceduralTexture.prototype, "baseTexture", null);
         return NormalMapProceduralTexture;
     }(BABYLON.ProceduralTexture));
@@ -1071,13 +1071,13 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], PerlinNoiseProceduralTexture.prototype, "time", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], PerlinNoiseProceduralTexture.prototype, "timeScale", void 0);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], PerlinNoiseProceduralTexture.prototype, "translationSpeed", void 0);
         return PerlinNoiseProceduralTexture;
     }(BABYLON.ProceduralTexture));

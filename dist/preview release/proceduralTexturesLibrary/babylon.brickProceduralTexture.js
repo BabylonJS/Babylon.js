@@ -102,16 +102,16 @@ var BABYLON;
             return texture;
         };
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], BrickProceduralTexture.prototype, "numberOfBricksHeight", null);
         __decorate([
-            BABYLON.serialize()
+            serialize()
         ], BrickProceduralTexture.prototype, "numberOfBricksWidth", null);
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], BrickProceduralTexture.prototype, "jointColor", null);
         __decorate([
-            BABYLON.serializeAsColor3()
+            serializeAsColor3()
         ], BrickProceduralTexture.prototype, "brickColor", null);
         return BrickProceduralTexture;
     }(BABYLON.ProceduralTexture));
