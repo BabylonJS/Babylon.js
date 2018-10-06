@@ -155,10 +155,6 @@ interface HTMLVideoElement {
     mozSrcObject: any;
 }
 
-interface Element {
-    webkitRequestFullScreen: () => void;
-}
-
 interface Screen {
     readonly orientation: string;
     readonly mozOrientation: string;

@@ -100,7 +100,7 @@ module BABYLON {
 
             // OBB
             max.addToRef(min, this.center).scaleInPlace(0.5);
-            max.subtractToRef(max, this.extendSize).scaleInPlace(0.5);
+            max.subtractToRef(min, this.extendSize).scaleInPlace(0.5);
 
             this._update(worldMatrix || _identityMatrix, extraWorldExtent || 0);
         }
