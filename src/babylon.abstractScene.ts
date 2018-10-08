@@ -174,5 +174,10 @@ module BABYLON {
          * Textures to keep.
          */
         public textures = new Array<BaseTexture>();
+
+        /**
+         * Effect layers in the scene.
+         */
+        public effectLayers = new Array<EffectLayer>();
     }
 }
