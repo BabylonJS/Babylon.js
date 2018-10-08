@@ -116,7 +116,7 @@ module BABYLON {
             this._caps.vertexArrayObject = false;
             this._caps.instancedArrays = false;
 
-            Tools.Log("Babylon.js null engine (v" + Engine.Version + ") launched");
+            Tools.Log(`Babylon.js v${Engine.Version} - Null engine`);
 
             // Wrappers
             if (typeof URL === "undefined") {

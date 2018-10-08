@@ -8,7 +8,7 @@ module BABYLON {
      * Constant used to convert a value to linear space
      * @ignorenaming
      */
-     export const ToLinearSpace = 2.2;
+    export const ToLinearSpace = 2.2;
     /**
      * Constant used to define the minimal number value in Babylon.js
      * @ignorenaming
@@ -1978,7 +1978,7 @@ module BABYLON {
          * @param len the length of the vector
          * @returns the current updated Vector3
          */
-        public normalizeFromLength(len : number): Vector3 {
+        public normalizeFromLength(len: number): Vector3 {
             if (len === 0 || len === 1.0) {
                 return this;
             }
@@ -4880,8 +4880,25 @@ module BABYLON {
             return this;
         }
 
-        // Statics
+        /**
+         * Toggles model matrix from being right handed to left handed in place and vice versa
+         */
+        public toggleModelMatrixHandInPlace() {
+            [2, 6, 8, 9, 14].forEach((num) => {
+                this.m[num] *= -1;
+            });
+        }
 
+        /**
+         * Toggles projection matrix from being right handed to left handed in place and vice versa
+         */
+        public toggleProjectionMatrixHandInPlace() {
+            [8, 9, 10, 11].forEach((num) => {
+                this.m[num] *= -1;
+            });
+        }
+
+        // Statics
         /**
          * Creates a matrix from an array
          * @param array defines the source array
@@ -7175,7 +7192,7 @@ module BABYLON {
         public static Vector3: Vector3[] = Tools.BuildArray(13, Vector3.Zero); // 13 temp Vector3 at once should be enough
         public static Vector4: Vector4[] = Tools.BuildArray(3, Vector4.Zero); // 3 temp Vector4 at once should be enough
         public static Quaternion: Quaternion[] = Tools.BuildArray(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
-        public static Matrix: Matrix[] = Tools.BuildArray(6, Matrix.Identity); // 6 temp Matrices at once should be enough
+        public static Matrix: Matrix[] = Tools.BuildArray(8, Matrix.Identity); // 8 temp Matrices at once should be enough
     }
     /**
      * @hidden

@@ -183,3 +183,44 @@ interface EXT_disjoint_timer_query {
 interface WebGLUniformLocation {
     _currentState: any;
 }
+
+// WebXR
+interface XRDevice {
+    requestSession(options: XRSessionCreationOptions): Promise<XRSession>;
+}
+interface XRSession {
+    baseLayer: XRWebGLLayer;
+    requestFrameOfReference(type: XRFrameOfReferenceType): Promise<void>;
+    requestHitTest(origin: Float32Array, direction: Float32Array, frameOfReference: any): any;
+    end(): void;
+    requestAnimationFrame: Function;
+}
+interface XRSessionCreationOptions {
+}
+interface XRLayer {
+    getViewport: Function;
+    framebufferWidth: number;
+    framebufferHeight: number;
+}
+interface XRView {
+    projectionMatrix: Float32Array;
+}
+interface XRFrame {
+    getDevicePose: Function;
+    views: Array<XRView>;
+    baseLayer: XRLayer;
+}
+interface XRFrameOfReference {
+}
+interface XRWebGLLayer extends XRLayer {
+    framebuffer: WebGLFramebuffer;
+}
+declare var XRWebGLLayer: {
+    prototype: XRWebGLLayer;
+    new(session: XRSession, context?: WebGLRenderingContext): XRWebGLLayer;
+};
+enum XRFrameOfReferenceType {
+    "head-model",
+    "eye-level",
+    "stage",
+}
