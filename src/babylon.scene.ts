@@ -1752,8 +1752,6 @@ module BABYLON {
         public simulatePointerUp(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): Scene {
             let evt = new PointerEvent("pointerup", pointerEventInit);
             let clickInfo = new ClickInfo();
-            clickInfo.singleClick = true;
-            clickInfo.ignore = true;
 
             if (this._checkPrePointerObservable(pickResult, evt, PointerEventTypes.POINTERUP)) {
                 return this;
