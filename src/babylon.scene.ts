@@ -1805,27 +1805,17 @@ module BABYLON {
 
             let type = PointerEventTypes.POINTERUP;
             if (this.onPointerObservable.hasObservers()) {
-                if (!clickInfo.ignore) {
-                    if (!clickInfo.hasSwiped) {
-                        if (clickInfo.singleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
-                            let type = PointerEventTypes.POINTERTAP;
-                            let pi = new PointerInfo(type, evt, pickResult);
-                            this._setRayOnPointerInfo(pi);
-                            this.onPointerObservable.notifyObservers(pi, type);
-                        }
-                        if (clickInfo.doubleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
-                            let type = PointerEventTypes.POINTERDOUBLETAP;
-                            let pi = new PointerInfo(type, evt, pickResult);
-                            this._setRayOnPointerInfo(pi);
-                            this.onPointerObservable.notifyObservers(pi, type);
-                        }
+                if (!clickInfo.ignore && !clickInfo.hasSwiped) {
+                    if (clickInfo.singleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
+                        type = PointerEventTypes.POINTERTAP;
+                    }
+                    else if (clickInfo.doubleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
+                        type = PointerEventTypes.POINTERDOUBLETAP;
                     }
                 }
-                else {
-                    let pi = new PointerInfo(type, evt, pickResult);
-                    this._setRayOnPointerInfo(pi);
-                    this.onPointerObservable.notifyObservers(pi, type);
-                }
+                let pi = new PointerInfo(type, evt, pickResult);
+                this._setRayOnPointerInfo(pi);
+                this.onPointerObservable.notifyObservers(pi, type);
             }
 
             if (this.onPointerUp && !clickInfo.ignore) {
