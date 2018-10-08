@@ -588,7 +588,7 @@ module BABYLON {
             // Is predicate defined?
             if (this.renderListPredicate) {
                 if (this.renderList) {
-                    this.renderList.splice(0); // Clear previous renderList
+                    this.renderList.length = 0; // Clear previous renderList
                 } else {
                     this.renderList = [];
                 }
