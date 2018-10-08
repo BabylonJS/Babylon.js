@@ -44,7 +44,7 @@
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
 - Fixed a bug with pointer up being fire twice ([Deltakosh](https://github.com/deltakosh))
 - Fixed a bug with particle systems being update once per camera instead of once per frame ([Deltakosh](https://github.com/deltakosh))
-
+- Handle properly the `LinesMesh` `intersectionThreshold` by using its value directly when the intersection against a `Ray` is checked, instead of extending the `BoundingInfo` accordingly ([barroij](https://github.com/barroij))
 
 ### Viewer
 
