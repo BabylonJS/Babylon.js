@@ -20,6 +20,11 @@ module BABYLON {
         constructor(scene: Scene) {
             super();
             this.scene = scene;
+            this["sounds"] = [];
+            this["effectLayers"] = [];
+            this["layers"] = [];
+            this["lensFlareSystems"] = [];
+            this["proceduralTextures"] = [];
         }
 
         /**
@@ -65,7 +70,7 @@ module BABYLON {
             this.textures.forEach((o) => {
                 this.scene.addTexture(o);
             });
-            
+
             for (let component of this.scene._serializableComponents) {
                 component.addFromContainer(this);
             }
@@ -114,7 +119,7 @@ module BABYLON {
             this.textures.forEach((o) => {
                 this.scene.removeTexture(o);
             });
-            
+
             for (let component of this.scene._serializableComponents) {
                 component.removeFromContainer(this);
             }
