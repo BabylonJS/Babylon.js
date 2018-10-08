@@ -481,7 +481,20 @@ module BABYLON {
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "4.0.0-alpha.0";
+            return "4.0.0-alpha.2";
+        }
+
+        /**
+         * Returns a string describing the current engine
+         */
+        public get description(): string {
+            let description = "WebGL" + this.webGLVersion;
+
+            if (this._caps.parallelShaderCompile) {
+                description += " - Parallel shader compilation";
+            }
+
+            return description;
         }
 
         // Updatable statics so stick with vars here
@@ -1230,7 +1243,7 @@ module BABYLON {
             // Detect if we are running on a faulty buggy desktop OS.
             this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-            console.log("Babylon.js engine (v" + Engine.Version + ") launched");
+            console.log(`Babylon.js v${Engine.Version} - ${this.description}`);
 
             this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
         }

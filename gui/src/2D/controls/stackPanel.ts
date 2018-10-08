@@ -26,7 +26,10 @@ export class StackPanel extends Container {
         this._markAsDirty();
     }
 
-    /** Gets or sets panel width */
+    /**
+     * Gets or sets panel width.
+     * This value should not be set when in horizontal mode as it will be computed automatically
+     */
     public set width(value: string | number) {
         if (!this._doNotTrackManualChanges) {
             this._manualWidth = true;
@@ -45,7 +48,10 @@ export class StackPanel extends Container {
         return this._width.toString(this._host);
     }
 
-    /** Gets or sets panel height */
+    /**
+     * Gets or sets panel height.
+     * This value should not be set when in vertical mode as it will be computed automatically
+     */
     public set height(value: string | number) {
         if (!this._doNotTrackManualChanges) {
             this._manualHeight = true;
