@@ -1894,7 +1894,6 @@ module BABYLON {
                         checkPicking = act.hasPickTriggers;
                     }
                 }
-                let eventRaised = false;
                 if (checkPicking) {
                     let btn = evt.button;
                     clickInfo.hasSwiped = this._isPointerSwiping();
@@ -4407,10 +4406,10 @@ module BABYLON {
                     var internalTexture = this.activeCamera.customDefaultRenderTarget.getInternalTexture();
                     if (internalTexture) {
                         engine.bindFramebuffer(internalTexture);
-                    }else {
+                    } else {
                         Tools.Error("Camera contains invalid customDefaultRenderTarget");
                     }
-                }else {
+                } else {
                     engine.restoreDefaultFramebuffer(); // Restore back buffer if needed
                 }
             }

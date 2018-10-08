@@ -53,4 +53,5 @@
 ## Breaking changes
 
 - `Database.IDBStorageEnabled` is now false by default ([Deltakosh](https://github.com/deltakosh))
-- `Database.openAsync` was renamed by `Database.open`
+- `Database.openAsync` was renamed by `Database.open` ([Deltakosh](https://github.com/deltakosh))
+- `scene.database` was renamed to `scene.offlineProvider` ([Deltakosh](https://github.com/deltakosh))
