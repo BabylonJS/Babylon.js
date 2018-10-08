@@ -70,6 +70,18 @@ module BABYLON {
          * It will improve performance when the number of geometries becomes important.
          */
         useGeometryIdsMap?: boolean;
+
+        /**
+         * Defines that each material of the scene should keep up-to-date a map of referencing meshes for fast diposing
+         * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
+         */
+        useMaterialMeshMap?: boolean;
+
+        /**
+         * Defines that each mesh of the scene should keep up-to-date a map of referencing cloned meshes for fast diposing
+         * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
+         */
+        useClonedMeshhMap?: boolean;
     }
 
     /**
@@ -1015,6 +1027,11 @@ module BABYLON {
          */
         public requireLightSorting = false;
 
+        /** @hidden */
+        public readonly useMaterialMeshMap: boolean;
+        /** @hidden */
+        public readonly useClonedMeshhMap: boolean;
+
         private _pointerOverMesh: Nullable<AbstractMesh>;
 
         private _pickedDownMesh: Nullable<AbstractMesh>;
@@ -1222,6 +1239,9 @@ module BABYLON {
             if (options && options.useGeometryIdsMap === true) {
                 this.geometriesById = {};
             }
+
+            this.useMaterialMeshMap = options && options.useGeometryIdsMap || false;
+            this.useClonedMeshhMap = options && options.useClonedMeshhMap || false;
         }
 
         private _defaultMeshCandidates: ISmartArrayLike<AbstractMesh> = {
@@ -1808,7 +1828,7 @@ module BABYLON {
                 }
             }
 
-            if (this.onPointerUp) {
+            if (this.onPointerUp && !clickInfo.ignore) {
                 this.onPointerUp(evt, pickResult, type);
             }
 
@@ -1899,7 +1919,6 @@ module BABYLON {
                             if (Date.now() - this._previousStartingPointerTime > Scene.DoubleClickDelay ||
                                 btn !== this._previousButtonPressed) {
                                 clickInfo.singleClick = true;
-                                eventRaised = true;
                                 cb(clickInfo, this._currentPickResult);
                             }
                         }
@@ -1969,10 +1988,8 @@ module BABYLON {
                     }
                 }
 
-                if (!eventRaised) {
-                    clickInfo.ignore = true;
-                    cb(clickInfo, this._currentPickResult);
-                }
+                clickInfo.ignore = true;
+                cb(clickInfo, this._currentPickResult);
             };
 
             this._onPointerMove = (evt: PointerEvent) => {
@@ -2999,7 +3016,8 @@ module BABYLON {
             var index = this.meshes.indexOf(toRemove);
             if (index !== -1) {
                 // Remove from the scene if mesh found
-                this.meshes.splice(index, 1);
+                this.meshes[index] = this.meshes[this.meshes.length - 1];
+                this.meshes.pop();
             }
 
             this.onMeshRemovedObservable.notifyObservers(toRemove);
@@ -3183,10 +3201,18 @@ module BABYLON {
          * @returns The index of the removed material
          */
         public removeMaterial(toRemove: Material): number {
-            var index = this.materials.indexOf(toRemove);
+            var index = toRemove._indexInSceneMaterialArray;
             if (index !== -1) {
-                this.materials.splice(index, 1);
+                if (index !== this.materials.length - 1) {
+                    const lastMaterial = this.materials[this.materials.length - 1];
+                    this.materials[index] = lastMaterial;
+                    lastMaterial._indexInSceneMaterialArray = index;
+                }
+
+                toRemove._indexInSceneMaterialArray = -1;
+                this.materials.pop();
             }
+
             this.onMaterialRemovedObservable.notifyObservers(toRemove);
 
             return index;
@@ -3302,6 +3328,7 @@ module BABYLON {
          * @param newMaterial The material to add
          */
         public addMaterial(newMaterial: Material): void {
+            newMaterial._indexInSceneMaterialArray = this.materials.length;
             this.materials.push(newMaterial);
             this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
         }
@@ -4039,10 +4066,38 @@ module BABYLON {
             this._processedMaterials.dispose();
         }
 
+        private _preventFreeActiveMeshesAndRenderingGroups = false;
+
+        /** Gets or sets a boolean blocking all the calls to freeActiveMeshes and freeRenderingGroups
+         * It can be used in order to prevent going through methods freeRenderingGroups and freeActiveMeshes several times to improve performance
+         * when disposing several meshes in a row or a hierarchy of meshes.
+         * When used, it is the responsability of the user to blockfreeActiveMeshesAndRenderingGroups back to false.
+         */
+        public get blockfreeActiveMeshesAndRenderingGroups(): boolean {
+            return this._preventFreeActiveMeshesAndRenderingGroups;
+        }
+
+        public set blockfreeActiveMeshesAndRenderingGroups(value: boolean) {
+            if (this._preventFreeActiveMeshesAndRenderingGroups === value) {
+                return;
+            }
+
+            if (value) {
+                this.freeActiveMeshes();
+                this.freeRenderingGroups();
+            }
+
+            this._preventFreeActiveMeshesAndRenderingGroups = value;
+        }
+
         /**
          * Clear the active meshes smart array preventing retention point in mesh dispose.
          */
         public freeActiveMeshes(): void {
+            if (this.blockfreeActiveMeshesAndRenderingGroups) {
+                return;
+            }
+
             this._activeMeshes.dispose();
             if (this.activeCamera && this.activeCamera._activeMeshes) {
                 this.activeCamera._activeMeshes.dispose();
@@ -4061,6 +4116,10 @@ module BABYLON {
          * Clear the info related to rendering groups preventing retention points during dispose.
          */
         public freeRenderingGroups(): void {
+            if (this.blockfreeActiveMeshesAndRenderingGroups) {
+                return;
+            }
+
             if (this._renderingManager) {
                 this._renderingManager.freeRenderingGroups();
             }

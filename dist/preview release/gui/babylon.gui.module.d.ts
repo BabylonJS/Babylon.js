@@ -1756,9 +1756,15 @@ declare module 'babylonjs-gui/2D/controls/stackPanel' {
             name?: string | undefined;
             /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
             isVertical: boolean;
-            /** Gets or sets panel width */
+            /**
+                * Gets or sets panel width.
+                * This value should not be set when in horizontal mode as it will be computed automatically
+                */
             width: string | number;
-            /** Gets or sets panel height */
+            /**
+                * Gets or sets panel height.
+                * This value should not be set when in vertical mode as it will be computed automatically
+                */
             height: string | number;
             /**
                 * Creates a new StackPanel
@@ -4446,9 +4452,15 @@ declare module BABYLON.GUI {
             name?: string | undefined;
             /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
             isVertical: boolean;
-            /** Gets or sets panel width */
+            /**
+                * Gets or sets panel width.
+                * This value should not be set when in horizontal mode as it will be computed automatically
+                */
             width: string | number;
-            /** Gets or sets panel height */
+            /**
+                * Gets or sets panel height.
+                * This value should not be set when in vertical mode as it will be computed automatically
+                */
             height: string | number;
             /**
                 * Creates a new StackPanel
