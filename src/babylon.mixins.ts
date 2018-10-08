@@ -154,10 +154,6 @@ interface HTMLVideoElement {
     mozSrcObject: any;
 }
 
-interface Screen {
-    readonly mozOrientation: string;
-}
-
 interface Math {
     fround(x: number): number;
     imul(a: number, b: number): number;
