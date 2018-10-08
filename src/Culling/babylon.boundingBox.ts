@@ -1,6 +1,6 @@
 module BABYLON {
 
-    const _identityMatrix = Matrix.Identity();
+    const _identityMatrix = Object.freeze(Matrix.Identity());
 
     /**
      * Class used to store bounding box information
