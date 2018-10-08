@@ -33,6 +33,7 @@ module BABYLON {
          * Checks if the ray intersects a box
          * @param minimum bound of the box
          * @param maximum bound of the box
+         * @param intersectionTreshold extra extend to be added to the box in all direction
          * @returns if the box was hit
          */
         public intersectsBoxMinMax(minimum: Vector3, maximum: Vector3, intersectionTreshold: number = 0): boolean {
@@ -132,6 +133,7 @@ module BABYLON {
         /**
          * Checks if the ray intersects a box
          * @param box the bounding box to check
+         * @param intersectionTreshold extra extend to be added to the BoundingBox in all direction
          * @returns if the box was hit
          */
         public intersectsBox(box: BoundingBox, intersectionTreshold: number = 0): boolean {
@@ -141,6 +143,7 @@ module BABYLON {
         /**
          * If the ray hits a sphere
          * @param sphere the bounding sphere to check
+         * @param intersectionTreshold extra extend to be added to the BoundingSphere in all direction
          * @returns true if it hits the sphere
          */
         public intersectsSphere(sphere: BoundingSphere, intersectionTreshold: number = 0): boolean {
