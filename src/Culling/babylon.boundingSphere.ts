@@ -32,7 +32,7 @@ module BABYLON {
         public maximum = Vector3.Zero();
 
         /**
-         * an optional extra extent that will be added in all diretionsto the world BoundingBox.
+         * an optional extra extent that will be added in all diretions to the world BoundingBox.
          * Note that vectorsWorld value is not impacted by this, only minimumWorld, maximumWorld and extendSizeWorld.
          */
         private _extraWorldExtent: number | undefined;
@@ -45,7 +45,7 @@ module BABYLON {
          * @param min defines the minimum vector (in local space)
          * @param max defines the maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
-         * @param extraWorldExtent an extra extent that will be added in all diretionsto the world BoundingSphere
+         * @param extraWorldExtent an extra extent that will be added in all diretions to the world BoundingSphere
          */
         constructor(min: Vector3, max: Vector3, worldMatrix?: Matrix, extraWorldExtent?: number) {
             this.reConstruct(min, max, worldMatrix, extraWorldExtent);
@@ -56,7 +56,7 @@ module BABYLON {
          * @param min defines the new minimum vector (in local space)
          * @param max defines the new maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
-         * @param extraWorldExtent an extra extent that will be added in all diretionsto the world BoundingSphere
+         * @param extraWorldExtent an extra extent that will be added in all diretions to the world BoundingSphere
          */
         public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix, extraWorldExtent?: number) {
             this.minimum.copyFrom(min);
