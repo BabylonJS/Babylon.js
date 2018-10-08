@@ -3,6 +3,7 @@ module BABYLON {
      * LineEdgesRenderer for LineMeshes to remove unnecessary triangulation
      */
     export class LineEdgesRenderer extends EdgesRenderer {
+
         /**
          * This constructor turns off auto generating edges line in Edges Renderer to make it here.
          * @param  source LineMesh used to generate edges
@@ -39,7 +40,9 @@ module BABYLON {
 
             this._buffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, this._linesPositions, VertexBuffer.PositionKind, false);
             this._buffers[VertexBuffer.NormalKind] = new VertexBuffer(engine, this._linesNormals, VertexBuffer.NormalKind, false, false, 4);
+
             this._ib = engine.createIndexBuffer(this._linesIndices);
+
             this._indicesCount = this._linesIndices.length;
         }
     }
