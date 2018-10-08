@@ -221,10 +221,10 @@ module BABYLON {
             var meshBB = this._sourceMesh.getBoundingInfo();
 
             if (this._boundingInfo) {
-                this._boundingInfo.reConstruct(meshBB.minimum, meshBB.maximum, undefined, meshBB.extraWorldExtent);
+                this._boundingInfo.reConstruct(meshBB.minimum, meshBB.maximum);
             }
             else {
-                this._boundingInfo = new BoundingInfo(meshBB.minimum, meshBB.maximum, undefined, meshBB.extraWorldExtent);
+                this._boundingInfo = new BoundingInfo(meshBB.minimum, meshBB.maximum);
             }
 
             this._updateBoundingInfo();

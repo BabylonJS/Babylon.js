@@ -1298,8 +1298,9 @@ module BABYLON {
          */
         public intersects(ray: Ray, fastCheck?: boolean): PickingInfo {
             var pickingInfo = new PickingInfo();
-
-            if (!this.subMeshes || !this._boundingInfo || !ray.intersectsSphere(this._boundingInfo.boundingSphere) || !ray.intersectsBox(this._boundingInfo.boundingBox)) {
+            const intersectionTreshold = this.getClassName() === "LinesMesh" ? (<LinesMesh>(this as any)).intersectionThreshold : 0;
+            const boundingInfo = this._boundingInfo;
+            if (!this.subMeshes || !boundingInfo || !ray.intersectsSphere(boundingInfo.boundingSphere, intersectionTreshold) || !ray.intersectsBox(boundingInfo.boundingBox, intersectionTreshold)) {
                 return pickingInfo;
             }
 
@@ -1335,13 +1336,11 @@ module BABYLON {
 
             if (intersectInfo) {
                 // Get picked point
-                var world = this.getWorldMatrix();
-                var worldOrigin = Vector3.TransformCoordinates(ray.origin, world);
-                var direction = ray.direction.clone();
-                direction = direction.scale(intersectInfo.distance);
-                var worldDirection = Vector3.TransformNormal(direction, world);
-
-                var pickedPoint = worldOrigin.add(worldDirection);
+                const world = this.getWorldMatrix();
+                const worldOrigin = Vector3.TransformCoordinates(ray.origin, world);
+                const direction = ray.direction.scaleToRef(intersectInfo.distance, Tmp.Vector3[0]);
+                const worldDirection = Vector3.TransformNormal(direction, world);
+                const pickedPoint = worldDirection.addInPlace(worldOrigin);
 
                 // Return result
                 pickingInfo.hit = true;
