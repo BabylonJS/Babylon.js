@@ -874,7 +874,7 @@ module BABYLON {
                 this._instanceDataStorage.visibleInstances = {
                     defaultRenderId: renderId,
                     selfDefaultRenderId: this._renderId
-                }
+                };
             }
 
             if (!this._instanceDataStorage.visibleInstances[renderId]) {
