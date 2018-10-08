@@ -65,9 +65,10 @@ module BABYLON {
             this.textures.forEach((o) => {
                 this.scene.addTexture(o);
             });
-            this.effectLayers.forEach((o) => {
-                this.scene.addEffectLayer(o);
-            });
+            
+            for (let component of this.scene._serializableComponents) {
+                component.addFromContainer(this);
+            }
         }
 
         /**
@@ -113,9 +114,10 @@ module BABYLON {
             this.textures.forEach((o) => {
                 this.scene.removeTexture(o);
             });
-            this.effectLayers.forEach((o) => {
-                this.scene.removeEffectLayer(o);
-            });
+            
+            for (let component of this.scene._serializableComponents) {
+                component.removeFromContainer(this);
+            }
         }
 
         private _moveAssets<T>(sourceAssets: T[], targetAssets: T[], keepAssets: T[]): void {
