@@ -4880,8 +4880,25 @@ module BABYLON {
             return this;
         }
 
-        // Statics
+        /**
+         * Toggles model matrix from being right handed to left handed in place and vice versa
+         */
+        public toggleModelMatrixHandInPlace() {
+            [2, 6, 8, 9, 14].forEach((num) => {
+                this.m[num] *= -1;
+            });
+        }
 
+        /**
+         * Toggles projection matrix from being right handed to left handed in place and vice versa
+         */
+        public toggleProjectionMatrixHandInPlace() {
+            [8, 9, 10, 11].forEach((num) => {
+                this.m[num] *= -1;
+            });
+        }
+
+        // Statics
         /**
          * Creates a matrix from an array
          * @param array defines the source array

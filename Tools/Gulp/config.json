@@ -1298,7 +1298,8 @@
                 "../../src/Cameras/VR/babylon.vrDeviceOrientationArcRotateCamera.js",
                 "../../src/Cameras/VR/babylon.vrDeviceOrientationGamepadCamera.js",
                 "../../src/Cameras/VR/babylon.vrExperienceHelper.js",
-                "../../src/Cameras/XR/babylon.webXRCamera.js"
+                "../../src/Cameras/XR/babylon.webXRCamera.js",
+                "../../src/Cameras/XR/babylon.webXRSessionManager.js"
             ],
             "dependUpon": [
                 "core",
