@@ -3,11 +3,13 @@ module BABYLON {
      * Class representing a ray with position and direction
      */
     export class Ray {
-        private _edge1: Vector3;
-        private _edge2: Vector3;
-        private _pvec: Vector3;
-        private _tvec: Vector3;
-        private _qvec: Vector3;
+        private static _edge1 = Vector3.Zero();
+        private static _edge2 = Vector3.Zero();
+        private static _pvec = Vector3.Zero();
+        private static _tvec = Vector3.Zero();
+        private static _qvec = Vector3.Zero();
+        private static _min = Vector3.Zero();
+        private static _max = Vector3.Zero();
 
         private _tmpRay: Ray;
 
@@ -33,7 +35,9 @@ module BABYLON {
          * @param maximum bound of the box
          * @returns if the box was hit
          */
-        public intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean {
+        public intersectsBoxMinMax(minimum: Vector3, maximum: Vector3, intersectionTreshold: number = 0): boolean {
+            const newMinimum = Ray._min.copyFromFloats(minimum.x - intersectionTreshold, minimum.y - intersectionTreshold, minimum.z - intersectionTreshold);
+            const newMaximum = Ray._max.copyFromFloats(maximum.x + intersectionTreshold, maximum.y + intersectionTreshold, maximum.z + intersectionTreshold);
             var d = 0.0;
             var maxValue = Number.MAX_VALUE;
             var inv: number;
@@ -41,14 +45,14 @@ module BABYLON {
             var max: number;
             var temp: number;
             if (Math.abs(this.direction.x) < 0.0000001) {
-                if (this.origin.x < minimum.x || this.origin.x > maximum.x) {
+                if (this.origin.x < newMinimum.x || this.origin.x > newMaximum.x) {
                     return false;
                 }
             }
             else {
                 inv = 1.0 / this.direction.x;
-                min = (minimum.x - this.origin.x) * inv;
-                max = (maximum.x - this.origin.x) * inv;
+                min = (newMinimum.x - this.origin.x) * inv;
+                max = (newMaximum.x - this.origin.x) * inv;
                 if (max === -Infinity) {
                     max = Infinity;
                 }
@@ -68,14 +72,14 @@ module BABYLON {
             }
 
             if (Math.abs(this.direction.y) < 0.0000001) {
-                if (this.origin.y < minimum.y || this.origin.y > maximum.y) {
+                if (this.origin.y < newMinimum.y || this.origin.y > newMaximum.y) {
                     return false;
                 }
             }
             else {
                 inv = 1.0 / this.direction.y;
-                min = (minimum.y - this.origin.y) * inv;
-                max = (maximum.y - this.origin.y) * inv;
+                min = (newMinimum.y - this.origin.y) * inv;
+                max = (newMaximum.y - this.origin.y) * inv;
 
                 if (max === -Infinity) {
                     max = Infinity;
@@ -96,14 +100,14 @@ module BABYLON {
             }
 
             if (Math.abs(this.direction.z) < 0.0000001) {
-                if (this.origin.z < minimum.z || this.origin.z > maximum.z) {
+                if (this.origin.z < newMinimum.z || this.origin.z > newMaximum.z) {
                     return false;
                 }
             }
             else {
                 inv = 1.0 / this.direction.z;
-                min = (minimum.z - this.origin.z) * inv;
-                max = (maximum.z - this.origin.z) * inv;
+                min = (newMinimum.z - this.origin.z) * inv;
+                max = (newMaximum.z - this.origin.z) * inv;
 
                 if (max === -Infinity) {
                     max = Infinity;
@@ -130,8 +134,8 @@ module BABYLON {
          * @param box the bounding box to check
          * @returns if the box was hit
          */
-        public intersectsBox(box: BoundingBox): boolean {
-            return this.intersectsBoxMinMax(box.minimum, box.maximum);
+        public intersectsBox(box: BoundingBox, intersectionTreshold: number = 0): boolean {
+            return this.intersectsBoxMinMax(box.minimum, box.maximum, intersectionTreshold);
         }
 
         /**
@@ -139,12 +143,13 @@ module BABYLON {
          * @param sphere the bounding sphere to check
          * @returns true if it hits the sphere
          */
-        public intersectsSphere(sphere: BoundingSphere): boolean {
+        public intersectsSphere(sphere: BoundingSphere, intersectionTreshold: number = 0): boolean {
             var x = sphere.center.x - this.origin.x;
             var y = sphere.center.y - this.origin.y;
             var z = sphere.center.z - this.origin.z;
             var pyth = (x * x) + (y * y) + (z * z);
-            var rr = sphere.radius * sphere.radius;
+            const radius = sphere.radius + intersectionTreshold;
+            var rr = radius * radius;
 
             if (pyth <= rr) {
                 return true;
@@ -168,18 +173,10 @@ module BABYLON {
          * @returns intersection information if hit
          */
         public intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo> {
-            if (!this._edge1) {
-                this._edge1 = Vector3.Zero();
-                this._edge2 = Vector3.Zero();
-                this._pvec = Vector3.Zero();
-                this._tvec = Vector3.Zero();
-                this._qvec = Vector3.Zero();
-            }
-
-            vertex1.subtractToRef(vertex0, this._edge1);
-            vertex2.subtractToRef(vertex0, this._edge2);
-            Vector3.CrossToRef(this.direction, this._edge2, this._pvec);
-            var det = Vector3.Dot(this._edge1, this._pvec);
+            vertex1.subtractToRef(vertex0, Ray._edge1);
+            vertex2.subtractToRef(vertex0, Ray._edge2);
+            Vector3.CrossToRef(this.direction, Ray._edge2, Ray._pvec);
+            var det = Vector3.Dot(Ray._edge1, Ray._pvec);
 
             if (det === 0) {
                 return null;
@@ -187,24 +184,24 @@ module BABYLON {
 
             var invdet = 1 / det;
 
-            this.origin.subtractToRef(vertex0, this._tvec);
+            this.origin.subtractToRef(vertex0, Ray._tvec);
 
-            var bu = Vector3.Dot(this._tvec, this._pvec) * invdet;
+            var bu = Vector3.Dot(Ray._tvec, Ray._pvec) * invdet;
 
             if (bu < 0 || bu > 1.0) {
                 return null;
             }
 
-            Vector3.CrossToRef(this._tvec, this._edge1, this._qvec);
+            Vector3.CrossToRef(Ray._tvec, Ray._edge1, Ray._qvec);
 
-            var bv = Vector3.Dot(this.direction, this._qvec) * invdet;
+            var bv = Vector3.Dot(this.direction, Ray._qvec) * invdet;
 
             if (bv < 0 || bu + bv > 1.0) {
                 return null;
             }
 
             //check if the distance is longer than the predefined length.
-            var distance = Vector3.Dot(this._edge2, this._qvec) * invdet;
+            var distance = Vector3.Dot(Ray._edge2, Ray._qvec) * invdet;
             if (distance > this.length) {
                 return null;
             }

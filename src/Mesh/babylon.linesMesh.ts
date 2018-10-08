@@ -31,11 +31,7 @@ module BABYLON {
             if (this._intersectionThreshold === value) {
                 return;
             }
-
             this._intersectionThreshold = value;
-            if (this.geometry) {
-                this.geometry._boundingWorldExtraExtent = value;
-            }
         }
 
         private _intersectionThreshold: number;

@@ -871,9 +871,10 @@ module BABYLON {
         /** @hidden */
         public _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): Mesh {
             if (!this._instanceDataStorage.visibleInstances) {
-                this._instanceDataStorage.visibleInstances = {};
-                this._instanceDataStorage.visibleInstances.defaultRenderId = renderId;
-                this._instanceDataStorage.visibleInstances.selfDefaultRenderId = this._renderId;
+                this._instanceDataStorage.visibleInstances = {
+                    defaultRenderId: renderId,
+                    selfDefaultRenderId: this._renderId
+                }
             }
 
             if (!this._instanceDataStorage.visibleInstances[renderId]) {
@@ -899,16 +900,15 @@ module BABYLON {
                 return this;
             }
 
-            let extraWorldExtent = this.geometry ? this.geometry._boundingWorldExtraExtent : undefined;
             var data = this._getPositionData(applySkeleton);
             if (data) {
                 const bias = this.geometry ? this.geometry.boundingBias : null;
                 var extend = Tools.ExtractMinAndMax(data, 0, this.getTotalVertices(), bias);
                 if (this._boundingInfo) {
-                    this._boundingInfo.reConstruct(extend.minimum, extend.maximum, undefined, extraWorldExtent);
+                    this._boundingInfo.reConstruct(extend.minimum, extend.maximum);
                 }
                 else {
-                    this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum, undefined, extraWorldExtent);
+                    this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
                 }
             }
 

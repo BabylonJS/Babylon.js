@@ -33,7 +33,6 @@ module BABYLON {
         private _isDisposed = false;
         private _extend: { minimum: Vector3, maximum: Vector3 };
         private _boundingBias: Vector2;
-        public _boundingWorldExtraExtent: number = 0;
         /** @hidden */
         public _delayInfo: Array<string>;
         private _indexBuffer: Nullable<WebGLBuffer>;
@@ -118,10 +117,6 @@ module BABYLON {
 
             // applyToMesh
             if (mesh) {
-                if (mesh.getClassName() === "LinesMesh") {
-                    this._boundingWorldExtraExtent = (<LinesMesh>mesh).intersectionThreshold;
-                }
-
                 this.applyToMesh(mesh);
                 mesh.computeWorldMatrix(true);
             }
@@ -253,7 +248,7 @@ module BABYLON {
 
                 for (var index = 0; index < numOfMeshes; index++) {
                     var mesh = meshes[index];
-                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum, undefined, this._boundingWorldExtraExtent);
+                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
                     mesh._createGlobalSubMesh(false);
                     mesh.computeWorldMatrix(true);
                 }
@@ -320,10 +315,10 @@ module BABYLON {
                 var meshes = this._meshes;
                 for (const mesh of meshes) {
                     if (mesh._boundingInfo) {
-                        mesh._boundingInfo.reConstruct(this._extend.minimum, this._extend.maximum, undefined, this._boundingWorldExtraExtent);
+                        mesh._boundingInfo.reConstruct(this._extend.minimum, this._extend.maximum);
                     }
                     else {
-                        mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum, undefined, this._boundingWorldExtraExtent);
+                        mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
                     }
 
                     const subMeshes = mesh.subMeshes;
@@ -687,7 +682,7 @@ module BABYLON {
                     if (!this._extend) {
                         this._updateExtend();
                     }
-                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum, undefined, this._boundingWorldExtraExtent);
+                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
 
                     mesh._createGlobalSubMesh(false);
 
@@ -937,7 +932,7 @@ module BABYLON {
             }
 
             // Bounding info
-            geometry._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum, undefined, this._boundingWorldExtraExtent);
+            geometry._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
 
             return geometry;
         }

@@ -434,7 +434,7 @@ module BABYLON {
                     return result;
                 }
 
-                result._boundingInfo = new BoundingInfo(boundingInfo.minimum, boundingInfo.maximum, undefined, boundingInfo.extraWorldExtent);
+                result._boundingInfo = new BoundingInfo(boundingInfo.minimum, boundingInfo.maximum);
             }
 
             return result;

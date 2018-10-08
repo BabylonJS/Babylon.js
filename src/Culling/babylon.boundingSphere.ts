@@ -31,11 +31,6 @@ module BABYLON {
          */
         public maximum = Vector3.Zero();
 
-        /**
-         * an optional extra extent that will be added in all diretions to the world BoundingBox.
-         * Note that vectorsWorld value is not impacted by this, only minimumWorld, maximumWorld and extendSizeWorld.
-         */
-        private _extraWorldExtent: number | undefined;
         private _worldMatrix: Matrix;
 
         private static TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
@@ -45,10 +40,9 @@ module BABYLON {
          * @param min defines the minimum vector (in local space)
          * @param max defines the maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
-         * @param extraWorldExtent an extra extent that will be added in all diretions to the world BoundingSphere
          */
-        constructor(min: Vector3, max: Vector3, worldMatrix?: Matrix, extraWorldExtent?: number) {
-            this.reConstruct(min, max, worldMatrix, extraWorldExtent);
+        constructor(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
+            this.reConstruct(min, max, worldMatrix);
         }
 
         /**
@@ -56,9 +50,8 @@ module BABYLON {
          * @param min defines the new minimum vector (in local space)
          * @param max defines the new maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
-         * @param extraWorldExtent an extra extent that will be added in all diretions to the world BoundingSphere
          */
-        public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix, extraWorldExtent?: number) {
+        public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
             this.minimum.copyFrom(min);
             this.maximum.copyFrom(max);
 
@@ -67,7 +60,7 @@ module BABYLON {
             max.addToRef(min, this.center).scaleInPlace(0.5);
             this.radius = distance * 0.5;
 
-            this._update(worldMatrix || _identityMatrix, extraWorldExtent);
+            this._update(worldMatrix || _identityMatrix);
         }
 
         /**
@@ -82,16 +75,15 @@ module BABYLON {
             const min = this.center.subtractToRef(tempRadiusVector, tmpVectors[1]);
             const max = this.center.addToRef(tempRadiusVector, tmpVectors[2]);
 
-            this.reConstruct(min, max, this._worldMatrix, this._extraWorldExtent);
+            this.reConstruct(min, max, this._worldMatrix);
 
             return this;
         }
 
         // Methods
         /** @hidden */
-        public _update(worldMatrix: Matrix, extraWorldExtent?: number): void {
+        public _update(worldMatrix: Matrix): void {
             this._worldMatrix = worldMatrix;
-            this._extraWorldExtent = extraWorldExtent;
 
             if (this._worldMatrix !== _identityMatrix) {
                 Vector3.TransformCoordinatesToRef(this.center, worldMatrix, this.centerWorld);
@@ -102,10 +94,6 @@ module BABYLON {
             else {
                 this.centerWorld.copyFrom(this.center);
                 this.radiusWorld = this.radius;
-            }
-
-            if (extraWorldExtent) {
-                this.radiusWorld += extraWorldExtent;
             }
         }
 
