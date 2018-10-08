@@ -765,6 +765,12 @@ module BABYLON {
          */
         protected _uniformBuffer: UniformBuffer;
 
+        /** @hidden */
+        public _indexInSceneMaterialArray = -1;
+
+        /** @hidden */
+        public meshMap: Nullable<{[id: string]: AbstractMesh | undefined}>;
+
         /**
          * Creates a material instance
          * @param name defines the name of the material
@@ -788,8 +794,11 @@ module BABYLON {
             this._useUBO = this.getScene().getEngine().supportsUniformBuffers;
 
             if (!doNotAdd) {
-                this._scene.materials.push(this);
-                this._scene.onNewMaterialAddedObservable.notifyObservers(this);
+                this._scene.addMaterial(this);
+            }
+
+            if (this._scene.useMaterialMeshMap) {
+                this.meshMap = {};
             }
         }
 
@@ -1057,17 +1066,20 @@ module BABYLON {
          * @returns an array of meshes bound to the material
          */
         public getBindedMeshes(): AbstractMesh[] {
-            var result = new Array<AbstractMesh>();
-
-            for (var index = 0; index < this._scene.meshes.length; index++) {
-                var mesh = this._scene.meshes[index];
-
-                if (mesh.material === this) {
-                    result.push(mesh);
+            if (this.meshMap) {
+                var result = new Array<AbstractMesh>();
+                for (let meshId in this.meshMap) {
+                    const mesh = this.meshMap[meshId];
+                    if (mesh) {
+                        result.push(mesh);
+                    }
                 }
+                return result;
             }
-
-            return result;
+            else {
+                const meshes = this._scene.meshes;
+                return meshes.filter((mesh) => mesh.material === this);
+            }
         }
 
         /**
@@ -1259,38 +1271,34 @@ module BABYLON {
          * Disposes the material
          * @param forceDisposeEffect specifies if effects should be forcefully disposed
          * @param forceDisposeTextures specifies if textures should be forcefully disposed
+         * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to any mesh
          */
-        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
+        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
+            const scene = this.getScene();
             // Animations
-            this.getScene().stopAnimation(this);
-            this.getScene().freeProcessedMaterials();
+            scene.stopAnimation(this);
+            scene.freeProcessedMaterials();
 
             // Remove from scene
-            var index = this._scene.materials.indexOf(this);
-            if (index >= 0) {
-                this._scene.materials.splice(index, 1);
-            }
-            this._scene.onMaterialRemovedObservable.notifyObservers(this);
+            scene.removeMaterial(this);
 
-            // Remove from meshes
-            for (index = 0; index < this._scene.meshes.length; index++) {
-                var mesh = this._scene.meshes[index];
-
-                if (mesh.material === this) {
-                    mesh.material = null;
-
-                    if ((<Mesh>mesh).geometry) {
-                        var geometry = <Geometry>((<Mesh>mesh).geometry);
-
-                        if (this._storeEffectOnSubMeshes) {
-                            for (var subMesh of mesh.subMeshes) {
-                                geometry._releaseVertexArrayObject(subMesh._materialEffect);
-                                if (forceDisposeEffect && subMesh._materialEffect) {
-                                    this._scene.getEngine()._releaseEffect(subMesh._materialEffect);
-                                }
-                            }
-                        } else {
-                            geometry._releaseVertexArrayObject(this._effect);
+            if (notBoundToMesh !== true) {
+                // Remove from meshes
+                if (this.meshMap) {
+                    for (let meshId in this.meshMap) {
+                        const mesh = this.meshMap[meshId];
+                        if (mesh) {
+                            mesh.material = null; // will set the entry in the map to undefined
+                            this.releaseVertexArrayObject(mesh, forceDisposeEffect);
+                        }
+                    }
+                }
+                else {
+                    const meshes = scene.meshes;
+                    for (let mesh of meshes) {
+                        if (mesh.material === this) {
+                            mesh.material = null;
+                            this.releaseVertexArrayObject(mesh, forceDisposeEffect);
                         }
                     }
                 }
@@ -1301,7 +1309,7 @@ module BABYLON {
             // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
             if (forceDisposeEffect && this._effect) {
                 if (!this._storeEffectOnSubMeshes) {
-                    this._scene.getEngine()._releaseEffect(this._effect);
+                    scene.getEngine()._releaseEffect(this._effect);
                 }
 
                 this._effect = null;
@@ -1317,6 +1325,24 @@ module BABYLON {
 
             if (this._onUnBindObservable) {
                 this._onUnBindObservable.clear();
+            }
+        }
+
+        /** @hidden */
+        private  releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {
+            if ((<Mesh>mesh).geometry) {
+                var geometry = <Geometry>((<Mesh>mesh).geometry);
+                const scene = this.getScene();
+                if (this._storeEffectOnSubMeshes) {
+                    for (var subMesh of mesh.subMeshes) {
+                        geometry._releaseVertexArrayObject(subMesh._materialEffect);
+                        if (forceDisposeEffect && subMesh._materialEffect) {
+                            scene.getEngine()._releaseEffect(subMesh._materialEffect);
+                        }
+                    }
+                } else {
+                    geometry._releaseVertexArrayObject(this._effect);
+                }
             }
         }
 

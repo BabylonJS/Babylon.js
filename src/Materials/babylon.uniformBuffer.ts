@@ -616,10 +616,12 @@ module BABYLON {
                 return;
             }
 
-            let index = this._engine._uniformBuffers.indexOf(this);
+            const uniformBuffers = this._engine._uniformBuffers;
+            let index = uniformBuffers.indexOf(this);
 
             if (index !== -1) {
-                this._engine._uniformBuffers.splice(index, 1);
+                uniformBuffers[index] = uniformBuffers[uniformBuffers.length - 1];
+                uniformBuffers.pop();
             }
 
             if (!this._buffer) {
