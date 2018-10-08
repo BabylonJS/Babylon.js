@@ -1164,8 +1164,8 @@ module BABYLON {
             if (canvas) {
                 // Fullscreen
                 this._onFullscreenChange = () => {
-                    if (document.fullscreen !== undefined) {
-                        this.isFullscreen = document.fullscreen;
+                    if ((<any>document).fullscreen !== undefined) {
+                        this.isFullscreen = (<any>document).fullscreen;
                     } else if (document.mozFullScreen !== undefined) {
                         this.isFullscreen = document.mozFullScreen;
                     } else if (document.webkitIsFullScreen !== undefined) {
