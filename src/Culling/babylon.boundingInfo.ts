@@ -62,7 +62,7 @@ module BABYLON {
          * @param minimum min vector of the bounding box/sphere
          * @param maximum max vector of the bounding box/sphere
          * @param worldMatrix defines the new world matrix
-         * @param extraWorldExtent an extra extent that will be added in all diretionsto the world BoundingInfo only
+         * @param extraWorldExtent an extra extent that will be added in all diretions to the world BoundingInfo only
          */
         constructor(minimum: Vector3, maximum: Vector3, worldMatrix?: Matrix, extraWorldExtent?: number) {
             this.boundingBox = new BoundingBox(minimum, maximum, worldMatrix, extraWorldExtent);
@@ -74,7 +74,7 @@ module BABYLON {
          * @param min defines the new minimum vector (in local space)
          * @param max defines the new maximum vector (in local space)
          * @param worldMatrix defines the new world matrix.
-         * @param extraWorldExtent an extra extent that will be added in all diretionsto the world BoundingInfo only
+         * @param extraWorldExtent an extra extent that will be added in all diretions to the world BoundingInfo only
          */
         public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix, extraWorldExtent?: number) {
             this.boundingBox.reConstruct(min, max, worldMatrix, extraWorldExtent);

@@ -52,10 +52,11 @@ module BABYLON {
         public maximum: Vector3 = Vector3.Zero();
 
         /**
-         * an optional extra extent that will be added in all diretionsto the world BoundingBox.
+         * an optional extra extent that will be added in all diretions to the world BoundingBox.
          * Note that vectorsWorld value is not impacted by this, only minimumWorld, maximumWorld and extendSizeWorld.
          */
         public extraWorldExtent: number;
+
         private _worldMatrix: Matrix;
         private static TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
 
@@ -69,7 +70,7 @@ module BABYLON {
          * @param min defines the minimum vector (in local space)
          * @param max defines the maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
-         * @param extraWorldExtent an extra extent that will be added in all diretionsto the world BoundingBox
+         * @param extraWorldExtent an extra extent that will be added in all diretions to the world BoundingBox
          */
         constructor(min: Vector3, max: Vector3, worldMatrix?: Matrix, extraWorldExtent?: number) {
             this.reConstruct(min, max, worldMatrix, extraWorldExtent);
@@ -177,12 +178,12 @@ module BABYLON {
                 maxWorld.addInPlaceFromFloats(extraWorldExtent, extraWorldExtent, extraWorldExtent);
             }
 
+            maxWorld.subtractToRef(minWorld, this.extendSizeWorld).scaleInPlace(0.5);
+            maxWorld.addToRef(minWorld, this.centerWorld).scaleInPlace(0.5);
+
             Vector3.FromArrayToRef(world.m, 0, directions[0]);
             Vector3.FromArrayToRef(world.m, 4, directions[1]);
             Vector3.FromArrayToRef(world.m, 8, directions[2]);
-
-            maxWorld.subtractToRef(minWorld, this.extendSizeWorld).scaleInPlace(0.5);
-            maxWorld.addToRef(minWorld, this.centerWorld).scaleInPlace(0.5);
 
             this.extraWorldExtent = extraWorldExtent;
             this._worldMatrix = world;
