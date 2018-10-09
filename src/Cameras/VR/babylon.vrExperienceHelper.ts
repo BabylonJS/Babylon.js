@@ -780,8 +780,8 @@ module BABYLON {
         }
 
         private _onFullscreenChange = () => {
-            if (document.fullscreen !== undefined) {
-                this._fullscreenVRpresenting = document.fullscreen;
+            if ((<any>document).fullscreen !== undefined) {
+                this._fullscreenVRpresenting = (<any>document).fullscreen;
             } else if (document.mozFullScreen !== undefined) {
                 this._fullscreenVRpresenting = document.mozFullScreen;
             } else if (document.webkitIsFullScreen !== undefined) {
