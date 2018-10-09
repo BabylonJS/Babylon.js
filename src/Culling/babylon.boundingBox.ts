@@ -6,49 +6,49 @@ module BABYLON {
         /**
          * Gets the 8 vectors representing the bounding box in local space
          */
-        public vectors: Vector3[] = Tools.BuildArray(8, Vector3.Zero);
+        public readonly vectors: Vector3[] = Tools.BuildArray(8, Vector3.Zero);
         /**
          * Gets the center of the bounding box in local space
          */
-        public center: Vector3 = Vector3.Zero();
+        public readonly center: Vector3 = Vector3.Zero();
         /**
          * Gets the center of the bounding box in world space
          */
-        public centerWorld: Vector3 = Vector3.Zero();
+        public readonly centerWorld: Vector3 = Vector3.Zero();
         /**
          * Gets the extend size in local space
          */
-        public extendSize: Vector3 = Vector3.Zero();
+        public readonly extendSize: Vector3 = Vector3.Zero();
         /**
          * Gets the extend size in world space
          */
-        public extendSizeWorld: Vector3 = Vector3.Zero();
+        public readonly extendSizeWorld: Vector3 = Vector3.Zero();
         /**
          * Gets the OBB (object bounding box) directions
          */
-        public directions: Vector3[] = Tools.BuildArray(3, Vector3.Zero);
+        public readonly directions: Vector3[] = Tools.BuildArray(3, Vector3.Zero);
         /**
          * Gets the 8 vectors representing the bounding box in world space
          */
-        public vectorsWorld: Vector3[] = Tools.BuildArray(8, Vector3.Zero);
+        public readonly vectorsWorld: Vector3[] = Tools.BuildArray(8, Vector3.Zero);
         /**
          * Gets the minimum vector in world space
          */
-        public minimumWorld: Vector3 = Vector3.Zero();
+        public readonly minimumWorld: Vector3 = Vector3.Zero();
         /**
          * Gets the maximum vector in world space
          */
-        public maximumWorld: Vector3 = Vector3.Zero();
+        public readonly maximumWorld: Vector3 = Vector3.Zero();
         /**
          * Gets the minimum vector in local space
          */
-        public minimum: Vector3 = Vector3.Zero();
+        public readonly minimum: Vector3 = Vector3.Zero();
         /**
          * Gets the maximum vector in local space
          */
-        public maximum: Vector3 = Vector3.Zero();
+        public readonly maximum: Vector3 = Vector3.Zero();
 
-        private _worldMatrix: Matrix;
+        private _worldMatrix: Readonly<Matrix>;
         private static readonly TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
 
         /**
@@ -62,19 +62,19 @@ module BABYLON {
          * @param max defines the maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
          */
-        constructor(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
+        constructor(min: Readonly<Vector3>, max: Readonly<Vector3>, worldMatrix?: Readonly<Matrix>) {
             this.reConstruct(min, max, worldMatrix);
         }
 
         // Methods
 
         /**
-         * Recreates the entire bounding box from scratch
+         * Recreates the entire bounding box from scratch, as when the constructor is called
          * @param min defines the new minimum vector (in local space)
          * @param max defines the new maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
          */
-        public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
+        public reConstruct(min: Readonly<Vector3>, max: Readonly<Vector3>, worldMatrix?: Readonly<Matrix>) {
             const minX = min.x, minY = min.y, minZ = min.z, maxX = max.x, maxY = max.y, maxZ = max.z;
             const vectors = this.vectors;
 
@@ -93,7 +93,7 @@ module BABYLON {
             max.addToRef(min, this.center).scaleInPlace(0.5);
             max.subtractToRef(min, this.extendSize).scaleInPlace(0.5);
 
-            this._update(worldMatrix || this._worldMatrix || Matrix.Identity());
+            this._update(worldMatrix || Matrix.IdentityReadOnly);
         }
 
         /**
@@ -112,31 +112,21 @@ module BABYLON {
             const min = this.center.subtractToRef(newRadius, tmpVectors[1]);
             const max = this.center.addToRef(newRadius, tmpVectors[2]);
 
-            this.reConstruct(min, max);
+            this.reConstruct(min, max, this._worldMatrix);
 
             return this;
         }
 
         /**
-         * Gets the world matrix of the bounding box
+         * Gets the world matrix of the bounding box.
          * @returns a matrix
          */
-        public getWorldMatrix(): Matrix {
+        public getWorldMatrix(): Readonly<Matrix> {
             return this._worldMatrix;
         }
 
-        /**
-         * Sets the world matrix stored in the bounding box
-         * @param matrix defines the matrix to store
-         * @returns current bounding box
-         */
-        public setWorldMatrix(matrix: Matrix): BoundingBox {
-            this._worldMatrix.copyFrom(matrix);
-            return this;
-        }
-
         /** @hidden */
-        public _update(world: Matrix): void {
+        public _update(world: Readonly<Matrix>): void {
             const minWorld = this.minimumWorld;
             const maxWorld = this.maximumWorld;
             const directions = this.directions;
@@ -182,7 +172,7 @@ module BABYLON {
          * @param frustumPlanes defines the frustum planes to test
          * @returns true if there is an intersection
          */
-        public isInFrustum(frustumPlanes: Plane[]): boolean {
+        public isInFrustum(frustumPlanes: Array<Readonly<Plane>>): boolean {
             return BoundingBox.IsInFrustum(this.vectorsWorld, frustumPlanes);
         }
 
@@ -191,7 +181,7 @@ module BABYLON {
          * @param frustumPlanes defines the frustum planes to test
          * @returns true if there is an inclusion
          */
-        public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
+        public isCompletelyInFrustum(frustumPlanes: Array<Readonly<Plane>>): boolean {
             return BoundingBox.IsCompletelyInFrustum(this.vectorsWorld, frustumPlanes);
         }
 
@@ -200,7 +190,7 @@ module BABYLON {
          * @param point defines the point to test
          * @returns true if the point is inside the bounding box
          */
-        public intersectsPoint(point: Vector3): boolean {
+        public intersectsPoint(point: Readonly<Vector3>): boolean {
             const min = this.minimumWorld;
             const max = this.maximumWorld;
             const minX = min.x, minY = min.y, minZ = min.z, maxX = max.x, maxY = max.y, maxZ = max.z;
@@ -227,7 +217,7 @@ module BABYLON {
          * @param sphere defines the sphere to test
          * @returns true if there is an intersection
          */
-        public intersectsSphere(sphere: BoundingSphere): boolean {
+        public intersectsSphere(sphere: Readonly<BoundingSphere>): boolean {
             return BoundingBox.IntersectsSphere(this.minimumWorld, this.maximumWorld, sphere.centerWorld, sphere.radiusWorld);
         }
 
@@ -237,7 +227,7 @@ module BABYLON {
          * @param max defines the max vector to use
          * @returns true if there is an intersection
          */
-        public intersectsMinMax(min: Vector3, max: Vector3): boolean {
+        public intersectsMinMax(min: Readonly<Vector3>, max: Readonly<Vector3>): boolean {
             const myMin = this.minimumWorld;
             const myMax = this.maximumWorld;
             const myMinX = myMin.x, myMinY = myMin.y, myMinZ = myMin.z, myMaxX = myMax.x, myMaxY = myMax.y, myMaxZ = myMax.z;
@@ -277,7 +267,7 @@ module BABYLON {
          * @param sphereRadius defines the sphere radius
          * @returns true if there is an intersection
          */
-        public static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean {
+        public static IntersectsSphere(minPoint: Readonly<Vector3>, maxPoint: Readonly<Vector3>, sphereCenter: Readonly<Vector3>, sphereRadius: number): boolean {
             var vector = Vector3.Clamp(sphereCenter, minPoint, maxPoint);
             var num = Vector3.DistanceSquared(sphereCenter, vector);
             return (num <= (sphereRadius * sphereRadius));
@@ -289,7 +279,7 @@ module BABYLON {
          * @param frustumPlanes defines the frustum planes to test
          * @return true if there is an inclusion
          */
-        public static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean {
+        public static IsCompletelyInFrustum(boundingVectors: Array<Readonly<Vector3>>, frustumPlanes: Array<Readonly<Plane>>): boolean {
             for (var p = 0; p < 6; ++p) {
                 const frustumPlane = frustumPlanes[p];
                 for (var i = 0; i < 8; ++i) {
@@ -307,7 +297,7 @@ module BABYLON {
          * @param frustumPlanes defines the frustum planes to test
          * @return true if there is an intersection
          */
-        public static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean {
+        public static IsInFrustum(boundingVectors: Array<Readonly<Vector3>>, frustumPlanes: Array<Readonly<Plane>>): boolean {
             for (var p = 0; p < 6; ++p) {
                 let canReturnFalse = true;
                 const frustumPlane = frustumPlanes[p];
