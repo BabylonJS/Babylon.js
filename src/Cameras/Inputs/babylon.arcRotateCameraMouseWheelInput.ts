@@ -48,8 +48,9 @@ module BABYLON {
                     } else {
                         delta = event.wheelDelta / (this.wheelPrecision * 40);
                     }
-                } else if (event.detail) {
-                    delta = -event.detail / this.wheelPrecision;
+                } else {
+                    let deltaValue = event.deltaY || event.detail;
+                    delta = -deltaValue / this.wheelPrecision;
                 }
 
                 if (delta) {
