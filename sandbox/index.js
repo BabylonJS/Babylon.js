@@ -300,6 +300,7 @@ if (BABYLON.Engine.isSupported()) {
 
     if (kiosk) {
         footer.style.display = "none";
+        canvas.style.height = "100%";
     }
 
     btnInspector.addEventListener('click', function() {
@@ -321,9 +322,11 @@ if (BABYLON.Engine.isSupported()) {
         if (event.keyCode === 32 && event.target.nodeName !== "INPUT") {
             if (footer.style.display === "none") {
                 footer.style.display = "block";
+                canvas.style.height = "calc(100% - 56px)";
             }
             else {
                 footer.style.display = "none";
+                canvas.style.height = "100%";
                 errorZone.style.display = "none";
                 if (debugLayerEnabled) {
                     currentScene.debugLayer.hide();
