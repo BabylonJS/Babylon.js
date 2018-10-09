@@ -16,9 +16,9 @@ gulp.task("typedoc-generate", function() {
         .src([
             "../../dist/preview release/babylon.d.ts",
             "../../dist/preview release/gui/babylon.gui.d.ts",
-            "../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts",
-            "../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts",
-            "../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"])
+            "../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts",
+            "../../dist/preview release/loaders/babylonjs.loaders.d.ts",
+            "../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts"])
         .pipe(typedoc({
             // TypeScript options (see typescript docs)
             mode: "modules",

@@ -566,8 +566,6 @@ var buildExternalLibrary = function(library, settings, watch) {
 
                 });
             } else {
-                console.log(library.output)
-
                 var wpConfig;
                 if (library.entry) {
                     wpConfig = require(settings.build.webpack);
