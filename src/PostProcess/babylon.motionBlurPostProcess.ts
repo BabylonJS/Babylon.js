@@ -29,7 +29,10 @@ module BABYLON {
          */
         public set motionBlurSamples(samples: number) {
             this._motionBlurSamples = samples;
-            this.updateEffect("#define SAMPLES " + samples.toFixed(1));
+
+            if (this._geometryBufferRenderer) {
+                this.updateEffect("#define GEOMETRY_SUPPORTED\n#define SAMPLES " + samples.toFixed(1));
+            }
         }
 
         private _motionBlurSamples: number = 32;
@@ -48,31 +51,30 @@ module BABYLON {
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
         constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
-            super(name, "motionBlur", ["motionStrength", "motionScale", "screenSize"], ["velocitySampler"], options, camera, samplingMode, engine, reusable, "#define SAMPLES 64.0", textureType, undefined, null, blockCompilation);
+            super(name, "motionBlur", ["motionStrength", "motionScale", "screenSize"], ["velocitySampler"], options, camera, samplingMode, engine, reusable, "#define GEOMETRY_SUPPORTED\n#define SAMPLES 64.0", textureType, undefined, null, blockCompilation);
 
             this._geometryBufferRenderer = scene.enableGeometryBufferRenderer();
 
-            if (this._geometryBufferRenderer) {
-                if (!this._geometryBufferRenderer.isSupported) {
-                    Tools.Warn("Multiple Render Target support needed to compute object based motion blur");
-                    this.dispose();
-                    return;
-                }
-
+            if (!this._geometryBufferRenderer) {
+                // Geometry buffer renderer is not supported. So, work as a passthrough.
+                Tools.Warn("Multiple Render Target support needed to compute object based motion blur");
+                this.updateEffect();
+            } else {
+                // Geometry buffer renderer is supported.
                 this._geometryBufferRenderer.enableVelocity = true;
+
+                this.onApply = (effect: Effect) => {
+                    effect.setVector2("screenSize", new Vector2(this.width, this.height));
+
+                    effect.setFloat("motionScale", scene.getAnimationRatio());
+                    effect.setFloat("motionStrength", this.motionStrength);
+
+                    if (this._geometryBufferRenderer) {
+                        const velocityIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE);
+                        effect.setTexture("velocitySampler", this._geometryBufferRenderer.getGBuffer().textures[velocityIndex]);
+                    }
+                };
             }
-
-            this.onApply = (effect: Effect) => {
-                effect.setVector2("screenSize", new Vector2(this.width, this.height));
-
-                effect.setFloat("motionScale", scene.getAnimationRatio());
-                effect.setFloat("motionStrength", this.motionStrength);
-
-                if (this._geometryBufferRenderer) {
-                    const velocityIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE);
-                    effect.setTexture("velocitySampler", this._geometryBufferRenderer.getGBuffer().textures[velocityIndex]);
-                }
-            };
         }
 
         /**

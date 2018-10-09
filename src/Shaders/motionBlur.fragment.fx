@@ -10,6 +10,7 @@ uniform vec2 screenSize;
 
 void main(void)
 {
+    #ifdef GEOMETRY_SUPPORTED
     vec2 texelSize = 1.0 / screenSize;
     vec2 velocityColor = texture2D(velocitySampler, vUV).rg;
 	
@@ -33,6 +34,8 @@ void main(void)
         result += texture2D(textureSampler, offset);
     }
 
-	//gl_FragColor = vec4(velocityColor, 0.0, 1.0);
 	gl_FragColor = result / float(samplesCount);
+    #else
+    gl_FragColor = texture2D(textureSampler, vUV);
+    #endif
 }

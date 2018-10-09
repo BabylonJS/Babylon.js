@@ -16,6 +16,8 @@ var dropdownLabel = document.getElementById("dropdownLabel");
 var dropdownContent = document.getElementById("dropdownContent");
 var playBtn = document.getElementById("playBtn");
 var slider = document.getElementById("slider");
+var footer = document.getElementById("footer");
+var canvas = document.getElementById("renderCanvas");
 
 var indexOf = location.href.indexOf("?");
 if (indexOf !== -1) {
@@ -41,11 +43,14 @@ if (indexOf !== -1) {
     }
 }
 
+if (kiosk) {
+    footer.style.display = "none";
+    canvas.style.height = "100%";
+}
+
 if (BABYLON.Engine.isSupported()) {
-    var canvas = document.getElementById("renderCanvas");
     var engine = new BABYLON.Engine(canvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
     var htmlInput = document.getElementById("files");
-    var footer = document.getElementById("footer");
     var btnInspector = document.getElementById("btnInspector");
     var errorZone = document.getElementById("errorZone");
     var filesInput;
@@ -128,7 +133,7 @@ if (BABYLON.Engine.isSupported()) {
         btnInspector.classList.remove("hidden");
 
         currentScene = babylonScene;
-        document.title = "BabylonJS - " + sceneFile.name;
+        document.title = "Babylon.js - " + sceneFile.name;
         // Fix for IE, otherwise it will change the default filter for files selection after first use
         htmlInput.value = "";
 
@@ -210,7 +215,7 @@ if (BABYLON.Engine.isSupported()) {
     };
 
     var sceneError = function(sceneFile, babylonScene, message) {
-        document.title = "BabylonJS - " + sceneFile.name;
+        document.title = "Babylon.js - " + sceneFile.name;
         document.getElementById("logo").className = "";
         canvas.style.opacity = 0;
 
@@ -298,10 +303,6 @@ if (BABYLON.Engine.isSupported()) {
         }
     });
 
-    if (kiosk) {
-        footer.style.display = "none";
-    }
-
     btnInspector.addEventListener('click', function() {
         if (currentScene) {
             if (currentScene.debugLayer.isVisible()) {
@@ -321,10 +322,14 @@ if (BABYLON.Engine.isSupported()) {
         if (event.keyCode === 32 && event.target.nodeName !== "INPUT") {
             if (footer.style.display === "none") {
                 footer.style.display = "block";
+                canvas.style.height = "calc(100% - 56px)";                
+                engine.resize();
             }
             else {
                 footer.style.display = "none";
+                canvas.style.height = "100%";
                 errorZone.style.display = "none";
+                engine.resize();
                 if (debugLayerEnabled) {
                     currentScene.debugLayer.hide();
                     debugLayerEnabled = false;
