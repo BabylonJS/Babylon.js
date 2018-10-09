@@ -193,6 +193,10 @@ export class GridMaterial extends BABYLON.PushMaterial {
         this._afterBind(mesh, this._activeEffect);
     }
 
+    /**
+     * Dispose the material and its associated resources.
+     * @param forceDisposeEffect will also dispose the used effect when true
+     */
     public dispose(forceDisposeEffect?: boolean): void {
         super.dispose(forceDisposeEffect);
     }
