@@ -61,3 +61,4 @@
 - `Database.IDBStorageEnabled` is now false by default ([Deltakosh](https://github.com/deltakosh))
 - `Database.openAsync` was renamed by `Database.open` ([Deltakosh](https://github.com/deltakosh))
 - `scene.database` was renamed to `scene.offlineProvider` ([Deltakosh](https://github.com/deltakosh))
+- `BoundingBox.setWorldMatrix` was removed. `BoundingBox.getWorldMatrix` now returns a `Readonly<Matrix>` ([barroij](https://github.com/barroij))
