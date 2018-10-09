@@ -215,10 +215,6 @@ module BABYLON {
          * @returns if the bounding info intersects
          */
         public intersects(boundingInfo: Readonly<BoundingInfo>, precise: boolean): boolean {
-            if (!this.boundingSphere.centerWorld || !boundingInfo.boundingSphere.centerWorld) {
-                return false;
-            }
-
             if (!BoundingSphere.Intersects(this.boundingSphere, boundingInfo.boundingSphere)) {
                 return false;
             }
