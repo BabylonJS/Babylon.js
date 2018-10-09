@@ -4225,7 +4225,7 @@ module BABYLON {
         private static _yAxis: Vector3 = Vector3.Zero();
         private static _zAxis: Vector3 = Vector3.Zero();
         private static _updateFlagSeed = 0;
-        private static _identityReadOnly = Matrix.Identity(true);
+        private static _identityReadOnly = Matrix.Identity();
 
         private _isIdentity = false;
         private _isIdentityDirty = true;
@@ -4251,17 +4251,18 @@ module BABYLON {
         }
 
         /** @hidden */
-        private _updateAsNotIdentity() {
+        private _updateIdentityStatus(isIdentity:boolean) {
             this.updateFlag = Matrix._updateFlagSeed++;
             this._isIdentityDirty = false;
-            this._isIdentity = false;
+            this._isIdentity = isIdentity;
         }
+
 
         /**
          * Creates an empty matrix (filled with zeros)
          */
         public constructor() {
-            this._updateAsNotIdentity();
+            this._updateIdentityStatus(false);
         }
 
         // Properties
@@ -4361,7 +4362,7 @@ module BABYLON {
                 this.m[index] = 0.0;
             }
 
-            this._updateAsNotIdentity();
+            this._updateIdentityStatus(false);
             return this;
         }
 
@@ -5103,35 +5104,27 @@ module BABYLON {
 
         /**
          * Creates a new identity matrix
-         * @param markAsUpdated if set to true, the cached value _isIdentityDirty and _isIdentity will be updated
          * @returns a new identity matrix
          */
-        public static Identity(markAsUpdated = false): Matrix {
+        public static Identity(): Matrix {
             const identity = Matrix.FromValues(1.0, 0.0, 0.0, 0.0,
                 0.0, 1.0, 0.0, 0.0,
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0);
-            if (markAsUpdated) {
-                identity._isIdentityDirty = false;
-                identity._isIdentity = true;
-            }
+            identity._updateIdentityStatus(true);
             return identity;
         }
 
         /**
          * Creates a new identity matrix and stores the result in a given matrix
-         * @param markAsUpdated if set to true, the cached value _isIdentityDirty and _isIdentity will be updated
          * @param result defines the target matrix
          */
-        public static IdentityToRef(result: Matrix, markAsUpdated = false): void {
+        public static IdentityToRef(result: Matrix): void {
             Matrix.FromValuesToRef(1.0, 0.0, 0.0, 0.0,
                 0.0, 1.0, 0.0, 0.0,
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0, result);
-            if (markAsUpdated) {
-                result._isIdentityDirty = false;
-                result._isIdentity = true;
-            }
+            result._updateIdentityStatus(true);
         }
 
         /**
@@ -5143,7 +5136,7 @@ module BABYLON {
                 0.0, 0.0, 0.0, 0.0,
                 0.0, 0.0, 0.0, 0.0,
                 0.0, 0.0, 0.0, 0.0);
-            zero._updateAsNotIdentity();
+            zero._updateIdentityStatus(false);
             return zero;
         }
 
