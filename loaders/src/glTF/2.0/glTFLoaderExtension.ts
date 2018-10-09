@@ -2,7 +2,7 @@
 import { ISceneV2, INodeV2, ICameraV2, IMeshPrimitiveV2, IMaterialV2, ITextureInfoV2, IAnimationV2 } from "./glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFFileLoader";
 
-export var tata = 0;
+export var toto = 0;
 
 /**
  * Interface for a glTF loader extension.

@@ -844,7 +844,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/glTFLoaderExtension' {
     import { IDisposable, Nullable, Mesh, Camera, Geometry, Material, BaseTexture, AnimationGroup } from "babylonjs";
     import { ISceneV2, INodeV2, ICameraV2, IMeshPrimitiveV2, IMaterialV2, ITextureInfoV2, IAnimationV2 } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/src/glTF/glTFFileLoader";
-    export var tata: number;
+    export var toto: number;
     /**
         * Interface for a glTF loader extension.
         */
@@ -2531,7 +2531,7 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    export var tata: number;
+    export var toto: number;
     /**
         * Interface for a glTF loader extension.
         */

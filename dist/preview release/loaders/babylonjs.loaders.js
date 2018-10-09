@@ -6485,7 +6485,7 @@ glTFFileLoader_1.GLTFFileLoader._CreateGLTFLoaderV2 = function (parent) { return
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.tata = 0;
+exports.toto = 0;
 
 
 /***/ }),
@@ -7321,9 +7321,9 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-var MatLib = __webpack_require__(/*! ./index */ "./src/index.ts");
+var Loaders = __webpack_require__(/*! ./index */ "./src/index.ts");
 /**
- * Legacy support, defining window.BABYLON.GridMaterial... (global variable).
+ * Legacy support, defining window.BABYLON.OBJLoader... (global variable).
  *
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
@@ -7331,9 +7331,9 @@ var MatLib = __webpack_require__(/*! ./index */ "./src/index.ts");
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
     globalObject.BABYLON = globalObject.BABYLON || {};
-    for (var mat in MatLib) {
-        if (MatLib.hasOwnProperty(mat)) {
-            globalObject.BABYLON[mat] = MatLib[mat];
+    for (var loader in Loaders) {
+        if (Loaders.hasOwnProperty(loader)) {
+            globalObject.BABYLON[loader] = Loaders[loader];
         }
     }
 }

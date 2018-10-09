@@ -1,4 +1,4 @@
-import * as MatLib from "../src/STL";
+import * as Loaders from "../src/OBJ";
 
 /**
  * This is the entry point for the UMD module.
@@ -6,9 +6,9 @@ import * as MatLib from "../src/STL";
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    for (var key in MatLib) {
-        (<any>globalObject).BABYLON[key] = (<any>MatLib)[key];
+    for (var key in Loaders) {
+        (<any>globalObject).BABYLON[key] = (<any>Loaders)[key];
     }
 }
 
-export * from "../src/STL";
+export * from "../src/OBJ";

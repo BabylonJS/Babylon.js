@@ -116,7 +116,7 @@ var BabylonViewer=function(e){var t={};function i(r){if(t[r])return t[r].exports
 /*!*********************************************!*\
   !*** ./src/glTF/2.0/glTFLoaderExtension.ts ***!
   \*********************************************/
-/*! no static exports found */function(e,t,i){"use strict";Object.defineProperty(t,"__esModule",{value:!0}),t.tata=0},"./src/glTF/2.0/index.ts":
+/*! no static exports found */function(e,t,i){"use strict";Object.defineProperty(t,"__esModule",{value:!0}),t.toto=0},"./src/glTF/2.0/index.ts":
 /*!*******************************!*\
   !*** ./src/glTF/2.0/index.ts ***!
   \*******************************/

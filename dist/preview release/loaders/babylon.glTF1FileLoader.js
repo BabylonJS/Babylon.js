@@ -141,7 +141,7 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 var FileLoader = __webpack_require__(/*! ../src/glTF/glTFFileLoader */ "./src/glTF/glTFFileLoader.ts");
-var Loaders = __webpack_require__(/*! ../src/glTF/1.0 */ "./src/glTF/1.0/index.ts");
+var LoadersV1 = __webpack_require__(/*! ../src/glTF/1.0 */ "./src/glTF/1.0/index.ts");
 /**
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
@@ -151,11 +151,12 @@ if (typeof globalObject !== "undefined") {
     for (var key in FileLoader) {
         globalObject.BABYLON[key] = FileLoader[key];
     }
-    for (var key in Loaders) {
+    for (var key in LoadersV1) {
         globalObject.BABYLON[key] = FileLoader[key];
     }
 }
 __export(__webpack_require__(/*! ../src/glTF/glTFFileLoader */ "./src/glTF/glTFFileLoader.ts"));
+__export(__webpack_require__(/*! ../src/glTF/1.0 */ "./src/glTF/1.0/index.ts"));
 
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
 

@@ -772,7 +772,7 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    export var tata: number;
+    export var toto: number;
     /**
         * Interface for a glTF loader extension.
         */

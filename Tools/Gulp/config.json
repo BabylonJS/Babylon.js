@@ -1995,48 +1995,62 @@
     "serializers": {
         "libraries": [
             {
-                "files": [
-                    "../../serializers/src/OBJ/babylon.objSerializer.ts"
-                ],
-                "output": "babylon.objSerializer.js"
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylonjs.serializers.min.js",
+                "webpack": "../../serializers/webpack.config.js",
+                "entry": "./src/legacy.ts",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true,
+                "isMain": true
             },
             {
-                "files": [
-                    "../../serializers/src/glTF/2.0/babylon.glTFSerializer.ts",
-                    "../../serializers/src/glTF/2.0/babylon.glTFExporter.ts",
-                    "../../serializers/src/glTF/2.0/babylon.glTFData.ts",
-                    "../../serializers/src/glTF/2.0/babylon.glTFMaterialExporter.ts",
-                    "../../serializers/src/glTF/2.0/babylon.glTFAnimation.ts",
-                    "../../serializers/src/glTF/2.0/babylon.glTFUtilities.ts",
-                    "../../serializers/src/glTF/2.0/babylon.glTFExporterExtension.ts",
-                    "../../serializers/src/glTF/babylon.glTFFileExporter.ts",
-                    "../../serializers/src/glTF/2.0/Extensions/KHR_texture_transform.ts"
-                ],
-                "excludeFromLoader": [
-                    "../../serializers/src/glTF/2.0/babylon.glTFExporterExtension.ts",
-                    "../../serializers/src/glTF/babylon.glTFFileExporter.ts"
-                ],
-                "shaderFiles": [
-                    "../../serializers/src/glTF/2.0/shaders/textureTransform.fragment.fx"
-                ],
-                "output": "babylon.glTF2Serializer.js"
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.objSerializer.min.js",
+                "webpack": "../../serializers/webpack.config.js",
+                "entry": "./legacy/legacy-objSerializer.ts",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
+            },
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.glTF2Serializer.min.js",
+                "webpack": "../../serializers/webpack.config.js",
+                "entry": "./legacy/legacy-glTF2Serializer.ts",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true,
+                "preventLoadLibrary": true
             }
         ],
         "build": {
-            "srcOutputDirectory": "../../serializers/",
+            "webpack": "../../serializers/webpack.config.js",
+            "srcOutputDirectory": "../../serializers/src/",
             "distOutputDirectory": "/serializers/",
-            "buildAsModule": true,
-            "moduleName": "babylonjs-serializers",
-            "extraTypesDependencies": [
-                "babylonjs",
-                "babylonjs-gltf2interface"
-            ],
-            "outputFilename": "babylonjs.serializers",
-            "moduleDeclaration": {
-                "name": "Serializers",
-                "module": "babylonjs-serializers"
+            "dtsBundle": {
+                "name": "babylonjs-serializers",
+                "main": "../../dist/preview release/serializers/build/src/index.d.ts",
+                "out": "../babylonjs.serializers.module.d.ts",
+                "baseDir": "../../dist/preview release/serializers/build/",
+                "headerText": "BabylonJS serializers"
             },
-            "extendsRoot": true
+            "processDeclaration": {
+                "filename": "babylonjs.serializers.module.d.ts",
+                "packageName": "babylonjs-serializers",
+                "moduleName": "BABYLON",
+                "importsToRemove": [],
+                "classMap": {
+                    "babylonjs": "BABYLON",
+                    "babylonjs-loaders": "BABYLON",
+                    "babylonjs-serializers": "BABYLON",
+                    "babylonjs-gltf2interface": "BABYLON.GLTF2"
+                }
+            }
         }
     },
     "gui": {

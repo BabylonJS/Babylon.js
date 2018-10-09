@@ -140,15 +140,15 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-var MatLib = __webpack_require__(/*! ../src/STL */ "./src/STL/index.ts");
+var Loaders = __webpack_require__(/*! ../src/STL */ "./src/STL/index.ts");
 /**
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    for (var key in MatLib) {
-        globalObject.BABYLON[key] = MatLib[key];
+    for (var key in Loaders) {
+        globalObject.BABYLON[key] = Loaders[key];
     }
 }
 __export(__webpack_require__(/*! ../src/STL */ "./src/STL/index.ts"));
