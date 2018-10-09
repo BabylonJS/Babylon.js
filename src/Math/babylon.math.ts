@@ -5082,32 +5082,34 @@ module BABYLON {
 
         /**
          * Creates a new identity matrix
+         * @param markAsUpdated if set to true, the cached value _isIdentityDirty and _isIdentity will be updated
          * @returns a new identity matrix
          */
-        public static Identity(markAsUpdated = false, considerAsTextureMatrix = false): Matrix {
+        public static Identity(markAsUpdated = false): Matrix {
             const identity = Matrix.FromValues(1.0, 0.0, 0.0, 0.0,
                 0.0, 1.0, 0.0, 0.0,
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0);
             if (markAsUpdated) {
                 identity._isIdentityDirty = false;
-                identity._isIdentity = !considerAsTextureMatrix;
+                identity._isIdentity = true;
             }
             return identity;
         }
 
         /**
          * Creates a new identity matrix and stores the result in a given matrix
+         * @param markAsUpdated if set to true, the cached value _isIdentityDirty and _isIdentity will be updated
          * @param result defines the target matrix
          */
-        public static IdentityToRef(result: Matrix, markAsUpdated = false, considerAsTextureMatrix = false): void {
+        public static IdentityToRef(result: Matrix, markAsUpdated = false): void {
             Matrix.FromValuesToRef(1.0, 0.0, 0.0, 0.0,
                 0.0, 1.0, 0.0, 0.0,
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0, result);
             if (markAsUpdated) {
                 result._isIdentityDirty = false;
-                result._isIdentity = !considerAsTextureMatrix;
+                result._isIdentity = true;
             }
         }
 
