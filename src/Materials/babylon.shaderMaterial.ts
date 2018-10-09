@@ -656,8 +656,9 @@ module BABYLON {
          * Disposes the material
          * @param forceDisposeEffect specifies if effects should be forcefully disposed
          * @param forceDisposeTextures specifies if textures should be forcefully disposed
+         * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to any mesh
          */
-        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
+        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
 
             if (forceDisposeTextures) {
                 var name: string;
@@ -675,7 +676,7 @@ module BABYLON {
 
             this._textures = {};
 
-            super.dispose(forceDisposeEffect, forceDisposeTextures);
+            super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
         }
 
         /**

@@ -35,7 +35,7 @@ module BABYLON {
 
             this.subMaterials = new Array<Material>();
 
-            this.storeEffectOnSubMeshes = true; // multimaterial is considered like a push material
+            this._storeEffectOnSubMeshes = true; // multimaterial is considered like a push material
         }
 
         private _hookArray(array: Nullable<Material>[]): void {
@@ -105,7 +105,7 @@ module BABYLON {
             for (var index = 0; index < this.subMaterials.length; index++) {
                 var subMaterial = this.subMaterials[index];
                 if (subMaterial) {
-                    if (subMaterial.storeEffectOnSubMeshes) {
+                    if (subMaterial._storeEffectOnSubMeshes) {
                         if (!subMaterial.isReadyForSubMesh(mesh, subMesh, useInstances)) {
                             return false;
                         }

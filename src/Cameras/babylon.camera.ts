@@ -56,6 +56,10 @@ module BABYLON {
          * Defines that both eyes of the camera should be renderered in a VR mode (webVR).
          */
         public static readonly RIG_MODE_WEBVR = 21;
+        /**
+         * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
+         */
+        public static readonly RIG_MODE_CUSTOM = 22;
 
         /**
          * Defines if by default attaching controls should prevent the default javascript event to continue.
@@ -195,11 +199,15 @@ module BABYLON {
         public isStereoscopicSideBySide: boolean;
 
         /**
-         * Defines the list of custom render target the camera should render to.
+         * Defines the list of custom render target which are rendered to and then used as the input to this camera's render. Eg. display another camera view on a TV in the main scene
          * This is pretty helpfull if you wish to make a camera render to a texture you could reuse somewhere
          * else in the scene.
          */
         public customRenderTargets = new Array<RenderTargetTexture>();
+        /**
+         * When set, the camera will render to this render target instead of the default canvas
+         */
+        public outputRenderTarget: Nullable<RenderTargetTexture> = null;
 
         /**
          * Observable triggered when the camera view matrix has changed.
@@ -242,7 +250,8 @@ module BABYLON {
 
         protected _globalPosition = Vector3.Zero();
 
-        private _computedViewMatrix = Matrix.Identity();
+        /** hidden */
+        public _computedViewMatrix = Matrix.Identity();
         private _doNotComputeProjectionMatrix = false;
         private _transformMatrix = Matrix.Zero();
         private _frustumPlanes: Plane[];

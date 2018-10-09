@@ -2,7 +2,7 @@ import { Rectangle } from "./rectangle";
 import { Control } from "./control";
 import { TextBlock } from "./textBlock";
 import { Image } from "./image";
-import { Vector2 } from "babylonjs";
+import { Vector2, Nullable } from "babylonjs";
 
 /**
  * Class used to create 2D buttons
@@ -24,6 +24,22 @@ export class Button extends Rectangle {
      * Function called to generate a pointer up animation
      */
     public pointerUpAnimation: () => void;
+
+    private _image: Nullable<Image>;
+    /**
+     * Returns the image part of the button (if any)
+     */
+    public get image(): Nullable<Image> {
+        return this._image;
+    }
+
+    private _textBlock: Nullable<TextBlock>;
+    /**
+     * Returns the image part of the button (if any)
+     */
+    public get textBlock(): Nullable<TextBlock> {
+        return this._textBlock;
+    }
 
     /**
      * Creates a new Button
@@ -143,6 +159,10 @@ export class Button extends Rectangle {
         iconImage.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         result.addControl(iconImage);
 
+        // Store
+        result._image = iconImage;
+        result._textBlock = textBlock;
+
         return result;
     }
 
@@ -161,6 +181,9 @@ export class Button extends Rectangle {
         iconImage.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         result.addControl(iconImage);
 
+        // Store
+        result._image = iconImage;
+
         return result;
     }
 
@@ -178,6 +201,9 @@ export class Button extends Rectangle {
         textBlock.textWrapping = true;
         textBlock.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         result.addControl(textBlock);
+
+        // Store
+        result._textBlock = textBlock;
 
         return result;
     }
@@ -202,6 +228,10 @@ export class Button extends Rectangle {
         textBlock.textWrapping = true;
         textBlock.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         result.addControl(textBlock);
+
+        // Store
+        result._image = iconImage;
+        result._textBlock = textBlock;
 
         return result;
     }

@@ -481,7 +481,20 @@ module BABYLON {
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "4.0.0-alpha.0";
+            return "4.0.0-alpha.2";
+        }
+
+        /**
+         * Returns a string describing the current engine
+         */
+        public get description(): string {
+            let description = "WebGL" + this.webGLVersion;
+
+            if (this._caps.parallelShaderCompile) {
+                description += " - Parallel shader compilation";
+            }
+
+            return description;
         }
 
         // Updatable statics so stick with vars here
@@ -623,6 +636,11 @@ module BABYLON {
          * Observable raised when the engine begins a new frame
          */
         public onBeginFrameObservable = new Observable<Engine>();
+
+        /**
+         * If set, will be used to request the next animation frame for the render loop
+         */
+        public customAnimationFrameRequester: Nullable<ICustomAnimationFrameRequester> = null;
 
         /**
          * Observable raised when the engine ends the current frame
@@ -1146,8 +1164,8 @@ module BABYLON {
             if (canvas) {
                 // Fullscreen
                 this._onFullscreenChange = () => {
-                    if (document.fullscreen !== undefined) {
-                        this.isFullscreen = document.fullscreen;
+                    if ((<any>document).fullscreen !== undefined) {
+                        this.isFullscreen = (<any>document).fullscreen;
                     } else if (document.mozFullScreen !== undefined) {
                         this.isFullscreen = document.mozFullScreen;
                     } else if (document.webkitIsFullScreen !== undefined) {
@@ -1225,7 +1243,7 @@ module BABYLON {
             // Detect if we are running on a faulty buggy desktop OS.
             this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-            console.log("Babylon.js engine (v" + Engine.Version + ") launched");
+            console.log(`Babylon.js v${Engine.Version} - ${this.description}`);
 
             this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
         }
@@ -1894,11 +1912,14 @@ module BABYLON {
 
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                var requester = null;
-                if (this._vrDisplay && this._vrDisplay.isPresenting) {
-                    requester = this._vrDisplay;
+                if (this.customAnimationFrameRequester) {
+                    this.customAnimationFrameRequester.requestID = Tools.QueueNewFrame(this.customAnimationFrameRequester.renderFunction || this._bindedRenderFunction, this.customAnimationFrameRequester);
+                    this._frameHandler = this.customAnimationFrameRequester.requestID;
+                } else if (this._vrDisplay && this._vrDisplay.isPresenting) {
+                    this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplay);
+                } else {
+                    this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
                 }
-                this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, requester);
             } else {
                 this._renderingQueueLaunched = false;
             }

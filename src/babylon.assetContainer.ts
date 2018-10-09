@@ -20,6 +20,11 @@ module BABYLON {
         constructor(scene: Scene) {
             super();
             this.scene = scene;
+            this["sounds"] = [];
+            this["effectLayers"] = [];
+            this["layers"] = [];
+            this["lensFlareSystems"] = [];
+            this["proceduralTextures"] = [];
         }
 
         /**
@@ -67,7 +72,7 @@ module BABYLON {
             });
 
             for (let component of this.scene._serializableComponents) {
-                component.addFromContainer(this.scene);
+                component.addFromContainer(this);
             }
         }
 
@@ -116,7 +121,7 @@ module BABYLON {
             });
 
             for (let component of this.scene._serializableComponents) {
-                component.removeFromContainer(this.scene);
+                component.removeFromContainer(this);
             }
         }
 
