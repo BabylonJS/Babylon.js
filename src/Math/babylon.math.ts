@@ -5120,8 +5120,7 @@ module BABYLON {
                 0.0, 0.0, 0.0, 0.0,
                 0.0, 0.0, 0.0, 0.0,
                 0.0, 0.0, 0.0, 0.0);
-            zero._isIdentityDirty = false;
-            zero._isIdentity = false;
+            zero._updateAsNotIdentity();
             return zero;
         }
 
