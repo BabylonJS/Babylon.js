@@ -1005,6 +1005,7 @@ module BABYLON {
         private _alternateTransformMatrix: Matrix;
         private _useAlternateCameraConfiguration = false;
         private _alternateRendering = false;
+        private _wheelEventName = "";
         /** @hidden */
         public _forcedViewPosition: Nullable<Vector3>;
 
@@ -1635,7 +1636,7 @@ module BABYLON {
             }
 
             if (pickResult) {
-                let type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
+                let type = evt.type === this._wheelEventName ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
 
                 if (this.onPointerMove) {
                     this.onPointerMove(evt, pickResult, type);
@@ -1752,8 +1753,6 @@ module BABYLON {
         public simulatePointerUp(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): Scene {
             let evt = new PointerEvent("pointerup", pointerEventInit);
             let clickInfo = new ClickInfo();
-            clickInfo.singleClick = true;
-            clickInfo.ignore = true;
 
             if (this._checkPrePointerObservable(pickResult, evt, PointerEventTypes.POINTERUP)) {
                 return this;
@@ -1805,27 +1804,17 @@ module BABYLON {
 
             let type = PointerEventTypes.POINTERUP;
             if (this.onPointerObservable.hasObservers()) {
-                if (!clickInfo.ignore) {
-                    if (!clickInfo.hasSwiped) {
-                        if (clickInfo.singleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
-                            let type = PointerEventTypes.POINTERTAP;
-                            let pi = new PointerInfo(type, evt, pickResult);
-                            this._setRayOnPointerInfo(pi);
-                            this.onPointerObservable.notifyObservers(pi, type);
-                        }
-                        if (clickInfo.doubleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
-                            let type = PointerEventTypes.POINTERDOUBLETAP;
-                            let pi = new PointerInfo(type, evt, pickResult);
-                            this._setRayOnPointerInfo(pi);
-                            this.onPointerObservable.notifyObservers(pi, type);
-                        }
+                if (!clickInfo.ignore && !clickInfo.hasSwiped) {
+                    if (clickInfo.singleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
+                        type = PointerEventTypes.POINTERTAP;
+                    }
+                    else if (clickInfo.doubleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
+                        type = PointerEventTypes.POINTERDOUBLETAP;
                     }
                 }
-                else {
-                    let pi = new PointerInfo(type, evt, pickResult);
-                    this._setRayOnPointerInfo(pi);
-                    this.onPointerObservable.notifyObservers(pi, type);
-                }
+                let pi = new PointerInfo(type, evt, pickResult);
+                this._setRayOnPointerInfo(pi);
+                this.onPointerObservable.notifyObservers(pi, type);
             }
 
             if (this.onPointerUp && !clickInfo.ignore) {
@@ -1894,7 +1883,6 @@ module BABYLON {
                         checkPicking = act.hasPickTriggers;
                     }
                 }
-                let eventRaised = false;
                 if (checkPicking) {
                     let btn = evt.button;
                     clickInfo.hasSwiped = this._isPointerSwiping();
@@ -1997,7 +1985,7 @@ module BABYLON {
                 this._updatePointerPosition(evt);
 
                 // PreObservable support
-                if (this._checkPrePointerObservable(null, evt, evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE)) {
+                if (this._checkPrePointerObservable(null, evt, evt.type === this._wheelEventName ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE)) {
                     return;
                 }
 
@@ -2186,9 +2174,13 @@ module BABYLON {
 
             if (attachMove) {
                 canvas.addEventListener(eventPrefix + "move", <any>this._onPointerMove, false);
+
                 // Wheel
-                canvas.addEventListener('mousewheel', <any>this._onPointerMove, false);
-                canvas.addEventListener('DOMMouseScroll', <any>this._onPointerMove, false);
+                this._wheelEventName = "onwheel" in document.createElement("div") ? "wheel" :       // Modern browsers support "wheel"
+                    (<any>document).onmousewheel !== undefined ? "mousewheel" :                     // Webkit and IE support at least "mousewheel"
+                        "DOMMouseScroll";                                                           // let's assume that remaining browsers are older Firefox
+
+                canvas.addEventListener(this._wheelEventName, <any>this._onPointerMove, false);
             }
 
             if (attachDown) {
@@ -2225,8 +2217,7 @@ module BABYLON {
             }
 
             // Wheel
-            canvas.removeEventListener('mousewheel', <any>this._onPointerMove);
-            canvas.removeEventListener('DOMMouseScroll', <any>this._onPointerMove);
+            canvas.removeEventListener(this._wheelEventName, <any>this._onPointerMove);
 
             // Keyboard
             canvas.removeEventListener("keydown", this._onKeyDown);
@@ -4403,14 +4394,14 @@ module BABYLON {
 
                 this._intermediateRendering = false;
 
-                if (this.activeCamera.customDefaultRenderTarget) {
-                    var internalTexture = this.activeCamera.customDefaultRenderTarget.getInternalTexture();
+                if (this.activeCamera.outputRenderTarget) {
+                    var internalTexture = this.activeCamera.outputRenderTarget.getInternalTexture();
                     if (internalTexture) {
                         engine.bindFramebuffer(internalTexture);
-                    }else {
+                    } else {
                         Tools.Error("Camera contains invalid customDefaultRenderTarget");
                     }
-                }else {
+                } else {
                     engine.restoreDefaultFramebuffer(); // Restore back buffer if needed
                 }
             }
