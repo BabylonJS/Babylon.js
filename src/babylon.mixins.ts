@@ -99,7 +99,6 @@ interface Document {
     webkitCancelFullScreen(): void;
     requestPointerLock(): void;
     exitPointerLock(): void;
-    fullscreen: boolean;
     mozFullScreen: boolean;
     msIsFullScreen: boolean;
     readonly webkitIsFullScreen: boolean;
@@ -153,11 +152,6 @@ interface Navigator {
 
 interface HTMLVideoElement {
     mozSrcObject: any;
-}
-
-interface Screen {
-    readonly orientation: string;
-    readonly mozOrientation: string;
 }
 
 interface Math {
