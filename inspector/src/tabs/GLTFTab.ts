@@ -1,5 +1,5 @@
 import { Mesh, Nullable, NullEngine, PBRMaterial, Scene, SceneLoader, StandardMaterial, Texture, TransformNode } from "babylonjs";
-import { GLTF2, GLTFFileLoader } from "babylonjs-loaders";
+import { GLTFLoaderV2, GLTFFileLoader } from "babylonjs-loaders";
 import { GLTF2Export } from "babylonjs-serializers";
 import { DetailPanel } from "../details/DetailPanel";
 import { Property } from "../details/Property";
@@ -11,7 +11,7 @@ import { TabBar } from "./TabBar";
 
 import * as Split from "Split";
 
-import {} from "babylonjs-gltf2interface";
+import { IGLTFValidationResults } from "babylonjs-gltf2interface";
 
 export class GLTFTab extends Tab {
     private static _LoaderDefaults: any = null;
@@ -24,7 +24,7 @@ export class GLTFTab extends Tab {
     private _split: any;
 
     public static get IsSupported(): boolean {
-        return !!(SceneLoader && GLTFFileLoader && GLTF2.GLTFLoader) || !!GLTF2Export;
+        return !!(SceneLoader && GLTFFileLoader && GLTFLoaderV2) || !!GLTF2Export;
     }
 
     /** @hidden */
@@ -55,7 +55,7 @@ export class GLTFTab extends Tab {
             this._closeDetailsPanel();
         });
 
-        if (SceneLoader && GLTFFileLoader && GLTF2.GLTFLoader) {
+        if (SceneLoader && GLTFFileLoader && GLTFLoaderV2) {
             this._addImport();
         }
 

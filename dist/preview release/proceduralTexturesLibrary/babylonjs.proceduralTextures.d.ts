@@ -1,7 +1,7 @@
 /*BabylonJS Procedural Textures*/
 // Dependencies for this module:
 //   ../../../../Tools/Gulp/babylonjs
-declare module BABYLON.PROCEDURALTEXTURES {
+declare module BABYLON {
     export class BrickProceduralTexture extends BABYLON.ProceduralTexture {
             constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
             updateShaderUniforms(): void;
@@ -24,7 +24,7 @@ declare module BABYLON.PROCEDURALTEXTURES {
             static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): BrickProceduralTexture;
     }
 }
-declare module BABYLON.PROCEDURALTEXTURES {
+declare module BABYLON {
     export class CloudProceduralTexture extends BABYLON.ProceduralTexture {
             constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
             updateShaderUniforms(): void;
@@ -45,7 +45,7 @@ declare module BABYLON.PROCEDURALTEXTURES {
             static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): CloudProceduralTexture;
     }
 }
-declare module BABYLON.PROCEDURALTEXTURES {
+declare module BABYLON {
     export class FireProceduralTexture extends BABYLON.ProceduralTexture {
             constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
             updateShaderUniforms(): void;
@@ -74,7 +74,7 @@ declare module BABYLON.PROCEDURALTEXTURES {
             static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): FireProceduralTexture;
     }
 }
-declare module BABYLON.PROCEDURALTEXTURES {
+declare module BABYLON {
     export class GrassProceduralTexture extends BABYLON.ProceduralTexture {
             constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
             updateShaderUniforms(): void;
@@ -95,7 +95,7 @@ declare module BABYLON.PROCEDURALTEXTURES {
             static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): GrassProceduralTexture;
     }
 }
-declare module BABYLON.PROCEDURALTEXTURES {
+declare module BABYLON {
     export class MarbleProceduralTexture extends BABYLON.ProceduralTexture {
             constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
             updateShaderUniforms(): void;
@@ -118,7 +118,7 @@ declare module BABYLON.PROCEDURALTEXTURES {
             static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): MarbleProceduralTexture;
     }
 }
-declare module BABYLON.PROCEDURALTEXTURES {
+declare module BABYLON {
     export class NormalMapProceduralTexture extends BABYLON.ProceduralTexture {
             constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
             updateShaderUniforms(): void;
@@ -140,7 +140,7 @@ declare module BABYLON.PROCEDURALTEXTURES {
             static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): NormalMapProceduralTexture;
     }
 }
-declare module BABYLON.PROCEDURALTEXTURES {
+declare module BABYLON {
     export class PerlinNoiseProceduralTexture extends BABYLON.ProceduralTexture {
             time: number;
             timeScale: number;
@@ -164,7 +164,7 @@ declare module BABYLON.PROCEDURALTEXTURES {
             static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): PerlinNoiseProceduralTexture;
     }
 }
-declare module BABYLON.PROCEDURALTEXTURES {
+declare module BABYLON {
     export class RoadProceduralTexture extends BABYLON.ProceduralTexture {
             constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
             updateShaderUniforms(): void;
@@ -184,7 +184,7 @@ declare module BABYLON.PROCEDURALTEXTURES {
             static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): RoadProceduralTexture;
     }
 }
-declare module BABYLON.PROCEDURALTEXTURES {
+declare module BABYLON {
     export class StarfieldProceduralTexture extends BABYLON.ProceduralTexture {
             constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
             updateShaderUniforms(): void;
@@ -214,7 +214,7 @@ declare module BABYLON.PROCEDURALTEXTURES {
             static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): StarfieldProceduralTexture;
     }
 }
-declare module BABYLON.PROCEDURALTEXTURES {
+declare module BABYLON {
     export class WoodProceduralTexture extends BABYLON.ProceduralTexture {
             constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
             updateShaderUniforms(): void;
