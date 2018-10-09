@@ -93,7 +93,7 @@ module BABYLON {
             max.addToRef(min, this.center).scaleInPlace(0.5);
             max.subtractToRef(min, this.extendSize).scaleInPlace(0.5);
 
-            this._update(worldMatrix || this._worldMatrix || Matrix.Identity());
+            this._update(worldMatrix || this._worldMatrix || Matrix.Identity(true));
         }
 
         /**
@@ -118,7 +118,7 @@ module BABYLON {
         }
 
         /**
-         * Gets the world matrix of the bounding box.
+         * Gets the world matrix of the bounding box
          * @returns a matrix
          */
         public getWorldMatrix(): Matrix {
