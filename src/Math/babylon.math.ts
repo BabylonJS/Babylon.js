@@ -4229,6 +4229,8 @@ module BABYLON {
 
         private _isIdentity = false;
         private _isIdentityDirty = true;
+        private _isIdentity3x2 = true;
+        private _isIdentity3x2Dirty = true;
         /**
          * Gets the update flag of the matrix which is an unique number for the matrix.
          * It will be incremented every time the matrix data change.
@@ -4245,6 +4247,7 @@ module BABYLON {
         public _markAsUpdated() {
             this.updateFlag = Matrix._updateFlagSeed++;
             this._isIdentityDirty = true;
+            this._isIdentity3x2Dirty = true;
         }
 
         /** @hidden */
@@ -4264,14 +4267,13 @@ module BABYLON {
         // Properties
 
         /**
-         * Check if the current matrix is indentity
-         * @param considerAsTextureMatrix defines if the current matrix must be considered as a texture matrix (3x2)
+         * Check if the current matrix is identity
          * @returns true is the matrix is the identity matrix
          */
-        public isIdentity(considerAsTextureMatrix = false): boolean {
+        public isIdentity(): boolean {
             if (this._isIdentityDirty) {
                 this._isIdentityDirty = false;
-                if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[15] !== 1.0) {
+                if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[10] !== 1.0 || this.m[15] !== 1.0) {
                     this._isIdentity = false;
                 } else if (this.m[1] !== 0.0 || this.m[2] !== 0.0 || this.m[3] !== 0.0 ||
                     this.m[4] !== 0.0 || this.m[6] !== 0.0 || this.m[7] !== 0.0 ||
@@ -4281,14 +4283,33 @@ module BABYLON {
                 } else {
                     this._isIdentity = true;
                 }
-
-                if (!considerAsTextureMatrix && this.m[10] !== 1.0) {
-                    this._isIdentity = false;
-                }
             }
 
             return this._isIdentity;
         }
+
+        /**
+         * Check if the current matrix is identity as a texture matrix (3x2 store in 4x4)
+         * @returns true is the matrix is the identity matrix
+         */
+        public isIdentityAs3x2(): boolean {
+            if (this._isIdentity3x2Dirty) {
+                this._isIdentity3x2Dirty = false;
+                if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[15] !== 1.0) {
+                    this._isIdentity3x2 = false;
+                } else if (this.m[1] !== 0.0 || this.m[2] !== 0.0 || this.m[3] !== 0.0 ||
+                    this.m[4] !== 0.0 || this.m[6] !== 0.0 || this.m[7] !== 0.0 ||
+                    this.m[8] !== 0.0 || this.m[9] !== 0.0 || this.m[10] !== 0.0 || this.m[11] !== 0.0 ||
+                    this.m[12] !== 0.0 || this.m[13] !== 0.0 || this.m[14] !== 0.0) {
+                    this._isIdentity3x2 = false;
+                } else {
+                    this._isIdentity3x2 = true;
+                }
+            }
+
+            return this._isIdentity3x2;
+        }
+
         /**
          * Gets the determinant of the matrix
          * @returns the matrix determinant

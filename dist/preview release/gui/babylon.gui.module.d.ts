@@ -652,7 +652,9 @@ declare module 'babylonjs-gui/3D/vector3WithInfo' {
 declare module 'babylonjs-gui/2D/controls/button' {
     import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
     import { Control } from "babylonjs-gui/2D/controls/control";
-    import { Vector2 } from "babylonjs";
+    import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
+    import { Image } from "babylonjs-gui/2D/controls/image";
+    import { Vector2, Nullable } from "babylonjs";
     /**
         * Class used to create 2D buttons
         */
@@ -674,6 +676,14 @@ declare module 'babylonjs-gui/2D/controls/button' {
                 * Function called to generate a pointer up animation
                 */
             pointerUpAnimation: () => void;
+            /**
+                * Returns the image part of the button (if any)
+                */
+            readonly image: Nullable<Image>;
+            /**
+                * Returns the image part of the button (if any)
+                */
+            readonly textBlock: Nullable<TextBlock>;
             /**
                 * Creates a new Button
                 * @param name defines the name of the button
@@ -3428,6 +3438,14 @@ declare module BABYLON.GUI {
                 * Function called to generate a pointer up animation
                 */
             pointerUpAnimation: () => void;
+            /**
+                * Returns the image part of the button (if any)
+                */
+            readonly image: BABYLON.Nullable<Image>;
+            /**
+                * Returns the image part of the button (if any)
+                */
+            readonly textBlock: BABYLON.Nullable<TextBlock>;
             /**
                 * Creates a new Button
                 * @param name defines the name of the button
