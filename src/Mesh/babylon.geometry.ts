@@ -62,9 +62,6 @@ module BABYLON {
          */
         public set boundingBias(value: Vector2) {
             if (this._boundingBias) {
-                if (this._boundingBias.equals(value)) {
-                    return;
-                }
                 this._boundingBias.copyFrom(value);
             }
             else {
@@ -120,11 +117,6 @@ module BABYLON {
 
             // applyToMesh
             if (mesh) {
-                if (mesh.getClassName() === "LinesMesh") {
-                    this.boundingBias = new Vector2(0, (<LinesMesh>mesh).intersectionThreshold);
-                    this._updateExtend();
-                }
-
                 this.applyToMesh(mesh);
                 mesh.computeWorldMatrix(true);
             }
@@ -317,18 +309,20 @@ module BABYLON {
                 this._updateExtend(data);
             }
 
-            var meshes = this._meshes;
-            var numOfMeshes = meshes.length;
             this._resetPointsArrayCache();
 
-            for (var index = 0; index < numOfMeshes; index++) {
-                var mesh = meshes[index];
-                if (updateExtends) {
-                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
+            if (updateExtends) {
+                var meshes = this._meshes;
+                for (const mesh of meshes) {
+                    if (mesh._boundingInfo) {
+                        mesh._boundingInfo.reConstruct(this._extend.minimum, this._extend.maximum);
+                    }
+                    else {
+                        mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
+                    }
 
-                    for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                        var subMesh = mesh.subMeshes[subIndex];
-
+                    const subMeshes = mesh.subMeshes;
+                    for (const subMesh of subMeshes) {
                         subMesh.refreshBoundingInfo();
                     }
                 }

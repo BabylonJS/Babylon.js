@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Class used to store bounding box information
      */
@@ -49,7 +49,7 @@
         public maximum: Vector3 = Vector3.Zero();
 
         private _worldMatrix: Matrix;
-        private static TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
+        private static readonly TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
 
         /**
          * @hidden
@@ -140,23 +140,35 @@
             const minWorld = this.minimumWorld;
             const maxWorld = this.maximumWorld;
             const directions = this.directions;
-
-            minWorld.setAll(Number.MAX_VALUE);
-            maxWorld.setAll(-Number.MAX_VALUE);
-
             const vectorsWorld = this.vectorsWorld;
             const vectors = this.vectors;
-            for (let index = 0; index < 8; ++index) {
-                const v = vectorsWorld[index];
-                Vector3.TransformCoordinatesToRef(vectors[index], world, v);
-                minWorld.minimizeInPlace(v);
-                maxWorld.maximizeInPlace(v);
-            }
 
-            // Extend
-            maxWorld.subtractToRef(minWorld, this.extendSizeWorld).scaleInPlace(0.5);
-            // OOBB
-            maxWorld.addToRef(minWorld, this.centerWorld).scaleInPlace(0.5);
+            if (!world.isIdentity()) {
+                minWorld.setAll(Number.MAX_VALUE);
+                maxWorld.setAll(-Number.MAX_VALUE);
+
+                for (let index = 0; index < 8; ++index) {
+                    const v = vectorsWorld[index];
+                    Vector3.TransformCoordinatesToRef(vectors[index], world, v);
+                    minWorld.minimizeInPlace(v);
+                    maxWorld.maximizeInPlace(v);
+                }
+
+                // Extend
+                maxWorld.subtractToRef(minWorld, this.extendSizeWorld).scaleInPlace(0.5);
+                maxWorld.addToRef(minWorld, this.centerWorld).scaleInPlace(0.5);
+            }
+            else {
+                minWorld.copyFrom(this.minimum);
+                maxWorld.copyFrom(this.maximum);
+                for (let index = 0; index < 8; ++index) {
+                    vectorsWorld[index].copyFrom(vectors[index]);
+                }
+
+                // Extend
+                this.extendSizeWorld.copyFrom(this.extendSize);
+                this.centerWorld.copyFrom(this.center);
+            }
 
             Vector3.FromArrayToRef(world.m, 0, directions[0]);
             Vector3.FromArrayToRef(world.m, 4, directions[1]);
