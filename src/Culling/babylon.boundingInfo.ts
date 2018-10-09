@@ -71,10 +71,10 @@ module BABYLON {
         }
 
         /**
-         * Recreates the entire bounding info from scratch, producing same values as if the constructor was called.
+         * Recreates the entire bounding info from scratch
          * @param min defines the new minimum vector (in local space)
          * @param max defines the new maximum vector (in local space)
-         * @param worldMatrix defines the new world matrix.
+         * @param worldMatrix defines the new world matrix
          */
         public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
             this.boundingBox.reConstruct(min, max, worldMatrix);

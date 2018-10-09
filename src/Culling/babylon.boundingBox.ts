@@ -69,7 +69,7 @@ module BABYLON {
         // Methods
 
         /**
-         * Recreates the entire bounding box from scratch, using the already provided world Matrix if any.
+         * Recreates the entire bounding box from scratch
          * @param min defines the new minimum vector (in local space)
          * @param max defines the new maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
@@ -112,14 +112,13 @@ module BABYLON {
             const min = this.center.subtractToRef(newRadius, tmpVectors[1]);
             const max = this.center.addToRef(newRadius, tmpVectors[2]);
 
-            this.reConstruct(min, max, this._worldMatrix);
+            this.reConstruct(min, max);
 
             return this;
         }
 
         /**
          * Gets the world matrix of the bounding box.
-         * must not be modified
          * @returns a matrix
          */
         public getWorldMatrix(): Matrix {
