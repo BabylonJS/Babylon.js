@@ -582,6 +582,14 @@ declare module BABYLON.GUI {
                 */
             pointerUpAnimation: () => void;
             /**
+                * Returns the image part of the button (if any)
+                */
+            readonly image: BABYLON.Nullable<Image>;
+            /**
+                * Returns the image part of the button (if any)
+                */
+            readonly textBlock: BABYLON.Nullable<TextBlock>;
+            /**
                 * Creates a new Button
                 * @param name defines the name of the button
                 */
@@ -837,6 +845,8 @@ declare module BABYLON.GUI {
             isPointerBlocker: boolean;
             /** Gets or sets a boolean indicating if the control can be focusable */
             isFocusInvisible: boolean;
+            /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
+            clipChildren: boolean;
             /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
             shadowOffsetX: number;
             /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
@@ -1603,9 +1613,15 @@ declare module BABYLON.GUI {
             name?: string | undefined;
             /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
             isVertical: boolean;
-            /** Gets or sets panel width */
+            /**
+                * Gets or sets panel width.
+                * This value should not be set when in horizontal mode as it will be computed automatically
+                */
             width: string | number;
-            /** Gets or sets panel height */
+            /**
+                * Gets or sets panel height.
+                * This value should not be set when in vertical mode as it will be computed automatically
+                */
             height: string | number;
             /**
                 * Creates a new StackPanel

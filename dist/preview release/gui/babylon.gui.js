@@ -902,6 +902,26 @@ var Button = /** @class */ (function (_super) {
         };
         return _this;
     }
+    Object.defineProperty(Button.prototype, "image", {
+        /**
+         * Returns the image part of the button (if any)
+         */
+        get: function () {
+            return this._image;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Button.prototype, "textBlock", {
+        /**
+         * Returns the image part of the button (if any)
+         */
+        get: function () {
+            return this._textBlock;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Button.prototype._getTypeName = function () {
         return "Button";
     };
@@ -973,6 +993,9 @@ var Button = /** @class */ (function (_super) {
         iconImage.stretch = image_1.Image.STRETCH_UNIFORM;
         iconImage.horizontalAlignment = control_1.Control.HORIZONTAL_ALIGNMENT_LEFT;
         result.addControl(iconImage);
+        // Store
+        result._image = iconImage;
+        result._textBlock = textBlock;
         return result;
     };
     /**
@@ -988,6 +1011,8 @@ var Button = /** @class */ (function (_super) {
         iconImage.stretch = image_1.Image.STRETCH_FILL;
         iconImage.horizontalAlignment = control_1.Control.HORIZONTAL_ALIGNMENT_LEFT;
         result.addControl(iconImage);
+        // Store
+        result._image = iconImage;
         return result;
     };
     /**
@@ -1003,6 +1028,8 @@ var Button = /** @class */ (function (_super) {
         textBlock.textWrapping = true;
         textBlock.textHorizontalAlignment = control_1.Control.HORIZONTAL_ALIGNMENT_CENTER;
         result.addControl(textBlock);
+        // Store
+        result._textBlock = textBlock;
         return result;
     };
     /**
@@ -1023,6 +1050,9 @@ var Button = /** @class */ (function (_super) {
         textBlock.textWrapping = true;
         textBlock.textHorizontalAlignment = control_1.Control.HORIZONTAL_ALIGNMENT_CENTER;
         result.addControl(textBlock);
+        // Store
+        result._image = iconImage;
+        result._textBlock = textBlock;
         return result;
     };
     return Button;
@@ -1869,7 +1899,9 @@ var Container = /** @class */ (function (_super) {
         this._applyStates(context);
         if (this._processMeasures(parentMeasure, context)) {
             this._localDraw(context);
-            this._clipForChildren(context);
+            if (this.clipChildren) {
+                this._clipForChildren(context);
+            }
             var computedWidth = -1;
             var computedHeight = -1;
             for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
@@ -2034,6 +2066,8 @@ var Control = /** @class */ (function () {
         this.isPointerBlocker = false;
         /** Gets or sets a boolean indicating if the control can be focusable */
         this.isFocusInvisible = false;
+        /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
+        this.clipChildren = true;
         /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
         this.shadowOffsetX = 0;
         /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
@@ -2995,8 +3029,10 @@ var Control = /** @class */ (function () {
             return false; // We do not want rendering for this frame as they are measure dependant information that need to be gathered
         }
         // Clip
-        this._clip(context);
-        context.clip();
+        if (this.clipChildren) {
+            this._clip(context);
+            context.clip();
+        }
         return true;
     };
     /** @hidden */
@@ -7187,7 +7223,10 @@ var StackPanel = /** @class */ (function (_super) {
         get: function () {
             return this._width.toString(this._host);
         },
-        /** Gets or sets panel width */
+        /**
+         * Gets or sets panel width.
+         * This value should not be set when in horizontal mode as it will be computed automatically
+         */
         set: function (value) {
             if (!this._doNotTrackManualChanges) {
                 this._manualWidth = true;
@@ -7206,7 +7245,10 @@ var StackPanel = /** @class */ (function (_super) {
         get: function () {
             return this._height.toString(this._host);
         },
-        /** Gets or sets panel height */
+        /**
+         * Gets or sets panel height.
+         * This value should not be set when in vertical mode as it will be computed automatically
+         */
         set: function (value) {
             if (!this._doNotTrackManualChanges) {
                 this._manualHeight = true;

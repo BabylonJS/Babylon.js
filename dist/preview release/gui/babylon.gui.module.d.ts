@@ -652,7 +652,9 @@ declare module 'babylonjs-gui/3D/vector3WithInfo' {
 declare module 'babylonjs-gui/2D/controls/button' {
     import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
     import { Control } from "babylonjs-gui/2D/controls/control";
-    import { Vector2 } from "babylonjs";
+    import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
+    import { Image } from "babylonjs-gui/2D/controls/image";
+    import { Vector2, Nullable } from "babylonjs";
     /**
         * Class used to create 2D buttons
         */
@@ -674,6 +676,14 @@ declare module 'babylonjs-gui/2D/controls/button' {
                 * Function called to generate a pointer up animation
                 */
             pointerUpAnimation: () => void;
+            /**
+                * Returns the image part of the button (if any)
+                */
+            readonly image: Nullable<Image>;
+            /**
+                * Returns the image part of the button (if any)
+                */
+            readonly textBlock: Nullable<TextBlock>;
             /**
                 * Creates a new Button
                 * @param name defines the name of the button
@@ -952,6 +962,8 @@ declare module 'babylonjs-gui/2D/controls/control' {
             isPointerBlocker: boolean;
             /** Gets or sets a boolean indicating if the control can be focusable */
             isFocusInvisible: boolean;
+            /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
+            clipChildren: boolean;
             /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
             shadowOffsetX: number;
             /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
@@ -1754,9 +1766,15 @@ declare module 'babylonjs-gui/2D/controls/stackPanel' {
             name?: string | undefined;
             /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
             isVertical: boolean;
-            /** Gets or sets panel width */
+            /**
+                * Gets or sets panel width.
+                * This value should not be set when in horizontal mode as it will be computed automatically
+                */
             width: string | number;
-            /** Gets or sets panel height */
+            /**
+                * Gets or sets panel height.
+                * This value should not be set when in vertical mode as it will be computed automatically
+                */
             height: string | number;
             /**
                 * Creates a new StackPanel
@@ -3409,6 +3427,14 @@ declare module BABYLON.GUI {
                 */
             pointerUpAnimation: () => void;
             /**
+                * Returns the image part of the button (if any)
+                */
+            readonly image: BABYLON.Nullable<Image>;
+            /**
+                * Returns the image part of the button (if any)
+                */
+            readonly textBlock: BABYLON.Nullable<TextBlock>;
+            /**
                 * Creates a new Button
                 * @param name defines the name of the button
                 */
@@ -3664,6 +3690,8 @@ declare module BABYLON.GUI {
             isPointerBlocker: boolean;
             /** Gets or sets a boolean indicating if the control can be focusable */
             isFocusInvisible: boolean;
+            /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
+            clipChildren: boolean;
             /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
             shadowOffsetX: number;
             /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
@@ -4430,9 +4458,15 @@ declare module BABYLON.GUI {
             name?: string | undefined;
             /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
             isVertical: boolean;
-            /** Gets or sets panel width */
+            /**
+                * Gets or sets panel width.
+                * This value should not be set when in horizontal mode as it will be computed automatically
+                */
             width: string | number;
-            /** Gets or sets panel height */
+            /**
+                * Gets or sets panel height.
+                * This value should not be set when in vertical mode as it will be computed automatically
+                */
             height: string | number;
             /**
                 * Creates a new StackPanel

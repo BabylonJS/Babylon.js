@@ -163,8 +163,7 @@ module BABYLON {
          * @param doNotRecurse If children should be disposed
          */
         public dispose(doNotRecurse?: boolean): void {
-            this._colorShader.dispose();
-
+            this._colorShader.dispose(false, false, true);
             super.dispose(doNotRecurse);
         }
 

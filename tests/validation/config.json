@@ -2,13 +2,19 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
+      "title": "Solid particle system",
+      "playgroundId": "#WCDZS#92",
+      "renderCount": 150,
+      "referenceImage": "sps.png"
+    },
+    {
       "title": "Simulate pointer",
       "playgroundId": "#8MGKWK#78",
       "referenceImage": "simulatePointer.png"
     },
     {
       "title": "Camera rig",
-      "playgroundId": "#ATL1CS#6",
+      "playgroundId": "#ATL1CS#9",
       "referenceImage": "cameraRig.png"
     },
     {

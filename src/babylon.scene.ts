@@ -70,6 +70,18 @@ module BABYLON {
          * It will improve performance when the number of geometries becomes important.
          */
         useGeometryIdsMap?: boolean;
+
+        /**
+         * Defines that each material of the scene should keep up-to-date a map of referencing meshes for fast diposing
+         * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
+         */
+        useMaterialMeshMap?: boolean;
+
+        /**
+         * Defines that each mesh of the scene should keep up-to-date a map of referencing cloned meshes for fast diposing
+         * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
+         */
+        useClonedMeshhMap?: boolean;
     }
 
     /**
@@ -252,6 +264,12 @@ module BABYLON {
          * in order to block unwanted artifacts like system double clicks
          */
         public preventDefaultOnPointerDown = true;
+
+        /**
+         * This is used to call preventDefault() on pointer up
+         * in order to block unwanted artifacts like system double clicks
+         */
+        public preventDefaultOnPointerUp = true;
 
         // Metadata
         /**
@@ -987,6 +1005,7 @@ module BABYLON {
         private _alternateTransformMatrix: Matrix;
         private _useAlternateCameraConfiguration = false;
         private _alternateRendering = false;
+        private _wheelEventName = "";
         /** @hidden */
         public _forcedViewPosition: Nullable<Vector3>;
 
@@ -1008,6 +1027,11 @@ module BABYLON {
          * This is useful if there are more lights that the maximum simulteanous authorized
          */
         public requireLightSorting = false;
+
+        /** @hidden */
+        public readonly useMaterialMeshMap: boolean;
+        /** @hidden */
+        public readonly useClonedMeshhMap: boolean;
 
         private _pointerOverMesh: Nullable<AbstractMesh>;
 
@@ -1216,6 +1240,9 @@ module BABYLON {
             if (options && options.useGeometryIdsMap === true) {
                 this.geometriesById = {};
             }
+
+            this.useMaterialMeshMap = options && options.useGeometryIdsMap || false;
+            this.useClonedMeshhMap = options && options.useClonedMeshhMap || false;
         }
 
         private _defaultMeshCandidates: ISmartArrayLike<AbstractMesh> = {
@@ -1609,7 +1636,7 @@ module BABYLON {
             }
 
             if (pickResult) {
-                let type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
+                let type = evt.type === this._wheelEventName ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
 
                 if (this.onPointerMove) {
                     this.onPointerMove(evt, pickResult, type);
@@ -1726,8 +1753,6 @@ module BABYLON {
         public simulatePointerUp(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): Scene {
             let evt = new PointerEvent("pointerup", pointerEventInit);
             let clickInfo = new ClickInfo();
-            clickInfo.singleClick = true;
-            clickInfo.ignore = true;
 
             if (this._checkPrePointerObservable(pickResult, evt, PointerEventTypes.POINTERUP)) {
                 return this;
@@ -1779,30 +1804,20 @@ module BABYLON {
 
             let type = PointerEventTypes.POINTERUP;
             if (this.onPointerObservable.hasObservers()) {
-                if (!clickInfo.ignore) {
-                    if (!clickInfo.hasSwiped) {
-                        if (clickInfo.singleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
-                            let type = PointerEventTypes.POINTERTAP;
-                            let pi = new PointerInfo(type, evt, pickResult);
-                            this._setRayOnPointerInfo(pi);
-                            this.onPointerObservable.notifyObservers(pi, type);
-                        }
-                        if (clickInfo.doubleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
-                            let type = PointerEventTypes.POINTERDOUBLETAP;
-                            let pi = new PointerInfo(type, evt, pickResult);
-                            this._setRayOnPointerInfo(pi);
-                            this.onPointerObservable.notifyObservers(pi, type);
-                        }
+                if (!clickInfo.ignore && !clickInfo.hasSwiped) {
+                    if (clickInfo.singleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
+                        type = PointerEventTypes.POINTERTAP;
+                    }
+                    else if (clickInfo.doubleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
+                        type = PointerEventTypes.POINTERDOUBLETAP;
                     }
                 }
-                else {
-                    let pi = new PointerInfo(type, evt, pickResult);
-                    this._setRayOnPointerInfo(pi);
-                    this.onPointerObservable.notifyObservers(pi, type);
-                }
+                let pi = new PointerInfo(type, evt, pickResult);
+                this._setRayOnPointerInfo(pi);
+                this.onPointerObservable.notifyObservers(pi, type);
             }
 
-            if (this.onPointerUp) {
+            if (this.onPointerUp && !clickInfo.ignore) {
                 this.onPointerUp(evt, pickResult, type);
             }
 
@@ -1892,7 +1907,6 @@ module BABYLON {
                             if (Date.now() - this._previousStartingPointerTime > Scene.DoubleClickDelay ||
                                 btn !== this._previousButtonPressed) {
                                 clickInfo.singleClick = true;
-
                                 cb(clickInfo, this._currentPickResult);
                             }
                         }
@@ -1961,6 +1975,7 @@ module BABYLON {
                         }
                     }
                 }
+
                 clickInfo.ignore = true;
                 cb(clickInfo, this._currentPickResult);
             };
@@ -1970,7 +1985,7 @@ module BABYLON {
                 this._updatePointerPosition(evt);
 
                 // PreObservable support
-                if (this._checkPrePointerObservable(null, evt, evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE)) {
+                if (this._checkPrePointerObservable(null, evt, evt.type === this._wheelEventName ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE)) {
                     return;
                 }
 
@@ -2037,6 +2052,12 @@ module BABYLON {
                 this._meshPickProceed = false;
 
                 this._updatePointerPosition(evt);
+
+                if (this.preventDefaultOnPointerUp && canvas) {
+                    evt.preventDefault();
+                    canvas.focus();
+                }
+
                 this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => {
                     // PreObservable support
                     if (this.onPrePointerObservable.hasObservers()) {
@@ -2153,9 +2174,13 @@ module BABYLON {
 
             if (attachMove) {
                 canvas.addEventListener(eventPrefix + "move", <any>this._onPointerMove, false);
+
                 // Wheel
-                canvas.addEventListener('mousewheel', <any>this._onPointerMove, false);
-                canvas.addEventListener('DOMMouseScroll', <any>this._onPointerMove, false);
+                this._wheelEventName = "onwheel" in document.createElement("div") ? "wheel" :       // Modern browsers support "wheel"
+                    (<any>document).onmousewheel !== undefined ? "mousewheel" :                     // Webkit and IE support at least "mousewheel"
+                        "DOMMouseScroll";                                                           // let's assume that remaining browsers are older Firefox
+
+                canvas.addEventListener(this._wheelEventName, <any>this._onPointerMove, false);
             }
 
             if (attachDown) {
@@ -2192,8 +2217,7 @@ module BABYLON {
             }
 
             // Wheel
-            canvas.removeEventListener('mousewheel', <any>this._onPointerMove);
-            canvas.removeEventListener('DOMMouseScroll', <any>this._onPointerMove);
+            canvas.removeEventListener(this._wheelEventName, <any>this._onPointerMove);
 
             // Keyboard
             canvas.removeEventListener("keydown", this._onKeyDown);
@@ -2983,7 +3007,8 @@ module BABYLON {
             var index = this.meshes.indexOf(toRemove);
             if (index !== -1) {
                 // Remove from the scene if mesh found
-                this.meshes.splice(index, 1);
+                this.meshes[index] = this.meshes[this.meshes.length - 1];
+                this.meshes.pop();
             }
 
             this.onMeshRemovedObservable.notifyObservers(toRemove);
@@ -3000,6 +3025,7 @@ module BABYLON {
          * @param newTransformNode defines the transform node to add
          */
         public addTransformNode(newTransformNode: TransformNode) {
+            newTransformNode._indexInSceneTransformNodesArray = this.transformNodes.length;
             this.transformNodes.push(newTransformNode);
 
             this.onNewTransformNodeAddedObservable.notifyObservers(newTransformNode);
@@ -3011,10 +3037,16 @@ module BABYLON {
          * @returns the index where the transform node was in the transform node list
          */
         public removeTransformNode(toRemove: TransformNode): number {
-            var index = this.transformNodes.indexOf(toRemove);
+            var index = toRemove._indexInSceneTransformNodesArray;
             if (index !== -1) {
-                // Remove from the scene if found
-                this.transformNodes.splice(index, 1);
+                if (index !== this.transformNodes.length - 1) {
+                    const lastNode = this.transformNodes[this.transformNodes.length - 1];
+                    this.transformNodes[index] = lastNode;
+                    lastNode._indexInSceneTransformNodesArray = index;
+                }
+
+                toRemove._indexInSceneTransformNodesArray = -1;
+                this.transformNodes.pop();
             }
 
             this.onTransformNodeRemovedObservable.notifyObservers(toRemove);
@@ -3160,10 +3192,18 @@ module BABYLON {
          * @returns The index of the removed material
          */
         public removeMaterial(toRemove: Material): number {
-            var index = this.materials.indexOf(toRemove);
+            var index = toRemove._indexInSceneMaterialArray;
             if (index !== -1) {
-                this.materials.splice(index, 1);
+                if (index !== this.materials.length - 1) {
+                    const lastMaterial = this.materials[this.materials.length - 1];
+                    this.materials[index] = lastMaterial;
+                    lastMaterial._indexInSceneMaterialArray = index;
+                }
+
+                toRemove._indexInSceneMaterialArray = -1;
+                this.materials.pop();
             }
+
             this.onMaterialRemovedObservable.notifyObservers(toRemove);
 
             return index;
@@ -3279,6 +3319,7 @@ module BABYLON {
          * @param newMaterial The material to add
          */
         public addMaterial(newMaterial: Material): void {
+            newMaterial._indexInSceneMaterialArray = this.materials.length;
             this.materials.push(newMaterial);
             this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
         }
@@ -4016,10 +4057,38 @@ module BABYLON {
             this._processedMaterials.dispose();
         }
 
+        private _preventFreeActiveMeshesAndRenderingGroups = false;
+
+        /** Gets or sets a boolean blocking all the calls to freeActiveMeshes and freeRenderingGroups
+         * It can be used in order to prevent going through methods freeRenderingGroups and freeActiveMeshes several times to improve performance
+         * when disposing several meshes in a row or a hierarchy of meshes.
+         * When used, it is the responsability of the user to blockfreeActiveMeshesAndRenderingGroups back to false.
+         */
+        public get blockfreeActiveMeshesAndRenderingGroups(): boolean {
+            return this._preventFreeActiveMeshesAndRenderingGroups;
+        }
+
+        public set blockfreeActiveMeshesAndRenderingGroups(value: boolean) {
+            if (this._preventFreeActiveMeshesAndRenderingGroups === value) {
+                return;
+            }
+
+            if (value) {
+                this.freeActiveMeshes();
+                this.freeRenderingGroups();
+            }
+
+            this._preventFreeActiveMeshesAndRenderingGroups = value;
+        }
+
         /**
          * Clear the active meshes smart array preventing retention point in mesh dispose.
          */
         public freeActiveMeshes(): void {
+            if (this.blockfreeActiveMeshesAndRenderingGroups) {
+                return;
+            }
+
             this._activeMeshes.dispose();
             if (this.activeCamera && this.activeCamera._activeMeshes) {
                 this.activeCamera._activeMeshes.dispose();
@@ -4038,6 +4107,10 @@ module BABYLON {
          * Clear the info related to rendering groups preventing retention points during dispose.
          */
         public freeRenderingGroups(): void {
+            if (this.blockfreeActiveMeshesAndRenderingGroups) {
+                return;
+            }
+
             if (this._renderingManager) {
                 this._renderingManager.freeRenderingGroups();
             }
@@ -4159,7 +4232,7 @@ module BABYLON {
 
                 mesh._preActivate();
 
-                if (mesh.isVisible && mesh.visibility > 0 && (mesh.alwaysSelectAsActiveMesh || ((mesh.layerMask & this.activeCamera.layerMask) !== 0 && mesh.isInFrustum(this._frustumPlanes)))) {
+                if (mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && (mesh.alwaysSelectAsActiveMesh || mesh.isInFrustum(this._frustumPlanes))) {
                     this._activeMeshes.push(mesh);
                     this.activeCamera._activeMeshes.push(mesh);
 
@@ -4321,7 +4394,16 @@ module BABYLON {
 
                 this._intermediateRendering = false;
 
-                engine.restoreDefaultFramebuffer(); // Restore back buffer if needed
+                if (this.activeCamera.outputRenderTarget) {
+                    var internalTexture = this.activeCamera.outputRenderTarget.getInternalTexture();
+                    if (internalTexture) {
+                        engine.bindFramebuffer(internalTexture);
+                    } else {
+                        Tools.Error("Camera contains invalid customDefaultRenderTarget");
+                    }
+                } else {
+                    engine.restoreDefaultFramebuffer(); // Restore back buffer if needed
+                }
             }
 
             this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
