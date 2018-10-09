@@ -3,13 +3,13 @@ module BABYLON {
      * Class representing a ray with position and direction
      */
     export class Ray {
-        private static _edge1 = Vector3.Zero();
-        private static _edge2 = Vector3.Zero();
-        private static _pvec = Vector3.Zero();
-        private static _tvec = Vector3.Zero();
-        private static _qvec = Vector3.Zero();
-        private static _min = Vector3.Zero();
-        private static _max = Vector3.Zero();
+        private static readonly _edge1 = Vector3.Zero();
+        private static readonly _edge2 = Vector3.Zero();
+        private static readonly _pvec = Vector3.Zero();
+        private static readonly _tvec = Vector3.Zero();
+        private static readonly _qvec = Vector3.Zero();
+        private static readonly _min = Vector3.Zero();
+        private static readonly _max = Vector3.Zero();
 
         private _tmpRay: Ray;
 

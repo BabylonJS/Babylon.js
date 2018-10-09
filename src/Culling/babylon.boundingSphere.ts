@@ -1,7 +1,4 @@
 module BABYLON {
-    // This matrix is used as a value to reset the bounding box.
-    const _identityMatrix = Matrix.Identity();
-
     /**
      * Class used to store bounding sphere information
      */
@@ -33,7 +30,9 @@ module BABYLON {
 
         private _worldMatrix: Matrix;
 
-        private static TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
+        private static readonly TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
+        // This matrix is used as a value to reset the bounding box.
+        private static readonly _identityMatrix = Matrix.Identity();
 
         /**
          * Creates a new bounding sphere
@@ -60,7 +59,7 @@ module BABYLON {
             max.addToRef(min, this.center).scaleInPlace(0.5);
             this.radius = distance * 0.5;
 
-            this._update(worldMatrix || _identityMatrix);
+            this._update(worldMatrix || BoundingSphere._identityMatrix);
         }
 
         /**
@@ -85,7 +84,7 @@ module BABYLON {
         public _update(worldMatrix: Matrix): void {
             this._worldMatrix = worldMatrix;
 
-            if (this._worldMatrix !== _identityMatrix) {
+            if (this._worldMatrix !== BoundingSphere._identityMatrix) {
                 Vector3.TransformCoordinatesToRef(this.center, worldMatrix, this.centerWorld);
                 const tempVector = BoundingSphere.TmpVector3[0];
                 Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, worldMatrix, tempVector);

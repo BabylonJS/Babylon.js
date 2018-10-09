@@ -1,7 +1,4 @@
 module BABYLON {
-
-    const _identityMatrix = Matrix.Identity();
-
     /**
      * Class used to store bounding box information
      */
@@ -52,7 +49,8 @@ module BABYLON {
         public maximum: Vector3 = Vector3.Zero();
 
         private _worldMatrix: Matrix;
-        private static TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
+        private static readonly TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
+        private static readonly _identityMatrix = Matrix.Identity();
 
         /**
          * @hidden
@@ -96,7 +94,7 @@ module BABYLON {
             max.addToRef(min, this.center).scaleInPlace(0.5);
             max.subtractToRef(min, this.extendSize).scaleInPlace(0.5);
 
-            this._update(worldMatrix || _identityMatrix);
+            this._update(worldMatrix || BoundingBox._identityMatrix);
         }
 
         /**
@@ -147,7 +145,7 @@ module BABYLON {
             const vectorsWorld = this.vectorsWorld;
             const vectors = this.vectors;
 
-            if (world !== _identityMatrix) {
+            if (world !== BoundingBox._identityMatrix) {
                 minWorld.setAll(Number.MAX_VALUE);
                 maxWorld.setAll(-Number.MAX_VALUE);
 
@@ -166,6 +164,7 @@ module BABYLON {
                 }
             }
 
+            // Extend
             maxWorld.subtractToRef(minWorld, this.extendSizeWorld).scaleInPlace(0.5);
             maxWorld.addToRef(minWorld, this.centerWorld).scaleInPlace(0.5);
 
