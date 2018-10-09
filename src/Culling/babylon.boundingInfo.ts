@@ -57,6 +57,8 @@ module BABYLON {
 
         private _isLocked = false;
 
+        private static readonly TmpVector3 = Tools.BuildArray(2, Vector3.Zero);
+
         /**
          * Constructs bounding info
          * @param minimum min vector of the bounding box/sphere
@@ -125,8 +127,8 @@ module BABYLON {
          */
         public centerOn(center: Vector3, extend: Vector3): BoundingInfo {
 
-            const minimum = Tmp.Vector3[0].copyFrom(center).subtractInPlace(extend);
-            const maximum = Tmp.Vector3[1].copyFrom(center).addInPlace(extend);
+            const minimum = BoundingInfo.TmpVector3[0].copyFrom(center).subtractInPlace(extend);
+            const maximum = BoundingInfo.TmpVector3[1].copyFrom(center).addInPlace(extend);
 
             this.boundingBox.reConstruct(minimum, maximum, this.boundingBox.getWorldMatrix());
             this.boundingSphere.reConstruct(minimum, maximum, this.boundingSphere.getWorldMatrix());
@@ -168,7 +170,7 @@ module BABYLON {
 		 */
         public get diagonalLength(): number {
             const boundingBox = this.boundingBox;
-            const diag = boundingBox.maximumWorld.subtractToRef(boundingBox.minimumWorld, Tmp.Vector3[0]);
+            const diag = boundingBox.maximumWorld.subtractToRef(boundingBox.minimumWorld, BoundingInfo.TmpVector3[0]);
             return diag.length();
         }
 
