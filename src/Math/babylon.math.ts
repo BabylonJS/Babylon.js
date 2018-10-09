@@ -4251,12 +4251,11 @@ module BABYLON {
         }
 
         /** @hidden */
-        private _updateIdentityStatus(isIdentity:boolean) {
+        private _updateIdentityStatus(isIdentity: boolean) {
             this.updateFlag = Matrix._updateFlagSeed++;
             this._isIdentityDirty = false;
             this._isIdentity = isIdentity;
         }
-
 
         /**
          * Creates an empty matrix (filled with zeros)
