@@ -62,6 +62,28 @@ module BABYLON {
         return this;
     };
 
+    export interface InstancedMesh {
+        /**
+         * Enables the edge rendering mode on the mesh.
+         * This mode makes the mesh edges visible
+         * @param epsilon defines the maximal distance between two angles to detect a face
+         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
+         * @returns the currentInstancedMesh
+         * @see https://www.babylonjs-playground.com/#19O9TU#0
+         */
+        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): InstancedMesh;
+    }
+
+    InstancedMesh.prototype.enableEdgesRendering = function(epsilon = 0.95, checkVerticesInsteadOfIndices = false): InstancedMesh {
+        if (this.sourceMesh.getClassName() === 'LinesMesh') {
+            LinesMesh.prototype.enableEdgesRendering.apply(this, arguments);
+        }
+        else {
+            AbstractMesh.prototype.enableEdgesRendering.apply(this, arguments);
+        }
+        return this;
+    };
+
     /**
      * FaceAdjacencies Helper class to generate edges
      */
@@ -262,56 +284,36 @@ module BABYLON {
             }
 
             if (needToCreateLine) {
-                var offset = this._linesPositions.length / 3;
-                var normal = p0.subtract(p1);
-                normal.normalize();
-
-                // Positions
-                this._linesPositions.push(p0.x);
-                this._linesPositions.push(p0.y);
-                this._linesPositions.push(p0.z);
-
-                this._linesPositions.push(p0.x);
-                this._linesPositions.push(p0.y);
-                this._linesPositions.push(p0.z);
-
-                this._linesPositions.push(p1.x);
-                this._linesPositions.push(p1.y);
-                this._linesPositions.push(p1.z);
-
-                this._linesPositions.push(p1.x);
-                this._linesPositions.push(p1.y);
-                this._linesPositions.push(p1.z);
-
-                // Normals
-                this._linesNormals.push(p1.x);
-                this._linesNormals.push(p1.y);
-                this._linesNormals.push(p1.z);
-                this._linesNormals.push(-1);
-
-                this._linesNormals.push(p1.x);
-                this._linesNormals.push(p1.y);
-                this._linesNormals.push(p1.z);
-                this._linesNormals.push(1);
-
-                this._linesNormals.push(p0.x);
-                this._linesNormals.push(p0.y);
-                this._linesNormals.push(p0.z);
-                this._linesNormals.push(-1);
-
-                this._linesNormals.push(p0.x);
-                this._linesNormals.push(p0.y);
-                this._linesNormals.push(p0.z);
-                this._linesNormals.push(1);
-
-                // Indices
-                this._linesIndices.push(offset);
-                this._linesIndices.push(offset + 1);
-                this._linesIndices.push(offset + 2);
-                this._linesIndices.push(offset);
-                this._linesIndices.push(offset + 2);
-                this._linesIndices.push(offset + 3);
+                this.createLine(p0, p1, this._linesPositions.length / 3);
             }
+        }
+
+        /**
+         * push line into the position, normal and index buffer
+         * @protected
+         */
+        protected createLine(p0: Vector3, p1: Vector3, offset: number) {
+            // Positions
+            this._linesPositions.push(
+                p0.x, p0.y, p0.z,
+                p0.x, p0.y, p0.z,
+                p1.x, p1.y, p1.z,
+                p1.x, p1.y, p1.z
+            );
+
+            // Normals
+            this._linesNormals.push(
+                p1.x, p1.y, p1.z, -1,
+                p1.x, p1.y, p1.z, 1,
+                p0.x, p0.y, p0.z, -1,
+                p0.x, p0.y, p0.z, 1
+            );
+
+            // Indices
+            this._linesIndices.push(
+                offset, offset + 1, offset + 2,
+                offset, offset + 2, offset + 3
+            );
         }
 
         /**
