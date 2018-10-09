@@ -897,26 +897,6 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
-    export interface IViewerTemplatePlugin {
-        readonly templateName: string;
-        readonly eventsToAttach?: Array<string>;
-        interactionPredicate(event: EventCallback): boolean;
-        onEvent?(event: EventCallback): void;
-        addHTMLTemplate?(template: Template): void;
-    }
-    export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugin {
-        readonly templateName: string;
-        readonly eventsToAttach: Array<string>;
-        protected _prepend: boolean;
-        protected _buttonName: string;
-        protected _buttonClass: string;
-        protected _htmlTemplate: string;
-        constructor(buttonName: string, buttonClass?: string, htmlTemplate?: string);
-        interactionPredicate(event: EventCallback): boolean;
-        abstract onEvent(event: EventCallback): void;
-        addHTMLTemplate(template: Template): void;
-        protected _generateHTMLElement(template: Template): Element | DocumentFragment;
-    }
 }
 declare module BabylonViewer {
     /**
@@ -924,7 +904,7 @@ declare module BabylonViewer {
       * @param name the name of the custom optimizer configuration
       * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
       */
-    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): typeof extendedUpgrade;
     export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 declare module BabylonViewer {
@@ -1556,6 +1536,20 @@ declare module BabylonViewer {
         *
         */
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
+}
+declare module BabylonViewer {
+    /**
+        * A custom upgrade-oriented function configuration for the scene optimizer.
+        *
+        * @param viewer the viewer to optimize
+        */
+    export function extendedUpgrade(sceneManager: SceneManager): boolean;
+    /**
+        * A custom degrade-oriented function configuration for the scene optimizer.
+        *
+        * @param viewer the viewer to optimize
+        */
+    export function extendedDegrade(sceneManager: SceneManager): boolean;
 }
 declare module BabylonViewer {
 }

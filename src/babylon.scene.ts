@@ -1883,6 +1883,9 @@ module BABYLON {
                         checkPicking = act.hasPickTriggers;
                     }
                 }
+
+                let needToIgnoreNext = false;
+
                 if (checkPicking) {
                     let btn = evt.button;
                     clickInfo.hasSwiped = this._isPointerSwiping();
@@ -1908,6 +1911,7 @@ module BABYLON {
                                 btn !== this._previousButtonPressed) {
                                 clickInfo.singleClick = true;
                                 cb(clickInfo, this._currentPickResult);
+                                needToIgnoreNext = true;
                             }
                         }
                         // at least one double click is required to be check and exclusive double click is enabled
@@ -1976,7 +1980,7 @@ module BABYLON {
                     }
                 }
 
-                clickInfo.ignore = true;
+                clickInfo.ignore = needToIgnoreNext;
                 cb(clickInfo, this._currentPickResult);
             };
 
