@@ -11,7 +11,7 @@ cache:
   - Playground/node_modules
   - tests/unit/node_modules
 install:
-- travis_retry npm install -g gulp
+- travis_retry npm install -g gulp@4.0.0
 - cd ./Tools/Gulp
 - travis_retry npm install
 jobs:
