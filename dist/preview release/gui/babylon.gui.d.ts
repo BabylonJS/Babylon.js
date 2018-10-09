@@ -594,6 +594,14 @@ declare module BABYLON.GUI {
                 */
             pointerUpAnimation: () => void;
             /**
+                * Returns the image part of the button (if any)
+                */
+            readonly image: BABYLON.Nullable<Image>;
+            /**
+                * Returns the image part of the button (if any)
+                */
+            readonly textBlock: BABYLON.Nullable<TextBlock>;
+            /**
                 * Creates a new Button
                 * @param name defines the name of the button
                 */
