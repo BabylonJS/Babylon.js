@@ -214,7 +214,13 @@ module BABYLON {
             } else {
                 extend = Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount, this._renderingMesh.geometry.boundingBias);
             }
-            this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
+
+            if (this._boundingInfo) {
+                this._boundingInfo.reConstruct(extend.minimum, extend.maximum);
+            }
+            else {
+                this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
+            }
             return this;
         }
 
