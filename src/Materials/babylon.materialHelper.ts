@@ -32,7 +32,7 @@ module BABYLON {
         public static PrepareDefinesForMergedUV(texture: BaseTexture, defines: any, key: string): void {
             defines._needUVs = true;
             defines[key] = true;
-            if (texture.getTextureMatrix().isIdentity(true)) {
+            if (texture.getTextureMatrix().isIdentityAs3x2()) {
                 defines[key + "DIRECTUV"] = texture.coordinatesIndex + 1;
                 if (texture.coordinatesIndex === 0) {
                     defines["MAINUV1"] = true;
@@ -53,7 +53,7 @@ module BABYLON {
         public static BindTextureMatrix(texture: BaseTexture, uniformBuffer: UniformBuffer, key: string): void {
             var matrix = texture.getTextureMatrix();
 
-            if (!matrix.isIdentity(true)) {
+            if (!matrix.isIdentityAs3x2()) {
                 uniformBuffer.updateMatrix(key + "Matrix", matrix);
             }
         }
@@ -245,14 +245,14 @@ module BABYLON {
 
                     switch (light.falloffType) {
                         case Light.FALLOFF_GLTF:
-                        defines["LIGHT_FALLOFF_GLTF" + lightIndex] = true;
-                        break;
+                            defines["LIGHT_FALLOFF_GLTF" + lightIndex] = true;
+                            break;
                         case Light.FALLOFF_PHYSICAL:
-                        defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = true;
-                        break;
+                            defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = true;
+                            break;
                         case Light.FALLOFF_STANDARD:
-                        defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = true;
-                        break;
+                            defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = true;
+                            break;
                     }
 
                     // Specular
