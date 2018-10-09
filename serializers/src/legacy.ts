@@ -1,7 +1,7 @@
-import * as Loaders from "./index";
+import * as Serializers from "./index";
 
 /**
- * Legacy support, defining window.BABYLON.OBJLoader... (global variable).
+ * Legacy support, defining window.BABYLON.OBJSerializer... (global variable).
  *
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
@@ -9,9 +9,9 @@ import * as Loaders from "./index";
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
     (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    for (var loader in Loaders) {
-        if (Loaders.hasOwnProperty(loader)) {
-            (<any>globalObject).BABYLON[loader] = (<any>Loaders)[loader];
+    for (var serializer in Serializers) {
+        if (Serializers.hasOwnProperty(serializer)) {
+            (<any>globalObject).BABYLON[serializer] = (<any>Serializers)[serializer];
         }
     }
 }

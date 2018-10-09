@@ -1,4 +1,4 @@
-import * as Loaders from "../src/STL";
+import * as Serializers from "../src/OBJ";
 
 /**
  * This is the entry point for the UMD module.
@@ -6,9 +6,9 @@ import * as Loaders from "../src/STL";
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    for (var key in Loaders) {
-        (<any>globalObject).BABYLON[key] = (<any>Loaders)[key];
+    for (var serializer in Serializers) {
+        (<any>globalObject).BABYLON[serializer] = (<any>Serializers)[serializer];
     }
 }
 
-export * from "../src/STL";
+export * from "../src/OBJ";

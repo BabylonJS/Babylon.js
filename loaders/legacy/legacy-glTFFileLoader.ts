@@ -20,3 +20,5 @@ if (typeof globalObject !== "undefined") {
 }
 
 export * from "../src/glTF/glTFFileLoader";
+export * from "../src/glTF/1.0";
+export * from "../src/glTF/2.0";
