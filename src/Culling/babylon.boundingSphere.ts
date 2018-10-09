@@ -78,7 +78,7 @@ module BABYLON {
         // Methods
         /** @hidden */
         public _update(worldMatrix: Matrix): void {
-            if (worldMatrix !== BoundingSphere._identityMatrix) {
+            if (!worldMatrix.isIdentity()) {
                 Vector3.TransformCoordinatesToRef(this.center, worldMatrix, this.centerWorld);
                 const tempVector = BoundingSphere.TmpVector3[0];
                 Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, worldMatrix, tempVector);
