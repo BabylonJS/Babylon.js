@@ -5916,6 +5916,52 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * Interface used to define a behavior
+     */
+    interface Behavior<T> {
+        /** gets or sets behavior's name */
+        name: string;
+        /**
+         * Function called when the behavior needs to be initialized (after attaching it to a target)
+         */
+        init(): void;
+        /**
+         * Called when the behavior is attached to a target
+         * @param target defines the target where the behavior is attached to
+         */
+        attach(target: T): void;
+        /**
+         * Called when the behavior is detached from its target
+         */
+        detach(): void;
+    }
+    /**
+     * Interface implemented by classes supporting behaviors
+     */
+    interface IBehaviorAware<T> {
+        /**
+         * Attach a behavior
+         * @param behavior defines the behavior to attach
+         * @returns the current host
+         */
+        addBehavior(behavior: Behavior<T>): T;
+        /**
+         * Remove a behavior from the current object
+         * @param behavior defines the behavior to detach
+         * @returns the current host
+         */
+        removeBehavior(behavior: Behavior<T>): T;
+        /**
+         * Gets a behavior using its name to search
+         * @param name defines the name to search
+         * @returns the behavior or null if not found
+         */
+        getBehaviorByName(name: string): Nullable<Behavior<T>>;
+    }
+}
+
+declare module BABYLON {
+    /**
      * Class used to store bone information
      * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
      */
@@ -6668,52 +6714,6 @@ declare module BABYLON {
          */
         sortBones(): void;
         private _sortBones;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Interface used to define a behavior
-     */
-    interface Behavior<T> {
-        /** gets or sets behavior's name */
-        name: string;
-        /**
-         * Function called when the behavior needs to be initialized (after attaching it to a target)
-         */
-        init(): void;
-        /**
-         * Called when the behavior is attached to a target
-         * @param target defines the target where the behavior is attached to
-         */
-        attach(target: T): void;
-        /**
-         * Called when the behavior is detached from its target
-         */
-        detach(): void;
-    }
-    /**
-     * Interface implemented by classes supporting behaviors
-     */
-    interface IBehaviorAware<T> {
-        /**
-         * Attach a behavior
-         * @param behavior defines the behavior to attach
-         * @returns the current host
-         */
-        addBehavior(behavior: Behavior<T>): T;
-        /**
-         * Remove a behavior from the current object
-         * @param behavior defines the behavior to detach
-         * @returns the current host
-         */
-        removeBehavior(behavior: Behavior<T>): T;
-        /**
-         * Gets a behavior using its name to search
-         * @param name defines the name to search
-         * @returns the behavior or null if not found
-         */
-        getBehaviorByName(name: string): Nullable<Behavior<T>>;
     }
 }
 
@@ -24062,202 +24062,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * Defines a target to use with MorphTargetManager
-     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
-     */
-    class MorphTarget implements IAnimatable {
-        /** defines the name of the target */
-        name: string;
-        /**
-         * Gets or sets the list of animations
-         */
-        animations: Animation[];
-        private _scene;
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _influence;
-        /**
-         * Observable raised when the influence changes
-         */
-        onInfluenceChanged: Observable<boolean>;
-        /** @hidden */
-        _onDataLayoutChanged: Observable<void>;
-        /**
-         * Gets or sets the influence of this target (ie. its weight in the overall morphing)
-         */
-        influence: number;
-        private _animationPropertiesOverride;
-        /**
-         * Gets or sets the animation properties override
-         */
-        animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
-        /**
-         * Creates a new MorphTarget
-         * @param name defines the name of the target
-         * @param influence defines the influence to use
-         */
-        constructor(
-        /** defines the name of the target */
-        name: string, influence?: number, scene?: Nullable<Scene>);
-        /**
-         * Gets a boolean defining if the target contains position data
-         */
-        readonly hasPositions: boolean;
-        /**
-         * Gets a boolean defining if the target contains normal data
-         */
-        readonly hasNormals: boolean;
-        /**
-         * Gets a boolean defining if the target contains tangent data
-         */
-        readonly hasTangents: boolean;
-        /**
-         * Affects position data to this target
-         * @param data defines the position data to use
-         */
-        setPositions(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the position data stored in this target
-         * @returns a FloatArray containing the position data (or null if not present)
-         */
-        getPositions(): Nullable<FloatArray>;
-        /**
-         * Affects normal data to this target
-         * @param data defines the normal data to use
-         */
-        setNormals(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the normal data stored in this target
-         * @returns a FloatArray containing the normal data (or null if not present)
-         */
-        getNormals(): Nullable<FloatArray>;
-        /**
-         * Affects tangent data to this target
-         * @param data defines the tangent data to use
-         */
-        setTangents(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the tangent data stored in this target
-         * @returns a FloatArray containing the tangent data (or null if not present)
-         */
-        getTangents(): Nullable<FloatArray>;
-        /**
-         * Serializes the current target into a Serialization object
-         * @returns the serialized object
-         */
-        serialize(): any;
-        /**
-         * Creates a new target from serialized data
-         * @param serializationObject defines the serialized data to use
-         * @returns a new MorphTarget
-         */
-        static Parse(serializationObject: any): MorphTarget;
-        /**
-         * Creates a MorphTarget from mesh data
-         * @param mesh defines the source mesh
-         * @param name defines the name to use for the new target
-         * @param influence defines the influence to attach to the target
-         * @returns a new MorphTarget
-         */
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This class is used to deform meshes using morphing between different targets
-     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
-     */
-    class MorphTargetManager {
-        private _targets;
-        private _targetInfluenceChangedObservers;
-        private _targetDataLayoutChangedObservers;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _vertexCount;
-        private _uniqueId;
-        private _tempInfluences;
-        /**
-         * Creates a new MorphTargetManager
-         * @param scene defines the current scene
-         */
-        constructor(scene?: Nullable<Scene>);
-        /**
-         * Gets the unique ID of this manager
-         */
-        readonly uniqueId: number;
-        /**
-         * Gets the number of vertices handled by this manager
-         */
-        readonly vertexCount: number;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of normals
-         */
-        readonly supportsNormals: boolean;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of tangents
-         */
-        readonly supportsTangents: boolean;
-        /**
-         * Gets the number of targets stored in this manager
-         */
-        readonly numTargets: number;
-        /**
-         * Gets the number of influencers (ie. the number of targets with influences > 0)
-         */
-        readonly numInfluencers: number;
-        /**
-         * Gets the list of influences (one per target)
-         */
-        readonly influences: Float32Array;
-        /**
-         * Gets the active target at specified index. An active target is a target with an influence > 0
-         * @param index defines the index to check
-         * @returns the requested target
-         */
-        getActiveTarget(index: number): MorphTarget;
-        /**
-         * Gets the target at specified index
-         * @param index defines the index to check
-         * @returns the requested target
-         */
-        getTarget(index: number): MorphTarget;
-        /**
-         * Add a new target to this manager
-         * @param target defines the target to add
-         */
-        addTarget(target: MorphTarget): void;
-        /**
-         * Removes a target from the manager
-         * @param target defines the target to remove
-         */
-        removeTarget(target: MorphTarget): void;
-        /**
-         * Serializes the current manager into a Serialization object
-         * @returns the serialized object
-         */
-        serialize(): any;
-        private _syncActiveTargets;
-        /**
-         * Syncrhonize the targets with all the meshes using this morph target manager
-         */
-        synchronize(): void;
-        /**
-         * Creates a new MorphTargetManager from serialized data
-         * @param serializationObject defines the serialized data
-         * @param scene defines the hosting scene
-         * @returns the new MorphTargetManager
-         */
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
-    }
-}
-
-declare module BABYLON {
-    /**
      * Class used to store all common mesh properties
      */
     class AbstractMesh extends TransformNode implements IDisposable, ICullable, IGetSetVerticesData {
@@ -29885,6 +29689,202 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * Defines a target to use with MorphTargetManager
+     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    class MorphTarget implements IAnimatable {
+        /** defines the name of the target */
+        name: string;
+        /**
+         * Gets or sets the list of animations
+         */
+        animations: Animation[];
+        private _scene;
+        private _positions;
+        private _normals;
+        private _tangents;
+        private _influence;
+        /**
+         * Observable raised when the influence changes
+         */
+        onInfluenceChanged: Observable<boolean>;
+        /** @hidden */
+        _onDataLayoutChanged: Observable<void>;
+        /**
+         * Gets or sets the influence of this target (ie. its weight in the overall morphing)
+         */
+        influence: number;
+        private _animationPropertiesOverride;
+        /**
+         * Gets or sets the animation properties override
+         */
+        animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
+        /**
+         * Creates a new MorphTarget
+         * @param name defines the name of the target
+         * @param influence defines the influence to use
+         */
+        constructor(
+        /** defines the name of the target */
+        name: string, influence?: number, scene?: Nullable<Scene>);
+        /**
+         * Gets a boolean defining if the target contains position data
+         */
+        readonly hasPositions: boolean;
+        /**
+         * Gets a boolean defining if the target contains normal data
+         */
+        readonly hasNormals: boolean;
+        /**
+         * Gets a boolean defining if the target contains tangent data
+         */
+        readonly hasTangents: boolean;
+        /**
+         * Affects position data to this target
+         * @param data defines the position data to use
+         */
+        setPositions(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the position data stored in this target
+         * @returns a FloatArray containing the position data (or null if not present)
+         */
+        getPositions(): Nullable<FloatArray>;
+        /**
+         * Affects normal data to this target
+         * @param data defines the normal data to use
+         */
+        setNormals(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the normal data stored in this target
+         * @returns a FloatArray containing the normal data (or null if not present)
+         */
+        getNormals(): Nullable<FloatArray>;
+        /**
+         * Affects tangent data to this target
+         * @param data defines the tangent data to use
+         */
+        setTangents(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the tangent data stored in this target
+         * @returns a FloatArray containing the tangent data (or null if not present)
+         */
+        getTangents(): Nullable<FloatArray>;
+        /**
+         * Serializes the current target into a Serialization object
+         * @returns the serialized object
+         */
+        serialize(): any;
+        /**
+         * Creates a new target from serialized data
+         * @param serializationObject defines the serialized data to use
+         * @returns a new MorphTarget
+         */
+        static Parse(serializationObject: any): MorphTarget;
+        /**
+         * Creates a MorphTarget from mesh data
+         * @param mesh defines the source mesh
+         * @param name defines the name to use for the new target
+         * @param influence defines the influence to attach to the target
+         * @returns a new MorphTarget
+         */
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This class is used to deform meshes using morphing between different targets
+     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    class MorphTargetManager {
+        private _targets;
+        private _targetInfluenceChangedObservers;
+        private _targetDataLayoutChangedObservers;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _vertexCount;
+        private _uniqueId;
+        private _tempInfluences;
+        /**
+         * Creates a new MorphTargetManager
+         * @param scene defines the current scene
+         */
+        constructor(scene?: Nullable<Scene>);
+        /**
+         * Gets the unique ID of this manager
+         */
+        readonly uniqueId: number;
+        /**
+         * Gets the number of vertices handled by this manager
+         */
+        readonly vertexCount: number;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of normals
+         */
+        readonly supportsNormals: boolean;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of tangents
+         */
+        readonly supportsTangents: boolean;
+        /**
+         * Gets the number of targets stored in this manager
+         */
+        readonly numTargets: number;
+        /**
+         * Gets the number of influencers (ie. the number of targets with influences > 0)
+         */
+        readonly numInfluencers: number;
+        /**
+         * Gets the list of influences (one per target)
+         */
+        readonly influences: Float32Array;
+        /**
+         * Gets the active target at specified index. An active target is a target with an influence > 0
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getActiveTarget(index: number): MorphTarget;
+        /**
+         * Gets the target at specified index
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getTarget(index: number): MorphTarget;
+        /**
+         * Add a new target to this manager
+         * @param target defines the target to add
+         */
+        addTarget(target: MorphTarget): void;
+        /**
+         * Removes a target from the manager
+         * @param target defines the target to remove
+         */
+        removeTarget(target: MorphTarget): void;
+        /**
+         * Serializes the current manager into a Serialization object
+         * @returns the serialized object
+         */
+        serialize(): any;
+        private _syncActiveTargets;
+        /**
+         * Syncrhonize the targets with all the meshes using this morph target manager
+         */
+        synchronize(): void;
+        /**
+         * Creates a new MorphTargetManager from serialized data
+         * @param serializationObject defines the serialized data
+         * @param scene defines the hosting scene
+         * @returns the new MorphTargetManager
+         */
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
+    }
+}
+
+declare module BABYLON {
+    /**
      * Class used to enable access to IndexedDB
      * @see http://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
      */
@@ -34080,73 +34080,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface Scene {
-        /**
-         * The list of reflection probes added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
-         */
-        reflectionProbes: Array<ReflectionProbe>;
-    }
-    /**
-     * Class used to generate realtime reflection / refraction cube textures
-     * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
-     */
-    class ReflectionProbe {
-        /** defines the name of the probe */
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        private _invertYAxis;
-        /** Gets or sets probe position (center of the cube map) */
-        position: Vector3;
-        /**
-         * Creates a new reflection probe
-         * @param name defines the name of the probe
-         * @param size defines the texture resolution (for each face)
-         * @param scene defines the hosting scene
-         * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
-         * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
-         */
-        constructor(
-        /** defines the name of the probe */
-        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean);
-        /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
-        samples: number;
-        /** Gets or sets the refresh rate to use (on every frame by default) */
-        refreshRate: number;
-        /**
-         * Gets the hosting scene
-         * @returns a Scene
-         */
-        getScene(): Scene;
-        /** Gets the internal CubeTexture used to render to */
-        readonly cubeTexture: RenderTargetTexture;
-        /** Gets the list of meshes to render */
-        readonly renderList: Nullable<AbstractMesh[]>;
-        /**
-         * Attach the probe to a specific mesh (Rendering will be done from attached mesh's position)
-         * @param mesh defines the mesh to attach to
-         */
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        /**
-         * Clean all associated resources
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     /**
      * Postprocess used to generate anaglyphic rendering
      */
@@ -35602,6 +35535,73 @@ declare module BABYLON {
          * @param vrMetrics All the required metrics for the VR camera
          */
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
+    }
+}
+
+declare module BABYLON {
+    interface Scene {
+        /**
+         * The list of reflection probes added to the scene
+         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+         */
+        reflectionProbes: Array<ReflectionProbe>;
+    }
+    /**
+     * Class used to generate realtime reflection / refraction cube textures
+     * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+     */
+    class ReflectionProbe {
+        /** defines the name of the probe */
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        private _invertYAxis;
+        /** Gets or sets probe position (center of the cube map) */
+        position: Vector3;
+        /**
+         * Creates a new reflection probe
+         * @param name defines the name of the probe
+         * @param size defines the texture resolution (for each face)
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
+         * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
+         */
+        constructor(
+        /** defines the name of the probe */
+        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean);
+        /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
+        samples: number;
+        /** Gets or sets the refresh rate to use (on every frame by default) */
+        refreshRate: number;
+        /**
+         * Gets the hosting scene
+         * @returns a Scene
+         */
+        getScene(): Scene;
+        /** Gets the internal CubeTexture used to render to */
+        readonly cubeTexture: RenderTargetTexture;
+        /** Gets the list of meshes to render */
+        readonly renderList: Nullable<AbstractMesh[]>;
+        /**
+         * Attach the probe to a specific mesh (Rendering will be done from attached mesh's position)
+         * @param mesh defines the mesh to attach to
+         */
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        /**
+         * Clean all associated resources
+         */
+        dispose(): void;
     }
 }
 
@@ -40224,352 +40224,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * A behavior that when attached to a mesh will will place a specified node on the meshes face pointing towards the camera
-     */
-    class AttachToBoxBehavior implements BABYLON.Behavior<BABYLON.Mesh> {
-        private ui;
-        /**
-         *  The name of the behavior
-         */
-        name: string;
-        /**
-         * The distance away from the face of the mesh that the UI should be attached to (default: 0.15)
-         */
-        distanceAwayFromFace: number;
-        /**
-         * The distance from the bottom of the face that the UI should be attached to (default: 0.15)
-         */
-        distanceAwayFromBottomOfFace: number;
-        private _faceVectors;
-        private _target;
-        private _scene;
-        private _onRenderObserver;
-        private _tmpMatrix;
-        private _tmpVector;
-        /**
-         * Creates the AttachToBoxBehavior, used to attach UI to the closest face of the box to a camera
-         * @param ui The transform node that should be attched to the mesh
-         */
-        constructor(ui: BABYLON.TransformNode);
-        /**
-         *  Initializes the behavior
-         */
-        init(): void;
-        private _closestFace;
-        private _zeroVector;
-        private _lookAtTmpMatrix;
-        private _lookAtToRef;
-        /**
-         * Attaches the AttachToBoxBehavior to the passed in mesh
-         * @param target The mesh that the specified node will be attached to
-         */
-        attach(target: BABYLON.Mesh): void;
-        /**
-         *  Detaches the behavior from the mesh
-         */
-        detach(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * A behavior that when attached to a mesh will allow the mesh to fade in and out
-     */
-    class FadeInOutBehavior implements Behavior<Mesh> {
-        /**
-         * Time in milliseconds to delay before fading in (Default: 0)
-         */
-        delay: number;
-        /**
-         * Time in milliseconds for the mesh to fade in (Default: 300)
-         */
-        fadeInTime: number;
-        private _millisecondsPerFrame;
-        private _hovered;
-        private _hoverValue;
-        private _ownerNode;
-        /**
-         * Instatiates the FadeInOutBehavior
-         */
-        constructor();
-        /**
-         *  The name of the behavior
-         */
-        readonly name: string;
-        /**
-         *  Initializes the behavior
-         */
-        init(): void;
-        /**
-         * Attaches the fade behavior on the passed in mesh
-         * @param ownerNode The mesh that will be faded in/out once attached
-         */
-        attach(ownerNode: Mesh): void;
-        /**
-         *  Detaches the behavior from the mesh
-         */
-        detach(): void;
-        /**
-         * Triggers the mesh to begin fading in or out
-         * @param value if the object should fade in or out (true to fade in)
-         */
-        fadeIn(value: boolean): void;
-        private _update;
-        private _setAllVisibility;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * A behavior that when attached to a mesh will allow the mesh to be scaled
-     */
-    class MultiPointerScaleBehavior implements Behavior<Mesh> {
-        private _dragBehaviorA;
-        private _dragBehaviorB;
-        private _startDistance;
-        private _initialScale;
-        private _targetScale;
-        private _ownerNode;
-        private _sceneRenderObserver;
-        /**
-         * Instantiate a new behavior that when attached to a mesh will allow the mesh to be scaled
-         */
-        constructor();
-        /**
-         *  The name of the behavior
-         */
-        readonly name: string;
-        /**
-         *  Initializes the behavior
-         */
-        init(): void;
-        private _getCurrentDistance;
-        /**
-         * Attaches the scale behavior the passed in mesh
-         * @param ownerNode The mesh that will be scaled around once attached
-         */
-        attach(ownerNode: Mesh): void;
-        /**
-         *  Detaches the behavior from the mesh
-         */
-        detach(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
-     */
-    class PointerDragBehavior implements Behavior<Mesh> {
-        private static _AnyMouseID;
-        private _attachedNode;
-        private _dragPlane;
-        private _scene;
-        private _pointerObserver;
-        private _beforeRenderObserver;
-        private static _planeScene;
-        /**
-         * The maximum tolerated angle between the drag plane and dragging pointer rays to trigger pointer events. Set to 0 to allow any angle (default: 0)
-         */
-        maxDragAngle: number;
-        /**
-         * @hidden
-         */
-        _useAlternatePickedPointAboveMaxDragAngle: boolean;
-        /**
-         * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
-         */
-        currentDraggingPointerID: number;
-        /**
-         * The last position where the pointer hit the drag plane in world space
-         */
-        lastDragPosition: Vector3;
-        /**
-         * If the behavior is currently in a dragging state
-         */
-        dragging: boolean;
-        /**
-         * The distance towards the target drag position to move each frame. This can be useful to avoid jitter. Set this to 1 for no delay. (Default: 0.2)
-         */
-        dragDeltaRatio: number;
-        /**
-         * If the drag plane orientation should be updated during the dragging (Default: true)
-         */
-        updateDragPlane: boolean;
-        private _debugMode;
-        private _moving;
-        /**
-         *  Fires each time the attached mesh is dragged with the pointer
-         *  * delta between last drag position and current drag position in world space
-         *  * dragDistance along the drag axis
-         *  * dragPlaneNormal normal of the current drag plane used during the drag
-         *  * dragPlanePoint in world space where the drag intersects the drag plane
-         */
-        onDragObservable: Observable<{
-            delta: Vector3;
-            dragPlanePoint: Vector3;
-            dragPlaneNormal: Vector3;
-            dragDistance: number;
-            pointerId: number;
-        }>;
-        /**
-         *  Fires each time a drag begins (eg. mouse down on mesh)
-         */
-        onDragStartObservable: Observable<{
-            dragPlanePoint: Vector3;
-            pointerId: number;
-        }>;
-        /**
-         *  Fires each time a drag ends (eg. mouse release after drag)
-         */
-        onDragEndObservable: Observable<{
-            dragPlanePoint: Vector3;
-            pointerId: number;
-        }>;
-        /**
-         *  If the attached mesh should be moved when dragged
-         */
-        moveAttached: boolean;
-        /**
-         *  If the drag behavior will react to drag events (Default: true)
-         */
-        enabled: boolean;
-        /**
-         * If camera controls should be detached during the drag
-         */
-        detachCameraControls: boolean;
-        /**
-         * If set, the drag plane/axis will be rotated based on the attached mesh's world rotation (Default: true)
-         */
-        useObjectOrienationForDragging: boolean;
-        private _options;
-        /**
-         * Creates a pointer drag behavior that can be attached to a mesh
-         * @param options The drag axis or normal of the plane that will be dragged across. If no options are specified the drag plane will always face the ray's origin (eg. camera)
-         */
-        constructor(options?: {
-            dragAxis?: Vector3;
-            dragPlaneNormal?: Vector3;
-        });
-        /**
-         *  The name of the behavior
-         */
-        readonly name: string;
-        /**
-         *  Initializes the behavior
-         */
-        init(): void;
-        private _tmpVector;
-        private _alternatePickedPoint;
-        private _worldDragAxis;
-        private _targetPosition;
-        private _attachedElement;
-        /**
-         * Attaches the drag behavior the passed in mesh
-         * @param ownerNode The mesh that will be dragged around once attached
-         */
-        attach(ownerNode: Mesh): void;
-        /**
-         * Force relase the drag action by code.
-         */
-        releaseDrag(): void;
-        private _startDragRay;
-        private _lastPointerRay;
-        /**
-         * Simulates the start of a pointer drag event on the behavior
-         * @param pointerId pointerID of the pointer that should be simulated (Default: Any mouse pointer ID)
-         * @param fromRay initial ray of the pointer to be simulated (Default: Ray from camera to attached mesh)
-         * @param startPickedPoint picked point of the pointer to be simulated (Default: attached mesh position)
-         */
-        startDrag(pointerId?: number, fromRay?: Ray, startPickedPoint?: Vector3): void;
-        private _startDrag;
-        private _dragDelta;
-        private _moveDrag;
-        private _pickWithRayOnDragPlane;
-        private _pointA;
-        private _pointB;
-        private _pointC;
-        private _lineA;
-        private _lineB;
-        private _localAxis;
-        private _lookAt;
-        private _updateDragPlanePosition;
-        /**
-         *  Detaches the behavior from the mesh
-         */
-        detach(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
-     */
-    class SixDofDragBehavior implements Behavior<Mesh> {
-        private static _virtualScene;
-        private _ownerNode;
-        private _sceneRenderObserver;
-        private _scene;
-        private _targetPosition;
-        private _virtualOriginMesh;
-        private _virtualDragMesh;
-        private _pointerObserver;
-        private _moving;
-        private _startingOrientation;
-        /**
-         * How much faster the object should move when the controller is moving towards it. This is useful to bring objects that are far away from the user to them faster. Set this to 0 to avoid any speed increase. (Default: 3)
-         */
-        private zDragFactor;
-        /**
-         * If the behavior is currently in a dragging state
-         */
-        dragging: boolean;
-        /**
-         * The distance towards the target drag position to move each frame. This can be useful to avoid jitter. Set this to 1 for no delay. (Default: 0.2)
-         */
-        dragDeltaRatio: number;
-        /**
-         * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
-         */
-        currentDraggingPointerID: number;
-        /**
-         * If camera controls should be detached during the drag
-         */
-        detachCameraControls: boolean;
-        /**
-         * Fires each time a drag starts
-         */
-        onDragStartObservable: Observable<{}>;
-        /**
-         *  Fires each time a drag ends (eg. mouse release after drag)
-         */
-        onDragEndObservable: Observable<{}>;
-        /**
-         * Instantiates a behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
-         */
-        constructor();
-        /**
-         *  The name of the behavior
-         */
-        readonly name: string;
-        /**
-         *  Initializes the behavior
-         */
-        init(): void;
-        /**
-         * Attaches the scale behavior the passed in mesh
-         * @param ownerNode The mesh that will be scaled around once attached
-         */
-        attach(ownerNode: Mesh): void;
-        /**
-         *  Detaches the behavior from the mesh
-         */
-        detach(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
      * The autoRotation behavior (BABYLON.AutoRotationBehavior) is designed to create a smooth rotation of an ArcRotateCamera when there is no user interaction.
      * @see http://doc.babylonjs.com/how_to/camera_behaviors#autorotation-behavior
      */
@@ -40922,6 +40576,1175 @@ declare module BABYLON {
          * The camera is not allowed to zoom closer to the mesh than the point at which the adjusted bounding sphere touches the frustum sides
          */
         static FitFrustumSidesMode: number;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * A behavior that when attached to a mesh will will place a specified node on the meshes face pointing towards the camera
+     */
+    class AttachToBoxBehavior implements BABYLON.Behavior<BABYLON.Mesh> {
+        private ui;
+        /**
+         *  The name of the behavior
+         */
+        name: string;
+        /**
+         * The distance away from the face of the mesh that the UI should be attached to (default: 0.15)
+         */
+        distanceAwayFromFace: number;
+        /**
+         * The distance from the bottom of the face that the UI should be attached to (default: 0.15)
+         */
+        distanceAwayFromBottomOfFace: number;
+        private _faceVectors;
+        private _target;
+        private _scene;
+        private _onRenderObserver;
+        private _tmpMatrix;
+        private _tmpVector;
+        /**
+         * Creates the AttachToBoxBehavior, used to attach UI to the closest face of the box to a camera
+         * @param ui The transform node that should be attched to the mesh
+         */
+        constructor(ui: BABYLON.TransformNode);
+        /**
+         *  Initializes the behavior
+         */
+        init(): void;
+        private _closestFace;
+        private _zeroVector;
+        private _lookAtTmpMatrix;
+        private _lookAtToRef;
+        /**
+         * Attaches the AttachToBoxBehavior to the passed in mesh
+         * @param target The mesh that the specified node will be attached to
+         */
+        attach(target: BABYLON.Mesh): void;
+        /**
+         *  Detaches the behavior from the mesh
+         */
+        detach(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * A behavior that when attached to a mesh will allow the mesh to fade in and out
+     */
+    class FadeInOutBehavior implements Behavior<Mesh> {
+        /**
+         * Time in milliseconds to delay before fading in (Default: 0)
+         */
+        delay: number;
+        /**
+         * Time in milliseconds for the mesh to fade in (Default: 300)
+         */
+        fadeInTime: number;
+        private _millisecondsPerFrame;
+        private _hovered;
+        private _hoverValue;
+        private _ownerNode;
+        /**
+         * Instatiates the FadeInOutBehavior
+         */
+        constructor();
+        /**
+         *  The name of the behavior
+         */
+        readonly name: string;
+        /**
+         *  Initializes the behavior
+         */
+        init(): void;
+        /**
+         * Attaches the fade behavior on the passed in mesh
+         * @param ownerNode The mesh that will be faded in/out once attached
+         */
+        attach(ownerNode: Mesh): void;
+        /**
+         *  Detaches the behavior from the mesh
+         */
+        detach(): void;
+        /**
+         * Triggers the mesh to begin fading in or out
+         * @param value if the object should fade in or out (true to fade in)
+         */
+        fadeIn(value: boolean): void;
+        private _update;
+        private _setAllVisibility;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * A behavior that when attached to a mesh will allow the mesh to be scaled
+     */
+    class MultiPointerScaleBehavior implements Behavior<Mesh> {
+        private _dragBehaviorA;
+        private _dragBehaviorB;
+        private _startDistance;
+        private _initialScale;
+        private _targetScale;
+        private _ownerNode;
+        private _sceneRenderObserver;
+        /**
+         * Instantiate a new behavior that when attached to a mesh will allow the mesh to be scaled
+         */
+        constructor();
+        /**
+         *  The name of the behavior
+         */
+        readonly name: string;
+        /**
+         *  Initializes the behavior
+         */
+        init(): void;
+        private _getCurrentDistance;
+        /**
+         * Attaches the scale behavior the passed in mesh
+         * @param ownerNode The mesh that will be scaled around once attached
+         */
+        attach(ownerNode: Mesh): void;
+        /**
+         *  Detaches the behavior from the mesh
+         */
+        detach(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
+     */
+    class PointerDragBehavior implements Behavior<Mesh> {
+        private static _AnyMouseID;
+        private _attachedNode;
+        private _dragPlane;
+        private _scene;
+        private _pointerObserver;
+        private _beforeRenderObserver;
+        private static _planeScene;
+        /**
+         * The maximum tolerated angle between the drag plane and dragging pointer rays to trigger pointer events. Set to 0 to allow any angle (default: 0)
+         */
+        maxDragAngle: number;
+        /**
+         * @hidden
+         */
+        _useAlternatePickedPointAboveMaxDragAngle: boolean;
+        /**
+         * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
+         */
+        currentDraggingPointerID: number;
+        /**
+         * The last position where the pointer hit the drag plane in world space
+         */
+        lastDragPosition: Vector3;
+        /**
+         * If the behavior is currently in a dragging state
+         */
+        dragging: boolean;
+        /**
+         * The distance towards the target drag position to move each frame. This can be useful to avoid jitter. Set this to 1 for no delay. (Default: 0.2)
+         */
+        dragDeltaRatio: number;
+        /**
+         * If the drag plane orientation should be updated during the dragging (Default: true)
+         */
+        updateDragPlane: boolean;
+        private _debugMode;
+        private _moving;
+        /**
+         *  Fires each time the attached mesh is dragged with the pointer
+         *  * delta between last drag position and current drag position in world space
+         *  * dragDistance along the drag axis
+         *  * dragPlaneNormal normal of the current drag plane used during the drag
+         *  * dragPlanePoint in world space where the drag intersects the drag plane
+         */
+        onDragObservable: Observable<{
+            delta: Vector3;
+            dragPlanePoint: Vector3;
+            dragPlaneNormal: Vector3;
+            dragDistance: number;
+            pointerId: number;
+        }>;
+        /**
+         *  Fires each time a drag begins (eg. mouse down on mesh)
+         */
+        onDragStartObservable: Observable<{
+            dragPlanePoint: Vector3;
+            pointerId: number;
+        }>;
+        /**
+         *  Fires each time a drag ends (eg. mouse release after drag)
+         */
+        onDragEndObservable: Observable<{
+            dragPlanePoint: Vector3;
+            pointerId: number;
+        }>;
+        /**
+         *  If the attached mesh should be moved when dragged
+         */
+        moveAttached: boolean;
+        /**
+         *  If the drag behavior will react to drag events (Default: true)
+         */
+        enabled: boolean;
+        /**
+         * If camera controls should be detached during the drag
+         */
+        detachCameraControls: boolean;
+        /**
+         * If set, the drag plane/axis will be rotated based on the attached mesh's world rotation (Default: true)
+         */
+        useObjectOrienationForDragging: boolean;
+        private _options;
+        /**
+         * Creates a pointer drag behavior that can be attached to a mesh
+         * @param options The drag axis or normal of the plane that will be dragged across. If no options are specified the drag plane will always face the ray's origin (eg. camera)
+         */
+        constructor(options?: {
+            dragAxis?: Vector3;
+            dragPlaneNormal?: Vector3;
+        });
+        /**
+         *  The name of the behavior
+         */
+        readonly name: string;
+        /**
+         *  Initializes the behavior
+         */
+        init(): void;
+        private _tmpVector;
+        private _alternatePickedPoint;
+        private _worldDragAxis;
+        private _targetPosition;
+        private _attachedElement;
+        /**
+         * Attaches the drag behavior the passed in mesh
+         * @param ownerNode The mesh that will be dragged around once attached
+         */
+        attach(ownerNode: Mesh): void;
+        /**
+         * Force relase the drag action by code.
+         */
+        releaseDrag(): void;
+        private _startDragRay;
+        private _lastPointerRay;
+        /**
+         * Simulates the start of a pointer drag event on the behavior
+         * @param pointerId pointerID of the pointer that should be simulated (Default: Any mouse pointer ID)
+         * @param fromRay initial ray of the pointer to be simulated (Default: Ray from camera to attached mesh)
+         * @param startPickedPoint picked point of the pointer to be simulated (Default: attached mesh position)
+         */
+        startDrag(pointerId?: number, fromRay?: Ray, startPickedPoint?: Vector3): void;
+        private _startDrag;
+        private _dragDelta;
+        private _moveDrag;
+        private _pickWithRayOnDragPlane;
+        private _pointA;
+        private _pointB;
+        private _pointC;
+        private _lineA;
+        private _lineB;
+        private _localAxis;
+        private _lookAt;
+        private _updateDragPlanePosition;
+        /**
+         *  Detaches the behavior from the mesh
+         */
+        detach(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
+     */
+    class SixDofDragBehavior implements Behavior<Mesh> {
+        private static _virtualScene;
+        private _ownerNode;
+        private _sceneRenderObserver;
+        private _scene;
+        private _targetPosition;
+        private _virtualOriginMesh;
+        private _virtualDragMesh;
+        private _pointerObserver;
+        private _moving;
+        private _startingOrientation;
+        /**
+         * How much faster the object should move when the controller is moving towards it. This is useful to bring objects that are far away from the user to them faster. Set this to 0 to avoid any speed increase. (Default: 3)
+         */
+        private zDragFactor;
+        /**
+         * If the behavior is currently in a dragging state
+         */
+        dragging: boolean;
+        /**
+         * The distance towards the target drag position to move each frame. This can be useful to avoid jitter. Set this to 1 for no delay. (Default: 0.2)
+         */
+        dragDeltaRatio: number;
+        /**
+         * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
+         */
+        currentDraggingPointerID: number;
+        /**
+         * If camera controls should be detached during the drag
+         */
+        detachCameraControls: boolean;
+        /**
+         * Fires each time a drag starts
+         */
+        onDragStartObservable: Observable<{}>;
+        /**
+         *  Fires each time a drag ends (eg. mouse release after drag)
+         */
+        onDragEndObservable: Observable<{}>;
+        /**
+         * Instantiates a behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
+         */
+        constructor();
+        /**
+         *  The name of the behavior
+         */
+        readonly name: string;
+        /**
+         *  Initializes the behavior
+         */
+        init(): void;
+        /**
+         * Attaches the scale behavior the passed in mesh
+         * @param ownerNode The mesh that will be scaled around once attached
+         */
+        attach(ownerNode: Mesh): void;
+        /**
+         *  Detaches the behavior from the mesh
+         */
+        detach(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Manage the gamepad inputs to control an arc rotate camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: ArcRotateCamera;
+        /**
+         * Defines the gamepad the input is gathering event from.
+         */
+        gamepad: Nullable<Gamepad>;
+        /**
+         * Defines the gamepad rotation sensiblity.
+         * This is the threshold from when rotation starts to be accounted for to prevent jittering.
+         */
+        gamepadRotationSensibility: number;
+        /**
+         * Defines the gamepad move sensiblity.
+         * This is the threshold from when moving starts to be accounted for for to prevent jittering.
+         */
+        gamepadMoveSensibility: number;
+        private _onGamepadConnectedObserver;
+        private _onGamepadDisconnectedObserver;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs(): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Manage the keyboard inputs to control the movement of an arc rotate camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: ArcRotateCamera;
+        /**
+         * Defines the list of key codes associated with the up action (increase alpha)
+         */
+        keysUp: number[];
+        /**
+         * Defines the list of key codes associated with the down action (decrease alpha)
+         */
+        keysDown: number[];
+        /**
+         * Defines the list of key codes associated with the left action (increase beta)
+         */
+        keysLeft: number[];
+        /**
+         * Defines the list of key codes associated with the right action (decrease beta)
+         */
+        keysRight: number[];
+        /**
+         * Defines the list of key codes associated with the reset action.
+         * Those keys reset the camera to its last stored state (with the method camera.storeState())
+         */
+        keysReset: number[];
+        /**
+         * Defines the panning sensibility of the inputs.
+         * (How fast is the camera paning)
+         */
+        panningSensibility: number;
+        /**
+         * Defines the zooming sensibility of the inputs.
+         * (How fast is the camera zooming)
+         */
+        zoomingSensibility: number;
+        /**
+         * Defines wether maintaining the alt key down switch the movement mode from
+         * orientation to zoom.
+         */
+        useAltToZoom: boolean;
+        /**
+         * Rotation speed of the camera
+         */
+        angularSpeed: number;
+        private _keys;
+        private _ctrlPressed;
+        private _altPressed;
+        private _onCanvasBlurObserver;
+        private _onKeyboardObserver;
+        private _engine;
+        private _scene;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs(): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Manage the mouse wheel inputs to control an arc rotate camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: ArcRotateCamera;
+        /**
+         * Gets or Set the mouse wheel precision or how fast is the camera zooming.
+         */
+        wheelPrecision: number;
+        /**
+         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
+         * It defines the percentage of current camera.radius to use as delta when wheel is used.
+         */
+        wheelDeltaPercentage: number;
+        private _wheel;
+        private _observer;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Manage the pointers inputs to control an arc rotate camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: ArcRotateCamera;
+        /**
+         * Defines the buttons associated with the input to handle camera move.
+         */
+        buttons: number[];
+        /**
+         * Defines the pointer angular sensibility  along the X axis or how fast is the camera rotating.
+         */
+        angularSensibilityX: number;
+        /**
+         * Defines the pointer angular sensibility along the Y axis or how fast is the camera rotating.
+         */
+        angularSensibilityY: number;
+        /**
+         * Defines the pointer pinch precision or how fast is the camera zooming.
+         */
+        pinchPrecision: number;
+        /**
+         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
+         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
+         */
+        pinchDeltaPercentage: number;
+        /**
+         * Defines the pointer panning sensibility or how fast is the camera moving.
+         */
+        panningSensibility: number;
+        /**
+         * Defines whether panning (2 fingers swipe) is enabled through multitouch.
+         */
+        multiTouchPanning: boolean;
+        /**
+         * Defines whether panning is enabled for both pan (2 fingers swipe) and zoom (pinch) through multitouch.
+         */
+        multiTouchPanAndZoom: boolean;
+        /**
+         * Revers pinch action direction.
+         */
+        pinchInwards: boolean;
+        private _isPanClick;
+        private _pointerInput;
+        private _observer;
+        private _onMouseMove;
+        private _onGestureStart;
+        private _onGesture;
+        private _MSGestureHandler;
+        private _onLostFocus;
+        private _onContextMenu;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Manage the device orientation inputs (gyroscope) to control an arc rotate camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: ArcRotateCamera;
+        /**
+         * Defines a correction factor applied on the alpha value retrieved from the orientation events.
+         */
+        alphaCorrection: number;
+        /**
+         * Defines a correction factor applied on the beta value retrieved from the orientation events.
+         */
+        betaCorrection: number;
+        /**
+         * Defines a correction factor applied on the gamma value retrieved from the orientation events.
+         */
+        gammaCorrection: number;
+        private _alpha;
+        private _gamma;
+        private _dirty;
+        private _deviceOrientationHandler;
+        /**
+         * Instantiate a new ArcRotateCameraVRDeviceOrientationInput.
+         */
+        constructor();
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /** @hidden */
+        _onOrientationEvent(evt: DeviceOrientationEvent): void;
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs(): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Listen to keyboard events to control the camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: FlyCamera;
+        /**
+         * The list of keyboard keys used to control the forward move of the camera.
+         */
+        keysForward: number[];
+        /**
+         * The list of keyboard keys used to control the backward move of the camera.
+         */
+        keysBackward: number[];
+        /**
+         * The list of keyboard keys used to control the forward move of the camera.
+         */
+        keysUp: number[];
+        /**
+         * The list of keyboard keys used to control the backward move of the camera.
+         */
+        keysDown: number[];
+        /**
+         * The list of keyboard keys used to control the right strafe move of the camera.
+         */
+        keysRight: number[];
+        /**
+         * The list of keyboard keys used to control the left strafe move of the camera.
+         */
+        keysLeft: number[];
+        private _keys;
+        private _onCanvasBlurObserver;
+        private _onKeyboardObserver;
+        private _engine;
+        private _scene;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /** @hidden */
+        _onLostFocus(e: FocusEvent): void;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Listen to mouse events to control the camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: FlyCamera;
+        /**
+         * Defines if touch is enabled. (Default is true.)
+         */
+        touchEnabled: boolean;
+        /**
+         * Defines the buttons associated with the input to handle camera rotation.
+         */
+        buttons: number[];
+        /**
+         * Assign buttons for Yaw control.
+         */
+        buttonsYaw: number[];
+        /**
+        * Assign buttons for Pitch control.
+        */
+        buttonsPitch: number[];
+        /**
+        * Assign buttons for Roll control.
+        */
+        buttonsRoll: number[];
+        /**
+         * Detect if any button is being pressed while mouse is moved.
+         * -1 = Mouse locked.
+         * 0 = Left button.
+         * 1 = Middle Button.
+         * 2 = Right Button.
+         */
+        activeButton: number;
+        /**
+         * Defines the pointer's angular sensibility, to control the camera rotation speed.
+         * Higher values reduce its sensitivity.
+         */
+        angularSensibility: number;
+        private _mousemoveCallback;
+        private _observer;
+        private _rollObserver;
+        private previousPosition;
+        private noPreventDefault;
+        private element;
+        /**
+         * Listen to mouse events to control the camera.
+         * @param touchEnabled Define if touch is enabled. (Default is true.)
+         * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+         */
+        constructor(touchEnabled?: boolean);
+        /**
+         * Attach the mouse control to the HTML DOM element.
+         * @param element Defines the element that listens to the input events.
+         * @param noPreventDefault Defines whether events caught by the controls should call preventdefault().
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Gets the class name of the current input.
+         * @returns the class name.
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input's friendly name.
+         */
+        getSimpleName(): string;
+        private _pointerInput;
+        private _onMouseMove;
+        /**
+         * Rotate camera by mouse offset.
+         */
+        private rotateCamera;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
+     * Screen rotation is taken into account.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
+        private _camera;
+        private _screenOrientationAngle;
+        private _constantTranform;
+        private _screenQuaternion;
+        private _alpha;
+        private _beta;
+        private _gamma;
+        /**
+         * Instantiates a new input
+         * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+         */
+        constructor();
+        /**
+         * Define the camera controlled by the input.
+         */
+        camera: FreeCamera;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        private _orientationChanged;
+        private _deviceOrientation;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs(): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Manage the gamepad inputs to control a free camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
+        /**
+         * Define the camera the input is attached to.
+         */
+        camera: FreeCamera;
+        /**
+         * Define the Gamepad controlling the input
+         */
+        gamepad: Nullable<Gamepad>;
+        /**
+         * Defines the gamepad rotation sensiblity.
+         * This is the threshold from when rotation starts to be accounted for to prevent jittering.
+         */
+        gamepadAngularSensibility: number;
+        /**
+         * Defines the gamepad move sensiblity.
+         * This is the threshold from when moving starts to be accounted for for to prevent jittering.
+         */
+        gamepadMoveSensibility: number;
+        private _onGamepadConnectedObserver;
+        private _onGamepadDisconnectedObserver;
+        private _cameraTransform;
+        private _deltaTransform;
+        private _vector3;
+        private _vector2;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs(): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Manage the keyboard inputs to control the movement of a free camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: FreeCamera;
+        /**
+         * Gets or Set the list of keyboard keys used to control the forward move of the camera.
+         */
+        keysUp: number[];
+        /**
+         * Gets or Set the list of keyboard keys used to control the backward move of the camera.
+         */
+        keysDown: number[];
+        /**
+         * Gets or Set the list of keyboard keys used to control the left strafe move of the camera.
+         */
+        keysLeft: number[];
+        /**
+         * Gets or Set the list of keyboard keys used to control the right strafe move of the camera.
+         */
+        keysRight: number[];
+        private _keys;
+        private _onCanvasBlurObserver;
+        private _onKeyboardObserver;
+        private _engine;
+        private _scene;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs(): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /** @hidden */
+        _onLostFocus(e: FocusEvent): void;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Manage the mouse inputs to control the movement of a free camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
+        /**
+         * Define if touch is enabled in the mouse input
+         */
+        touchEnabled: boolean;
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: FreeCamera;
+        /**
+         * Defines the buttons associated with the input to handle camera move.
+         */
+        buttons: number[];
+        /**
+         * Defines the pointer angular sensibility  along the X and Y axis or how fast is the camera rotating.
+         */
+        angularSensibility: number;
+        private _pointerInput;
+        private _onMouseMove;
+        private _observer;
+        private previousPosition;
+        /**
+         * Manage the mouse inputs to control the movement of a free camera.
+         * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+         * @param touchEnabled Defines if touch is enabled or not
+         */
+        constructor(
+        /**
+         * Define if touch is enabled in the mouse input
+         */
+        touchEnabled?: boolean);
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Manage the touch inputs to control the movement of a free camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: FreeCamera;
+        /**
+         * Defines the touch sensibility for rotation.
+         * The higher the faster.
+         */
+        touchAngularSensibility: number;
+        /**
+         * Defines the touch sensibility for move.
+         * The higher the faster.
+         */
+        touchMoveSensibility: number;
+        private _offsetX;
+        private _offsetY;
+        private _pointerPressed;
+        private _pointerInput;
+        private _observer;
+        private _onLostFocus;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs(): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Manage the Virtual Joystick inputs to control the movement of a free camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: FreeCamera;
+        private _leftjoystick;
+        private _rightjoystick;
+        /**
+         * Gets the left stick of the virtual joystick.
+         * @returns The virtual Joystick
+         */
+        getLeftJoystick(): VirtualJoystick;
+        /**
+         * Gets the right stick of the virtual joystick.
+         * @returns The virtual Joystick
+         */
+        getRightJoystick(): VirtualJoystick;
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs(): void;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
     }
 }
 
@@ -41885,829 +42708,6 @@ declare module BABYLON {
          * Initializes the controllers and their meshes
          */
         initControllers(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Manage the gamepad inputs to control an arc rotate camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
-        /**
-         * Defines the camera the input is attached to.
-         */
-        camera: ArcRotateCamera;
-        /**
-         * Defines the gamepad the input is gathering event from.
-         */
-        gamepad: Nullable<Gamepad>;
-        /**
-         * Defines the gamepad rotation sensiblity.
-         * This is the threshold from when rotation starts to be accounted for to prevent jittering.
-         */
-        gamepadRotationSensibility: number;
-        /**
-         * Defines the gamepad move sensiblity.
-         * This is the threshold from when moving starts to be accounted for for to prevent jittering.
-         */
-        gamepadMoveSensibility: number;
-        private _onGamepadConnectedObserver;
-        private _onGamepadDisconnectedObserver;
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Update the current camera state depending on the inputs that have been used this frame.
-         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
-         */
-        checkInputs(): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Manage the keyboard inputs to control the movement of an arc rotate camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
-        /**
-         * Defines the camera the input is attached to.
-         */
-        camera: ArcRotateCamera;
-        /**
-         * Defines the list of key codes associated with the up action (increase alpha)
-         */
-        keysUp: number[];
-        /**
-         * Defines the list of key codes associated with the down action (decrease alpha)
-         */
-        keysDown: number[];
-        /**
-         * Defines the list of key codes associated with the left action (increase beta)
-         */
-        keysLeft: number[];
-        /**
-         * Defines the list of key codes associated with the right action (decrease beta)
-         */
-        keysRight: number[];
-        /**
-         * Defines the list of key codes associated with the reset action.
-         * Those keys reset the camera to its last stored state (with the method camera.storeState())
-         */
-        keysReset: number[];
-        /**
-         * Defines the panning sensibility of the inputs.
-         * (How fast is the camera paning)
-         */
-        panningSensibility: number;
-        /**
-         * Defines the zooming sensibility of the inputs.
-         * (How fast is the camera zooming)
-         */
-        zoomingSensibility: number;
-        /**
-         * Defines wether maintaining the alt key down switch the movement mode from
-         * orientation to zoom.
-         */
-        useAltToZoom: boolean;
-        /**
-         * Rotation speed of the camera
-         */
-        angularSpeed: number;
-        private _keys;
-        private _ctrlPressed;
-        private _altPressed;
-        private _onCanvasBlurObserver;
-        private _onKeyboardObserver;
-        private _engine;
-        private _scene;
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Update the current camera state depending on the inputs that have been used this frame.
-         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
-         */
-        checkInputs(): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Manage the mouse wheel inputs to control an arc rotate camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
-        /**
-         * Defines the camera the input is attached to.
-         */
-        camera: ArcRotateCamera;
-        /**
-         * Gets or Set the mouse wheel precision or how fast is the camera zooming.
-         */
-        wheelPrecision: number;
-        /**
-         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
-         * It defines the percentage of current camera.radius to use as delta when wheel is used.
-         */
-        wheelDeltaPercentage: number;
-        private _wheel;
-        private _observer;
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Manage the pointers inputs to control an arc rotate camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
-        /**
-         * Defines the camera the input is attached to.
-         */
-        camera: ArcRotateCamera;
-        /**
-         * Defines the buttons associated with the input to handle camera move.
-         */
-        buttons: number[];
-        /**
-         * Defines the pointer angular sensibility  along the X axis or how fast is the camera rotating.
-         */
-        angularSensibilityX: number;
-        /**
-         * Defines the pointer angular sensibility along the Y axis or how fast is the camera rotating.
-         */
-        angularSensibilityY: number;
-        /**
-         * Defines the pointer pinch precision or how fast is the camera zooming.
-         */
-        pinchPrecision: number;
-        /**
-         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
-         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
-         */
-        pinchDeltaPercentage: number;
-        /**
-         * Defines the pointer panning sensibility or how fast is the camera moving.
-         */
-        panningSensibility: number;
-        /**
-         * Defines whether panning (2 fingers swipe) is enabled through multitouch.
-         */
-        multiTouchPanning: boolean;
-        /**
-         * Defines whether panning is enabled for both pan (2 fingers swipe) and zoom (pinch) through multitouch.
-         */
-        multiTouchPanAndZoom: boolean;
-        /**
-         * Revers pinch action direction.
-         */
-        pinchInwards: boolean;
-        private _isPanClick;
-        private _pointerInput;
-        private _observer;
-        private _onMouseMove;
-        private _onGestureStart;
-        private _onGesture;
-        private _MSGestureHandler;
-        private _onLostFocus;
-        private _onContextMenu;
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Manage the device orientation inputs (gyroscope) to control an arc rotate camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
-        /**
-         * Defines the camera the input is attached to.
-         */
-        camera: ArcRotateCamera;
-        /**
-         * Defines a correction factor applied on the alpha value retrieved from the orientation events.
-         */
-        alphaCorrection: number;
-        /**
-         * Defines a correction factor applied on the beta value retrieved from the orientation events.
-         */
-        betaCorrection: number;
-        /**
-         * Defines a correction factor applied on the gamma value retrieved from the orientation events.
-         */
-        gammaCorrection: number;
-        private _alpha;
-        private _gamma;
-        private _dirty;
-        private _deviceOrientationHandler;
-        /**
-         * Instantiate a new ArcRotateCameraVRDeviceOrientationInput.
-         */
-        constructor();
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /** @hidden */
-        _onOrientationEvent(evt: DeviceOrientationEvent): void;
-        /**
-         * Update the current camera state depending on the inputs that have been used this frame.
-         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
-         */
-        checkInputs(): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Listen to keyboard events to control the camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
-        /**
-         * Defines the camera the input is attached to.
-         */
-        camera: FlyCamera;
-        /**
-         * The list of keyboard keys used to control the forward move of the camera.
-         */
-        keysForward: number[];
-        /**
-         * The list of keyboard keys used to control the backward move of the camera.
-         */
-        keysBackward: number[];
-        /**
-         * The list of keyboard keys used to control the forward move of the camera.
-         */
-        keysUp: number[];
-        /**
-         * The list of keyboard keys used to control the backward move of the camera.
-         */
-        keysDown: number[];
-        /**
-         * The list of keyboard keys used to control the right strafe move of the camera.
-         */
-        keysRight: number[];
-        /**
-         * The list of keyboard keys used to control the left strafe move of the camera.
-         */
-        keysLeft: number[];
-        private _keys;
-        private _onCanvasBlurObserver;
-        private _onKeyboardObserver;
-        private _engine;
-        private _scene;
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /** @hidden */
-        _onLostFocus(e: FocusEvent): void;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
-        /**
-         * Update the current camera state depending on the inputs that have been used this frame.
-         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
-         */
-        checkInputs(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Listen to mouse events to control the camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
-        /**
-         * Defines the camera the input is attached to.
-         */
-        camera: FlyCamera;
-        /**
-         * Defines if touch is enabled. (Default is true.)
-         */
-        touchEnabled: boolean;
-        /**
-         * Defines the buttons associated with the input to handle camera rotation.
-         */
-        buttons: number[];
-        /**
-         * Assign buttons for Yaw control.
-         */
-        buttonsYaw: number[];
-        /**
-        * Assign buttons for Pitch control.
-        */
-        buttonsPitch: number[];
-        /**
-        * Assign buttons for Roll control.
-        */
-        buttonsRoll: number[];
-        /**
-         * Detect if any button is being pressed while mouse is moved.
-         * -1 = Mouse locked.
-         * 0 = Left button.
-         * 1 = Middle Button.
-         * 2 = Right Button.
-         */
-        activeButton: number;
-        /**
-         * Defines the pointer's angular sensibility, to control the camera rotation speed.
-         * Higher values reduce its sensitivity.
-         */
-        angularSensibility: number;
-        private _mousemoveCallback;
-        private _observer;
-        private _rollObserver;
-        private previousPosition;
-        private noPreventDefault;
-        private element;
-        /**
-         * Listen to mouse events to control the camera.
-         * @param touchEnabled Define if touch is enabled. (Default is true.)
-         * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-         */
-        constructor(touchEnabled?: boolean);
-        /**
-         * Attach the mouse control to the HTML DOM element.
-         * @param element Defines the element that listens to the input events.
-         * @param noPreventDefault Defines whether events caught by the controls should call preventdefault().
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Gets the class name of the current input.
-         * @returns the class name.
-         */
-        getClassName(): string;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input's friendly name.
-         */
-        getSimpleName(): string;
-        private _pointerInput;
-        private _onMouseMove;
-        /**
-         * Rotate camera by mouse offset.
-         */
-        private rotateCamera;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
-     * Screen rotation is taken into account.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
-        private _camera;
-        private _screenOrientationAngle;
-        private _constantTranform;
-        private _screenQuaternion;
-        private _alpha;
-        private _beta;
-        private _gamma;
-        /**
-         * Instantiates a new input
-         * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-         */
-        constructor();
-        /**
-         * Define the camera controlled by the input.
-         */
-        camera: FreeCamera;
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        private _orientationChanged;
-        private _deviceOrientation;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Update the current camera state depending on the inputs that have been used this frame.
-         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
-         */
-        checkInputs(): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Manage the gamepad inputs to control a free camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
-        /**
-         * Define the camera the input is attached to.
-         */
-        camera: FreeCamera;
-        /**
-         * Define the Gamepad controlling the input
-         */
-        gamepad: Nullable<Gamepad>;
-        /**
-         * Defines the gamepad rotation sensiblity.
-         * This is the threshold from when rotation starts to be accounted for to prevent jittering.
-         */
-        gamepadAngularSensibility: number;
-        /**
-         * Defines the gamepad move sensiblity.
-         * This is the threshold from when moving starts to be accounted for for to prevent jittering.
-         */
-        gamepadMoveSensibility: number;
-        private _onGamepadConnectedObserver;
-        private _onGamepadDisconnectedObserver;
-        private _cameraTransform;
-        private _deltaTransform;
-        private _vector3;
-        private _vector2;
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Update the current camera state depending on the inputs that have been used this frame.
-         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
-         */
-        checkInputs(): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Manage the keyboard inputs to control the movement of a free camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
-        /**
-         * Defines the camera the input is attached to.
-         */
-        camera: FreeCamera;
-        /**
-         * Gets or Set the list of keyboard keys used to control the forward move of the camera.
-         */
-        keysUp: number[];
-        /**
-         * Gets or Set the list of keyboard keys used to control the backward move of the camera.
-         */
-        keysDown: number[];
-        /**
-         * Gets or Set the list of keyboard keys used to control the left strafe move of the camera.
-         */
-        keysLeft: number[];
-        /**
-         * Gets or Set the list of keyboard keys used to control the right strafe move of the camera.
-         */
-        keysRight: number[];
-        private _keys;
-        private _onCanvasBlurObserver;
-        private _onKeyboardObserver;
-        private _engine;
-        private _scene;
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Update the current camera state depending on the inputs that have been used this frame.
-         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
-         */
-        checkInputs(): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /** @hidden */
-        _onLostFocus(e: FocusEvent): void;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Manage the mouse inputs to control the movement of a free camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
-        /**
-         * Define if touch is enabled in the mouse input
-         */
-        touchEnabled: boolean;
-        /**
-         * Defines the camera the input is attached to.
-         */
-        camera: FreeCamera;
-        /**
-         * Defines the buttons associated with the input to handle camera move.
-         */
-        buttons: number[];
-        /**
-         * Defines the pointer angular sensibility  along the X and Y axis or how fast is the camera rotating.
-         */
-        angularSensibility: number;
-        private _pointerInput;
-        private _onMouseMove;
-        private _observer;
-        private previousPosition;
-        /**
-         * Manage the mouse inputs to control the movement of a free camera.
-         * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-         * @param touchEnabled Defines if touch is enabled or not
-         */
-        constructor(
-        /**
-         * Define if touch is enabled in the mouse input
-         */
-        touchEnabled?: boolean);
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Manage the touch inputs to control the movement of a free camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
-        /**
-         * Defines the camera the input is attached to.
-         */
-        camera: FreeCamera;
-        /**
-         * Defines the touch sensibility for rotation.
-         * The higher the faster.
-         */
-        touchAngularSensibility: number;
-        /**
-         * Defines the touch sensibility for move.
-         * The higher the faster.
-         */
-        touchMoveSensibility: number;
-        private _offsetX;
-        private _offsetY;
-        private _pointerPressed;
-        private _pointerInput;
-        private _observer;
-        private _onLostFocus;
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Update the current camera state depending on the inputs that have been used this frame.
-         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
-         */
-        checkInputs(): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Manage the Virtual Joystick inputs to control the movement of a free camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
-        /**
-         * Defines the camera the input is attached to.
-         */
-        camera: FreeCamera;
-        private _leftjoystick;
-        private _rightjoystick;
-        /**
-         * Gets the left stick of the virtual joystick.
-         * @returns The virtual Joystick
-         */
-        getLeftJoystick(): VirtualJoystick;
-        /**
-         * Gets the right stick of the virtual joystick.
-         * @returns The virtual Joystick
-         */
-        getRightJoystick(): VirtualJoystick;
-        /**
-         * Update the current camera state depending on the inputs that have been used this frame.
-         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
-         */
-        checkInputs(): void;
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
     }
 }
 
