@@ -24,8 +24,6 @@ gulp.task("srcTscWatch", function() {
  * Watch ts files and fire repective tasks.
  */
 gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
-    var interval = 1000;
-
     var tasks = [];
 
     config.modules.map(function(module) {
@@ -40,38 +38,6 @@ gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
             wpconfig.output.devtoolModuleFilenameTemplate = "[absolute-resource-path]";
             //config.stats = "minimal";
             tasks.push(webpackStream(wpconfig, webpack).pipe(gulp.dest(outputDirectory)))
-        }
-        else {
-            // Soon To Be Gone
-            config[module].libraries.map(function(library) {
-                if (library.webpack) {
-                    if (library.noWatch) return;
-                    var outputDirectory = config.build.tempDirectory + config[module].build.distOutputDirectory;
-                    let wpconfig = require("../" + library.webpack);
-                    wpconfig.watch = true;
-                    // dev mode and absolute path sourcemaps for debugging
-                    wpconfig.mode = "development";
-                    wpconfig.output.devtoolModuleFilenameTemplate = "[absolute-resource-path]";
-                    //config.stats = "minimal";
-                    tasks.push(webpackStream(wpconfig, webpack).pipe(gulp.dest(outputDirectory)))
-                } else {
-                    tasks.push(gulp.watch(library.files, { interval: interval }, function() {
-                        console.log(library.output);
-                        return buildExternalLibrary(library, config[module], true)
-                            .pipe(debug());
-                    }));
-                    tasks.push(gulp.watch(library.shaderFiles, { interval: interval }, function() {
-                        console.log(library.output);
-                        return buildExternalLibrary(library, config[module], true)
-                            .pipe(debug())
-                    }));
-                    tasks.push(gulp.watch(library.sassFiles, { interval: interval }, function() {
-                        console.log(library.output);
-                        return buildExternalLibrary(library, config[module], true)
-                            .pipe(debug())
-                    }));
-                }
-            });
         }
     });
 
