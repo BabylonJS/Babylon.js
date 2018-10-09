@@ -28,8 +28,6 @@ module BABYLON {
          */
         public maximum = Vector3.Zero();
 
-        private _worldMatrix: Matrix;
-
         private static readonly TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
         // This matrix is used as a value to reset the bounding box.
         private static readonly _identityMatrix = Matrix.Identity();
@@ -45,7 +43,7 @@ module BABYLON {
         }
 
         /**
-         * Recreates the entire bounding sphere from scratch, producing same values as if the constructor was called.
+         * Recreates the entire bounding sphere from scratch
          * @param min defines the new minimum vector (in local space)
          * @param max defines the new maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
@@ -74,7 +72,7 @@ module BABYLON {
             const min = this.center.subtractToRef(tempRadiusVector, tmpVectors[1]);
             const max = this.center.addToRef(tempRadiusVector, tmpVectors[2]);
 
-            this.reConstruct(min, max, this._worldMatrix);
+            this.reConstruct(min, max);
 
             return this;
         }
@@ -82,9 +80,7 @@ module BABYLON {
         // Methods
         /** @hidden */
         public _update(worldMatrix: Matrix): void {
-            this._worldMatrix = worldMatrix;
-
-            if (this._worldMatrix !== BoundingSphere._identityMatrix) {
+            if (worldMatrix !== BoundingSphere._identityMatrix) {
                 Vector3.TransformCoordinatesToRef(this.center, worldMatrix, this.centerWorld);
                 const tempVector = BoundingSphere.TmpVector3[0];
                 Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, worldMatrix, tempVector);
@@ -142,15 +138,5 @@ module BABYLON {
 
             return true;
         }
-
-        /**
-         * Gets the world matrix of the bounding box.
-         * must not be modified
-         * @returns a matrix
-         */
-        public getWorldMatrix(): Matrix {
-            return this._worldMatrix;
-        }
-
     }
 }
