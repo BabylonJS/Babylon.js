@@ -50,7 +50,6 @@ module BABYLON {
 
         private _worldMatrix: Matrix;
         private static readonly TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
-        private static readonly _identityMatrix = Matrix.Identity();
 
         /**
          * @hidden
@@ -70,7 +69,7 @@ module BABYLON {
         // Methods
 
         /**
-         * Recreates the entire bounding box from scratch, producing same values as if the constructor was called.
+         * Recreates the entire bounding box from scratch, using the already provided world Matrix if any.
          * @param min defines the new minimum vector (in local space)
          * @param max defines the new maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
@@ -94,7 +93,7 @@ module BABYLON {
             max.addToRef(min, this.center).scaleInPlace(0.5);
             max.subtractToRef(min, this.extendSize).scaleInPlace(0.5);
 
-            this._update(worldMatrix || BoundingBox._identityMatrix);
+            this._update(worldMatrix || this._worldMatrix || Matrix.Identity());
         }
 
         /**
@@ -133,7 +132,7 @@ module BABYLON {
          * @returns current bounding box
          */
         public setWorldMatrix(matrix: Matrix): BoundingBox {
-            this._worldMatrix = matrix;
+            this._worldMatrix.copyFrom(matrix);
             return this;
         }
 
@@ -145,7 +144,7 @@ module BABYLON {
             const vectorsWorld = this.vectorsWorld;
             const vectors = this.vectors;
 
-            if (world !== BoundingBox._identityMatrix) {
+            if (!world.isIdentity()) {
                 minWorld.setAll(Number.MAX_VALUE);
                 maxWorld.setAll(-Number.MAX_VALUE);
 
@@ -155,6 +154,10 @@ module BABYLON {
                     minWorld.minimizeInPlace(v);
                     maxWorld.maximizeInPlace(v);
                 }
+
+                // Extend
+                maxWorld.subtractToRef(minWorld, this.extendSizeWorld).scaleInPlace(0.5);
+                maxWorld.addToRef(minWorld, this.centerWorld).scaleInPlace(0.5);
             }
             else {
                 minWorld.copyFrom(this.minimum);
@@ -162,11 +165,11 @@ module BABYLON {
                 for (let index = 0; index < 8; ++index) {
                     vectorsWorld[index].copyFrom(vectors[index]);
                 }
-            }
 
-            // Extend
-            maxWorld.subtractToRef(minWorld, this.extendSizeWorld).scaleInPlace(0.5);
-            maxWorld.addToRef(minWorld, this.centerWorld).scaleInPlace(0.5);
+                // Extend
+                this.extendSizeWorld.copyFrom(this.extendSize);
+                this.centerWorld.copyFrom(this.center);
+            }
 
             Vector3.FromArrayToRef(world.m, 0, directions[0]);
             Vector3.FromArrayToRef(world.m, 4, directions[1]);
