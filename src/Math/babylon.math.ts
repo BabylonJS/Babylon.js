@@ -4225,7 +4225,7 @@ module BABYLON {
         private static _yAxis: Vector3 = Vector3.Zero();
         private static _zAxis: Vector3 = Vector3.Zero();
         private static _updateFlagSeed = 0;
-        private static _identityReadOnly = Matrix.Identity();
+        private static _identityReadOnly = Matrix.Identity(true);
 
         private _isIdentity = false;
         private _isIdentityDirty = true;

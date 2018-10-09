@@ -29,8 +29,6 @@ module BABYLON {
         public maximum = Vector3.Zero();
 
         private static readonly TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
-        // This matrix is used as a value to reset the bounding box.
-        private static readonly _identityMatrix = Matrix.Identity();
 
         /**
          * Creates a new bounding sphere
@@ -57,7 +55,7 @@ module BABYLON {
             max.addToRef(min, this.center).scaleInPlace(0.5);
             this.radius = distance * 0.5;
 
-            this._update(worldMatrix || BoundingSphere._identityMatrix);
+            this._update(worldMatrix || Matrix.IdentityReadOnly);
         }
 
         /**
