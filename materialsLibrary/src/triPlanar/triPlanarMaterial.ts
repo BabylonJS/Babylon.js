@@ -1,7 +1,7 @@
 import { Effect, MaterialDefines, PushMaterial, serializeAsTexture, BaseTexture, expandToProperty, serialize, serializeAsColor3, Color3, Scene, Nullable, AbstractMesh, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
 
-Effect.ShadersStore["triPlanarPixelShader"] = require("./triPlanar.fragment.fx");
-Effect.ShadersStore["triPlanarVertexShader"] = require("./triPlanar.vertex.fx");
+Effect.ShadersStore["triPlanarPixelShader"] = require("./triplanar.fragment.fx");
+Effect.ShadersStore["triPlanarVertexShader"] = require("./triplanar.vertex.fx");
 
 class TriPlanarMaterialDefines extends MaterialDefines {
     public DIFFUSEX = false;
