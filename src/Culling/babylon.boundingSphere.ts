@@ -1,7 +1,4 @@
 module BABYLON {
-    // This matrix is used as a value to reset the bounding box.
-    const _identityMatrix = Matrix.Identity();
-
     /**
      * Class used to store bounding sphere information
      */
@@ -31,7 +28,7 @@ module BABYLON {
          */
         public maximum = Vector3.Zero();
 
-        private static TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
+        private static readonly TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
 
         /**
          * Creates a new bounding sphere
@@ -58,7 +55,7 @@ module BABYLON {
             max.addToRef(min, this.center).scaleInPlace(0.5);
             this.radius = distance * 0.5;
 
-            this._update(worldMatrix || _identityMatrix);
+            this._update(worldMatrix || Matrix.IdentityReadOnly);
         }
 
         /**
@@ -80,11 +77,17 @@ module BABYLON {
 
         // Methods
         /** @hidden */
-        public _update(world: Matrix): void {
-            Vector3.TransformCoordinatesToRef(this.center, world, this.centerWorld);
-            const tempVector = BoundingSphere.TmpVector3[0];
-            Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, world, tempVector);
-            this.radiusWorld = Math.max(Math.abs(tempVector.x), Math.abs(tempVector.y), Math.abs(tempVector.z)) * this.radius;
+        public _update(worldMatrix: Matrix): void {
+            if (!worldMatrix.isIdentity()) {
+                Vector3.TransformCoordinatesToRef(this.center, worldMatrix, this.centerWorld);
+                const tempVector = BoundingSphere.TmpVector3[0];
+                Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, worldMatrix, tempVector);
+                this.radiusWorld = Math.max(Math.abs(tempVector.x), Math.abs(tempVector.y), Math.abs(tempVector.z)) * this.radius;
+            }
+            else {
+                this.centerWorld.copyFrom(this.center);
+                this.radiusWorld = this.radius;
+            }
         }
 
         /**
@@ -133,6 +136,5 @@ module BABYLON {
 
             return true;
         }
-
     }
 }

@@ -4250,11 +4250,19 @@ module BABYLON {
             this._isIdentity3x2Dirty = true;
         }
 
+        /** @hidden */
+        private _updateIdentityStatus(isIdentity:boolean) {
+            this.updateFlag = Matrix._updateFlagSeed++;
+            this._isIdentityDirty = false;
+            this._isIdentity = isIdentity;
+        }
+
+
         /**
          * Creates an empty matrix (filled with zeros)
          */
         public constructor() {
-            this._markAsUpdated();
+            this._updateIdentityStatus(false);
         }
 
         // Properties
@@ -4354,7 +4362,7 @@ module BABYLON {
                 this.m[index] = 0.0;
             }
 
-            this._markAsUpdated();
+            this._updateIdentityStatus(false);
             return this;
         }
 
@@ -5099,10 +5107,12 @@ module BABYLON {
          * @returns a new identity matrix
          */
         public static Identity(): Matrix {
-            return Matrix.FromValues(1.0, 0.0, 0.0, 0.0,
+            const identity = Matrix.FromValues(1.0, 0.0, 0.0, 0.0,
                 0.0, 1.0, 0.0, 0.0,
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0);
+            identity._updateIdentityStatus(true);
+            return identity;
         }
 
         /**
@@ -5114,6 +5124,7 @@ module BABYLON {
                 0.0, 1.0, 0.0, 0.0,
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0, result);
+            result._updateIdentityStatus(true);
         }
 
         /**
@@ -5121,10 +5132,12 @@ module BABYLON {
          * @returns a new zero matrix
          */
         public static Zero(): Matrix {
-            return Matrix.FromValues(0.0, 0.0, 0.0, 0.0,
+            const zero = Matrix.FromValues(0.0, 0.0, 0.0, 0.0,
                 0.0, 0.0, 0.0, 0.0,
                 0.0, 0.0, 0.0, 0.0,
                 0.0, 0.0, 0.0, 0.0);
+            zero._updateIdentityStatus(false);
+            return zero;
         }
 
         /**

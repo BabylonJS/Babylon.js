@@ -57,6 +57,8 @@ module BABYLON {
 
         private _isLocked = false;
 
+        private static readonly TmpVector3 = Tools.BuildArray(2, Vector3.Zero);
+
         /**
          * Constructs bounding info
          * @param minimum min vector of the bounding box/sphere
@@ -106,7 +108,7 @@ module BABYLON {
 
         // Methods
         /**
-         * Updates the boudning sphere and box
+         * Updates the bounding sphere and box
          * @param world world matrix to be used to update
          */
         public update(world: Matrix) {
@@ -125,8 +127,8 @@ module BABYLON {
          */
         public centerOn(center: Vector3, extend: Vector3): BoundingInfo {
 
-            const minimum = Tmp.Vector3[0].copyFrom(center).subtractInPlace(extend);
-            const maximum = Tmp.Vector3[1].copyFrom(center).addInPlace(extend);
+            const minimum = BoundingInfo.TmpVector3[0].copyFrom(center).subtractInPlace(extend);
+            const maximum = BoundingInfo.TmpVector3[1].copyFrom(center).addInPlace(extend);
 
             this.boundingBox.reConstruct(minimum, maximum);
             this.boundingSphere.reConstruct(minimum, maximum);
@@ -167,9 +169,9 @@ module BABYLON {
 		 * Gets the world distance between the min and max points of the bounding box
 		 */
         public get diagonalLength(): number {
-            let boundingBox = this.boundingBox;
-            let size = boundingBox.maximumWorld.subtract(boundingBox.minimumWorld);
-            return size.length();
+            const boundingBox = this.boundingBox;
+            const diag = boundingBox.maximumWorld.subtractToRef(boundingBox.minimumWorld, BoundingInfo.TmpVector3[0]);
+            return diag.length();
         }
 
         /**
