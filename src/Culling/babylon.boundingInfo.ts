@@ -130,8 +130,8 @@ module BABYLON {
             const minimum = BoundingInfo.TmpVector3[0].copyFrom(center).subtractInPlace(extend);
             const maximum = BoundingInfo.TmpVector3[1].copyFrom(center).addInPlace(extend);
 
-            this.boundingBox.reConstruct(minimum, maximum, this.boundingBox.getWorldMatrix());
-            this.boundingSphere.reConstruct(minimum, maximum, this.boundingSphere.getWorldMatrix());
+            this.boundingBox.reConstruct(minimum, maximum);
+            this.boundingSphere.reConstruct(minimum, maximum);
 
             return this;
         }

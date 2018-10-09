@@ -4247,11 +4247,18 @@ module BABYLON {
             this._isIdentityDirty = true;
         }
 
+        /** @hidden */
+        private _updateAsNotIdentity() {
+            this.updateFlag = Matrix._updateFlagSeed++;
+            this._isIdentityDirty = false;
+            this._isIdentity = false;
+        }
+
         /**
          * Creates an empty matrix (filled with zeros)
          */
         public constructor() {
-            this._markAsUpdated();
+            this._updateAsNotIdentity();
         }
 
         // Properties
@@ -4333,7 +4340,7 @@ module BABYLON {
                 this.m[index] = 0.0;
             }
 
-            this._markAsUpdated();
+            this._updateAsNotIdentity();
             return this;
         }
 
@@ -5077,22 +5084,31 @@ module BABYLON {
          * Creates a new identity matrix
          * @returns a new identity matrix
          */
-        public static Identity(): Matrix {
-            return Matrix.FromValues(1.0, 0.0, 0.0, 0.0,
+        public static Identity(markAsUpdated = false, considerAsTextureMatrix = false): Matrix {
+            const identity = Matrix.FromValues(1.0, 0.0, 0.0, 0.0,
                 0.0, 1.0, 0.0, 0.0,
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0);
+            if (markAsUpdated) {
+                identity._isIdentityDirty = false;
+                identity._isIdentity = !considerAsTextureMatrix;
+            }
+            return identity;
         }
 
         /**
          * Creates a new identity matrix and stores the result in a given matrix
          * @param result defines the target matrix
          */
-        public static IdentityToRef(result: Matrix): void {
+        public static IdentityToRef(result: Matrix, markAsUpdated = false, considerAsTextureMatrix = false): void {
             Matrix.FromValuesToRef(1.0, 0.0, 0.0, 0.0,
                 0.0, 1.0, 0.0, 0.0,
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0, result);
+            if (markAsUpdated) {
+                result._isIdentityDirty = false;
+                result._isIdentity = !considerAsTextureMatrix;
+            }
         }
 
         /**
@@ -5100,10 +5116,13 @@ module BABYLON {
          * @returns a new zero matrix
          */
         public static Zero(): Matrix {
-            return Matrix.FromValues(0.0, 0.0, 0.0, 0.0,
+            const zero = Matrix.FromValues(0.0, 0.0, 0.0, 0.0,
                 0.0, 0.0, 0.0, 0.0,
                 0.0, 0.0, 0.0, 0.0,
                 0.0, 0.0, 0.0, 0.0);
+            zero._isIdentityDirty = false;
+            zero._isIdentity = false;
+            return zero;
         }
 
         /**
