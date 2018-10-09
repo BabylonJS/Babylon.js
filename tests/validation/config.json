@@ -2,6 +2,12 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
+      "title": "LineEdgesRenderer",
+      "playgroundId": "#T90MQ4#1",
+      "renderCount": 50,
+      "referenceImage": "LineEdgesRenderer.png"
+    },
+    {
       "title": "Solid particle system",
       "playgroundId": "#WCDZS#92",
       "renderCount": 150,
