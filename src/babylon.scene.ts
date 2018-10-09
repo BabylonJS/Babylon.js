@@ -1967,6 +1967,7 @@ module BABYLON {
                                         cb(clickInfo, this._currentPickResult);
                                     }
                                 }
+                                needToIgnoreNext = true;
                             }
                             // just the first click of the double has been raised
                             else {
