@@ -118,7 +118,7 @@ module BABYLON {
         }
 
         /**
-         * Gets the world matrix of the bounding box.
+         * Gets the world matrix of the bounding box
          * @returns a matrix
          */
         public getWorldMatrix(): Readonly<Matrix> {
