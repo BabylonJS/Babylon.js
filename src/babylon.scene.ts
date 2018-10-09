@@ -1005,6 +1005,7 @@ module BABYLON {
         private _alternateTransformMatrix: Matrix;
         private _useAlternateCameraConfiguration = false;
         private _alternateRendering = false;
+        private _wheelEventName = "";
         /** @hidden */
         public _forcedViewPosition: Nullable<Vector3>;
 
@@ -1635,7 +1636,7 @@ module BABYLON {
             }
 
             if (pickResult) {
-                let type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
+                let type = evt.type === this._wheelEventName ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
 
                 if (this.onPointerMove) {
                     this.onPointerMove(evt, pickResult, type);
@@ -1984,7 +1985,7 @@ module BABYLON {
                 this._updatePointerPosition(evt);
 
                 // PreObservable support
-                if (this._checkPrePointerObservable(null, evt, evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE)) {
+                if (this._checkPrePointerObservable(null, evt, evt.type === this._wheelEventName ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE)) {
                     return;
                 }
 
@@ -2173,9 +2174,13 @@ module BABYLON {
 
             if (attachMove) {
                 canvas.addEventListener(eventPrefix + "move", <any>this._onPointerMove, false);
+
                 // Wheel
-                canvas.addEventListener('mousewheel', <any>this._onPointerMove, false);
-                canvas.addEventListener('DOMMouseScroll', <any>this._onPointerMove, false);
+                this._wheelEventName = "onwheel" in document.createElement("div") ? "wheel" :       // Modern browsers support "wheel"
+                    (<any>document).onmousewheel !== undefined ? "mousewheel" :                     // Webkit and IE support at least "mousewheel"
+                        "DOMMouseScroll";                                                           // let's assume that remaining browsers are older Firefox
+
+                canvas.addEventListener(this._wheelEventName, <any>this._onPointerMove, false);
             }
 
             if (attachDown) {
@@ -2212,8 +2217,7 @@ module BABYLON {
             }
 
             // Wheel
-            canvas.removeEventListener('mousewheel', <any>this._onPointerMove);
-            canvas.removeEventListener('DOMMouseScroll', <any>this._onPointerMove);
+            canvas.removeEventListener(this._wheelEventName, <any>this._onPointerMove);
 
             // Keyboard
             canvas.removeEventListener("keydown", this._onKeyDown);
