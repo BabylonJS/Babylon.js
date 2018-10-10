@@ -4645,8 +4645,14 @@ module BABYLON {
                 return false;
             }
 
-            if (!this._isIdentityDirty && !(value as Matrix)._isIdentityDirty && this._isIdentity !== (value as Matrix)._isIdentity) {
-                return false;
+            if (!this._isIdentityDirty && !(value as Matrix)._isIdentityDirty) {
+                if (this._isIdentity && (value as Matrix)._isIdentity) {
+                    return true;
+                }
+
+                if (this._isIdentity || (value as Matrix)._isIdentity) {
+                    return false;
+                }
             }
 
             const m = this.m;
