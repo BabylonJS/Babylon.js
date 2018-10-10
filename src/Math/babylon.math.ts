@@ -2440,10 +2440,10 @@ module BABYLON {
          * @param result defines the Vector3 where to store the result
          */
         public static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void {
-            MathTmp.Vector3[0].x = left.y * right.z - left.z * right.y;
-            MathTmp.Vector3[0].y = left.z * right.x - left.x * right.z;
-            MathTmp.Vector3[0].z = left.x * right.y - left.y * right.x;
-            result.copyFrom(MathTmp.Vector3[0]);
+            const x = left.y * right.z - left.z * right.y;
+            const y = left.z * right.x - left.x * right.z;
+            const z = left.x * right.y - left.y * right.x;
+            result.copyFromFloats(x, y, z);
         }
 
         /**
@@ -2466,7 +2466,6 @@ module BABYLON {
             vector.normalizeToRef(result);
         }
 
-        private static _viewportMatrixCache: Matrix;
         /**
          * Project a Vector3 onto screen space
          * @param vector defines the Vector3 to project
@@ -2481,7 +2480,7 @@ module BABYLON {
             var cx = viewport.x;
             var cy = viewport.y;
 
-            var viewportMatrix = Vector3._viewportMatrixCache ? Vector3._viewportMatrixCache : (Vector3._viewportMatrixCache = new Matrix());
+            var viewportMatrix = MathTmp.Matrix[1];
 
             Matrix.FromValuesToRef(
                 cw / 2.0, 0, 0, 0,
@@ -4227,9 +4226,6 @@ module BABYLON {
      * Class used to store matrix data (4x4)
      */
     export class Matrix {
-        private static _xAxis: Vector3 = Vector3.Zero();
-        private static _yAxis: Vector3 = Vector3.Zero();
-        private static _zAxis: Vector3 = Vector3.Zero();
         private static _updateFlagSeed = 0;
         private static _identityReadOnly = Matrix.Identity();
 
@@ -5519,31 +5515,35 @@ module BABYLON {
          * @param result defines the target matrix
          */
         public static LookAtLHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void {
+            const xAxis = MathTmp.Vector3[0];
+            const yAxis = MathTmp.Vector3[1];
+            const zAxis = MathTmp.Vector3[2];
+
             // Z axis
-            target.subtractToRef(eye, this._zAxis);
-            this._zAxis.normalize();
+            target.subtractToRef(eye, zAxis);
+            zAxis.normalize();
 
             // X axis
-            Vector3.CrossToRef(up, this._zAxis, this._xAxis);
+            Vector3.CrossToRef(up, zAxis, xAxis);
 
-            if (this._xAxis.lengthSquared() === 0) {
-                this._xAxis.x = 1.0;
+            if (xAxis.lengthSquared() === 0) {
+                xAxis.x = 1.0;
             } else {
-                this._xAxis.normalize();
+                xAxis.normalize();
             }
 
             // Y axis
-            Vector3.CrossToRef(this._zAxis, this._xAxis, this._yAxis);
-            this._yAxis.normalize();
+            Vector3.CrossToRef(zAxis, xAxis, yAxis);
+            yAxis.normalize();
 
             // Eye angles
-            var ex = -Vector3.Dot(this._xAxis, eye);
-            var ey = -Vector3.Dot(this._yAxis, eye);
-            var ez = -Vector3.Dot(this._zAxis, eye);
+            var ex = -Vector3.Dot(xAxis, eye);
+            var ey = -Vector3.Dot(yAxis, eye);
+            var ez = -Vector3.Dot(zAxis, eye);
 
-            return Matrix.FromValuesToRef(this._xAxis.x, this._yAxis.x, this._zAxis.x, 0,
-                this._xAxis.y, this._yAxis.y, this._zAxis.y, 0,
-                this._xAxis.z, this._yAxis.z, this._zAxis.z, 0,
+            return Matrix.FromValuesToRef(xAxis.x, yAxis.x, zAxis.x, 0,
+                xAxis.y, yAxis.y, zAxis.y, 0,
+                xAxis.z, yAxis.z, zAxis.z, 0,
                 ex, ey, ez, 1, result);
         }
 
@@ -5570,31 +5570,35 @@ module BABYLON {
          * @param result defines the target matrix
          */
         public static LookAtRHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void {
+            const xAxis = MathTmp.Vector3[0];
+            const yAxis = MathTmp.Vector3[1];
+            const zAxis = MathTmp.Vector3[2];
+
             // Z axis
-            eye.subtractToRef(target, this._zAxis);
-            this._zAxis.normalize();
+            eye.subtractToRef(target, zAxis);
+            zAxis.normalize();
 
             // X axis
-            Vector3.CrossToRef(up, this._zAxis, this._xAxis);
+            Vector3.CrossToRef(up, zAxis, xAxis);
 
-            if (this._xAxis.lengthSquared() === 0) {
-                this._xAxis.x = 1.0;
+            if (xAxis.lengthSquared() === 0) {
+                xAxis.x = 1.0;
             } else {
-                this._xAxis.normalize();
+                xAxis.normalize();
             }
 
             // Y axis
-            Vector3.CrossToRef(this._zAxis, this._xAxis, this._yAxis);
-            this._yAxis.normalize();
+            Vector3.CrossToRef(zAxis, xAxis, yAxis);
+            yAxis.normalize();
 
             // Eye angles
-            var ex = -Vector3.Dot(this._xAxis, eye);
-            var ey = -Vector3.Dot(this._yAxis, eye);
-            var ez = -Vector3.Dot(this._zAxis, eye);
+            var ex = -Vector3.Dot(xAxis, eye);
+            var ey = -Vector3.Dot(yAxis, eye);
+            var ez = -Vector3.Dot(zAxis, eye);
 
-            return Matrix.FromValuesToRef(this._xAxis.x, this._yAxis.x, this._zAxis.x, 0,
-                this._xAxis.y, this._yAxis.y, this._zAxis.y, 0,
-                this._xAxis.z, this._yAxis.z, this._zAxis.z, 0,
+            return Matrix.FromValuesToRef(xAxis.x, yAxis.x, zAxis.x, 0,
+                xAxis.y, yAxis.y, zAxis.y, 0,
+                xAxis.z, yAxis.z, zAxis.z, 0,
                 ex, ey, ez, 1, result);
         }
 
