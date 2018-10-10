@@ -20,7 +20,7 @@ module BABYLON {
      * Helper class used to enable XR
      * @see https://doc.babylonjs.com/how_to/webxr
      */
-    export class WebXRExperienceHelper {
+    export class WebXRExperienceHelper implements IDisposable {
         /**
          * Container which stores the xr camera and controllers as children. This can be used to move the camera/user as the camera's position is updated by the xr device
          */
@@ -115,6 +115,17 @@ module BABYLON {
                 this.state = WebXRState.IN_XR;
                 this.onStateChangedObservable.notifyObservers(this.state);
             });
+        }
+
+        /**
+         * Disposes of the experience helper
+         */
+        public dispose() {
+            this.camera.dispose();
+            this.container.dispose();
+            this._removeCanvas();
+            this.onStateChangedObservable.clear();
+            this._sessionManager.dispose();
         }
 
         // create canvas used to mirror/vr xr content in fullscreen
