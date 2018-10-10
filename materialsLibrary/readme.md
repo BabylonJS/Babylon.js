@@ -1,6 +1,6 @@
 ﻿# Materials library
 
-To get a detailled tutorial, please read the [documentation](http://doc.babylonjs.com/tutorials/How_to_create_a_material_for_materialsLibrary)
+To get a detailled tutorial, please read the [documentation](https://doc.babylonjs.com/how_to/how_to_create_a_material_for_materialslibrary)
 
 For every material, you can find a detailled documentation [here](http://doc.babylonjs.com/extensions) under **materials library** tag.
 
