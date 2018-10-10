@@ -184,12 +184,14 @@ interface XRDevice {
 }
 interface XRSession {
     baseLayer: XRWebGLLayer;
-    requestFrameOfReference(type: XRFrameOfReferenceType): Promise<void>;
+    requestFrameOfReference(type: string): Promise<void>;
     requestHitTest(origin: Float32Array, direction: Float32Array, frameOfReference: any): any;
-    end(): void;
+    end(): Promise<void>;
     requestAnimationFrame: Function;
+    addEventListener: Function;
 }
 interface XRSessionCreationOptions {
+    outputContext: WebGLRenderingContext;
 }
 interface XRLayer {
     getViewport: Function;
@@ -213,8 +215,3 @@ declare var XRWebGLLayer: {
     prototype: XRWebGLLayer;
     new(session: XRSession, context?: WebGLRenderingContext): XRWebGLLayer;
 };
-enum XRFrameOfReferenceType {
-    "head-model",
-    "eye-level",
-    "stage",
-}
