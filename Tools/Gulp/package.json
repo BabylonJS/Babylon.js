@@ -19,6 +19,7 @@
         "gulp-content-to-variable": "^0.1.0",
         "gulp-debug": "^4.0.0",
         "gulp-expect-file": "^1.0.0",
+        "gulp-filter": "^5.1.0",
         "gulp-optimize-js": "^1.1.0",
         "gulp-rename": "^1.4.0",
         "gulp-replace": "~1.0.0",
