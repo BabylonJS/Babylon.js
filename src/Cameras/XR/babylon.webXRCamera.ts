@@ -51,15 +51,16 @@ module BABYLON {
         /**
          * Updates the cameras position from the current pose information of the  XR session
          * @param xrSessionManager the session containing pose information
+         * @returns true if the camera has been updated, false if the session did not contain pose or frame data
          */
         public updateFromXRSessionManager(xrSessionManager: WebXRSessionManager) {
             // Ensure all frame data is available
             if (!xrSessionManager._currentXRFrame || !xrSessionManager._currentXRFrame.getDevicePose) {
-                return;
+                return false;
             }
             var pose = xrSessionManager._currentXRFrame.getDevicePose(xrSessionManager._frameOfReference);
             if (!pose || !pose.poseModelMatrix) {
-                return;
+                return false;
             }
 
             // Update the parent cameras matrix
@@ -95,6 +96,7 @@ module BABYLON {
                 // Set cameras to render to the session's render target
                 this.rigCameras[i].outputRenderTarget = xrSessionManager._sessionRenderTargetTexture;
             });
+            return true;
         }
     }
 }

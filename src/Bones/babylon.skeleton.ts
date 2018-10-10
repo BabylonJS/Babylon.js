@@ -25,6 +25,7 @@ module BABYLON {
         private _scene: Scene;
         private _isDirty = true;
         private _transformMatrices: Float32Array;
+        private _transformMatrixTexture: Nullable<RawTexture>;
         private _meshesWithPoseMatrix = new Array<AbstractMesh>();
         private _animatables: IAnimatable[];
         private _identity = Matrix.Identity();
@@ -34,10 +35,18 @@ module BABYLON {
 
         private _lastAbsoluteTransformsUpdateId = -1;
 
+        private _canUseTextureForBones = false;
+
         /**
          * Specifies if the skeleton should be serialized
          */
         public doNotSerialize = false;
+
+        /**
+         * Gets or sets a boolean indicating that bone matrices should be stored as a texture instead of using shader uniforms (default is true).
+         * Please note that this option is not available when needInitialSkinMatrix === true or if the hardware does not support it
+         */
+        public useTextureToStoreBoneMatrices = true;
 
         private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
@@ -63,6 +72,13 @@ module BABYLON {
         public onBeforeComputeObservable = new Observable<Skeleton>();
 
         /**
+         * Gets a boolean indicating that the skeleton effectively stores matrices into a texture
+         */
+        public get isUsingTextureForMatrices() {
+            return this.useTextureToStoreBoneMatrices && this._canUseTextureForBones && !this.needInitialSkinMatrix;
+        }
+
+        /**
          * Creates a new skeleton
          * @param name defines the skeleton name
          * @param id defines the skeleton Id
@@ -77,10 +93,13 @@ module BABYLON {
 
             this._scene = scene || Engine.LastCreatedScene;
 
-            scene.skeletons.push(this);
+            this._scene.skeletons.push(this);
 
             //make sure it will recalculate the matrix next time prepare is called.
             this._isDirty = true;
+
+            const engineCaps = this._scene.getEngine().getCaps();
+            this._canUseTextureForBones = engineCaps.textureFloat && engineCaps.maxVertexTextureImageUnits > 0;
         }
 
         // Members
@@ -99,6 +118,14 @@ module BABYLON {
             }
 
             return this._transformMatrices;
+        }
+
+        /**
+         * Gets the list of transform matrices to send to shaders inside a texture (one matrix per bone)
+         * @returns a raw texture containing the data
+         */
+        public getTransformMatrixTexture(): Nullable<RawTexture> {
+            return this._transformMatrixTexture;
         }
 
         /**
@@ -220,7 +247,7 @@ module BABYLON {
             var frameOffset = this._getHighestAnimationFrame() + 1;
 
             // make a dictionary of source skeleton's bones, so exact same order or doublely nested loop is not required
-            var boneDict: {[key: string]: Bone} = {};
+            var boneDict: { [key: string]: Bone } = {};
             var sourceBones = source.bones;
             var nBones: number;
             var i: number;
@@ -312,8 +339,7 @@ module BABYLON {
             }
         }
 
-        /** @hidden */
-        public _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Nullable<Matrix>): void {
+        private _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Nullable<Matrix>): void {
 
             this.onBeforeComputeObservable.notifyObservers(this);
 
@@ -378,9 +404,21 @@ module BABYLON {
             } else {
                 if (!this._transformMatrices || this._transformMatrices.length !== 16 * (this.bones.length + 1)) {
                     this._transformMatrices = new Float32Array(16 * (this.bones.length + 1));
+
+                    if (this.isUsingTextureForMatrices) {
+                        if (this._transformMatrixTexture) {
+                            this._transformMatrixTexture.dispose();
+                        }
+
+                        this._transformMatrixTexture = RawTexture.CreateRGBATexture(this._transformMatrices, (this.bones.length + 1) * 4, 1, this._scene, false, false, Engine.TEXTURE_NEAREST_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT);
+                    }
                 }
 
                 this._computeTransformMatrices(this._transformMatrices, null);
+
+                if (this.isUsingTextureForMatrices && this._transformMatrixTexture) {
+                    this._transformMatrixTexture.update(this._transformMatrices);
+                }
             }
 
             this._isDirty = false;
@@ -470,6 +508,11 @@ module BABYLON {
 
             // Remove from scene
             this.getScene().removeSkeleton(this);
+
+            if (this._transformMatrixTexture) {
+                this._transformMatrixTexture.dispose();
+                this._transformMatrixTexture = null;
+            }
         }
 
         /**

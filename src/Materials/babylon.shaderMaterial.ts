@@ -406,12 +406,28 @@ module BABYLON {
                     attribs.push(VertexBuffer.MatricesIndicesExtraKind);
                     attribs.push(VertexBuffer.MatricesWeightsExtraKind);
                 }
+
+                const skeleton = mesh.skeleton;
+
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
                 fallbacks.addCPUSkinningFallback(0, mesh);
 
-                if (this._options.uniforms.indexOf("mBones") === -1) {
-                    this._options.uniforms.push("mBones");
+                if (skeleton.isUsingTextureForMatrices) {
+                    defines.push("#define BONETEXTURE");
+
+                    if (this._options.uniforms.indexOf("boneTextureWidth") === -1) {
+                        this._options.uniforms.push("boneTextureWidth");
+                    }
+
+                    if (this._options.samplers.indexOf("boneSampler") === -1) {
+                        this._options.samplers.push("boneSampler");
+                    }
+                } else {
+                    defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
+
+                    if (this._options.uniforms.indexOf("mBones") === -1) {
+                        this._options.uniforms.push("mBones");
+                    }
                 }
 
             } else {
