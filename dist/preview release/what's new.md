@@ -10,6 +10,7 @@
   - camera customDefaultRenderTarget to allow cameras to render to a custom render target (eg. xr framebuffer) instead of the canvas ([TrevorDev](https://github.com/TrevorDev))
   - webXR camera which can be updated by a webXRSession ([TrevorDev](https://github.com/TrevorDev))
   - webXRSessionManager to bridge xrSession to babylon's engine/camera ([TrevorDev](https://github.com/TrevorDev))
+  - webXRExperienceHelper to setup a default XR experience ([TrevorDev](https://github.com/TrevorDev))
 
 ## Updates
 
