@@ -166,6 +166,7 @@ module BABYLON {
          */
         public dispose() {
             this.onXRFrameObservable.clear();
+            this.onXRSessionEnded.clear();
         }
     }
 }
