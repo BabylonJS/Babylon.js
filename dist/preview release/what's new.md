@@ -10,6 +10,7 @@
   - camera customDefaultRenderTarget to allow cameras to render to a custom render target (eg. xr framebuffer) instead of the canvas ([TrevorDev](https://github.com/TrevorDev))
   - webXR camera which can be updated by a webXRSession ([TrevorDev](https://github.com/TrevorDev))
   - webXRSessionManager to bridge xrSession to babylon's engine/camera ([TrevorDev](https://github.com/TrevorDev))
+  - webXRExperienceHelper to setup a default XR experience ([TrevorDev](https://github.com/TrevorDev))
 
 ## Updates
 
@@ -19,6 +20,7 @@
 
 ### Core Engine
 
+- Added support for bone matrix texture. Now skeletons will use a texture instead of uniforms when possible ([Deltakosh](https://github.com/deltakosh))
 - Refactored of the SolidParticleSystem code for performance and code quality improvement ([barroij](https://github.com/barroij))
 - Added utility function `Tools.BuildArray` for array initialisation ([barroij](https://github.com/barroij))
 - Introduced a new `IOfflineSupport` interface to hide IndexedDB ([Deltakosh](https://github.com/deltakosh))
@@ -51,7 +53,7 @@
 - Fixed a bug with particle systems being update once per camera instead of once per frame ([Deltakosh](https://github.com/deltakosh))
 - Handle properly the `LinesMesh` `intersectionThreshold` by using its value directly when the intersection against a `Ray` is checked, instead of extending the `BoundingInfo` accordingly ([barroij](https://github.com/barroij))
 - Fixed the `LineEdgesRenderer` used for edge rendering of `LinesMesh` handle properly LinesMesh made of disconnected lines + Make it work for instance of `LinesMesh` ([barroij](https://github.com/barroij))
-
+- Fixed `Matrix.toNormalMatrix`function ([barroij](https://github.com/barroij))
 ### Viewer
 
 ### Loaders

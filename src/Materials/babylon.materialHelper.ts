@@ -174,7 +174,15 @@ module BABYLON {
             if (useBones) {
                 if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                     defines["NUM_BONE_INFLUENCERS"] = mesh.numBoneInfluencers;
-                    defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
+
+                    const materialSupportsBoneTexture = defines["BONETEXTURE"] !== undefined;
+
+                    if (mesh.skeleton.isUsingTextureForMatrices && materialSupportsBoneTexture) {
+                        defines["BONETEXTURE"] = true;
+                    } else {
+                        defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
+                        defines["BONETEXTURE"] = materialSupportsBoneTexture ? false : undefined;
+                    }
                 } else {
                     defines["NUM_BONE_INFLUENCERS"] = 0;
                     defines["BonesPerMesh"] = 0;
@@ -606,10 +614,18 @@ module BABYLON {
             }
 
             if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-                var matrices = mesh.skeleton.getTransformMatrices(mesh);
+                const skeleton = mesh.skeleton;
 
-                if (matrices) {
-                    effect.setMatrices("mBones", matrices);
+                if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureWidth") > -1) {
+                    const boneTexture = skeleton.getTransformMatrixTexture();
+                    effect.setTexture("boneSampler", boneTexture);
+                    effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+                } else {
+                    const matrices = skeleton.getTransformMatrices(mesh);
+
+                    if (matrices) {
+                        effect.setMatrices("mBones", matrices);
+                    }
                 }
             }
         }
