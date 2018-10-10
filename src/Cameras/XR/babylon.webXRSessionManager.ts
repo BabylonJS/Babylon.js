@@ -12,9 +12,11 @@ module BABYLON {
         /** @hidden */
         public _frameOfReference: XRFrameOfReference;
         /** @hidden */
-        public _sessionRenderTargetTexture: RenderTargetTexture;
+        public _sessionRenderTargetTexture: Nullable<RenderTargetTexture> = null;
         /** @hidden */
-        public _currentXRFrame: XRFrame;
+        public _currentXRFrame: Nullable<XRFrame>;
+        public onXRFrameObservable:Observable<any> = new BABYLON.Observable<any>();
+        public onXRSessionEnded:Observable<any> = new BABYLON.Observable<any>();
 
         /**
          * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
@@ -48,10 +50,25 @@ module BABYLON {
          * @param frameOfReferenceType option to configure how the xr pose is expressed
          * @returns Promise which resolves after it enters XR
          */
-        public enterXR(sessionCreationOptions: XRSessionCreationOptions, frameOfReferenceType: XRFrameOfReferenceType): Promise<void> {
+        public enterXR(sessionCreationOptions: XRSessionCreationOptions, frameOfReferenceType: string): Promise<void> {
             // initialize session
             return this._xrDevice.requestSession(sessionCreationOptions).then((session: XRSession) => {
                 this._xrSession = session;
+
+                // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
+                this._xrSession.addEventListener("end", ()=>{
+                    // Remove render target texture and notify frame obervers
+                    this._sessionRenderTargetTexture = null;
+
+                    // Restore frame buffer to avoid clear on xr framebuffer after session end
+                    this.scene.getEngine().restoreDefaultFramebuffer();
+                    
+                    // Need to restart render loop as after the session is ended the last request for new frame will never call callback
+                    this.scene.getEngine().customAnimationFrameRequester = null;
+                    this.onXRSessionEnded.notifyObservers(null);
+                    this.scene.getEngine()._renderLoop();
+                }, {once : true})
+
                 this._xrSession.baseLayer = new XRWebGLLayer(this._xrSession, this.scene.getEngine()._gl);
                 return this._xrSession.requestFrameOfReference(frameOfReferenceType);
             }).then((frameOfRef: any) => {
@@ -59,14 +76,19 @@ module BABYLON {
                 // Tell the engine's render loop to be driven by the xr session's refresh rate and provide xr pose information
                 this.scene.getEngine().customAnimationFrameRequester = {
                     requestAnimationFrame: this._xrSession.requestAnimationFrame.bind(this._xrSession),
-                    renderFunction: (timestamp: number, xrFrame: XRFrame) => {
+                    renderFunction: (timestamp: number, xrFrame: Nullable<XRFrame>) => {
                         // Store the XR frame in the manager to be consumed by the XR camera to update pose
                         this._currentXRFrame = xrFrame;
+                        this.onXRFrameObservable.notifyObservers(null);
                         this.scene.getEngine()._renderLoop();
                     }
                 };
                 // Create render target texture from xr's webgl render target
                 this._sessionRenderTargetTexture = WebXRSessionManager._CreateRenderTargetTextureFromSession(this._xrSession, this.scene);
+                
+                // Stop window's animation frame and trigger sessions animation frame
+                window.cancelAnimationFrame(this.scene.getEngine()._frameHandler);
+                this.scene.getEngine()._renderLoop();
             });
         }
 
@@ -75,15 +97,7 @@ module BABYLON {
          * @returns Promise which resolves after it exits XR
          */
         public exitXR() {
-            return new Promise((res) => {
-                this.scene.getEngine().customAnimationFrameRequester = null;
-                this._xrSession.end();
-                // Restore frame buffer to avoid clear on xr framebuffer after session end
-                this.scene.getEngine().restoreDefaultFramebuffer();
-                // Need to restart render loop as after calling session.end the last request for new frame will never call callback
-                this.scene.getEngine()._renderLoop();
-                res();
-            });
+            return this._xrSession.end();
         }
 
         /**
