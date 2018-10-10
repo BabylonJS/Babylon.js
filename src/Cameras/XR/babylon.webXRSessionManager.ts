@@ -4,9 +4,15 @@ module BABYLON {
      * @see https://doc.babylonjs.com/how_to/webxr
      */
     export class WebXRSessionManager {
-        private _xrNavigator: any;
-        private _xrDevice: XRDevice;
-        private _tmpMatrix = new BABYLON.Matrix();
+        /**
+         * Fires every time a new xrFrame arrives which can be used to update the camera
+         */
+        public onXRFrameObservable: Observable<any> = new BABYLON.Observable<any>();
+        /**
+         * Fires when the xr session is ended either by the device or manually done
+         */
+        public onXRSessionEnded: Observable<any> = new BABYLON.Observable<any>();
+
         /** @hidden */
         public _xrSession: XRSession;
         /** @hidden */
@@ -15,8 +21,9 @@ module BABYLON {
         public _sessionRenderTargetTexture: Nullable<RenderTargetTexture> = null;
         /** @hidden */
         public _currentXRFrame: Nullable<XRFrame>;
-        public onXRFrameObservable:Observable<any> = new BABYLON.Observable<any>();
-        public onXRSessionEnded:Observable<any> = new BABYLON.Observable<any>();
+        private _xrNavigator: any;
+        private _xrDevice: XRDevice;
+        private _tmpMatrix = new BABYLON.Matrix();
 
         /**
          * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
@@ -56,18 +63,18 @@ module BABYLON {
                 this._xrSession = session;
 
                 // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
-                this._xrSession.addEventListener("end", ()=>{
+                this._xrSession.addEventListener("end", () => {
                     // Remove render target texture and notify frame obervers
                     this._sessionRenderTargetTexture = null;
 
                     // Restore frame buffer to avoid clear on xr framebuffer after session end
                     this.scene.getEngine().restoreDefaultFramebuffer();
-                    
+
                     // Need to restart render loop as after the session is ended the last request for new frame will never call callback
                     this.scene.getEngine().customAnimationFrameRequester = null;
                     this.onXRSessionEnded.notifyObservers(null);
                     this.scene.getEngine()._renderLoop();
-                }, {once : true})
+                }, {once : true});
 
                 this._xrSession.baseLayer = new XRWebGLLayer(this._xrSession, this.scene.getEngine()._gl);
                 return this._xrSession.requestFrameOfReference(frameOfReferenceType);
@@ -85,7 +92,7 @@ module BABYLON {
                 };
                 // Create render target texture from xr's webgl render target
                 this._sessionRenderTargetTexture = WebXRSessionManager._CreateRenderTargetTextureFromSession(this._xrSession, this.scene);
-                
+
                 // Stop window's animation frame and trigger sessions animation frame
                 window.cancelAnimationFrame(this.scene.getEngine()._frameHandler);
                 this.scene.getEngine()._renderLoop();

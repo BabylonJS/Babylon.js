@@ -197,7 +197,7 @@ interface XRSession {
     addEventListener: Function;
 }
 interface XRSessionCreationOptions {
-    outputContext:WebGLRenderingContext;
+    outputContext: WebGLRenderingContext;
 }
 interface XRLayer {
     getViewport: Function;
