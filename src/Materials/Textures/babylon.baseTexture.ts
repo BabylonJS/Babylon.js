@@ -293,7 +293,7 @@ module BABYLON {
          * @returns the transformation matrix
          */
         public getTextureMatrix(): Matrix {
-            return Matrix.IdentityReadOnly;
+            return <Matrix>Matrix.IdentityReadOnly;
         }
 
         /**
@@ -301,7 +301,7 @@ module BABYLON {
          * @returns the reflection matrix
          */
         public getReflectionTextureMatrix(): Matrix {
-            return Matrix.IdentityReadOnly;
+            return <Matrix>Matrix.IdentityReadOnly;
         }
 
         /**

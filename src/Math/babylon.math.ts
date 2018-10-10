@@ -2280,7 +2280,7 @@ module BABYLON {
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        public static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
+        public static TransformNormalToRef(vector: Vector3, transformation: Readonly<Matrix>, result: Vector3): void {
             this.TransformNormalFromFloatsToRef(vector.x, vector.y, vector.z, transformation, result);
         }
 
@@ -4536,7 +4536,7 @@ module BABYLON {
          * @param other defines the second operand
          * @returns a new matrix set with the multiplication result of the current Matrix and the given one
          */
-        public multiply(other: Matrix): Matrix {
+        public multiply(other: Readonly<Matrix>): Matrix {
             var result = new Matrix();
             this.multiplyToRef(other, result);
             return result;
@@ -4547,7 +4547,7 @@ module BABYLON {
          * @param other defines the source matrix
          * @returns the current updated matrix
          */
-        public copyFrom(other: Matrix): Matrix {
+        public copyFrom(other: Readonly<Matrix>): Matrix {
             for (var index = 0; index < 16; index++) {
                 this.m[index] = other.m[index];
             }
@@ -4575,7 +4575,7 @@ module BABYLON {
          * @param result defines the matrix where to store the multiplication
          * @returns the current matrix
          */
-        public multiplyToRef(other: Matrix, result: Matrix): Matrix {
+        public multiplyToRef(other: Readonly<Matrix>, result: Matrix): Matrix {
             this.multiplyToArray(other, result.m, 0);
 
             result._markAsUpdated();
@@ -4589,7 +4589,7 @@ module BABYLON {
          * @param offset defines the offset in the target array where to start storing values
          * @returns the current matrix
          */
-        public multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix {
+        public multiplyToArray(other: Readonly<Matrix>, result: Float32Array, offset: number): Matrix {
             var tm0 = this.m[0];
             var tm1 = this.m[1];
             var tm2 = this.m[2];
