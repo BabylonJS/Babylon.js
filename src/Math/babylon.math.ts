@@ -76,11 +76,7 @@ module BABYLON {
          * @param index defines an optional index in the target array to define where to start storing values
          * @returns the current Color3 object
          */
-        public toArray(array: FloatArray, index?: number): Color3 {
-            if (index === undefined) {
-                index = 0;
-            }
-
+        public toArray(array: FloatArray, index: number = 0): Color3 {
             array[index] = this.r;
             array[index + 1] = this.g;
             array[index + 2] = this.b;
@@ -93,7 +89,7 @@ module BABYLON {
          * @param alpha defines the alpha component on the new Color4 object (default is 1)
          * @returns a new Color4 object
          */
-        public toColor4(alpha = 1): Color4 {
+        public toColor4(alpha: number = 1): Color4 {
             return new Color4(this.r, this.g, this.b, alpha);
         }
 
@@ -960,7 +956,7 @@ module BABYLON {
          * @param source defines the source Vector2
          * @returns the current updated Vector2
          */
-        public copyFrom(source: Vector2): Vector2 {
+        public copyFrom(source: DeepImmutable<Vector2>): Vector2 {
             this.x = source.x;
             this.y = source.y;
             return this;
@@ -992,7 +988,7 @@ module BABYLON {
          * @param otherVector defines the other vector
          * @returns a new Vector2 set with the addition of the current Vector2 and the given one coordinates
          */
-        public add(otherVector: Vector2): Vector2 {
+        public add(otherVector: DeepImmutable<Vector2>): Vector2 {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         }
 
@@ -1002,7 +998,7 @@ module BABYLON {
          * @param result defines the target vector
          * @returns the unmodified current Vector2
          */
-        public addToRef(otherVector: Vector2, result: Vector2): Vector2 {
+        public addToRef(otherVector: DeepImmutable<Vector2>, result: Vector2): Vector2 {
             result.x = this.x + otherVector.x;
             result.y = this.y + otherVector.y;
             return this;
@@ -1013,7 +1009,7 @@ module BABYLON {
          * @param otherVector defines the other vector
          * @returns the current updated Vector2
          */
-        public addInPlace(otherVector: Vector2): Vector2 {
+        public addInPlace(otherVector: DeepImmutable<Vector2>): Vector2 {
             this.x += otherVector.x;
             this.y += otherVector.y;
             return this;
@@ -1024,7 +1020,7 @@ module BABYLON {
          * @param otherVector defines the other vector
          * @returns a new Vector2
          */
-        public addVector3(otherVector: Vector3): Vector2 {
+        public addVector3(otherVector: DeepImmutable<Vector3>): Vector2 {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         }
 
@@ -1033,7 +1029,7 @@ module BABYLON {
          * @param otherVector defines the other vector
          * @returns a new Vector2
          */
-        public subtract(otherVector: Vector2): Vector2 {
+        public subtract(otherVector: DeepImmutable<Vector2>): Vector2 {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
         }
 
@@ -1043,7 +1039,7 @@ module BABYLON {
          * @param result defines the target vector
          * @returns the unmodified current Vector2
          */
-        public subtractToRef(otherVector: Vector2, result: Vector2): Vector2 {
+        public subtractToRef(otherVector: DeepImmutable<Vector2>, result: Vector2): Vector2 {
             result.x = this.x - otherVector.x;
             result.y = this.y - otherVector.y;
             return this;
@@ -1053,7 +1049,7 @@ module BABYLON {
          * @param otherVector defines the other vector
          * @returns the current updated Vector2
          */
-        public subtractInPlace(otherVector: Vector2): Vector2 {
+        public subtractInPlace(otherVector: DeepImmutable<Vector2>): Vector2 {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
             return this;
@@ -1064,7 +1060,7 @@ module BABYLON {
          * @param otherVector defines the other vector
          * @returns the current updated Vector2
          */
-        public multiplyInPlace(otherVector: Vector2): Vector2 {
+        public multiplyInPlace(otherVector: DeepImmutable<Vector2>): Vector2 {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
             return this;
@@ -1075,7 +1071,7 @@ module BABYLON {
          * @param otherVector defines the other vector
          * @returns a new Vector2
          */
-        public multiply(otherVector: Vector2): Vector2 {
+        public multiply(otherVector: DeepImmutable<Vector2>): Vector2 {
             return new Vector2(this.x * otherVector.x, this.y * otherVector.y);
         }
 
@@ -1085,7 +1081,7 @@ module BABYLON {
          * @param result defines the target vector
          * @returns the unmodified current Vector2
          */
-        public multiplyToRef(otherVector: Vector2, result: Vector2): Vector2 {
+        public multiplyToRef(otherVector: DeepImmutable<Vector2>, result: Vector2): Vector2 {
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
             return this;
@@ -1116,7 +1112,7 @@ module BABYLON {
          * @param result defines the target vector
          * @returns the unmodified current Vector2
          */
-        public divideToRef(otherVector: Vector2, result: Vector2): Vector2 {
+        public divideToRef(otherVector: DeepImmutable<Vector2>, result: Vector2): Vector2 {
             result.x = this.x / otherVector.x;
             result.y = this.y / otherVector.y;
             return this;
@@ -1127,7 +1123,7 @@ module BABYLON {
          * @param otherVector defines the other vector
          * @returns the current updated Vector2
          */
-        public divideInPlace(otherVector: Vector2): Vector2 {
+        public divideInPlace(otherVector: DeepImmutable<Vector2>): Vector2 {
             return this.divideToRef(otherVector, this);
         }
 
@@ -1190,7 +1186,7 @@ module BABYLON {
          * @param otherVector defines the other vector
          * @returns true if the given vector coordinates strictly equal the current Vector2 ones
          */
-        public equals(otherVector: Vector2): boolean {
+        public equals(otherVector: DeepImmutable<Vector2>): boolean {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y;
         }
 
@@ -1200,7 +1196,7 @@ module BABYLON {
          * @param epsilon defines the minimal distance to consider equality
          * @returns true if the given vector coordinates are close to the current ones by a distance of epsilon.
          */
-        public equalsWithEpsilon(otherVector: Vector2, epsilon: number = Epsilon): boolean {
+        public equalsWithEpsilon(otherVector: DeepImmutable<Vector2>, epsilon: number = Epsilon): boolean {
             return otherVector && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon);
         }
 
@@ -1315,7 +1311,7 @@ module BABYLON {
          * @param amount defines the interpolation factor
          * @returns a new Vector2
          */
-        public static CatmullRom(value1: Vector2, value2: Vector2, value3: Vector2, value4: Vector2, amount: number): Vector2 {
+        public static CatmullRom(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, value3: DeepImmutable<Vector2>, value4: DeepImmutable<Vector2>, amount: number): Vector2 {
             var squared = amount * amount;
             var cubed = amount * squared;
 
@@ -1344,7 +1340,7 @@ module BABYLON {
          * @param max defines the upper limit
          * @returns a new Vector2
          */
-        public static Clamp(value: Vector2, min: Vector2, max: Vector2): Vector2 {
+        public static Clamp(value: DeepImmutable<Vector2>, min: DeepImmutable<Vector2>, max: DeepImmutable<Vector2>): Vector2 {
             var x = value.x;
             x = (x > max.x) ? max.x : x;
             x = (x < min.x) ? min.x : x;
@@ -1365,7 +1361,7 @@ module BABYLON {
          * @param amount defines the interpolation factor
          * @returns a new Vector2
          */
-        public static Hermite(value1: Vector2, tangent1: Vector2, value2: Vector2, tangent2: Vector2, amount: number): Vector2 {
+        public static Hermite(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, amount: number): Vector2 {
             var squared = amount * amount;
             var cubed = amount * squared;
             var part1 = ((2 * cubed) - (3 * squared)) + 1;
@@ -1373,8 +1369,8 @@ module BABYLON {
             var part3 = (cubed - (2 * squared)) + amount;
             var part4 = cubed - squared;
 
-            var x = (((value1.x * part1) + (value2.x * part2)) + (tangent1.x * part3)) + (tangent2.x * part4);
-            var y = (((value1.y * part1) + (value2.y * part2)) + (tangent1.y * part3)) + (tangent2.y * part4);
+            var x = value1.x * part1 + value2.x * part2 + tangent1.x * part3 + tangent2.x * part4;
+            var y = value1.y * part1 + value2.y * part2 + tangent1.y * part3 + tangent2.y * part4;
 
             return new Vector2(x, y);
         }
@@ -1386,9 +1382,9 @@ module BABYLON {
          * @param amount defines the interpolation factor
          * @returns a new Vector2
          */
-        public static Lerp(start: Vector2, end: Vector2, amount: number): Vector2 {
-            var x = start.x + ((end.x - start.x) * amount);
-            var y = start.y + ((end.y - start.y) * amount);
+        public static Lerp(start: DeepImmutable<Vector2>, end: DeepImmutable<Vector2>, amount: number): Vector2 {
+            var x = start.x + (end.x - start.x) * amount;
+            var y = start.y + (end.y - start.y) * amount;
             return new Vector2(x, y);
         }
 
@@ -1398,7 +1394,7 @@ module BABYLON {
          * @param right defines second vector
          * @returns the dot product (float)
          */
-        public static Dot(left: Vector2, right: Vector2): number {
+        public static Dot(left: DeepImmutable<Vector2>, right: DeepImmutable<Vector2>): number {
             return left.x * right.x + left.y * right.y;
         }
 
@@ -1407,7 +1403,7 @@ module BABYLON {
          * @param vector defines the vector to normalize
          * @returns a new Vector2
          */
-        public static Normalize(vector: Vector2): Vector2 {
+        public static Normalize(vector: DeepImmutable<Vector2>): Vector2 {
             var newVector = vector.clone();
             newVector.normalize();
             return newVector;
@@ -1431,7 +1427,7 @@ module BABYLON {
          * @param right defines 2nd vector
          * @returns a new Vector2
          */
-        public static Maximize(left: Vector2, right: Vector2): Vector2 {
+        public static Maximize(left: DeepImmutable<Vector2>, right: DeepImmutable<Vector2>): Vector2 {
             var x = (left.x > right.x) ? left.x : right.x;
             var y = (left.y > right.y) ? left.y : right.y;
             return new Vector2(x, y);
@@ -1443,7 +1439,7 @@ module BABYLON {
          * @param transformation defines the matrix to apply
          * @returns a new Vector2
          */
-        public static Transform(vector: Vector2, transformation: Matrix): Vector2 {
+        public static Transform(vector: DeepImmutable<Vector2>, transformation: DeepImmutable<Matrix>): Vector2 {
             let r = Vector2.Zero();
             Vector2.TransformToRef(vector, transformation, r);
             return r;
@@ -1455,7 +1451,7 @@ module BABYLON {
          * @param transformation defines the matrix to apply
          * @param result defines the target vector
          */
-        public static TransformToRef(vector: Vector2, transformation: Matrix, result: Vector2) {
+        public static TransformToRef(vector: DeepImmutable<Vector2>, transformation: DeepImmutable<Matrix>, result: Vector2) {
             const m = transformation.m;
             var x = (vector.x * m[0]) + (vector.y * m[4]) + m[12];
             var y = (vector.x * m[1]) + (vector.y * m[5]) + m[13];
@@ -1471,7 +1467,7 @@ module BABYLON {
          * @param p2 defines 3rd triangle point
          * @returns true if the point "p" is in the triangle defined by the vertors "p0", "p1", "p2"
          */
-        public static PointInTriangle(p: Vector2, p0: Vector2, p1: Vector2, p2: Vector2) {
+        public static PointInTriangle(p: DeepImmutable<Vector2>, p0: DeepImmutable<Vector2>, p1: DeepImmutable<Vector2>, p2: DeepImmutable<Vector2>): boolean {
             let a = 1 / 2 * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
             let sign = a < 0 ? -1 : 1;
             let s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * p.x + (p0.x - p2.x) * p.y) * sign;
@@ -1486,7 +1482,7 @@ module BABYLON {
          * @param value2 defines second vector
          * @returns the distance between vectors
          */
-        public static Distance(value1: Vector2, value2: Vector2): number {
+        public static Distance(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): number {
             return Math.sqrt(Vector2.DistanceSquared(value1, value2));
         }
 
@@ -1496,7 +1492,7 @@ module BABYLON {
          * @param value2 defines second vector
          * @returns the squared distance between vectors
          */
-        public static DistanceSquared(value1: Vector2, value2: Vector2): number {
+        public static DistanceSquared(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): number {
             var x = value1.x - value2.x;
             var y = value1.y - value2.y;
             return (x * x) + (y * y);
@@ -1508,7 +1504,7 @@ module BABYLON {
          * @param value2 defines second vector
          * @returns a new Vector2
          */
-        public static Center(value1: Vector2, value2: Vector2): Vector2 {
+        public static Center(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): Vector2 {
             var center = value1.add(value2);
             center.scaleInPlace(0.5);
             return center;
@@ -1521,7 +1517,7 @@ module BABYLON {
          * @param segB defines the other point of the segment
          * @returns the shortest distance
          */
-        public static DistanceOfPointFromSegment(p: Vector2, segA: Vector2, segB: Vector2): number {
+        public static DistanceOfPointFromSegment(p: DeepImmutable<Vector2>, segA: DeepImmutable<Vector2>, segB: DeepImmutable<Vector2>): number {
             let l2 = Vector2.DistanceSquared(segA, segB);
             if (l2 === 0) {
                 return Vector2.Distance(p, segA);
@@ -1627,7 +1623,7 @@ module BABYLON {
          * @param otherVector defines the second operand
          * @returns the current updated Vector3
          */
-        public addInPlace(otherVector: Vector3): Vector3 {
+        public addInPlace(otherVector: DeepImmutable<Vector3>): Vector3 {
             return this.addInPlaceFromFloats(otherVector.x, otherVector.y, otherVector.z);
         }
 
@@ -1650,7 +1646,7 @@ module BABYLON {
          * @param otherVector defines the second operand
          * @returns the resulting Vector3
          */
-        public add(otherVector: Vector3): Vector3 {
+        public add(otherVector: DeepImmutable<Vector3>): Vector3 {
             return new Vector3(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z);
         }
 
@@ -1660,7 +1656,7 @@ module BABYLON {
          * @param result defines the Vector3 object where to store the result
          * @returns the current Vector3
          */
-        public addToRef(otherVector: Vector3, result: Vector3): Vector3 {
+        public addToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
             return result.copyFromFloats(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z);
         }
 
@@ -1681,7 +1677,7 @@ module BABYLON {
          * @param otherVector defines the second operand
          * @returns the resulting Vector3
          */
-        public subtract(otherVector: Vector3): Vector3 {
+        public subtract(otherVector: DeepImmutable<Vector3>): Vector3 {
             return new Vector3(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z);
         }
 
@@ -1691,7 +1687,7 @@ module BABYLON {
          * @param result defines the Vector3 object where to store the result
          * @returns the current Vector3
          */
-        public subtractToRef(otherVector: Vector3, result: Vector3): Vector3 {
+        public subtractToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
             return this.subtractFromFloatsToRef(otherVector.x, otherVector.y, otherVector.z, result);
         }
 
@@ -1772,7 +1768,7 @@ module BABYLON {
          * @param otherVector defines the second operand
          * @returns true if both vectors are equals
          */
-        public equals(otherVector: Vector3): boolean {
+        public equals(otherVector: DeepImmutable<Vector3>): boolean {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
         }
 
@@ -1782,7 +1778,7 @@ module BABYLON {
          * @param epsilon defines the minimal distance to define values as equals
          * @returns true if both vectors are distant less than epsilon
          */
-        public equalsWithEpsilon(otherVector: Vector3, epsilon: number = Epsilon): boolean {
+        public equalsWithEpsilon(otherVector: DeepImmutable<Vector3>, epsilon: number = Epsilon): boolean {
             return otherVector && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon) && Scalar.WithinEpsilon(this.z, otherVector.z, epsilon);
         }
 
@@ -1802,7 +1798,7 @@ module BABYLON {
          * @param otherVector defines the second operand
          * @returns the current updated Vector3
          */
-        public multiplyInPlace(otherVector: Vector3): Vector3 {
+        public multiplyInPlace(otherVector: DeepImmutable<Vector3>): Vector3 {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
             this.z *= otherVector.z;
@@ -1814,7 +1810,7 @@ module BABYLON {
          * @param otherVector defines the second operand
          * @returns the new Vector3
          */
-        public multiply(otherVector: Vector3): Vector3 {
+        public multiply(otherVector: DeepImmutable<Vector3>): Vector3 {
             return this.multiplyByFloats(otherVector.x, otherVector.y, otherVector.z);
         }
 
@@ -1824,7 +1820,7 @@ module BABYLON {
          * @param result defines the Vector3 object where to store the result
          * @returns the current Vector3
          */
-        public multiplyToRef(otherVector: Vector3, result: Vector3): Vector3 {
+        public multiplyToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
             return result.copyFromFloats(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z);
         }
 
@@ -1844,7 +1840,7 @@ module BABYLON {
          * @param otherVector defines the second operand
          * @returns the new Vector3
          */
-        public divide(otherVector: Vector3): Vector3 {
+        public divide(otherVector: DeepImmutable<Vector3>): Vector3 {
             return new Vector3(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z);
         }
 
@@ -1854,7 +1850,7 @@ module BABYLON {
          * @param result defines the Vector3 object where to store the result
          * @returns the current Vector3
          */
-        public divideToRef(otherVector: Vector3, result: Vector3): Vector3 {
+        public divideToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
             return result.copyFromFloats(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z);
         }
 
@@ -1872,7 +1868,7 @@ module BABYLON {
          * @param other defines the second operand
          * @returns the current updated Vector3
          */
-        public minimizeInPlace(other: Vector3): Vector3 {
+        public minimizeInPlace(other: DeepImmutable<Vector3>): Vector3 {
             return this.minimizeInPlaceFromFloats(other.x, other.y, other.z);
         }
 
@@ -1881,7 +1877,7 @@ module BABYLON {
          * @param other defines the second operand
          * @returns the current updated Vector3
          */
-        public maximizeInPlace(other: Vector3): Vector3 {
+        public maximizeInPlace(other: DeepImmutable<Vector3>): Vector3 {
             return this.maximizeInPlaceFromFloats(other.x, other.y, other.z);
         }
 
@@ -1996,7 +1992,7 @@ module BABYLON {
          * @returns the new Vector3
          */
         public normalizeToNew(): Vector3 {
-            const normalized = new Vector3(0, 0, 0);
+            const normalized = new Vector3();
             this.normalizeToRef(normalized);
             return normalized;
         }
@@ -2028,7 +2024,7 @@ module BABYLON {
          * @param source defines the source Vector3
          * @returns the current updated Vector3
          */
-        public copyFrom(source: Vector3): Vector3 {
+        public copyFrom(source: DeepImmutable<Vector3>): Vector3 {
             return this.copyFromFloats(source.x, source.y, source.z);
         }
 
@@ -2077,7 +2073,7 @@ module BABYLON {
          * @param size defines the size along the axis
          * @returns the clip factor
          */
-        public static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: number) {
+        public static GetClipFactor(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, axis: DeepImmutable<Vector3>, size: number): number {
             var d0 = Vector3.Dot(vector0, axis) - size;
             var d1 = Vector3.Dot(vector1, axis) - size;
 
@@ -2093,7 +2089,7 @@ module BABYLON {
          * @param normal direction of the normal
          * @return the angle between vector0 and vector1
          */
-        public static GetAngleBetweenVectors(vector0: Vector3, vector1: Vector3, normal: Vector3): number {
+        public static GetAngleBetweenVectors(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): number {
             const v0: Vector3 = vector0.normalizeToRef(MathTmp.Vector3[1]);
             const v1: Vector3 = vector1.normalizeToRef(MathTmp.Vector3[2]);
             const dot: number = Vector3.Dot(v0, v1);
@@ -2111,10 +2107,7 @@ module BABYLON {
          * @param offset defines the offset in the source array
          * @returns the new Vector3
          */
-        public static FromArray(array: ArrayLike<number>, offset?: number): Vector3 {
-            if (!offset) {
-                offset = 0;
-            }
+        public static FromArray(array: ArrayLike<number>, offset: number = 0): Vector3 {
             return new Vector3(array[offset], array[offset + 1], array[offset + 2]);
         }
 
@@ -2125,7 +2118,7 @@ module BABYLON {
          * @param offset defines the offset in the source array
          * @returns the new Vector3
          */
-        public static FromFloatArray(array: Float32Array, offset?: number): Vector3 {
+        public static FromFloatArray(array: Float32Array, offset: number = 0): Vector3 {
             return Vector3.FromArray(array, offset);
         }
 
@@ -2227,7 +2220,7 @@ module BABYLON {
          * @param transformation defines the transformation matrix
          * @returns the transformed Vector3
          */
-        public static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3 {
+        public static TransformCoordinates(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector3 {
             var result = Vector3.Zero();
             Vector3.TransformCoordinatesToRef(vector, transformation, result);
             return result;
@@ -2240,7 +2233,7 @@ module BABYLON {
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        public static TransformCoordinatesToRef(vector: Vector3, transformation: Readonly<Matrix>, result: Vector3): void {
+        public static TransformCoordinatesToRef(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>, result: Vector3): void {
             return Vector3.TransformCoordinatesFromFloatsToRef(vector.x, vector.y, vector.z, transformation, result);
         }
 
@@ -2253,7 +2246,7 @@ module BABYLON {
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Readonly<Matrix>, result: Vector3): void {
+        public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: DeepImmutable<Matrix>, result: Vector3): void {
             const m = transformation.m;
             var rx = x * m[0] + y * m[4] + z * m[8] + m[12];
             var ry = x * m[1] + y * m[5] + z * m[9] + m[13];
@@ -2272,7 +2265,7 @@ module BABYLON {
          * @param transformation defines the transformation matrix
          * @returns the new Vector3
          */
-        public static TransformNormal(vector: Vector3, transformation: Matrix): Vector3 {
+        public static TransformNormal(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector3 {
             var result = Vector3.Zero();
             Vector3.TransformNormalToRef(vector, transformation, result);
             return result;
@@ -2285,7 +2278,7 @@ module BABYLON {
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        public static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
+        public static TransformNormalToRef(vector: DeepImmutable<Vector3>, transformation:  DeepImmutable<Matrix>, result: Vector3): void {
             this.TransformNormalFromFloatsToRef(vector.x, vector.y, vector.z, transformation, result);
         }
 
@@ -2298,7 +2291,7 @@ module BABYLON {
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Readonly<Matrix>, result: Vector3): void {
+        public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: DeepImmutable<Matrix>, result: Vector3): void {
             const m = transformation.m;
             result.x = x * m[0] + y * m[4] + z * m[8];
             result.y = x * m[1] + y * m[5] + z * m[9];
@@ -2314,21 +2307,28 @@ module BABYLON {
          * @param amount defines the amount on the spline to use
          * @returns the new Vector3
          */
-        public static CatmullRom(value1: Vector3, value2: Vector3, value3: Vector3, value4: Vector3, amount: number): Vector3 {
+        public static CatmullRom(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, value3: DeepImmutable<Vector3>, value4: DeepImmutable<Vector3>, amount: number): Vector3 {
             var squared = amount * amount;
             var cubed = amount * squared;
 
-            var x = 0.5 * ((((2 * value2.x) + ((-value1.x + value3.x) * amount)) +
-                (((((2 * value1.x) - (5 * value2.x)) + (4 * value3.x)) - value4.x) * squared)) +
-                ((((-value1.x + (3 * value2.x)) - (3 * value3.x)) + value4.x) * cubed));
-
-            var y = 0.5 * ((((2 * value2.y) + ((-value1.y + value3.y) * amount)) +
-                (((((2 * value1.y) - (5 * value2.y)) + (4 * value3.y)) - value4.y) * squared)) +
-                ((((-value1.y + (3 * value2.y)) - (3 * value3.y)) + value4.y) * cubed));
-
-            var z = 0.5 * ((((2 * value2.z) + ((-value1.z + value3.z) * amount)) +
-                (((((2 * value1.z) - (5 * value2.z)) + (4 * value3.z)) - value4.z) * squared)) +
-                ((((-value1.z + (3 * value2.z)) - (3 * value3.z)) + value4.z) * cubed));
+            var x = 0.5 * (
+                2 * value2.x +
+                (-value1.x + value3.x) * amount +
+                (2 * value1.x - 5 * value2.x + 4 * value3.x - value4.x) * squared +
+                (-value1.x + 3 * value2.x - 3 * value3.x + value4.x) * cubed
+            );
+            var y = 0.5 * (
+                2 * value2.y +
+                (-value1.y + value3.y) * amount +
+                (2 * value1.y - 5 * value2.y + 4 * value3.y - value4.y) * squared +
+                (-value1.y + 3 * value2.y - 3 * value3.y + value4.y) * cubed
+            );
+            var z = 0.5 * (
+                2 * value2.z +
+                (-value1.z + value3.z) * amount +
+                (2 * value1.z - 5 * value2.z + 4 * value3.z - value4.z) * squared +
+                (-value1.z + 3 * value2.z - 3 * value3.z + value4.z) * cubed
+            );
 
             return new Vector3(x, y, z);
         }
@@ -2342,7 +2342,7 @@ module BABYLON {
          * @param max defines the upper range value
          * @returns the new Vector3
          */
-        public static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3 {
+        public static Clamp(value: DeepImmutable<Vector3>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>): Vector3 {
             const v = new Vector3();
             Vector3.ClampToRef(value, min, max, v);
             return v;
@@ -2358,7 +2358,7 @@ module BABYLON {
          * @param result defines the Vector3 where to store the result
          * @returns the new Vector3
          */
-        public static ClampToRef(value: Vector3, min: Vector3, max: Vector3, result: Vector3): void {
+        public static ClampToRef(value: DeepImmutable<Vector3>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, result: Vector3): void {
             var x = value.x;
             x = (x > max.x) ? max.x : x;
             x = (x < min.x) ? min.x : x;
@@ -2384,17 +2384,17 @@ module BABYLON {
          * @param amount defines the amount on the interpolation spline (between 0 and 1)
          * @returns the new Vector3
          */
-        public static Hermite(value1: Vector3, tangent1: Vector3, value2: Vector3, tangent2: Vector3, amount: number): Vector3 {
+        public static Hermite(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, amount: number): Vector3 {
             var squared = amount * amount;
             var cubed = amount * squared;
-            var part1 = ((2 * cubed) - (3 * squared)) + 1;
-            var part2 = (-2 * cubed) + (3 * squared);
-            var part3 = (cubed - (2 * squared)) + amount;
+            var part1 = (2 * cubed - 3 * squared) + 1;
+            var part2 = -2 * cubed + 3 * squared;
+            var part3 = (cubed - 2 * squared) + amount;
             var part4 = cubed - squared;
 
-            var x = (((value1.x * part1) + (value2.x * part2)) + (tangent1.x * part3)) + (tangent2.x * part4);
-            var y = (((value1.y * part1) + (value2.y * part2)) + (tangent1.y * part3)) + (tangent2.y * part4);
-            var z = (((value1.z * part1) + (value2.z * part2)) + (tangent1.z * part3)) + (tangent2.z * part4);
+            var x = value1.x * part1 + value2.x * part2 + tangent1.x * part3 + tangent2.x * part4;
+            var y = value1.y * part1 + value2.y * part2 + tangent1.y * part3 + tangent2.y * part4;
+            var z = value1.z * part1 + value2.z * part2 + tangent1.z * part3 + tangent2.z * part4;
             return new Vector3(x, y, z);
         }
 
@@ -2405,7 +2405,7 @@ module BABYLON {
          * @param amount max defines amount between both (between 0 and 1)
          * @returns the new Vector3
          */
-        public static Lerp(start: Vector3, end: Vector3, amount: number): Vector3 {
+        public static Lerp(start: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, amount: number): Vector3 {
             var result = new Vector3(0, 0, 0);
             Vector3.LerpToRef(start, end, amount, result);
             return result;
@@ -2418,10 +2418,10 @@ module BABYLON {
          * @param amount max defines amount between both (between 0 and 1)
          * @param result defines the Vector3 where to store the result
          */
-        public static LerpToRef(start: Vector3, end: Vector3, amount: number, result: Vector3): void {
-            result.x = start.x + ((end.x - start.x) * amount);
-            result.y = start.y + ((end.y - start.y) * amount);
-            result.z = start.z + ((end.z - start.z) * amount);
+        public static LerpToRef(start: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, amount: number, result: Vector3): void {
+            result.x = start.x + (end.x - start.x * amount);
+            result.y = start.y + (end.y - start.y * amount);
+            result.z = start.z + (end.z - start.z * amount);
         }
 
         /**
@@ -2430,7 +2430,7 @@ module BABYLON {
          * @param right defines the right operand
          * @returns the dot product
          */
-        public static Dot(left: Vector3, right: Vector3): number {
+        public static Dot(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): number {
             return (left.x * right.x + left.y * right.y + left.z * right.z);
         }
 
@@ -2441,7 +2441,7 @@ module BABYLON {
          * @param right defines the right operand
          * @returns the cross product
          */
-        public static Cross(left: Vector3, right: Vector3): Vector3 {
+        public static Cross(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3 {
             var result = Vector3.Zero();
             Vector3.CrossToRef(left, right, result);
             return result;
@@ -2454,11 +2454,11 @@ module BABYLON {
          * @param right defines the right operand
          * @param result defines the Vector3 where to store the result
          */
-        public static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void {
-            MathTmp.Vector3[0].x = left.y * right.z - left.z * right.y;
-            MathTmp.Vector3[0].y = left.z * right.x - left.x * right.z;
-            MathTmp.Vector3[0].z = left.x * right.y - left.y * right.x;
-            result.copyFrom(MathTmp.Vector3[0]);
+        public static CrossToRef(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>, result: Vector3): void {
+            const x = left.y * right.z - left.z * right.y;
+            const y = left.z * right.x - left.x * right.z;
+            const z = left.x * right.y - left.y * right.x;
+            result.copyFromFloats(x, y, z);
         }
 
         /**
@@ -2466,7 +2466,7 @@ module BABYLON {
          * @param vector defines the Vector3 to normalize
          * @returns the new Vector3
          */
-        public static Normalize(vector: Vector3): Vector3 {
+        public static Normalize(vector: DeepImmutable<Vector3>): Vector3 {
             var result = Vector3.Zero();
             Vector3.NormalizeToRef(vector, result);
             return result;
@@ -2477,11 +2477,10 @@ module BABYLON {
          * @param vector defines the Vector3 to normalize
          * @param result defines the Vector3 where to store the result
          */
-        public static NormalizeToRef(vector: Vector3, result: Vector3): void {
+        public static NormalizeToRef(vector: DeepImmutable<Vector3>, result: Vector3): void {
             vector.normalizeToRef(result);
         }
 
-        private static _viewportMatrixCache: Matrix;
         /**
          * Project a Vector3 onto screen space
          * @param vector defines the Vector3 to project
@@ -2490,13 +2489,13 @@ module BABYLON {
          * @param viewport defines the screen viewport to use
          * @returns the new Vector3
          */
-        public static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3 {
-            var cw = viewport.width;
-            var ch = viewport.height;
-            var cx = viewport.x;
-            var cy = viewport.y;
-
-            var viewportMatrix = Vector3._viewportMatrixCache ? Vector3._viewportMatrixCache : (Vector3._viewportMatrixCache = new Matrix());
+        public static Project(vector: DeepImmutable<Vector3>, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>, viewport: DeepImmutable<Viewport>): Vector3 {
+            const cw = viewport.width;
+            const ch = viewport.height;
+            const cx = viewport.x;
+            const cy = viewport.y;
+            const matrix = MathTmp.Matrix[0];
+            const viewportMatrix = MathTmp.Matrix[1];
 
             Matrix.FromValuesToRef(
                 cw / 2, 0, 0, 0,
@@ -2504,7 +2503,6 @@ module BABYLON {
                 0, 0, 0.5, 0,
                 cx + cw / 2, ch / 2 + cy, 0.5, 1, viewportMatrix);
 
-            var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(transform, matrix);
             matrix.multiplyToRef(viewportMatrix, matrix);
 
@@ -2520,14 +2518,16 @@ module BABYLON {
          * @param transform defines the transform (view x projection) matrix to use
          * @returns the new Vector3
          */
-        public static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3 {
+        public static UnprojectFromTransform(source: DeepImmutable<Vector3>, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>): Vector3 {
             var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(transform, matrix);
             matrix.invert();
-            source.x = source.x / viewportWidth * 2 - 1;
-            source.y = -(source.y / viewportHeight * 2 - 1);
-            var vector = Vector3.TransformCoordinates(source, matrix);
-            var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
+            var screenSource = MathTmp.Vector3[0];
+            screenSource.x = source.x / viewportWidth * 2 - 1;
+            screenSource.y = -(source.y / viewportHeight * 2 - 1);
+            screenSource.z =  source.z;
+            var vector = Vector3.TransformCoordinates(screenSource, matrix);
+            var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
 
             if (Scalar.WithinEpsilon(num, 1)) {
                 vector = vector.scale(1 / num);
@@ -2546,7 +2546,7 @@ module BABYLON {
          * @param projection defines the projection matrix to use
          * @returns the new Vector3
          */
-        public static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3 {
+        public static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Vector3 {
             let result = Vector3.Zero();
 
             Vector3.UnprojectToRef(source, viewportWidth, viewportHeight, world, view, projection, result);
@@ -2564,7 +2564,7 @@ module BABYLON {
          * @param projection defines the projection matrix to use
          * @param result defines the Vector3 where to store the result
          */
-        public static UnprojectToRef(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix, result: Vector3): void {
+        public static UnprojectToRef(source: DeepImmutable<Vector3>, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, result: Vector3): void {
             Vector3.UnprojectFloatsToRef(source.x, source.y, source.z, viewportWidth, viewportHeight, world, view, projection, result);
         }
 
@@ -2580,7 +2580,7 @@ module BABYLON {
          * @param projection defines the projection matrix to use
          * @param result defines the Vector3 where to store the result
          */
-        public static UnprojectFloatsToRef(sourceX: float, sourceY: float, sourceZ: float, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix, result: Vector3): void {
+        public static UnprojectFloatsToRef(sourceX: float, sourceY: float, sourceZ: float, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, result: Vector3): void {
             var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(view, matrix);
             matrix.multiplyToRef(projection, matrix);
@@ -2603,7 +2603,7 @@ module BABYLON {
          * @param right defines the second operand
          * @returns the new Vector3
          */
-        public static Minimize(left: Vector3, right: Vector3): Vector3 {
+        public static Minimize(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3 {
             var min = left.clone();
             min.minimizeInPlace(right);
             return min;
@@ -2615,7 +2615,7 @@ module BABYLON {
          * @param right defines the second operand
          * @returns the new Vector3
          */
-        public static Maximize(left: Vector3, right: Vector3): Vector3 {
+        public static Maximize(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3 {
             var max = left.clone();
             max.maximizeInPlace(right);
             return max;
@@ -2627,7 +2627,7 @@ module BABYLON {
          * @param value2 defines the second operand
          * @returns the distance
          */
-        public static Distance(value1: Vector3, value2: Vector3): number {
+        public static Distance(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): number {
             return Math.sqrt(Vector3.DistanceSquared(value1, value2));
         }
 
@@ -2637,7 +2637,7 @@ module BABYLON {
          * @param value2 defines the second operand
          * @returns the squared distance
          */
-        public static DistanceSquared(value1: Vector3, value2: Vector3): number {
+        public static DistanceSquared(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): number {
             var x = value1.x - value2.x;
             var y = value1.y - value2.y;
             var z = value1.z - value2.z;
@@ -2651,7 +2651,7 @@ module BABYLON {
          * @param value2 defines the second operand
          * @returns the new Vector3
          */
-        public static Center(value1: Vector3, value2: Vector3): Vector3 {
+        public static Center(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): Vector3 {
             var center = value1.add(value2);
             center.scaleInPlace(0.5);
             return center;
@@ -2667,7 +2667,7 @@ module BABYLON {
          * @param axis3 defines the third axis
          * @returns a new Vector3
          */
-        public static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3 {
+        public static RotationFromAxis(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): Vector3 {
             var rotation = Vector3.Zero();
             Vector3.RotationFromAxisToRef(axis1, axis2, axis3, rotation);
             return rotation;
@@ -2680,7 +2680,7 @@ module BABYLON {
          * @param axis3 defines the third axis
          * @param ref defines the Vector3 where to store the result
          */
-        public static RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3): void {
+        public static RotationFromAxisToRef(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: Vector3): void {
             var quat = MathTmp.Quaternion[0];
             Quaternion.RotationQuaternionFromAxisToRef(axis1, axis2, axis3, quat);
             quat.toEulerAnglesToRef(ref);
@@ -2772,7 +2772,7 @@ module BABYLON {
          * @param otherVector the vector to add
          * @returns the updated Vector4.
          */
-        public addInPlace(otherVector: Vector4): Vector4 {
+        public addInPlace(otherVector: DeepImmutable<Vector4>): Vector4 {
             this.x += otherVector.x;
             this.y += otherVector.y;
             this.z += otherVector.z;
@@ -2785,7 +2785,7 @@ module BABYLON {
          * @param otherVector the vector to add
          * @returns the resulting vector
          */
-        public add(otherVector: Vector4): Vector4 {
+        public add(otherVector: DeepImmutable<Vector4>): Vector4 {
             return new Vector4(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z, this.w + otherVector.w);
         }
 
@@ -2795,7 +2795,7 @@ module BABYLON {
          * @param result the vector to store the result
          * @returns the current Vector4.
          */
-        public addToRef(otherVector: Vector4, result: Vector4): Vector4 {
+        public addToRef(otherVector: DeepImmutable<Vector4>, result: Vector4): Vector4 {
             result.x = this.x + otherVector.x;
             result.y = this.y + otherVector.y;
             result.z = this.z + otherVector.z;
@@ -2808,7 +2808,7 @@ module BABYLON {
          * @param otherVector the vector to subtract
          * @returns the updated Vector4.
          */
-        public subtractInPlace(otherVector: Vector4): Vector4 {
+        public subtractInPlace(otherVector: DeepImmutable<Vector4>): Vector4 {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
             this.z -= otherVector.z;
@@ -2821,7 +2821,7 @@ module BABYLON {
          * @param otherVector the vector to add
          * @returns the new vector with the result
          */
-        public subtract(otherVector: Vector4): Vector4 {
+        public subtract(otherVector: DeepImmutable<Vector4>): Vector4 {
             return new Vector4(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w);
         }
 
@@ -2831,7 +2831,7 @@ module BABYLON {
          * @param result the vector to store the result
          * @returns the current Vector4.
          */
-        public subtractToRef(otherVector: Vector4, result: Vector4): Vector4 {
+        public subtractToRef(otherVector: DeepImmutable<Vector4>, result: Vector4): Vector4 {
             result.x = this.x - otherVector.x;
             result.y = this.y - otherVector.y;
             result.z = this.z - otherVector.z;
@@ -2934,7 +2934,7 @@ module BABYLON {
          * @param otherVector the vector to compare against
          * @returns true if they are equal
          */
-        public equals(otherVector: Vector4): boolean {
+        public equals(otherVector: DeepImmutable<Vector4>): boolean {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z && this.w === otherVector.w;
         }
 
@@ -2944,7 +2944,7 @@ module BABYLON {
          * @param epsilon (Default: very small number)
          * @returns true if they are equal
          */
-        public equalsWithEpsilon(otherVector: Vector4, epsilon: number = Epsilon): boolean {
+        public equalsWithEpsilon(otherVector: DeepImmutable<Vector4>, epsilon: number = Epsilon): boolean {
             return otherVector
                 && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon)
                 && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon)
@@ -2969,7 +2969,7 @@ module BABYLON {
          * @param otherVector vector to multiple with
          * @returns the updated Vector4.
          */
-        public multiplyInPlace(otherVector: Vector4): Vector4 {
+        public multiplyInPlace(otherVector: DeepImmutable<Vector4>): Vector4 {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
             this.z *= otherVector.z;
@@ -2982,7 +2982,7 @@ module BABYLON {
          * @param otherVector vector to multiple with
          * @returns resulting new vector
          */
-        public multiply(otherVector: Vector4): Vector4 {
+        public multiply(otherVector: DeepImmutable<Vector4>): Vector4 {
             return new Vector4(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w);
         }
         /**
@@ -2991,7 +2991,7 @@ module BABYLON {
          * @param result vector to store the result
          * @returns the current Vector4.
          */
-        public multiplyToRef(otherVector: Vector4, result: Vector4): Vector4 {
+        public multiplyToRef(otherVector: DeepImmutable<Vector4>, result: Vector4): Vector4 {
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
             result.z = this.z * otherVector.z;
@@ -3014,7 +3014,7 @@ module BABYLON {
          * @param otherVector vector to devide with
          * @returns resulting new vector
          */
-        public divide(otherVector: Vector4): Vector4 {
+        public divide(otherVector: DeepImmutable<Vector4>): Vector4 {
             return new Vector4(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z, this.w / otherVector.w);
         }
         /**
@@ -3023,7 +3023,7 @@ module BABYLON {
          * @param result vector to store the result
          * @returns the current Vector4.
          */
-        public divideToRef(otherVector: Vector4, result: Vector4): Vector4 {
+        public divideToRef(otherVector: DeepImmutable<Vector4>, result: Vector4): Vector4 {
             result.x = this.x / otherVector.x;
             result.y = this.y / otherVector.y;
             result.z = this.z / otherVector.z;
@@ -3036,7 +3036,7 @@ module BABYLON {
          * @param otherVector vector to devide with
          * @returns the updated Vector3.
          */
-        public divideInPlace(otherVector: Vector4): Vector4 {
+        public divideInPlace(otherVector: DeepImmutable<Vector4>): Vector4 {
             return this.divideToRef(otherVector, this);
         }
 
@@ -3045,7 +3045,7 @@ module BABYLON {
          * @param other defines the second operand
          * @returns the current updated Vector4
          */
-        public minimizeInPlace(other: Vector4): Vector4 {
+        public minimizeInPlace(other: DeepImmutable<Vector4>): Vector4 {
             if (other.x < this.x) { this.x = other.x; }
             if (other.y < this.y) { this.y = other.y; }
             if (other.z < this.z) { this.z = other.z; }
@@ -3131,7 +3131,7 @@ module BABYLON {
          * @param source the source vector to copy from
          * @returns the updated Vector4.
          */
-        public copyFrom(source: Vector4): Vector4 {
+        public copyFrom(source: DeepImmutable<Vector4>): Vector4 {
             this.x = source.x;
             this.y = source.y;
             this.z = source.z;
@@ -3242,7 +3242,7 @@ module BABYLON {
          * @param vector the vector to normalize
          * @returns the vector
          */
-        public static Normalize(vector: Vector4): Vector4 {
+        public static Normalize(vector: DeepImmutable<Vector4>): Vector4 {
             var result = Vector4.Zero();
             Vector4.NormalizeToRef(vector, result);
             return result;
@@ -3252,7 +3252,7 @@ module BABYLON {
          * @param vector the vector to normalize
          * @param result the vector to store the result in
          */
-        public static NormalizeToRef(vector: Vector4, result: Vector4): void {
+        public static NormalizeToRef(vector: DeepImmutable<Vector4>, result: Vector4): void {
             result.copyFrom(vector);
             result.normalize();
         }
@@ -3263,7 +3263,7 @@ module BABYLON {
          * @param right right vector to minimize
          * @returns a new vector with the minimum of the left and right vector values
          */
-        public static Minimize(left: Vector4, right: Vector4): Vector4 {
+        public static Minimize(left: DeepImmutable<Vector4>, right: DeepImmutable<Vector4>): Vector4 {
             var min = left.clone();
             min.minimizeInPlace(right);
             return min;
@@ -3275,7 +3275,7 @@ module BABYLON {
          * @param right right vector to maximize
          * @returns a new vector with the maximum of the left and right vector values
          */
-        public static Maximize(left: Vector4, right: Vector4): Vector4 {
+        public static Maximize(left: DeepImmutable<Vector4>, right: DeepImmutable<Vector4>): Vector4 {
             var max = left.clone();
             max.maximizeInPlace(right);
             return max;
@@ -3286,7 +3286,7 @@ module BABYLON {
          * @param value2 value to calulate the distance between
          * @return the distance between the two vectors
          */
-        public static Distance(value1: Vector4, value2: Vector4): number {
+        public static Distance(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): number {
             return Math.sqrt(Vector4.DistanceSquared(value1, value2));
         }
         /**
@@ -3295,7 +3295,7 @@ module BABYLON {
          * @param value2 value to calulate the distance between
          * @return the distance between the two vectors squared
          */
-        public static DistanceSquared(value1: Vector4, value2: Vector4): number {
+        public static DistanceSquared(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): number {
             var x = value1.x - value2.x;
             var y = value1.y - value2.y;
             var z = value1.z - value2.z;
@@ -3309,7 +3309,7 @@ module BABYLON {
          * @param value2 value to calulate the center between
          * @return the center between the two vectors
          */
-        public static Center(value1: Vector4, value2: Vector4): Vector4 {
+        public static Center(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): Vector4 {
             var center = value1.add(value2);
             center.scaleInPlace(0.5);
             return center;
@@ -3322,7 +3322,7 @@ module BABYLON {
          * @param transformation the transformation matrix to apply
          * @returns the new vector
          */
-        public static TransformNormal(vector: Vector4, transformation: Matrix): Vector4 {
+        public static TransformNormal(vector: DeepImmutable<Vector4>, transformation: DeepImmutable<Matrix>): Vector4 {
             var result = Vector4.Zero();
             Vector4.TransformNormalToRef(vector, transformation, result);
             return result;
@@ -3335,11 +3335,11 @@ module BABYLON {
          * @param transformation the transformation matrix to apply
          * @param result the vector to store the result in
          */
-        public static TransformNormalToRef(vector: Vector4, transformation: Matrix, result: Vector4): void {
+        public static TransformNormalToRef(vector: DeepImmutable<Vector4>, transformation: DeepImmutable<Matrix>, result: Vector4): void {
             const m = transformation.m;
-            var x = (vector.x * m[0]) + (vector.y * m[4]) + (vector.z * m[8]);
-            var y = (vector.x * m[1]) + (vector.y * m[5]) + (vector.z * m[9]);
-            var z = (vector.x * m[2]) + (vector.y * m[6]) + (vector.z * m[10]);
+            const x = vector.x * m[0] + vector.y * m[4] + vector.z * m[8];
+            const y = vector.x * m[1] + vector.y * m[5] + vector.z * m[9];
+            const z = vector.x * m[2] + vector.y * m[6] + vector.z * m[10];
             result.x = x;
             result.y = y;
             result.z = z;
@@ -3356,7 +3356,7 @@ module BABYLON {
          * @param transformation the transformation matrix to apply
          * @param result the vector to store the results in
          */
-        public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: Matrix, result: Vector4): void {
+        public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: DeepImmutable<Matrix>, result: Vector4): void {
             const m = transformation.m;
             result.x = (x * m[0]) + (y * m[4]) + (z * m[8]);
             result.y = (x * m[1]) + (y * m[5]) + (z * m[9]);
@@ -3592,7 +3592,7 @@ module BABYLON {
          * @param otherQuaternion defines the second operand
          * @return true if the current quaternion and the given one coordinates are strictly equals
          */
-        public equals(otherQuaternion: Quaternion): boolean {
+        public equals(otherQuaternion: DeepImmutable<Quaternion>): boolean {
             return otherQuaternion && this.x === otherQuaternion.x && this.y === otherQuaternion.y && this.z === otherQuaternion.z && this.w === otherQuaternion.w;
         }
 
@@ -3609,7 +3609,7 @@ module BABYLON {
          * @param other defines the other quaternion
          * @returns the updated current quaternion
          */
-        public copyFrom(other: Quaternion): Quaternion {
+        public copyFrom(other: DeepImmutable<Quaternion>): Quaternion {
             this.x = other.x;
             this.y = other.y;
             this.z = other.z;
@@ -3650,7 +3650,7 @@ module BABYLON {
          * @param other defines the second operand
          * @returns a new quaternion as the addition result of the given one and the current quaternion
          */
-        public add(other: Quaternion): Quaternion {
+        public add(other: DeepImmutable<Quaternion>): Quaternion {
             return new Quaternion(this.x + other.x, this.y + other.y, this.z + other.z, this.w + other.w);
         }
 
@@ -3659,7 +3659,7 @@ module BABYLON {
          * @param other defines the quaternion to add
          * @returns the current quaternion
          */
-        public addInPlace(other: Quaternion): Quaternion {
+        public addInPlace(other: DeepImmutable<Quaternion>): Quaternion {
             this.x += other.x;
             this.y += other.y;
             this.z += other.z;
@@ -3671,7 +3671,7 @@ module BABYLON {
          * @param other defines the second operand
          * @returns a new quaternion as the subtraction result of the given one from the current one
          */
-        public subtract(other: Quaternion): Quaternion {
+        public subtract(other: DeepImmutable<Quaternion>): Quaternion {
             return new Quaternion(this.x - other.x, this.y - other.y, this.z - other.z, this.w - other.w);
         }
 
@@ -3731,7 +3731,7 @@ module BABYLON {
          * @param q1 defines the second operand
          * @returns a new quaternion set as the multiplication result of the current one with the given one "q1"
          */
-        public multiply(q1: Quaternion): Quaternion {
+        public multiply(q1: DeepImmutable<Quaternion>): Quaternion {
             var result = new Quaternion(0, 0, 0, 1);
             this.multiplyToRef(q1, result);
             return result;
@@ -3742,7 +3742,7 @@ module BABYLON {
          * @param result defines the target quaternion
          * @returns the current quaternion
          */
-        public multiplyToRef(q1: Quaternion, result: Quaternion): Quaternion {
+        public multiplyToRef(q1: DeepImmutable<Quaternion>, result: Quaternion): Quaternion {
             var x = this.x * q1.w + this.y * q1.z - this.z * q1.y + this.w * q1.x;
             var y = -this.x * q1.z + this.y * q1.w + this.z * q1.x + this.w * q1.y;
             var z = this.x * q1.y - this.y * q1.x + this.z * q1.w + this.w * q1.z;
@@ -3756,7 +3756,7 @@ module BABYLON {
          * @param q1 defines the second operand
          * @returns the currentupdated quaternion
          */
-        public multiplyInPlace(q1: Quaternion): Quaternion {
+        public multiplyInPlace(q1: DeepImmutable<Quaternion>): Quaternion {
             this.multiplyToRef(q1, this);
             return this;
         }
@@ -3889,7 +3889,7 @@ module BABYLON {
          * @param matrix defines the source matrix
          * @returns a new quaternion created from the given rotation matrix values
          */
-        public static FromRotationMatrix(matrix: Matrix): Quaternion {
+        public static FromRotationMatrix(matrix: DeepImmutable<Matrix>): Quaternion {
             var result = new Quaternion();
             Quaternion.FromRotationMatrixToRef(matrix, result);
             return result;
@@ -3900,7 +3900,7 @@ module BABYLON {
          * @param matrix defines the source matrix
          * @param result defines the target quaternion
          */
-        public static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion): void {
+        public static FromRotationMatrixToRef(matrix: DeepImmutable<Matrix>, result: Quaternion): void {
             var data = matrix.m;
             var m11 = data[0], m12 = data[4], m13 = data[8];
             var m21 = data[1], m22 = data[5], m23 = data[9];
@@ -3949,7 +3949,7 @@ module BABYLON {
          * @param right defines the right operand
          * @returns the dot product
          */
-        public static Dot(left: Quaternion, right: Quaternion): number {
+        public static Dot(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>): number {
             return (left.x * right.x + left.y * right.y + left.z * right.z + left.w * right.w);
         }
 
@@ -3959,7 +3959,7 @@ module BABYLON {
          * @param quat1 defines the second quaternion to check
          * @returns true if the two quaternions are close to each other
          */
-        public static AreClose(quat0: Quaternion, quat1: Quaternion): boolean {
+        public static AreClose(quat0: DeepImmutable<Quaternion>, quat1: DeepImmutable<Quaternion>): boolean {
             let dot = Quaternion.Dot(quat0, quat1);
 
             return dot >= 0;
@@ -4005,7 +4005,7 @@ module BABYLON {
          * @param angle defines the angle to use
          * @returns a new quaternion created from the given axis (Vector3) and angle in radians (float)
          */
-        public static RotationAxis(axis: Vector3, angle: number): Quaternion {
+        public static RotationAxis(axis: DeepImmutable<Vector3>, angle: number): Quaternion {
             return Quaternion.RotationAxisToRef(axis, angle, new Quaternion());
         }
 
@@ -4016,7 +4016,7 @@ module BABYLON {
          * @param result defines the target quaternion
          * @returns the target quaternion
          */
-        public static RotationAxisToRef(axis: Vector3, angle: number, result: Quaternion): Quaternion {
+        public static RotationAxisToRef(axis: DeepImmutable<Vector3>, angle: number, result: Quaternion): Quaternion {
             var sin = Math.sin(angle / 2);
             axis.normalize();
             result.w = Math.cos(angle / 2);
@@ -4117,7 +4117,7 @@ module BABYLON {
          * @param axis3 defines the third axis
          * @returns the new quaternion
          */
-        public static RotationQuaternionFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Quaternion {
+        public static RotationQuaternionFromAxis(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): Quaternion {
             var quat = new Quaternion(0, 0, 0, 0);
             Quaternion.RotationQuaternionFromAxisToRef(axis1, axis2, axis3, quat);
             return quat;
@@ -4130,7 +4130,7 @@ module BABYLON {
          * @param axis3 defines the third axis
          * @param ref defines the target quaternion
          */
-        public static RotationQuaternionFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): void {
+        public static RotationQuaternionFromAxisToRef(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: Quaternion): void {
             var rotMat = MathTmp.Matrix[0];
             Matrix.FromXYZAxesToRef(axis1.normalize(), axis2.normalize(), axis3.normalize(), rotMat);
             Quaternion.FromRotationMatrixToRef(rotMat, ref);
@@ -4143,7 +4143,7 @@ module BABYLON {
          * @param amount defines the gradient to use
          * @returns the new interpolated quaternion
          */
-        public static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion {
+        public static Slerp(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>, amount: number): Quaternion {
             var result = Quaternion.Identity();
 
             Quaternion.SlerpToRef(left, right, amount, result);
@@ -4158,10 +4158,10 @@ module BABYLON {
          * @param amount defines the gradient to use
          * @param result defines the target quaternion
          */
-        public static SlerpToRef(left: Quaternion, right: Quaternion, amount: number, result: Quaternion): void {
+        public static SlerpToRef(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>, amount: number, result: Quaternion): void {
             var num2;
             var num3;
-            var num4 = (((left.x * right.x) + (left.y * right.y)) + (left.z * right.z)) + (left.w * right.w);
+            var num4 = ((left.x * right.x + left.y * right.y) + left.z * right.z) + (left.w * right.w);
             var flag = false;
 
             if (num4 < 0) {
@@ -4175,15 +4175,15 @@ module BABYLON {
             }
             else {
                 var num5 = Math.acos(num4);
-                var num6 = (1 / Math.sin(num5));
-                num3 = (Math.sin((1 - amount) * num5)) * num6;
-                num2 = flag ? ((-Math.sin(amount * num5)) * num6) : ((Math.sin(amount * num5)) * num6);
+                var num6 = 1 / Math.sin(num5);
+                num3 = Math.sin((1 - amount) * num5) * num6;
+                num2 = flag ? -Math.sin(amount * num5) * num6 : Math.sin(amount * num5) * num6;
             }
 
-            result.x = (num3 * left.x) + (num2 * right.x);
-            result.y = (num3 * left.y) + (num2 * right.y);
-            result.z = (num3 * left.z) + (num2 * right.z);
-            result.w = (num3 * left.w) + (num2 * right.w);
+            result.x = num3 * left.x + num2 * right.x;
+            result.y = num3 * left.y + num2 * right.y;
+            result.z = num3 * left.z + num2 * right.z;
+            result.w = num3 * left.w + num2 * right.w;
         }
 
         /**
@@ -4195,18 +4195,18 @@ module BABYLON {
          * @param amount defines the target quaternion
          * @returns the new interpolated quaternion
          */
-        public static Hermite(value1: Quaternion, tangent1: Quaternion, value2: Quaternion, tangent2: Quaternion, amount: number): Quaternion {
+        public static Hermite(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, amount: number): Quaternion {
             var squared = amount * amount;
             var cubed = amount * squared;
-            var part1 = ((2 * cubed) - (3 * squared)) + 1;
-            var part2 = (-2 * cubed) + (3 * squared);
-            var part3 = (cubed - (2 * squared)) + amount;
+            var part1 = (2 * cubed - 3 * squared) + 1;
+            var part2 = -2 * cubed + 3 * squared;
+            var part3 = (cubed - 2 * squared) + amount;
             var part4 = cubed - squared;
 
-            var x = (((value1.x * part1) + (value2.x * part2)) + (tangent1.x * part3)) + (tangent2.x * part4);
-            var y = (((value1.y * part1) + (value2.y * part2)) + (tangent1.y * part3)) + (tangent2.y * part4);
-            var z = (((value1.z * part1) + (value2.z * part2)) + (tangent1.z * part3)) + (tangent2.z * part4);
-            var w = (((value1.w * part1) + (value2.w * part2)) + (tangent1.w * part3)) + (tangent2.w * part4);
+            var x = value1.x * part1 + value2.x * part2 + tangent1.x * part3 + tangent2.x * part4;
+            var y = value1.y * part1 + value2.y * part2 + tangent1.y * part3 + tangent2.y * part4;
+            var z = value1.z * part1 + value2.z * part2 + tangent1.z * part3 + tangent2.z * part4;
+            var w = value1.w * part1 + value2.w * part2 + tangent1.w * part3 + tangent2.w * part4;
             return new Quaternion(x, y, z, w);
         }
     }
@@ -4216,7 +4216,7 @@ module BABYLON {
      */
     export class Matrix {
         private static _updateFlagSeed = 0;
-        private static _identityReadOnly = Object.freeze(Matrix.Identity());
+        private static _identityReadOnly : DeepImmutable<Matrix> = Matrix.Identity();
 
         private _isIdentity = false;  // always set to false when _isIdentityDirty is true
         private _isIdentityDirty = true;
@@ -4266,16 +4266,12 @@ module BABYLON {
             if (this._isIdentityDirty) {
                 const m = this.m;
                 this._isIdentityDirty = false;
-                if (m[0] !== 1 || m[5] !== 1 || m[10] !== 1 || m[15] !== 1) {
-                    this._isIdentity = false;
-                } else if (m[1] !== 0 || m[2] !== 0 || m[3] !== 0 ||
-                    m[4] !== 0 || m[6] !== 0 || m[7] !== 0 ||
-                    m[8] !== 0 || m[9] !== 0 || m[11] !== 0 ||
-                    m[12] !== 0 || m[13] !== 0 || m[14] !== 0) {
-                    this._isIdentity = false;
-                } else {
-                    this._isIdentity = true;
-                }
+                this._isIdentity = (
+                    m[0]  === 1 && m[1]  === 0 && m[2]  === 0 && m[3]  === 0 &&
+                    m[4]  === 0 && m[5]  === 1 && m[6]  === 0 && m[7]  === 0 &&
+                    m[8]  === 0 && m[9]  === 0 && m[10] === 1 && m[11] === 0 &&
+                    m[12] === 0 && m[13] === 0 && m[14] === 0 && m[15] === 1
+                );
             }
 
             return this._isIdentity;
@@ -4372,7 +4368,7 @@ module BABYLON {
          * @param other defines the matrix to add
          * @returns a new matrix as the addition of the current matrix and the given one
          */
-        public add(other: Matrix): Matrix {
+        public add(other: DeepImmutable<Matrix>): Matrix {
             var result = new Matrix();
             this.addToRef(other, result);
             return result;
@@ -4384,7 +4380,7 @@ module BABYLON {
          * @param result defines the target matrix
          * @returns the current matrix
          */
-        public addToRef(other: Matrix, result: Readonly<Matrix>): Matrix {
+        public addToRef(other: DeepImmutable<Matrix>, result: Matrix): Matrix {
             for (var index = 0; index < 16; index++) {
                 result.m[index] = this.m[index] + other.m[index];
             }
@@ -4397,7 +4393,7 @@ module BABYLON {
          * @param other defines the second operand
          * @returns the current updated matrix
          */
-        public addToSelf(other: Matrix): Matrix {
+        public addToSelf(other: DeepImmutable<Matrix>): Matrix {
             for (var index = 0; index < 16; index++) {
                 this.m[index] += other.m[index];
             }
@@ -4407,12 +4403,12 @@ module BABYLON {
 
         /**
          * Sets the given matrix to the current inverted Matrix
-         * @param other defines the target matrix
+         * @param result defines the target matrix
          * @returns the unmodified current matrix
          */
-        public invertToRef(other: Matrix): Matrix {
+        public invertToRef(result: Matrix): Matrix {
             if (this.isIdentity) {
-                Matrix.IdentityToRef(other);
+                Matrix.IdentityToRef(result);
                 return this;
             }
 
@@ -4433,31 +4429,31 @@ module BABYLON {
             const l14 = m[13];
             const l15 = m[14];
             const l16 = m[15];
-            const l17 = (l11 * l16) - (l12 * l15);
-            const l18 = (l10 * l16) - (l12 * l14);
-            const l19 = (l10 * l15) - (l11 * l14);
-            const l20 = (l9 * l16) - (l12 * l13);
-            const l21 = (l9 * l15) - (l11 * l13);
-            const l22 = (l9 * l14) - (l10 * l13);
-            const l23 = ((l6 * l17) - (l7 * l18)) + (l8 * l19);
-            const l24 = -(((l5 * l17) - (l7 * l20)) + (l8 * l21));
-            const l25 = ((l5 * l18) - (l6 * l20)) + (l8 * l22);
-            const l26 = -(((l5 * l19) - (l6 * l21)) + (l7 * l22));
-            const l27 = 1 / ((((l1 * l23) + (l2 * l24)) + (l3 * l25)) + (l4 * l26));
-            const l28 = (l7 * l16) - (l8 * l15);
-            const l29 = (l6 * l16) - (l8 * l14);
-            const l30 = (l6 * l15) - (l7 * l14);
-            const l31 = (l5 * l16) - (l8 * l13);
-            const l32 = (l5 * l15) - (l7 * l13);
-            const l33 = (l5 * l14) - (l6 * l13);
-            const l34 = (l7 * l12) - (l8 * l11);
-            const l35 = (l6 * l12) - (l8 * l10);
-            const l36 = (l6 * l11) - (l7 * l10);
-            const l37 = (l5 * l12) - (l8 * l9);
-            const l38 = (l5 * l11) - (l7 * l9);
-            const l39 = (l5 * l10) - (l6 * l9);
+            const l17 = l11 * l16 - l12 * l15;
+            const l18 = l10 * l16 - l12 * l14;
+            const l19 = l10 * l15 - l11 * l14;
+            const l20 = l9 * l16 - l12 * l13;
+            const l21 = l9 * l15 - l11 * l13;
+            const l22 = l9 * l14 - l10 * l13;
+            const l23 = l6 * l17 - l7 * l18 + l8 * l19;
+            const l24 = -(l5 * l17 - l7 * l20 + l8 * l21);
+            const l25 = l5 * l18 - l6 * l20 + l8 * l22;
+            const l26 = -(l5 * l19 - l6 * l21 + l7 * l22);
+            const l27 = 1 / (l1 * l23 + l2 * l24 + l3 * l25 + l4 * l26);
+            const l28 = l7 * l16 - l8 * l15;
+            const l29 = l6 * l16 - l8 * l14;
+            const l30 = l6 * l15 - l7 * l14;
+            const l31 = l5 * l16 - l8 * l13;
+            const l32 = l5 * l15 - l7 * l13;
+            const l33 = l5 * l14 - l6 * l13;
+            const l34 = l7 * l12 - l8 * l11;
+            const l35 = l6 * l12 - l8 * l10;
+            const l36 = l6 * l11 - l7 * l10;
+            const l37 = l5 * l12 - l8 * l9;
+            const l38 = l5 * l11 - l7 * l9;
+            const l39 = l5 * l10 - l6 * l9;
 
-            const otherM = other.m;
+            const otherM = result.m;
             otherM[0] = l23 * l27
             otherM[4] = l24 * l27
             otherM[8] = l25 * l27
@@ -4475,7 +4471,7 @@ module BABYLON {
             otherM[11] = -(l1 * l35 - l2 * l37 + l4 * l39) * l27
             otherM[15] = (l1 * l36 - l2 * l38 + l3 * l39) * l27
 
-            other._markAsUpdated();
+            result._markAsUpdated();
             return this;
         }
 
@@ -4500,7 +4496,7 @@ module BABYLON {
          * @param vector3 defines the translation to insert
          * @returns the current updated matrix
          */
-        public setTranslation(vector3: Vector3): Matrix {
+        public setTranslation(vector3: DeepImmutable<Vector3>): Matrix {
             this.m[12] = vector3.x;
             this.m[13] = vector3.y;
             this.m[14] = vector3.z;
@@ -4546,7 +4542,7 @@ module BABYLON {
          * @param other defines the second operand
          * @returns a new matrix set with the multiplication result of the current Matrix and the given one
          */
-        public multiply(other: Matrix): Matrix {
+        public multiply(other: DeepImmutable<Matrix>): Matrix {
             var result = new Matrix();
             this.multiplyToRef(other, result);
             return result;
@@ -4557,7 +4553,7 @@ module BABYLON {
          * @param other defines the source matrix
          * @returns the current updated matrix
          */
-        public copyFrom(other: Matrix): Matrix {
+        public copyFrom(other: DeepImmutable<Matrix>): Matrix {
             for (var index = 0; index < 16; index++) {
                 this.m[index] = other.m[index];
             }
@@ -4585,7 +4581,7 @@ module BABYLON {
          * @param result defines the matrix where to store the multiplication
          * @returns the current matrix
          */
-        public multiplyToRef(other: Matrix, result: Matrix): Matrix {
+        public multiplyToRef(other: DeepImmutable<Matrix>, result: Matrix): Matrix {
             this.multiplyToArray(other, result.m, 0);
 
             result._markAsUpdated();
@@ -4599,7 +4595,7 @@ module BABYLON {
          * @param offset defines the offset in the target array where to start storing values
          * @returns the current matrix
          */
-        public multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix {
+        public multiplyToArray(other: DeepImmutable<Matrix>, result: Float32Array, offset: number): Matrix {
             const m = this.m;
             const otherM = other.m;
             if (this.isIdentity) {
@@ -4676,19 +4672,19 @@ module BABYLON {
          * @param value defines the second matrix to compare
          * @returns true is the current matrix and the given one values are strictly equal
          */
-        public equals(value: Matrix): boolean {
+        public equals(value: DeepImmutable<Matrix>): boolean {
             if (!value)
                 return false;
 
-            if (!this._isIdentityDirty && !value._isIdentityDirty && this._isIdentity !== value._isIdentity)
+            if (!this._isIdentityDirty && !(value as Matrix)._isIdentityDirty && this._isIdentity !== (value as Matrix)._isIdentity)
                 return false;
 
             const m = this.m;
             const om = value && value.m;
             return (
-                m[0] === om[0] && m[1] === om[1] && m[2] === om[2] && m[3] === om[3] &&
-                m[4] === om[4] && m[5] === om[5] && m[6] === om[6] && m[7] === om[7] &&
-                m[8] === om[8] && m[9] === om[9] && m[10] === om[10] && m[11] === om[11] &&
+                m[0]  === om[0]  && m[1]  === om[1]  && m[2]  === om[2]  && m[3]  === om[3] &&
+                m[4]  === om[4]  && m[5]  === om[5]  && m[6]  === om[6]  && m[7]  === om[7] &&
+                m[8]  === om[8]  && m[9]  === om[9]  && m[10] === om[10] && m[11] === om[11] &&
                 m[12] === om[12] && m[13] === om[13] && m[14] === om[14] && m[15] === om[15]
             );
         }
@@ -4775,10 +4771,11 @@ module BABYLON {
             if (rotation) {
                 const sx = 1/scale.x, sy = 1/scale.y, sz = 1/scale.z;
                 Matrix.FromValuesToRef(
-                    m[0] * sx, m[1] * sx, m[2] * sx, 0,
-                    m[4] * sy, m[5] * sy, m[6] * sy, 0,
+                    m[0] * sx, m[1] * sx, m[2] * sx,  0,
+                    m[4] * sy, m[5] * sy, m[6] * sy,  0,
                     m[8] * sz, m[9] * sz, m[10] * sz, 0,
-                    0, 0, 0, 1, MathTmp.Matrix[0]);
+                            0,         0,          0, 1,
+                    MathTmp.Matrix[0]);
 
                 Quaternion.FromRotationMatrixToRef(MathTmp.Matrix[0], rotation);
             }
@@ -5009,7 +5006,7 @@ module BABYLON {
         /**
          * Gets an identity matrix that must not be updated
          */
-        public static get IdentityReadOnly(): Readonly<Matrix> {
+        public static get IdentityReadOnly(): DeepImmutable<Matrix> {
             return Matrix._identityReadOnly;
         }
 
@@ -5115,11 +5112,12 @@ module BABYLON {
          * @param translation defines the translation vector3
          * @param result defines the target matrix
          */
-        public static ComposeToRef(scale: Vector3, rotation: Quaternion, translation: Vector3, result: Matrix): void {
+        public static ComposeToRef(scale: DeepImmutable<Vector3>, rotation: DeepImmutable<Quaternion>, translation: DeepImmutable<Vector3>, result: Matrix): void {
+            const x = scale.x, y = scale.y, z = scale.z;
             Matrix.FromValuesToRef(
-                scale.x, 0, 0, 0,
-                0, scale.y, 0, 0,
-                0, 0, scale.z, 0,
+                x, 0, 0, 0,
+                0, y, 0, 0,
+                0, 0, z, 0,
                 0, 0, 0, 1,
                 MathTmp.Matrix[1]
             );
@@ -5160,7 +5158,8 @@ module BABYLON {
          * @returns a new zero matrix
          */
         public static Zero(): Matrix {
-            const zero = Matrix.FromValues(0, 0, 0, 0,
+            const zero = Matrix.FromValues(
+                0, 0, 0, 0,
                 0, 0, 0, 0,
                 0, 0, 0, 0,
                 0, 0, 0, 0);
@@ -5173,7 +5172,7 @@ module BABYLON {
          * @param source defines the source matrix
          * @returns the new matrix
          */
-        public static Invert(source: Matrix): Matrix {
+        public static Invert(source: DeepImmutable<Matrix>): Matrix {
             var result = new Matrix();
             source.invertToRef(result);
             return result;
@@ -5272,7 +5271,7 @@ module BABYLON {
          * @param angle defines the angle (in radians) to use
          * @return the new matrix
          */
-        public static RotationAxis(axis: Vector3, angle: number): Matrix {
+        public static RotationAxis(axis: DeepImmutable<Vector3>, angle: number): Matrix {
             var result = Matrix.Zero();
             Matrix.RotationAxisToRef(axis, angle, result);
             return result;
@@ -5284,27 +5283,27 @@ module BABYLON {
          * @param angle defines the angle (in radians) to use
          * @param result defines the target matrix
          */
-        public static RotationAxisToRef(axis: Vector3, angle: number, result: Matrix): void {
+        public static RotationAxisToRef(axis: DeepImmutable<Vector3>, angle: number, result: Matrix): void {
             var s = Math.sin(-angle);
             var c = Math.cos(-angle);
             var c1 = 1 - c;
 
             axis.normalize();
 
-            result.m[0] = (axis.x * axis.x) * c1 + c;
-            result.m[1] = (axis.x * axis.y) * c1 - (axis.z * s);
-            result.m[2] = (axis.x * axis.z) * c1 + (axis.y * s);
-            result.m[3] = 0;
+            result.m[0] = axis.x * axis.x * c1 + c
+            result.m[1] = axis.x * axis.y * c1 - axis.z * s
+            result.m[2] = axis.x * axis.z * c1 + axis.y * s
+            result.m[3] = 0
 
-            result.m[4] = (axis.y * axis.x) * c1 + (axis.z * s);
-            result.m[5] = (axis.y * axis.y) * c1 + c;
-            result.m[6] = (axis.y * axis.z) * c1 - (axis.x * s);
-            result.m[7] = 0;
+            result.m[4] = axis.y * axis.x * c1 + axis.z * s
+            result.m[5] = axis.y * axis.y * c1 + c
+            result.m[6] = axis.y * axis.z * c1 - axis.x * s
+            result.m[7] = 0
 
-            result.m[8] = (axis.z * axis.x) * c1 - (axis.y * s);
-            result.m[9] = (axis.z * axis.y) * c1 + (axis.x * s);
-            result.m[10] = (axis.z * axis.z) * c1 + c;
-            result.m[11] = 0;
+            result.m[8] = axis.z * axis.x * c1 - axis.y * s
+            result.m[9] = axis.z * axis.y * c1 + axis.x * s
+            result.m[10] = axis.z * axis.z * c1 + c
+            result.m[11] = 0
 
             result.m[15] = 1;
 
@@ -5413,7 +5412,7 @@ module BABYLON {
          * @param gradient defines the gradient factor
          * @returns the new matrix
          */
-        public static Lerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
+        public static Lerp(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number): Matrix {
             var result = Matrix.Zero();
             Matrix.LerpToRef(startValue, endValue, gradient, result);
             return result;
@@ -5426,7 +5425,7 @@ module BABYLON {
          * @param gradient defines the gradient factor
          * @param result defines the Matrix object where to store data
          */
-        public static LerpToRef(startValue: Matrix, endValue: Matrix, gradient: number, result: Matrix): void {
+        public static LerpToRef(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number, result: Matrix): void {
             for (var index = 0; index < 16; index++) {
                 result.m[index] = startValue.m[index] * (1 - gradient) + endValue.m[index] * gradient;
             }
@@ -5459,7 +5458,7 @@ module BABYLON {
          * @param gradient defines the gradient between the two matrices
          * @param result defines the target matrix
          */
-        public static DecomposeLerpToRef(startValue: Matrix, endValue: Matrix, gradient: number, result: Matrix) {
+        public static DecomposeLerpToRef(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number, result: Matrix) {
             var startScale = MathTmp.Vector3[0];
             var startRotation = MathTmp.Quaternion[0];
             var startTranslation = MathTmp.Vector3[1];
@@ -5489,7 +5488,7 @@ module BABYLON {
          * @param up defines the up vector for the entity
          * @returns the new matrix
          */
-        public static LookAtLH(eye: Vector3, target: Vector3, up: Vector3): Matrix {
+        public static LookAtLH(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix {
             var result = Matrix.Zero();
             Matrix.LookAtLHToRef(eye, target, up, result);
             return result;
@@ -5503,38 +5502,38 @@ module BABYLON {
          * @param up defines the up vector for the entity
          * @param result defines the target matrix
          */
-        public static LookAtLHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void {
-            const _xAxis = MathTmp.Vector3[0];
-            const _yAxis = MathTmp.Vector3[1];
-            const _zAxis = MathTmp.Vector3[2];
+        public static LookAtLHToRef(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void {
+            const xAxis = MathTmp.Vector3[0];
+            const yAxis = MathTmp.Vector3[1];
+            const zAxis = MathTmp.Vector3[2];
 
             // Z axis
-            target.subtractToRef(eye, _zAxis);
-            _zAxis.normalize();
+            target.subtractToRef(eye, zAxis);
+            zAxis.normalize();
 
             // X axis
-            Vector3.CrossToRef(up, _zAxis, _xAxis);
+            Vector3.CrossToRef(up, zAxis, xAxis);
 
-            const xSquareLength = _xAxis.lengthSquared();
+            const xSquareLength = xAxis.lengthSquared();
             if (xSquareLength === 0) {
-                _xAxis.x = 1;
+                xAxis.x = 1;
             } else {
-                _xAxis.normalizeFromLength(Math.sqrt(xSquareLength));
+                xAxis.normalizeFromLength(Math.sqrt(xSquareLength));
             }
 
             // Y axis
-            Vector3.CrossToRef(_zAxis, _xAxis, _yAxis);
-            _yAxis.normalize();
+            Vector3.CrossToRef(zAxis, xAxis, yAxis);
+            yAxis.normalize();
 
             // Eye angles
-            var ex = -Vector3.Dot(_xAxis, eye);
-            var ey = -Vector3.Dot(_yAxis, eye);
-            var ez = -Vector3.Dot(_zAxis, eye);
+            var ex = -Vector3.Dot(xAxis, eye);
+            var ey = -Vector3.Dot(yAxis, eye);
+            var ez = -Vector3.Dot(zAxis, eye);
 
             return Matrix.FromValuesToRef(
-                _xAxis.x, _yAxis.x, _zAxis.x, 0,
-                _xAxis.y, _yAxis.y, _zAxis.y, 0,
-                _xAxis.z, _yAxis.z, _zAxis.z, 0,
+                xAxis.x, yAxis.x, zAxis.x, 0,
+                xAxis.y, yAxis.y, zAxis.y, 0,
+                xAxis.z, yAxis.z, zAxis.z, 0,
                 ex, ey, ez, 1, result);
         }
 
@@ -5560,38 +5559,38 @@ module BABYLON {
          * @param up defines the up vector for the entity
          * @param result defines the target matrix
          */
-        public static LookAtRHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void {
-            const _xAxis = MathTmp.Vector3[0];
-            const _yAxis = MathTmp.Vector3[1];
-            const _zAxis = MathTmp.Vector3[2];
+        public static LookAtRHToRef(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void {
+            const xAxis = MathTmp.Vector3[0];
+            const yAxis = MathTmp.Vector3[1];
+            const zAxis = MathTmp.Vector3[2];
 
             // Z axis
-            eye.subtractToRef(target, _zAxis);
-            _zAxis.normalize();
+            eye.subtractToRef(target, zAxis);
+            zAxis.normalize();
 
             // X axis
-            Vector3.CrossToRef(up, _zAxis, _xAxis);
+            Vector3.CrossToRef(up, zAxis, xAxis);
 
-            const xSquareLength = _xAxis.lengthSquared();
+            const xSquareLength = xAxis.lengthSquared();
             if (xSquareLength === 0) {
-                _xAxis.x = 1;
+                xAxis.x = 1;
             } else {
-                _xAxis.normalizeFromLength(Math.sqrt(xSquareLength));
+                xAxis.normalizeFromLength(Math.sqrt(xSquareLength));
             }
 
             // Y axis
-            Vector3.CrossToRef(_zAxis, _xAxis, _yAxis);
-            _yAxis.normalize();
+            Vector3.CrossToRef(zAxis, xAxis, yAxis);
+            yAxis.normalize();
 
             // Eye angles
-            var ex = -Vector3.Dot(_xAxis, eye);
-            var ey = -Vector3.Dot(_yAxis, eye);
-            var ez = -Vector3.Dot(_zAxis, eye);
+            var ex = -Vector3.Dot(xAxis, eye);
+            var ey = -Vector3.Dot(yAxis, eye);
+            var ez = -Vector3.Dot(zAxis, eye);
 
             return Matrix.FromValuesToRef(
-                _xAxis.x, _yAxis.x, _zAxis.x, 0,
-                _xAxis.y, _yAxis.y, _zAxis.y, 0,
-                _xAxis.z, _yAxis.z, _zAxis.z, 0,
+                xAxis.x, yAxis.x, zAxis.x, 0,
+                xAxis.y, yAxis.y, zAxis.y, 0,
+                xAxis.z, yAxis.z, zAxis.z, 0,
                 ex, ey, ez, 1, result);
         }
 
@@ -5900,7 +5899,7 @@ module BABYLON {
          * @param matrix defines the matrix to use
          * @returns a new Float32Array array with 4 elements : the 2x2 matrix extracted from the given matrix
          */
-        public static GetAsMatrix2x2(matrix: Matrix): Float32Array {
+        public static GetAsMatrix2x2(matrix: DeepImmutable<Matrix>): Float32Array {
             return new Float32Array([
                 matrix.m[0], matrix.m[1],
                 matrix.m[4], matrix.m[5]
@@ -5911,7 +5910,7 @@ module BABYLON {
          * @param matrix defines the matrix to use
          * @returns a new Float32Array array with 9 elements : the 3x3 matrix extracted from the given matrix
          */
-        public static GetAsMatrix3x3(matrix: Matrix): Float32Array {
+        public static GetAsMatrix3x3(matrix: DeepImmutable<Matrix>): Float32Array {
             return new Float32Array([
                 matrix.m[0], matrix.m[1], matrix.m[2],
                 matrix.m[4], matrix.m[5], matrix.m[6],
@@ -5924,7 +5923,7 @@ module BABYLON {
          * @param matrix defines the matrix to transpose
          * @returns the new matrix
          */
-        public static Transpose(matrix: Matrix): Matrix {
+        public static Transpose(matrix: DeepImmutable<Matrix>): Matrix {
             var result = new Matrix();
 
             Matrix.TransposeToRef(matrix, result);
@@ -5937,7 +5936,7 @@ module BABYLON {
          * @param matrix defines the matrix to transpose
          * @param result defines the target matrix
          */
-        public static TransposeToRef(matrix: Matrix, result: Matrix): void {
+        public static TransposeToRef(matrix: DeepImmutable<Matrix>, result: Matrix): void {
             result.m[0] = matrix.m[0];
             result.m[1] = matrix.m[4];
             result.m[2] = matrix.m[8];
