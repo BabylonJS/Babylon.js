@@ -4857,8 +4857,9 @@ module BABYLON {
          * @param ref matrix to store the result
          */
         public toNormalMatrix(ref: Matrix): void {
-            this.invertToRef(ref);
-            ref.transpose();
+            const tmp = MathTmp.Matrix[0];
+            this.invertToRef(tmp);
+            tmp.transposeToRef(ref);
             var m = ref.m;
             Matrix.FromValuesToRef(
                 m[0], m[1], m[2], 0,
