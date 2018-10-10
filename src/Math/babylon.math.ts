@@ -1319,14 +1319,19 @@ module BABYLON {
             var squared = amount * amount;
             var cubed = amount * squared;
 
-            var x = 0.5 * ((((2 * value2.x) + ((-value1.x + value3.x) * amount)) +
-                (((((2 * value1.x) - (5 * value2.x)) + (4 * value3.x)) - value4.x) * squared)) +
-                ((((-value1.x + (3 * value2.x)) - (3 * value3.x)) + value4.x) * cubed));
+            var x = 0.5 * (
+                2 * value2.x +
+                (-value1.x + value3.x) * amount +
+                (2 * value1.x - 5 * value2.x + 4 * value3.x - value4.x) * squared +
+                (-value1.x + 3 * value2.x - 3 * value3.x + value4.x) * cubed
+            );
 
-            var y = 0.5 * ((((2 * value2.y) + ((-value1.y + value3.y) * amount)) +
-                (((((2 * value1.y) - (5 * value2.y)) + (4 * value3.y)) - value4.y) * squared)) +
-                ((((-value1.y + (3 * value2.y)) - (3 * value3.y)) + value4.y) * cubed));
-
+            var y = 0.5 * (
+                2 * value2.y +
+                (-value1.y + value3.y) * amount +
+                (2 * value1.y - 5 * value2.y + 4 * value3.y - value4.y) * squared +
+                (-value1.y + 3 * value2.y - 3 * value3.y + value4.y) * cubed
+            );
             return new Vector2(x, y);
         }
 
@@ -2338,6 +2343,22 @@ module BABYLON {
          * @returns the new Vector3
          */
         public static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3 {
+            const v = new Vector3();
+            Vector3.ClampToRef(value, min, max, result);
+            return v;
+        }
+
+        /**
+         * Sets the given vector "result" with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max"
+         * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one
+         * If a coordinate value of "value" is greater than one of the "max" coordinate, then this "value" coordinate is set with the "max" one
+         * @param value defines the current value
+         * @param min defines the lower range value
+         * @param max defines the upper range value
+         * @param result defines the Vector3 where to store the result
+         * @returns the new Vector3
+         */
+        public static ClampToRef(value: Vector3, min: Vector3, max: Vector3, result: Vector3): void {
             var x = value.x;
             x = (x > max.x) ? max.x : x;
             x = (x < min.x) ? min.x : x;
@@ -2350,8 +2371,9 @@ module BABYLON {
             z = (z > max.z) ? max.z : z;
             z = (z < min.z) ? min.z : z;
 
-            return new Vector3(x, y, z);
+            result.copyFromFloats(x, y, z);
         }
+
 
         /**
          * Returns a new Vector3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2"
