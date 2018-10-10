@@ -2356,7 +2356,6 @@ module BABYLON {
          * @param min defines the lower range value
          * @param max defines the upper range value
          * @param result defines the Vector3 where to store the result
-         * @returns the new Vector3
          */
         public static ClampToRef(value: DeepImmutable<Vector3>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, result: Vector3): void {
             var x = value.x;
@@ -4160,7 +4159,7 @@ module BABYLON {
         public static SlerpToRef(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>, amount: number, result: Quaternion): void {
             var num2;
             var num3;
-            var num4 = ((left.x * right.x + left.y * right.y) + left.z * right.z) + (left.w * right.w);
+            var num4 = left.x * right.x + left.y * right.y + left.z * right.z + left.w * right.w;
             var flag = false;
 
             if (num4 < 0) {
@@ -4412,22 +4411,11 @@ module BABYLON {
             }
 
             const m = this.m;
-            const l1 = m[0];
-            const l2 = m[1];
-            const l3 = m[2];
-            const l4 = m[3];
-            const l5 = m[4];
-            const l6 = m[5];
-            const l7 = m[6];
-            const l8 = m[7];
-            const l9 = m[8];
-            const l10 = m[9];
-            const l11 = m[10];
-            const l12 = m[11];
-            const l13 = m[12];
-            const l14 = m[13];
-            const l15 = m[14];
-            const l16 = m[15];
+            const l1 = m[0], l2 = m[1], l3 = m[2], l4 = m[3];
+            const l5 = m[4], l6 = m[5], l7 = m[6], l8 = m[7];
+            const l9 = m[8], l10 = m[9], l11 = m[10], l12 = m[11];
+            const l13 = m[12], l14 = m[13], l15 = m[14], l16 = m[15];
+
             const l17 = l11 * l16 - l12 * l15;
             const l18 = l10 * l16 - l12 * l14;
             const l19 = l10 * l15 - l11 * l14;
@@ -5114,15 +5102,7 @@ module BABYLON {
          * @param result defines the target matrix
          */
         public static ComposeToRef(scale: DeepImmutable<Vector3>, rotation: DeepImmutable<Quaternion>, translation: DeepImmutable<Vector3>, result: Matrix): void {
-            const x = scale.x, y = scale.y, z = scale.z;
-            Matrix.FromValuesToRef(
-                x, 0, 0, 0,
-                0, y, 0, 0,
-                0, 0, z, 0,
-                0, 0, 0, 1,
-                MathTmp.Matrix[1]
-            );
-
+            Matrix.ScalingToRef(scale.x, scale.y, scale.z, MathTmp.Matrix[1]);
             rotation.toRotationMatrix(MathTmp.Matrix[0]);
             MathTmp.Matrix[1].multiplyToRef(MathTmp.Matrix[0], result);
 
@@ -5357,23 +5337,13 @@ module BABYLON {
          * @param result defines the target matrix
          */
         public static ScalingToRef(x: number, y: number, z: number, result: Matrix): void {
-            result.m[0] = x;
-            result.m[1] = 0;
-            result.m[2] = 0;
-            result.m[3] = 0;
-            result.m[4] = 0;
-            result.m[5] = y;
-            result.m[6] = 0;
-            result.m[7] = 0;
-            result.m[8] = 0;
-            result.m[9] = 0;
-            result.m[10] = z;
-            result.m[11] = 0;
-            result.m[12] = 0;
-            result.m[13] = 0;
-            result.m[14] = 0;
-            result.m[15] = 1;
-
+            Matrix.FromValuesToRef(
+                x, 0, 0, 0,
+                0, y, 0, 0,
+                0, 0, z, 0,
+                0, 0, 0, 1,
+                result
+            );
             result._updateIdentityStatus(x === 1 && y === 1 && z === 1);
         }
 
@@ -5743,7 +5713,7 @@ module BABYLON {
                 matrix
             );
 
-            matrix._updateIdentityStatus(a === 1 && b === 1 && c === 1 && d === 0);
+            matrix._updateIdentityStatus(false);
             return matrix;
         }
 
@@ -5787,7 +5757,7 @@ module BABYLON {
                 0, 0, d, 0,
                 result
             );
-            result._updateIdentityStatus(a === 1 && b === 1 && c === 1 && d === 0);
+            result._updateIdentityStatus(false);
         }
 
         /**
@@ -5835,7 +5805,7 @@ module BABYLON {
                 0, 0, d, 0,
                 result
             );
-            result._updateIdentityStatus(a === 1 && b === 1 && c === 1 && d === 0);
+            result._updateIdentityStatus(false);
         }
 
         /**

@@ -27,8 +27,18 @@ namespace BABYLON {
    */
   export type DataArray = number[] | ArrayBuffer | ArrayBufferView;
 
+  /** @hidden */
   type Primitive = undefined | null | boolean | string | number | Function;
 
+  /** @hidden */
+  interface DeepImmutableArray<T> extends ReadonlyArray<DeepImmutable<T>> {}
+  /* interface DeepImmutableMap<K, V> extends ReadonlyMap<DeepImmutable<K>, DeepImmutable<V>> {} // es2015+ only */
+  /** @hidden */
+  type DeepImmutableObject<T> = { readonly [K in keyof T]: DeepImmutable<T[K]> };
+
+    /**
+   * Make a type as ddeply immutable, meaning that all its properties are readonly
+   */
   export type Immutable<T> = T extends Primitive
     ? T
     : T extends Array<infer U>
@@ -36,6 +46,9 @@ namespace BABYLON {
       : /* T extends Map<infer K, infer V> ? ReadonlyMap<K, V> : // es2015+ only */
         Readonly<T>;
 
+  /**
+   * Make a type as ddeply immutable, meaning that all its properties are recursively readonly
+   */
   export type DeepImmutable<T> = T extends Primitive
     ? T
     : T extends Array<infer U>
@@ -43,7 +56,4 @@ namespace BABYLON {
       : /* T extends Map<infer K, infer V> ? DeepImmutableMap<K, V> : // es2015+ only */
         DeepImmutableObject<T>;
 
-  interface DeepImmutableArray<T> extends ReadonlyArray<DeepImmutable<T>> {}
-  /* interface DeepImmutableMap<K, V> extends ReadonlyMap<DeepImmutable<K>, DeepImmutable<V>> {} // es2015+ only */
-  type DeepImmutableObject<T> = { readonly [K in keyof T]: DeepImmutable<T[K]> };
 }
