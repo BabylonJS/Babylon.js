@@ -76,11 +76,7 @@ module BABYLON {
          * @param index defines an optional index in the target array to define where to start storing values
          * @returns the current Color3 object
          */
-        public toArray(array: FloatArray, index?: number): Color3 {
-            if (index === undefined) {
-                index = 0;
-            }
-
+        public toArray(array: FloatArray, index: number = 0): Color3 {
             array[index] = this.r;
             array[index + 1] = this.g;
             array[index + 2] = this.b;
@@ -93,7 +89,7 @@ module BABYLON {
          * @param alpha defines the alpha component on the new Color4 object (default is 1)
          * @returns a new Color4 object
          */
-        public toColor4(alpha = 1): Color4 {
+        public toColor4(alpha: number = 1): Color4 {
             return new Color4(this.r, this.g, this.b, alpha);
         }
 
@@ -2106,10 +2102,7 @@ module BABYLON {
          * @param offset defines the offset in the source array
          * @returns the new Vector3
          */
-        public static FromArray(array: ArrayLike<number>, offset?: number): Vector3 {
-            if (!offset) {
-                offset = 0;
-            }
+        public static FromArray(array: ArrayLike<number>, offset: number = 0): Vector3 {
             return new Vector3(array[offset], array[offset + 1], array[offset + 2]);
         }
 
@@ -2338,6 +2331,20 @@ module BABYLON {
          * @returns the new Vector3
          */
         public static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3 {
+            const v = new Vector3();
+            Vector3.ClampToRef(value, min, max, v);
+            return v;
+        }
+        /**
+         * Sets the given vector "result" with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max"
+         * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one
+         * If a coordinate value of "value" is greater than one of the "max" coordinate, then this "value" coordinate is set with the "max" one
+         * @param value defines the current value
+         * @param min defines the lower range value
+         * @param max defines the upper range value
+         * @param result defines the Vector3 where to store the result
+         */
+        public static ClampToRef(value: Vector3, min: Vector3, max: Vector3, result: Vector3): void {
             var x = value.x;
             x = (x > max.x) ? max.x : x;
             x = (x < min.x) ? min.x : x;
@@ -2350,7 +2357,7 @@ module BABYLON {
             z = (z > max.z) ? max.z : z;
             z = (z < min.z) ? min.z : z;
 
-            return new Vector3(x, y, z);
+            result.copyFromFloats(x, y, z);
         }
 
         /**
