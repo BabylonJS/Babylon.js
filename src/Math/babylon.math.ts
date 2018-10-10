@@ -5286,7 +5286,7 @@ module BABYLON {
          * @return the new matrix
          */
         public static RotationAxis(axis: Vector3, angle: number): Matrix {
-            var result = Matrix.Zero();
+            var result = new Matrix();
             Matrix.RotationAxisToRef(axis, angle, result);
             return result;
         }
@@ -5357,7 +5357,7 @@ module BABYLON {
          * @returns the new matrix
          */
         public static Scaling(x: number, y: number, z: number): Matrix {
-            var result = Matrix.Zero();
+            var result = new Matrix();
             Matrix.ScalingToRef(x, y, z, result);
             return result;
         }
@@ -5425,7 +5425,7 @@ module BABYLON {
          * @returns the new matrix
          */
         public static Lerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
-            var result = Matrix.Zero();
+            var result = new Matrix();
             Matrix.LerpToRef(startValue, endValue, gradient, result);
             return result;
         }
@@ -5455,7 +5455,7 @@ module BABYLON {
          * @returns the new matrix
          */
         public static DecomposeLerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
-            var result = Matrix.Zero();
+            var result = new Matrix();
             Matrix.DecomposeLerpToRef(startValue, endValue, gradient, result);
             return result;
         }
@@ -5501,7 +5501,7 @@ module BABYLON {
          * @returns the new matrix
          */
         public static LookAtLH(eye: Vector3, target: Vector3, up: Vector3): Matrix {
-            var result = Matrix.Zero();
+            var result = new Matrix();
             Matrix.LookAtLHToRef(eye, target, up, result);
             return result;
         }
@@ -5556,7 +5556,7 @@ module BABYLON {
          * @returns the new matrix
          */
         public static LookAtRH(eye: Vector3, target: Vector3, up: Vector3): Matrix {
-            var result = Matrix.Zero();
+            var result = new Matrix();
             Matrix.LookAtRHToRef(eye, target, up, result);
             return result;
         }
@@ -5611,7 +5611,7 @@ module BABYLON {
          * @returns a new matrix as a left-handed orthographic projection matrix
          */
         public static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix {
-            var matrix = Matrix.Zero();
+            var matrix = new Matrix();
             Matrix.OrthoLHToRef(width, height, znear, zfar, matrix);
             return matrix;
         }
@@ -5653,7 +5653,7 @@ module BABYLON {
          * @returns a new matrix as a left-handed orthographic projection matrix
          */
         public static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
-            var matrix = Matrix.Zero();
+            var matrix = new Matrix();
 
             Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, matrix);
 
@@ -5701,7 +5701,7 @@ module BABYLON {
          * @returns a new matrix as a right-handed orthographic projection matrix
          */
         public static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
-            var matrix = Matrix.Zero();
+            var matrix = new Matrix();
             Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, znear, zfar, matrix);
             return matrix;
         }
@@ -5730,7 +5730,7 @@ module BABYLON {
          * @returns a new matrix as a left-handed perspective projection matrix
          */
         public static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix {
-            var matrix = Matrix.Zero();
+            var matrix = new Matrix();
 
             let n = znear;
             let f = zfar;
@@ -5760,7 +5760,7 @@ module BABYLON {
          * @returns a new matrix as a left-handed perspective projection matrix
          */
         public static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
-            var matrix = Matrix.Zero();
+            var matrix = new Matrix();
             Matrix.PerspectiveFovLHToRef(fov, aspect, znear, zfar, matrix);
             return matrix;
         }
@@ -5802,7 +5802,7 @@ module BABYLON {
          * @returns a new matrix as a right-handed perspective projection matrix
          */
         public static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
-            var matrix = Matrix.Zero();
+            var matrix = new Matrix();
             Matrix.PerspectiveFovRHToRef(fov, aspect, znear, zfar, matrix);
             return matrix;
         }
