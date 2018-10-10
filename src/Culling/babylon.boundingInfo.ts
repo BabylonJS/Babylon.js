@@ -1,25 +1,22 @@
 module BABYLON {
-    var computeBoxExtents = (axis: Vector3, box: BoundingBox) => {
-        var p = Vector3.Dot(box.centerWorld, axis);
+    const _result0 = { min: 0, max: 0};
+    const _result1 = { min: 0, max: 0};
+    const computeBoxExtents = (axis: Readonly<Vector3>, box: Readonly<BoundingBox>, result: {min: number, max: number}) => {
+        const p = Vector3.Dot(box.centerWorld, axis);
 
-        var r0 = Math.abs(Vector3.Dot(box.directions[0], axis)) * box.extendSize.x;
-        var r1 = Math.abs(Vector3.Dot(box.directions[1], axis)) * box.extendSize.y;
-        var r2 = Math.abs(Vector3.Dot(box.directions[2], axis)) * box.extendSize.z;
+        const r0 = Math.abs(Vector3.Dot(box.directions[0], axis)) * box.extendSize.x;
+        const r1 = Math.abs(Vector3.Dot(box.directions[1], axis)) * box.extendSize.y;
+        const r2 = Math.abs(Vector3.Dot(box.directions[2], axis)) * box.extendSize.z;
 
-        var r = r0 + r1 + r2;
-        return {
-            min: p - r,
-            max: p + r
-        };
+        const r = r0 + r1 + r2;
+        result.min = p - r;
+        result.max = p + r;
     };
 
-    var extentsOverlap = (min0: number, max0: number, min1: number, max1: number): boolean => !(min0 > max1 || min1 > max0);
-
-    var axisOverlap = (axis: Vector3, box0: BoundingBox, box1: BoundingBox): boolean => {
-        var result0 = computeBoxExtents(axis, box0);
-        var result1 = computeBoxExtents(axis, box1);
-
-        return extentsOverlap(result0.min, result0.max, result1.min, result1.max);
+    const axisOverlap = (axis: Vector3, box0: BoundingBox, box1: BoundingBox): boolean => {
+        computeBoxExtents(axis, box0, _result0);
+        computeBoxExtents(axis, box1, _result1);
+        return !(_result0.min > _result1.max || _result1.min > _result0.max);
     };
 
     /**
@@ -49,13 +46,15 @@ module BABYLON {
         /**
          * Bounding box for the mesh
          */
-        public boundingBox: BoundingBox;
+        public readonly boundingBox: BoundingBox;
         /**
          * Bounding sphere for the mesh
          */
-        public boundingSphere: BoundingSphere;
+        public readonly boundingSphere: BoundingSphere;
 
         private _isLocked = false;
+
+        private static readonly TmpVector3 = Tools.BuildArray(2, Vector3.Zero);
 
         /**
          * Constructs bounding info
@@ -63,18 +62,18 @@ module BABYLON {
          * @param maximum max vector of the bounding box/sphere
          * @param worldMatrix defines the new world matrix
          */
-        constructor(minimum: Vector3, maximum: Vector3, worldMatrix?: Matrix) {
+        constructor(minimum: Readonly<Vector3>, maximum: Readonly<Vector3>, worldMatrix?: Readonly<Matrix>) {
             this.boundingBox = new BoundingBox(minimum, maximum, worldMatrix);
             this.boundingSphere = new BoundingSphere(minimum, maximum, worldMatrix);
         }
 
         /**
-         * Recreates the entire bounding info from scratch
+         * Recreates the entire bounding info from scratch as if we call the constructor in place
          * @param min defines the new minimum vector (in local space)
          * @param max defines the new maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
          */
-        public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
+        public reConstruct(min: Readonly<Vector3>, max: Readonly<Vector3>, worldMatrix?: Readonly<Matrix>) {
             this.boundingBox.reConstruct(min, max, worldMatrix);
             this.boundingSphere.reConstruct(min, max, worldMatrix);
         }
@@ -106,10 +105,10 @@ module BABYLON {
 
         // Methods
         /**
-         * Updates the boudning sphere and box
+         * Updates the bounding sphere and box
          * @param world world matrix to be used to update
          */
-        public update(world: Matrix) {
+        public update(world: Readonly<Matrix>) {
             if (this._isLocked) {
                 return;
             }
@@ -123,13 +122,13 @@ module BABYLON {
          * @param extend New extend of the bounding info
          * @returns the current bounding info
          */
-        public centerOn(center: Vector3, extend: Vector3): BoundingInfo {
+        public centerOn(center: Readonly<Vector3>, extend: Readonly<Vector3>): BoundingInfo {
 
-            const minimum = Tmp.Vector3[0].copyFrom(center).subtractInPlace(extend);
-            const maximum = Tmp.Vector3[1].copyFrom(center).addInPlace(extend);
+            const minimum = BoundingInfo.TmpVector3[0].copyFrom(center).subtractInPlace(extend);
+            const maximum = BoundingInfo.TmpVector3[1].copyFrom(center).addInPlace(extend);
 
-            this.boundingBox.reConstruct(minimum, maximum);
-            this.boundingSphere.reConstruct(minimum, maximum);
+            this.boundingBox.reConstruct(minimum, maximum, this.boundingBox.getWorldMatrix());
+            this.boundingSphere.reConstruct(minimum, maximum, this.boundingBox.getWorldMatrix());
 
             return this;
         }
@@ -152,7 +151,7 @@ module BABYLON {
          * @param strategy defines the strategy to use for the culling (default is BABYLON.Scene.CULLINGSTRATEGY_STANDARD)
          * @returns true if the bounding info is in the frustum planes
          */
-        public isInFrustum(frustumPlanes: Plane[], strategy: number = AbstractMesh.CULLINGSTRATEGY_STANDARD): boolean {
+        public isInFrustum(frustumPlanes: Array<Readonly<Plane>>, strategy: number = AbstractMesh.CULLINGSTRATEGY_STANDARD): boolean {
             if (!this.boundingSphere.isInFrustum(frustumPlanes)) {
                 return false;
             }
@@ -167,9 +166,9 @@ module BABYLON {
 		 * Gets the world distance between the min and max points of the bounding box
 		 */
         public get diagonalLength(): number {
-            let boundingBox = this.boundingBox;
-            let size = boundingBox.maximumWorld.subtract(boundingBox.minimumWorld);
-            return size.length();
+            const boundingBox = this.boundingBox;
+            const diag = boundingBox.maximumWorld.subtractToRef(boundingBox.minimumWorld, BoundingInfo.TmpVector3[0]);
+            return diag.length();
         }
 
         /**
@@ -178,7 +177,7 @@ module BABYLON {
          * @param frustumPlanes Camera near/planes
          * @returns true if the object is in frustum otherwise false
          */
-        public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
+        public isCompletelyInFrustum(frustumPlanes: Array<Readonly<Plane>>): boolean {
             return this.boundingBox.isCompletelyInFrustum(frustumPlanes);
         }
         /** @hidden */
@@ -192,7 +191,7 @@ module BABYLON {
          * @param point the point to check intersection with
          * @returns if the point intersects
          */
-        public intersectsPoint(point: Vector3): boolean {
+        public intersectsPoint(point: Readonly<Vector3>): boolean {
             if (!this.boundingSphere.centerWorld) {
                 return false;
             }
@@ -215,11 +214,7 @@ module BABYLON {
          * @param precise if the intersection should be done using OBB
          * @returns if the bounding info intersects
          */
-        public intersects(boundingInfo: BoundingInfo, precise: boolean): boolean {
-            if (!this.boundingSphere.centerWorld || !boundingInfo.boundingSphere.centerWorld) {
-                return false;
-            }
-
+        public intersects(boundingInfo: Readonly<BoundingInfo>, precise: boolean): boolean {
             if (!BoundingSphere.Intersects(this.boundingSphere, boundingInfo.boundingSphere)) {
                 return false;
             }

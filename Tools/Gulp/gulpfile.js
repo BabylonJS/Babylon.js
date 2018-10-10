@@ -11,6 +11,7 @@ var cleants = require("gulp-clean-ts-extends");
 var replace = require("gulp-replace");
 var expect = require("gulp-expect-file");
 var optimisejs = require("gulp-optimize-js");
+var filter = require('gulp-filter');
 var path = require("path");
 var webpack = require('webpack');
 var webpackStream = require("webpack-stream");
@@ -239,10 +240,12 @@ gulp.task("build", gulp.series("shaders", function build() {
 }));
 
 /*
-* Compiles all typescript files and creating a js and a declaration file.
-*/
+ * Compiles all typescript files and creating a js and a declaration file.
+ */
 gulp.task("typescript-compile", function() {
+    const dtsFilter = filter(['**', '!**/*.d.ts'], {restore: false});
     var tsResult = gulp.src(config.typescript)
+        .pipe(dtsFilter)
         .pipe(sourcemaps.init())
         .pipe(tsProject({
             summarizeFailureOutput: true

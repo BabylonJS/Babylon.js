@@ -76,11 +76,7 @@ module BABYLON {
          * @param index defines an optional index in the target array to define where to start storing values
          * @returns the current Color3 object
          */
-        public toArray(array: FloatArray, index?: number): Color3 {
-            if (index === undefined) {
-                index = 0;
-            }
-
+        public toArray(array: FloatArray, index: number = 0): Color3 {
             array[index] = this.r;
             array[index + 1] = this.g;
             array[index + 2] = this.b;
@@ -93,7 +89,7 @@ module BABYLON {
          * @param alpha defines the alpha component on the new Color4 object (default is 1)
          * @returns a new Color4 object
          */
-        public toColor4(alpha = 1): Color4 {
+        public toColor4(alpha: number = 1): Color4 {
             return new Color4(this.r, this.g, this.b, alpha);
         }
 
@@ -2106,10 +2102,7 @@ module BABYLON {
          * @param offset defines the offset in the source array
          * @returns the new Vector3
          */
-        public static FromArray(array: ArrayLike<number>, offset?: number): Vector3 {
-            if (!offset) {
-                offset = 0;
-            }
+        public static FromArray(array: ArrayLike<number>, offset: number = 0): Vector3 {
             return new Vector3(array[offset], array[offset + 1], array[offset + 2]);
         }
 
@@ -2235,7 +2228,7 @@ module BABYLON {
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        public static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
+        public static TransformCoordinatesToRef(vector: Vector3, transformation: Readonly<Matrix>, result: Vector3): void {
             return Vector3.TransformCoordinatesFromFloatsToRef(vector.x, vector.y, vector.z, transformation, result);
         }
 
@@ -2248,7 +2241,7 @@ module BABYLON {
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
+        public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Readonly<Matrix>, result: Vector3): void {
             const m = transformation.m;
             var rx = x * m[0] + y * m[4] + z * m[8] + m[12];
             var ry = x * m[1] + y * m[5] + z * m[9] + m[13];
@@ -2280,7 +2273,7 @@ module BABYLON {
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        public static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
+        public static TransformNormalToRef(vector: Vector3, transformation: Readonly<Matrix>, result: Vector3): void {
             this.TransformNormalFromFloatsToRef(vector.x, vector.y, vector.z, transformation, result);
         }
 
@@ -2293,7 +2286,7 @@ module BABYLON {
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
+        public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Readonly<Matrix>, result: Vector3): void {
             const m = transformation.m;
             result.x = x * m[0] + y * m[4] + z * m[8];
             result.y = x * m[1] + y * m[5] + z * m[9];
@@ -2338,6 +2331,20 @@ module BABYLON {
          * @returns the new Vector3
          */
         public static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3 {
+            const v = new Vector3();
+            Vector3.ClampToRef(value, min, max, v);
+            return v;
+        }
+        /**
+         * Sets the given vector "result" with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max"
+         * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one
+         * If a coordinate value of "value" is greater than one of the "max" coordinate, then this "value" coordinate is set with the "max" one
+         * @param value defines the current value
+         * @param min defines the lower range value
+         * @param max defines the upper range value
+         * @param result defines the Vector3 where to store the result
+         */
+        public static ClampToRef(value: Vector3, min: Vector3, max: Vector3, result: Vector3): void {
             var x = value.x;
             x = (x > max.x) ? max.x : x;
             x = (x < min.x) ? min.x : x;
@@ -2350,7 +2357,7 @@ module BABYLON {
             z = (z > max.z) ? max.z : z;
             z = (z < min.z) ? min.z : z;
 
-            return new Vector3(x, y, z);
+            result.copyFromFloats(x, y, z);
         }
 
         /**
@@ -4220,7 +4227,6 @@ module BABYLON {
      * Class used to store matrix data (4x4)
      */
     export class Matrix {
-        private static _tempQuaternion: Quaternion = new Quaternion();
         private static _xAxis: Vector3 = Vector3.Zero();
         private static _yAxis: Vector3 = Vector3.Zero();
         private static _zAxis: Vector3 = Vector3.Zero();
@@ -4229,6 +4235,8 @@ module BABYLON {
 
         private _isIdentity = false;
         private _isIdentityDirty = true;
+        private _isIdentity3x2 = true;
+        private _isIdentity3x2Dirty = true;
         /**
          * Gets the update flag of the matrix which is an unique number for the matrix.
          * It will be incremented every time the matrix data change.
@@ -4245,26 +4253,33 @@ module BABYLON {
         public _markAsUpdated() {
             this.updateFlag = Matrix._updateFlagSeed++;
             this._isIdentityDirty = true;
+            this._isIdentity3x2Dirty = true;
+        }
+
+        /** @hidden */
+        private _updateIdentityStatus(isIdentity: boolean) {
+            this.updateFlag = Matrix._updateFlagSeed++;
+            this._isIdentityDirty = false;
+            this._isIdentity = isIdentity;
         }
 
         /**
          * Creates an empty matrix (filled with zeros)
          */
         public constructor() {
-            this._markAsUpdated();
+            this._updateIdentityStatus(false);
         }
 
         // Properties
 
         /**
-         * Check if the current matrix is indentity
-         * @param considerAsTextureMatrix defines if the current matrix must be considered as a texture matrix (3x2)
+         * Check if the current matrix is identity
          * @returns true is the matrix is the identity matrix
          */
-        public isIdentity(considerAsTextureMatrix = false): boolean {
+        public isIdentity(): boolean {
             if (this._isIdentityDirty) {
                 this._isIdentityDirty = false;
-                if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[15] !== 1.0) {
+                if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[10] !== 1.0 || this.m[15] !== 1.0) {
                     this._isIdentity = false;
                 } else if (this.m[1] !== 0.0 || this.m[2] !== 0.0 || this.m[3] !== 0.0 ||
                     this.m[4] !== 0.0 || this.m[6] !== 0.0 || this.m[7] !== 0.0 ||
@@ -4274,14 +4289,33 @@ module BABYLON {
                 } else {
                     this._isIdentity = true;
                 }
-
-                if (!considerAsTextureMatrix && this.m[10] !== 1.0) {
-                    this._isIdentity = false;
-                }
             }
 
             return this._isIdentity;
         }
+
+        /**
+         * Check if the current matrix is identity as a texture matrix (3x2 store in 4x4)
+         * @returns true is the matrix is the identity matrix
+         */
+        public isIdentityAs3x2(): boolean {
+            if (this._isIdentity3x2Dirty) {
+                this._isIdentity3x2Dirty = false;
+                if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[15] !== 1.0) {
+                    this._isIdentity3x2 = false;
+                } else if (this.m[1] !== 0.0 || this.m[2] !== 0.0 || this.m[3] !== 0.0 ||
+                    this.m[4] !== 0.0 || this.m[6] !== 0.0 || this.m[7] !== 0.0 ||
+                    this.m[8] !== 0.0 || this.m[9] !== 0.0 || this.m[10] !== 0.0 || this.m[11] !== 0.0 ||
+                    this.m[12] !== 0.0 || this.m[13] !== 0.0 || this.m[14] !== 0.0) {
+                    this._isIdentity3x2 = false;
+                } else {
+                    this._isIdentity3x2 = true;
+                }
+            }
+
+            return this._isIdentity3x2;
+        }
+
         /**
          * Gets the determinant of the matrix
          * @returns the matrix determinant
@@ -4333,7 +4367,7 @@ module BABYLON {
                 this.m[index] = 0.0;
             }
 
-            this._markAsUpdated();
+            this._updateIdentityStatus(false);
             return this;
         }
 
@@ -4509,7 +4543,7 @@ module BABYLON {
          * @param other defines the second operand
          * @returns a new matrix set with the multiplication result of the current Matrix and the given one
          */
-        public multiply(other: Matrix): Matrix {
+        public multiply(other: Readonly<Matrix>): Matrix {
             var result = new Matrix();
             this.multiplyToRef(other, result);
             return result;
@@ -4520,7 +4554,7 @@ module BABYLON {
          * @param other defines the source matrix
          * @returns the current updated matrix
          */
-        public copyFrom(other: Matrix): Matrix {
+        public copyFrom(other: Readonly<Matrix>): Matrix {
             for (var index = 0; index < 16; index++) {
                 this.m[index] = other.m[index];
             }
@@ -4548,7 +4582,7 @@ module BABYLON {
          * @param result defines the matrix where to store the multiplication
          * @returns the current matrix
          */
-        public multiplyToRef(other: Matrix, result: Matrix): Matrix {
+        public multiplyToRef(other: Readonly<Matrix>, result: Matrix): Matrix {
             this.multiplyToArray(other, result.m, 0);
 
             result._markAsUpdated();
@@ -4562,7 +4596,7 @@ module BABYLON {
          * @param offset defines the offset in the target array where to start storing values
          * @returns the current matrix
          */
-        public multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix {
+        public multiplyToArray(other: Readonly<Matrix>, result: Float32Array, offset: number): Matrix {
             var tm0 = this.m[0];
             var tm1 = this.m[1];
             var tm2 = this.m[2];
@@ -4830,8 +4864,9 @@ module BABYLON {
          * @param ref matrix to store the result
          */
         public toNormalMatrix(ref: Matrix): void {
-            this.invertToRef(ref);
-            ref.transpose();
+            const tmp = MathTmp.Matrix[0];
+            this.invertToRef(tmp);
+            tmp.transposeToRef(ref);
             var m = ref.m;
             Matrix.FromValuesToRef(
                 m[0], m[1], m[2], 0,
@@ -4990,7 +5025,7 @@ module BABYLON {
         /**
          * Gets an identity matrix that must not be updated
          */
-        public static get IdentityReadOnly(): Matrix {
+        public static get IdentityReadOnly(): Readonly<Matrix> {
             return Matrix._identityReadOnly;
         }
 
@@ -5078,10 +5113,12 @@ module BABYLON {
          * @returns a new identity matrix
          */
         public static Identity(): Matrix {
-            return Matrix.FromValues(1.0, 0.0, 0.0, 0.0,
+            const identity = Matrix.FromValues(1.0, 0.0, 0.0, 0.0,
                 0.0, 1.0, 0.0, 0.0,
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0);
+            identity._updateIdentityStatus(true);
+            return identity;
         }
 
         /**
@@ -5093,6 +5130,7 @@ module BABYLON {
                 0.0, 1.0, 0.0, 0.0,
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0, result);
+            result._updateIdentityStatus(true);
         }
 
         /**
@@ -5100,10 +5138,12 @@ module BABYLON {
          * @returns a new zero matrix
          */
         public static Zero(): Matrix {
-            return Matrix.FromValues(0.0, 0.0, 0.0, 0.0,
+            const zero = Matrix.FromValues(0.0, 0.0, 0.0, 0.0,
                 0.0, 0.0, 0.0, 0.0,
                 0.0, 0.0, 0.0, 0.0,
                 0.0, 0.0, 0.0, 0.0);
+            zero._updateIdentityStatus(false);
+            return zero;
         }
 
         /**
@@ -5309,8 +5349,8 @@ module BABYLON {
          * @param result defines the target matrix
          */
         public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Matrix): void {
-            Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, this._tempQuaternion);
-            this._tempQuaternion.toRotationMatrix(result);
+            Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, MathTmp.Quaternion[0]);
+            MathTmp.Quaternion[0].toRotationMatrix(result);
         }
 
         /**
