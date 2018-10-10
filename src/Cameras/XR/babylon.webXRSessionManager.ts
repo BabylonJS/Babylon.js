@@ -3,7 +3,7 @@ module BABYLON {
      * Manages an XRSession
      * @see https://doc.babylonjs.com/how_to/webxr
      */
-    export class WebXRSessionManager {
+    export class WebXRSessionManager implements IDisposable {
         /**
          * Fires every time a new xrFrame arrives which can be used to update the camera
          */
@@ -159,6 +159,13 @@ module BABYLON {
             renderTargetTexture._texture = internalTexture;
 
              return renderTargetTexture;
+        }
+
+        /**
+         * Disposes of the session manager
+         */
+        public dispose() {
+            this.onXRFrameObservable.clear();
         }
     }
 }
