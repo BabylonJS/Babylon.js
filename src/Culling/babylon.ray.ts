@@ -441,7 +441,7 @@ module BABYLON {
         * @param world a matrix to transform the ray to. Default is the identity matrix.
         * @returns the new ray
         */
-        public static CreateNewFromTo(origin: Vector3, end: Vector3, world: Matrix = Matrix.IdentityReadOnly): Ray {
+        public static CreateNewFromTo(origin: Vector3, end: Vector3, world: Readonly<Matrix> = Matrix.IdentityReadOnly): Ray {
             var direction = end.subtract(origin);
             var length = Math.sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
             direction.normalize();
@@ -455,7 +455,7 @@ module BABYLON {
          * @param matrix matrix to apply
          * @returns the resulting new ray
          */
-        public static Transform(ray: Ray, matrix: Matrix): Ray {
+        public static Transform(ray: Ray, matrix: Readonly<Matrix>): Ray {
             var result = new Ray(new Vector3(0, 0, 0), new Vector3(0, 0, 0));
             Ray.TransformToRef(ray, matrix, result);
 
@@ -468,7 +468,7 @@ module BABYLON {
          * @param matrix matrix to apply
          * @param result ray to store result in
          */
-        public static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void {
+        public static TransformToRef(ray: Ray, matrix: Readonly<Matrix>, result: Ray): void {
             Vector3.TransformCoordinatesToRef(ray.origin, matrix, result.origin);
             Vector3.TransformNormalToRef(ray.direction, matrix, result.direction);
             result.length = ray.length;
