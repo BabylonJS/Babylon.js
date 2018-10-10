@@ -1,5 +1,22 @@
 module BABYLON {
     /**
+     * States of the webXR experience
+     */
+    export enum WebXRState {
+        /**
+         * Transitioning to/from being in XR mode
+         */
+        TRANSITION,
+        /**
+         * In XR mode and presenting
+         */
+        IN_XR,
+        /**
+         * Not entered XR mode
+         */
+        NOT_IN_XR
+    }
+    /**
      * Helper class used to enable XR
      * @see https://doc.babylonjs.com/how_to/webxr
      */
@@ -14,15 +31,14 @@ module BABYLON {
         public camera: WebXRCamera;
 
         /**
-         * If XR mode has completed being entered
-         * After calling enterXR() this will be false until the returned promise is resolved
+         * The current state of the XR experience (eg. transitioning, in XR or not in XR)
          */
-        public isInXRMode = false;
+        public state: WebXRState = WebXRState.NOT_IN_XR;
+
         /**
-         * If this is transitioning XR modes
-         * After calling enterXR() this will be true until the returned promise is resolved, then it will be false
+         * Fires when the state of the experience helper has changed
          */
-        public isInStateTransition = false;
+        public onStateChangedObservable = new Observable<WebXRState>();
 
         private _sessionManager: WebXRSessionManager;
 
@@ -48,7 +64,8 @@ module BABYLON {
          * @returns promise that resolves after xr mode has exited
          */
         public exitXR() {
-            this.isInStateTransition = true;
+            this.state = WebXRState.TRANSITION;
+            this.onStateChangedObservable.notifyObservers(this.state);
             return this._sessionManager.exitXR();
         }
 
@@ -59,7 +76,8 @@ module BABYLON {
          * @returns promise that resolves after xr mode has entered
          */
         public enterXR(sessionCreationOptions: XRSessionCreationOptions, frameOfReference: string) {
-            this.isInStateTransition = true;
+            this.state = WebXRState.TRANSITION;
+            this.onStateChangedObservable.notifyObservers(this.state);
 
             this._createCanvas();
             if (!sessionCreationOptions.outputContext) {
@@ -91,11 +109,11 @@ module BABYLON {
                     this._sessionManager.onXRFrameObservable.clear();
                     this._removeCanvas();
 
-                    this.isInStateTransition = false;
-                    this.isInXRMode = false;
+                    this.state = WebXRState.NOT_IN_XR;
+                    this.onStateChangedObservable.notifyObservers(this.state);
                 });
-                this.isInStateTransition = false;
-                this.isInXRMode = true;
+                this.state = WebXRState.IN_XR;
+                this.onStateChangedObservable.notifyObservers(this.state);
             });
         }
 
