@@ -2168,6 +2168,10 @@ var GridMaterial = /** @class */ (function (_super) {
         babylonjs_1.MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
         this._afterBind(mesh, this._activeEffect);
     };
+    /**
+     * Dispose the material and its associated resources.
+     * @param forceDisposeEffect will also dispose the used effect when true
+     */
     GridMaterial.prototype.dispose = function (forceDisposeEffect) {
         _super.prototype.dispose.call(this, forceDisposeEffect);
     };

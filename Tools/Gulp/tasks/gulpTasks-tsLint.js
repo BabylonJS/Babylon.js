@@ -3,6 +3,7 @@ var gulp = require("gulp");
 var merge2 = require("merge2");
 var gulpTslint = require("gulp-tslint");
 var minimist = require("minimist");
+var filter = require('gulp-filter');
 
 // Parse Command Line.
 var commandLineOptions = minimist(process.argv.slice(2), {
@@ -23,7 +24,9 @@ var config = require("../config.json");
  * TsLint all typescript files from the src directory.
  */
 gulp.task("typescript-tsLint", function() {
+    const dtsFilter = filter(['**', '!**/*.d.ts'], { restore: false });
     return gulp.src(config.typescript)
+        .pipe(dtsFilter)
         .pipe(gulpTslint(tsLintConfig))
         .pipe(gulpTslint.report());
 });

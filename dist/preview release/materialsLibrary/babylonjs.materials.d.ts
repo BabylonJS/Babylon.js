@@ -212,6 +212,10 @@ declare module BABYLON {
             needAlphaBlendingForMesh(mesh: BABYLON.AbstractMesh): boolean;
             isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
             bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+            /**
+                * Dispose the material and its associated resources.
+                * @param forceDisposeEffect will also dispose the used effect when true
+                */
             dispose(forceDisposeEffect?: boolean): void;
             clone(name: string): GridMaterial;
             serialize(): any;

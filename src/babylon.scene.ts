@@ -1883,6 +1883,9 @@ module BABYLON {
                         checkPicking = act.hasPickTriggers;
                     }
                 }
+
+                let needToIgnoreNext = false;
+
                 if (checkPicking) {
                     let btn = evt.button;
                     clickInfo.hasSwiped = this._isPointerSwiping();
@@ -1908,6 +1911,7 @@ module BABYLON {
                                 btn !== this._previousButtonPressed) {
                                 clickInfo.singleClick = true;
                                 cb(clickInfo, this._currentPickResult);
+                                needToIgnoreNext = true;
                             }
                         }
                         // at least one double click is required to be check and exclusive double click is enabled
@@ -1963,6 +1967,7 @@ module BABYLON {
                                         cb(clickInfo, this._currentPickResult);
                                     }
                                 }
+                                needToIgnoreNext = true;
                             }
                             // just the first click of the double has been raised
                             else {
@@ -1976,7 +1981,7 @@ module BABYLON {
                     }
                 }
 
-                clickInfo.ignore = true;
+                clickInfo.ignore = needToIgnoreNext;
                 cb(clickInfo, this._currentPickResult);
             };
 
@@ -2015,6 +2020,10 @@ module BABYLON {
                     canvas.focus();
                 }
 
+                this._startingPointerPosition.x = this._pointerX;
+                this._startingPointerPosition.y = this._pointerY;
+                this._startingPointerTime = Date.now();
+
                 // PreObservable support
                 if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERDOWN)) {
                     return;
@@ -2025,9 +2034,6 @@ module BABYLON {
                 }
 
                 this._pointerCaptures[evt.pointerId] = true;
-                this._startingPointerPosition.x = this._pointerX;
-                this._startingPointerPosition.y = this._pointerY;
-                this._startingPointerTime = Date.now();
 
                 if (!this.pointerDownPredicate) {
                     this.pointerDownPredicate = (mesh: AbstractMesh): boolean => {

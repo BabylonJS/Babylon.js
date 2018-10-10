@@ -1,7 +1,4 @@
 module BABYLON {
-    // This matrix is used as a value to reset the bounding box.
-    const _identityMatrix = Matrix.Identity();
-
     /**
      * Class used to store bounding sphere information
      */
@@ -9,7 +6,7 @@ module BABYLON {
         /**
          * Gets the center of the bounding sphere in local space
          */
-        public center = Vector3.Zero();
+        public readonly center = Vector3.Zero();
         /**
          * Radius of the bounding sphere in local space
          */
@@ -17,7 +14,7 @@ module BABYLON {
         /**
          * Gets the center of the bounding sphere in world space
          */
-        public centerWorld = Vector3.Zero();
+        public readonly centerWorld = Vector3.Zero();
         /**
          * Radius of the bounding sphere in world space
          */
@@ -25,13 +22,14 @@ module BABYLON {
         /**
          * Gets the minimum vector in local space
          */
-        public minimum = Vector3.Zero();
+        public readonly minimum = Vector3.Zero();
         /**
          * Gets the maximum vector in local space
          */
-        public maximum = Vector3.Zero();
+        public readonly maximum = Vector3.Zero();
 
-        private static TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
+        private _worldMatrix: Readonly<Matrix>;
+        private static readonly TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
 
         /**
          * Creates a new bounding sphere
@@ -39,17 +37,17 @@ module BABYLON {
          * @param max defines the maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
          */
-        constructor(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
+        constructor(min: Readonly<Vector3>, max: Readonly<Vector3>, worldMatrix?: Readonly<Matrix>) {
             this.reConstruct(min, max, worldMatrix);
         }
 
         /**
-         * Recreates the entire bounding sphere from scratch
+         * Recreates the entire bounding sphere from scratch as if we call the constructor in place
          * @param min defines the new minimum vector (in local space)
          * @param max defines the new maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
          */
-        public reConstruct(min: Vector3, max: Vector3, worldMatrix?: Matrix) {
+        public reConstruct(min: Readonly<Vector3>, max: Readonly<Vector3>, worldMatrix?: Readonly<Matrix>) {
             this.minimum.copyFrom(min);
             this.maximum.copyFrom(max);
 
@@ -58,7 +56,7 @@ module BABYLON {
             max.addToRef(min, this.center).scaleInPlace(0.5);
             this.radius = distance * 0.5;
 
-            this._update(worldMatrix || _identityMatrix);
+            this._update(worldMatrix || Matrix.IdentityReadOnly);
         }
 
         /**
@@ -73,18 +71,32 @@ module BABYLON {
             const min = this.center.subtractToRef(tempRadiusVector, tmpVectors[1]);
             const max = this.center.addToRef(tempRadiusVector, tmpVectors[2]);
 
-            this.reConstruct(min, max);
+            this.reConstruct(min, max, this._worldMatrix);
 
             return this;
         }
 
+        /**
+         * Gets the world matrix of the bounding box
+         * @returns a matrix
+         */
+        public getWorldMatrix(): Readonly<Matrix> {
+            return this._worldMatrix;
+        }
+
         // Methods
         /** @hidden */
-        public _update(world: Matrix): void {
-            Vector3.TransformCoordinatesToRef(this.center, world, this.centerWorld);
-            const tempVector = BoundingSphere.TmpVector3[0];
-            Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, world, tempVector);
-            this.radiusWorld = Math.max(Math.abs(tempVector.x), Math.abs(tempVector.y), Math.abs(tempVector.z)) * this.radius;
+        public _update(worldMatrix: Readonly<Matrix>): void {
+            if (!worldMatrix.isIdentity()) {
+                Vector3.TransformCoordinatesToRef(this.center, worldMatrix, this.centerWorld);
+                const tempVector = BoundingSphere.TmpVector3[0];
+                Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, worldMatrix, tempVector);
+                this.radiusWorld = Math.max(Math.abs(tempVector.x), Math.abs(tempVector.y), Math.abs(tempVector.z)) * this.radius;
+            }
+            else {
+                this.centerWorld.copyFrom(this.center);
+                this.radiusWorld = this.radius;
+            }
         }
 
         /**
@@ -92,7 +104,7 @@ module BABYLON {
          * @param frustumPlanes defines the frustum planes to test
          * @returns true if there is an intersection
          */
-        public isInFrustum(frustumPlanes: Plane[]): boolean {
+        public isInFrustum(frustumPlanes: Array<Readonly<Plane>>): boolean {
             for (var i = 0; i < 6; i++) {
                 if (frustumPlanes[i].dotCoordinate(this.centerWorld) <= -this.radiusWorld) {
                     return false;
@@ -107,7 +119,7 @@ module BABYLON {
          * @param point defines the point to test
          * @returns true if the point is inside the bounding sphere
          */
-        public intersectsPoint(point: Vector3): boolean {
+        public intersectsPoint(point: Readonly<Vector3>): boolean {
             const squareDistance = Vector3.DistanceSquared(this.centerWorld, point);
             if (this.radiusWorld * this.radiusWorld < squareDistance) {
                 return false;
@@ -123,7 +135,7 @@ module BABYLON {
          * @param sphere1 sphere 1
          * @returns true if the speres intersect
          */
-        public static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean {
+        public static Intersects(sphere0: Readonly<BoundingSphere>, sphere1: Readonly<BoundingSphere>): boolean {
             const squareDistance = Vector3.DistanceSquared(sphere0.centerWorld, sphere1.centerWorld);
             const radiusSum = sphere0.radiusWorld + sphere1.radiusWorld;
 
@@ -133,6 +145,5 @@ module BABYLON {
 
             return true;
         }
-
     }
 }

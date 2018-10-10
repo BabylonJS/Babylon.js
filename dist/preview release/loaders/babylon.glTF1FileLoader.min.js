@@ -2426,7 +2426,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __export(__webpack_require__(/*! ./glTFBinaryExtension */ "./src/glTF/1.0/glTFBinaryExtension.ts"));
 __export(__webpack_require__(/*! ./glTFLoaderV1 */ "./src/glTF/1.0/glTFLoaderV1.ts"));
 __export(__webpack_require__(/*! ./glTFLoaderExtension */ "./src/glTF/1.0/glTFLoaderExtension.ts"));
-//export * from "./glTFLoaderInterfaces";
+__export(__webpack_require__(/*! ./glTFLoaderInterfaces */ "./src/glTF/1.0/glTFLoaderInterfaces.ts"));
 __export(__webpack_require__(/*! ./glTFLoaderUtils */ "./src/glTF/1.0/glTFLoaderUtils.ts"));
 __export(__webpack_require__(/*! ./glTFMaterialsCommonExtension */ "./src/glTF/1.0/glTFMaterialsCommonExtension.ts"));
 
