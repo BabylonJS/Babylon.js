@@ -2374,7 +2374,6 @@ module BABYLON {
             result.copyFromFloats(x, y, z);
         }
 
-
         /**
          * Returns a new Vector3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2"
          * @param value1 defines the first control point
@@ -4454,22 +4453,22 @@ module BABYLON {
             const l39 = l5 * l10 - l6 * l9;
 
             const otherM = result.m;
-            otherM[0] = l23 * l27
-            otherM[4] = l24 * l27
-            otherM[8] = l25 * l27
-            otherM[12] = l26 * l27
-            otherM[1] = -(l2 * l17 - l3 * l18 + l4 * l19) * l27
-            otherM[5] = (l1 * l17 - l3 * l20 + l4 * l21) * l27
-            otherM[9] = -(l1 * l18 - l2 * l20 + l4 * l22) * l27
-            otherM[13] = (l1 * l19 - l2 * l21 + l3 * l22) * l27
-            otherM[2] = (l2 * l28 - l3 * l29 + l4 * l30) * l27
-            otherM[6] = -(l1 * l28 - l3 * l31 + l4 * l32) * l27
-            otherM[10] = (l1 * l29 - l2 * l31 + l4 * l33) * l27
-            otherM[14] = -(l1 * l30 - l2 * l32 + l3 * l33) * l27
-            otherM[3] = -(l2 * l34 - l3 * l35 + l4 * l36) * l27
-            otherM[7] = (l1 * l34 - l3 * l37 + l4 * l38) * l27
-            otherM[11] = -(l1 * l35 - l2 * l37 + l4 * l39) * l27
-            otherM[15] = (l1 * l36 - l2 * l38 + l3 * l39) * l27
+            otherM[0] = l23 * l27;
+            otherM[4] = l24 * l27;
+            otherM[8] = l25 * l27;
+            otherM[12] = l26 * l27;
+            otherM[1] = -(l2 * l17 - l3 * l18 + l4 * l19) * l27;
+            otherM[5] = (l1 * l17 - l3 * l20 + l4 * l21) * l27;
+            otherM[9] = -(l1 * l18 - l2 * l20 + l4 * l22) * l27;
+            otherM[13] = (l1 * l19 - l2 * l21 + l3 * l22) * l27;
+            otherM[2] = (l2 * l28 - l3 * l29 + l4 * l30) * l27;
+            otherM[6] = -(l1 * l28 - l3 * l31 + l4 * l32) * l27;
+            otherM[10] = (l1 * l29 - l2 * l31 + l4 * l33) * l27;
+            otherM[14] = -(l1 * l30 - l2 * l32 + l3 * l33) * l27;
+            otherM[3] = -(l2 * l34 - l3 * l35 + l4 * l36) * l27;
+            otherM[7] = (l1 * l34 - l3 * l37 + l4 * l38) * l27;
+            otherM[11] = -(l1 * l35 - l2 * l37 + l4 * l39) * l27;
+            otherM[15] = (l1 * l36 - l2 * l38 + l3 * l39) * l27;
 
             result._markAsUpdated();
             return this;
@@ -4600,13 +4599,13 @@ module BABYLON {
             const otherM = other.m;
             if (this.isIdentity) {
                 for (var index = 0; index < 16; ++index) {
-                    result[offset+index] = otherM[index];
+                    result[offset + index] = otherM[index];
                 }
                 return this;
             }
             if (other.isIdentity) {
                 for (var index = 0; index < 16; ++index) {
-                    result[offset+index] = m[index];
+                    result[offset + index] = m[index];
                 }
                 return this;
             }
@@ -4673,11 +4672,13 @@ module BABYLON {
          * @returns true is the current matrix and the given one values are strictly equal
          */
         public equals(value: DeepImmutable<Matrix>): boolean {
-            if (!value)
+            if (!value) {
                 return false;
+            }
 
-            if (!this._isIdentityDirty && !(value as Matrix)._isIdentityDirty && this._isIdentity !== (value as Matrix)._isIdentity)
+            if (!this._isIdentityDirty && !(value as Matrix)._isIdentityDirty && this._isIdentity !== (value as Matrix)._isIdentity) {
                 return false;
+            }
 
             const m = this.m;
             const om = value && value.m;
@@ -4769,7 +4770,7 @@ module BABYLON {
             }
 
             if (rotation) {
-                const sx = 1/scale.x, sy = 1/scale.y, sz = 1/scale.z;
+                const sx = 1 / scale.x, sy = 1 / scale.y, sz = 1 / scale.z;
                 Matrix.FromValuesToRef(
                     m[0] * sx, m[1] * sx, m[2] * sx,  0,
                     m[4] * sy, m[5] * sy, m[6] * sy,  0,
@@ -4928,7 +4929,7 @@ module BABYLON {
             }
             else {
                 const m = this.m;
-                const sx = 1/scale.x, sy = 1/scale.y, sz = 1/scale.z;
+                const sx = 1 / scale.x, sy = 1 / scale.y, sz = 1 / scale.z;
                 Matrix.FromValuesToRef(
                     m[0] * sx, m[1] * sx, m[2] * sx, 0,
                     m[4] * sy, m[5] * sy, m[6] * sy, 0,
@@ -5222,7 +5223,7 @@ module BABYLON {
             Matrix.FromValuesToRef(
                 1, 0, 0, 0,
                 0, c, s, 0,
-                0,-s, c, 0,
+                0, -s, c, 0,
                 0, 0, 0, 1,
                 result
             );
@@ -5238,7 +5239,7 @@ module BABYLON {
             const s = Math.sin(angle);
             const c = Math.cos(angle);
             Matrix.FromValuesToRef(
-                c, 0,-s, 0,
+                c, 0, -s, 0,
                 0, 1, 0, 0,
                 s, 0, c, 0,
                 0, 0, 0, 1,
@@ -5290,20 +5291,20 @@ module BABYLON {
 
             axis.normalize();
 
-            result.m[0] = axis.x * axis.x * c1 + c
-            result.m[1] = axis.x * axis.y * c1 - axis.z * s
-            result.m[2] = axis.x * axis.z * c1 + axis.y * s
-            result.m[3] = 0
+            result.m[0] = axis.x * axis.x * c1 + c;
+            result.m[1] = axis.x * axis.y * c1 - axis.z * s;
+            result.m[2] = axis.x * axis.z * c1 + axis.y * s;
+            result.m[3] = 0;
 
-            result.m[4] = axis.y * axis.x * c1 + axis.z * s
-            result.m[5] = axis.y * axis.y * c1 + c
-            result.m[6] = axis.y * axis.z * c1 - axis.x * s
-            result.m[7] = 0
+            result.m[4] = axis.y * axis.x * c1 + axis.z * s;
+            result.m[5] = axis.y * axis.y * c1 + c;
+            result.m[6] = axis.y * axis.z * c1 - axis.x * s;
+            result.m[7] = 0;
 
-            result.m[8] = axis.z * axis.x * c1 - axis.y * s
-            result.m[9] = axis.z * axis.y * c1 + axis.x * s
-            result.m[10] = axis.z * axis.z * c1 + c
-            result.m[11] = 0
+            result.m[8] = axis.z * axis.x * c1 - axis.y * s;
+            result.m[9] = axis.z * axis.y * c1 + axis.x * s;
+            result.m[10] = axis.z * axis.z * c1 + c;
+            result.m[11] = 0;
 
             result.m[15] = 1;
 
