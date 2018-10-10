@@ -268,7 +268,8 @@ module BABYLON {
          * @returns true if there is an intersection
          */
         public static IntersectsSphere(minPoint: Readonly<Vector3>, maxPoint: Readonly<Vector3>, sphereCenter: Readonly<Vector3>, sphereRadius: number): boolean {
-            var vector = Vector3.Clamp(sphereCenter, minPoint, maxPoint);
+            const vector = BoundingBox.TmpVector3[0];
+            Vector3.ClampToRef(sphereCenter, minPoint, maxPoint, vector);
             var num = Vector3.DistanceSquared(sphereCenter, vector);
             return (num <= (sphereRadius * sphereRadius));
         }
