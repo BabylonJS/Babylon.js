@@ -32,6 +32,8 @@ const through = require('through2');
 var karmaServer = require('karma').Server;
 var gulpTslint = require("gulp-tslint");
 var tslint = require("tslint");
+const filter = require('gulp-filter');
+const dtsFilter = filter(['**', '!**/*.d.ts'], {restore: false});
 
 //viewer declaration
 var processDeclaration = require('./processViewerDeclaration');
@@ -273,6 +275,7 @@ gulp.task("build", gulp.series("shaders", function build() {
 */
 gulp.task("typescript-tsLint", function() {
     return gulp.src(config.typescript)
+        .pipe(dtsFilter)
         .pipe(gulpTslint({
             formatter: "stylish",
             configuration: "../../tslint.json",
@@ -345,6 +348,7 @@ gulp.task("tsLint", gulp.series("typescript-tsLint", "typescript-libraries-tsLin
 */
 gulp.task("typescript-compile", function() {
     var tsResult = gulp.src(config.typescript)
+        .pipe(dtsFilter)
         .pipe(sourcemaps.init())
         .pipe(tsProject({
             summarizeFailureOutput: true
@@ -880,6 +884,7 @@ gulp.task("netlify-cleanup", function() {
 // this is needed for the modules for the declaration files.
 gulp.task("modules-compile", function() {
     var tsResult = gulp.src(config.typescript)
+        .pipe(dtsFilter)
         .pipe(sourcemaps.init())
         .pipe(tsProject());
 
