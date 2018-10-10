@@ -2235,7 +2235,7 @@ module BABYLON {
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        public static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
+        public static TransformCoordinatesToRef(vector: Vector3, transformation: Readonly<Matrix>, result: Vector3): void {
             return Vector3.TransformCoordinatesFromFloatsToRef(vector.x, vector.y, vector.z, transformation, result);
         }
 
@@ -2248,7 +2248,7 @@ module BABYLON {
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
+        public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Readonly<Matrix>, result: Vector3): void {
             const m = transformation.m;
             var rx = x * m[0] + y * m[4] + z * m[8] + m[12];
             var ry = x * m[1] + y * m[5] + z * m[9] + m[13];
@@ -2280,7 +2280,7 @@ module BABYLON {
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        public static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
+        public static TransformNormalToRef(vector: Vector3, transformation: Readonly<Matrix>, result: Vector3): void {
             this.TransformNormalFromFloatsToRef(vector.x, vector.y, vector.z, transformation, result);
         }
 
@@ -2293,7 +2293,7 @@ module BABYLON {
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
+        public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Readonly<Matrix>, result: Vector3): void {
             const m = transformation.m;
             result.x = x * m[0] + y * m[4] + z * m[8];
             result.y = x * m[1] + y * m[5] + z * m[9];
@@ -4220,7 +4220,6 @@ module BABYLON {
      * Class used to store matrix data (4x4)
      */
     export class Matrix {
-        private static _tempQuaternion: Quaternion = new Quaternion();
         private static _xAxis: Vector3 = Vector3.Zero();
         private static _yAxis: Vector3 = Vector3.Zero();
         private static _zAxis: Vector3 = Vector3.Zero();
@@ -4537,7 +4536,7 @@ module BABYLON {
          * @param other defines the second operand
          * @returns a new matrix set with the multiplication result of the current Matrix and the given one
          */
-        public multiply(other: Matrix): Matrix {
+        public multiply(other: Readonly<Matrix>): Matrix {
             var result = new Matrix();
             this.multiplyToRef(other, result);
             return result;
@@ -4548,7 +4547,7 @@ module BABYLON {
          * @param other defines the source matrix
          * @returns the current updated matrix
          */
-        public copyFrom(other: Matrix): Matrix {
+        public copyFrom(other: Readonly<Matrix>): Matrix {
             for (var index = 0; index < 16; index++) {
                 this.m[index] = other.m[index];
             }
@@ -4576,7 +4575,7 @@ module BABYLON {
          * @param result defines the matrix where to store the multiplication
          * @returns the current matrix
          */
-        public multiplyToRef(other: Matrix, result: Matrix): Matrix {
+        public multiplyToRef(other: Readonly<Matrix>, result: Matrix): Matrix {
             this.multiplyToArray(other, result.m, 0);
 
             result._markAsUpdated();
@@ -4590,7 +4589,7 @@ module BABYLON {
          * @param offset defines the offset in the target array where to start storing values
          * @returns the current matrix
          */
-        public multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix {
+        public multiplyToArray(other: Readonly<Matrix>, result: Float32Array, offset: number): Matrix {
             var tm0 = this.m[0];
             var tm1 = this.m[1];
             var tm2 = this.m[2];
@@ -5018,7 +5017,7 @@ module BABYLON {
         /**
          * Gets an identity matrix that must not be updated
          */
-        public static get IdentityReadOnly(): Matrix {
+        public static get IdentityReadOnly(): Readonly<Matrix> {
             return Matrix._identityReadOnly;
         }
 
@@ -5342,8 +5341,8 @@ module BABYLON {
          * @param result defines the target matrix
          */
         public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Matrix): void {
-            Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, this._tempQuaternion);
-            this._tempQuaternion.toRotationMatrix(result);
+            Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, MathTmp.Quaternion[0]);
+            MathTmp.Quaternion[0].toRotationMatrix(result);
         }
 
         /**

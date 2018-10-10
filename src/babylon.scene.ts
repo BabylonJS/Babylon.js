@@ -2020,6 +2020,10 @@ module BABYLON {
                     canvas.focus();
                 }
 
+                this._startingPointerPosition.x = this._pointerX;
+                this._startingPointerPosition.y = this._pointerY;
+                this._startingPointerTime = Date.now();
+
                 // PreObservable support
                 if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERDOWN)) {
                     return;
@@ -2030,9 +2034,6 @@ module BABYLON {
                 }
 
                 this._pointerCaptures[evt.pointerId] = true;
-                this._startingPointerPosition.x = this._pointerX;
-                this._startingPointerPosition.y = this._pointerY;
-                this._startingPointerTime = Date.now();
 
                 if (!this.pointerDownPredicate) {
                     this.pointerDownPredicate = (mesh: AbstractMesh): boolean => {
