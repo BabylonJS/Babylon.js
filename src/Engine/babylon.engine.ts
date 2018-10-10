@@ -867,7 +867,8 @@ module BABYLON {
         private _emptyCubeTexture: Nullable<InternalTexture>;
         private _emptyTexture3D: Nullable<InternalTexture>;
 
-        private _frameHandler: number;
+        /** @hidden */
+        public _frameHandler: number;
 
         private _nextFreeTextureSlots = new Array<number>();
         private _maxSimultaneousTextures = 0;
