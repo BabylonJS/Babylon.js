@@ -19,6 +19,7 @@
 
 ### Core Engine
 
+- Added support for bone matrix texture. Now skeletons will use a texture instead of uniforms when possible ([Deltakosh](https://github.com/deltakosh))
 - Refactored of the SolidParticleSystem code for performance and code quality improvement ([barroij](https://github.com/barroij))
 - Added utility function `Tools.BuildArray` for array initialisation ([barroij](https://github.com/barroij))
 - Introduced a new `IOfflineSupport` interface to hide IndexedDB ([Deltakosh](https://github.com/deltakosh))

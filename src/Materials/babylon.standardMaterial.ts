@@ -43,6 +43,7 @@ module BABYLON {
         public VERTEXALPHA = false;
         public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
+        public BONETEXTURE = false;
         public INSTANCES = false;
         public GLOSSINESS = false;
         public ROUGHNESS = false;
@@ -1080,10 +1081,12 @@ module BABYLON {
                     "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "normalMatrix", "lightmapMatrix", "refractionMatrix",
                     "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
                     "vReflectionPosition", "vReflectionSize",
-                    "logarithmicDepthConstant", "vTangentSpaceParams", "alphaCutOff"
+                    "logarithmicDepthConstant", "vTangentSpaceParams", "alphaCutOff", "boneTextureWidth"
                 ];
 
-                var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
+                var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler",
+                    "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
+                    "refractionCubeSampler", "refraction2DSampler", "boneSampler"];
 
                 var uniformBuffers = ["Material", "Scene"];
 
