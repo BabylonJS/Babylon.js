@@ -4645,13 +4645,9 @@ module BABYLON {
                 return false;
             }
 
-            if (!this._isIdentityDirty && !(value as Matrix)._isIdentityDirty) {
-                if (this._isIdentity && (value as Matrix)._isIdentity) {
-                    return true;
-                }
-
-                if (this._isIdentity || (value as Matrix)._isIdentity) {
-                    return false;
+            if (this._isIdentity || (value as Matrix)._isIdentity) {
+                if (!this._isIdentityDirty && !(value as Matrix)._isIdentityDirty) {
+                    return this._isIdentity && (value as Matrix)._isIdentity;
                 }
             }
 
@@ -4794,7 +4790,6 @@ module BABYLON {
          */
         public transposeToRef(result: Matrix): Matrix {
             Matrix.TransposeToRef(this, result);
-
             return this;
         }
 
