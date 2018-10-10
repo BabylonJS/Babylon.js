@@ -2344,7 +2344,7 @@ module BABYLON {
          */
         public static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3 {
             const v = new Vector3();
-            Vector3.ClampToRef(value, min, max, result);
+            Vector3.ClampToRef(value, min, max, v);
             return v;
         }
 
