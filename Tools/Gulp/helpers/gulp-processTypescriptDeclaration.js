@@ -1,4 +1,7 @@
-module.exports = function(data, options) {
+// Gulp Tools
+var fs = require("fs");
+
+var processData = function(data, options) {
     var str = "" + data;
 
     // Start process
@@ -93,4 +96,35 @@ module.exports = function(data, options) {
     }
 
     return str;
+}
+
+module.exports = function(fileLocation, options, cb) {
+    options = options || { };
+
+    fs.readFile(fileLocation, function(err, data) {
+        if (err) throw err;
+
+        data += "";
+        // For Raanan, litteral import hack TO BETTER INTEGRATE
+        data = data.replace('import "../sass/main.scss";', "");
+
+        if (options.prependText) {
+            data = options.prependText + '\n' + data.toString();
+        }
+        
+        var newData = "";
+        if (options) {
+            newData = processData(data, options);
+            fs.writeFileSync(fileLocation.replace('.module', ''), newData);
+        }
+
+        if (options.doNotAppendNamespace) {
+            fs.writeFileSync(fileLocation, data);
+        }
+        else {
+            fs.writeFileSync(fileLocation, data + "\n" + newData);
+        }
+
+        cb && cb();
+    });
 }

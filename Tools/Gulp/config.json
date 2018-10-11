@@ -1498,7 +1498,9 @@
         "loaders",
         "serializers",
         "gui",
-        "inspector",
+        "inspector"
+    ],
+    "viewerModules": [
         "viewer",
         "viewer-assets"
     ],
@@ -1508,7 +1510,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylonjs.materials.min.js",
-                "webpack": "../../materialsLibrary/webpack.config.js",
+                "webpack": "../../../materialsLibrary/webpack.config.js",
                 "entry": "./src/legacy.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1518,7 +1520,7 @@
             {
                 "noBundleInName": true,
                 "output": "babylon.cellMaterial.min.js",
-                "webpack": "../../materialsLibrary/legacy/webpack.cell.config.js",
+                "webpack": "../../../materialsLibrary/legacy/webpack.cell.config.js",
                 "entry": "./legacy/legacy-cell.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1528,7 +1530,7 @@
             {
                 "noBundleInName": true,
                 "output": "babylon.customMaterial.min.js",
-                "webpack": "../../materialsLibrary/legacy/webpack.custom.config.js",
+                "webpack": "../../../materialsLibrary/legacy/webpack.custom.config.js",
                 "entry": "./legacy/legacy-custom.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1538,7 +1540,7 @@
             {
                 "noBundleInName": true,
                 "output": "babylon.fireMaterial.min.js",
-                "webpack": "../../materialsLibrary/legacy/webpack.fire.config.js",
+                "webpack": "../../../materialsLibrary/legacy/webpack.fire.config.js",
                 "entry": "./legacy/legacy-fire.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1548,7 +1550,7 @@
             {
                 "noBundleInName": true,
                 "output": "babylon.furMaterial.min.js",
-                "webpack": "../../materialsLibrary/legacy/webpack.fur.config.js",
+                "webpack": "../../../materialsLibrary/legacy/webpack.fur.config.js",
                 "entry": "./legacy/legacy-fur.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1558,7 +1560,7 @@
             {
                 "noBundleInName": true,
                 "output": "babylon.gradientMaterial.min.js",
-                "webpack": "../../materialsLibrary/legacy/webpack.gradient.config.js",
+                "webpack": "../../../materialsLibrary/legacy/webpack.gradient.config.js",
                 "entry": "./legacy/legacy-gradient.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1568,7 +1570,7 @@
             {
                 "noBundleInName": true,
                 "output": "babylon.gridMaterial.min.js",
-                "webpack": "../../materialsLibrary/legacy/webpack.grid.config.js",
+                "webpack": "../../../materialsLibrary/legacy/webpack.grid.config.js",
                 "entry": "./legacy/legacy-grid.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1578,7 +1580,7 @@
             {
                 "noBundleInName": true,
                 "output": "babylon.lavaMaterial.min.js",
-                "webpack": "../../materialsLibrary/legacy/webpack.lava.config.js",
+                "webpack": "../../../materialsLibrary/legacy/webpack.lava.config.js",
                 "entry": "./legacy/legacy-lava.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1588,7 +1590,7 @@
             {
                 "noBundleInName": true,
                 "output": "babylon.mixMaterial.min.js",
-                "webpack": "../../materialsLibrary/legacy/webpack.mix.config.js",
+                "webpack": "../../../materialsLibrary/legacy/webpack.mix.config.js",
                 "entry": "./legacy/legacy-mix.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1598,7 +1600,7 @@
             {
                 "noBundleInName": true,
                 "output": "babylon.normalMaterial.min.js",
-                "webpack": "../../materialsLibrary/legacy/webpack.normal.config.js",
+                "webpack": "../../../materialsLibrary/legacy/webpack.normal.config.js",
                 "entry": "./legacy/legacy-normal.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1608,7 +1610,7 @@
             {
                 "noBundleInName": true,
                 "output": "babylon.shadowOnlyMaterial.min.js",
-                "webpack": "../../materialsLibrary/legacy/webpack.shadowOnly.config.js",
+                "webpack": "../../../materialsLibrary/legacy/webpack.shadowOnly.config.js",
                 "entry": "./legacy/legacy-shadowOnly.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1618,7 +1620,7 @@
             {
                 "noBundleInName": true,
                 "output": "babylon.simpleMaterial.min.js",
-                "webpack": "../../materialsLibrary/legacy/webpack.simple.config.js",
+                "webpack": "../../../materialsLibrary/legacy/webpack.simple.config.js",
                 "entry": "./legacy/legacy-simple.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1628,7 +1630,7 @@
             {
                 "noBundleInName": true,
                 "output": "babylon.skyMaterial.min.js",
-                "webpack": "../../materialsLibrary/legacy/webpack.sky.config.js",
+                "webpack": "../../../materialsLibrary/legacy/webpack.sky.config.js",
                 "entry": "./legacy/legacy-sky.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1638,7 +1640,7 @@
             {
                 "noBundleInName": true,
                 "output": "babylon.terrainMaterial.min.js",
-                "webpack": "../../materialsLibrary/legacy/webpack.terrain.config.js",
+                "webpack": "../../../materialsLibrary/legacy/webpack.terrain.config.js",
                 "entry": "./legacy/legacy-terrain.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1648,7 +1650,7 @@
             {
                 "noBundleInName": true,
                 "output": "babylon.triPlanarMaterial.min.js",
-                "webpack": "../../materialsLibrary/legacy/webpack.triPlanar.config.js",
+                "webpack": "../../../materialsLibrary/legacy/webpack.triPlanar.config.js",
                 "entry": "./legacy/legacy-triPlanar.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1658,7 +1660,7 @@
             {
                 "noBundleInName": true,
                 "output": "babylon.waterMaterial.min.js",
-                "webpack": "../../materialsLibrary/legacy/webpack.water.config.js",
+                "webpack": "../../../materialsLibrary/legacy/webpack.water.config.js",
                 "entry": "./legacy/legacy-water.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1667,7 +1669,7 @@
             }
         ],
         "build": {
-            "webpack": "../../materialsLibrary/webpack.config.js",
+            "webpack": "../../../materialsLibrary/webpack.config.js",
             "srcOutputDirectory": "../../materialsLibrary/src/",
             "distOutputDirectory": "/materialsLibrary/",
             "dtsBundle": {
@@ -1696,7 +1698,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylonjs.postProcess.min.js",
-                "webpack": "../../postProcessLibrary/webpack.config.js",
+                "webpack": "../../../postProcessLibrary/webpack.config.js",
                 "entry": "./src/legacy.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1707,7 +1709,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.asciiArtPostProcess.min.js",
-                "webpack": "../../postProcessLibrary/legacy/webpack.asciiArt.config.js",
+                "webpack": "../../../postProcessLibrary/legacy/webpack.asciiArt.config.js",
                 "entry": "./legacy/legacy-asciiArt.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1718,7 +1720,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.digitalRainPostProcess.min.js",
-                "webpack": "../../postProcessLibrary/legacy/webpack.digitalRain.config.js",
+                "webpack": "../../../postProcessLibrary/legacy/webpack.digitalRain.config.js",
                 "entry": "./legacy/legacy-digitalRain.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1727,7 +1729,7 @@
             }
         ],
         "build": {
-            "webpack": "../../postProcessLibrary/webpack.config.js",
+            "webpack": "../../../postProcessLibrary/webpack.config.js",
             "srcOutputDirectory": "../../postProcessLibrary/src/",
             "distOutputDirectory": "/postProcessesLibrary/",
             "dtsBundle": {
@@ -1756,7 +1758,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylonjs.proceduralTextures.min.js",
-                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "webpack": "../../../proceduralTexturesLibrary/webpack.config.js",
                 "entry": "./src/legacy.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1767,7 +1769,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.brickProceduralTexture.min.js",
-                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "webpack": "../../../proceduralTexturesLibrary/webpack.config.js",
                 "entry": "./legacy/legacy-brick.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1778,7 +1780,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.cloudProceduralTexture.min.js",
-                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "webpack": "../../../proceduralTexturesLibrary/webpack.config.js",
                 "entry": "./legacy/legacy-cloud.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1789,7 +1791,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.fireProceduralTexture.min.js",
-                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "webpack": "../../../proceduralTexturesLibrary/webpack.config.js",
                 "entry": "./legacy/legacy-fire.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1800,7 +1802,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.grassProceduralTexture.min.js",
-                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "webpack": "../../../proceduralTexturesLibrary/webpack.config.js",
                 "entry": "./legacy/legacy-grass.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1811,7 +1813,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.marbleProceduralTexture.min.js",
-                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "webpack": "../../../proceduralTexturesLibrary/webpack.config.js",
                 "entry": "./legacy/legacy-marble.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1822,7 +1824,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.normalMapProceduralTexture.min.js",
-                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "webpack": "../../../proceduralTexturesLibrary/webpack.config.js",
                 "entry": "./legacy/legacy-normalMap.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1833,7 +1835,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.perlinNoiseProceduralTexture.min.js",
-                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "webpack": "../../../proceduralTexturesLibrary/webpack.config.js",
                 "entry": "./legacy/legacy-perlinNoise.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1844,7 +1846,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.roadProceduralTexture.min.js",
-                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "webpack": "../../../proceduralTexturesLibrary/webpack.config.js",
                 "entry": "./legacy/legacy-road.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1855,7 +1857,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.starfieldProceduralTexture.min.js",
-                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "webpack": "../../../proceduralTexturesLibrary/webpack.config.js",
                 "entry": "./legacy/legacy-starfield.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1866,7 +1868,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.woodProceduralTexture.min.js",
-                "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+                "webpack": "../../../proceduralTexturesLibrary/webpack.config.js",
                 "entry": "./legacy/legacy-wood.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1875,7 +1877,7 @@
             }
         ],
         "build": {
-            "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+            "webpack": "../../../proceduralTexturesLibrary/webpack.config.js",
             "srcOutputDirectory": "../../proceduralTexturesLibrary/src/",
             "distOutputDirectory": "/proceduralTexturesLibrary/",
             "dtsBundle": {
@@ -1904,7 +1906,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylonjs.loaders.min.js",
-                "webpack": "../../loaders/webpack.config.js",
+                "webpack": "../../../loaders/webpack.config.js",
                 "entry": "./src/legacy.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1915,7 +1917,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.objFileLoader.min.js",
-                "webpack": "../../loaders/webpack.config.js",
+                "webpack": "../../../loaders/webpack.config.js",
                 "entry": "./legacy/legacy-objFileLoader.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1926,7 +1928,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.stlFileLoader.min.js",
-                "webpack": "../../loaders/webpack.config.js",
+                "webpack": "../../../loaders/webpack.config.js",
                 "entry": "./legacy/legacy-stlFileLoader.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1937,7 +1939,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.glTF1FileLoader.min.js",
-                "webpack": "../../loaders/webpack.config.js",
+                "webpack": "../../../loaders/webpack.config.js",
                 "entry": "./legacy/legacy-glTF1FileLoader.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1948,7 +1950,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.glTF2FileLoader.min.js",
-                "webpack": "../../loaders/webpack.config.js",
+                "webpack": "../../../loaders/webpack.config.js",
                 "entry": "./legacy/legacy-glTF2FileLoader.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1959,7 +1961,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.glTFFileLoader.min.js",
-                "webpack": "../../loaders/webpack.config.js",
+                "webpack": "../../../loaders/webpack.config.js",
                 "entry": "./legacy/legacy-glTFFileLoader.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1968,7 +1970,7 @@
             }
         ],
         "build": {
-            "webpack": "../../loaders/webpack.config.js",
+            "webpack": "../../../loaders/webpack.config.js",
             "srcOutputDirectory": "../../loaders/src/",
             "distOutputDirectory": "/loaders/",
             "dtsBundle": {
@@ -1998,7 +2000,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylonjs.serializers.min.js",
-                "webpack": "../../serializers/webpack.config.js",
+                "webpack": "../../../serializers/webpack.config.js",
                 "entry": "./src/legacy.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -2009,7 +2011,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.objSerializer.min.js",
-                "webpack": "../../serializers/webpack.config.js",
+                "webpack": "../../../serializers/webpack.config.js",
                 "entry": "./legacy/legacy-objSerializer.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -2020,7 +2022,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.glTF2Serializer.min.js",
-                "webpack": "../../serializers/webpack.config.js",
+                "webpack": "../../../serializers/webpack.config.js",
                 "entry": "./legacy/legacy-glTF2Serializer.ts",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -2029,7 +2031,7 @@
             }
         ],
         "build": {
-            "webpack": "../../serializers/webpack.config.js",
+            "webpack": "../../../serializers/webpack.config.js",
             "srcOutputDirectory": "../../serializers/src/",
             "distOutputDirectory": "/serializers/",
             "dtsBundle": {
@@ -2059,7 +2061,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.gui.min.js",
-                "webpack": "../../gui/webpack.config.js",
+                "webpack": "../../../gui/webpack.config.js",
                 "bundle": "true",
                 "babylonIncluded": false,
                 "useOutputForDebugging": true,
@@ -2101,7 +2103,7 @@
                 "files": [],
                 "sassFiles": [],
                 "output": "babylon.inspector.bundle.js",
-                "webpack": "../../inspector/webpack.config.js",
+                "webpack": "../../../inspector/webpack.config.js",
                 "bundle": "true",
                 "extendsRoot": true,
                 "useOutputForDebugging": true,
@@ -2138,7 +2140,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.viewer.js",
-                "webpack": "../../Viewer/webpack.gulp.config.js",
+                "webpack": "../../../Viewer/webpack.gulp.config.js",
                 "bundle": "true",
                 "moduleDeclaration": {
                     "name": "BabylonViewer",
@@ -2156,12 +2158,13 @@
             "dtsBundle": {
                 "name": "babylonjs-viewer",
                 "main": "../../dist/preview release/viewer/build/src/index.d.ts",
-                "out": "../../babylon.viewer.module.d.ts",
-                "prependText": "/// <reference path=\"./babylon.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n"
+                "out": "../../babylon.viewer.module.d.ts"
             },
             "processDeclaration": {
                 "packageName": "babylonjs-viewer",
                 "moduleName": "BabylonViewer",
+                "doNotAppendNamespace": true,
+                "prependText": "/// <reference path=\"./babylon.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n",
                 "importsToRemove": [
                     "pep",
                     "babylonjs-loaders"
@@ -2211,7 +2214,7 @@
                 "files": [],
                 "noBundleInName": true,
                 "output": "babylon.viewer.assets.js",
-                "webpack": "../../Viewer/webpack.assets.config.js",
+                "webpack": "../../../Viewer/webpack.assets.config.js",
                 "bundle": "true",
                 "moduleDeclaration": {
                     "name": "BabylonViewerAssets",
