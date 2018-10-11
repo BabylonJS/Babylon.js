@@ -4,7 +4,8 @@
     {
       "title": "Pointers",
       "playgroundId": "#1GLEJK#5",
-      "referenceImage": "pointers.png"
+      "referenceImage": "pointers.png",
+      "excludeFromAutomaticTesting": true
     },
     {
       "title": "LineEdgesRenderer",
