@@ -4225,15 +4225,14 @@ module BABYLON {
         /** @hidden */
         public _markAsUpdated() {
             this.updateFlag = Matrix._updateFlagSeed++;
-            this._isIdentityDirty = true;
             this._isIdentity = false;
-            this._isIdentity3x2Dirty = true;
             this._isIdentity3x2 = false;
-
+            this._isIdentityDirty = true;
+            this._isIdentity3x2Dirty = true;
         }
 
         /** @hidden */
-        private _updateIdentityStatus(isIdentity: boolean, isIdentityDirty: boolean = false, isIdentity3x2:boolean = false, isIdentity3x2Dirty :boolean= true) {
+        private _updateIdentityStatus(isIdentity: boolean, isIdentityDirty: boolean = false, isIdentity3x2: boolean = false, isIdentity3x2Dirty : boolean= true) {
             this.updateFlag = Matrix._updateFlagSeed++;
             this._isIdentity = isIdentity;
             this._isIdentity3x2 = isIdentity || isIdentity3x2;
@@ -4539,7 +4538,7 @@ module BABYLON {
                 m[12], m[13], m[14], m[15],
                 this
             );
-            this._updateIdentityStatus(m[12] === 0 && m[13] === 0 && m[14] === 0 && m[15] === 1)
+            this._updateIdentityStatus(m[12] === 0 && m[13] === 0 && m[14] === 0 && m[15] === 1);
             return this;
         }
 
@@ -4562,7 +4561,7 @@ module BABYLON {
         public copyFrom(other: Readonly<Matrix>): Matrix {
             other.copyToArray(this._m);
             const o = (other as Matrix);
-            this._updateIdentityStatus(o._isIdentity, o._isIdentityDirty, o._isIdentity3x2, o._isIdentity3x2Dirty)
+            this._updateIdentityStatus(o._isIdentity, o._isIdentityDirty, o._isIdentity3x2, o._isIdentity3x2Dirty);
             return this;
         }
 
@@ -4648,11 +4647,11 @@ module BABYLON {
          * @returns true is the current matrix and the given one values are strictly equal
          */
         public equals(value: Matrix): boolean {
-            if (!value) {
+            const other = (value as Matrix);
+            if (!other) {
                 return false;
             }
 
-            const other = (value as Matrix);
             if (this._isIdentity || other._isIdentity) {
                 if (!this._isIdentityDirty && !other._isIdentityDirty) {
                     return this._isIdentity && other._isIdentity;
@@ -4712,10 +4711,10 @@ module BABYLON {
                     translation.setAll(0);
                 }
                 if (scale) {
-                    scale.setAll(1)
+                    scale.setAll(1);
                 }
                 if (rotation) {
-                    rotation.copyFromFloats(0,0,0,1);
+                    rotation.copyFromFloats(0, 0, 0, 1);
                 }
                 return true;
             }
@@ -5949,7 +5948,7 @@ module BABYLON {
                       temp * y,   temp2 * y + 1,       temp3 * y, 0.0,
                       temp * z,       temp2 * z,   temp3 * z + 1, 0.0,
                 temp * plane.d, temp2 * plane.d, temp3 * plane.d, 1.0,
-            result
+                result
             );
         }
 
