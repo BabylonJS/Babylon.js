@@ -26,6 +26,7 @@ var addModuleExports = require("./helpers/gulp-addModuleExports");
 var addES6Exports = require("./helpers/gulp-addES6Exports");
 var uncommentShader = require("./helpers/gulp-removeShaderComments");
 var processDeclaration = require('./helpers/gulp-processTypescriptDeclaration');
+var rmDir = require("./helpers/gulp-rmDir");
 
 // Import Gulp Tasks
 require("./tasks/gulpTasks-tsLint");
@@ -380,23 +381,21 @@ var buildExternalLibrary = function(library, settings) {
             wpConfig = require(library.webpack);
         }
 
-        let wpBuild = webpackStream(wpConfig, webpack);
-
-        let buildEvent = wpBuild.pipe(gulp.dest(outputDirectory));
-        sequence.push(buildEvent);
+        let wpBuildMin = webpackStream(wpConfig, webpack);
+        let buildEventMin = wpBuildMin.pipe(gulp.dest(outputDirectory));
+        sequence.push(buildEventMin);
 
         // Generate unminified
         wpConfig.mode = "development";
         wpConfig.output.filename = wpConfig.output.filename.replace(".min", "");
 
-        wpBuild = webpackStream(wpConfig, webpack);
-
-        let buildEvent2 = wpBuild.pipe(gulp.dest(outputDirectory));
-        sequence.push(buildEvent2);
+        let wpBuildMax = webpackStream(wpConfig, webpack);
+        let buildEventMax = wpBuildMax.pipe(gulp.dest(outputDirectory));
+        sequence.push(buildEventMax);
 
         if (library.isMain) {
             if (settings.build.dtsBundle || settings.build.processDeclaration) {
-                buildEvent.on("end", function() {
+                buildEventMin.on("end", function() {
                     if (settings.build.dtsBundle) {
                         dtsBundle.bundle(settings.build.dtsBundle);
                     }
@@ -442,7 +441,13 @@ function buildExternalLibraries(settings) {
  * Dynamic module creation.
  */
 config.modules.map(function(module) {
-    gulp.task(module, buildExternalLibraries(config[module]));
+    var settings = config[module];
+
+    // Clean up old build files.
+    rmDir(settings.build.dtsBundle.baseDir);
+
+    // Build the libraries.
+    gulp.task(module, buildExternalLibraries(settings));
 });
 
 /**
