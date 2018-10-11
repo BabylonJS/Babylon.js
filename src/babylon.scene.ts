@@ -1802,7 +1802,7 @@ module BABYLON {
                 this._pickedDownMesh.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
             }
 
-            let type = PointerEventTypes.POINTERUP;
+            let type = 0;
             if (this.onPointerObservable.hasObservers()) {
                 if (!clickInfo.ignore && !clickInfo.hasSwiped) {
                     if (clickInfo.singleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
@@ -1811,10 +1811,20 @@ module BABYLON {
                     else if (clickInfo.doubleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
                         type = PointerEventTypes.POINTERDOUBLETAP;
                     }
+                    if (type) {
+                        let pi = new PointerInfo(type, evt, pickResult);
+                        this._setRayOnPointerInfo(pi);
+                        this.onPointerObservable.notifyObservers(pi, type);
+                    }
                 }
-                let pi = new PointerInfo(type, evt, pickResult);
-                this._setRayOnPointerInfo(pi);
-                this.onPointerObservable.notifyObservers(pi, type);
+
+                if (!clickInfo.ignore) {
+                    type = PointerEventTypes.POINTERUP;
+
+                    let pi = new PointerInfo(type, evt, pickResult);
+                    this._setRayOnPointerInfo(pi);
+                    this.onPointerObservable.notifyObservers(pi, type);
+                }
             }
 
             if (this.onPointerUp && !clickInfo.ignore) {
@@ -1981,8 +1991,9 @@ module BABYLON {
                     }
                 }
 
-                clickInfo.ignore = needToIgnoreNext;
-                cb(clickInfo, this._currentPickResult);
+                if (!needToIgnoreNext) {
+                    cb(clickInfo, this._currentPickResult);
+                }
             };
 
             this._onPointerMove = (evt: PointerEvent) => {

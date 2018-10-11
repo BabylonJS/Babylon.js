@@ -343,7 +343,7 @@ module BABYLON {
                 return false;
             }
 
-            if (!material.isReady(subMesh.getMesh(), useInstances)) {
+            if (!material.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances)) {
                 return false;
             }
 
