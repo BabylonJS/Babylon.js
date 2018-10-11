@@ -96,10 +96,10 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ({
 
-/***/ "../node_modules/webpack/buildin/global.js":
-/*!*************************************************!*\
-  !*** ../node_modules/webpack/buildin/global.js ***!
-  \*************************************************/
+/***/ "../Tools/Gulp/node_modules/webpack/buildin/global.js":
+/*!************************************************************!*\
+  !*** ../Tools/Gulp/node_modules/webpack/buildin/global.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -11497,7 +11497,7 @@ if (typeof globalObject !== "undefined") {
 }
 __export(__webpack_require__(/*! ./index */ "./src/index.ts"));
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../Tools/Gulp/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 

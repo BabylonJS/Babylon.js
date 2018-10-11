@@ -236,7 +236,7 @@ function runTest(index, done) {
         var pgRoot = "/Playground"
 
         var retryTime = 500;
-        var maxRetry = 2;
+        var maxRetry = 5;
         var retry = 0;
 
         var onError = function() {

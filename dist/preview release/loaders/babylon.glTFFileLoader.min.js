@@ -96,10 +96,10 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ({
 
-/***/ "../node_modules/webpack/buildin/global.js":
-/*!*************************************************!*\
-  !*** ../node_modules/webpack/buildin/global.js ***!
-  \*************************************************/
+/***/ "../Tools/Gulp/node_modules/webpack/buildin/global.js":
+/*!************************************************************!*\
+  !*** ../Tools/Gulp/node_modules/webpack/buildin/global.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -163,7 +163,7 @@ __export(__webpack_require__(/*! ../src/glTF/glTFFileLoader */ "./src/glTF/glTFF
 __export(__webpack_require__(/*! ../src/glTF/1.0 */ "./src/glTF/1.0/index.ts"));
 __export(__webpack_require__(/*! ../src/glTF/2.0 */ "./src/glTF/2.0/index.ts"));
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../Tools/Gulp/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 

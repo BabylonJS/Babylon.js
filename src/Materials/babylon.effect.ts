@@ -623,10 +623,10 @@ module BABYLON {
             result = result.replace(/attribute[ \t]/g, "in ");
             result = result.replace(/[ \t]attribute/g, " in");
 
+            result = result.replace(/texture2D\s*\(/g, "texture(");
             if (isFragment) {
                 result = result.replace(/texture2DLodEXT\s*\(/g, "textureLod(");
                 result = result.replace(/textureCubeLodEXT\s*\(/g, "textureLod(");
-                result = result.replace(/texture2D\s*\(/g, "texture(");
                 result = result.replace(/textureCube\s*\(/g, "texture(");
                 result = result.replace(/gl_FragDepthEXT/g, "gl_FragDepth");
                 result = result.replace(/gl_FragColor/g, "glFragColor");
