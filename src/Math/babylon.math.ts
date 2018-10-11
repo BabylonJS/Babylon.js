@@ -5232,23 +5232,23 @@ module BABYLON {
             var c1 = 1 - c;
 
             axis.normalize();
+            const m = result._m;
+            m[0] = (axis.x * axis.x) * c1 + c;
+            m[1] = (axis.x * axis.y) * c1 - (axis.z * s);
+            m[2] = (axis.x * axis.z) * c1 + (axis.y * s);
+            m[3] = 0.0;
 
-            result._m[0] = (axis.x * axis.x) * c1 + c;
-            result._m[1] = (axis.x * axis.y) * c1 - (axis.z * s);
-            result._m[2] = (axis.x * axis.z) * c1 + (axis.y * s);
-            result._m[3] = 0.0;
+            m[4] = (axis.y * axis.x) * c1 + (axis.z * s);
+            m[5] = (axis.y * axis.y) * c1 + c;
+            m[6] = (axis.y * axis.z) * c1 - (axis.x * s);
+            m[7] = 0.0;
 
-            result._m[4] = (axis.y * axis.x) * c1 + (axis.z * s);
-            result._m[5] = (axis.y * axis.y) * c1 + c;
-            result._m[6] = (axis.y * axis.z) * c1 - (axis.x * s);
-            result._m[7] = 0.0;
+            m[8] = (axis.z * axis.x) * c1 - (axis.y * s);
+            m[9] = (axis.z * axis.y) * c1 + (axis.x * s);
+            m[10] = (axis.z * axis.z) * c1 + c;
+            m[11] = 0.0;
 
-            result._m[8] = (axis.z * axis.x) * c1 - (axis.y * s);
-            result._m[9] = (axis.z * axis.y) * c1 + (axis.x * s);
-            result._m[10] = (axis.z * axis.z) * c1 + c;
-            result._m[11] = 0.0;
-
-            result._m[15] = 1.0;
+            m[15] = 1.0;
 
             result._markAsUpdated();
         }
