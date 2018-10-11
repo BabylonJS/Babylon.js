@@ -21,17 +21,12 @@ var buildExternalLibrary = function(library, settings) {
     const sequence = [];
     var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
 
-    var wpConfig;
-    if (library.entry) {
-        wpConfig = require(settings.build.webpack);
-        wpConfig.entry = {
-            'main': path.resolve(wpConfig.context, library.entry),
-        };
-        wpConfig.output.filename = library.output;
-    }
-    else {
-        wpConfig = require(library.webpack);
-    }
+    // Webpack Config.
+    var wpConfig = require(settings.build.webpack);
+    wpConfig.entry = {
+        'main': path.resolve(wpConfig.context, library.entry),
+    };
+    wpConfig.output.filename = library.output;
 
     // Generate minified file.
     let wpBuildMin = webpackStream(wpConfig, webpack);
@@ -45,7 +40,8 @@ var buildExternalLibrary = function(library, settings) {
     let buildEventMax = wpBuildMax.pipe(gulp.dest(outputDirectory));
     sequence.push(buildEventMax);
 
-    if (library.isMain) {
+    // TODO. Generate all d.ts
+    if (!library.preventLoadLibrary) {
         buildEventMin.on("end", function() {
             dtsBundle.bundle(settings.build.dtsBundle);
 

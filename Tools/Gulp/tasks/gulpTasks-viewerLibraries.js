@@ -23,7 +23,7 @@ var buildViewerLibrary = function(library, settings) {
     var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
 
     settings.build.outputs.forEach(out => {
-        let wpConfig = require(library.webpack);
+        let wpConfig = require(settings.build.webpack);
         if (!out.minified) {
             wpConfig.mode = "development";
         }
@@ -58,15 +58,13 @@ var buildViewerLibrary = function(library, settings) {
                 if (isJs) this.push(file);
                 cb();
             }))
-            .pipe(addModuleExports(library.moduleDeclaration, { subModule: false, extendsRoot: false, externalUsingBabylon: true, noBabylonInit: library.babylonIncluded }));
+            .pipe(addModuleExports(library.moduleDeclaration, { subModule: false, extendsRoot: false, externalUsingBabylon: true, noBabylonInit: true }));
 
         function processDestination(dest) {
             var outputDirectory = config.build.outputDirectory + dest.outputDirectory;
-            build = build
-                .pipe(rename(dest.filename.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
-                .pipe(gulp.dest(outputDirectory));
+            build = build.pipe(gulp.dest(outputDirectory));
 
-            if (library.babylonIncluded && dest.addBabylonDeclaration) {
+            if (dest.addBabylonDeclaration) {
                 // include the babylon declaration
                 if (dest.addBabylonDeclaration === true) {
                     dest.addBabylonDeclaration = [config.build.declarationFilename];

@@ -28,20 +28,25 @@ gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
 
     config.modules.map(function(module) {
         if (config[module].build && config[module].build.webpack) {
-            var library = config[module].libraries[0];
-            if (library.noWatch) return;
-            var outputDirectory = config.build.tempDirectory + config[module].build.distOutputDirectory;
-            let wpconfig = require("../" + config[module].build.webpack);
-            wpconfig.watch = true;
-            // dev mode and absolute path sourcemaps for debugging
-            wpconfig.mode = "development";
-            wpconfig.output.devtoolModuleFilenameTemplate = "[absolute-resource-path]";
-            //config.stats = "minimal";
-            tasks.push(webpackStream(wpconfig, webpack).pipe(gulp.dest(outputDirectory)))
+            for (var index = 0; index < config[module].libraries.length; index++) {
+                var library = config[module].libraries[index];
+                if (library.preventLoadLibrary) { 
+                    continue;
+                }
+
+                let wpconfig = require(config[module].build.webpack);
+                // watch on.
+                wpconfig.watch = true;
+                // dev mode and absolute path sourcemaps for debugging
+                wpconfig.mode = "development";
+                wpconfig.output.devtoolModuleFilenameTemplate = "[absolute-resource-path]";
+                //config.stats = "minimal";
+
+                var outputDirectory = config.build.tempDirectory + config[module].build.distOutputDirectory;
+                tasks.push(webpackStream(wpconfig, webpack).pipe(gulp.dest(outputDirectory)))
+            }
         }
     });
-
-    console.log(tasks.length);
 
     return Promise.resolve();
 }));
