@@ -4318,14 +4318,14 @@ module BABYLON {
          * Returns the matrix as a Float32Array
          * @returns the matrix underlying array
          */
-        public toArray(): Float32Array {
+        public toArray(): Readonly<Float32Array> {
             return this._m;
         }
         /**
          * Returns the matrix as a Float32Array
         * @returns the matrix underlying array.
         */
-        public asArray(): Float32Array {
+        public asArray(): Readonly<Float32Array> {
             return this._m;
         }
 
