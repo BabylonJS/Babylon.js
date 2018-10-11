@@ -34,7 +34,7 @@ module BABYLON {
         }
 
         /**
-         * Initializes the manager, this must be done with a user action (eg. button click event)
+         * Initializes the manager
          * After initialization enterXR can be called to start an XR session
          * @returns Promise which resolves after it is initialized
          */
@@ -52,7 +52,7 @@ module BABYLON {
         }
 
         /**
-         * Enters XR with the desired XR session options
+         * Enters XR with the desired XR session options, this must be done with a user action (eg. button click event)
          * @param sessionCreationOptions xr options to create the session with
          * @param frameOfReferenceType option to configure how the xr pose is expressed
          * @returns Promise which resolves after it enters XR
@@ -139,6 +139,19 @@ module BABYLON {
                     res(null);
                 });
             });
+        }
+
+        /**
+         * Checks if a session would be supported for the creation options specified
+         * @param options creation options to check if they are supported
+         * @returns true if supported
+         */
+        public supportsSession(options:XRSessionCreationOptions){
+            return this._xrDevice.supportsSession(options).then(()=>{
+                return true;
+            }).catch((e)=>{
+                return false;
+            })
         }
 
         /**
