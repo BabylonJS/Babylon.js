@@ -457,7 +457,7 @@ module BABYLON {
                 if (child.nodeType === 3) {
                     result += child.textContent;
                 }
-                child = child.nextSibling;
+                child = <any>(child.nextSibling);
             }
 
             return result;

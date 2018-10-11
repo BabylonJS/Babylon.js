@@ -541,10 +541,10 @@ module BABYLON {
             }
             else if (darkness <= 0.0) {
                 this._darkness = 0.0;
-                 }
+            }
             else {
                 this._darkness = darkness;
-                 }
+            }
             return this;
         }
 
@@ -907,8 +907,16 @@ module BABYLON {
                 }
 
                 // Bones
-                if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._effect.setMatrices("mBones", (<Skeleton>mesh.skeleton).getTransformMatrices((mesh)));
+                if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
+                    const skeleton = mesh.skeleton;
+
+                    if (skeleton.isUsingTextureForMatrices) {
+                        const boneTexture = skeleton.getTransformMatrixTexture();
+                        this._effect.setTexture("boneSampler", boneTexture);
+                        this._effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+                    } else {
+                        this._effect.setMatrices("mBones", skeleton.getTransformMatrices((mesh)));
+                    }
                 }
 
                 // Morph targets
@@ -1074,15 +1082,22 @@ module BABYLON {
             }
 
             // Bones
-            if (mesh.useBones && mesh.computeBonesUsingShaders) {
+            if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                 attribs.push(VertexBuffer.MatricesIndicesKind);
                 attribs.push(VertexBuffer.MatricesWeightsKind);
                 if (mesh.numBoneInfluencers > 4) {
                     attribs.push(VertexBuffer.MatricesIndicesExtraKind);
                     attribs.push(VertexBuffer.MatricesWeightsExtraKind);
                 }
+                const skeleton = mesh.skeleton;
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-                defines.push("#define BonesPerMesh " + ((<Skeleton>mesh.skeleton).bones.length + 1));
+
+                if (skeleton.isUsingTextureForMatrices) {
+                    defines.push("#define BONETEXTURE");
+                } else {
+                    defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
+                }
+
             } else {
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
             }
@@ -1095,7 +1110,7 @@ module BABYLON {
                     defines.push("#define MORPHTARGETS");
                     morphInfluencers = manager.numInfluencers;
                     defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
-                    MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, {"NUM_MORPH_INFLUENCERS": morphInfluencers });
+                    MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, { "NUM_MORPH_INFLUENCERS": morphInfluencers });
                 }
             }
 
@@ -1114,8 +1129,8 @@ module BABYLON {
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("shadowMap",
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "lightData", "depthValues", "biasAndScale", "morphTargetInfluences"],
-                    ["diffuseSampler"], join,
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "lightData", "depthValues", "biasAndScale", "morphTargetInfluences", "boneTextureWidth"],
+                    ["diffuseSampler", "boneSampler"], join,
                     undefined, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
             }
 
