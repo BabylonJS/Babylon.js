@@ -1,5 +1,5 @@
 import { Control } from "./control";
-import { Nullable, Tools } from "babylonjs";
+import { Nullable, Tools, Observable } from "babylonjs";
 import { Measure } from "../measure";
 
 /**
@@ -22,6 +22,18 @@ export class Image extends Control {
     private _cellWidth: number = 0;
     private _cellHeight: number = 0;
     private _cellId: number = -1;
+
+    /**
+     * Observable notified when the content is loaded
+     */
+    public onImageLoadedObservable = new Observable<Image>();
+
+    /**
+     * Gets a boolean indicating that the content is loaded
+     */
+    public get isLoaded(): boolean {
+        return this._loaded;
+    }
 
     /**
      * Gets or sets the left coordinate in the source image
@@ -154,6 +166,8 @@ export class Image extends Control {
         if (this._autoScale) {
             this.synchronizeSizeWithContent();
         }
+
+        this.onImageLoadedObservable.notifyObservers(this);
 
         this._markAsDirty();
     }
@@ -319,6 +333,11 @@ export class Image extends Control {
             }
         }
         context.restore();
+    }
+
+    public dispose() {
+        super.dispose();
+        this.onImageLoadedObservable.clear();
     }
 
     // Static
