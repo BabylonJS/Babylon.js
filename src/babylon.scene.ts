@@ -2098,10 +2098,10 @@ module BABYLON {
                                     }
                                 }
                             }
-                        }
-                        else {
-                            if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERUP)) {
-                                return;
+                            else {
+                                if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERUP)) {
+                                    return;
+                                }
                             }
                         }
                     }
