@@ -4342,10 +4342,11 @@ module BABYLON {
          * @returns the current matrix
          */
         public reset(): Matrix {
-            for (var index = 0; index < 16; index++) {
-                this._m[index] = 0.0;
-            }
-
+            Matrix.FromValuesToRef(
+                0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, this);
             this._updateIdentityStatus(false);
             return this;
         }
@@ -4497,12 +4498,7 @@ module BABYLON {
          * @returns the current updated matrix
          */
         public setTranslation(vector3: Vector3): Matrix {
-            this._m[12] = vector3.x;
-            this._m[13] = vector3.y;
-            this._m[14] = vector3.z;
-
-            this._markAsUpdated();
-            return this;
+            return this.setTranslationFromFloats(vector3.x, vector3.y, vector3.z);
         }
 
         /**
@@ -4522,7 +4518,6 @@ module BABYLON {
             result.x = this._m[12];
             result.y = this._m[13];
             result.z = this._m[14];
-
             return this;
         }
 
@@ -4531,9 +4526,13 @@ module BABYLON {
          * @returns the updated matrix
          */
         public removeRotationAndScaling(): Matrix {
-            this.setRowFromFloats(0, 1, 0, 0, 0);
-            this.setRowFromFloats(1, 0, 1, 0, 0);
-            this.setRowFromFloats(2, 0, 0, 1, 0);
+            const m = this.m;
+            Matrix.FromValuesToRef(
+                  1.0,   0.0,   0.0,   0.0,
+                  0.0,   1.0,   0.0,   0.0,
+                  0.0,   0.0,   1.0,   0.0,
+                m[12], m[13], m[14], m[15],
+                this);
             return this;
         }
 
@@ -4554,11 +4553,11 @@ module BABYLON {
          * @returns the current updated matrix
          */
         public copyFrom(other: Readonly<Matrix>): Matrix {
-            for (var index = 0; index < 16; index++) {
-                this._m[index] = (other as Matrix)._m[index];
-            }
-
-            this._markAsUpdated();
+            other.copyToArray(this._m);
+            this._isIdentityDirty = (other as Matrix)._isIdentityDirty;
+            this._isIdentity = (other as Matrix)._isIdentity;
+            this._isIdentity3x2Dirty = (other as Matrix)._isIdentity3x2Dirty;
+            this._isIdentity3x2 = (other as Matrix)._isIdentity3x2;
             return this;
         }
 
@@ -4583,7 +4582,6 @@ module BABYLON {
          */
         public multiplyToRef(other: Readonly<Matrix>, result: Matrix): Matrix {
             this.multiplyToArray(other, result._m, 0);
-
             result._markAsUpdated();
             return this;
         }
@@ -4596,22 +4594,17 @@ module BABYLON {
          * @returns the current matrix
          */
         public multiplyToArray(other: Readonly<Matrix>, result: Float32Array, offset: number): Matrix {
-            const m = this._m;
-            const otherM = (other as Matrix)._m;
-
             if (this._isIdentity) {
-                for (var index = 0; index < 16; ++index) {
-                    result[offset + index] = otherM[index];
-                }
+                other.copyToArray(result, offset);
                 return this;
             }
             if ((other as Matrix)._isIdentity) {
-                for (var index = 0; index < 16; ++index) {
-                    result[offset + index] = m[index];
-                }
+                this.copyToArray(result, offset);
                 return this;
             }
 
+            const m = this._m;
+            const otherM = other.m;
             var tm0 = m[0], tm1 = m[1], tm2 = m[2], tm3 = m[3];
             var tm4 = m[4], tm5 = m[5], tm6 = m[6], tm7 = m[7];
             var tm8 = m[8], tm9 = m[9], tm10 = m[10], tm11 = m[11];
@@ -4650,8 +4643,18 @@ module BABYLON {
          * @returns true is the current matrix and the given one values are strictly equal
          */
         public equals(value: Matrix): boolean {
-            const m = this._m;
-            const om = value._m;
+            if (!value) {
+                return false;
+            }
+
+            if (this._isIdentity || (value as Matrix)._isIdentity) {
+                if (!this._isIdentityDirty && !(value as Matrix)._isIdentityDirty) {
+                    return this._isIdentity && (value as Matrix)._isIdentity;
+                }
+            }
+
+            const m = this.m;
+            const om = value.m;
             return (
                 m[0]  === om[0]  && m[1]  === om[1]  && m[2]  === om[2]  && m[3]  === om[3] &&
                 m[4]  === om[4]  && m[5]  === om[5]  && m[6]  === om[6]  && m[7]  === om[7] &&
@@ -4665,11 +4668,8 @@ module BABYLON {
          * @returns a new matrix from the current matrix
          */
         public clone(): Matrix {
-            const matrix = Matrix.FromArray(this._m);
-            matrix._isIdentityDirty = this._isIdentityDirty;
-            matrix._isIdentity = this._isIdentity;
-            matrix._isIdentity3x2Dirty = this._isIdentity3x2Dirty;
-            matrix._isIdentity3x2 = this._isIdentity3x2;
+            const matrix = new Matrix();
+            matrix.copyFrom(this);
             return matrix;
         }
 
@@ -4926,12 +4926,8 @@ module BABYLON {
          * @param offset defines an offset in the source array
          * @returns a new Matrix set from the starting index of the given array
          */
-        public static FromArray(array: ArrayLike<number>, offset?: number): Matrix {
+        public static FromArray(array: ArrayLike<number>, offset: number = 0): Matrix {
             var result = new Matrix();
-
-            if (!offset) {
-                offset = 0;
-            }
             Matrix.FromArrayToRef(array, offset, result);
             return result;
         }
@@ -5072,7 +5068,8 @@ module BABYLON {
          * @returns a new identity matrix
          */
         public static Identity(): Matrix {
-            const identity = Matrix.FromValues(1.0, 0.0, 0.0, 0.0,
+            const identity = Matrix.FromValues(
+                1.0, 0.0, 0.0, 0.0,
                 0.0, 1.0, 0.0, 0.0,
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0);
