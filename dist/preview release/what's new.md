@@ -65,4 +65,4 @@
 - `Database.openAsync` was renamed by `Database.open` ([Deltakosh](https://github.com/deltakosh))
 - `scene.database` was renamed to `scene.offlineProvider` ([Deltakosh](https://github.com/deltakosh))
 - `BoundingBox.setWorldMatrix` was removed. `BoundingBox.getWorldMatrix` now returns a `Readonly<Matrix>` ([barroij](https://github.com/barroij))
-- `Matrix`'s accessor `m` and method `toArray` and `adArray`now returns a `Readonly<Float32Array>` as the matrix underlying array is not supposed to be modified manually from the outside of the class ([barroij](https://github.com/barroij))
+- `Matrix`'s accessor `m` and method `toArray` and `asArray` now returns a `Readonly<Float32Array>` as the matrix underlying array is not supposed to be modified manually from the outside of the class ([barroij](https://github.com/barroij))
