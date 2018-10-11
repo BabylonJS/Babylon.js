@@ -3770,795 +3770,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * Class used to work with sound analyzer using fast fourier transform (FFT)
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-     */
-    class Analyser {
-        /**
-         * Gets or sets the smoothing
-         * @ignorenaming
-         */
-        SMOOTHING: number;
-        /**
-         * Gets or sets the FFT table size
-         * @ignorenaming
-         */
-        FFT_SIZE: number;
-        /**
-         * Gets or sets the bar graph amplitude
-         * @ignorenaming
-         */
-        BARGRAPHAMPLITUDE: number;
-        /**
-         * Gets or sets the position of the debug canvas
-         * @ignorenaming
-         */
-        DEBUGCANVASPOS: {
-            x: number;
-            y: number;
-        };
-        /**
-         * Gets or sets the debug canvas size
-         * @ignorenaming
-         */
-        DEBUGCANVASSIZE: {
-            width: number;
-            height: number;
-        };
-        private _byteFreqs;
-        private _byteTime;
-        private _floatFreqs;
-        private _webAudioAnalyser;
-        private _debugCanvas;
-        private _debugCanvasContext;
-        private _scene;
-        private _registerFunc;
-        private _audioEngine;
-        /**
-         * Creates a new analyser
-         * @param scene defines hosting scene
-         */
-        constructor(scene: Scene);
-        /**
-         * Get the number of data values you will have to play with for the visualization
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/frequencyBinCount
-         * @returns a number
-         */
-        getFrequencyBinCount(): number;
-        /**
-         * Gets the current frequency data as a byte array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
-         * @returns a Uint8Array
-         */
-        getByteFrequencyData(): Uint8Array;
-        /**
-         * Gets the current waveform as a byte array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
-         * @returns a Uint8Array
-         */
-        getByteTimeDomainData(): Uint8Array;
-        /**
-         * Gets the current frequency data as a float array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
-         * @returns a Float32Array
-         */
-        getFloatFrequencyData(): Float32Array;
-        /**
-         * Renders the debug canvas
-         */
-        drawDebugCanvas(): void;
-        /**
-         * Stops rendering the debug canvas and removes it
-         */
-        stopDebugCanvas(): void;
-        /**
-         * Connects two audio nodes
-         * @param inputAudioNode defines first node to connect
-         * @param outputAudioNode defines second node to connect
-         */
-        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This represents an audio engine and it is responsible
-     * to play, synchronize and analyse sounds throughout the application.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-     */
-    interface IAudioEngine extends IDisposable {
-        /**
-         * Gets whether the current host supports Web Audio and thus could create AudioContexts.
-         */
-        readonly canUseWebAudio: boolean;
-        /**
-         * Gets the current AudioContext if available.
-         */
-        readonly audioContext: Nullable<AudioContext>;
-        /**
-         * The master gain node defines the global audio volume of your audio engine.
-         */
-        readonly masterGain: GainNode;
-        /**
-         * Gets whether or not mp3 are supported by your browser.
-         */
-        readonly isMP3supported: boolean;
-        /**
-         * Gets whether or not ogg are supported by your browser.
-         */
-        readonly isOGGsupported: boolean;
-        /**
-         * Defines if Babylon should emit a warning if WebAudio is not supported.
-         * @ignoreNaming
-         */
-        WarnedWebAudioUnsupported: boolean;
-        /**
-         * Defines if the audio engine relies on a custom unlocked button.
-         * In this case, the embedded button will not be displayed.
-         */
-        useCustomUnlockedButton: boolean;
-        /**
-         * Gets whether or not the audio engine is unlocked (require first a user gesture on some browser).
-         */
-        readonly unlocked: boolean;
-        /**
-         * Event raised when audio has been unlocked on the browser.
-         */
-        onAudioUnlockedObservable: Observable<AudioEngine>;
-        /**
-         * Event raised when audio has been locked on the browser.
-         */
-        onAudioLockedObservable: Observable<AudioEngine>;
-        /**
-         * Flags the audio engine in Locked state.
-         * This happens due to new browser policies preventing audio to autoplay.
-         */
-        lock(): void;
-        /**
-         * Unlocks the audio engine once a user action has been done on the dom.
-         * This is helpful to resume play once browser policies have been satisfied.
-         */
-        unlock(): void;
-    }
-    /**
-     * This represents the default audio engine used in babylon.
-     * It is responsible to play, synchronize and analyse sounds throughout the  application.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-     */
-    class AudioEngine implements IAudioEngine {
-        private _audioContext;
-        private _audioContextInitialized;
-        private _muteButton;
-        private _hostElement;
-        /**
-         * Gets whether the current host supports Web Audio and thus could create AudioContexts.
-         */
-        canUseWebAudio: boolean;
-        /**
-         * The master gain node defines the global audio volume of your audio engine.
-         */
-        masterGain: GainNode;
-        /**
-         * Defines if Babylon should emit a warning if WebAudio is not supported.
-         * @ignoreNaming
-         */
-        WarnedWebAudioUnsupported: boolean;
-        /**
-         * Gets whether or not mp3 are supported by your browser.
-         */
-        isMP3supported: boolean;
-        /**
-         * Gets whether or not ogg are supported by your browser.
-         */
-        isOGGsupported: boolean;
-        /**
-         * Gets whether audio has been unlocked on the device.
-         * Some Browsers have strong restrictions about Audio and won t autoplay unless
-         * a user interaction has happened.
-         */
-        unlocked: boolean;
-        /**
-         * Defines if the audio engine relies on a custom unlocked button.
-         * In this case, the embedded button will not be displayed.
-         */
-        useCustomUnlockedButton: boolean;
-        /**
-         * Event raised when audio has been unlocked on the browser.
-         */
-        onAudioUnlockedObservable: Observable<AudioEngine>;
-        /**
-         * Event raised when audio has been locked on the browser.
-         */
-        onAudioLockedObservable: Observable<AudioEngine>;
-        /**
-         * Gets the current AudioContext if available.
-         */
-        readonly audioContext: Nullable<AudioContext>;
-        private _connectedAnalyser;
-        /**
-         * Instantiates a new audio engine.
-         *
-         * There should be only one per page as some browsers restrict the number
-         * of audio contexts you can create.
-         * @param hostElement defines the host element where to display the mute icon if necessary
-         */
-        constructor(hostElement?: Nullable<HTMLElement>);
-        /**
-         * Flags the audio engine in Locked state.
-         * This happens due to new browser policies preventing audio to autoplay.
-         */
-        lock(): void;
-        /**
-         * Unlocks the audio engine once a user action has been done on the dom.
-         * This is helpful to resume play once browser policies have been satisfied.
-         */
-        unlock(): void;
-        private _resumeAudioContext;
-        private _initializeAudioContext;
-        private _tryToRun;
-        private _triggerRunningState;
-        private _triggerSuspendedState;
-        private _displayMuteButton;
-        private _moveButtonToTopLeft;
-        private _onResize;
-        private _hideMuteButton;
-        /**
-         * Destroy and release the resources associated with the audio ccontext.
-         */
-        dispose(): void;
-        /**
-         * Gets the global volume sets on the master gain.
-         * @returns the global volume if set or -1 otherwise
-         */
-        getGlobalVolume(): number;
-        /**
-         * Sets the global volume of your experience (sets on the master gain).
-         * @param newVolume Defines the new global volume of the application
-         */
-        setGlobalVolume(newVolume: number): void;
-        /**
-         * Connect the audio engine to an audio analyser allowing some amazing
-         * synchornization between the sounds/music and your visualization (VuMeter for instance).
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
-         * @param analyser The analyser to connect to the engine
-         */
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    interface AbstractScene {
-        /**
-         * The list of sounds used in the scene.
-         */
-        sounds: Nullable<Array<Sound>>;
-    }
-    interface Scene {
-        /**
-         * @hidden
-         * Backing field
-         */
-        _mainSoundTrack: SoundTrack;
-        /**
-         * The main sound track played by the scene.
-         * It cotains your primary collection of sounds.
-         */
-        mainSoundTrack: SoundTrack;
-        /**
-         * The list of sound tracks added to the scene
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-         */
-        soundTracks: Nullable<Array<SoundTrack>>;
-        /**
-         * Gets a sound using a given name
-         * @param name defines the name to search for
-         * @return the found sound or null if not found at all.
-         */
-        getSoundByName(name: string): Nullable<Sound>;
-        /**
-         * Gets or sets if audio support is enabled
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-         */
-        audioEnabled: boolean;
-        /**
-         * Gets or sets if audio will be output to headphones
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-         */
-        headphone: boolean;
-    }
-    /**
-     * Defines the sound scene component responsible to manage any sounds
-     * in a given scene.
-     */
-    class AudioSceneComponent implements ISceneSerializableComponent {
-        /**
-         * The component name helpfull to identify the component in the list of scene components.
-         */
-        readonly name: string;
-        /**
-         * The scene the component belongs to.
-         */
-        scene: Scene;
-        private _audioEnabled;
-        /**
-         * Gets whether audio is enabled or not.
-         * Please use related enable/disable method to switch state.
-         */
-        readonly audioEnabled: boolean;
-        private _headphone;
-        /**
-         * Gets whether audio is outputing to headphone or not.
-         * Please use the according Switch methods to change output.
-         */
-        readonly headphone: boolean;
-        /**
-         * Creates a new instance of the component for the given scene
-         * @param scene Defines the scene to register the component in
-         */
-        constructor(scene: Scene);
-        /**
-         * Registers the component in a given scene
-         */
-        register(): void;
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        rebuild(): void;
-        /**
-         * Serializes the component data to the specified json object
-         * @param serializationObject The object to serialize to
-         */
-        serialize(serializationObject: any): void;
-        /**
-         * Adds all the element from the container to the scene
-         * @param container the container holding the elements
-         */
-        addFromContainer(container: AbstractScene): void;
-        /**
-         * Removes all the elements in the container from the scene
-         * @param container contains the elements to remove
-         */
-        removeFromContainer(container: AbstractScene): void;
-        /**
-         * Disposes the component and the associated ressources.
-         */
-        dispose(): void;
-        /**
-         * Disables audio in the associated scene.
-         */
-        disableAudio(): void;
-        /**
-         * Enables audio in the associated scene.
-         */
-        enableAudio(): void;
-        /**
-         * Switch audio to headphone output.
-         */
-        switchAudioModeForHeadphones(): void;
-        /**
-         * Switch audio to normal speakers.
-         */
-        switchAudioModeForNormalSpeakers(): void;
-        private _afterRender;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Defines a sound that can be played in the application.
-     * The sound can either be an ambient track or a simple sound played in reaction to a user action.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-     */
-    class Sound {
-        /**
-         * The name of the sound in the scene.
-         */
-        name: string;
-        /**
-         * Does the sound autoplay once loaded.
-         */
-        autoplay: boolean;
-        /**
-         * Does the sound loop after it finishes playing once.
-         */
-        loop: boolean;
-        /**
-         * Does the sound use a custom attenuation curve to simulate the falloff
-         * happening when the source gets further away from the camera.
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
-         */
-        useCustomAttenuation: boolean;
-        /**
-         * The sound track id this sound belongs to.
-         */
-        soundTrackId: number;
-        /**
-         * Is this sound currently played.
-         */
-        isPlaying: boolean;
-        /**
-         * Is this sound currently paused.
-         */
-        isPaused: boolean;
-        /**
-         * Does this sound enables spatial sound.
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
-         */
-        spatialSound: boolean;
-        /**
-         * Define the reference distance the sound should be heard perfectly.
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
-         */
-        refDistance: number;
-        /**
-         * Define the roll off factor of spatial sounds.
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
-         */
-        rolloffFactor: number;
-        /**
-         * Define the max distance the sound should be heard (intensity just became 0 at this point).
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
-         */
-        maxDistance: number;
-        /**
-         * Define the distance attenuation model the sound will follow.
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
-         */
-        distanceModel: string;
-        /**
-         * @hidden
-         * Back Compat
-         **/
-        onended: () => any;
-        /**
-         * Observable event when the current playing sound finishes.
-         */
-        onEndedObservable: Observable<Sound>;
-        private _panningModel;
-        private _playbackRate;
-        private _streaming;
-        private _startTime;
-        private _startOffset;
-        private _position;
-        /** @hidden */
-        _positionInEmitterSpace: boolean;
-        private _localDirection;
-        private _volume;
-        private _isReadyToPlay;
-        private _isDirectional;
-        private _readyToPlayCallback;
-        private _audioBuffer;
-        private _soundSource;
-        private _streamingSource;
-        private _soundPanner;
-        private _soundGain;
-        private _inputAudioNode;
-        private _outputAudioNode;
-        private _coneInnerAngle;
-        private _coneOuterAngle;
-        private _coneOuterGain;
-        private _scene;
-        private _connectedMesh;
-        private _customAttenuationFunction;
-        private _registerFunc;
-        private _isOutputConnected;
-        private _htmlAudioElement;
-        private _urlType;
-        /**
-        * Create a sound and attach it to a scene
-        * @param name Name of your sound
-        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
-        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
-        */
-        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: any);
-        /**
-         * Release the sound and its associated resources
-         */
-        dispose(): void;
-        /**
-         * Gets if the sounds is ready to be played or not.
-         * @returns true if ready, otherwise false
-         */
-        isReady(): boolean;
-        private _soundLoaded;
-        /**
-         * Sets the data of the sound from an audiobuffer
-         * @param audioBuffer The audioBuffer containing the data
-         */
-        setAudioBuffer(audioBuffer: AudioBuffer): void;
-        /**
-         * Updates the current sounds options such as maxdistance, loop...
-         * @param options A JSON object containing values named as the object properties
-         */
-        updateOptions(options: any): void;
-        private _createSpatialParameters;
-        private _updateSpatialParameters;
-        /**
-         * Switch the panning model to HRTF:
-         * Renders a stereo output of higher quality than equalpower — it uses a convolution with measured impulse responses from human subjects.
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
-         */
-        switchPanningModelToHRTF(): void;
-        /**
-         * Switch the panning model to Equal Power:
-         * Represents the equal-power panning algorithm, generally regarded as simple and efficient. equalpower is the default value.
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
-         */
-        switchPanningModelToEqualPower(): void;
-        private _switchPanningModel;
-        /**
-         * Connect this sound to a sound track audio node like gain...
-         * @param soundTrackAudioNode the sound track audio node to connect to
-         */
-        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
-        /**
-        * Transform this sound into a directional source
-        * @param coneInnerAngle Size of the inner cone in degree
-        * @param coneOuterAngle Size of the outer cone in degree
-        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
-        */
-        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
-        /**
-         * Gets or sets the inner angle for the directional cone.
-         */
-        /**
-        * Gets or sets the inner angle for the directional cone.
-        */
-        directionalConeInnerAngle: number;
-        /**
-         * Gets or sets the outer angle for the directional cone.
-         */
-        /**
-        * Gets or sets the outer angle for the directional cone.
-        */
-        directionalConeOuterAngle: number;
-        /**
-         * Sets the position of the emitter if spatial sound is enabled
-         * @param newPosition Defines the new posisiton
-         */
-        setPosition(newPosition: Vector3): void;
-        /**
-         * Sets the local direction of the emitter if spatial sound is enabled
-         * @param newLocalDirection Defines the new local direction
-         */
-        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
-        private _updateDirection;
-        /** @hidden */
-        updateDistanceFromListener(): void;
-        /**
-         * Sets a new custom attenuation function for the sound.
-         * @param callback Defines the function used for the attenuation
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
-         */
-        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
-        /**
-        * Play the sound
-        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
-        * @param offset (optional) Start the sound setting it at a specific time
-        */
-        play(time?: number, offset?: number): void;
-        private _onended;
-        /**
-        * Stop the sound
-        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
-        */
-        stop(time?: number): void;
-        /**
-         * Put the sound in pause
-         */
-        pause(): void;
-        /**
-         * Sets a dedicated volume for this sounds
-         * @param newVolume Define the new volume of the sound
-         * @param time Define in how long the sound should be at this value
-         */
-        setVolume(newVolume: number, time?: number): void;
-        /**
-         * Set the sound play back rate
-         * @param newPlaybackRate Define the playback rate the sound should be played at
-         */
-        setPlaybackRate(newPlaybackRate: number): void;
-        /**
-         * Gets the volume of the sound.
-         * @returns the volume of the sound
-         */
-        getVolume(): number;
-        /**
-         * Attach the sound to a dedicated mesh
-         * @param meshToConnectTo The mesh to connect the sound with
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
-         */
-        attachToMesh(meshToConnectTo: AbstractMesh): void;
-        /**
-         * Detach the sound from the previously attached mesh
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
-         */
-        detachFromMesh(): void;
-        private _onRegisterAfterWorldMatrixUpdate;
-        /**
-         * Clone the current sound in the scene.
-         * @returns the new sound clone
-         */
-        clone(): Nullable<Sound>;
-        /**
-         * Gets the current underlying audio buffer containing the data
-         * @returns the audio buffer
-         */
-        getAudioBuffer(): Nullable<AudioBuffer>;
-        /**
-         * Serializes the Sound in a JSON representation
-         * @returns the JSON representation of the sound
-         */
-        serialize(): any;
-        /**
-         * Parse a JSON representation of a sound to innstantiate in a given scene
-         * @param parsedSound Define the JSON representation of the sound (usually coming from the serialize method)
-         * @param scene Define the scene the new parsed sound should be created in
-         * @param rootUrl Define the rooturl of the load in case we need to fetch relative dependencies
-         * @param sourceSound Define a cound place holder if do not need to instantiate a new one
-         * @returns the newly parsed sound
-         */
-        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Options allowed during the creation of a sound track.
-     */
-    interface ISoundTrackOptions {
-        /**
-         * The volume the sound track should take during creation
-         */
-        volume?: number;
-        /**
-         * Define if the sound track is the main sound track of the scene
-         */
-        mainTrack?: boolean;
-    }
-    /**
-     * It could be useful to isolate your music & sounds on several tracks to better manage volume on a grouped instance of sounds.
-     * It will be also used in a future release to apply effects on a specific track.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
-     */
-    class SoundTrack {
-        /**
-         * The unique identifier of the sound track in the scene.
-         */
-        id: number;
-        /**
-         * The list of sounds included in the sound track.
-         */
-        soundCollection: Array<Sound>;
-        private _outputAudioNode;
-        private _scene;
-        private _isMainTrack;
-        private _connectedAnalyser;
-        private _options;
-        private _isInitialized;
-        /**
-         * Creates a new sound track.
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
-         * @param scene Define the scene the sound track belongs to
-         * @param options
-         */
-        constructor(scene: Scene, options?: ISoundTrackOptions);
-        private _initializeSoundTrackAudioGraph;
-        /**
-         * Release the sound track and its associated resources
-         */
-        dispose(): void;
-        /**
-         * Adds a sound to this sound track
-         * @param sound define the cound to add
-         * @ignoreNaming
-         */
-        AddSound(sound: Sound): void;
-        /**
-         * Removes a sound to this sound track
-         * @param sound define the cound to remove
-         * @ignoreNaming
-         */
-        RemoveSound(sound: Sound): void;
-        /**
-         * Set a global volume for the full sound track.
-         * @param newVolume Define the new volume of the sound track
-         */
-        setVolume(newVolume: number): void;
-        /**
-         * Switch the panning model to HRTF:
-         * Renders a stereo output of higher quality than equalpower — it uses a convolution with measured impulse responses from human subjects.
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
-         */
-        switchPanningModelToHRTF(): void;
-        /**
-         * Switch the panning model to Equal Power:
-         * Represents the equal-power panning algorithm, generally regarded as simple and efficient. equalpower is the default value.
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
-         */
-        switchPanningModelToEqualPower(): void;
-        /**
-         * Connect the sound track to an audio analyser allowing some amazing
-         * synchornization between the sounds/music and your visualization (VuMeter for instance).
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
-         * @param analyser The analyser to connect to the engine
-         */
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Wraps one or more Sound objects and selects one with random weight for playback.
-     */
-    class WeightedSound {
-        /** When true a Sound will be selected and played when the current playing Sound completes. */
-        loop: boolean;
-        private _coneInnerAngle;
-        private _coneOuterAngle;
-        private _volume;
-        /** A Sound is currently playing. */
-        isPlaying: boolean;
-        /** A Sound is currently paused. */
-        isPaused: boolean;
-        private _sounds;
-        private _weights;
-        private _currentIndex?;
-        /**
-         * Creates a new WeightedSound from the list of sounds given.
-         * @param loop When true a Sound will be selected and played when the current playing Sound completes.
-         * @param sounds Array of Sounds that will be selected from.
-         * @param weights Array of number values for selection weights; length must equal sounds, values will be normalized to 1
-         */
-        constructor(loop: boolean, sounds: Sound[], weights: number[]);
-        /**
-         * The size of cone in degrees for a directional sound in which there will be no attenuation.
-         */
-        /**
-        * The size of cone in degress for a directional sound in which there will be no attenuation.
-        */
-        directionalConeInnerAngle: number;
-        /**
-         * Size of cone in degrees for a directional sound outside of which there will be no sound.
-         * Listener angles between innerAngle and outerAngle will falloff linearly.
-         */
-        /**
-        * Size of cone in degrees for a directional sound outside of which there will be no sound.
-        * Listener angles between innerAngle and outerAngle will falloff linearly.
-        */
-        directionalConeOuterAngle: number;
-        /**
-         * Playback volume.
-         */
-        /**
-        * Playback volume.
-        */
-        volume: number;
-        private _onended;
-        /**
-         * Suspend playback
-         */
-        pause(): void;
-        /**
-         * Stop playback
-         */
-        stop(): void;
-        /**
-         * Start playback.
-         * @param startOffset Position the clip head at a specific time in seconds.
-         */
-        play(startOffset?: number): void;
-    }
-}
-
-declare module BABYLON {
-    /**
      * Class used to store an actual running animation
      */
     class Animatable {
@@ -5909,6 +5120,795 @@ declare module BABYLON {
          * @returns a boolean indicating if the animation is running
          */
         animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number): boolean;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class used to work with sound analyzer using fast fourier transform (FFT)
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
+    class Analyser {
+        /**
+         * Gets or sets the smoothing
+         * @ignorenaming
+         */
+        SMOOTHING: number;
+        /**
+         * Gets or sets the FFT table size
+         * @ignorenaming
+         */
+        FFT_SIZE: number;
+        /**
+         * Gets or sets the bar graph amplitude
+         * @ignorenaming
+         */
+        BARGRAPHAMPLITUDE: number;
+        /**
+         * Gets or sets the position of the debug canvas
+         * @ignorenaming
+         */
+        DEBUGCANVASPOS: {
+            x: number;
+            y: number;
+        };
+        /**
+         * Gets or sets the debug canvas size
+         * @ignorenaming
+         */
+        DEBUGCANVASSIZE: {
+            width: number;
+            height: number;
+        };
+        private _byteFreqs;
+        private _byteTime;
+        private _floatFreqs;
+        private _webAudioAnalyser;
+        private _debugCanvas;
+        private _debugCanvasContext;
+        private _scene;
+        private _registerFunc;
+        private _audioEngine;
+        /**
+         * Creates a new analyser
+         * @param scene defines hosting scene
+         */
+        constructor(scene: Scene);
+        /**
+         * Get the number of data values you will have to play with for the visualization
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/frequencyBinCount
+         * @returns a number
+         */
+        getFrequencyBinCount(): number;
+        /**
+         * Gets the current frequency data as a byte array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
+         * @returns a Uint8Array
+         */
+        getByteFrequencyData(): Uint8Array;
+        /**
+         * Gets the current waveform as a byte array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
+         * @returns a Uint8Array
+         */
+        getByteTimeDomainData(): Uint8Array;
+        /**
+         * Gets the current frequency data as a float array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
+         * @returns a Float32Array
+         */
+        getFloatFrequencyData(): Float32Array;
+        /**
+         * Renders the debug canvas
+         */
+        drawDebugCanvas(): void;
+        /**
+         * Stops rendering the debug canvas and removes it
+         */
+        stopDebugCanvas(): void;
+        /**
+         * Connects two audio nodes
+         * @param inputAudioNode defines first node to connect
+         * @param outputAudioNode defines second node to connect
+         */
+        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This represents an audio engine and it is responsible
+     * to play, synchronize and analyse sounds throughout the application.
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
+    interface IAudioEngine extends IDisposable {
+        /**
+         * Gets whether the current host supports Web Audio and thus could create AudioContexts.
+         */
+        readonly canUseWebAudio: boolean;
+        /**
+         * Gets the current AudioContext if available.
+         */
+        readonly audioContext: Nullable<AudioContext>;
+        /**
+         * The master gain node defines the global audio volume of your audio engine.
+         */
+        readonly masterGain: GainNode;
+        /**
+         * Gets whether or not mp3 are supported by your browser.
+         */
+        readonly isMP3supported: boolean;
+        /**
+         * Gets whether or not ogg are supported by your browser.
+         */
+        readonly isOGGsupported: boolean;
+        /**
+         * Defines if Babylon should emit a warning if WebAudio is not supported.
+         * @ignoreNaming
+         */
+        WarnedWebAudioUnsupported: boolean;
+        /**
+         * Defines if the audio engine relies on a custom unlocked button.
+         * In this case, the embedded button will not be displayed.
+         */
+        useCustomUnlockedButton: boolean;
+        /**
+         * Gets whether or not the audio engine is unlocked (require first a user gesture on some browser).
+         */
+        readonly unlocked: boolean;
+        /**
+         * Event raised when audio has been unlocked on the browser.
+         */
+        onAudioUnlockedObservable: Observable<AudioEngine>;
+        /**
+         * Event raised when audio has been locked on the browser.
+         */
+        onAudioLockedObservable: Observable<AudioEngine>;
+        /**
+         * Flags the audio engine in Locked state.
+         * This happens due to new browser policies preventing audio to autoplay.
+         */
+        lock(): void;
+        /**
+         * Unlocks the audio engine once a user action has been done on the dom.
+         * This is helpful to resume play once browser policies have been satisfied.
+         */
+        unlock(): void;
+    }
+    /**
+     * This represents the default audio engine used in babylon.
+     * It is responsible to play, synchronize and analyse sounds throughout the  application.
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
+    class AudioEngine implements IAudioEngine {
+        private _audioContext;
+        private _audioContextInitialized;
+        private _muteButton;
+        private _hostElement;
+        /**
+         * Gets whether the current host supports Web Audio and thus could create AudioContexts.
+         */
+        canUseWebAudio: boolean;
+        /**
+         * The master gain node defines the global audio volume of your audio engine.
+         */
+        masterGain: GainNode;
+        /**
+         * Defines if Babylon should emit a warning if WebAudio is not supported.
+         * @ignoreNaming
+         */
+        WarnedWebAudioUnsupported: boolean;
+        /**
+         * Gets whether or not mp3 are supported by your browser.
+         */
+        isMP3supported: boolean;
+        /**
+         * Gets whether or not ogg are supported by your browser.
+         */
+        isOGGsupported: boolean;
+        /**
+         * Gets whether audio has been unlocked on the device.
+         * Some Browsers have strong restrictions about Audio and won t autoplay unless
+         * a user interaction has happened.
+         */
+        unlocked: boolean;
+        /**
+         * Defines if the audio engine relies on a custom unlocked button.
+         * In this case, the embedded button will not be displayed.
+         */
+        useCustomUnlockedButton: boolean;
+        /**
+         * Event raised when audio has been unlocked on the browser.
+         */
+        onAudioUnlockedObservable: Observable<AudioEngine>;
+        /**
+         * Event raised when audio has been locked on the browser.
+         */
+        onAudioLockedObservable: Observable<AudioEngine>;
+        /**
+         * Gets the current AudioContext if available.
+         */
+        readonly audioContext: Nullable<AudioContext>;
+        private _connectedAnalyser;
+        /**
+         * Instantiates a new audio engine.
+         *
+         * There should be only one per page as some browsers restrict the number
+         * of audio contexts you can create.
+         * @param hostElement defines the host element where to display the mute icon if necessary
+         */
+        constructor(hostElement?: Nullable<HTMLElement>);
+        /**
+         * Flags the audio engine in Locked state.
+         * This happens due to new browser policies preventing audio to autoplay.
+         */
+        lock(): void;
+        /**
+         * Unlocks the audio engine once a user action has been done on the dom.
+         * This is helpful to resume play once browser policies have been satisfied.
+         */
+        unlock(): void;
+        private _resumeAudioContext;
+        private _initializeAudioContext;
+        private _tryToRun;
+        private _triggerRunningState;
+        private _triggerSuspendedState;
+        private _displayMuteButton;
+        private _moveButtonToTopLeft;
+        private _onResize;
+        private _hideMuteButton;
+        /**
+         * Destroy and release the resources associated with the audio ccontext.
+         */
+        dispose(): void;
+        /**
+         * Gets the global volume sets on the master gain.
+         * @returns the global volume if set or -1 otherwise
+         */
+        getGlobalVolume(): number;
+        /**
+         * Sets the global volume of your experience (sets on the master gain).
+         * @param newVolume Defines the new global volume of the application
+         */
+        setGlobalVolume(newVolume: number): void;
+        /**
+         * Connect the audio engine to an audio analyser allowing some amazing
+         * synchornization between the sounds/music and your visualization (VuMeter for instance).
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
+         * @param analyser The analyser to connect to the engine
+         */
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
+    interface AbstractScene {
+        /**
+         * The list of sounds used in the scene.
+         */
+        sounds: Nullable<Array<Sound>>;
+    }
+    interface Scene {
+        /**
+         * @hidden
+         * Backing field
+         */
+        _mainSoundTrack: SoundTrack;
+        /**
+         * The main sound track played by the scene.
+         * It cotains your primary collection of sounds.
+         */
+        mainSoundTrack: SoundTrack;
+        /**
+         * The list of sound tracks added to the scene
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         */
+        soundTracks: Nullable<Array<SoundTrack>>;
+        /**
+         * Gets a sound using a given name
+         * @param name defines the name to search for
+         * @return the found sound or null if not found at all.
+         */
+        getSoundByName(name: string): Nullable<Sound>;
+        /**
+         * Gets or sets if audio support is enabled
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         */
+        audioEnabled: boolean;
+        /**
+         * Gets or sets if audio will be output to headphones
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         */
+        headphone: boolean;
+    }
+    /**
+     * Defines the sound scene component responsible to manage any sounds
+     * in a given scene.
+     */
+    class AudioSceneComponent implements ISceneSerializableComponent {
+        /**
+         * The component name helpfull to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        private _audioEnabled;
+        /**
+         * Gets whether audio is enabled or not.
+         * Please use related enable/disable method to switch state.
+         */
+        readonly audioEnabled: boolean;
+        private _headphone;
+        /**
+         * Gets whether audio is outputing to headphone or not.
+         * Please use the according Switch methods to change output.
+         */
+        readonly headphone: boolean;
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Serializes the component data to the specified json object
+         * @param serializationObject The object to serialize to
+         */
+        serialize(serializationObject: any): void;
+        /**
+         * Adds all the element from the container to the scene
+         * @param container the container holding the elements
+         */
+        addFromContainer(container: AbstractScene): void;
+        /**
+         * Removes all the elements in the container from the scene
+         * @param container contains the elements to remove
+         */
+        removeFromContainer(container: AbstractScene): void;
+        /**
+         * Disposes the component and the associated ressources.
+         */
+        dispose(): void;
+        /**
+         * Disables audio in the associated scene.
+         */
+        disableAudio(): void;
+        /**
+         * Enables audio in the associated scene.
+         */
+        enableAudio(): void;
+        /**
+         * Switch audio to headphone output.
+         */
+        switchAudioModeForHeadphones(): void;
+        /**
+         * Switch audio to normal speakers.
+         */
+        switchAudioModeForNormalSpeakers(): void;
+        private _afterRender;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Defines a sound that can be played in the application.
+     * The sound can either be an ambient track or a simple sound played in reaction to a user action.
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
+    class Sound {
+        /**
+         * The name of the sound in the scene.
+         */
+        name: string;
+        /**
+         * Does the sound autoplay once loaded.
+         */
+        autoplay: boolean;
+        /**
+         * Does the sound loop after it finishes playing once.
+         */
+        loop: boolean;
+        /**
+         * Does the sound use a custom attenuation curve to simulate the falloff
+         * happening when the source gets further away from the camera.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
+         */
+        useCustomAttenuation: boolean;
+        /**
+         * The sound track id this sound belongs to.
+         */
+        soundTrackId: number;
+        /**
+         * Is this sound currently played.
+         */
+        isPlaying: boolean;
+        /**
+         * Is this sound currently paused.
+         */
+        isPaused: boolean;
+        /**
+         * Does this sound enables spatial sound.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
+        spatialSound: boolean;
+        /**
+         * Define the reference distance the sound should be heard perfectly.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
+        refDistance: number;
+        /**
+         * Define the roll off factor of spatial sounds.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
+        rolloffFactor: number;
+        /**
+         * Define the max distance the sound should be heard (intensity just became 0 at this point).
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
+        maxDistance: number;
+        /**
+         * Define the distance attenuation model the sound will follow.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
+        distanceModel: string;
+        /**
+         * @hidden
+         * Back Compat
+         **/
+        onended: () => any;
+        /**
+         * Observable event when the current playing sound finishes.
+         */
+        onEndedObservable: Observable<Sound>;
+        private _panningModel;
+        private _playbackRate;
+        private _streaming;
+        private _startTime;
+        private _startOffset;
+        private _position;
+        /** @hidden */
+        _positionInEmitterSpace: boolean;
+        private _localDirection;
+        private _volume;
+        private _isReadyToPlay;
+        private _isDirectional;
+        private _readyToPlayCallback;
+        private _audioBuffer;
+        private _soundSource;
+        private _streamingSource;
+        private _soundPanner;
+        private _soundGain;
+        private _inputAudioNode;
+        private _outputAudioNode;
+        private _coneInnerAngle;
+        private _coneOuterAngle;
+        private _coneOuterGain;
+        private _scene;
+        private _connectedMesh;
+        private _customAttenuationFunction;
+        private _registerFunc;
+        private _isOutputConnected;
+        private _htmlAudioElement;
+        private _urlType;
+        /**
+        * Create a sound and attach it to a scene
+        * @param name Name of your sound
+        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
+        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
+        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
+        */
+        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: any);
+        /**
+         * Release the sound and its associated resources
+         */
+        dispose(): void;
+        /**
+         * Gets if the sounds is ready to be played or not.
+         * @returns true if ready, otherwise false
+         */
+        isReady(): boolean;
+        private _soundLoaded;
+        /**
+         * Sets the data of the sound from an audiobuffer
+         * @param audioBuffer The audioBuffer containing the data
+         */
+        setAudioBuffer(audioBuffer: AudioBuffer): void;
+        /**
+         * Updates the current sounds options such as maxdistance, loop...
+         * @param options A JSON object containing values named as the object properties
+         */
+        updateOptions(options: any): void;
+        private _createSpatialParameters;
+        private _updateSpatialParameters;
+        /**
+         * Switch the panning model to HRTF:
+         * Renders a stereo output of higher quality than equalpower — it uses a convolution with measured impulse responses from human subjects.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
+        switchPanningModelToHRTF(): void;
+        /**
+         * Switch the panning model to Equal Power:
+         * Represents the equal-power panning algorithm, generally regarded as simple and efficient. equalpower is the default value.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
+        switchPanningModelToEqualPower(): void;
+        private _switchPanningModel;
+        /**
+         * Connect this sound to a sound track audio node like gain...
+         * @param soundTrackAudioNode the sound track audio node to connect to
+         */
+        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
+        /**
+        * Transform this sound into a directional source
+        * @param coneInnerAngle Size of the inner cone in degree
+        * @param coneOuterAngle Size of the outer cone in degree
+        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
+        */
+        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
+        /**
+         * Gets or sets the inner angle for the directional cone.
+         */
+        /**
+        * Gets or sets the inner angle for the directional cone.
+        */
+        directionalConeInnerAngle: number;
+        /**
+         * Gets or sets the outer angle for the directional cone.
+         */
+        /**
+        * Gets or sets the outer angle for the directional cone.
+        */
+        directionalConeOuterAngle: number;
+        /**
+         * Sets the position of the emitter if spatial sound is enabled
+         * @param newPosition Defines the new posisiton
+         */
+        setPosition(newPosition: Vector3): void;
+        /**
+         * Sets the local direction of the emitter if spatial sound is enabled
+         * @param newLocalDirection Defines the new local direction
+         */
+        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
+        private _updateDirection;
+        /** @hidden */
+        updateDistanceFromListener(): void;
+        /**
+         * Sets a new custom attenuation function for the sound.
+         * @param callback Defines the function used for the attenuation
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
+         */
+        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
+        /**
+        * Play the sound
+        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+        * @param offset (optional) Start the sound setting it at a specific time
+        */
+        play(time?: number, offset?: number): void;
+        private _onended;
+        /**
+        * Stop the sound
+        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
+        */
+        stop(time?: number): void;
+        /**
+         * Put the sound in pause
+         */
+        pause(): void;
+        /**
+         * Sets a dedicated volume for this sounds
+         * @param newVolume Define the new volume of the sound
+         * @param time Define in how long the sound should be at this value
+         */
+        setVolume(newVolume: number, time?: number): void;
+        /**
+         * Set the sound play back rate
+         * @param newPlaybackRate Define the playback rate the sound should be played at
+         */
+        setPlaybackRate(newPlaybackRate: number): void;
+        /**
+         * Gets the volume of the sound.
+         * @returns the volume of the sound
+         */
+        getVolume(): number;
+        /**
+         * Attach the sound to a dedicated mesh
+         * @param meshToConnectTo The mesh to connect the sound with
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
+         */
+        attachToMesh(meshToConnectTo: AbstractMesh): void;
+        /**
+         * Detach the sound from the previously attached mesh
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
+         */
+        detachFromMesh(): void;
+        private _onRegisterAfterWorldMatrixUpdate;
+        /**
+         * Clone the current sound in the scene.
+         * @returns the new sound clone
+         */
+        clone(): Nullable<Sound>;
+        /**
+         * Gets the current underlying audio buffer containing the data
+         * @returns the audio buffer
+         */
+        getAudioBuffer(): Nullable<AudioBuffer>;
+        /**
+         * Serializes the Sound in a JSON representation
+         * @returns the JSON representation of the sound
+         */
+        serialize(): any;
+        /**
+         * Parse a JSON representation of a sound to innstantiate in a given scene
+         * @param parsedSound Define the JSON representation of the sound (usually coming from the serialize method)
+         * @param scene Define the scene the new parsed sound should be created in
+         * @param rootUrl Define the rooturl of the load in case we need to fetch relative dependencies
+         * @param sourceSound Define a cound place holder if do not need to instantiate a new one
+         * @returns the newly parsed sound
+         */
+        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Options allowed during the creation of a sound track.
+     */
+    interface ISoundTrackOptions {
+        /**
+         * The volume the sound track should take during creation
+         */
+        volume?: number;
+        /**
+         * Define if the sound track is the main sound track of the scene
+         */
+        mainTrack?: boolean;
+    }
+    /**
+     * It could be useful to isolate your music & sounds on several tracks to better manage volume on a grouped instance of sounds.
+     * It will be also used in a future release to apply effects on a specific track.
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
+     */
+    class SoundTrack {
+        /**
+         * The unique identifier of the sound track in the scene.
+         */
+        id: number;
+        /**
+         * The list of sounds included in the sound track.
+         */
+        soundCollection: Array<Sound>;
+        private _outputAudioNode;
+        private _scene;
+        private _isMainTrack;
+        private _connectedAnalyser;
+        private _options;
+        private _isInitialized;
+        /**
+         * Creates a new sound track.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
+         * @param scene Define the scene the sound track belongs to
+         * @param options
+         */
+        constructor(scene: Scene, options?: ISoundTrackOptions);
+        private _initializeSoundTrackAudioGraph;
+        /**
+         * Release the sound track and its associated resources
+         */
+        dispose(): void;
+        /**
+         * Adds a sound to this sound track
+         * @param sound define the cound to add
+         * @ignoreNaming
+         */
+        AddSound(sound: Sound): void;
+        /**
+         * Removes a sound to this sound track
+         * @param sound define the cound to remove
+         * @ignoreNaming
+         */
+        RemoveSound(sound: Sound): void;
+        /**
+         * Set a global volume for the full sound track.
+         * @param newVolume Define the new volume of the sound track
+         */
+        setVolume(newVolume: number): void;
+        /**
+         * Switch the panning model to HRTF:
+         * Renders a stereo output of higher quality than equalpower — it uses a convolution with measured impulse responses from human subjects.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
+        switchPanningModelToHRTF(): void;
+        /**
+         * Switch the panning model to Equal Power:
+         * Represents the equal-power panning algorithm, generally regarded as simple and efficient. equalpower is the default value.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
+        switchPanningModelToEqualPower(): void;
+        /**
+         * Connect the sound track to an audio analyser allowing some amazing
+         * synchornization between the sounds/music and your visualization (VuMeter for instance).
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
+         * @param analyser The analyser to connect to the engine
+         */
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Wraps one or more Sound objects and selects one with random weight for playback.
+     */
+    class WeightedSound {
+        /** When true a Sound will be selected and played when the current playing Sound completes. */
+        loop: boolean;
+        private _coneInnerAngle;
+        private _coneOuterAngle;
+        private _volume;
+        /** A Sound is currently playing. */
+        isPlaying: boolean;
+        /** A Sound is currently paused. */
+        isPaused: boolean;
+        private _sounds;
+        private _weights;
+        private _currentIndex?;
+        /**
+         * Creates a new WeightedSound from the list of sounds given.
+         * @param loop When true a Sound will be selected and played when the current playing Sound completes.
+         * @param sounds Array of Sounds that will be selected from.
+         * @param weights Array of number values for selection weights; length must equal sounds, values will be normalized to 1
+         */
+        constructor(loop: boolean, sounds: Sound[], weights: number[]);
+        /**
+         * The size of cone in degrees for a directional sound in which there will be no attenuation.
+         */
+        /**
+        * The size of cone in degress for a directional sound in which there will be no attenuation.
+        */
+        directionalConeInnerAngle: number;
+        /**
+         * Size of cone in degrees for a directional sound outside of which there will be no sound.
+         * Listener angles between innerAngle and outerAngle will falloff linearly.
+         */
+        /**
+        * Size of cone in degrees for a directional sound outside of which there will be no sound.
+        * Listener angles between innerAngle and outerAngle will falloff linearly.
+        */
+        directionalConeOuterAngle: number;
+        /**
+         * Playback volume.
+         */
+        /**
+        * Playback volume.
+        */
+        volume: number;
+        private _onended;
+        /**
+         * Suspend playback
+         */
+        pause(): void;
+        /**
+         * Stop playback
+         */
+        stop(): void;
+        /**
+         * Start playback.
+         * @param startOffset Position the clip head at a specific time in seconds.
+         */
+        play(startOffset?: number): void;
     }
 }
 
@@ -16380,6 +16380,404 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * Interface used to present a loading screen while loading a scene
+     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     */
+    interface ILoadingScreen {
+        /**
+         * Function called to display the loading screen
+         */
+        displayLoadingUI: () => void;
+        /**
+         * Function called to hide the loading screen
+         */
+        hideLoadingUI: () => void;
+        /**
+         * Gets or sets the color to use for the background
+         */
+        loadingUIBackgroundColor: string;
+        /**
+         * Gets or sets the text to display while loading
+         */
+        loadingUIText: string;
+    }
+    /**
+     * Class used for the default loading screen
+     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     */
+    class DefaultLoadingScreen implements ILoadingScreen {
+        private _renderingCanvas;
+        private _loadingText;
+        private _loadingDivBackgroundColor;
+        private _loadingDiv;
+        private _loadingTextDiv;
+        /**
+         * Creates a new default loading screen
+         * @param _renderingCanvas defines the canvas used to render the scene
+         * @param _loadingText defines the default text to display
+         * @param _loadingDivBackgroundColor defines the default background color
+         */
+        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
+        /**
+         * Function called to display the loading screen
+         */
+        displayLoadingUI(): void;
+        /**
+         * Function called to hide the loading screen
+         */
+        hideLoadingUI(): void;
+        /**
+         * Gets or sets the text to display while loading
+         */
+        loadingUIText: string;
+        /**
+         * Gets or sets the color to use for the background
+         */
+        loadingUIBackgroundColor: string;
+        private _resizeLoadingUI;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class used to represent data loading progression
+     */
+    class SceneLoaderProgressEvent {
+        /** defines if data length to load can be evaluated */
+        readonly lengthComputable: boolean;
+        /** defines the loaded data length */
+        readonly loaded: number;
+        /** defines the data length to load */
+        readonly total: number;
+        /**
+         * Create a new progress event
+         * @param lengthComputable defines if data length to load can be evaluated
+         * @param loaded defines the loaded data length
+         * @param total defines the data length to load
+         */
+        constructor(
+        /** defines if data length to load can be evaluated */
+        lengthComputable: boolean, 
+        /** defines the loaded data length */
+        loaded: number, 
+        /** defines the data length to load */
+        total: number);
+        /**
+         * Creates a new SceneLoaderProgressEvent from a ProgressEvent
+         * @param event defines the source event
+         * @returns a new SceneLoaderProgressEvent
+         */
+        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
+    }
+    /**
+     * Interface used by SceneLoader plugins to define supported file extensions
+     */
+    interface ISceneLoaderPluginExtensions {
+        /**
+         * Defines the list of supported extensions
+         */
+        [extension: string]: {
+            isBinary: boolean;
+        };
+    }
+    /**
+     * Interface used by SceneLoader plugin factory
+     */
+    interface ISceneLoaderPluginFactory {
+        /**
+         * Defines the name of the factory
+         */
+        name: string;
+        /**
+         * Function called to create a new plugin
+         * @return the new plugin
+         */
+        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        /**
+         * Boolean indicating if the plugin can direct load specific data
+         */
+        canDirectLoad?: (data: string) => boolean;
+    }
+    /**
+     * Interface used to define a SceneLoader plugin
+     */
+    interface ISceneLoaderPlugin {
+        /**
+         * The friendly name of this plugin.
+         */
+        name: string;
+        /**
+         * The file extensions supported by this plugin.
+         */
+        extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param meshes The meshes array to import into
+         * @param particleSystems The particle systems array to import into
+         * @param skeletons The skeletons array to import into
+         * @param onError The callback when import fails
+         * @returns True if successful or false otherwise
+         */
+        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean;
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns true if successful or false otherwise
+         */
+        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
+        canDirectLoad?: (data: string) => boolean;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns The loaded asset container
+         */
+        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
+    }
+    /**
+     * Interface used to define an async SceneLoader plugin
+     */
+    interface ISceneLoaderPluginAsync {
+        /**
+         * The friendly name of this plugin.
+         */
+        name: string;
+        /**
+         * The file extensions supported by this plugin.
+         */
+        extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @param fileName Defines the name of the file to load
+         * @returns The loaded meshes, particle systems, skeletons, and animation groups
+         */
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: IParticleSystem[];
+            skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
+        }>;
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @param fileName Defines the name of the file to load
+         * @returns Nothing
+         */
+        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
+        canDirectLoad?: (data: string) => boolean;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @param fileName Defines the name of the file to load
+         * @returns The loaded asset container
+         */
+        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
+    }
+    /**
+     * Class used to load scene from various file formats using registered plugins
+     * @see http://doc.babylonjs.com/how_to/load_from_any_file_type
+     */
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        private static _CleanBoneMatrixWeights;
+        /**
+         * No logging while loading
+         */
+        static readonly NO_LOGGING: number;
+        /**
+         * Minimal logging while loading
+         */
+        static readonly MINIMAL_LOGGING: number;
+        /**
+         * Summary logging while loading
+         */
+        static readonly SUMMARY_LOGGING: number;
+        /**
+         * Detailled logging while loading
+         */
+        static readonly DETAILED_LOGGING: number;
+        private static _loggingLevel;
+        /**
+         * Gets or sets a boolean indicating if entire scene must be loaded even if scene contains incremental data
+         */
+        static ForceFullSceneLoadingForIncremental: boolean;
+        /**
+         * Gets or sets a boolean indicating if loading screen must be displayed while loading a scene
+         */
+        static ShowLoadingScreen: boolean;
+        /**
+         * Defines the current logging level (while loading the scene)
+         * @ignorenaming
+         */
+        static loggingLevel: number;
+        /**
+         * Gets or set a boolean indicating if matrix weights must be cleaned upon loading
+         */
+        static CleanBoneMatrixWeights: boolean;
+        /**
+         * Event raised when a plugin is used to load a scene
+         */
+        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        private static _registeredPlugins;
+        private static _getDefaultPlugin;
+        private static _getPluginForExtension;
+        private static _getPluginForDirectLoad;
+        private static _getPluginForFilename;
+        private static _getDirectLoad;
+        private static _loadData;
+        private static _getFileInfo;
+        /**
+         * Gets a plugin that can load the given extension
+         * @param extension defines the extension to load
+         * @returns a plugin or null if none works
+         */
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
+        /**
+         * Gets a boolean indicating that the given extension can be loaded
+         * @param extension defines the extension to load
+         * @returns true if the extension is supported
+         */
+        static IsPluginForExtensionAvailable(extension: string): boolean;
+        /**
+         * Adds a new plugin to the list of registered plugins
+         * @param plugin defines the plugin to add
+         */
+        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+        /**
+         * Import meshes into a scene
+         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param scene the instance of BABYLON.Scene to append to
+         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+         * Import meshes into a scene
+         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param scene the instance of BABYLON.Scene to append to
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
+         */
+        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: IParticleSystem[];
+            skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
+        }>;
+        /**
+         * Load a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param engine is the instance of BABYLON.Engine to use to create the scene
+         * @param onSuccess a callback with the scene when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static Load(rootUrl: string, sceneFilename: string, engine: Engine, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+         * Load a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param engine is the instance of BABYLON.Engine to use to create the scene
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded scene
+         */
+        static LoadAsync(rootUrl: string, sceneFilename: string, engine: Engine, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        /**
+         * Append a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to
+         * @param onSuccess a callback with the scene when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static Append(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+         * Append a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The given scene
+         */
+        static AppendAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        /**
+         * Load a scene into an asset container
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+         * @param onSuccess a callback with the scene when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static LoadAssetContainer(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+         * Load a scene into an asset container
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded asset container
+         */
+        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
+    }
+}
+
+declare module BABYLON {
+    /**
      * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
      * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
      * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
@@ -23697,404 +24095,6 @@ declare module BABYLON {
          * @returns the spherical harmonics
          */
         static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalHarmonics;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Interface used to present a loading screen while loading a scene
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-     */
-    interface ILoadingScreen {
-        /**
-         * Function called to display the loading screen
-         */
-        displayLoadingUI: () => void;
-        /**
-         * Function called to hide the loading screen
-         */
-        hideLoadingUI: () => void;
-        /**
-         * Gets or sets the color to use for the background
-         */
-        loadingUIBackgroundColor: string;
-        /**
-         * Gets or sets the text to display while loading
-         */
-        loadingUIText: string;
-    }
-    /**
-     * Class used for the default loading screen
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-     */
-    class DefaultLoadingScreen implements ILoadingScreen {
-        private _renderingCanvas;
-        private _loadingText;
-        private _loadingDivBackgroundColor;
-        private _loadingDiv;
-        private _loadingTextDiv;
-        /**
-         * Creates a new default loading screen
-         * @param _renderingCanvas defines the canvas used to render the scene
-         * @param _loadingText defines the default text to display
-         * @param _loadingDivBackgroundColor defines the default background color
-         */
-        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
-        /**
-         * Function called to display the loading screen
-         */
-        displayLoadingUI(): void;
-        /**
-         * Function called to hide the loading screen
-         */
-        hideLoadingUI(): void;
-        /**
-         * Gets or sets the text to display while loading
-         */
-        loadingUIText: string;
-        /**
-         * Gets or sets the color to use for the background
-         */
-        loadingUIBackgroundColor: string;
-        private _resizeLoadingUI;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Class used to represent data loading progression
-     */
-    class SceneLoaderProgressEvent {
-        /** defines if data length to load can be evaluated */
-        readonly lengthComputable: boolean;
-        /** defines the loaded data length */
-        readonly loaded: number;
-        /** defines the data length to load */
-        readonly total: number;
-        /**
-         * Create a new progress event
-         * @param lengthComputable defines if data length to load can be evaluated
-         * @param loaded defines the loaded data length
-         * @param total defines the data length to load
-         */
-        constructor(
-        /** defines if data length to load can be evaluated */
-        lengthComputable: boolean, 
-        /** defines the loaded data length */
-        loaded: number, 
-        /** defines the data length to load */
-        total: number);
-        /**
-         * Creates a new SceneLoaderProgressEvent from a ProgressEvent
-         * @param event defines the source event
-         * @returns a new SceneLoaderProgressEvent
-         */
-        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
-    }
-    /**
-     * Interface used by SceneLoader plugins to define supported file extensions
-     */
-    interface ISceneLoaderPluginExtensions {
-        /**
-         * Defines the list of supported extensions
-         */
-        [extension: string]: {
-            isBinary: boolean;
-        };
-    }
-    /**
-     * Interface used by SceneLoader plugin factory
-     */
-    interface ISceneLoaderPluginFactory {
-        /**
-         * Defines the name of the factory
-         */
-        name: string;
-        /**
-         * Function called to create a new plugin
-         * @return the new plugin
-         */
-        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        /**
-         * Boolean indicating if the plugin can direct load specific data
-         */
-        canDirectLoad?: (data: string) => boolean;
-    }
-    /**
-     * Interface used to define a SceneLoader plugin
-     */
-    interface ISceneLoaderPlugin {
-        /**
-         * The friendly name of this plugin.
-         */
-        name: string;
-        /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
-        /**
-         * Import meshes into a scene.
-         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param scene The scene to import into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param meshes The meshes array to import into
-         * @param particleSystems The particle systems array to import into
-         * @param skeletons The skeletons array to import into
-         * @param onError The callback when import fails
-         * @returns True if successful or false otherwise
-         */
-        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * Load into a scene.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onError The callback when import fails
-         * @returns true if successful or false otherwise
-         */
-        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        /**
-         * Load into an asset container.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onError The callback when import fails
-         * @returns The loaded asset container
-         */
-        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
-    }
-    /**
-     * Interface used to define an async SceneLoader plugin
-     */
-    interface ISceneLoaderPluginAsync {
-        /**
-         * The friendly name of this plugin.
-         */
-        name: string;
-        /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
-        /**
-         * Import meshes into a scene.
-         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param scene The scene to import into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @param fileName Defines the name of the file to load
-         * @returns The loaded meshes, particle systems, skeletons, and animation groups
-         */
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
-        /**
-         * Load into a scene.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @param fileName Defines the name of the file to load
-         * @returns Nothing
-         */
-        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        /**
-         * Load into an asset container.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @param fileName Defines the name of the file to load
-         * @returns The loaded asset container
-         */
-        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
-    }
-    /**
-     * Class used to load scene from various file formats using registered plugins
-     * @see http://doc.babylonjs.com/how_to/load_from_any_file_type
-     */
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        private static _CleanBoneMatrixWeights;
-        /**
-         * No logging while loading
-         */
-        static readonly NO_LOGGING: number;
-        /**
-         * Minimal logging while loading
-         */
-        static readonly MINIMAL_LOGGING: number;
-        /**
-         * Summary logging while loading
-         */
-        static readonly SUMMARY_LOGGING: number;
-        /**
-         * Detailled logging while loading
-         */
-        static readonly DETAILED_LOGGING: number;
-        private static _loggingLevel;
-        /**
-         * Gets or sets a boolean indicating if entire scene must be loaded even if scene contains incremental data
-         */
-        static ForceFullSceneLoadingForIncremental: boolean;
-        /**
-         * Gets or sets a boolean indicating if loading screen must be displayed while loading a scene
-         */
-        static ShowLoadingScreen: boolean;
-        /**
-         * Defines the current logging level (while loading the scene)
-         * @ignorenaming
-         */
-        static loggingLevel: number;
-        /**
-         * Gets or set a boolean indicating if matrix weights must be cleaned upon loading
-         */
-        static CleanBoneMatrixWeights: boolean;
-        /**
-         * Event raised when a plugin is used to load a scene
-         */
-        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        private static _registeredPlugins;
-        private static _getDefaultPlugin;
-        private static _getPluginForExtension;
-        private static _getPluginForDirectLoad;
-        private static _getPluginForFilename;
-        private static _getDirectLoad;
-        private static _loadData;
-        private static _getFileInfo;
-        /**
-         * Gets a plugin that can load the given extension
-         * @param extension defines the extension to load
-         * @returns a plugin or null if none works
-         */
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
-        /**
-         * Gets a boolean indicating that the given extension can be loaded
-         * @param extension defines the extension to load
-         * @returns true if the extension is supported
-         */
-        static IsPluginForExtensionAvailable(extension: string): boolean;
-        /**
-         * Adds a new plugin to the list of registered plugins
-         * @param plugin defines the plugin to add
-         */
-        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
-        /**
-         * Import meshes into a scene
-         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene the instance of BABYLON.Scene to append to
-         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-         * Import meshes into a scene
-         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene the instance of BABYLON.Scene to append to
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
-         */
-        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
-        /**
-         * Load a scene
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param engine is the instance of BABYLON.Engine to use to create the scene
-         * @param onSuccess a callback with the scene when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static Load(rootUrl: string, sceneFilename: string, engine: Engine, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-         * Load a scene
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param engine is the instance of BABYLON.Engine to use to create the scene
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded scene
-         */
-        static LoadAsync(rootUrl: string, sceneFilename: string, engine: Engine, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
-        /**
-         * Append a scene
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to
-         * @param onSuccess a callback with the scene when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static Append(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-         * Append a scene
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The given scene
-         */
-        static AppendAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
-        /**
-         * Load a scene into an asset container
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
-         * @param onSuccess a callback with the scene when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static LoadAssetContainer(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-         * Load a scene into an asset container
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded asset container
-         */
-        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
     }
 }
 
@@ -41795,192 +41795,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new AnaglyphArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphFreeCamera extends FreeCamera {
-        /**
-         * Creates a new AnaglyphFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new AnaglyphGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new AnaglyphUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphUniversalCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new StereoscopicArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicFreeCamera extends FreeCamera {
-        /**
-         * Creates a new StereoscopicFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new StereoscopicGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new StereoscopicUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicUniversalCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
      * This represents all the required metrics to create a VR camera.
      * @see http://doc.babylonjs.com/babylon101/cameras#device-orientation-camera
      */
@@ -42753,6 +42567,192 @@ declare module BABYLON {
          * Initializes the controllers and their meshes
          */
         initControllers(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new AnaglyphArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphFreeCamera extends FreeCamera {
+        /**
+         * Creates a new AnaglyphFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new AnaglyphGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new AnaglyphUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphUniversalCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new StereoscopicArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicFreeCamera extends FreeCamera {
+        /**
+         * Creates a new StereoscopicFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new StereoscopicGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new StereoscopicUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicUniversalCamera
+         */
+        getClassName(): string;
     }
 }
 
@@ -44520,6 +44520,9 @@ declare module BABYLON {
         dispose(): void;
         private _gatherRenderTargets;
     }
+}
+
+declare module BABYLON {
 }
 
 declare module BABYLON {
@@ -48037,9 +48040,6 @@ declare module BABYLON {
             deviceId: string;
         }): void;
     }
-}
-
-declare module BABYLON {
 }
 
 declare var DracoDecoderModule: any;
