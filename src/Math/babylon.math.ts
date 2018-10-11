@@ -2511,7 +2511,7 @@ module BABYLON {
             source.x = source.x / viewportWidth * 2 - 1;
             source.y = -(source.y / viewportHeight * 2 - 1);
             var vector = Vector3.TransformCoordinates(source, matrix);
-            const m = matrix.m
+            const m = matrix.m;
             var num = source.x * m[3] + source.y * m[7] + source.z * m[11] + m[15];
 
             if (Scalar.WithinEpsilon(num, 1.0)) {
@@ -2575,7 +2575,7 @@ module BABYLON {
             screenSource.y = -(sourceY / viewportHeight * 2 - 1);
             screenSource.z = 2 * sourceZ - 1.0;
             Vector3.TransformCoordinatesToRef(screenSource, matrix, result);
-            const m = matrix.m
+            const m = matrix.m;
             var num = screenSource.x * m[3] + screenSource.y * m[7] + screenSource.z * m[11] + m[15];
 
             if (Scalar.WithinEpsilon(num, 1.0)) {
@@ -6086,7 +6086,7 @@ module BABYLON {
          * @returns a new Plane as the result of the transformation of the current Plane by the given matrix.
          */
         public transform(transformation: Matrix): Plane {
-            const transposedMatrix = MathTmp.Matrix[0]
+            const transposedMatrix = MathTmp.Matrix[0];
             Matrix.TransposeToRef(transformation, transposedMatrix);
             const m = transposedMatrix.m;
             var x = this.normal.x;
@@ -6094,10 +6094,10 @@ module BABYLON {
             var z = this.normal.z;
             var d = this.d;
 
-            var normalX = x * m[0] + y * m[1] + z * m[2] + d * m[3]
-            var normalY = x * m[4] + y * m[5] + z * m[6] + d * m[7]
-            var normalZ = x * m[8] + y * m[9] + z * m[10] + d * m[11]
-            var finalD = x * m[12] + y * m[13] + z * m[14] + d * m[15]
+            var normalX = x * m[0] + y * m[1] + z * m[2] + d * m[3];
+            var normalY = x * m[4] + y * m[5] + z * m[6] + d * m[7];
+            var normalZ = x * m[8] + y * m[9] + z * m[10] + d * m[11];
+            var finalD = x * m[12] + y * m[13] + z * m[14] + d * m[15];
 
             return new Plane(normalX, normalY, normalZ, finalD);
         }
