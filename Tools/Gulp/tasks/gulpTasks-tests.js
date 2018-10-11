@@ -7,25 +7,13 @@ var webpack = require('webpack');
 var webpackStream = require("webpack-stream");
 var rename = require("gulp-rename");
 
+// Import Helpers.
+var rmDir = require("../helpers/gulp-rmDir");
+
 // Read the full config.
 var config = require("../config.json");
 var relativeRootDir = "../../../";
 var rootDir = __dirname + "/" + relativeRootDir;
-
-// Helper functions
-var rmDir = function(dirPath) {
-    try { var files = fs.readdirSync(dirPath); }
-    catch (e) { return; }
-    if (files.length > 0)
-        for (var i = 0; i < files.length; i++) {
-            var filePath = dirPath + '/' + files[i];
-            if (fs.statSync(filePath).isFile())
-                fs.unlinkSync(filePath);
-            else
-                rmDir(filePath);
-        }
-    fs.rmdirSync(dirPath);
-};
 
 /**
  * Launches the KARMA validation tests in chrome in order to debug them.
