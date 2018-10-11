@@ -45,18 +45,31 @@ module BABYLON {
         private _nonVRCamera: Nullable<Camera> = null;
         private _originalSceneAutoClear = true;
 
-        private _outputCanvas: HTMLCanvasElement;
-        private _outputCanvasContext: WebGLRenderingContext;
+        
+        private _managedOutputCanvas: Nullable<HTMLCanvasElement> = null;
+        public managedOutputCanvasContext: Nullable<WebGLRenderingContext> = null;
+
+        private _supported = false;
+
+        public static CreateAsync(scene: BABYLON.Scene):Promise<WebXRExperienceHelper>{
+            var helper = new WebXRExperienceHelper(scene)
+
+            return helper._sessionManager.initialize().then(()=>{
+                helper._supported = true;
+                return helper;
+            }).catch(()=>{
+                return helper;
+            });
+        }
 
         /**
          * Creates a WebXRExperienceHelper
          * @param scene The scene the helper should be created in
          */
-        constructor(private scene: BABYLON.Scene) {
+        private constructor(private scene: BABYLON.Scene) {
             this.camera = new BABYLON.WebXRCamera("", scene);
             this._sessionManager = new BABYLON.WebXRSessionManager(scene);
             this.container = new AbstractMesh("", scene);
-            this._sessionManager.initialize();
         }
 
         /**
@@ -79,10 +92,7 @@ module BABYLON {
             this.state = WebXRState.TRANSITION;
             this.onStateChangedObservable.notifyObservers(this.state);
 
-            this._createCanvas();
-            if (!sessionCreationOptions.outputContext) {
-                sessionCreationOptions.outputContext = this._outputCanvasContext;
-            }
+            this._addCanvas();
 
             return this._sessionManager.enterXR(sessionCreationOptions, frameOfReference).then(() => {
                 // Cache pre xr scene settings
@@ -117,6 +127,13 @@ module BABYLON {
             });
         }
 
+        public supportsSession(options:XRSessionCreationOptions){
+            if(!this._supported){
+                return Promise.resolve(false);
+            }
+            return this._sessionManager.supportsSession(options);
+        }
+
         /**
          * Disposes of the experience helper
          */
@@ -124,21 +141,31 @@ module BABYLON {
             this.camera.dispose();
             this.container.dispose();
             this._removeCanvas();
+            this.setManagedOutputCanvas(null);
             this.onStateChangedObservable.clear();
             this._sessionManager.dispose();
         }
 
         // create canvas used to mirror/vr xr content in fullscreen
-        private _createCanvas() {
+        public setManagedOutputCanvas(canvas:Nullable<HTMLCanvasElement>){
             this._removeCanvas();
-            this._outputCanvas = document.createElement('canvas');
-            this._outputCanvas.style.cssText = "position:absolute; bottom:0px;right:0px;z-index:10;width:100%;height:100%;background-color: #48989e;";
-            document.body.appendChild(this._outputCanvas);
-            this._outputCanvasContext = <any>this._outputCanvas.getContext('xrpresent');
+            if(!canvas){
+                this._managedOutputCanvas = null;
+                this.managedOutputCanvasContext = null;
+            }else{
+                this._managedOutputCanvas = canvas;
+                this.managedOutputCanvasContext = <any>this._managedOutputCanvas.getContext('xrpresent');
+            }
+        }
+        
+        private _addCanvas() {
+            if(this._managedOutputCanvas){
+                document.body.appendChild(this._managedOutputCanvas);
+            }
         }
         private _removeCanvas() {
-            if (this._outputCanvas && document.body.contains(this._outputCanvas)) {
-                document.body.removeChild(this._outputCanvas);
+            if(this._managedOutputCanvas && document.body.contains(this._managedOutputCanvas)){
+                document.body.removeChild(this._managedOutputCanvas);
             }
         }
     }
