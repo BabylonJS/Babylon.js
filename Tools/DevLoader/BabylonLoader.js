@@ -146,39 +146,8 @@ var BABYLONDEVTOOLS;
             }
 
             if (!useDist) {
-                if (library.useOutputForDebugging) {
-                    var tempDirectory = '/.temp' + module.build.distOutputDirectory;
-                    this.loadScript(babylonJSPath + tempDirectory + library.output);
-                } else {
-                    var i = 0;
-                    for (; i < library.files.length; i++) {
-                        var file = library.files[i];
-                        if (file.indexOf('lib.d.ts') > 0) {
-                            continue;
-                        }
-                        // Manage exclude files.
-                        if (library.excludeFromLoader && library.excludeFromLoader.indexOf(file) > -1) {
-                            continue;
-                        }
-
-                        file = file.replace('.ts', '.js');
-                        file = file.replace('../', '');
-                        file = babylonJSPath + '/' + file;
-                        this.loadScript(file);
-                    }
-
-                    if (library.shaderFiles && library.shaderFiles.length > 0) {
-                        var shaderFile = library.shaderFiles[0];
-                        var endDirectoryIndex = shaderFile.lastIndexOf('/');
-                        shaderFile = shaderFile.substring(0, endDirectoryIndex + 1);
-                        shaderFile += library.output.replace('.js', '.js.fx');
-                        this.loadScript(shaderFile);
-                        if (library.shadersIncludeFiles) {
-                            var includeShaderFile = shaderFile.replace('.js.fx', '.js.include.fx');
-                            this.loadScript(includeShaderFile);
-                        }
-                    }
-                }
+                var tempDirectory = '/.temp' + module.build.distOutputDirectory;
+                this.loadScript(babylonJSPath + tempDirectory + library.output);
             }
             else if (min) {
                 if (library.webpack) {
