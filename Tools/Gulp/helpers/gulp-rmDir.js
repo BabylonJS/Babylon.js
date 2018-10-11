@@ -23,4 +23,9 @@ var rmDir = function(dirPath) {
     fs.rmdirSync(dirPath);
 }
 
-module.exports = rmDir;
+module.exports = function(dirPath) {
+    // Retry :-)
+    rmDir(dirPath);
+    rmDir(dirPath);
+    rmDir(dirPath);
+};
