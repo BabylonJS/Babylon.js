@@ -1748,11 +1748,18 @@ module BABYLON {
          * The pickResult parameter can be obtained from a scene.pick or scene.pickWithRay
          * @param pickResult pickingInfo of the object wished to simulate pointer event on
          * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
+         * @param doubleTap indicates that the pointer up event should be considered as part of a double click (false by default)
          * @returns the current scene
          */
-        public simulatePointerUp(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): Scene {
+        public simulatePointerUp(pickResult: PickingInfo, pointerEventInit?: PointerEventInit, doubleTap?: boolean): Scene {
             let evt = new PointerEvent("pointerup", pointerEventInit);
             let clickInfo = new ClickInfo();
+
+            if (doubleTap) {
+                clickInfo.doubleClick = true;
+            } else {
+                clickInfo.singleClick = true;
+            }
 
             if (this._checkPrePointerObservable(pickResult, evt, PointerEventTypes.POINTERUP)) {
                 return this;
@@ -2091,10 +2098,10 @@ module BABYLON {
                                     }
                                 }
                             }
-                        }
-                        else {
-                            if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERUP)) {
-                                return;
+                            else {
+                                if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERUP)) {
+                                    return;
+                                }
                             }
                         }
                     }
