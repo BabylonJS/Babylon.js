@@ -436,7 +436,7 @@ module BABYLON {
                 this._t0.x, this._t0.y, this._t0.z, 0.0,
                        0.0,        0.0,        0.0, 1.0,
                 this._cachedTextureMatrix
-            )
+            );
 
             let scene = this.getScene();
 

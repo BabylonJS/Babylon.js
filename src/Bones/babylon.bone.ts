@@ -437,7 +437,7 @@ module BABYLON {
                     }
                 }
 
-                tmat.setTranslationFromFloats(0,0,0);
+                tmat.setTranslationFromFloats(0, 0, 0);
                 tmat.invert();
                 Vector3.TransformCoordinatesToRef(vec, tmat, tvec);
 
@@ -602,7 +602,7 @@ module BABYLON {
          */
         public rotate(axis: Vector3, amount: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
             var rmat = Bone._tmpMats[0];
-            rmat.setTranslationFromFloats(0,0,0);
+            rmat.setTranslationFromFloats(0, 0, 0);
             Matrix.RotationAxisToRef(axis, amount, rmat);
             this._rotateWithMatrix(rmat, space, mesh);
         }
