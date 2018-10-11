@@ -13,11 +13,6 @@ var expect = require("gulp-expect-file");
 var optimisejs = require("gulp-optimize-js");
 var filter = require('gulp-filter');
 var path = require("path");
-var webpack = require('webpack');
-var webpackStream = require("webpack-stream");
-var fs = require("fs");
-var dtsBundle = require('dts-bundle');
-var through = require('through2');
 
 // Gulp Helpers
 var addDtsExport = require("./helpers/gulp-addDtsExport");
@@ -25,10 +20,10 @@ var addDecorateAndExtends = require("./helpers/gulp-decorateAndExtends");
 var addModuleExports = require("./helpers/gulp-addModuleExports");
 var addES6Exports = require("./helpers/gulp-addES6Exports");
 var uncommentShader = require("./helpers/gulp-removeShaderComments");
-var processDeclaration = require('./helpers/gulp-processTypescriptDeclaration');
-var rmDir = require("./helpers/gulp-rmDir");
 
 // Import Gulp Tasks
+require("./tasks/gulpTasks-libraries");
+require("./tasks/gulpTasks-viewerLibraries");
 require("./tasks/gulpTasks-tsLint");
 require("./tasks/gulpTasks-netlify");
 require("./tasks/gulpTasks-whatsNew");
@@ -284,176 +279,10 @@ gulp.task("typescript-compile", function() {
  */
 gulp.task("typescript", gulp.series("typescript-compile", "buildWorker", "build"));
 
-var buildExternalLibrary = function(library, settings) {
-    var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
-
-    if (!library.webpack) {
-        throw "Missing Webpack configuration in " + library;
-    }
-
-    const sequence = [];
-    if (settings.build.outputs) {
-        settings.build.outputs.forEach(out => {
-            let wpConfig = require(library.webpack);
-            if (!out.minified) {
-                wpConfig.mode = "development";
-            }
-
-            let wpBuild = webpackStream(wpConfig, require("webpack"));
-
-            //shoud dtsBundle create the declaration?
-            if (settings.build.dtsBundle) {
-                let event = wpBuild
-                    .pipe(through.obj(function(file, enc, cb) {
-                        // only declaration files
-                        const isdts = /\.d\.ts$/.test(file.path);
-                        if (isdts) this.push(file);
-                        cb();
-                    }))
-                    .pipe(gulp.dest(outputDirectory));
-                // dts-bundle does NOT support (gulp) streams, so files have to be saved and reloaded, 
-                // until I fix it
-                event.on("end", function() {
-                    // create the file
-                    dtsBundle.bundle(settings.build.dtsBundle);
-                    // prepend the needed reference
-                    let fileLocation = path.join(path.dirname(settings.build.dtsBundle.main), settings.build.dtsBundle.out);
-                    fs.readFile(fileLocation, function(err, data) {
-                        if (err) throw err;
-                        data = (settings.build.dtsBundle.prependText || "") + '\n' + data.toString();
-                        fs.writeFileSync(fileLocation, data);
-                        if (settings.build.processDeclaration) {
-                            var newData = processDeclaration(data, settings.build.processDeclaration);
-                            fs.writeFileSync(fileLocation.replace('.module', ''), newData);
-                        }
-                    });
-                });
-            }
-
-            let build = wpBuild
-                .pipe(through.obj(function(file, enc, cb) {
-                    // only pipe js files
-                    const isJs = /\.js$/.test(file.path);
-                    if (isJs) this.push(file);
-                    cb();
-                }))
-                .pipe(addModuleExports(library.moduleDeclaration, { subModule: false, extendsRoot: false, externalUsingBabylon: true, noBabylonInit: library.babylonIncluded }));
-
-            function processDestination(dest) {
-                var outputDirectory = config.build.outputDirectory + dest.outputDirectory;
-                build = build
-                    .pipe(rename(dest.filename.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
-                    .pipe(gulp.dest(outputDirectory));
-
-                if (library.babylonIncluded && dest.addBabylonDeclaration) {
-                    // include the babylon declaration
-                    if (dest.addBabylonDeclaration === true) {
-                        dest.addBabylonDeclaration = [config.build.declarationFilename];
-                    }
-                    var decsToAdd = dest.addBabylonDeclaration.map(function(dec) {
-                        return config.build.outputDirectory + '/' + dec;
-                    });
-                    sequence.unshift(gulp.src(decsToAdd)
-                        .pipe(rename(function(path) {
-                            path.dirname = '';
-                        }))
-                        .pipe(gulp.dest(outputDirectory)))
-                }
-            }
-
-            out.destinations.forEach(dest => {
-                processDestination(dest);
-            });
-
-            sequence.push(build);
-
-        });
-    } else {
-        var wpConfig;
-        if (library.entry) {
-            wpConfig = require(settings.build.webpack);
-            wpConfig.entry = {
-                'main': path.resolve(wpConfig.context, library.entry),
-            };
-            wpConfig.output.filename = library.output;
-        }
-        else {
-            wpConfig = require(library.webpack);
-        }
-
-        let wpBuildMin = webpackStream(wpConfig, webpack);
-        let buildEventMin = wpBuildMin.pipe(gulp.dest(outputDirectory));
-        sequence.push(buildEventMin);
-
-        // Generate unminified
-        wpConfig.mode = "development";
-        wpConfig.output.filename = wpConfig.output.filename.replace(".min", "");
-
-        let wpBuildMax = webpackStream(wpConfig, webpack);
-        let buildEventMax = wpBuildMax.pipe(gulp.dest(outputDirectory));
-        sequence.push(buildEventMax);
-
-        if (library.isMain) {
-            if (settings.build.dtsBundle || settings.build.processDeclaration) {
-                buildEventMin.on("end", function() {
-                    if (settings.build.dtsBundle) {
-                        dtsBundle.bundle(settings.build.dtsBundle);
-                    }
-
-                    if (settings.build.processDeclaration) {
-                        let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
-                        fs.readFile(fileLocation, function(err, data) {
-                            if (err) throw err;
-
-                            // For Raanan, litteral import hack TO BETTER INTEGRATE
-                            data = data + "";
-                            data = data.replace('import "../sass/main.scss";', "");
-
-                            var newData = processDeclaration(data, settings.build.processDeclaration);
-                            fs.writeFileSync(fileLocation.replace('.module', ''), newData);
-                            //legacy module support
-                            fs.writeFileSync(fileLocation, data + "\n" + newData);
-                        });
-                    }
-                });
-            }
-        }
-    }
-
-    return merge2(sequence);
-}
-
-/**
- * Dynamic module creation In Serie for WebPack leaks.
- */
-function buildExternalLibraries(settings) {
-    var tasks = settings.libraries.map(function(library) {
-        var build = function(cb) {
-            return buildExternalLibrary(library, settings);
-        }
-        return build;
-    });
-
-    return gulp.series.apply(this, tasks);
-}
-
-/**
- * Dynamic module creation.
- */
-config.modules.map(function(module) {
-    var settings = config[module];
-
-    // Clean up old build files.
-    rmDir(settings.build.dtsBundle.baseDir);
-
-    // Build the libraries.
-    gulp.task(module, buildExternalLibraries(settings));
-});
-
 /**
  * Build all libs.
  */
-gulp.task("typescript-libraries", gulp.series(config.modules));
+gulp.task("typescript-libraries", gulp.series(config.modules, config.viewerModules));
 
 /**
  * Custom build with full path file control; used by profile.html
