@@ -1447,7 +1447,7 @@ module BABYLON {
          * @param result defines the target vector
          */
         public static TransformToRef(vector: Vector2, transformation: Matrix, result: Vector2) {
-            const m = transformation.m;
+            const m = transformation.toArray();
             var x = (vector.x * m[0]) + (vector.y * m[4]) + m[12];
             var y = (vector.x * m[1]) + (vector.y * m[5]) + m[13];
             result.x = x;
@@ -2242,7 +2242,7 @@ module BABYLON {
          * @param result defines the Vector3 where to store the result
          */
         public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Readonly<Matrix>, result: Vector3): void {
-            const m = transformation.m;
+            const m = transformation.toArray();
             var rx = x * m[0] + y * m[4] + z * m[8] + m[12];
             var ry = x * m[1] + y * m[5] + z * m[9] + m[13];
             var rz = x * m[2] + y * m[6] + z * m[10] + m[14];
@@ -2287,7 +2287,7 @@ module BABYLON {
          * @param result defines the Vector3 where to store the result
          */
         public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Readonly<Matrix>, result: Vector3): void {
-            const m = transformation.m;
+            const m = transformation.toArray();
             result.x = x * m[0] + y * m[4] + z * m[8];
             result.y = x * m[1] + y * m[5] + z * m[9];
             result.z = x * m[2] + y * m[6] + z * m[10];
@@ -2511,7 +2511,8 @@ module BABYLON {
             source.x = source.x / viewportWidth * 2 - 1;
             source.y = -(source.y / viewportHeight * 2 - 1);
             var vector = Vector3.TransformCoordinates(source, matrix);
-            var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
+            const m = matrix.toArray()
+            var num = source.x * m[3] + source.y * m[7] + source.z * m[11] + m[15];
 
             if (Scalar.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
@@ -2574,7 +2575,8 @@ module BABYLON {
             screenSource.y = -(sourceY / viewportHeight * 2 - 1);
             screenSource.z = 2 * sourceZ - 1.0;
             Vector3.TransformCoordinatesToRef(screenSource, matrix, result);
-            var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
+            const m = matrix.toArray()
+            var num = screenSource.x * m[3] + screenSource.y * m[7] + screenSource.z * m[11] + m[15];
 
             if (Scalar.WithinEpsilon(num, 1.0)) {
                 result.scaleInPlace(1.0 / num);
@@ -3320,7 +3322,7 @@ module BABYLON {
          * @param result the vector to store the result in
          */
         public static TransformNormalToRef(vector: Vector4, transformation: Matrix, result: Vector4): void {
-            const m = transformation.m;
+            const m = transformation.toArray();
             var x = (vector.x * m[0]) + (vector.y * m[4]) + (vector.z * m[8]);
             var y = (vector.x * m[1]) + (vector.y * m[5]) + (vector.z * m[9]);
             var z = (vector.x * m[2]) + (vector.y * m[6]) + (vector.z * m[10]);
@@ -3341,7 +3343,7 @@ module BABYLON {
          * @param result the vector to store the results in
          */
         public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: Matrix, result: Vector4): void {
-            const m = transformation.m;
+            const m = transformation.toArray();
             result.x = (x * m[0]) + (y * m[4]) + (z * m[8]);
             result.y = (x * m[1]) + (y * m[5]) + (z * m[9]);
             result.z = (x * m[2]) + (y * m[6]) + (z * m[10]);
@@ -3852,34 +3854,7 @@ module BABYLON {
          * @returns the current unchanged quaternion
          */
         public toRotationMatrix(result: Matrix): Quaternion {
-            var xx = this.x * this.x;
-            var yy = this.y * this.y;
-            var zz = this.z * this.z;
-            var xy = this.x * this.y;
-            var zw = this.z * this.w;
-            var zx = this.z * this.x;
-            var yw = this.y * this.w;
-            var yz = this.y * this.z;
-            var xw = this.x * this.w;
-
-            result.m[0] = 1.0 - (2.0 * (yy + zz));
-            result.m[1] = 2.0 * (xy + zw);
-            result.m[2] = 2.0 * (zx - yw);
-            result.m[3] = 0;
-            result.m[4] = 2.0 * (xy - zw);
-            result.m[5] = 1.0 - (2.0 * (zz + xx));
-            result.m[6] = 2.0 * (yz + xw);
-            result.m[7] = 0;
-            result.m[8] = 2.0 * (zx + yw);
-            result.m[9] = 2.0 * (yz - xw);
-            result.m[10] = 1.0 - (2.0 * (yy + xx));
-            result.m[11] = 0;
-            result.m[12] = 0;
-            result.m[13] = 0;
-            result.m[14] = 0;
-            result.m[15] = 1.0;
-
-            result._markAsUpdated();
+            Matrix.FromQuaternionToRef(this, result);
             return this;
         }
 
@@ -3912,7 +3887,7 @@ module BABYLON {
          * @param result defines the target quaternion
          */
         public static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion): void {
-            var data = matrix.m;
+            var data = matrix.toArray();
             var m11 = data[0], m12 = data[4], m13 = data[8];
             var m21 = data[1], m22 = data[5], m23 = data[9];
             var m31 = data[2], m32 = data[6], m33 = data[10];
@@ -4243,12 +4218,13 @@ module BABYLON {
         /**
          * Gets or sets the internal data of the matrix
          */
-        public m: Float32Array = new Float32Array(16);
+        private readonly m: Float32Array = new Float32Array(16);
 
         /** @hidden */
         public _markAsUpdated() {
             this.updateFlag = Matrix._updateFlagSeed++;
             this._isIdentityDirty = true;
+            this._isIdentity = false;
             this._isIdentity3x2Dirty = true;
         }
 
@@ -4317,6 +4293,10 @@ module BABYLON {
          * @returns the matrix determinant
          */
         public determinant(): number {
+            if (this._isIdentity === true) {
+                return 1;
+            }
+
             const m = this.m;
             const temp1 = m[10] * m[15] - m[11] * m[14];
             const temp2 = m[9] * m[15] - m[11] * m[13];
@@ -4415,6 +4395,11 @@ module BABYLON {
          * @returns the unmodified current matrix
          */
         public invertToRef(other: Matrix): Matrix {
+            if (this._isIdentity === true) {
+                Matrix.IdentityToRef(other);
+                return this;
+            }
+
             const m = this.m;
             const l1 = m[0], l2 = m[1], l3 = m[2], l4 = m[3];
             const l5 = m[4], l6 = m[5], l7 = m[6], l8 = m[7];
@@ -4547,7 +4532,7 @@ module BABYLON {
          */
         public copyFrom(other: Readonly<Matrix>): Matrix {
             for (var index = 0; index < 16; index++) {
-                this.m[index] = other.m[index];
+                this.m[index] = (other as Matrix).m[index];
             }
 
             this._markAsUpdated();
@@ -4589,7 +4574,20 @@ module BABYLON {
          */
         public multiplyToArray(other: Readonly<Matrix>, result: Float32Array, offset: number): Matrix {
             const m = this.m;
-            const otherM = other.m;
+            const otherM = (other as Matrix).m;
+
+            if (this._isIdentity) {
+                for (var index = 0; index < 16; ++index) {
+                    result[offset + index] = otherM[index];
+                }
+                return this;
+            }
+            if ((other as Matrix)._isIdentity) {
+                for (var index = 0; index < 16; ++index) {
+                    result[offset + index] = m[index];
+                }
+                return this;
+            }
 
             var tm0 = m[0], tm1 = m[1], tm2 = m[2], tm3 = m[3];
             var tm4 = m[4], tm5 = m[5], tm6 = m[6], tm7 = m[7];
@@ -4601,7 +4599,7 @@ module BABYLON {
             var om8 = otherM[8], om9 = otherM[9], om10 = otherM[10], om11 = otherM[11];
             var om12 = otherM[12], om13 = otherM[13], om14 = otherM[14], om15 = otherM[15];
 
-            result[offset] = tm0 * om0 + tm1 * om4 + tm2 * om8 + tm3 * om12;
+            result[offset    ] = tm0 * om0 + tm1 * om4 + tm2 * om8 + tm3 * om12;
             result[offset + 1] = tm0 * om1 + tm1 * om5 + tm2 * om9 + tm3 * om13;
             result[offset + 2] = tm0 * om2 + tm1 * om6 + tm2 * om10 + tm3 * om14;
             result[offset + 3] = tm0 * om3 + tm1 * om7 + tm2 * om11 + tm3 * om15;
@@ -6065,16 +6063,18 @@ module BABYLON {
          * @returns a new Plane as the result of the transformation of the current Plane by the given matrix.
          */
         public transform(transformation: Matrix): Plane {
-            var transposedMatrix = Matrix.Transpose(transformation);
+            const transposedMatrix = MathTmp.Matrix[0]
+            Matrix.TransposeToRef(transformation, transposedMatrix);
+            const m = transposedMatrix.toArray();
             var x = this.normal.x;
             var y = this.normal.y;
             var z = this.normal.z;
             var d = this.d;
 
-            var normalX = (((x * transposedMatrix.m[0]) + (y * transposedMatrix.m[1])) + (z * transposedMatrix.m[2])) + (d * transposedMatrix.m[3]);
-            var normalY = (((x * transposedMatrix.m[4]) + (y * transposedMatrix.m[5])) + (z * transposedMatrix.m[6])) + (d * transposedMatrix.m[7]);
-            var normalZ = (((x * transposedMatrix.m[8]) + (y * transposedMatrix.m[9])) + (z * transposedMatrix.m[10])) + (d * transposedMatrix.m[11]);
-            var finalD = (((x * transposedMatrix.m[12]) + (y * transposedMatrix.m[13])) + (z * transposedMatrix.m[14])) + (d * transposedMatrix.m[15]);
+            var normalX = x * m[0] + y * m[1] + z * m[2] + d * m[3]
+            var normalY = x * m[4] + y * m[5] + z * m[6] + d * m[7]
+            var normalZ = x * m[8] + y * m[9] + z * m[10] + d * m[11]
+            var finalD = x * m[12] + y * m[13] + z * m[14] + d * m[15]
 
             return new Plane(normalX, normalY, normalZ, finalD);
         }
@@ -6262,10 +6262,11 @@ module BABYLON {
          * @param frustumPlane the resuling frustum plane
          */
         public static GetNearPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
-            frustumPlane.normal.x = transform.m[3] + transform.m[2];
-            frustumPlane.normal.y = transform.m[7] + transform.m[6];
-            frustumPlane.normal.z = transform.m[11] + transform.m[10];
-            frustumPlane.d = transform.m[15] + transform.m[14];
+            const m = transform.toArray();
+            frustumPlane.normal.x = m[3] + m[2];
+            frustumPlane.normal.y = m[7] + m[6];
+            frustumPlane.normal.z = m[11] + m[10];
+            frustumPlane.d = m[15] + m[14];
             frustumPlane.normalize();
         }
 
@@ -6275,10 +6276,11 @@ module BABYLON {
          * @param frustumPlane the resuling frustum plane
          */
         public static GetFarPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
-            frustumPlane.normal.x = transform.m[3] - transform.m[2];
-            frustumPlane.normal.y = transform.m[7] - transform.m[6];
-            frustumPlane.normal.z = transform.m[11] - transform.m[10];
-            frustumPlane.d = transform.m[15] - transform.m[14];
+            const m = transform.toArray();
+            frustumPlane.normal.x = m[3] - m[2];
+            frustumPlane.normal.y = m[7] - m[6];
+            frustumPlane.normal.z = m[11] - m[10];
+            frustumPlane.d = m[15] - m[14];
             frustumPlane.normalize();
         }
 
@@ -6288,10 +6290,11 @@ module BABYLON {
          * @param frustumPlane the resuling frustum plane
          */
         public static GetLeftPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
-            frustumPlane.normal.x = transform.m[3] + transform.m[0];
-            frustumPlane.normal.y = transform.m[7] + transform.m[4];
-            frustumPlane.normal.z = transform.m[11] + transform.m[8];
-            frustumPlane.d = transform.m[15] + transform.m[12];
+            const m = transform.toArray();
+            frustumPlane.normal.x = m[3] + m[0];
+            frustumPlane.normal.y = m[7] + m[4];
+            frustumPlane.normal.z = m[11] + m[8];
+            frustumPlane.d = m[15] + m[12];
             frustumPlane.normalize();
         }
 
@@ -6301,10 +6304,11 @@ module BABYLON {
          * @param frustumPlane the resuling frustum plane
          */
         public static GetRightPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
-            frustumPlane.normal.x = transform.m[3] - transform.m[0];
-            frustumPlane.normal.y = transform.m[7] - transform.m[4];
-            frustumPlane.normal.z = transform.m[11] - transform.m[8];
-            frustumPlane.d = transform.m[15] - transform.m[12];
+            const m = transform.toArray();
+            frustumPlane.normal.x = m[3] - m[0];
+            frustumPlane.normal.y = m[7] - m[4];
+            frustumPlane.normal.z = m[11] - m[8];
+            frustumPlane.d = m[15] - m[12];
             frustumPlane.normalize();
         }
 
@@ -6314,10 +6318,11 @@ module BABYLON {
          * @param frustumPlane the resuling frustum plane
          */
         public static GetTopPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
-            frustumPlane.normal.x = transform.m[3] - transform.m[1];
-            frustumPlane.normal.y = transform.m[7] - transform.m[5];
-            frustumPlane.normal.z = transform.m[11] - transform.m[9];
-            frustumPlane.d = transform.m[15] - transform.m[13];
+            const m = transform.toArray();
+            frustumPlane.normal.x = m[3] - m[1];
+            frustumPlane.normal.y = m[7] - m[5];
+            frustumPlane.normal.z = m[11] - m[9];
+            frustumPlane.d = m[15] - m[13];
             frustumPlane.normalize();
         }
 
@@ -6327,10 +6332,11 @@ module BABYLON {
          * @param frustumPlane the resuling frustum plane
          */
         public static GetBottomPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
-            frustumPlane.normal.x = transform.m[3] + transform.m[1];
-            frustumPlane.normal.y = transform.m[7] + transform.m[5];
-            frustumPlane.normal.z = transform.m[11] + transform.m[9];
-            frustumPlane.d = transform.m[15] + transform.m[13];
+            const m = transform.toArray();
+            frustumPlane.normal.x = m[3] + m[1];
+            frustumPlane.normal.y = m[7] + m[5];
+            frustumPlane.normal.z = m[11] + m[9];
+            frustumPlane.d = m[15] + m[13];
             frustumPlane.normalize();
         }
 
