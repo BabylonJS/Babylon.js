@@ -1447,7 +1447,7 @@ module BABYLON {
          * @param result defines the target vector
          */
         public static TransformToRef(vector: Vector2, transformation: Matrix, result: Vector2) {
-            const m = transformation.toArray();
+            const m = transformation.m;
             var x = (vector.x * m[0]) + (vector.y * m[4]) + m[12];
             var y = (vector.x * m[1]) + (vector.y * m[5]) + m[13];
             result.x = x;
@@ -2242,7 +2242,7 @@ module BABYLON {
          * @param result defines the Vector3 where to store the result
          */
         public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Readonly<Matrix>, result: Vector3): void {
-            const m = transformation.toArray();
+            const m = transformation.m;
             var rx = x * m[0] + y * m[4] + z * m[8] + m[12];
             var ry = x * m[1] + y * m[5] + z * m[9] + m[13];
             var rz = x * m[2] + y * m[6] + z * m[10] + m[14];
@@ -2287,7 +2287,7 @@ module BABYLON {
          * @param result defines the Vector3 where to store the result
          */
         public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Readonly<Matrix>, result: Vector3): void {
-            const m = transformation.toArray();
+            const m = transformation.m;
             result.x = x * m[0] + y * m[4] + z * m[8];
             result.y = x * m[1] + y * m[5] + z * m[9];
             result.z = x * m[2] + y * m[6] + z * m[10];
@@ -2511,7 +2511,7 @@ module BABYLON {
             source.x = source.x / viewportWidth * 2 - 1;
             source.y = -(source.y / viewportHeight * 2 - 1);
             var vector = Vector3.TransformCoordinates(source, matrix);
-            const m = matrix.toArray()
+            const m = matrix.m
             var num = source.x * m[3] + source.y * m[7] + source.z * m[11] + m[15];
 
             if (Scalar.WithinEpsilon(num, 1.0)) {
@@ -2575,7 +2575,7 @@ module BABYLON {
             screenSource.y = -(sourceY / viewportHeight * 2 - 1);
             screenSource.z = 2 * sourceZ - 1.0;
             Vector3.TransformCoordinatesToRef(screenSource, matrix, result);
-            const m = matrix.toArray()
+            const m = matrix.m
             var num = screenSource.x * m[3] + screenSource.y * m[7] + screenSource.z * m[11] + m[15];
 
             if (Scalar.WithinEpsilon(num, 1.0)) {
@@ -3322,7 +3322,7 @@ module BABYLON {
          * @param result the vector to store the result in
          */
         public static TransformNormalToRef(vector: Vector4, transformation: Matrix, result: Vector4): void {
-            const m = transformation.toArray();
+            const m = transformation.m;
             var x = (vector.x * m[0]) + (vector.y * m[4]) + (vector.z * m[8]);
             var y = (vector.x * m[1]) + (vector.y * m[5]) + (vector.z * m[9]);
             var z = (vector.x * m[2]) + (vector.y * m[6]) + (vector.z * m[10]);
@@ -3343,7 +3343,7 @@ module BABYLON {
          * @param result the vector to store the results in
          */
         public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: Matrix, result: Vector4): void {
-            const m = transformation.toArray();
+            const m = transformation.m;
             result.x = (x * m[0]) + (y * m[4]) + (z * m[8]);
             result.y = (x * m[1]) + (y * m[5]) + (z * m[9]);
             result.z = (x * m[2]) + (y * m[6]) + (z * m[10]);
@@ -3887,7 +3887,7 @@ module BABYLON {
          * @param result defines the target quaternion
          */
         public static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion): void {
-            var data = matrix.toArray();
+            var data = matrix.m;
             var m11 = data[0], m12 = data[4], m13 = data[8];
             var m21 = data[1], m22 = data[5], m23 = data[9];
             var m31 = data[2], m32 = data[6], m33 = data[10];
@@ -4215,10 +4215,12 @@ module BABYLON {
          */
         public updateFlag: number;
 
+        private readonly _m: Float32Array = new Float32Array(16);
+
         /**
-         * Gets or sets the internal data of the matrix
+         * Gets the internal data of the matrix
          */
-        private readonly m: Float32Array = new Float32Array(16);
+        public get m(): Readonly<Float32Array> { return this._m; }
 
         /** @hidden */
         public _markAsUpdated() {
@@ -4251,16 +4253,13 @@ module BABYLON {
         public isIdentity(): boolean {
             if (this._isIdentityDirty) {
                 this._isIdentityDirty = false;
-                if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[10] !== 1.0 || this.m[15] !== 1.0) {
-                    this._isIdentity = false;
-                } else if (this.m[1] !== 0.0 || this.m[2] !== 0.0 || this.m[3] !== 0.0 ||
-                    this.m[4] !== 0.0 || this.m[6] !== 0.0 || this.m[7] !== 0.0 ||
-                    this.m[8] !== 0.0 || this.m[9] !== 0.0 || this.m[11] !== 0.0 ||
-                    this.m[12] !== 0.0 || this.m[13] !== 0.0 || this.m[14] !== 0.0) {
-                    this._isIdentity = false;
-                } else {
-                    this._isIdentity = true;
-                }
+                const m = this._m;
+                this._isIdentity = (
+                    m[0]  === 1.0 && m[1]  === 0.0 && m[2]  === 0.0 && m[3]  === 0.0 &&
+                    m[4]  === 0.0 && m[5]  === 1.0 && m[6]  === 0.0 && m[7]  === 0.0 &&
+                    m[8]  === 0.0 && m[9]  === 0.0 && m[10] === 1.0 && m[11] === 0.0 &&
+                    m[12] === 0.0 && m[13] === 0.0 && m[14] === 0.0 && m[15] === 1.0
+                );
             }
 
             return this._isIdentity;
@@ -4273,12 +4272,12 @@ module BABYLON {
         public isIdentityAs3x2(): boolean {
             if (this._isIdentity3x2Dirty) {
                 this._isIdentity3x2Dirty = false;
-                if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[15] !== 1.0) {
+                if (this._m[0] !== 1.0 || this._m[5] !== 1.0 || this._m[15] !== 1.0) {
                     this._isIdentity3x2 = false;
-                } else if (this.m[1] !== 0.0 || this.m[2] !== 0.0 || this.m[3] !== 0.0 ||
-                    this.m[4] !== 0.0 || this.m[6] !== 0.0 || this.m[7] !== 0.0 ||
-                    this.m[8] !== 0.0 || this.m[9] !== 0.0 || this.m[10] !== 0.0 || this.m[11] !== 0.0 ||
-                    this.m[12] !== 0.0 || this.m[13] !== 0.0 || this.m[14] !== 0.0) {
+                } else if (this._m[1] !== 0.0 || this._m[2] !== 0.0 || this._m[3] !== 0.0 ||
+                    this._m[4] !== 0.0 || this._m[6] !== 0.0 || this._m[7] !== 0.0 ||
+                    this._m[8] !== 0.0 || this._m[9] !== 0.0 || this._m[10] !== 0.0 || this._m[11] !== 0.0 ||
+                    this._m[12] !== 0.0 || this._m[13] !== 0.0 || this._m[14] !== 0.0) {
                     this._isIdentity3x2 = false;
                 } else {
                     this._isIdentity3x2 = true;
@@ -4297,7 +4296,7 @@ module BABYLON {
                 return 1;
             }
 
-            const m = this.m;
+            const m = this._m;
             const temp1 = m[10] * m[15] - m[11] * m[14];
             const temp2 = m[9] * m[15] - m[11] * m[13];
             const temp3 = m[9] * m[14] - m[10] * m[13];
@@ -4320,14 +4319,14 @@ module BABYLON {
          * @returns the matrix underlying array
          */
         public toArray(): Float32Array {
-            return this.m;
+            return this._m;
         }
         /**
          * Returns the matrix as a Float32Array
         * @returns the matrix underlying array.
         */
         public asArray(): Float32Array {
-            return this.toArray();
+            return this._m;
         }
 
         /**
@@ -4344,7 +4343,7 @@ module BABYLON {
          */
         public reset(): Matrix {
             for (var index = 0; index < 16; index++) {
-                this.m[index] = 0.0;
+                this._m[index] = 0.0;
             }
 
             this._updateIdentityStatus(false);
@@ -4370,7 +4369,7 @@ module BABYLON {
          */
         public addToRef(other: Matrix, result: Matrix): Matrix {
             for (var index = 0; index < 16; index++) {
-                result.m[index] = this.m[index] + other.m[index];
+                result._m[index] = this._m[index] + other._m[index];
             }
             result._markAsUpdated();
             return this;
@@ -4383,7 +4382,7 @@ module BABYLON {
          */
         public addToSelf(other: Matrix): Matrix {
             for (var index = 0; index < 16; index++) {
-                this.m[index] += other.m[index];
+                this._m[index] += other._m[index];
             }
             this._markAsUpdated();
             return this;
@@ -4400,7 +4399,7 @@ module BABYLON {
                 return this;
             }
 
-            const m = this.m;
+            const m = this._m;
             const l1 = m[0], l2 = m[1], l3 = m[2], l4 = m[3];
             const l5 = m[4], l6 = m[5], l7 = m[6], l8 = m[7];
             const l9 = m[8], l10 = m[9], l11 = m[10], l12 = m[11];
@@ -4430,7 +4429,7 @@ module BABYLON {
             const l38 = l5 * l11 - l7 * l9;
             const l39 = l5 * l10 - l6 * l9;
 
-            const otherM = other.m;
+            const otherM = other._m;
             otherM[0] = l23 * l27;
             otherM[4] = l24 * l27;
             otherM[8] = l25 * l27;
@@ -4453,6 +4452,30 @@ module BABYLON {
         }
 
         /**
+         * add a value at the specified position in the current Matrix
+         * @param index the index of the value within the matrix. between 0 and 15.
+         * @param value the value to be added
+         * @returns the current updated matrix
+         */
+        public addAtIndex(index: number, value: number): Matrix {
+            this._m[index] += value;
+            this._markAsUpdated();
+            return this;
+        }
+
+        /**
+         * mutiply the specified position in the current Matrix by a value
+         * @param index the index of the value within the matrix. between 0 and 15.
+         * @param value the value to be added
+         * @returns the current updated matrix
+         */
+        public multiplyAtIndex(index: number, value: number): Matrix {
+            this._m[index] *= value;
+            this._markAsUpdated();
+            return this;
+        }
+
+        /**
          * Inserts the translation vector (using 3 floats) in the current matrix
          * @param x defines the 1st component of the translation
          * @param y defines the 2nd component of the translation
@@ -4460,9 +4483,9 @@ module BABYLON {
          * @returns the current updated matrix
          */
         public setTranslationFromFloats(x: number, y: number, z: number): Matrix {
-            this.m[12] = x;
-            this.m[13] = y;
-            this.m[14] = z;
+            this._m[12] = x;
+            this._m[13] = y;
+            this._m[14] = z;
 
             this._markAsUpdated();
             return this;
@@ -4474,9 +4497,9 @@ module BABYLON {
          * @returns the current updated matrix
          */
         public setTranslation(vector3: Vector3): Matrix {
-            this.m[12] = vector3.x;
-            this.m[13] = vector3.y;
-            this.m[14] = vector3.z;
+            this._m[12] = vector3.x;
+            this._m[13] = vector3.y;
+            this._m[14] = vector3.z;
 
             this._markAsUpdated();
             return this;
@@ -4487,7 +4510,7 @@ module BABYLON {
          * @returns a new Vector3 as the extracted translation from the matrix
          */
         public getTranslation(): Vector3 {
-            return new Vector3(this.m[12], this.m[13], this.m[14]);
+            return new Vector3(this._m[12], this._m[13], this._m[14]);
         }
 
         /**
@@ -4496,9 +4519,9 @@ module BABYLON {
          * @returns the current matrix
          */
         public getTranslationToRef(result: Vector3): Matrix {
-            result.x = this.m[12];
-            result.y = this.m[13];
-            result.z = this.m[14];
+            result.x = this._m[12];
+            result.y = this._m[13];
+            result.z = this._m[14];
 
             return this;
         }
@@ -4532,7 +4555,7 @@ module BABYLON {
          */
         public copyFrom(other: Readonly<Matrix>): Matrix {
             for (var index = 0; index < 16; index++) {
-                this.m[index] = (other as Matrix).m[index];
+                this._m[index] = (other as Matrix)._m[index];
             }
 
             this._markAsUpdated();
@@ -4547,7 +4570,7 @@ module BABYLON {
          */
         public copyToArray(array: Float32Array, offset: number = 0): Matrix {
             for (var index = 0; index < 16; index++) {
-                array[offset + index] = this.m[index];
+                array[offset + index] = this._m[index];
             }
             return this;
         }
@@ -4559,7 +4582,7 @@ module BABYLON {
          * @returns the current matrix
          */
         public multiplyToRef(other: Readonly<Matrix>, result: Matrix): Matrix {
-            this.multiplyToArray(other, result.m, 0);
+            this.multiplyToArray(other, result._m, 0);
 
             result._markAsUpdated();
             return this;
@@ -4573,8 +4596,8 @@ module BABYLON {
          * @returns the current matrix
          */
         public multiplyToArray(other: Readonly<Matrix>, result: Float32Array, offset: number): Matrix {
-            const m = this.m;
-            const otherM = (other as Matrix).m;
+            const m = this._m;
+            const otherM = (other as Matrix)._m;
 
             if (this._isIdentity) {
                 for (var index = 0; index < 16; ++index) {
@@ -4627,8 +4650,8 @@ module BABYLON {
          * @returns true is the current matrix and the given one values are strictly equal
          */
         public equals(value: Matrix): boolean {
-            const m = this.m;
-            const om = value.m;
+            const m = this._m;
+            const om = value._m;
             return (
                 m[0]  === om[0]  && m[1]  === om[1]  && m[2]  === om[2]  && m[3]  === om[3] &&
                 m[4]  === om[4]  && m[5]  === om[5]  && m[6]  === om[6]  && m[7]  === om[7] &&
@@ -4642,7 +4665,7 @@ module BABYLON {
          * @returns a new matrix from the current matrix
          */
         public clone(): Matrix {
-            const matrix = Matrix.FromArray(this.m);
+            const matrix = Matrix.FromArray(this._m);
             matrix._isIdentityDirty = this._isIdentityDirty;
             matrix._isIdentity = this._isIdentity;
             matrix._isIdentity3x2Dirty = this._isIdentity3x2Dirty;
@@ -4663,9 +4686,9 @@ module BABYLON {
          * @returns the hash code
          */
         public getHashCode(): number {
-            let hash = this.m[0] || 0;
+            let hash = this._m[0] || 0;
             for (let i = 1; i < 16; i++) {
-                hash = (hash * 397) ^ (this.m[i] || 0);
+                hash = (hash * 397) ^ (this._m[i] || 0);
             }
             return hash;
         }
@@ -4678,7 +4701,7 @@ module BABYLON {
          * @returns true if operation was successful
          */
         public decompose(scale?: Vector3, rotation?: Quaternion, translation?: Vector3): boolean {
-            const m = this.m;
+            const m = this._m;
             if (translation) {
                 translation.copyFromFloats(m[12], m[13], m[14]);
             }
@@ -4725,7 +4748,7 @@ module BABYLON {
                 return null;
             }
             var i = index * 4;
-            return new Vector4(this.m[i + 0], this.m[i + 1], this.m[i + 2], this.m[i + 3]);
+            return new Vector4(this._m[i + 0], this._m[i + 1], this._m[i + 2], this._m[i + 3]);
         }
 
         /**
@@ -4771,10 +4794,10 @@ module BABYLON {
                 return this;
             }
             var i = index * 4;
-            this.m[i + 0] = x;
-            this.m[i + 1] = y;
-            this.m[i + 2] = z;
-            this.m[i + 3] = w;
+            this._m[i + 0] = x;
+            this._m[i + 1] = y;
+            this._m[i + 2] = z;
+            this._m[i + 3] = w;
 
             this._markAsUpdated();
             return this;
@@ -4799,7 +4822,7 @@ module BABYLON {
          */
         public scaleToRef(scale: number, result: Matrix): Matrix {
             for (var index = 0; index < 16; index++) {
-                result.m[index] = this.m[index] * scale;
+                result._m[index] = this._m[index] * scale;
             }
             result._markAsUpdated();
             return this;
@@ -4813,7 +4836,7 @@ module BABYLON {
          */
         public scaleAndAddToRef(scale: number, result: Matrix): Matrix {
             for (var index = 0; index < 16; index++) {
-                result.m[index] += this.m[index] * scale;
+                result._m[index] += this._m[index] * scale;
             }
             result._markAsUpdated();
             return this;
@@ -4827,7 +4850,7 @@ module BABYLON {
             const tmp = MathTmp.Matrix[0];
             this.invertToRef(tmp);
             tmp.transposeToRef(ref);
-            var m = ref.m;
+            var m = ref._m;
             Matrix.FromValuesToRef(
                 m[0], m[1],  m[2], 0.0,
                 m[4], m[5],  m[6], 0.0,
@@ -4859,7 +4882,7 @@ module BABYLON {
                 return this;
             }
 
-            const m = this.m;
+            const m = this._m;
             const sx = 1 / scale.x, sy = 1 / scale.y, sz = 1 / scale.z;
             Matrix.FromValuesToRef(
                 m[0] * sx, m[1] * sx,  m[2] * sx, 0.0,
@@ -4875,7 +4898,7 @@ module BABYLON {
          * Toggles model matrix from being right handed to left handed in place and vice versa
          */
         public toggleModelMatrixHandInPlace() {
-            const m = this.m;
+            const m = this._m;
             m[2] *= -1;
             m[6] *= -1;
             m[8] *= -1;
@@ -4888,7 +4911,7 @@ module BABYLON {
          * Toggles projection matrix from being right handed to left handed in place and vice versa
          */
         public toggleProjectionMatrixHandInPlace() {
-            var m = this.m;
+            var m = this._m;
             m[8] *= -1;
             m[9] *= -1;
             m[10] *= -1;
@@ -4920,7 +4943,7 @@ module BABYLON {
          */
         public static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Matrix) {
             for (var index = 0; index < 16; index++) {
-                result.m[index] = array[index + offset];
+                result._m[index] = array[index + offset];
             }
             result._markAsUpdated();
         }
@@ -4934,7 +4957,7 @@ module BABYLON {
          */
         public static FromFloat32ArrayToRefScaled(array: Float32Array, offset: number, scale: number, result: Matrix) {
             for (var index = 0; index < 16; index++) {
-                result.m[index] = array[index + offset] * scale;
+                result._m[index] = array[index + offset] * scale;
             }
 
             result._markAsUpdated();
@@ -4972,7 +4995,7 @@ module BABYLON {
             initialM31: number, initialM32: number, initialM33: number, initialM34: number,
             initialM41: number, initialM42: number, initialM43: number, initialM44: number, result: Matrix): void {
 
-            const m = result.m;
+            const m = result._m;
             m[0] = initialM11; m[1] = initialM12; m[2] = initialM13; m[3] = initialM14;
             m[4] = initialM21; m[5] = initialM22; m[6] = initialM23; m[7] = initialM24;
             m[8] = initialM31; m[9] = initialM32; m[10] = initialM33; m[11] = initialM34;
@@ -5007,7 +5030,7 @@ module BABYLON {
             initialM41: number, initialM42: number, initialM43: number, initialM44: number): Matrix {
 
             var result = new Matrix();
-            const m = result.m;
+            const m = result._m;
             m[0] = initialM11; m[1] = initialM12; m[2] = initialM13; m[3] = initialM14;
             m[4] = initialM21; m[5] = initialM22; m[6] = initialM23; m[7] = initialM24;
             m[8] = initialM31; m[9] = initialM32; m[10] = initialM33; m[11] = initialM34;
@@ -5210,22 +5233,22 @@ module BABYLON {
 
             axis.normalize();
 
-            result.m[0] = (axis.x * axis.x) * c1 + c;
-            result.m[1] = (axis.x * axis.y) * c1 - (axis.z * s);
-            result.m[2] = (axis.x * axis.z) * c1 + (axis.y * s);
-            result.m[3] = 0.0;
+            result._m[0] = (axis.x * axis.x) * c1 + c;
+            result._m[1] = (axis.x * axis.y) * c1 - (axis.z * s);
+            result._m[2] = (axis.x * axis.z) * c1 + (axis.y * s);
+            result._m[3] = 0.0;
 
-            result.m[4] = (axis.y * axis.x) * c1 + (axis.z * s);
-            result.m[5] = (axis.y * axis.y) * c1 + c;
-            result.m[6] = (axis.y * axis.z) * c1 - (axis.x * s);
-            result.m[7] = 0.0;
+            result._m[4] = (axis.y * axis.x) * c1 + (axis.z * s);
+            result._m[5] = (axis.y * axis.y) * c1 + c;
+            result._m[6] = (axis.y * axis.z) * c1 - (axis.x * s);
+            result._m[7] = 0.0;
 
-            result.m[8] = (axis.z * axis.x) * c1 - (axis.y * s);
-            result.m[9] = (axis.z * axis.y) * c1 + (axis.x * s);
-            result.m[10] = (axis.z * axis.z) * c1 + c;
-            result.m[11] = 0.0;
+            result._m[8] = (axis.z * axis.x) * c1 - (axis.y * s);
+            result._m[9] = (axis.z * axis.y) * c1 + (axis.x * s);
+            result._m[10] = (axis.z * axis.z) * c1 + c;
+            result._m[11] = 0.0;
 
-            result.m[15] = 1.0;
+            result._m[15] = 1.0;
 
             result._markAsUpdated();
         }
@@ -5339,7 +5362,7 @@ module BABYLON {
          */
         public static LerpToRef(startValue: Matrix, endValue: Matrix, gradient: number, result: Matrix): void {
             for (var index = 0; index < 16; index++) {
-                result.m[index] = startValue.m[index] * (1.0 - gradient) + endValue.m[index] * gradient;
+                result._m[index] = startValue._m[index] * (1.0 - gradient) + endValue._m[index] * gradient;
             }
             result._markAsUpdated();
         }
@@ -5626,7 +5649,7 @@ module BABYLON {
          */
         public static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
             Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result);
-            result.m[10] *= -1.0;
+            result._m[10] *= -1.0;
         }
 
         /**
@@ -5766,16 +5789,16 @@ module BABYLON {
             var rightTan = Math.tan(fov.rightDegrees * Math.PI / 180.0);
             var xScale = 2.0 / (leftTan + rightTan);
             var yScale = 2.0 / (upTan + downTan);
-            result.m[0] = xScale;
-            result.m[1] = result.m[2] = result.m[3] = result.m[4] = 0.0;
-            result.m[5] = yScale;
-            result.m[6] = result.m[7] = 0.0;
-            result.m[8] = ((leftTan - rightTan) * xScale * 0.5);
-            result.m[9] = -((upTan - downTan) * yScale * 0.5);
-            result.m[10] = -zfar / (znear - zfar);
-            result.m[11] = 1.0 * rightHandedFactor;
-            result.m[12] = result.m[13] = result.m[15] = 0.0;
-            result.m[14] = -(2.0 * zfar * znear) / (zfar - znear);
+            result._m[0] = xScale;
+            result._m[1] = result._m[2] = result._m[3] = result._m[4] = 0.0;
+            result._m[5] = yScale;
+            result._m[6] = result._m[7] = 0.0;
+            result._m[8] = ((leftTan - rightTan) * xScale * 0.5);
+            result._m[9] = -((upTan - downTan) * yScale * 0.5);
+            result._m[10] = -zfar / (znear - zfar);
+            result._m[11] = 1.0 * rightHandedFactor;
+            result._m[12] = result._m[13] = result._m[15] = 0.0;
+            result._m[14] = -(2.0 * zfar * znear) / (zfar - znear);
 
             result._markAsUpdated();
         }
@@ -5811,8 +5834,8 @@ module BABYLON {
          */
         public static GetAsMatrix2x2(matrix: Matrix): Float32Array {
             return new Float32Array([
-                matrix.m[0], matrix.m[1],
-                matrix.m[4], matrix.m[5]
+                matrix._m[0], matrix._m[1],
+                matrix._m[4], matrix._m[5]
             ]);
         }
         /**
@@ -5822,9 +5845,9 @@ module BABYLON {
          */
         public static GetAsMatrix3x3(matrix: Matrix): Float32Array {
             return new Float32Array([
-                matrix.m[0], matrix.m[1], matrix.m[2],
-                matrix.m[4], matrix.m[5], matrix.m[6],
-                matrix.m[8], matrix.m[9], matrix.m[10]
+                matrix._m[0], matrix._m[1], matrix._m[2],
+                matrix._m[4], matrix._m[5], matrix._m[6],
+                matrix._m[8], matrix._m[9], matrix._m[10]
             ]);
         }
 
@@ -5847,25 +5870,25 @@ module BABYLON {
          * @param result defines the target matrix
          */
         public static TransposeToRef(matrix: Matrix, result: Matrix): void {
-            result.m[0] = matrix.m[0];
-            result.m[1] = matrix.m[4];
-            result.m[2] = matrix.m[8];
-            result.m[3] = matrix.m[12];
+            result._m[0] = matrix._m[0];
+            result._m[1] = matrix._m[4];
+            result._m[2] = matrix._m[8];
+            result._m[3] = matrix._m[12];
 
-            result.m[4] = matrix.m[1];
-            result.m[5] = matrix.m[5];
-            result.m[6] = matrix.m[9];
-            result.m[7] = matrix.m[13];
+            result._m[4] = matrix._m[1];
+            result._m[5] = matrix._m[5];
+            result._m[6] = matrix._m[9];
+            result._m[7] = matrix._m[13];
 
-            result.m[8] = matrix.m[2];
-            result.m[9] = matrix.m[6];
-            result.m[10] = matrix.m[10];
-            result.m[11] = matrix.m[14];
+            result._m[8] = matrix._m[2];
+            result._m[9] = matrix._m[6];
+            result._m[10] = matrix._m[10];
+            result._m[11] = matrix._m[14];
 
-            result.m[12] = matrix.m[3];
-            result.m[13] = matrix.m[7];
-            result.m[14] = matrix.m[11];
-            result.m[15] = matrix.m[15];
+            result._m[12] = matrix._m[3];
+            result._m[13] = matrix._m[7];
+            result._m[14] = matrix._m[11];
+            result._m[15] = matrix._m[15];
         }
 
         /**
@@ -5892,22 +5915,22 @@ module BABYLON {
             var temp = -2 * x;
             var temp2 = -2 * y;
             var temp3 = -2 * z;
-            result.m[0] = (temp * x) + 1;
-            result.m[1] = temp2 * x;
-            result.m[2] = temp3 * x;
-            result.m[3] = 0.0;
-            result.m[4] = temp * y;
-            result.m[5] = (temp2 * y) + 1;
-            result.m[6] = temp3 * y;
-            result.m[7] = 0.0;
-            result.m[8] = temp * z;
-            result.m[9] = temp2 * z;
-            result.m[10] = (temp3 * z) + 1;
-            result.m[11] = 0.0;
-            result.m[12] = temp * plane.d;
-            result.m[13] = temp2 * plane.d;
-            result.m[14] = temp3 * plane.d;
-            result.m[15] = 1.0;
+            result._m[0] = (temp * x) + 1;
+            result._m[1] = temp2 * x;
+            result._m[2] = temp3 * x;
+            result._m[3] = 0.0;
+            result._m[4] = temp * y;
+            result._m[5] = (temp2 * y) + 1;
+            result._m[6] = temp3 * y;
+            result._m[7] = 0.0;
+            result._m[8] = temp * z;
+            result._m[9] = temp2 * z;
+            result._m[10] = (temp3 * z) + 1;
+            result._m[11] = 0.0;
+            result._m[12] = temp * plane.d;
+            result._m[13] = temp2 * plane.d;
+            result._m[14] = temp3 * plane.d;
+            result._m[15] = 1.0;
 
             result._markAsUpdated();
         }
@@ -5921,29 +5944,29 @@ module BABYLON {
          */
         public static FromXYZAxesToRef(xaxis: Vector3, yaxis: Vector3, zaxis: Vector3, result: Matrix) {
 
-            result.m[0] = xaxis.x;
-            result.m[1] = xaxis.y;
-            result.m[2] = xaxis.z;
+            result._m[0] = xaxis.x;
+            result._m[1] = xaxis.y;
+            result._m[2] = xaxis.z;
 
-            result.m[3] = 0.0;
+            result._m[3] = 0.0;
 
-            result.m[4] = yaxis.x;
-            result.m[5] = yaxis.y;
-            result.m[6] = yaxis.z;
+            result._m[4] = yaxis.x;
+            result._m[5] = yaxis.y;
+            result._m[6] = yaxis.z;
 
-            result.m[7] = 0.0;
+            result._m[7] = 0.0;
 
-            result.m[8] = zaxis.x;
-            result.m[9] = zaxis.y;
-            result.m[10] = zaxis.z;
+            result._m[8] = zaxis.x;
+            result._m[9] = zaxis.y;
+            result._m[10] = zaxis.z;
 
-            result.m[11] = 0.0;
+            result._m[11] = 0.0;
 
-            result.m[12] = 0.0;
-            result.m[13] = 0.0;
-            result.m[14] = 0.0;
+            result._m[12] = 0.0;
+            result._m[13] = 0.0;
+            result._m[14] = 0.0;
 
-            result.m[15] = 1.0;
+            result._m[15] = 1.0;
 
             result._markAsUpdated();
         }
@@ -5965,24 +5988,24 @@ module BABYLON {
             var yz = quat.y * quat.z;
             var xw = quat.x * quat.w;
 
-            result.m[0] = 1.0 - (2.0 * (yy + zz));
-            result.m[1] = 2.0 * (xy + zw);
-            result.m[2] = 2.0 * (zx - yw);
-            result.m[3] = 0.0;
-            result.m[4] = 2.0 * (xy - zw);
-            result.m[5] = 1.0 - (2.0 * (zz + xx));
-            result.m[6] = 2.0 * (yz + xw);
-            result.m[7] = 0.0;
-            result.m[8] = 2.0 * (zx + yw);
-            result.m[9] = 2.0 * (yz - xw);
-            result.m[10] = 1.0 - (2.0 * (yy + xx));
-            result.m[11] = 0.0;
+            result._m[0] = 1.0 - (2.0 * (yy + zz));
+            result._m[1] = 2.0 * (xy + zw);
+            result._m[2] = 2.0 * (zx - yw);
+            result._m[3] = 0.0;
+            result._m[4] = 2.0 * (xy - zw);
+            result._m[5] = 1.0 - (2.0 * (zz + xx));
+            result._m[6] = 2.0 * (yz + xw);
+            result._m[7] = 0.0;
+            result._m[8] = 2.0 * (zx + yw);
+            result._m[9] = 2.0 * (yz - xw);
+            result._m[10] = 1.0 - (2.0 * (yy + xx));
+            result._m[11] = 0.0;
 
-            result.m[12] = 0.0;
-            result.m[13] = 0.0;
-            result.m[14] = 0.0;
+            result._m[12] = 0.0;
+            result._m[13] = 0.0;
+            result._m[14] = 0.0;
 
-            result.m[15] = 1.0;
+            result._m[15] = 1.0;
 
             result._markAsUpdated();
         }
@@ -6065,7 +6088,7 @@ module BABYLON {
         public transform(transformation: Matrix): Plane {
             const transposedMatrix = MathTmp.Matrix[0]
             Matrix.TransposeToRef(transformation, transposedMatrix);
-            const m = transposedMatrix.toArray();
+            const m = transposedMatrix.m;
             var x = this.normal.x;
             var y = this.normal.y;
             var z = this.normal.z;
@@ -6262,7 +6285,7 @@ module BABYLON {
          * @param frustumPlane the resuling frustum plane
          */
         public static GetNearPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
-            const m = transform.toArray();
+            const m = transform.m;
             frustumPlane.normal.x = m[3] + m[2];
             frustumPlane.normal.y = m[7] + m[6];
             frustumPlane.normal.z = m[11] + m[10];
@@ -6276,7 +6299,7 @@ module BABYLON {
          * @param frustumPlane the resuling frustum plane
          */
         public static GetFarPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
-            const m = transform.toArray();
+            const m = transform.m;
             frustumPlane.normal.x = m[3] - m[2];
             frustumPlane.normal.y = m[7] - m[6];
             frustumPlane.normal.z = m[11] - m[10];
@@ -6290,7 +6313,7 @@ module BABYLON {
          * @param frustumPlane the resuling frustum plane
          */
         public static GetLeftPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
-            const m = transform.toArray();
+            const m = transform.m;
             frustumPlane.normal.x = m[3] + m[0];
             frustumPlane.normal.y = m[7] + m[4];
             frustumPlane.normal.z = m[11] + m[8];
@@ -6304,7 +6327,7 @@ module BABYLON {
          * @param frustumPlane the resuling frustum plane
          */
         public static GetRightPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
-            const m = transform.toArray();
+            const m = transform.m;
             frustumPlane.normal.x = m[3] - m[0];
             frustumPlane.normal.y = m[7] - m[4];
             frustumPlane.normal.z = m[11] - m[8];
@@ -6318,7 +6341,7 @@ module BABYLON {
          * @param frustumPlane the resuling frustum plane
          */
         public static GetTopPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
-            const m = transform.toArray();
+            const m = transform.m;
             frustumPlane.normal.x = m[3] - m[1];
             frustumPlane.normal.y = m[7] - m[5];
             frustumPlane.normal.z = m[11] - m[9];
@@ -6332,7 +6355,7 @@ module BABYLON {
          * @param frustumPlane the resuling frustum plane
          */
         public static GetBottomPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
-            const m = transform.toArray();
+            const m = transform.m;
             frustumPlane.normal.x = m[3] + m[1];
             frustumPlane.normal.y = m[7] + m[5];
             frustumPlane.normal.z = m[11] + m[9];
