@@ -4300,19 +4300,31 @@ module BABYLON {
             }
 
             const m = this._m;
-            const temp1 = m[10] * m[15] - m[11] * m[14];
-            const temp2 = m[9] * m[15] - m[11] * m[13];
-            const temp3 = m[9] * m[14] - m[10] * m[13];
-            const temp4 = m[8] * m[15] - m[11] * m[12];
-            const temp5 = m[8] * m[14] - m[10] * m[12];
-            const temp6 = m[8] * m[13] - m[9] * m[12];
+            const m00 = m[0], m01 = m[1], m02 = m[2], m03 = m[3];
+            const m10 = m[4], m11 = m[5], m12 = m[6], m13 = m[7];
+            const m20 = m[8], m21 = m[9], m22 = m[10], m23 = m[11];
+            const m30 = m[12], m31 = m[13], m32 = m[14], m33 = m[15];
+            // https://en.wikipedia.org/wiki/Laplace_expansion
+            // to compute the derminant of a 4x4 Matrix we compute the cofactors of any row or column,
+            // then we multiply each Cofactor by its corresponding matrix value and sum them all to get the determinant
+            // Cofactor(i, j) = sign(i,j) * det(Minor(i, j))
+            // where
+            //  - sign(i,j) = (i+j) % 2 === 0 ? 1 : -1
+            //  - Minor(i, j) is the 3x3 matrix we get by removing row i and column j from current Matrix
+            //
+            // Herre we do that for the 1st row.
 
-            return (
-              m[0] * (m[5] * temp1 - m[6] * temp2 + m[7] * temp3) -
-              m[1] * (m[4] * temp1 - m[6] * temp4 + m[7] * temp5) +
-              m[2] * (m[4] * temp2 - m[5] * temp4 + m[7] * temp6) -
-              m[3] * (m[4] * temp3 - m[5] * temp5 + m[6] * temp6)
-            );
+            const det_22_33 = m22 * m33 - m32 * m23;
+            const det_21_33 = m21 * m33 - m31 * m23;
+            const det_21_32 = m21 * m32 - m31 * m22;
+            const det_20_33 = m20 * m33 - m30 * m23;
+            const det_20_32 = m20 * m32 - m22 * m30;
+            const det_20_31 = m20 * m31 - m30 * m21;
+            const cofact_00 = +(m11 * det_22_33 - m12 * det_21_33 + m13 * det_21_32);
+            const cofact_01 = -(m10 * det_22_33 - m12 * det_20_33 + m13 * det_20_32);
+            const cofact_02 = +(m10 * det_21_33 - m11 * det_20_33 + m13 * det_20_31);
+            const cofact_03 = -(m10 * det_21_32 - m11 * det_20_32 + m12 * det_20_31)
+            return m00 * cofact_00 + m01 * cofact_01 + m02 * cofact_02 + m03 * cofact_03;
         }
 
         // Methods
@@ -4405,55 +4417,71 @@ module BABYLON {
                 return this;
             }
 
+            // the inverse of a Matrix is the transpose of cofactor matrix divided by the determinant
             const m = this._m;
-            const l1 = m[0], l2 = m[1], l3 = m[2], l4 = m[3];
-            const l5 = m[4], l6 = m[5], l7 = m[6], l8 = m[7];
-            const l9 = m[8], l10 = m[9], l11 = m[10], l12 = m[11];
-            const l13 = m[12], l14 = m[13], l15 = m[14], l16 = m[15];
+            const m00 = m[0], m01 = m[1], m02 = m[2], m03 = m[3];
+            const m10 = m[4], m11 = m[5], m12 = m[6], m13 = m[7];
+            const m20 = m[8], m21 = m[9], m22 = m[10], m23 = m[11];
+            const m30 = m[12], m31 = m[13], m32 = m[14], m33 = m[15];
 
-            const l17 = l11 * l16 - l12 * l15;
-            const l18 = l10 * l16 - l12 * l14;
-            const l19 = l10 * l15 - l11 * l14;
-            const l20 = l9 * l16 - l12 * l13;
-            const l21 = l9 * l15 - l11 * l13;
-            const l22 = l9 * l14 - l10 * l13;
-            const l23 = l6 * l17 - l7 * l18 + l8 * l19;
-            const l24 = -(l5 * l17 - l7 * l20 + l8 * l21);
-            const l25 = l5 * l18 - l6 * l20 + l8 * l22;
-            const l26 = -(l5 * l19 - l6 * l21 + l7 * l22);
-            const l27 = 1 / (l1 * l23 + l2 * l24 + l3 * l25 + l4 * l26);
-            const l28 = l7 * l16 - l8 * l15;
-            const l29 = l6 * l16 - l8 * l14;
-            const l30 = l6 * l15 - l7 * l14;
-            const l31 = l5 * l16 - l8 * l13;
-            const l32 = l5 * l15 - l7 * l13;
-            const l33 = l5 * l14 - l6 * l13;
-            const l34 = l7 * l12 - l8 * l11;
-            const l35 = l6 * l12 - l8 * l10;
-            const l36 = l6 * l11 - l7 * l10;
-            const l37 = l5 * l12 - l8 * l9;
-            const l38 = l5 * l11 - l7 * l9;
-            const l39 = l5 * l10 - l6 * l9;
+            const det_22_33 = m22 * m33 - m32 * m23;
+            const det_21_33 = m21 * m33 - m31 * m23;
+            const det_21_32 = m21 * m32 - m31 * m22;
+            const det_20_33 = m20 * m33 - m30 * m23;
+            const det_20_32 = m20 * m32 - m22 * m30;
+            const det_20_31 = m20 * m31 - m30 * m21;
 
-            const otherM = other._m;
-            otherM[0] = l23 * l27;
-            otherM[4] = l24 * l27;
-            otherM[8] = l25 * l27;
-            otherM[12] = l26 * l27;
-            otherM[1] = -(l2 * l17 - l3 * l18 + l4 * l19) * l27;
-            otherM[5] = (l1 * l17 - l3 * l20 + l4 * l21) * l27;
-            otherM[9] = -(l1 * l18 - l2 * l20 + l4 * l22) * l27;
-            otherM[13] = (l1 * l19 - l2 * l21 + l3 * l22) * l27;
-            otherM[2] = (l2 * l28 - l3 * l29 + l4 * l30) * l27;
-            otherM[6] = -(l1 * l28 - l3 * l31 + l4 * l32) * l27;
-            otherM[10] = (l1 * l29 - l2 * l31 + l4 * l33) * l27;
-            otherM[14] = -(l1 * l30 - l2 * l32 + l3 * l33) * l27;
-            otherM[3] = -(l2 * l34 - l3 * l35 + l4 * l36) * l27;
-            otherM[7] = (l1 * l34 - l3 * l37 + l4 * l38) * l27;
-            otherM[11] = -(l1 * l35 - l2 * l37 + l4 * l39) * l27;
-            otherM[15] = (l1 * l36 - l2 * l38 + l3 * l39) * l27;
+            const cofact_00 = +(m11 * det_22_33 - m12 * det_21_33 + m13 * det_21_32);
+            const cofact_01 = -(m10 * det_22_33 - m12 * det_20_33 + m13 * det_20_32);
+            const cofact_02 = +(m10 * det_21_33 - m11 * det_20_33 + m13 * det_20_31);
+            const cofact_03 = -(m10 * det_21_32 - m11 * det_20_32 + m12 * det_20_31)
 
-            other._markAsUpdated();
+            const det = m00 * cofact_00 + m01 * cofact_01 + m02 * cofact_02 + m03 * cofact_03;
+
+            if (det === 0) {
+                // not invertible
+                other.copyFrom(this);
+                return this;
+            }
+
+            const detInv = 1 / det;
+            const det_12_33 = m12 * m33 - m32 * m13;
+            const det_11_33 = m11 * m33 - m31 * m13;
+            const det_11_32 = m11 * m32 - m31 * m12;
+            const det_10_33 = m10 * m33 - m30 * m13;
+            const det_10_32 = m10 * m32 - m30 * m12;
+            const det_10_31 = m10 * m31 - m30 * m11;
+            const det_12_23 = m12 * m23 - m22 * m13;
+            const det_11_23 = m11 * m23 - m21 * m13;
+            const det_11_22 = m11 * m22 - m21 * m12;
+            const det_10_23 = m10 * m23 - m20 * m13;
+            const det_10_22 = m10 * m22 - m20 * m12;
+            const det_10_21 = m10 * m21 - m20 * m11;
+
+            const cofact_10 = -(m01 * det_22_33 - m02 * det_21_33 + m03 * det_21_32);
+            const cofact_11 = +(m00 * det_22_33 - m02 * det_20_33 + m03 * det_20_32);
+            const cofact_12 = -(m00 * det_21_33 - m01 * det_20_33 + m03 * det_20_31);
+            const cofact_13 = +(m00 * det_21_32 - m01 * det_20_32 + m02 * det_20_31);
+
+            const cofact_20 = +(m01 * det_12_33 - m02 * det_11_33 + m03 * det_11_32);
+            const cofact_21 = -(m00 * det_12_33 - m02 * det_10_33 + m03 * det_10_32);
+            const cofact_22 = +(m00 * det_11_33 - m01 * det_10_33 + m03 * det_10_31);
+            const cofact_23 = -(m00 * det_11_32 - m01 * det_10_32 + m02 * det_10_31);
+
+            const cofact_30 = -(m01 * det_12_23 - m02 * det_11_23 + m03 * det_11_22);
+            const cofact_31 = +(m00 * det_12_23 - m02 * det_10_23 + m03 * det_10_22);
+            const cofact_32 = -(m00 * det_11_23 - m01 * det_10_23 + m03 * det_10_21);
+            const cofact_33 = +(m00 * det_11_22 - m01 * det_10_22 + m02 * det_10_21);
+
+
+            Matrix.FromValuesToRef(
+                cofact_00 * detInv, cofact_10 * detInv, cofact_20 * detInv, cofact_30 * detInv,
+                cofact_01 * detInv, cofact_11 * detInv, cofact_21 * detInv, cofact_31 * detInv,
+                cofact_02 * detInv, cofact_12 * detInv, cofact_22 * detInv, cofact_32 * detInv,
+                cofact_03 * detInv, cofact_13 * detInv, cofact_23 * detInv, cofact_33 * detInv,
+                other
+            )
+
             return this;
         }
 
