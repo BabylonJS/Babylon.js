@@ -4,9 +4,13 @@ module BABYLON {
      */
     export enum WebXRState {
         /**
-         * Transitioning to/from being in XR mode
+         * Transitioning to being in XR mode
          */
-        TRANSITION,
+        ENTERING_XR,
+        /**
+         * Transitioning to non XR mode
+         */
+        EXITING_XR,
         /**
          * In XR mode and presenting
          */
@@ -34,6 +38,11 @@ module BABYLON {
          * The current state of the XR experience (eg. transitioning, in XR or not in XR)
          */
         public state: WebXRState = WebXRState.NOT_IN_XR;
+
+        private _setState(val:WebXRState){
+            this.state = val;
+            this.onStateChangedObservable.notifyObservers(this.state);
+        }
 
         /**
          * Fires when the state of the experience helper has changed
@@ -77,8 +86,7 @@ module BABYLON {
          * @returns promise that resolves after xr mode has exited
          */
         public exitXR() {
-            this.state = WebXRState.TRANSITION;
-            this.onStateChangedObservable.notifyObservers(this.state);
+            this._setState(WebXRState.EXITING_XR);
             return this._sessionManager.exitXR();
         }
 
@@ -89,8 +97,7 @@ module BABYLON {
          * @returns promise that resolves after xr mode has entered
          */
         public enterXR(sessionCreationOptions: XRSessionCreationOptions, frameOfReference: string) {
-            this.state = WebXRState.TRANSITION;
-            this.onStateChangedObservable.notifyObservers(this.state);
+            this._setState(WebXRState.ENTERING_XR);
 
             return this._sessionManager.enterXR(sessionCreationOptions, frameOfReference).then(() => {
                 // Cache pre xr scene settings
@@ -116,11 +123,9 @@ module BABYLON {
                     this.scene.activeCamera = this._nonVRCamera;
                     this._sessionManager.onXRFrameObservable.clear();
 
-                    this.state = WebXRState.NOT_IN_XR;
-                    this.onStateChangedObservable.notifyObservers(this.state);
+                    this._setState(WebXRState.NOT_IN_XR);
                 });
-                this.state = WebXRState.IN_XR;
-                this.onStateChangedObservable.notifyObservers(this.state);
+                this._setState(WebXRState.IN_XR);
             });
         }
 

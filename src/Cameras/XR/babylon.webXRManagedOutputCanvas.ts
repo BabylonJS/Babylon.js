@@ -19,8 +19,9 @@ module BABYLON {
                 canvas.style.cssText = "position:absolute; bottom:0px;right:0px;z-index:10;width:100%;height:100%;background-color: #48989e;";
             }
             this._setManagedOutputCanvas(canvas);
-            helper.onStateChangedObservable.add(() => {
-                if (helper.state == WebXRState.IN_XR) {
+            helper.onStateChangedObservable.add((stateInfo) => {
+                if (stateInfo == WebXRState.ENTERING_XR) {
+                    // The canvas is added to the screen before entering XR because currently the xr session must be initialized while the canvas is added render properly
                     this._addCanvas();
                 }else if (helper.state == WebXRState.NOT_IN_XR) {
                     this._removeCanvas();
