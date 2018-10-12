@@ -1,4 +1,4 @@
-import { BaseSlider } from "./baseslider";
+import { BaseSlider } from "./baseSlider";
 import { Measure } from "../measure";
 import { Image } from "./image";
 
@@ -78,7 +78,6 @@ export class ImageBasedSlider extends BaseSlider {
             var top = this._renderTop;
             var width = this._renderWidth;
             var height = this._renderHeight;
-
 
             // Background
             if (this._backgroundImage) {
