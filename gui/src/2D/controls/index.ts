@@ -14,11 +14,11 @@ export * from "./radioButton";
 export * from "./stackPanel";
 export * from "./selector";
 export * from "./textBlock";
-export * from "./baseSlider";
-export * from "./slider";
-export * from "./imageBasedSlider";
 export * from "./virtualKeyboard";
 export * from "./rectangle";
 export * from "./displayGrid";
+export * from "./baseSlider";
+export * from "./slider";
+export * from "./imageBasedSlider";
 
 export * from "./statics";
