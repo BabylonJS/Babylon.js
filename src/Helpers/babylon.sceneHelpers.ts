@@ -52,6 +52,13 @@ module BABYLON {
          * @returns a new VREXperienceHelper
          */
         createDefaultVRExperience(webVROptions?: VRExperienceHelperOptions): VRExperienceHelper;
+
+        /**
+         * Creates a new XREXperienceHelper
+         * @see http://doc.babylonjs.com/how_to/webxr
+         * @returns a promise for a new XREXperienceHelper
+         */
+        createDefaultXRExperienceAsync(): Promise<WebXRExperienceHelper>;
     }
 
     Scene.prototype.createDefaultLight = function(replace = false): void {
@@ -170,7 +177,12 @@ module BABYLON {
         return null;
     };
 
-    Scene.prototype.createDefaultVRExperience = function(webVROptions: VRExperienceHelperOptions = {}): VRExperienceHelper {
-        return new VRExperienceHelper(this, webVROptions);
+    Scene.prototype.createDefaultXRExperienceAsync = function(): Promise<BABYLON.WebXRExperienceHelper> {
+        return BABYLON.WebXRExperienceHelper.CreateAsync(this).then((helper) => {
+            var outputCanvas = new BABYLON.WebXRManagedOutputCanvas(helper);
+            return BABYLON.WebXREnterExitUI.CreateAsync(this, helper, {outputCanvasContext: outputCanvas.canvasContext}).then((ui) => {
+                return helper;
+            });
+        });
     };
 }
