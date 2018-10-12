@@ -17,7 +17,7 @@ export * from "./textBlock";
 export * from "./virtualKeyboard";
 export * from "./rectangle";
 export * from "./displayGrid";
-export * from "./baseslider";
+export * from "./baseSlider";
 export * from "./slider";
 export * from "./imageBasedSlider";
 

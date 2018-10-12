@@ -1,4 +1,4 @@
-import { BaseSlider } from "./baseslider";
+import { BaseSlider } from "./baseSlider";
 import { Measure } from "../measure";
 import { Image } from "./image";
 
@@ -25,6 +25,27 @@ export class ImageBasedSlider extends BaseSlider {
         }
 
         this._backgroundImage = value;
+
+        if (value && !value.isLoaded) {
+            value.onImageLoadedObservable.addOnce(() => this._markAsDirty());
+        }
+
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets the image used to render the value bar
+     */
+    public get valueBarImage(): Image {
+        return this._valueBarImage;
+    }
+
+    public set valueBarImage(value: Image) {
+        if (this._valueBarImage === value) {
+            return;
+        }
+
+        this._valueBarImage = value;
 
         if (value && !value.isLoaded) {
             value.onImageLoadedObservable.addOnce(() => this._markAsDirty());
@@ -96,7 +117,17 @@ export class ImageBasedSlider extends BaseSlider {
 
             // Bar
             if (this._valueBarImage) {
-
+                if (this.isVertical) {
+                    this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, height - thumbPosition);
+                    if (this.isThumbClamped) {
+                        this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, this._currentMeasure.height - thumbPosition);
+                    } else {
+                        this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, height - thumbPosition);
+                    }
+                } else {
+                    this._tempMeasure.copyFromFloats(left, top, thumbPosition, height);
+                }
+                this._valueBarImage._draw(this._tempMeasure, context);
             }
 
             // Thumb
