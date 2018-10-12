@@ -130,7 +130,6 @@ export class BaseSlider extends Control {
         this._markAsDirty();
     }
 
-
     /** Gets or sets a value indicating if the thumb can go over main bar extends */
     public get isThumbClamped(): boolean {
         return this._isThumbClamped;
