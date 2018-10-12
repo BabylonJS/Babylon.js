@@ -118,7 +118,7 @@ If you want to contribute, please read our [contribution guidelines](https://git
 - 3DS Max [exporter](https://github.com/BabylonJS/Exporters/tree/master/3ds%20Max) can be used to generate a .babylon file from 3DS Max
 - Maya [exporter](https://github.com/BabylonJS/Exporters/tree/master/Maya) can be used to generate a .babylon file from 3DS Max
 - Blender [exporter](https://github.com/BabylonJS/Exporters/tree/master/Blender) can be used to generate a .babylon file from Blender 3d
-- Unity 5 [exporter](https://github.com/BabylonJS/Exporters/tree/master/Unity%205) can be used to export your geometries from Unity 5 scene editor(animations are supported)
+- Unity 5[ (deprecated) exporter](https://github.com/BabylonJS/Exporters/tree/master/Unity) can be used to export your geometries from Unity 5 scene editor(animations are supported)
 - [glTF Tools](https://github.com/KhronosGroup/glTF#gltf-tools) by KhronosGroup
 
 ## Features

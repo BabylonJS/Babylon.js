@@ -100,7 +100,6 @@ export class ImageBasedSlider extends BaseSlider {
             var width = this._renderWidth;
             var height = this._renderHeight;
 
-
             // Background
             if (this._backgroundImage) {
                 this._tempMeasure.copyFromFloats(left, top, width, height);
