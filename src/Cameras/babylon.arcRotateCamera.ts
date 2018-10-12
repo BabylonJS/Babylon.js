@@ -814,9 +814,11 @@ module BABYLON {
 
             if (this.lowerRadiusLimit !== null && this.radius < this.lowerRadiusLimit) {
                 this.radius = this.lowerRadiusLimit;
+                this.inertialRadiusOffset = 0;
             }
             if (this.upperRadiusLimit !== null && this.radius > this.upperRadiusLimit) {
                 this.radius = this.upperRadiusLimit;
+                this.inertialRadiusOffset = 0;
             }
         }
 
