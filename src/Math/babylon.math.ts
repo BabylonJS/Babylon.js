@@ -4794,7 +4794,6 @@ module BABYLON {
          */
         public transposeToRef(result: Matrix): Matrix {
             Matrix.TransposeToRef(this, result);
-
             return this;
         }
 
@@ -4973,7 +4972,6 @@ module BABYLON {
             for (var index = 0; index < 16; index++) {
                 result._m[index] = array[index + offset] * scale;
             }
-
             result._markAsUpdated();
         }
 
@@ -5049,7 +5047,7 @@ module BABYLON {
             m[4] = initialM21; m[5] = initialM22; m[6] = initialM23; m[7] = initialM24;
             m[8] = initialM31; m[9] = initialM32; m[10] = initialM33; m[11] = initialM34;
             m[12] = initialM41; m[13] = initialM42; m[14] = initialM43; m[15] = initialM44;
-
+            result._markAsUpdated();
             return result;
         }
 
@@ -5605,9 +5603,7 @@ module BABYLON {
          */
         public static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
             var matrix = new Matrix();
-
             Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, matrix);
-
             return matrix;
         }
 
@@ -5640,7 +5636,7 @@ module BABYLON {
                 result
             );
 
-            result._updateIdentityStatus(a === 1 && b === 1 && c === 1 && d === 0 && i0 === 0 && i1 === 0);
+            result._markAsUpdated();
         }
 
         /**
@@ -5671,7 +5667,7 @@ module BABYLON {
          */
         public static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
             Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result);
-            result._m[10] *= -1.0;
+            result.multiplyAtIndex(10, -1);
         }
 
         /**
@@ -5850,7 +5846,9 @@ module BABYLON {
                 0.0, 0.0, zmax - zmin, 0.0,
                 cx + cw / 2.0, ch / 2.0 + cy, zmin, 1);
 
-            return world.multiply(view).multiply(projection).multiply(viewportMatrix);
+            world.multiplyToRef(view, MathTmp.Matrix[0]);
+            MathTmp.Matrix[0].multiplyToRef(projection, MathTmp.Matrix[1]);
+            return MathTmp.Matrix[1].multiply(viewportMatrix);
         }
 
         /**
@@ -5884,9 +5882,7 @@ module BABYLON {
          */
         public static Transpose(matrix: Matrix): Matrix {
             var result = new Matrix();
-
             Matrix.TransposeToRef(matrix, result);
-
             return result;
         }
 
@@ -5917,6 +5913,8 @@ module BABYLON {
             rm[13] = mm[7];
             rm[14] = mm[11];
             rm[15] = mm[15];
+            // identity-ness does not change when transposing
+            result._updateIdentityStatus(matrix._isIdentity, matrix._isIdentityDirty);
         }
 
         /**
