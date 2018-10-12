@@ -146,12 +146,12 @@ module BABYLON {
          * @param options creation options to check if they are supported
          * @returns true if supported
          */
-        public supportsSession(options:XRSessionCreationOptions){
-            return this._xrDevice.supportsSession(options).then(()=>{
+        public supportsSession(options: XRSessionCreationOptions) {
+            return this._xrDevice.supportsSession(options).then(() => {
                 return true;
-            }).catch((e)=>{
+            }).catch((e) => {
                 return false;
-            })
+            });
         }
 
         /**

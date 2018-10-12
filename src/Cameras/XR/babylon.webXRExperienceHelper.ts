@@ -45,19 +45,19 @@ module BABYLON {
         private _nonVRCamera: Nullable<Camera> = null;
         private _originalSceneAutoClear = true;
 
-        
-        private _managedOutputCanvas: Nullable<HTMLCanvasElement> = null;
-        public managedOutputCanvasContext: Nullable<WebGLRenderingContext> = null;
-
         private _supported = false;
 
-        public static CreateAsync(scene: BABYLON.Scene):Promise<WebXRExperienceHelper>{
-            var helper = new WebXRExperienceHelper(scene)
-
-            return helper._sessionManager.initialize().then(()=>{
+        /**
+         * Creates the experience helper
+         * @param scene the scene to attach the exprience helper to
+         * @returns a promise for the experience helper
+         */
+        public static CreateAsync(scene: BABYLON.Scene): Promise<WebXRExperienceHelper> {
+            var helper = new WebXRExperienceHelper(scene);
+            return helper._sessionManager.initialize().then(() => {
                 helper._supported = true;
                 return helper;
-            }).catch(()=>{
+            }).catch(() => {
                 return helper;
             });
         }
@@ -92,8 +92,6 @@ module BABYLON {
             this.state = WebXRState.TRANSITION;
             this.onStateChangedObservable.notifyObservers(this.state);
 
-            this._addCanvas();
-
             return this._sessionManager.enterXR(sessionCreationOptions, frameOfReference).then(() => {
                 // Cache pre xr scene settings
                 this._originalSceneAutoClear = this.scene.autoClear;
@@ -117,7 +115,6 @@ module BABYLON {
                     this.scene.autoClear = this._originalSceneAutoClear;
                     this.scene.activeCamera = this._nonVRCamera;
                     this._sessionManager.onXRFrameObservable.clear();
-                    this._removeCanvas();
 
                     this.state = WebXRState.NOT_IN_XR;
                     this.onStateChangedObservable.notifyObservers(this.state);
@@ -127,8 +124,13 @@ module BABYLON {
             });
         }
 
-        public supportsSession(options:XRSessionCreationOptions){
-            if(!this._supported){
+        /**
+         * Checks if the creation options are supported by the xr session
+         * @param options creation options
+         * @returns true if supported
+         */
+        public supportsSession(options: XRSessionCreationOptions) {
+            if (!this._supported) {
                 return Promise.resolve(false);
             }
             return this._sessionManager.supportsSession(options);
@@ -140,33 +142,8 @@ module BABYLON {
         public dispose() {
             this.camera.dispose();
             this.container.dispose();
-            this._removeCanvas();
-            this.setManagedOutputCanvas(null);
             this.onStateChangedObservable.clear();
             this._sessionManager.dispose();
-        }
-
-        // create canvas used to mirror/vr xr content in fullscreen
-        public setManagedOutputCanvas(canvas:Nullable<HTMLCanvasElement>){
-            this._removeCanvas();
-            if(!canvas){
-                this._managedOutputCanvas = null;
-                this.managedOutputCanvasContext = null;
-            }else{
-                this._managedOutputCanvas = canvas;
-                this.managedOutputCanvasContext = <any>this._managedOutputCanvas.getContext('xrpresent');
-            }
-        }
-        
-        private _addCanvas() {
-            if(this._managedOutputCanvas){
-                document.body.appendChild(this._managedOutputCanvas);
-            }
-        }
-        private _removeCanvas() {
-            if(this._managedOutputCanvas && document.body.contains(this._managedOutputCanvas)){
-                document.body.removeChild(this._managedOutputCanvas);
-            }
         }
     }
 }
