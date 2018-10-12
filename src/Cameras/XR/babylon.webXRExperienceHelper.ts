@@ -39,7 +39,7 @@ module BABYLON {
          */
         public state: WebXRState = WebXRState.NOT_IN_XR;
 
-        private _setState(val:WebXRState){
+        private _setState(val: WebXRState) {
             this.state = val;
             this.onStateChangedObservable.notifyObservers(this.state);
         }
