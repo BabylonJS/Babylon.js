@@ -430,10 +430,13 @@ module BABYLON {
             this._t1.subtractInPlace(this._t0);
             this._t2.subtractInPlace(this._t0);
 
-            Matrix.IdentityToRef(this._cachedTextureMatrix);
-            this._cachedTextureMatrix.m[0] = this._t1.x; this._cachedTextureMatrix.m[1] = this._t1.y; this._cachedTextureMatrix.m[2] = this._t1.z;
-            this._cachedTextureMatrix.m[4] = this._t2.x; this._cachedTextureMatrix.m[5] = this._t2.y; this._cachedTextureMatrix.m[6] = this._t2.z;
-            this._cachedTextureMatrix.m[8] = this._t0.x; this._cachedTextureMatrix.m[9] = this._t0.y; this._cachedTextureMatrix.m[10] = this._t0.z;
+            Matrix.FromValuesToRef(
+                this._t1.x, this._t1.y, this._t1.z, 0.0,
+                this._t2.x, this._t2.y, this._t2.z, 0.0,
+                this._t0.x, this._t0.y, this._t0.z, 0.0,
+                       0.0,        0.0,        0.0, 1.0,
+                this._cachedTextureMatrix
+            );
 
             let scene = this.getScene();
 
@@ -497,15 +500,13 @@ module BABYLON {
                     (<any>this._cachedTextureMatrix)[13] = this.vOffset;
                     break;
                 case Texture.PROJECTION_MODE:
-                    Matrix.IdentityToRef(this._projectionModeMatrix);
-
-                    this._projectionModeMatrix.m[0] = 0.5;
-                    this._projectionModeMatrix.m[5] = -0.5;
-                    this._projectionModeMatrix.m[10] = 0.0;
-                    this._projectionModeMatrix.m[12] = 0.5;
-                    this._projectionModeMatrix.m[13] = 0.5;
-                    this._projectionModeMatrix.m[14] = 1.0;
-                    this._projectionModeMatrix.m[15] = 1.0;
+                    Matrix.FromValuesToRef(
+                        0.5,  0.0, 0.0, 0.0,
+                        0.0, -0.5, 0.0, 0.0,
+                        0.0,  0.0, 0.0, 0.0,
+                        0.5,  0.5, 1.0, 1.0,
+                        this._projectionModeMatrix
+                    );
 
                     let projectionMatrix = scene.getProjectionMatrix();
                     this._cachedProjectionMatrixId = projectionMatrix.updateFlag;
