@@ -83,6 +83,14 @@ export class ImageBasedSlider extends BaseSlider {
             // Background
             if (this._backgroundImage) {
                 this._tempMeasure.copyFromFloats(left, top, width, height);
+                if (this.isThumbClamped) {
+                    if (this.isVertical) {
+                        this._tempMeasure.height += this._effectiveThumbThickness;
+                    } else {
+                        this._tempMeasure.width += this._effectiveThumbThickness;
+                    }
+
+                }
                 this._backgroundImage._draw(this._tempMeasure, context);
             }
 
