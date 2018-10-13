@@ -232,7 +232,7 @@ function runTest(index, done) {
             return;
         }
 
-        var snippetUrl = "https://babylonsnippetsv3.azurewebsites.net/snippets";
+        var snippetUrl = "https://snippet.babylonjs.com";
         var pgRoot = "/Playground"
 
         var retryTime = 500;

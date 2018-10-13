@@ -1,5 +1,5 @@
 ﻿(function() {
-    var snippetUrl = "https://babylonsnippetsv3.azurewebsites.net/snippets";
+    var snippetUrl = "https://snippet.babylonjs.com";
     var currentSnippetToken;
     var engine;
     var fpsLabel = document.getElementById("fpsLabel");
