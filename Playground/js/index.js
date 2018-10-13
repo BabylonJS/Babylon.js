@@ -159,7 +159,7 @@ function showError(errorMessage, errorEvent) {
             markDirty();
         });
 
-        var snippetV3Url = "https://babylonsnippetsv3.azurewebsites.net/api/snippets"
+        var snippetV3Url = "https://babylonsnippetsv3.azurewebsites.net/snippets"
         //var snippetV3Url = "https://localhost:5001/api/snippets"
         var currentSnippetToken;
         var currentSnippetTitle = null;
