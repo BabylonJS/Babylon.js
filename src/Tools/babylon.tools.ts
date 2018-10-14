@@ -220,7 +220,7 @@
             if (Tools.IsWindowObjectExist() && window.setImmediate) {
                 window.setImmediate(action);
             } else {
-                setTimeout(action, 1);
+                window.setTimeout(action, 1);
             }
         }
 
@@ -498,7 +498,7 @@
             var eventPrefix = "pointer";
 
             // Check if pointer events are supported
-            if (Tools.IsWindowObjectExist() && !window.PointerEvent && !navigator.pointerEnabled) {
+            if (Tools.IsWindowObjectExist() && !window.PointerEvent) {
                 eventPrefix = "mouse";
             }
 
@@ -1080,7 +1080,7 @@
                 //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
                 canvas.toBlob = function (callback, type, quality) {
                     setTimeout(() => {
-                        var binStr = atob(this.toDataURL(type, quality).split(',')[1]),
+                        var binStr = window.atob(this.toDataURL(type, quality).split(',')[1]),
                             len = binStr.length,
                             arr = new Uint8Array(len);
 
@@ -1378,7 +1378,7 @@
         * @return The decoded base64 data.
         */
         public static DecodeBase64(uri: string): ArrayBuffer {
-            const decodedString = atob(uri.split(",")[1]);
+            const decodedString = window.atob(uri.split(",")[1]);
             const bufferLength = decodedString.length;
             const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
 
