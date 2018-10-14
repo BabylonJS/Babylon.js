@@ -1,16 +1,13 @@
 ﻿module BABYLON {
-    /** @hidden */
-    export interface INativeEngineInterop {
+    interface INativeEngine {
         requestAnimationFrame(callback: () => void): void;
 
         createIndexBuffer(data: ArrayBufferView): any;
         bindIndexBuffer(buffer: any): void;
         deleteIndexBuffer(buffer: any): void;
-
-        createVertexBuffer(data: ArrayBufferView, elementCount: number): any;
+        createVertexBuffer(data: Float32Array): any;
         bindVertexBuffer(buffer: any, location: number, byteOffset: number, byteStride: number): void;
         deleteVertexBuffer(buffer: any): void;
-
         createProgram(vertexShader: string, fragmentShader: string): WebGLProgram;
         getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[];
         getAttributes(shaderProgram: WebGLProgram, attributeNames: string[]): number[];
@@ -136,10 +133,10 @@
     }
 
     /** @hidden */
-    declare var nativeEngineInterop: INativeEngineInterop;
+    declare var nativeEngine: INativeEngine;
 
     /** @hidden */
-    export class NativeEngineWrapperOptions {
+    export class NativeEngineOptions {
         public textureSize = 512;
 
         public deterministicLockstep = false;
@@ -147,8 +144,9 @@
     }
 
     /** @hidden */
-    export class NativeEngineWrapper extends Engine {
-        private _options: NativeEngineWrapperOptions;
+    export class NativeEngine extends Engine {
+        private readonly _native: INativeEngine = nativeEngine;
+        private readonly _options: NativeEngineOptions;
 
         public isDeterministicLockStep(): boolean {
             return this._options.deterministicLockstep;
@@ -162,9 +160,7 @@
             return 1.0;
         }
 
-        // INativeEngineInterop
-        // 
-        public constructor(private readonly _interop: INativeEngineInterop = nativeEngineInterop, options: NativeEngineWrapperOptions = new NativeEngineWrapperOptions()) {
+        public constructor(options: NativeEngineOptions = new NativeEngineOptions()) {
             super(null);
 
             if (options.deterministicLockstep === undefined) {
@@ -222,7 +218,7 @@
             this._caps.vertexArrayObject = false;
             this._caps.instancedArrays = false;
 
-            Tools.Log("Babylon.js NativeEngineWrapper engine (v" + Engine.Version + ") launched");
+            Tools.Log("Babylon Native (v" + Engine.Version + ") launched");
 
             // Wrappers
             if (typeof URL === "undefined") {
@@ -242,12 +238,12 @@
          * @hidden 
          */
         protected _queueNewFrame(bindedRenderFunction: any, requester: any): number {
-            this._interop.requestAnimationFrame(bindedRenderFunction);
+            this._native.requestAnimationFrame(bindedRenderFunction);
             return 0;
         }
 
         public clear(color: Color4, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
-            this._interop.clear(color.r, color.g, color.b, color.a, backBuffer, depth, stencil);
+            this._native.clear(color.r, color.g, color.b, color.a, backBuffer, depth, stencil);
         }
 
         public createIndexBuffer(indices: IndicesArray): WebGLBufferInfo {
@@ -255,7 +251,7 @@
             return {
                 references: 1,
                 is32Bits: (data.BYTES_PER_ELEMENT === 4),
-                _nativeIndexBuffer: this._interop.createIndexBuffer(data),
+                _nativeIndexBuffer: this._native.createIndexBuffer(data),
             } as WebGLBufferInfo;
         }
 
@@ -268,7 +264,7 @@
         public bindBuffers(vertexBuffers: { [key: string]: VertexBufferInfo }, indexBuffer: WebGLBufferInfo, effect: Effect): void {
             // Index
             if (indexBuffer) {
-                this._interop.bindIndexBuffer(indexBuffer._nativeIndexBuffer);
+                this._native.bindIndexBuffer(indexBuffer._nativeIndexBuffer);
             }
 
             // Vertex
@@ -286,8 +282,11 @@
                         const data = vertexBuffer.getData();
                         if (data) {
                             if (vertexBuffer.type === VertexBuffer.FLOAT && ArrayBuffer.isView(data)) {
-                                buffer._nativeVertexBuffer = buffer._nativeVertexBuffer || this._interop.createVertexBuffer(new Uint8Array(data.buffer, data.byteOffset, data.byteLength), vertexBuffer.count * vertexBuffer.getSize());
-                                this._interop.bindVertexBuffer(buffer._nativeVertexBuffer, location, vertexBuffer.byteOffset, vertexBuffer.byteStride);
+                                if (!buffer._nativeVertexBuffer) {
+                                    const length = vertexBuffer.count * vertexBuffer.getSize();
+                                    buffer._nativeVertexBuffer = this._native.createVertexBuffer(new Float32Array(data.buffer, data.byteOffset, length));
+                                }
+                                this._native.bindVertexBuffer(buffer._nativeVertexBuffer, location, vertexBuffer.byteOffset, vertexBuffer.byteStride);
                             }
                             else {
                                 // TODO: do this only for implementations that require it.
@@ -296,12 +295,12 @@
                                 if (!nativeBuffer) {
                                     const floatData = new Float32Array(vertexBuffer.count * vertexBuffer.getSize());
                                     vertexBuffer.forEach(floatData.length, (value, index) => floatData[index] = value);
-                                    nativeBuffer = this._interop.createVertexBuffer(new Uint8Array(floatData.buffer), floatData.length);
+                                    nativeBuffer = this._native.createVertexBuffer(floatData);
                                     vertexBuffer._nativeBuffer = nativeBuffer;
                                     buffer._vertexBuffers = buffer._vertexBuffers || [];
                                     buffer._vertexBuffers.push(vertexBuffer);
                                 }
-                                this._interop.bindVertexBuffer(nativeBuffer, location, 0, vertexBuffer.getSize() * Float32Array.BYTES_PER_ELEMENT);
+                                this._native.bindVertexBuffer(nativeBuffer, location, 0, vertexBuffer.getSize() * Float32Array.BYTES_PER_ELEMENT);
                             }
                         }
                     }
@@ -310,7 +309,7 @@
         }
 
         public getAttributes(shaderProgram: WebGLProgram, attributesNames: string[]): number[] {
-            return this._interop.getAttributes(shaderProgram, attributesNames);
+            return this._native.getAttributes(shaderProgram, attributesNames);
         }
 
         /**
@@ -333,7 +332,7 @@
             // if (instancesCount) {
             //     this._gl.drawElementsInstanced(drawMode, indexCount, indexFormat, indexStart * mult, instancesCount);
             // } else {
-            this._interop.drawIndexed(fillMode, indexStart, indexCount);
+            this._native.drawIndexed(fillMode, indexStart, indexCount);
             // }
         }
 
@@ -353,7 +352,7 @@
             // if (instancesCount) {
             //     this._gl.drawArraysInstanced(drawMode, verticesStart, verticesCount, instancesCount);
             // } else {
-            this._interop.draw(fillMode, verticesStart, verticesCount);
+            this._native.draw(fillMode, verticesStart, verticesCount);
             // }
         }
 
@@ -366,7 +365,7 @@
          * @returns the new webGL program
          */
         public createRawShaderProgram(vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
-            return this._interop.createProgram(vertexCode, fragmentCode);
+            return this._native.createProgram(vertexCode, fragmentCode);
         }
 
         /**
@@ -397,20 +396,20 @@
 
         protected setProgram(program: WebGLProgram): void {
             if (this._currentProgram !== program) {
-                this._interop.setProgram(program);
+                this._native.setProgram(program);
                 this._currentProgram = program;
             }
         }
 
         public getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[] {
-            return this._interop.getUniforms(shaderProgram, uniformsNames);
+            return this._native.getUniforms(shaderProgram, uniformsNames);
         }
 
         public setMatrix(uniform: WebGLUniformLocation, matrix: Matrix): void {
             if (!uniform)
                 return;
 
-            this._interop.setMatrix(uniform, matrix.toArray());
+            this._native.setMatrix(uniform, matrix.toArray());
         }
 
         public getRenderWidth(useScreen = false): number {
@@ -418,7 +417,7 @@
                 return this._currentRenderTarget.width;
             }
 
-            return this._interop.getRenderWidth();
+            return this._native.getRenderWidth();
         }
 
         public getRenderHeight(useScreen = false): number {
@@ -426,7 +425,7 @@
                 return this._currentRenderTarget.height;
             }
 
-            return this._interop.getRenderHeight();
+            return this._native.getRenderHeight();
         }
 
         public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
@@ -435,7 +434,7 @@
         }
 
         public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
-            this._interop.setState(culling, zOffset, reverseSide);
+            this._native.setState(culling, zOffset, reverseSide);
         }
 
         /**
@@ -443,7 +442,7 @@
          * @param value defines the offset to apply
          */
         public setZOffset(value: number): void {
-            this._interop.setZOffset(value);
+            this._native.setZOffset(value);
         }
 
         /**
@@ -451,7 +450,7 @@
          * @returns the current zOffset state
          */
         public getZOffset(): number {
-            return this._interop.getZOffset();
+            return this._native.getZOffset();
         }
 
         /**
@@ -459,7 +458,7 @@
          * @param enable defines the state to set
          */
         public setDepthBuffer(enable: boolean): void {
-            this._interop.setDepthTest(enable);
+            this._native.setDepthTest(enable);
         }
 
         /**
@@ -467,7 +466,7 @@
          * @returns the current depth writing state
          */
         public getDepthWrite(): boolean {
-            return this._interop.getDepthWrite();
+            return this._native.getDepthWrite();
         }
 
         /**
@@ -475,7 +474,7 @@
          * @param enable defines the state to set
          */
         public setDepthWrite(enable: boolean): void {
-            this._interop.setDepthWrite(enable);
+            this._native.setDepthWrite(enable);
         }
 
         /**
@@ -483,7 +482,7 @@
          * @param enable defines the state to set
          */
         public setColorWrite(enable: boolean): void {
-            this._interop.setColorWrite(enable);
+            this._native.setColorWrite(enable);
             this._colorWrite = enable;
         }
 
@@ -517,7 +516,7 @@
                 return;
             }
 
-            this._interop.setBlendMode(this._getBlendMode(mode));
+            this._native.setBlendMode(this._getBlendMode(mode));
 
             if (!noDepthWriteChange) {
                 this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
@@ -556,154 +555,154 @@
             if (!uniform)
                 return;
 
-            this._interop.setIntArray(uniform, array);
+            this._native.setIntArray(uniform, array);
         }
 
         public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void {
             if (!uniform)
                 return;
 
-            this._interop.setIntArray2(uniform, array);
+            this._native.setIntArray2(uniform, array);
         }
 
         public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void {
             if (!uniform)
                 return;
 
-            this._interop.setIntArray3(uniform, array);
+            this._native.setIntArray3(uniform, array);
         }
 
         public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void {
             if (!uniform)
                 return;
 
-            this._interop.setIntArray4(uniform, array);
+            this._native.setIntArray4(uniform, array);
         }
 
         public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void {
             if (!uniform)
                 return;
 
-            this._interop.setFloatArray(uniform, array);
+            this._native.setFloatArray(uniform, array);
         }
 
         public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void {
             if (!uniform)
                 return;
 
-            this._interop.setFloatArray2(uniform, array);
+            this._native.setFloatArray2(uniform, array);
         }
 
         public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void {
             if (!uniform)
                 return;
 
-            this._interop.setFloatArray3(uniform, array);
+            this._native.setFloatArray3(uniform, array);
         }
 
         public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void {
             if (!uniform)
                 return;
 
-            this._interop.setFloatArray4(uniform, array);
+            this._native.setFloatArray4(uniform, array);
         }
 
         public setArray(uniform: WebGLUniformLocation, array: number[]): void {
             if (!uniform)
                 return;
 
-            this._interop.setFloatArray(uniform, array);
+            this._native.setFloatArray(uniform, array);
         }
 
         public setArray2(uniform: WebGLUniformLocation, array: number[]): void {
             if (!uniform)
                 return;
 
-            this._interop.setFloatArray2(uniform, array);
+            this._native.setFloatArray2(uniform, array);
         }
 
         public setArray3(uniform: WebGLUniformLocation, array: number[]): void {
             if (!uniform)
                 return;
 
-            this._interop.setFloatArray3(uniform, array);
+            this._native.setFloatArray3(uniform, array);
         }
 
         public setArray4(uniform: WebGLUniformLocation, array: number[]): void {
             if (!uniform)
                 return;
 
-            this._interop.setFloatArray4(uniform, array);
+            this._native.setFloatArray4(uniform, array);
         }
 
         public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void {
             if (!uniform)
                 return;
 
-            this._interop.setMatrices(uniform, matrices);
+            this._native.setMatrices(uniform, matrices);
         }
 
         public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void {
             if (!uniform)
                 return;
 
-            this._interop.setMatrix3x3(uniform, matrix);
+            this._native.setMatrix3x3(uniform, matrix);
         }
 
         public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void {
             if (!uniform)
                 return;
 
-            this._interop.setMatrix2x2(uniform, matrix);
+            this._native.setMatrix2x2(uniform, matrix);
         }
 
         public setFloat(uniform: WebGLUniformLocation, value: number): void {
             if (!uniform)
                 return;
 
-            this._interop.setFloat(uniform, value);
+            this._native.setFloat(uniform, value);
         }
 
         public setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void {
             if (!uniform)
                 return;
 
-            this._interop.setFloat2(uniform, x, y);
+            this._native.setFloat2(uniform, x, y);
         }
 
         public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void {
             if (!uniform)
                 return;
 
-            this._interop.setFloat3(uniform, x, y, z);
+            this._native.setFloat3(uniform, x, y, z);
         }
 
         public setBool(uniform: WebGLUniformLocation, bool: number): void {
             if (!uniform)
                 return;
 
-            this._interop.setBool(uniform, bool);
+            this._native.setBool(uniform, bool);
         }
 
         public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void {
             if (!uniform)
                 return;
 
-            this._interop.setFloat4(uniform, x, y, z, w);
+            this._native.setFloat4(uniform, x, y, z, w);
         }
 
         public setColor3(uniform: WebGLUniformLocation, color3: Color3): void {
             if (!uniform)
                 return;
 
-            this._interop.setFloat3(uniform, color3.r, color3.g, color3.b);
+            this._native.setFloat3(uniform, color3.r, color3.g, color3.b);
         }
 
         public setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void {
             if (!uniform)
                 return;
 
-            this._interop.setFloat4(uniform, color3.r, color3.g, color3.b, alpha);
+            this._native.setFloat4(uniform, color3.r, color3.g, color3.b, alpha);
         }
 
         public wipeCaches(bruteForce?: boolean): void {
@@ -727,11 +726,11 @@
         }
 
         public _createTexture(): WebGLTexture {
-            return this._interop.createTexture();
+            return this._native.createTexture();
         }
 
         protected _deleteTexture(texture: Nullable<WebGLTexture>): void {
-            this._interop.deleteTexture(texture);
+            this._native.deleteTexture(texture);
         }
 
         // TODO: Refactor to share more logic with babylon.engine.ts version.
@@ -884,22 +883,22 @@
                         return;
                     }
 
-                    this._interop.loadTexture(webGLTexture, data, !noMipmap);
+                    this._native.loadTexture(webGLTexture, data, !noMipmap);
 
                     if (invertY) {
                         throw new Error("Support for textures with inverted Y coordinates not yet implemented.");
                     }
                     //this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
-                    texture.baseWidth = this._interop.getTextureWidth(webGLTexture);
-                    texture.baseHeight = this._interop.getTextureHeight(webGLTexture);
+                    texture.baseWidth = this._native.getTextureWidth(webGLTexture);
+                    texture.baseHeight = this._native.getTextureHeight(webGLTexture);
                     texture.width = texture.baseWidth;
                     texture.height = texture.baseHeight;
                     texture.isReady = true;
 
                     var filter = this._getSamplingFilter(samplingMode);
 
-                    this._interop.setTextureSampling(webGLTexture, filter);
+                    this._native.setTextureSampling(webGLTexture, filter);
 
                     // this.resetTextureCache();
                     if (scene) {
@@ -1002,7 +1001,7 @@
         public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
             if (texture._webGLTexture) {
                 var filter = this._getSamplingFilter(samplingMode);
-                this._interop.setTextureSampling(texture._webGLTexture, filter);
+                this._native.setTextureSampling(texture._webGLTexture, filter);
             }
             texture.samplingMode = samplingMode;
         }
@@ -1045,7 +1044,7 @@
             if (!texture) {
                 if (this._boundTexturesCache[channel] != null) {
                     this._activeChannel = channel;
-                    this._interop.setTexture(uniform, null);
+                    this._native.setTexture(uniform, null);
                 }
                 return false;
             }
@@ -1079,14 +1078,14 @@
                 return false;
             }
 
-            this._interop.setTextureWrapMode(
+            this._native.setTextureWrapMode(
                 internalTexture._webGLTexture,
                 this._getAddressMode(texture.wrapU),
                 this._getAddressMode(texture.wrapV),
                 this._getAddressMode(texture.wrapR));
             this._updateAnisotropicLevel(texture);
 
-            this._interop.setTexture(uniform, internalTexture._webGLTexture);
+            this._native.setTexture(uniform, internalTexture._webGLTexture);
 
             return true;
         }
@@ -1102,7 +1101,7 @@
             }
 
             if (internalTexture._cachedAnisotropicFilteringLevel !== value) {
-                this._interop.setTextureAnisotropicLevel(internalTexture._webGLTexture, value);
+                this._native.setTextureAnisotropicLevel(internalTexture._webGLTexture, value);
                 internalTexture._cachedAnisotropicFilteringLevel = value;
             }
         }
@@ -1128,12 +1127,12 @@
 
         protected _deleteBuffer(buffer: WebGLBufferInfo): void {
             if (buffer._nativeIndexBuffer) {
-                this._interop.deleteIndexBuffer(buffer._nativeIndexBuffer);
+                this._native.deleteIndexBuffer(buffer);
                 delete buffer._nativeIndexBuffer;
             }
 
             if (buffer._nativeVertexBuffer) {
-                this._interop.deleteVertexBuffer(buffer._nativeVertexBuffer);
+                this._native.deleteVertexBuffer(buffer);
                 delete buffer._nativeVertexBuffer;
             }
 
@@ -1141,7 +1140,6 @@
                 for (const vertexBuffer of buffer._vertexBuffers) {
                     const nativeBuffer = vertexBuffer._nativeBuffer;
                     if (nativeBuffer) {
-                        this._interop.deleteVertexBuffer(nativeBuffer);
                         delete vertexBuffer._nativeBuffer;
                     }
                 }
