@@ -1,7 +1,17 @@
 import { Mesh, Nullable, Matrix, Geometry, Tools, StandardMaterial } from "babylonjs";
 
+/**
+ * Class for generating OBJ data from a Babylon scene.
+ */
 export class OBJExport {
-    //Exports the geometry of a Mesh array in .OBJ file format (text)
+    /**
+     * Exports the geometry of a Mesh array in .OBJ file format (text)
+     * @param mesh defines the list of meshes to serialize
+     * @param materials defines if materials should be exported
+     * @param matlibname defines the name of the associated mtl file
+     * @param globalposition defines if the exported positions are globals or local to the exported mesh
+     * @returns the OBJ content
+     */
     public static OBJ(mesh: Mesh[], materials?: boolean, matlibname?: string, globalposition?: boolean): string {
         const output: string[] = [];
         let v = 1;
@@ -90,7 +100,12 @@ export class OBJExport {
         const text: string = output.join("\n");
         return (text);
     }
-    //Exports the material(s) of a mesh in .MTL file format (text)
+
+    /**
+     * Exports the material(s) of a mesh in .MTL file format (text)
+     * @param mesh defines the mesh to extract the material from
+     * @returns the mtl content
+     */
     //TODO: Export the materials of mesh array
     public static MTL(mesh: Mesh): string {
         var output = [];
