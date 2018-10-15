@@ -24,8 +24,22 @@ var rmDir = function(dirPath) {
 }
 
 module.exports = function(dirPath) {
-    // Retry :-)
-    rmDir(dirPath);
-    rmDir(dirPath);
-    rmDir(dirPath);
+    // Retry cause  sometimes locked on my mac :-)
+    try {
+        rmDir(dirPath);
+    }
+    catch (e) {
+        try {
+            rmDir(dirPath);
+        }
+        catch (e) {
+            try {
+                rmDir(dirPath);
+            }
+            catch (e) {
+                // Something is definitely wrong here.
+                throw e;
+            }
+        } 
+    }
 };
