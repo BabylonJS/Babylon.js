@@ -65,9 +65,7 @@ module BABYLON.Debug {
             if (x !== 0 || y !== 0 || z !== 0) {
                 var tmat2 = Tmp.Matrix[1];
                 BABYLON.Matrix.IdentityToRef(tmat2);
-                tmat2.m[12] = x;
-                tmat2.m[13] = y;
-                tmat2.m[14] = z;
+                tmat2.setTranslationFromFloats(x, y, z);
                 tmat2.multiplyToRef(tmat, tmat);
             }
 
