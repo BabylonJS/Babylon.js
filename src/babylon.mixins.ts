@@ -184,6 +184,7 @@ interface XRDevice {
     supportsSession(options: XRSessionCreationOptions): Promise<void>;
 }
 interface XRSession {
+    getInputSources():Array<any>;
     baseLayer: XRWebGLLayer;
     requestFrameOfReference(type: string): Promise<void>;
     requestHitTest(origin: Float32Array, direction: Float32Array, frameOfReference: any): any;
@@ -206,6 +207,7 @@ interface XRView {
 }
 interface XRFrame {
     getDevicePose: Function;
+    getInputPose: Function;
     views: Array<XRView>;
     baseLayer: XRLayer;
 }

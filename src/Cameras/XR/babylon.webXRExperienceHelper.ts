@@ -49,7 +49,8 @@ module BABYLON {
          */
         public onStateChangedObservable = new Observable<WebXRState>();
 
-        private _sessionManager: WebXRSessionManager;
+        /** @hidden */
+        public _sessionManager: WebXRSessionManager;
 
         private _nonVRCamera: Nullable<Camera> = null;
         private _originalSceneAutoClear = true;
