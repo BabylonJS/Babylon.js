@@ -2,7 +2,7 @@
 
 Getting started? Play directly with the Babylon.js API using our [playground](https://playground.babylonjs.com/). It also contains a lot of samples to learn how to use it.
 
-[![Build Status](https://travis-ci.com/BabylonJS/Babylon.js.svg)](https://travis-ci.com/BabylonJS/Babylon.js)
+[![Build Status](https://travis-ci.com/BabylonJS/Babylon.js.svg?branch=master)](https://travis-ci.com/BabylonJS/Babylon.js)
 [![Average time to resolve an issue](https://isitmaintained.com/badge/resolution/babylonJS/babylon.js.svg)](https://isitmaintained.com/project/babylonJS/babylon.js "Average time to resolve an issue")
 [![Percentage of issues still open](https://isitmaintained.com/badge/open/babylonJS/babylon.js.svg)](https://isitmaintained.com/project/babylonJS/babylon.js "Percentage of issues still open")
 
