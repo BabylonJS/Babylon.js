@@ -4305,7 +4305,7 @@ module BABYLON {
             const m20 = m[8], m21 = m[9], m22 = m[10], m23 = m[11];
             const m30 = m[12], m31 = m[13], m32 = m[14], m33 = m[15];
             // https://en.wikipedia.org/wiki/Laplace_expansion
-            // to compute the derminant of a 4x4 Matrix we compute the cofactors of any row or column,
+            // to compute the deterrminant of a 4x4 Matrix we compute the cofactors of any row or column,
             // then we multiply each Cofactor by its corresponding matrix value and sum them all to get the determinant
             // Cofactor(i, j) = sign(i,j) * det(Minor(i, j))
             // where
