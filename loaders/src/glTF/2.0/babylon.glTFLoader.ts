@@ -1037,6 +1037,10 @@ module BABYLON.GLTF2 {
         }
 
         private _loadAnimationChannelAsync(context: string, animationContext: string, animation: Loader.IAnimation, channel: Loader.IAnimationChannel, babylonAnimationGroup: AnimationGroup): Promise<void> {
+            if (channel.target.node == undefined) {
+                return Promise.resolve();
+            }
+
             const targetNode = ArrayItem.Get(`${context}/target/node`, this.gltf.nodes, channel.target.node);
 
             // Ignore animations that have no animation targets.
