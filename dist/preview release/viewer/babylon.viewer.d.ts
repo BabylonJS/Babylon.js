@@ -2469,4 +2469,4 @@ declare module BabylonViewer {
                 */
             static EnvironmentLODOffset: number;
     }
-}
+}

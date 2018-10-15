@@ -62,7 +62,9 @@ var buildViewerLibrary = function(library, settings) {
 
         function processDestination(dest) {
             var outputDirectory = config.build.outputDirectory + dest.outputDirectory;
-            build = build.pipe(gulp.dest(outputDirectory));
+            build = build
+                .pipe(rename(dest.filename))
+                .pipe(gulp.dest(outputDirectory));
 
             if (dest.addBabylonDeclaration) {
                 // include the babylon declaration
