@@ -346,6 +346,14 @@ declare module BABYLON.GUI {
                 */
             copyFrom(other: Measure): void;
             /**
+                * Copy from a group of 4 floats
+                * @param left defines left coordinate
+                * @param top defines top coordinate
+                * @param width defines width dimension
+                * @param height defines height dimension
+                */
+            copyFromFloats(left: number, top: number, width: number, height: number): void;
+            /**
                 * Check equality between this measure and another one
                 * @param other defines the other measures
                 * @returns true if both measures are equals
@@ -1322,6 +1330,14 @@ declare module BABYLON.GUI {
     export class Image extends Control {
             name?: string | undefined;
             /**
+                * BABYLON.Observable notified when the content is loaded
+                */
+            onImageLoadedObservable: BABYLON.Observable<Image>;
+            /**
+                * Gets a boolean indicating that the content is loaded
+                */
+            readonly isLoaded: boolean;
+            /**
                 * Gets or sets the left coordinate in the source image
                 */
             sourceLeft: number;
@@ -1377,6 +1393,7 @@ declare module BABYLON.GUI {
             /** Force the control to synchronize with its content */
             synchronizeSizeWithContent(): void;
             _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+            dispose(): void;
             /** STRETCH_NONE */
             static readonly STRETCH_NONE: number;
             /** STRETCH_FILL */
@@ -2006,51 +2023,6 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
-    /**
-        * Class used to create slider controls
-        */
-    export class Slider extends Control {
-            name?: string | undefined;
-            /** BABYLON.Observable raised when the sldier value changes */
-            onValueChangedObservable: BABYLON.Observable<number>;
-            /** Gets or sets border color */
-            borderColor: string;
-            /** Gets or sets background color */
-            background: string;
-            /** Gets or sets main bar offset */
-            barOffset: string | number;
-            /** Gets main bar offset in pixels*/
-            readonly barOffsetInPixels: number;
-            /** Gets or sets thumb width */
-            thumbWidth: string | number;
-            /** Gets thumb width in pixels */
-            readonly thumbWidthInPixels: number;
-            /** Gets or sets minimum value */
-            minimum: number;
-            /** Gets or sets maximum value */
-            maximum: number;
-            /** Gets or sets current value */
-            value: number;
-            /**Gets or sets a boolean indicating if the slider should be vertical or horizontal */
-            isVertical: boolean;
-            /** Gets or sets a boolean indicating if the thumb should be round or square */
-            isThumbCircle: boolean;
-            /** Gets or sets a value indicating if the thumb can go over main bar extends */
-            isThumbClamped: boolean;
-            /**
-                * Creates a new Slider
-                * @param name defines the control name
-                */
-            constructor(name?: string | undefined);
-            protected _getTypeName(): string;
-            protected _getThumbThickness(type: string, backgroundLength: number): number;
-            _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
-            _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
-            _onPointerMove(target: Control, coordinates: BABYLON.Vector2): void;
-            _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
-    }
-}
-declare module BABYLON.GUI {
     /** Class used to create rectangle container */
     export class Rectangle extends Container {
             name?: string | undefined;
@@ -2100,6 +2072,106 @@ declare module BABYLON.GUI {
             constructor(name?: string | undefined);
             _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             protected _getTypeName(): string;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+        * Class used to create slider controls
+        */
+    export class BaseSlider extends Control {
+            name?: string | undefined;
+            protected _thumbWidth: ValueAndUnit;
+            protected _barOffset: ValueAndUnit;
+            protected _effectiveBarOffset: number;
+            protected _renderLeft: number;
+            protected _renderTop: number;
+            protected _renderWidth: number;
+            protected _renderHeight: number;
+            protected _backgroundBoxLength: number;
+            protected _backgroundBoxThickness: number;
+            protected _effectiveThumbThickness: number;
+            /** BABYLON.Observable raised when the sldier value changes */
+            onValueChangedObservable: BABYLON.Observable<number>;
+            /** Gets or sets main bar offset (ie. the margin applied to the value bar) */
+            barOffset: string | number;
+            /** Gets main bar offset in pixels*/
+            readonly barOffsetInPixels: number;
+            /** Gets or sets thumb width */
+            thumbWidth: string | number;
+            /** Gets thumb width in pixels */
+            readonly thumbWidthInPixels: number;
+            /** Gets or sets minimum value */
+            minimum: number;
+            /** Gets or sets maximum value */
+            maximum: number;
+            /** Gets or sets current value */
+            value: number;
+            /**Gets or sets a boolean indicating if the slider should be vertical or horizontal */
+            isVertical: boolean;
+            /** Gets or sets a value indicating if the thumb can go over main bar extends */
+            isThumbClamped: boolean;
+            /**
+                * Creates a new BaseSlider
+                * @param name defines the control name
+                */
+            constructor(name?: string | undefined);
+            protected _getTypeName(): string;
+            protected _getThumbPosition(): number;
+            protected _getThumbThickness(type: string): number;
+            protected _prepareRenderingData(type: string): void;
+            _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+            _onPointerMove(target: Control, coordinates: BABYLON.Vector2): void;
+            _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+        * Class used to create slider controls
+        */
+    export class Slider extends BaseSlider {
+            name?: string | undefined;
+            /** Gets or sets a boolean indicating if the thumb must be rendered */
+            displayThumb: boolean;
+            /** Gets or sets border color */
+            borderColor: string;
+            /** Gets or sets background color */
+            background: string;
+            /** Gets or sets a boolean indicating if the thumb should be round or square */
+            isThumbCircle: boolean;
+            /**
+                * Creates a new Slider
+                * @param name defines the control name
+                */
+            constructor(name?: string | undefined);
+            protected _getTypeName(): string;
+            _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+        * Class used to create slider controls based on images
+        */
+    export class ImageBasedSlider extends BaseSlider {
+            name?: string | undefined;
+            /**
+                * Gets or sets the image used to render the background
+                */
+            backgroundImage: Image;
+            /**
+                * Gets or sets the image used to render the value bar
+                */
+            valueBarImage: Image;
+            /**
+                * Gets or sets the image used to render the thumb
+                */
+            thumbImage: Image;
+            /**
+                * Creates a new ImageBasedSlider
+                * @param name defines the control name
+                */
+            constructor(name?: string | undefined);
+            protected _getTypeName(): string;
+            _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
     }
 }
 declare module BABYLON.GUI {

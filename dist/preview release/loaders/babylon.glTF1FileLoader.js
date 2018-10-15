@@ -500,6 +500,10 @@ var BABYLON;
                 _this._endPerformanceCounter("Validate JSON");
                 _this.onValidatedObservable.notifyObservers(result);
                 _this.onValidatedObservable.clear();
+            }, function (reason) {
+                _this._endPerformanceCounter("Validate JSON");
+                BABYLON.Tools.Warn("Failed to validate: " + reason);
+                _this.onValidatedObservable.clear();
             });
         };
         GLTFFileLoader.prototype._getLoader = function (loaderData) {

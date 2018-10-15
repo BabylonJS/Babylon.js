@@ -30,16 +30,16 @@ function showError(errorMessage, errorEvent) {
     document.getElementById("errorZone").innerHTML = errorContent;
 
     // Close button error
-    document.getElementById("errorZone").querySelector('.close').addEventListener('click', function () {
+    document.getElementById("errorZone").querySelector('.close').addEventListener('click', function() {
         document.getElementById("errorZone").style.display = 'none';
     });
 }
 
-(function () {
+(function() {
 
     var multipleSize = [1600, 1475, 1030, 750];
-    var setToMultipleID = function (id, thingToDo, param) {
-        multipleSize.forEach(function (size) {
+    var setToMultipleID = function(id, thingToDo, param) {
+        multipleSize.forEach(function(size) {
 
             if (thingToDo == "innerHTML") {
                 document.getElementById(id + size).innerHTML = param
@@ -76,7 +76,7 @@ function showError(errorMessage, errorEvent) {
         '.navbarBottom',
         '.navbarBottom .links .link'];
 
-    var run = function () {
+    var run = function() {
 
         // #region - Examples playgrounds
         var examplesButton = document.getElementsByClassName("examplesButton");
@@ -84,7 +84,7 @@ function showError(errorMessage, errorEvent) {
         if (examplesButton && examplesButton.length > 0) {
             var isExamplesDisplayed = false;
             for (var i = 0; i < examplesButton.length; i++) {
-                examplesButton[i].parentElement.onclick = function () {
+                examplesButton[i].parentElement.onclick = function() {
                     isExamplesDisplayed = !isExamplesDisplayed;
                     if (isExamplesDisplayed) {
                         document.getElementById("exampleList").style.display = "block";
@@ -102,7 +102,7 @@ function showError(errorMessage, errorEvent) {
         var filterBar = document.getElementById("filterBar");
         if (filterBar) {
             var filterBarClear = document.getElementById("filterBarClear");
-            var filter = function () {
+            var filter = function() {
                 var filterText = filterBar.value.toLowerCase();
                 if (filterText == "") filterBarClear.style.display = "none";
                 else filterBarClear.style.display = "inline-block";
@@ -132,10 +132,10 @@ function showError(errorMessage, errorEvent) {
                 if (displayCount == 0) document.getElementById("noResultsContainer").style.display = "block";
                 else document.getElementById("noResultsContainer").style.display = "none";
             }
-            filterBar.oninput = function () {
+            filterBar.oninput = function() {
                 filter();
             }
-            filterBarClear.onclick = function () {
+            filterBarClear.onclick = function() {
                 filterBar.value = "";
                 filter();
             }
@@ -144,7 +144,7 @@ function showError(errorMessage, errorEvent) {
 
         var blockEditorChange = false;
 
-        var markDirty = function () {
+        var markDirty = function() {
             if (blockEditorChange) {
                 return;
             }
@@ -155,11 +155,11 @@ function showError(errorMessage, errorEvent) {
             setToMultipleID('safemodeToggle', 'innerHTML', 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
         }
 
-        jsEditor.onKeyUp(function (evt) {
+        jsEditor.onKeyUp(function(evt) {
             markDirty();
         });
 
-        var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
+        var snippetV3Url = "https://snippet.babylonjs.com"
         var currentSnippetToken;
         var currentSnippetTitle = null;
         var currentSnippetDescription = null;
@@ -176,7 +176,7 @@ function showError(errorMessage, errorEvent) {
             setToMultipleID("currentVersion", "innerHTML", "Version: Latest");
         }
 
-        var checkTypescriptSupport = function (xhr) {
+        var checkTypescriptSupport = function(xhr) {
             var filename = location.pathname.substring(location.pathname.lastIndexOf('/') + 1);
             if (xhr.responseText.indexOf("class Playground") !== -1) {// Typescript content
                 if (!filename) {
@@ -197,12 +197,12 @@ function showError(errorMessage, errorEvent) {
             return true;
         }
 
-        var loadScript = function (scriptURL, title) {
+        var loadScript = function(scriptURL, title) {
             var xhr = new XMLHttpRequest();
 
             xhr.open('GET', scriptURL, true);
 
-            xhr.onreadystatechange = function () {
+            xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
 
@@ -227,20 +227,7 @@ function showError(errorMessage, errorEvent) {
             xhr.send(null);
         };
 
-        var loadScriptFromIndex = function (index) {
-            if (index === 0) {
-                index = 1;
-            }
-
-            var script = scripts[index - 1].trim();
-            loadScript("scripts/" + script + ".js", script);
-        }
-
-        var onScriptClick = function (evt) {
-            loadScriptFromIndex(evt.target.scriptLinkIndex);
-        };
-
-        var loadScriptsList = function () {
+        var loadScriptsList = function() {
 
             var exampleList = document.getElementById("exampleList");
 
@@ -253,7 +240,7 @@ function showError(errorMessage, errorEvent) {
                 xhr.open('GET', 'https://raw.githubusercontent.com/BabylonJS/Documentation/master/examples/list_ts.json', true);
             }
 
-            xhr.onreadystatechange = function () {
+            xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
                         scripts = JSON.parse(xhr.response)["examples"];
@@ -344,8 +331,6 @@ function showError(errorMessage, errorEvent) {
                                 var query = queryString.replace("?", "");
                                 index = parseInt(query);
                                 if (!isNaN(index)) {
-                                    // Old examples
-                                    //loadScriptFromIndex(index);
                                     var newPG = "";
                                     switch (index) {
                                         case 1: newPG = "#TAZ2CB#0"; break; // Basic scene
@@ -400,7 +385,7 @@ function showError(errorMessage, errorEvent) {
                         toggleTheme(theme);
 
                         // Remove editor if window size is less than 850px
-                        var removeEditorForSmallScreen = function () {
+                        var removeEditorForSmallScreen = function() {
                             if (mq.matches) {
                                 splitInstance.collapse(0);
                             } else {
@@ -416,7 +401,7 @@ function showError(errorMessage, errorEvent) {
             xhr.send(null);
         }
 
-        var createNewScript = function () {
+        var createNewScript = function() {
             // check if checked is on
             let iCanClear = checkSafeMode("Are you sure you want to create a new playground?");
             if (!iCanClear) return;
@@ -436,7 +421,7 @@ function showError(errorMessage, errorEvent) {
             compileAndRun();
         }
 
-        var clear = function () {
+        var clear = function() {
             // check if checked is on
             let iCanClear = checkSafeMode("Are you sure you want to clear the playground?");
             if (!iCanClear) return;
@@ -447,7 +432,7 @@ function showError(errorMessage, errorEvent) {
             jsEditor.focus();
         }
 
-        var checkSafeMode = function (message) {
+        var checkSafeMode = function(message) {
             var safeToggle = document.getElementById("safemodeToggle1600");
             if (safeToggle.classList.contains('checked')) {
                 let confirm = window.confirm(message);
@@ -462,7 +447,7 @@ function showError(errorMessage, errorEvent) {
             }
         }
 
-        var showNoMetadata = function () {
+        var showNoMetadata = function() {
             if (currentSnippetTitle) {
                 document.getElementById("saveFormTitle").value = currentSnippetTitle;
                 document.getElementById("saveFormTitle").readOnly = true;
@@ -492,7 +477,7 @@ function showError(errorMessage, errorEvent) {
         };
         showNoMetadata();
 
-        var hideNoMetadata = function () {
+        var hideNoMetadata = function() {
             document.getElementById("saveFormTitle").readOnly = true;
             document.getElementById("saveFormDescription").readOnly = true;
             document.getElementById("saveFormTags").readOnly = true;
@@ -500,7 +485,7 @@ function showError(errorMessage, errorEvent) {
             setToMultipleID("metadataButton", "display", "inline-block");
         };
 
-        compileAndRun = function () {
+        compileAndRun = function() {
             try {
                 var waitRing = document.getElementById("waitDiv");
                 if (waitRing) {
@@ -553,8 +538,8 @@ function showError(errorMessage, errorEvent) {
                 var createEngineFunction = "createDefaultEngine";
                 var createSceneFunction;
 
-                getRunCode(jsEditor, function (code) {
-                    var createDefaultEngine = function () {
+                getRunCode(jsEditor, function(code) {
+                    var createDefaultEngine = function() {
                         return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
                     }
 
@@ -598,7 +583,7 @@ function showError(errorMessage, errorEvent) {
                         eval("scene = " + createSceneFunction + "()");
 
                         // if scene returns a promise avoid checks
-                        if(scene.then){
+                        if (scene.then) {
                             checkCamera = false
                             checkSceneCount = false
                         }
@@ -619,7 +604,7 @@ function showError(errorMessage, errorEvent) {
 
                     }
 
-                    engine.runRenderLoop(function () {
+                    engine.runRenderLoop(function() {
                         if (engine.scenes.length === 0) {
                             return;
                         }
@@ -637,7 +622,7 @@ function showError(errorMessage, errorEvent) {
                         fpsLabel.style.right = document.body.clientWidth - (jsEditor.domElement.clientWidth + canvas.clientWidth) + "px";
                         fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
                     });
-    
+
                     if (checkSceneCount && engine.scenes.length === 0) {
 
                         showError("You must at least create a scene.", null);
@@ -647,20 +632,20 @@ function showError(errorMessage, errorEvent) {
                     if (checkCamera && engine.scenes[0].activeCamera == null) {
                         showError("You must at least create a camera.", null);
                         return;
-                    }else if(scene.then){
-                        scene.then(function (){
+                    } else if (scene.then) {
+                        scene.then(function() {
                             document.getElementById("statusBar").innerHTML = "";
                         });
-                    }else{
-                        engine.scenes[0].executeWhenReady(function () {
+                    } else {
+                        engine.scenes[0].executeWhenReady(function() {
                             document.getElementById("statusBar").innerHTML = "";
                         });
-                    }           
+                    }
 
                     if (scene) {
                         if (showInspector) {
                             scene.debugLayer.show({ initialTab: initialTabIndex });
-                            scene.executeWhenReady(function () {
+                            scene.executeWhenReady(function() {
                                 scene.debugLayer._inspector.refresh();
                             })
                         } else if (showDebugLayer) {
@@ -676,7 +661,7 @@ function showError(errorMessage, errorEvent) {
             }
         };
         window.addEventListener("resize",
-            function () {
+            function() {
                 if (engine) {
                     engine.resize();
                 }
@@ -686,7 +671,7 @@ function showError(errorMessage, errorEvent) {
         loadScriptsList();
 
         // Zip
-        var addContentToZip = function (zip, name, url, replace, buffer, then) {
+        var addContentToZip = function(zip, name, url, replace, buffer, then) {
             if (url.substring(0, 5) == "http:" || url.substring(0, 5) == "blob:" || url.substring(0, 6) == "https:") {
                 then();
                 return;
@@ -700,7 +685,7 @@ function showError(errorMessage, errorEvent) {
                 xhr.responseType = "arraybuffer";
             }
 
-            xhr.onreadystatechange = function () {
+            xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
                         var text;
@@ -728,7 +713,7 @@ function showError(errorMessage, errorEvent) {
             xhr.send(null);
         }
 
-        var addTexturesToZip = function (zip, index, textures, folder, then) {
+        var addTexturesToZip = function(zip, index, textures, folder, then) {
 
             if (index === textures.length) {
                 then();
@@ -775,7 +760,7 @@ function showError(errorMessage, errorEvent) {
                     url,
                     null,
                     true,
-                    function () {
+                    function() {
                         addTexturesToZip(zip, index + 1, textures, folder, then);
                     });
             }
@@ -784,7 +769,7 @@ function showError(errorMessage, errorEvent) {
             }
         }
 
-        var addImportedFilesToZip = function (zip, index, importedFiles, folder, then) {
+        var addImportedFilesToZip = function(zip, index, importedFiles, folder, then) {
             if (index === importedFiles.length) {
                 then();
                 return;
@@ -802,12 +787,12 @@ function showError(errorMessage, errorEvent) {
                 url,
                 null,
                 true,
-                function () {
+                function() {
                     addImportedFilesToZip(zip, index + 1, importedFiles, folder, then);
                 });
         }
 
-        var getZip = function () {
+        var getZip = function() {
             if (engine.scenes.length === 0) {
                 return;
             }
@@ -831,17 +816,17 @@ function showError(errorMessage, errorEvent) {
                 "zipContent/index.html",
                 zipCode,
                 false,
-                function () {
+                function() {
                     addTexturesToZip(zip,
                         0,
                         textures,
                         null,
-                        function () {
+                        function() {
                             addImportedFilesToZip(zip,
                                 0,
                                 importedFiles,
                                 null,
-                                function () {
+                                function() {
                                     var blob = zip.generate({ type: "blob" });
                                     saveAs(blob, "sample.zip");
                                     document.getElementById("statusBar").innerHTML = "";
@@ -851,7 +836,7 @@ function showError(errorMessage, errorEvent) {
         }
 
         // Versions
-        setVersion = function (version) {
+        setVersion = function(version) {
             switch (version) {
                 case "stable":
                     location.href = "indexStable.html" + location.hash;
@@ -863,35 +848,35 @@ function showError(errorMessage, errorEvent) {
         }
 
         // Fonts
-        setFontSize = function (size) {
+        setFontSize = function(size) {
             fontSize = size;
             jsEditor.updateOptions({ fontSize: size });
             setToMultipleID("currentFontSize", "innerHTML", "Font: " + size);
         };
 
         // Fullscreen
-        document.getElementById("renderCanvas").addEventListener("webkitfullscreenchange", function () {
+        document.getElementById("renderCanvas").addEventListener("webkitfullscreenchange", function() {
             if (document.webkitIsFullScreen) goFullPage();
             else exitFullPage();
         }, false);
 
-        var goFullPage = function () {
+        var goFullPage = function() {
             var canvasElement = document.getElementById("renderCanvas");
             canvasElement.style.position = "absolute";
             canvasElement.style.top = 0;
             canvasElement.style.left = 0;
             canvasElement.style.zIndex = 100;
         }
-        var exitFullPage = function () {
+        var exitFullPage = function() {
             document.getElementById("renderCanvas").style.position = "relative";
             document.getElementById("renderCanvas").style.zIndex = 0;
         }
-        var goFullscreen = function () {
+        var goFullscreen = function() {
             if (engine) {
                 engine.switchFullscreen(true);
             }
         }
-        var editorGoFullscreen = function () {
+        var editorGoFullscreen = function() {
             var editorDiv = document.getElementById("jsEditor");
             if (editorDiv.requestFullscreen) {
                 editorDiv.requestFullscreen();
@@ -903,7 +888,7 @@ function showError(errorMessage, errorEvent) {
 
         }
 
-        var toggleEditor = function () {
+        var toggleEditor = function() {
             var editorButton = document.getElementById("editorButton1600");
             var scene = engine.scenes[0];
 
@@ -928,7 +913,7 @@ function showError(errorMessage, errorEvent) {
         /**
          * Toggle the dark theme
          */
-        var toggleTheme = function (theme) {
+        var toggleTheme = function(theme) {
             // Monaco
             var vsTheme;
             if (theme == 'dark') {
@@ -963,7 +948,7 @@ function showError(errorMessage, errorEvent) {
             jsEditor.setValue(oldCode);
             setFontSize(fontSize);
 
-            jsEditor.onKeyUp(function (evt) {
+            jsEditor.onKeyUp(function(evt) {
                 markDirty();
             });
 
@@ -981,7 +966,7 @@ function showError(errorMessage, errorEvent) {
             localStorage.setItem("bjs-playground-theme", theme);
         }
 
-        var toggleDebug = function () {
+        var toggleDebug = function() {
             // Always showing the debug layer, because you can close it by itself
             var scene = engine.scenes[0];
             if (document.getElementsByClassName("insp-right-panel")[0]) {
@@ -993,16 +978,16 @@ function showError(errorMessage, errorEvent) {
             }
         }
 
-        var toggleMetadata = function () {
+        var toggleMetadata = function() {
             var scene = engine.scenes[0];
             document.getElementById("saveLayer").style.display = "block";
         }
 
-        var formatCode = function () {
+        var formatCode = function() {
             jsEditor.getAction('editor.action.format').run();
         }
 
-        var toggleMinimap = function () {
+        var toggleMinimap = function() {
             var minimapToggle = document.getElementById("minimapToggle1600");
             if (minimapToggle.classList.contains('checked')) {
                 jsEditor.updateOptions({ minimap: { enabled: false } });
@@ -1016,7 +1001,7 @@ function showError(errorMessage, errorEvent) {
 
 
         //Navigation Overwrites
-        var exitPrompt = function (e) {
+        var exitPrompt = function(e) {
             var safeToggle = document.getElementById("safemodeToggle1600");
             if (safeToggle.classList.contains('checked')) {
                 e = e || window.event;
@@ -1032,7 +1017,7 @@ function showError(errorMessage, errorEvent) {
         window.onbeforeunload = exitPrompt;
 
         // Snippet
-        var save = function () {
+        var save = function() {
 
             // Retrieve title if necessary
             if (document.getElementById("saveLayer")) {
@@ -1042,9 +1027,9 @@ function showError(errorMessage, errorEvent) {
             }
 
             var xmlHttp = new XMLHttpRequest();
-            xmlHttp.onreadystatechange = function () {
+            xmlHttp.onreadystatechange = function() {
                 if (xmlHttp.readyState === 4) {
-                    if (xmlHttp.status === 201) {
+                    if (xmlHttp.status === 200) {
                         var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
                         var snippet = JSON.parse(xmlHttp.responseText);
                         var newUrl = baseUrl + "#" + snippet.id;
@@ -1062,13 +1047,13 @@ function showError(errorMessage, errorEvent) {
                 }
             }
 
-            xmlHttp.open("POST", snippetUrl + (currentSnippetToken ? "/" + currentSnippetToken : ""), true);
+            xmlHttp.open("POST", snippetV3Url + (currentSnippetToken ? "/" + currentSnippetToken : ""), true);
             xmlHttp.setRequestHeader("Content-Type", "application/json");
 
             var dataToSend = {
-                payload: {
+                payload: JSON.stringify({
                     code: jsEditor.getValue()
-                },
+                }),
                 name: currentSnippetTitle,
                 description: currentSnippetDescription,
                 tags: currentSnippetTags
@@ -1077,7 +1062,7 @@ function showError(errorMessage, errorEvent) {
             xmlHttp.send(JSON.stringify(dataToSend));
         }
 
-        var askForSave = function () {
+        var askForSave = function() {
             if (currentSnippetTitle == null
                 || currentSnippetDescription == null
                 || currentSnippetTags == null) {
@@ -1088,18 +1073,18 @@ function showError(errorMessage, errorEvent) {
                 save();
             }
         };
-        document.getElementById("saveFormButtonOk").addEventListener("click", function () {
+        document.getElementById("saveFormButtonOk").addEventListener("click", function() {
             document.getElementById("saveLayer").style.display = "none";
             save();
         });
-        document.getElementById("saveFormButtonCancel").addEventListener("click", function () {
+        document.getElementById("saveFormButtonCancel").addEventListener("click", function() {
             document.getElementById("saveLayer").style.display = "none";
         });
         document.getElementById("mainTitle").innerHTML = "v" + BABYLON.Engine.Version;
 
         var previousHash = "";
 
-        var cleanHash = function () {
+        var cleanHash = function() {
             var splits = decodeURIComponent(location.hash.substr(1)).split("#");
 
             if (splits.length > 2) {
@@ -1109,7 +1094,7 @@ function showError(errorMessage, errorEvent) {
             location.hash = splits.join("#");
         }
 
-        var checkHash = function (firstTime) {
+        var checkHash = function(firstTime) {
             if (location.hash) {
                 if (previousHash !== location.hash) {
                     cleanHash();
@@ -1118,7 +1103,7 @@ function showError(errorMessage, errorEvent) {
 
                     try {
                         var xmlHttp = new XMLHttpRequest();
-                        xmlHttp.onreadystatechange = function () {
+                        xmlHttp.onreadystatechange = function() {
                             if (xmlHttp.readyState === 4) {
                                 if (xmlHttp.status === 200) {
 
@@ -1126,7 +1111,7 @@ function showError(errorMessage, errorEvent) {
                                         return;
                                     }
 
-                                    var snippet = JSON.parse(xmlHttp.responseText)[0];
+                                    var snippet = JSON.parse(xmlHttp.responseText);
 
                                     blockEditorChange = true;
                                     jsEditor.setValue(JSON.parse(snippet.jsonPayload).code.toString());
@@ -1166,11 +1151,6 @@ function showError(errorMessage, errorEvent) {
                                     compileAndRun();
 
                                     // setToMultipleID("currentScript", "innerHTML", "Custom");
-                                } else if (firstTime) {
-                                    location.href = location.href.replace(location.hash, "");
-                                    if (scripts) {
-                                        loadScriptFromIndex(0);
-                                    }
                                 }
                             }
                         };
@@ -1180,7 +1160,7 @@ function showError(errorMessage, errorEvent) {
                         if (!hash.split("#")[1]) hash += "#0";
 
 
-                        xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
+                        xmlHttp.open("GET", snippetV3Url + "/" + hash.replace("#", "/"));
                         xmlHttp.send();
                     } catch (e) {
 
@@ -1209,7 +1189,7 @@ function showError(errorMessage, errorEvent) {
         setToMultipleID("darkTheme", "click", toggleTheme.bind(this, 'dark'));
         setToMultipleID("lightTheme", "click", toggleTheme.bind(this, 'light'));
         // Safe mode
-        setToMultipleID("safemodeToggle", 'click', function () {
+        setToMultipleID("safemodeToggle", 'click', function() {
             document.getElementById("safemodeToggle1600").classList.toggle('checked');
             if (document.getElementById("safemodeToggle1600").classList.contains('checked')) {
                 setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
@@ -1245,11 +1225,11 @@ function showError(errorMessage, errorEvent) {
 
     xhr.open('GET', "babylon.d.txt", true);
 
-    xhr.onreadystatechange = function () {
+    xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
                 require.config({ paths: { 'vs': 'node_modules/monaco-editor/min/vs' } });
-                require(['vs/editor/editor.main'], function () {
+                require(['vs/editor/editor.main'], function() {
                     if (monacoMode === "javascript") {
                         monaco.languages.typescript.javascriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
                     } else {
