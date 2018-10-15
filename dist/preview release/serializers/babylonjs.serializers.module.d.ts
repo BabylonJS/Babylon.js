@@ -26,7 +26,8 @@ declare module 'babylonjs-serializers/src/OBJ/objSerializer' {
 }
 
 declare module 'babylonjs-serializers/src/glTF/glTFFileExporter' {
-    export var toto3: number;
+    /** @hidden */
+    export var __IGLTFExporterExtension: number;
     /**
         * Interface for extending the exporter
         * @hidden
@@ -330,7 +331,8 @@ declare module 'babylonjs-serializers/src/glTF/2.0/glTFExporterExtension' {
     import { ImageMimeType, IMeshPrimitive } from "babylonjs-gltf2interface";
     import { _BinaryWriter } from "babylonjs-serializers/src/glTF/2.0/glTFExporter";
     import { IGLTFExporterExtension } from "babylonjs-serializers/src/glTF/glTFFileExporter";
-    export var toto2: number;
+    /** @hidden */
+    export var __IGLTFExporterExtensionV2: number;
     /**
         * Interface for a glTF exporter extension
         * @hidden
@@ -607,7 +609,8 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    export var toto3: number;
+    /** @hidden */
+    export var __IGLTFExporterExtension: number;
     /**
         * Interface for extending the exporter
         * @hidden
@@ -884,7 +887,8 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    export var toto2: number;
+    /** @hidden */
+    export var __IGLTFExporterExtensionV2: number;
     /**
         * Interface for a glTF exporter extension
         * @hidden

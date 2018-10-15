@@ -1,7 +1,8 @@
 ﻿import { VertexBuffer, Buffer, AnimationGroup, Material, AbstractMesh, Mesh, Bone, Skeleton } from "babylonjs";
 import { AnimationSamplerInterpolation, ITexture, ITextureInfo, IGLTF, ISampler, IScene, ISkin, IMesh, IMeshPrimitive, INode, IAccessor, IAnimationChannel, IAnimationSampler, IAnimation, IBuffer, IBufferView, ICamera, IImage, IMaterialNormalTextureInfo, IMaterialOcclusionTextureInfo, IMaterialPbrMetallicRoughness, IMaterial } from "babylonjs-gltf2interface";
 
-export var toto1 = 0;
+/** @hidden */
+export var __IGLTFLoaderInterfacesV2 = 0; // I am here to allow dts to be created
 
 /**
  * Loader interface with an index field.

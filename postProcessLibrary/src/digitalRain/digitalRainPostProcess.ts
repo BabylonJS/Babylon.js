@@ -246,10 +246,12 @@ export class DigitalRainPostProcess extends PostProcess {
 
         var alpha = 0.0;
         var cosTimeZeroOne = 0.0;
-        var matrix = new Matrix();
-        for (let i = 0; i < 16; i++) {
-            matrix.m[i] = Math.random();
-        }
+        var matrix = Matrix.FromValues(
+            Math.random(), Math.random(), Math.random(), Math.random(),
+            Math.random(), Math.random(), Math.random(), Math.random(),
+            Math.random(), Math.random(), Math.random(), Math.random(),
+            Math.random(), Math.random(), Math.random(), Math.random()
+        );
 
         this.onApply = (effect: Effect) => {
             effect.setTexture("digitalRainFont", this._digitalRainFontTexture);

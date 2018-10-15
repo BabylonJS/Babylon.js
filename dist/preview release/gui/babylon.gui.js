@@ -845,6 +845,297 @@ exports.AdvancedDynamicTexture = AdvancedDynamicTexture;
 
 /***/ }),
 
+/***/ "./src/2D/controls/baseSlider.ts":
+/*!***************************************!*\
+  !*** ./src/2D/controls/baseSlider.ts ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var control_1 = __webpack_require__(/*! ./control */ "./src/2D/controls/control.ts");
+var valueAndUnit_1 = __webpack_require__(/*! ../valueAndUnit */ "./src/2D/valueAndUnit.ts");
+var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
+/**
+ * Class used to create slider controls
+ */
+var BaseSlider = /** @class */ (function (_super) {
+    __extends(BaseSlider, _super);
+    /**
+     * Creates a new BaseSlider
+     * @param name defines the control name
+     */
+    function BaseSlider(name) {
+        var _this = _super.call(this, name) || this;
+        _this.name = name;
+        _this._thumbWidth = new valueAndUnit_1.ValueAndUnit(20, valueAndUnit_1.ValueAndUnit.UNITMODE_PIXEL, false);
+        _this._minimum = 0;
+        _this._maximum = 100;
+        _this._value = 50;
+        _this._isVertical = false;
+        _this._barOffset = new valueAndUnit_1.ValueAndUnit(5, valueAndUnit_1.ValueAndUnit.UNITMODE_PIXEL, false);
+        _this._isThumbClamped = false;
+        // Shared rendering info
+        _this._effectiveBarOffset = 0;
+        /** Observable raised when the sldier value changes */
+        _this.onValueChangedObservable = new babylonjs_1.Observable();
+        // Events
+        _this._pointerIsDown = false;
+        _this.isPointerBlocker = true;
+        return _this;
+    }
+    Object.defineProperty(BaseSlider.prototype, "barOffset", {
+        /** Gets or sets main bar offset (ie. the margin applied to the value bar) */
+        get: function () {
+            return this._barOffset.toString(this._host);
+        },
+        set: function (value) {
+            if (this._barOffset.toString(this._host) === value) {
+                return;
+            }
+            if (this._barOffset.fromString(value)) {
+                this._markAsDirty();
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BaseSlider.prototype, "barOffsetInPixels", {
+        /** Gets main bar offset in pixels*/
+        get: function () {
+            return this._barOffset.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BaseSlider.prototype, "thumbWidth", {
+        /** Gets or sets thumb width */
+        get: function () {
+            return this._thumbWidth.toString(this._host);
+        },
+        set: function (value) {
+            if (this._thumbWidth.toString(this._host) === value) {
+                return;
+            }
+            if (this._thumbWidth.fromString(value)) {
+                this._markAsDirty();
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BaseSlider.prototype, "thumbWidthInPixels", {
+        /** Gets thumb width in pixels */
+        get: function () {
+            return this._thumbWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BaseSlider.prototype, "minimum", {
+        /** Gets or sets minimum value */
+        get: function () {
+            return this._minimum;
+        },
+        set: function (value) {
+            if (this._minimum === value) {
+                return;
+            }
+            this._minimum = value;
+            this._markAsDirty();
+            this.value = Math.max(Math.min(this.value, this._maximum), this._minimum);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BaseSlider.prototype, "maximum", {
+        /** Gets or sets maximum value */
+        get: function () {
+            return this._maximum;
+        },
+        set: function (value) {
+            if (this._maximum === value) {
+                return;
+            }
+            this._maximum = value;
+            this._markAsDirty();
+            this.value = Math.max(Math.min(this.value, this._maximum), this._minimum);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BaseSlider.prototype, "value", {
+        /** Gets or sets current value */
+        get: function () {
+            return this._value;
+        },
+        set: function (value) {
+            value = Math.max(Math.min(value, this._maximum), this._minimum);
+            if (this._value === value) {
+                return;
+            }
+            this._value = value;
+            this._markAsDirty();
+            this.onValueChangedObservable.notifyObservers(this._value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BaseSlider.prototype, "isVertical", {
+        /**Gets or sets a boolean indicating if the slider should be vertical or horizontal */
+        get: function () {
+            return this._isVertical;
+        },
+        set: function (value) {
+            if (this._isVertical === value) {
+                return;
+            }
+            this._isVertical = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BaseSlider.prototype, "isThumbClamped", {
+        /** Gets or sets a value indicating if the thumb can go over main bar extends */
+        get: function () {
+            return this._isThumbClamped;
+        },
+        set: function (value) {
+            if (this._isThumbClamped === value) {
+                return;
+            }
+            this._isThumbClamped = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    BaseSlider.prototype._getTypeName = function () {
+        return "BaseSlider";
+    };
+    BaseSlider.prototype._getThumbPosition = function () {
+        if (this.isVertical) {
+            return ((this.maximum - this.value) / (this.maximum - this.minimum)) * this._backgroundBoxLength;
+        }
+        return ((this.value - this.minimum) / (this.maximum - this.minimum)) * this._backgroundBoxLength;
+    };
+    BaseSlider.prototype._getThumbThickness = function (type) {
+        var thumbThickness = 0;
+        switch (type) {
+            case "circle":
+                if (this._thumbWidth.isPixel) {
+                    thumbThickness = Math.max(this._thumbWidth.getValue(this._host), this._backgroundBoxThickness);
+                }
+                else {
+                    thumbThickness = this._backgroundBoxThickness * this._thumbWidth.getValue(this._host);
+                }
+                break;
+            case "rectangle":
+                if (this._thumbWidth.isPixel) {
+                    thumbThickness = Math.min(this._thumbWidth.getValue(this._host), this._backgroundBoxThickness);
+                }
+                else {
+                    thumbThickness = this._backgroundBoxThickness * this._thumbWidth.getValue(this._host);
+                }
+        }
+        return thumbThickness;
+    };
+    BaseSlider.prototype._prepareRenderingData = function (type) {
+        // Main bar
+        this._effectiveBarOffset = 0;
+        this._renderLeft = this._currentMeasure.left;
+        this._renderTop = this._currentMeasure.top;
+        this._renderWidth = this._currentMeasure.width;
+        this._renderHeight = this._currentMeasure.height;
+        this._backgroundBoxLength = Math.max(this._currentMeasure.width, this._currentMeasure.height);
+        this._backgroundBoxThickness = Math.min(this._currentMeasure.width, this._currentMeasure.height);
+        this._effectiveThumbThickness = this._getThumbThickness(type);
+        this._backgroundBoxLength -= this._effectiveThumbThickness;
+        //throw error when height is less than width for vertical slider
+        if ((this.isVertical && this._currentMeasure.height < this._currentMeasure.width)) {
+            console.error("Height should be greater than width");
+            return;
+        }
+        if (this._barOffset.isPixel) {
+            this._effectiveBarOffset = Math.min(this._barOffset.getValue(this._host), this._backgroundBoxThickness);
+        }
+        else {
+            this._effectiveBarOffset = this._backgroundBoxThickness * this._barOffset.getValue(this._host);
+        }
+        this._backgroundBoxThickness -= (this._effectiveBarOffset * 2);
+        if (this.isVertical) {
+            this._renderLeft += this._effectiveBarOffset;
+            if (!this.isThumbClamped) {
+                this._renderTop += (this._effectiveThumbThickness / 2);
+            }
+            this._renderHeight = this._backgroundBoxLength;
+            this._renderWidth = this._backgroundBoxThickness;
+        }
+        else {
+            this._renderTop += this._effectiveBarOffset;
+            if (!this.isThumbClamped) {
+                this._renderLeft += (this._effectiveThumbThickness / 2);
+            }
+            this._renderHeight = this._backgroundBoxThickness;
+            this._renderWidth = this._backgroundBoxLength;
+        }
+    };
+    BaseSlider.prototype._updateValueFromPointer = function (x, y) {
+        if (this.rotation != 0) {
+            this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
+            x = this._transformedPosition.x;
+            y = this._transformedPosition.y;
+        }
+        if (this._isVertical) {
+            this.value = this._minimum + (1 - ((y - this._currentMeasure.top) / this._currentMeasure.height)) * (this._maximum - this._minimum);
+        }
+        else {
+            this.value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
+        }
+    };
+    BaseSlider.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+            return false;
+        }
+        this._pointerIsDown = true;
+        this._updateValueFromPointer(coordinates.x, coordinates.y);
+        this._host._capturingControl[pointerId] = this;
+        return true;
+    };
+    BaseSlider.prototype._onPointerMove = function (target, coordinates) {
+        if (this._pointerIsDown) {
+            this._updateValueFromPointer(coordinates.x, coordinates.y);
+        }
+        _super.prototype._onPointerMove.call(this, target, coordinates);
+    };
+    BaseSlider.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
+        this._pointerIsDown = false;
+        delete this._host._capturingControl[pointerId];
+        _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick);
+    };
+    return BaseSlider;
+}(control_1.Control));
+exports.BaseSlider = BaseSlider;
+
+
+/***/ }),
+
 /***/ "./src/2D/controls/button.ts":
 /*!***********************************!*\
   !*** ./src/2D/controls/button.ts ***!
@@ -4186,9 +4477,23 @@ var Image = /** @class */ (function (_super) {
         _this._cellWidth = 0;
         _this._cellHeight = 0;
         _this._cellId = -1;
+        /**
+         * Observable notified when the content is loaded
+         */
+        _this.onImageLoadedObservable = new babylonjs_1.Observable();
         _this.source = url;
         return _this;
     }
+    Object.defineProperty(Image.prototype, "isLoaded", {
+        /**
+         * Gets a boolean indicating that the content is loaded
+         */
+        get: function () {
+            return this._loaded;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Image.prototype, "sourceLeft", {
         /**
          * Gets or sets the left coordinate in the source image
@@ -4322,6 +4627,7 @@ var Image = /** @class */ (function (_super) {
         if (this._autoScale) {
             this.synchronizeSizeWithContent();
         }
+        this.onImageLoadedObservable.notifyObservers(this);
         this._markAsDirty();
     };
     Object.defineProperty(Image.prototype, "source", {
@@ -4469,6 +4775,10 @@ var Image = /** @class */ (function (_super) {
         }
         context.restore();
     };
+    Image.prototype.dispose = function () {
+        _super.prototype.dispose.call(this);
+        this.onImageLoadedObservable.clear();
+    };
     // Static
     /** STRETCH_NONE */
     Image.STRETCH_NONE = 0;
@@ -4481,6 +4791,171 @@ var Image = /** @class */ (function (_super) {
     return Image;
 }(control_1.Control));
 exports.Image = Image;
+
+
+/***/ }),
+
+/***/ "./src/2D/controls/imageBasedSlider.ts":
+/*!*********************************************!*\
+  !*** ./src/2D/controls/imageBasedSlider.ts ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var baseSlider_1 = __webpack_require__(/*! ./baseSlider */ "./src/2D/controls/baseSlider.ts");
+var measure_1 = __webpack_require__(/*! ../measure */ "./src/2D/measure.ts");
+/**
+ * Class used to create slider controls based on images
+ */
+var ImageBasedSlider = /** @class */ (function (_super) {
+    __extends(ImageBasedSlider, _super);
+    /**
+     * Creates a new ImageBasedSlider
+     * @param name defines the control name
+     */
+    function ImageBasedSlider(name) {
+        var _this = _super.call(this, name) || this;
+        _this.name = name;
+        _this._tempMeasure = new measure_1.Measure(0, 0, 0, 0);
+        return _this;
+    }
+    Object.defineProperty(ImageBasedSlider.prototype, "backgroundImage", {
+        /**
+         * Gets or sets the image used to render the background
+         */
+        get: function () {
+            return this._backgroundImage;
+        },
+        set: function (value) {
+            var _this = this;
+            if (this._backgroundImage === value) {
+                return;
+            }
+            this._backgroundImage = value;
+            if (value && !value.isLoaded) {
+                value.onImageLoadedObservable.addOnce(function () { return _this._markAsDirty(); });
+            }
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ImageBasedSlider.prototype, "valueBarImage", {
+        /**
+         * Gets or sets the image used to render the value bar
+         */
+        get: function () {
+            return this._valueBarImage;
+        },
+        set: function (value) {
+            var _this = this;
+            if (this._valueBarImage === value) {
+                return;
+            }
+            this._valueBarImage = value;
+            if (value && !value.isLoaded) {
+                value.onImageLoadedObservable.addOnce(function () { return _this._markAsDirty(); });
+            }
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ImageBasedSlider.prototype, "thumbImage", {
+        /**
+         * Gets or sets the image used to render the thumb
+         */
+        get: function () {
+            return this._thumbImage;
+        },
+        set: function (value) {
+            var _this = this;
+            if (this._thumbImage === value) {
+                return;
+            }
+            this._thumbImage = value;
+            if (value && !value.isLoaded) {
+                value.onImageLoadedObservable.addOnce(function () { return _this._markAsDirty(); });
+            }
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ImageBasedSlider.prototype._getTypeName = function () {
+        return "ImageBasedSlider";
+    };
+    ImageBasedSlider.prototype._draw = function (parentMeasure, context) {
+        context.save();
+        this._applyStates(context);
+        if (this._processMeasures(parentMeasure, context)) {
+            this._prepareRenderingData("rectangle");
+            var thumbPosition = this._getThumbPosition();
+            var left = this._renderLeft;
+            var top = this._renderTop;
+            var width = this._renderWidth;
+            var height = this._renderHeight;
+            // Background
+            if (this._backgroundImage) {
+                this._tempMeasure.copyFromFloats(left, top, width, height);
+                if (this.isThumbClamped) {
+                    if (this.isVertical) {
+                        this._tempMeasure.height += this._effectiveThumbThickness;
+                    }
+                    else {
+                        this._tempMeasure.width += this._effectiveThumbThickness;
+                    }
+                }
+                this._backgroundImage._draw(this._tempMeasure, context);
+            }
+            // Bar
+            if (this._valueBarImage) {
+                if (this.isVertical) {
+                    this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, height - thumbPosition);
+                    if (this.isThumbClamped) {
+                        this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, this._currentMeasure.height - thumbPosition);
+                    }
+                    else {
+                        this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, height - thumbPosition);
+                    }
+                }
+                else {
+                    this._tempMeasure.copyFromFloats(left, top, thumbPosition, height);
+                }
+                this._valueBarImage._draw(this._tempMeasure, context);
+            }
+            // Thumb
+            if (this._thumbImage) {
+                if (this.isVertical) {
+                    this._tempMeasure.copyFromFloats(left - this._effectiveBarOffset, this._currentMeasure.top + thumbPosition, this._currentMeasure.width, this._effectiveThumbThickness);
+                }
+                else {
+                    this._tempMeasure.copyFromFloats(this._currentMeasure.left + thumbPosition, this._currentMeasure.top, this._effectiveThumbThickness, this._currentMeasure.height);
+                }
+                this._thumbImage._draw(this._tempMeasure, context);
+            }
+        }
+        context.restore();
+    };
+    return ImageBasedSlider;
+}(baseSlider_1.BaseSlider));
+exports.ImageBasedSlider = ImageBasedSlider;
 
 
 /***/ }),
@@ -4515,9 +4990,11 @@ __export(__webpack_require__(/*! ./stackPanel */ "./src/2D/controls/stackPanel.t
 __export(__webpack_require__(/*! ./selector */ "./src/2D/controls/selector.ts"));
 __export(__webpack_require__(/*! ./textBlock */ "./src/2D/controls/textBlock.ts"));
 __export(__webpack_require__(/*! ./virtualKeyboard */ "./src/2D/controls/virtualKeyboard.ts"));
-__export(__webpack_require__(/*! ./slider */ "./src/2D/controls/slider.ts"));
 __export(__webpack_require__(/*! ./rectangle */ "./src/2D/controls/rectangle.ts"));
 __export(__webpack_require__(/*! ./displayGrid */ "./src/2D/controls/displayGrid.ts"));
+__export(__webpack_require__(/*! ./baseSlider */ "./src/2D/controls/baseSlider.ts"));
+__export(__webpack_require__(/*! ./slider */ "./src/2D/controls/slider.ts"));
+__export(__webpack_require__(/*! ./imageBasedSlider */ "./src/2D/controls/imageBasedSlider.ts"));
 __export(__webpack_require__(/*! ./statics */ "./src/2D/controls/statics.ts"));
 
 
@@ -6711,9 +7188,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var control_1 = __webpack_require__(/*! ./control */ "./src/2D/controls/control.ts");
-var valueAndUnit_1 = __webpack_require__(/*! ../valueAndUnit */ "./src/2D/valueAndUnit.ts");
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
+var baseSlider_1 = __webpack_require__(/*! ./baseSlider */ "./src/2D/controls/baseSlider.ts");
 /**
  * Class used to create slider controls
  */
@@ -6726,23 +7201,27 @@ var Slider = /** @class */ (function (_super) {
     function Slider(name) {
         var _this = _super.call(this, name) || this;
         _this.name = name;
-        _this._thumbWidth = new valueAndUnit_1.ValueAndUnit(20, valueAndUnit_1.ValueAndUnit.UNITMODE_PIXEL, false);
-        _this._minimum = 0;
-        _this._maximum = 100;
-        _this._value = 50;
-        _this._isVertical = false;
         _this._background = "black";
         _this._borderColor = "white";
-        _this._barOffset = new valueAndUnit_1.ValueAndUnit(5, valueAndUnit_1.ValueAndUnit.UNITMODE_PIXEL, false);
         _this._isThumbCircle = false;
-        _this._isThumbClamped = false;
-        /** Observable raised when the sldier value changes */
-        _this.onValueChangedObservable = new babylonjs_1.Observable();
-        // Events
-        _this._pointerIsDown = false;
-        _this.isPointerBlocker = true;
+        _this._displayThumb = true;
         return _this;
     }
+    Object.defineProperty(Slider.prototype, "displayThumb", {
+        /** Gets or sets a boolean indicating if the thumb must be rendered */
+        get: function () {
+            return this._displayThumb;
+        },
+        set: function (value) {
+            if (this._displayThumb === value) {
+                return;
+            }
+            this._displayThumb = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Slider.prototype, "borderColor", {
         /** Gets or sets border color */
         get: function () {
@@ -6773,118 +7252,6 @@ var Slider = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Slider.prototype, "barOffset", {
-        /** Gets or sets main bar offset */
-        get: function () {
-            return this._barOffset.toString(this._host);
-        },
-        set: function (value) {
-            if (this._barOffset.toString(this._host) === value) {
-                return;
-            }
-            if (this._barOffset.fromString(value)) {
-                this._markAsDirty();
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Slider.prototype, "barOffsetInPixels", {
-        /** Gets main bar offset in pixels*/
-        get: function () {
-            return this._barOffset.getValueInPixel(this._host, this._cachedParentMeasure.width);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Slider.prototype, "thumbWidth", {
-        /** Gets or sets thumb width */
-        get: function () {
-            return this._thumbWidth.toString(this._host);
-        },
-        set: function (value) {
-            if (this._thumbWidth.toString(this._host) === value) {
-                return;
-            }
-            if (this._thumbWidth.fromString(value)) {
-                this._markAsDirty();
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Slider.prototype, "thumbWidthInPixels", {
-        /** Gets thumb width in pixels */
-        get: function () {
-            return this._thumbWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Slider.prototype, "minimum", {
-        /** Gets or sets minimum value */
-        get: function () {
-            return this._minimum;
-        },
-        set: function (value) {
-            if (this._minimum === value) {
-                return;
-            }
-            this._minimum = value;
-            this._markAsDirty();
-            this.value = Math.max(Math.min(this.value, this._maximum), this._minimum);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Slider.prototype, "maximum", {
-        /** Gets or sets maximum value */
-        get: function () {
-            return this._maximum;
-        },
-        set: function (value) {
-            if (this._maximum === value) {
-                return;
-            }
-            this._maximum = value;
-            this._markAsDirty();
-            this.value = Math.max(Math.min(this.value, this._maximum), this._minimum);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Slider.prototype, "value", {
-        /** Gets or sets current value */
-        get: function () {
-            return this._value;
-        },
-        set: function (value) {
-            value = Math.max(Math.min(value, this._maximum), this._minimum);
-            if (this._value === value) {
-                return;
-            }
-            this._value = value;
-            this._markAsDirty();
-            this.onValueChangedObservable.notifyObservers(this._value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Slider.prototype, "isVertical", {
-        /**Gets or sets a boolean indicating if the slider should be vertical or horizontal */
-        get: function () {
-            return this._isVertical;
-        },
-        set: function (value) {
-            if (this._isVertical === value) {
-                return;
-            }
-            this._isVertical = value;
-            this._markAsDirty();
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(Slider.prototype, "isThumbCircle", {
         /** Gets or sets a boolean indicating if the thumb should be round or square */
         get: function () {
@@ -6900,100 +7267,30 @@ var Slider = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Slider.prototype, "isThumbClamped", {
-        /** Gets or sets a value indicating if the thumb can go over main bar extends */
-        get: function () {
-            return this._isThumbClamped;
-        },
-        set: function (value) {
-            if (this._isThumbClamped === value) {
-                return;
-            }
-            this._isThumbClamped = value;
-            this._markAsDirty();
-        },
-        enumerable: true,
-        configurable: true
-    });
     Slider.prototype._getTypeName = function () {
         return "Slider";
-    };
-    Slider.prototype._getThumbThickness = function (type, backgroundLength) {
-        var thumbThickness = 0;
-        switch (type) {
-            case "circle":
-                if (this._thumbWidth.isPixel) {
-                    thumbThickness = Math.max(this._thumbWidth.getValue(this._host), backgroundLength);
-                }
-                else {
-                    thumbThickness = backgroundLength * this._thumbWidth.getValue(this._host);
-                }
-                break;
-            case "rectangle":
-                if (this._thumbWidth.isPixel) {
-                    thumbThickness = Math.min(this._thumbWidth.getValue(this._host), backgroundLength);
-                }
-                else {
-                    thumbThickness = backgroundLength * this._thumbWidth.getValue(this._host);
-                }
-        }
-        return thumbThickness;
     };
     Slider.prototype._draw = function (parentMeasure, context) {
         context.save();
         this._applyStates(context);
         if (this._processMeasures(parentMeasure, context)) {
-            // Main bar
-            var effectiveBarOffset = 0;
-            var type = this.isThumbCircle ? "circle" : "rectangle";
-            var left = this._currentMeasure.left;
-            var top = this._currentMeasure.top;
-            var width = this._currentMeasure.width;
-            var height = this._currentMeasure.height;
-            var backgroundBoxLength = Math.max(this._currentMeasure.width, this._currentMeasure.height);
-            var backgroundBoxThickness = Math.min(this._currentMeasure.width, this._currentMeasure.height);
-            var effectiveThumbThickness = this._getThumbThickness(type, backgroundBoxThickness);
-            backgroundBoxLength -= effectiveThumbThickness;
+            this._prepareRenderingData(this.isThumbCircle ? "circle" : "rectangle");
+            var left = this._renderLeft;
+            var top = this._renderTop;
+            var width = this._renderWidth;
+            var height = this._renderHeight;
             var radius = 0;
-            //throw error when height is less than width for vertical slider
-            if ((this._isVertical && this._currentMeasure.height < this._currentMeasure.width)) {
-                console.error("Height should be greater than width");
-                return;
-            }
-            if (this._barOffset.isPixel) {
-                effectiveBarOffset = Math.min(this._barOffset.getValue(this._host), backgroundBoxThickness);
-            }
-            else {
-                effectiveBarOffset = backgroundBoxThickness * this._barOffset.getValue(this._host);
-            }
-            backgroundBoxThickness -= (effectiveBarOffset * 2);
-            if (this._isVertical) {
-                left += effectiveBarOffset;
-                if (!this.isThumbClamped) {
-                    top += (effectiveThumbThickness / 2);
-                }
-                height = backgroundBoxLength;
-                width = backgroundBoxThickness;
-            }
-            else {
-                top += effectiveBarOffset;
-                if (!this.isThumbClamped) {
-                    left += (effectiveThumbThickness / 2);
-                }
-                height = backgroundBoxThickness;
-                width = backgroundBoxLength;
-            }
             if (this.isThumbClamped && this.isThumbCircle) {
-                if (this._isVertical) {
-                    top += (effectiveThumbThickness / 2);
+                if (this.isVertical) {
+                    top += (this._effectiveThumbThickness / 2);
                 }
                 else {
-                    left += (effectiveThumbThickness / 2);
+                    left += (this._effectiveThumbThickness / 2);
                 }
-                radius = backgroundBoxThickness / 2;
+                radius = this._backgroundBoxThickness / 2;
             }
             else {
-                radius = (effectiveThumbThickness - effectiveBarOffset) / 2;
+                radius = (this._effectiveThumbThickness - this._effectiveBarOffset) / 2;
             }
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;
@@ -7001,18 +7298,18 @@ var Slider = /** @class */ (function (_super) {
                 context.shadowOffsetX = this.shadowOffsetX;
                 context.shadowOffsetY = this.shadowOffsetY;
             }
-            var thumbPosition = (this._isVertical) ? ((this._maximum - this._value) / (this._maximum - this._minimum)) * backgroundBoxLength : ((this._value - this._minimum) / (this._maximum - this._minimum)) * backgroundBoxLength;
+            var thumbPosition = this._getThumbPosition();
             context.fillStyle = this._background;
-            if (this._isVertical) {
+            if (this.isVertical) {
                 if (this.isThumbClamped) {
                     if (this.isThumbCircle) {
                         context.beginPath();
-                        context.arc(left + backgroundBoxThickness / 2, top, radius, Math.PI, 2 * Math.PI);
+                        context.arc(left + this._backgroundBoxThickness / 2, top, radius, Math.PI, 2 * Math.PI);
                         context.fill();
                         context.fillRect(left, top, width, height);
                     }
                     else {
-                        context.fillRect(left, top, width, height + effectiveThumbThickness);
+                        context.fillRect(left, top, width, height + this._effectiveThumbThickness);
                     }
                 }
                 else {
@@ -7023,12 +7320,12 @@ var Slider = /** @class */ (function (_super) {
                 if (this.isThumbClamped) {
                     if (this.isThumbCircle) {
                         context.beginPath();
-                        context.arc(left + backgroundBoxLength, top + (backgroundBoxThickness / 2), radius, 0, 2 * Math.PI);
+                        context.arc(left + this._backgroundBoxLength, top + (this._backgroundBoxThickness / 2), radius, 0, 2 * Math.PI);
                         context.fill();
                         context.fillRect(left, top, width, height);
                     }
                     else {
-                        context.fillRect(left, top, width + effectiveThumbThickness, height);
+                        context.fillRect(left, top, width + this._effectiveThumbThickness, height);
                     }
                 }
                 else {
@@ -7040,12 +7337,13 @@ var Slider = /** @class */ (function (_super) {
                 context.shadowOffsetX = 0;
                 context.shadowOffsetY = 0;
             }
+            // Value bar
             context.fillStyle = this.color;
-            if (this._isVertical) {
+            if (this.isVertical) {
                 if (this.isThumbClamped) {
                     if (this.isThumbCircle) {
                         context.beginPath();
-                        context.arc(left + backgroundBoxThickness / 2, top + backgroundBoxLength, radius, 0, 2 * Math.PI);
+                        context.arc(left + this._backgroundBoxThickness / 2, top + this._backgroundBoxLength, radius, 0, 2 * Math.PI);
                         context.fill();
                         context.fillRect(left, top + thumbPosition, width, height - thumbPosition);
                     }
@@ -7061,7 +7359,7 @@ var Slider = /** @class */ (function (_super) {
                 if (this.isThumbClamped) {
                     if (this.isThumbCircle) {
                         context.beginPath();
-                        context.arc(left, top + backgroundBoxThickness / 2, radius, 0, 2 * Math.PI);
+                        context.arc(left, top + this._backgroundBoxThickness / 2, radius, 0, 2 * Math.PI);
                         context.fill();
                         context.fillRect(left, top, thumbPosition, height);
                     }
@@ -7073,87 +7371,57 @@ var Slider = /** @class */ (function (_super) {
                     context.fillRect(left, top, thumbPosition, height);
                 }
             }
-            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                context.shadowColor = this.shadowColor;
-                context.shadowBlur = this.shadowBlur;
-                context.shadowOffsetX = this.shadowOffsetX;
-                context.shadowOffsetY = this.shadowOffsetY;
-            }
-            if (this._isThumbCircle) {
-                context.beginPath();
-                if (this._isVertical) {
-                    context.arc(left + backgroundBoxThickness / 2, top + thumbPosition, radius, 0, 2 * Math.PI);
-                }
-                else {
-                    context.arc(left + thumbPosition, top + (backgroundBoxThickness / 2), radius, 0, 2 * Math.PI);
-                }
-                context.fill();
+            // Thumb
+            if (this.displayThumb) {
                 if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                    context.shadowBlur = 0;
-                    context.shadowOffsetX = 0;
-                    context.shadowOffsetY = 0;
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY;
                 }
-                context.strokeStyle = this._borderColor;
-                context.stroke();
-            }
-            else {
-                if (this._isVertical) {
-                    context.fillRect(left - effectiveBarOffset, this._currentMeasure.top + thumbPosition, this._currentMeasure.width, effectiveThumbThickness);
+                if (this._isThumbCircle) {
+                    context.beginPath();
+                    if (this.isVertical) {
+                        context.arc(left + this._backgroundBoxThickness / 2, top + thumbPosition, radius, 0, 2 * Math.PI);
+                    }
+                    else {
+                        context.arc(left + thumbPosition, top + (this._backgroundBoxThickness / 2), radius, 0, 2 * Math.PI);
+                    }
+                    context.fill();
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
+                    context.strokeStyle = this._borderColor;
+                    context.stroke();
                 }
                 else {
-                    context.fillRect(this._currentMeasure.left + thumbPosition, this._currentMeasure.top, effectiveThumbThickness, this._currentMeasure.height);
-                }
-                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                    context.shadowBlur = 0;
-                    context.shadowOffsetX = 0;
-                    context.shadowOffsetY = 0;
-                }
-                context.strokeStyle = this._borderColor;
-                if (this._isVertical) {
-                    context.strokeRect(left - effectiveBarOffset, this._currentMeasure.top + thumbPosition, this._currentMeasure.width, effectiveThumbThickness);
-                }
-                else {
-                    context.strokeRect(this._currentMeasure.left + thumbPosition, this._currentMeasure.top, effectiveThumbThickness, this._currentMeasure.height);
+                    if (this.isVertical) {
+                        context.fillRect(left - this._effectiveBarOffset, this._currentMeasure.top + thumbPosition, this._currentMeasure.width, this._effectiveThumbThickness);
+                    }
+                    else {
+                        context.fillRect(this._currentMeasure.left + thumbPosition, this._currentMeasure.top, this._effectiveThumbThickness, this._currentMeasure.height);
+                    }
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
+                    context.strokeStyle = this._borderColor;
+                    if (this.isVertical) {
+                        context.strokeRect(left - this._effectiveBarOffset, this._currentMeasure.top + thumbPosition, this._currentMeasure.width, this._effectiveThumbThickness);
+                    }
+                    else {
+                        context.strokeRect(this._currentMeasure.left + thumbPosition, this._currentMeasure.top, this._effectiveThumbThickness, this._currentMeasure.height);
+                    }
                 }
             }
         }
         context.restore();
     };
-    Slider.prototype._updateValueFromPointer = function (x, y) {
-        if (this.rotation != 0) {
-            this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
-            x = this._transformedPosition.x;
-            y = this._transformedPosition.y;
-        }
-        if (this._isVertical) {
-            this.value = this._minimum + (1 - ((y - this._currentMeasure.top) / this._currentMeasure.height)) * (this._maximum - this._minimum);
-        }
-        else {
-            this.value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
-        }
-    };
-    Slider.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
-            return false;
-        }
-        this._pointerIsDown = true;
-        this._updateValueFromPointer(coordinates.x, coordinates.y);
-        this._host._capturingControl[pointerId] = this;
-        return true;
-    };
-    Slider.prototype._onPointerMove = function (target, coordinates) {
-        if (this._pointerIsDown) {
-            this._updateValueFromPointer(coordinates.x, coordinates.y);
-        }
-        _super.prototype._onPointerMove.call(this, target, coordinates);
-    };
-    Slider.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
-        this._pointerIsDown = false;
-        delete this._host._capturingControl[pointerId];
-        _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick);
-    };
     return Slider;
-}(control_1.Control));
+}(baseSlider_1.BaseSlider));
 exports.Slider = Slider;
 
 
@@ -8402,6 +8670,19 @@ var Measure = /** @class */ (function () {
         this.top = other.top;
         this.width = other.width;
         this.height = other.height;
+    };
+    /**
+     * Copy from a group of 4 floats
+     * @param left defines left coordinate
+     * @param top defines top coordinate
+     * @param width defines width dimension
+     * @param height defines height dimension
+     */
+    Measure.prototype.copyFromFloats = function (left, top, width, height) {
+        this.left = left;
+        this.top = top;
+        this.width = width;
+        this.height = height;
     };
     /**
      * Check equality between this measure and another one

@@ -232,7 +232,7 @@ function runTest(index, done) {
             return;
         }
 
-        var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
+        var snippetUrl = "https://snippet.babylonjs.com";
         var pgRoot = "/Playground"
 
         var retryTime = 500;
@@ -258,7 +258,7 @@ function runTest(index, done) {
                 if (xmlHttp.readyState === 4) {
                     try {
                         xmlHttp.onreadystatechange = null;
-                        var snippet = JSON.parse(xmlHttp.responseText)[0];
+                        var snippet = JSON.parse(xmlHttp.responseText);
                         var code = JSON.parse(snippet.jsonPayload).code.toString();
                         code = code.replace(/\/textures\//g, pgRoot + "/textures/");
                         code = code.replace(/"textures\//g, "\"" + pgRoot + "/textures/");

@@ -3136,7 +3136,8 @@ glTFFileLoader_1.GLTFFileLoader._CreateGLTFLoaderV2 = function (parent) { return
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toto = 0;
+/** @hidden */
+exports.__IGLTFLoaderExtensionV2 = 0; // I am here to allow dts to be created
 
 
 /***/ }),
@@ -3151,7 +3152,8 @@ exports.toto = 0;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toto1 = 0;
+/** @hidden */
+exports.__IGLTFLoaderInterfacesV2 = 0; // I am here to allow dts to be created
 
 
 /***/ }),
@@ -3685,6 +3687,10 @@ var GLTFFileLoader = /** @class */ (function () {
         return GLTFValidator.validateString(json, options).then(function (result) {
             _this._endPerformanceCounter("Validate JSON");
             _this.onValidatedObservable.notifyObservers(result);
+            _this.onValidatedObservable.clear();
+        }, function (reason) {
+            _this._endPerformanceCounter("Validate JSON");
+            babylonjs_1.Tools.Warn("Failed to validate: " + reason);
             _this.onValidatedObservable.clear();
         });
     };

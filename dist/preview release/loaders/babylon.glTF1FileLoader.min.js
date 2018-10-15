@@ -2942,6 +2942,10 @@ var GLTFFileLoader = /** @class */ (function () {
             _this._endPerformanceCounter("Validate JSON");
             _this.onValidatedObservable.notifyObservers(result);
             _this.onValidatedObservable.clear();
+        }, function (reason) {
+            _this._endPerformanceCounter("Validate JSON");
+            babylonjs_1.Tools.Warn("Failed to validate: " + reason);
+            _this.onValidatedObservable.clear();
         });
     };
     GLTFFileLoader.prototype._getLoader = function (loaderData) {

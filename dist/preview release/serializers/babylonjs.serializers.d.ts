@@ -9,7 +9,8 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    export var toto3: number;
+    /** @hidden */
+    export var __IGLTFExporterExtension: number;
     /**
         * Interface for extending the exporter
         * @hidden
@@ -286,7 +287,8 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    export var toto2: number;
+    /** @hidden */
+    export var __IGLTFExporterExtensionV2: number;
     /**
         * Interface for a glTF exporter extension
         * @hidden

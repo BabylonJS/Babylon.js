@@ -2255,7 +2255,8 @@ exports._BinaryWriter = _BinaryWriter;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toto2 = 0;
+/** @hidden */
+exports.__IGLTFExporterExtensionV2 = 0; // I am here to allow dts to be created
 
 
 /***/ }),
@@ -3682,7 +3683,8 @@ __export(__webpack_require__(/*! ./glTFUtilities */ "./src/glTF/2.0/glTFUtilitie
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toto3 = 0;
+/** @hidden */
+exports.__IGLTFExporterExtension = 0; // I am here to allow dts to be created
 
 
 /***/ }),

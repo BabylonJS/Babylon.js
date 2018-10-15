@@ -593,6 +593,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
             this.onValidatedObservable.notifyObservers(result);
             this.onValidatedObservable.clear();
+        }, (reason) => {
+            this._endPerformanceCounter("Validate JSON");
+             Tools.Warn(`Failed to validate: ${reason}`);
+            this.onValidatedObservable.clear();
         });
     }
 

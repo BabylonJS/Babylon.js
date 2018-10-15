@@ -1218,7 +1218,8 @@ declare module 'babylonjs-loaders/src/glTF/2.0/glTFLoaderExtension' {
     import { IDisposable, Nullable, Mesh, Camera, Geometry, Material, BaseTexture, AnimationGroup } from "babylonjs";
     import { ISceneV2, INodeV2, ICameraV2, IMeshPrimitiveV2, IMaterialV2, ITextureInfoV2, IAnimationV2 } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/src/glTF/glTFFileLoader";
-    export var toto: number;
+    /** @hidden */
+    export var __IGLTFLoaderExtensionV2: number;
     /**
         * Interface for a glTF loader extension.
         */
@@ -1313,7 +1314,8 @@ declare module 'babylonjs-loaders/src/glTF/2.0/glTFLoaderExtension' {
 declare module 'babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces' {
     import { VertexBuffer, Buffer, AnimationGroup, Material, AbstractMesh, Mesh, Bone, Skeleton } from "babylonjs";
     import { AnimationSamplerInterpolation, ITexture, ITextureInfo, IGLTF, ISampler, IScene, ISkin, IMesh, IMeshPrimitive, INode, IAccessor, IAnimationChannel, IAnimationSampler, IAnimation, IBuffer, IBufferView, ICamera, IImage, IMaterialNormalTextureInfo, IMaterialOcclusionTextureInfo, IMaterialPbrMetallicRoughness, IMaterial } from "babylonjs-gltf2interface";
-    export var toto1: number;
+    /** @hidden */
+    export var __IGLTFLoaderInterfacesV2: number;
     /**
         * Loader interface with an index field.
         */
@@ -2903,7 +2905,8 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    export var toto: number;
+    /** @hidden */
+    export var __IGLTFLoaderExtensionV2: number;
     /**
         * Interface for a glTF loader extension.
         */
@@ -2995,7 +2998,8 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    export var toto1: number;
+    /** @hidden */
+    export var __IGLTFLoaderInterfacesV2: number;
     /**
         * Loader interface with an index field.
         */

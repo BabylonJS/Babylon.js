@@ -1142,7 +1142,8 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    export var toto: number;
+    /** @hidden */
+    export var __IGLTFLoaderExtensionV2: number;
     /**
         * Interface for a glTF loader extension.
         */
@@ -1234,7 +1235,8 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    export var toto1: number;
+    /** @hidden */
+    export var __IGLTFLoaderInterfacesV2: number;
     /**
         * Loader interface with an index field.
         */

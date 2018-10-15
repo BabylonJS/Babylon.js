@@ -2,7 +2,8 @@
 import { ISceneV2, INodeV2, ICameraV2, IMeshPrimitiveV2, IMaterialV2, ITextureInfoV2, IAnimationV2 } from "./glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFFileLoader";
 
-export var toto = 0;
+/** @hidden */
+export var __IGLTFLoaderExtensionV2 = 0; // I am here to allow dts to be created
 
 /**
  * Interface for a glTF loader extension.
