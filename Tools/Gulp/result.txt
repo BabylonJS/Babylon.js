@@ -1,0 +1,4 @@
+[17:29:16] Using gulpfile c:\Dev\Babylon\Babylon.js\Tools\Gulp\gulpfile.js
+[17:29:16] Starting 'typedoc-validate'...
+[17:29:17] All formatting check passed successfully during the validation !
+[17:29:17] Finished 'typedoc-validate' after 579 ms

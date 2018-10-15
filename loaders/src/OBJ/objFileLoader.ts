@@ -5,7 +5,9 @@ import { Geometry, Mesh, SceneLoader, Vector3, Vector2, Tools, Color3, StandardM
  */
 export class MTLFileLoader {
 
-    // All material loaded from the mtl will be set here
+    /**
+     * All material loaded from the mtl will be set here
+     */
     public materials: StandardMaterial[] = [];
 
     /**
@@ -14,11 +16,11 @@ export class MTLFileLoader {
      * -some component missing (Ni, Tf...)
      * -including the specific options available
      *
-     * @param scene
-     * @param data
-     * @param rootUrl
+     * @param scene defines the scene the material will be created in
+     * @param data defines the mtl data to parse
+     * @param rootUrl defines the rooturl to use in order to load relative dependencies
      */
-    public parseMTL(scene: Scene, data: string | ArrayBuffer, rootUrl: string) {
+    public parseMTL(scene: Scene, data: string | ArrayBuffer, rootUrl: string): void {
         if (data instanceof ArrayBuffer) {
             return;
         }
@@ -199,31 +201,60 @@ export class MTLFileLoader {
     }
 }
 
+/**
+ * OBJ file type loader.
+ * This is a babylon scene loader plugin.
+ */
 export class OBJFileLoader implements ISceneLoaderPluginAsync {
 
+    /**
+     * Defines if UVs are optimized by default during load.
+     */
     public static OPTIMIZE_WITH_UV = false;
+    /**
+     * Defines if Y is inverted by default during load.
+     */
     public static INVERT_Y = false;
+    /**
+     * Defines the name of the plugin.
+     */
     public name = "obj";
+    /**
+     * Defines the extension the plugin is able to load.
+     */
     public extensions = ".obj";
+    /** @hidden */
     public obj = /^o/;
+    /** @hidden */
     public group = /^g/;
+    /** @hidden */
     public mtllib = /^mtllib /;
+    /** @hidden */
     public usemtl = /^usemtl /;
+    /** @hidden */
     public smooth = /^s /;
+    /** @hidden */
     public vertexPattern = /v( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
     // vn float float float
+    /** @hidden */
     public normalPattern = /vn( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
     // vt float float
+    /** @hidden */
     public uvPattern = /vt( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
     // f vertex vertex vertex ...
+    /** @hidden */
     public facePattern1 = /f\s+(([\d]{1,}[\s]?){3,})+/;
     // f vertex/uvs vertex/uvs vertex/uvs ...
+    /** @hidden */
     public facePattern2 = /f\s+((([\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
     // f vertex/uvs/normal vertex/uvs/normal vertex/uvs/normal ...
+    /** @hidden */
     public facePattern3 = /f\s+((([\d]{1,}\/[\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
     // f vertex//normal vertex//normal vertex//normal ...
+    /** @hidden */
     public facePattern4 = /f\s+((([\d]{1,}\/\/[\d]{1,}[\s]?){3,})+)/;
     // f -vertex/-uvs/-normal -vertex/-uvs/-normal -vertex/-uvs/-normal ...
+    /** @hidden */
     public facePattern5 = /f\s+(((-[\d]{1,}\/-[\d]{1,}\/-[\d]{1,}[\s]?){3,})+)/;
 
     /**

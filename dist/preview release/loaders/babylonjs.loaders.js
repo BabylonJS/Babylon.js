@@ -161,7 +161,9 @@ var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
  */
 var MTLFileLoader = /** @class */ (function () {
     function MTLFileLoader() {
-        // All material loaded from the mtl will be set here
+        /**
+         * All material loaded from the mtl will be set here
+         */
         this.materials = [];
     }
     /**
@@ -170,9 +172,9 @@ var MTLFileLoader = /** @class */ (function () {
      * -some component missing (Ni, Tf...)
      * -including the specific options available
      *
-     * @param scene
-     * @param data
-     * @param rootUrl
+     * @param scene defines the scene the material will be created in
+     * @param data defines the mtl data to parse
+     * @param rootUrl defines the rooturl to use in order to load relative dependencies
      */
     MTLFileLoader.prototype.parseMTL = function (scene, data, rootUrl) {
         if (data instanceof ArrayBuffer) {
@@ -364,29 +366,52 @@ var MTLFileLoader = /** @class */ (function () {
     return MTLFileLoader;
 }());
 exports.MTLFileLoader = MTLFileLoader;
+/**
+ * OBJ file type loader.
+ * This is a babylon scene loader plugin.
+ */
 var OBJFileLoader = /** @class */ (function () {
     function OBJFileLoader() {
+        /**
+         * Defines the name of the plugin.
+         */
         this.name = "obj";
+        /**
+         * Defines the extension the plugin is able to load.
+         */
         this.extensions = ".obj";
+        /** @hidden */
         this.obj = /^o/;
+        /** @hidden */
         this.group = /^g/;
+        /** @hidden */
         this.mtllib = /^mtllib /;
+        /** @hidden */
         this.usemtl = /^usemtl /;
+        /** @hidden */
         this.smooth = /^s /;
+        /** @hidden */
         this.vertexPattern = /v( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
         // vn float float float
+        /** @hidden */
         this.normalPattern = /vn( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
         // vt float float
+        /** @hidden */
         this.uvPattern = /vt( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
         // f vertex vertex vertex ...
+        /** @hidden */
         this.facePattern1 = /f\s+(([\d]{1,}[\s]?){3,})+/;
         // f vertex/uvs vertex/uvs vertex/uvs ...
+        /** @hidden */
         this.facePattern2 = /f\s+((([\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
         // f vertex/uvs/normal vertex/uvs/normal vertex/uvs/normal ...
+        /** @hidden */
         this.facePattern3 = /f\s+((([\d]{1,}\/[\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
         // f vertex//normal vertex//normal vertex//normal ...
+        /** @hidden */
         this.facePattern4 = /f\s+((([\d]{1,}\/\/[\d]{1,}[\s]?){3,})+)/;
         // f -vertex/-uvs/-normal -vertex/-uvs/-normal -vertex/-uvs/-normal ...
+        /** @hidden */
         this.facePattern5 = /f\s+(((-[\d]{1,}\/-[\d]{1,}\/-[\d]{1,}[\s]?){3,})+)/;
     }
     /**
@@ -1027,7 +1052,13 @@ var OBJFileLoader = /** @class */ (function () {
             return babylonMeshesArray;
         });
     };
+    /**
+     * Defines if UVs are optimized by default during load.
+     */
     OBJFileLoader.OPTIMIZE_WITH_UV = false;
+    /**
+     * Defines if Y is inverted by default during load.
+     */
     OBJFileLoader.INVERT_Y = false;
     return OBJFileLoader;
 }());
@@ -1069,26 +1100,52 @@ __export(__webpack_require__(/*! ./stlFileLoader */ "./src/STL/stlFileLoader.ts"
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
+/**
+ * STL file type loader.
+ * This is a babylon scene loader plugin.
+ */
 var STLFileLoader = /** @class */ (function () {
     function STLFileLoader() {
+        /** @hidden */
         this.solidPattern = /solid (\S*)([\S\s]*)endsolid[ ]*(\S*)/g;
+        /** @hidden */
         this.facetsPattern = /facet([\s\S]*?)endfacet/g;
+        /** @hidden */
         this.normalPattern = /normal[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
+        /** @hidden */
         this.vertexPattern = /vertex[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
+        /**
+         * Defines the name of the plugin.
+         */
         this.name = "stl";
-        // force data to come in as an ArrayBuffer
-        // we'll convert to string if it looks like it's an ASCII .stl
+        /**
+         * Defines the extensions the stl loader is able to load.
+         * force data to come in as an ArrayBuffer
+         * we'll convert to string if it looks like it's an ASCII .stl
+         */
         this.extensions = {
             ".stl": { isBinary: true },
         };
     }
+    /**
+     * Import meshes into a scene.
+     * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+     * @param scene The scene to import into
+     * @param data The data to import
+     * @param rootUrl The root url for scene and resources
+     * @param meshes The meshes array to import into
+     * @param particleSystems The particle systems array to import into
+     * @param skeletons The skeletons array to import into
+     * @param onError The callback when import fails
+     * @returns True if successful or false otherwise
+     */
     STLFileLoader.prototype.importMesh = function (meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons) {
         var matches;
         if (typeof data !== "string") {
-            if (this.isBinary(data)) {
+            if (this._isBinary(data)) {
                 // binary .stl
                 var babylonMesh = new babylonjs_1.Mesh("stlmesh", scene);
-                this.parseBinary(babylonMesh, data);
+                this._parseBinary(babylonMesh, data);
                 if (meshes) {
                     meshes.push(babylonMesh);
                 }
@@ -1127,13 +1184,21 @@ var STLFileLoader = /** @class */ (function () {
             // stl mesh name can be empty as well
             meshName = meshName || "stlmesh";
             var babylonMesh = new babylonjs_1.Mesh(meshName, scene);
-            this.parseASCII(babylonMesh, matches[2]);
+            this._parseASCII(babylonMesh, matches[2]);
             if (meshes) {
                 meshes.push(babylonMesh);
             }
         }
         return true;
     };
+    /**
+     * Load into a scene.
+     * @param scene The scene to load into
+     * @param data The data to import
+     * @param rootUrl The root url for scene and resources
+     * @param onError The callback when import fails
+     * @returns true if successful or false otherwise
+     */
     STLFileLoader.prototype.load = function (scene, data, rootUrl) {
         var result = this.importMesh(null, scene, data, rootUrl, null, null, null);
         if (result) {
@@ -1141,13 +1206,21 @@ var STLFileLoader = /** @class */ (function () {
         }
         return result;
     };
+    /**
+     * Load into an asset container.
+     * @param scene The scene to load into
+     * @param data The data to import
+     * @param rootUrl The root url for scene and resources
+     * @param onError The callback when import fails
+     * @returns The loaded asset container
+     */
     STLFileLoader.prototype.loadAssetContainer = function (scene, data, rootUrl, onError) {
         var container = new babylonjs_1.AssetContainer(scene);
         this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
         container.removeAllFromScene();
         return container;
     };
-    STLFileLoader.prototype.isBinary = function (data) {
+    STLFileLoader.prototype._isBinary = function (data) {
         // check if file size is correct for binary stl
         var faceSize, nFaces, reader;
         reader = new DataView(data);
@@ -1165,7 +1238,7 @@ var STLFileLoader = /** @class */ (function () {
         }
         return false;
     };
-    STLFileLoader.prototype.parseBinary = function (mesh, data) {
+    STLFileLoader.prototype._parseBinary = function (mesh, data) {
         var reader = new DataView(data);
         var faces = reader.getUint32(80, true);
         var dataOffset = 84;
@@ -1200,7 +1273,7 @@ var STLFileLoader = /** @class */ (function () {
         mesh.setIndices(indices);
         mesh.computeWorldMatrix(true);
     };
-    STLFileLoader.prototype.parseASCII = function (mesh, solidData) {
+    STLFileLoader.prototype._parseASCII = function (mesh, solidData) {
         var positions = [];
         var normals = [];
         var indices = [];
@@ -1265,10 +1338,10 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var glTFLoaderExtension_1 = __webpack_require__(/*! ./glTFLoaderExtension */ "./src/glTF/1.0/glTFLoaderExtension.ts");
 var glTFLoaderUtils_1 = __webpack_require__(/*! ./glTFLoaderUtils */ "./src/glTF/1.0/glTFLoaderUtils.ts");
-var glTFLoaderV1_1 = __webpack_require__(/*! ./glTFLoaderV1 */ "./src/glTF/1.0/glTFLoaderV1.ts");
 var glTFLoaderInterfaces_1 = __webpack_require__(/*! ./glTFLoaderInterfaces */ "./src/glTF/1.0/glTFLoaderInterfaces.ts");
-var glTFLoaderV1_2 = __webpack_require__(/*! ./glTFLoaderV1 */ "./src/glTF/1.0/glTFLoaderV1.ts");
+var glTFLoaderV1_1 = __webpack_require__(/*! ./glTFLoaderV1 */ "./src/glTF/1.0/glTFLoaderV1.ts");
 var BinaryExtensionBufferName = "binary_glTF";
+/** @hidden */
 var GLTFBinaryExtension = /** @class */ (function (_super) {
     __extends(GLTFBinaryExtension, _super);
     function GLTFBinaryExtension() {
@@ -1322,7 +1395,7 @@ var GLTFBinaryExtension = /** @class */ (function (_super) {
     return GLTFBinaryExtension;
 }(glTFLoaderExtension_1.GLTFLoaderExtension));
 exports.GLTFBinaryExtension = GLTFBinaryExtension;
-glTFLoaderV1_2.GLTFLoaderV1.RegisterExtension(new GLTFBinaryExtension());
+glTFLoaderV1_1.GLTFLoaderV1.RegisterExtension(new GLTFBinaryExtension());
 
 
 /***/ }),
@@ -1338,6 +1411,7 @@ glTFLoaderV1_2.GLTFLoaderV1.RegisterExtension(new GLTFBinaryExtension());
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var glTFLoaderV1_1 = __webpack_require__(/*! ./glTFLoaderV1 */ "./src/glTF/1.0/glTFLoaderV1.ts");
+/** @hidden */
 var GLTFLoaderExtension = /** @class */ (function () {
     function GLTFLoaderExtension(name) {
         this._name = name;
@@ -1492,6 +1566,7 @@ exports.GLTFLoaderExtension = GLTFLoaderExtension;
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
 * Enums
+* @hidden
 */
 var EComponentType;
 (function (EComponentType) {
@@ -1501,11 +1576,13 @@ var EComponentType;
     EComponentType[EComponentType["UNSIGNED_SHORT"] = 5123] = "UNSIGNED_SHORT";
     EComponentType[EComponentType["FLOAT"] = 5126] = "FLOAT";
 })(EComponentType = exports.EComponentType || (exports.EComponentType = {}));
+/** @hidden */
 var EShaderType;
 (function (EShaderType) {
     EShaderType[EShaderType["FRAGMENT"] = 35632] = "FRAGMENT";
     EShaderType[EShaderType["VERTEX"] = 35633] = "VERTEX";
 })(EShaderType = exports.EShaderType || (exports.EShaderType = {}));
+/** @hidden */
 var EParameterType;
 (function (EParameterType) {
     EParameterType[EParameterType["BYTE"] = 5120] = "BYTE";
@@ -1530,12 +1607,14 @@ var EParameterType;
     EParameterType[EParameterType["FLOAT_MAT4"] = 35676] = "FLOAT_MAT4";
     EParameterType[EParameterType["SAMPLER_2D"] = 35678] = "SAMPLER_2D";
 })(EParameterType = exports.EParameterType || (exports.EParameterType = {}));
+/** @hidden */
 var ETextureWrapMode;
 (function (ETextureWrapMode) {
     ETextureWrapMode[ETextureWrapMode["CLAMP_TO_EDGE"] = 33071] = "CLAMP_TO_EDGE";
     ETextureWrapMode[ETextureWrapMode["MIRRORED_REPEAT"] = 33648] = "MIRRORED_REPEAT";
     ETextureWrapMode[ETextureWrapMode["REPEAT"] = 10497] = "REPEAT";
 })(ETextureWrapMode = exports.ETextureWrapMode || (exports.ETextureWrapMode = {}));
+/** @hidden */
 var ETextureFilterType;
 (function (ETextureFilterType) {
     ETextureFilterType[ETextureFilterType["NEAREST"] = 9728] = "NEAREST";
@@ -1545,6 +1624,7 @@ var ETextureFilterType;
     ETextureFilterType[ETextureFilterType["NEAREST_MIPMAP_LINEAR"] = 9986] = "NEAREST_MIPMAP_LINEAR";
     ETextureFilterType[ETextureFilterType["LINEAR_MIPMAP_LINEAR"] = 9987] = "LINEAR_MIPMAP_LINEAR";
 })(ETextureFilterType = exports.ETextureFilterType || (exports.ETextureFilterType = {}));
+/** @hidden */
 var ETextureFormat;
 (function (ETextureFormat) {
     ETextureFormat[ETextureFormat["ALPHA"] = 6406] = "ALPHA";
@@ -1553,12 +1633,14 @@ var ETextureFormat;
     ETextureFormat[ETextureFormat["LUMINANCE"] = 6409] = "LUMINANCE";
     ETextureFormat[ETextureFormat["LUMINANCE_ALPHA"] = 6410] = "LUMINANCE_ALPHA";
 })(ETextureFormat = exports.ETextureFormat || (exports.ETextureFormat = {}));
+/** @hidden */
 var ECullingType;
 (function (ECullingType) {
     ECullingType[ECullingType["FRONT"] = 1028] = "FRONT";
     ECullingType[ECullingType["BACK"] = 1029] = "BACK";
     ECullingType[ECullingType["FRONT_AND_BACK"] = 1032] = "FRONT_AND_BACK";
 })(ECullingType = exports.ECullingType || (exports.ECullingType = {}));
+/** @hidden */
 var EBlendingFunction;
 (function (EBlendingFunction) {
     EBlendingFunction[EBlendingFunction["ZERO"] = 0] = "ZERO";
@@ -1595,6 +1677,7 @@ var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
 var glTFLoaderInterfaces_1 = __webpack_require__(/*! ./glTFLoaderInterfaces */ "./src/glTF/1.0/glTFLoaderInterfaces.ts");
 /**
 * Utils functions for GLTF
+* @hidden
 */
 var GLTFUtils = /** @class */ (function () {
     function GLTFUtils() {
@@ -2806,6 +2889,7 @@ var importMaterials = function (gltfRuntime) {
 };
 /**
 * Implementation of the base glTF spec
+* @hidden
 */
 var GLTFLoaderBase = /** @class */ (function () {
     function GLTFLoaderBase() {
@@ -3122,6 +3206,7 @@ var GLTFLoaderBase = /** @class */ (function () {
 exports.GLTFLoaderBase = GLTFLoaderBase;
 /**
 * glTF V1 Loader
+* @hidden
 */
 var GLTFLoaderV1 = /** @class */ (function () {
     function GLTFLoaderV1() {
@@ -3371,6 +3456,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var _1 = __webpack_require__(/*! . */ "./src/glTF/1.0/index.ts");
 var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
 var glTFLoaderV1_1 = __webpack_require__(/*! ./glTFLoaderV1 */ "./src/glTF/1.0/glTFLoaderV1.ts");
+/** @hidden */
 var GLTFMaterialsCommonExtension = /** @class */ (function (_super) {
     __extends(GLTFMaterialsCommonExtension, _super);
     function GLTFMaterialsCommonExtension() {

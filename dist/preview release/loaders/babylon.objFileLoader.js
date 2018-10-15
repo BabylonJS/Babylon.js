@@ -191,7 +191,9 @@ var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
  */
 var MTLFileLoader = /** @class */ (function () {
     function MTLFileLoader() {
-        // All material loaded from the mtl will be set here
+        /**
+         * All material loaded from the mtl will be set here
+         */
         this.materials = [];
     }
     /**
@@ -200,9 +202,9 @@ var MTLFileLoader = /** @class */ (function () {
      * -some component missing (Ni, Tf...)
      * -including the specific options available
      *
-     * @param scene
-     * @param data
-     * @param rootUrl
+     * @param scene defines the scene the material will be created in
+     * @param data defines the mtl data to parse
+     * @param rootUrl defines the rooturl to use in order to load relative dependencies
      */
     MTLFileLoader.prototype.parseMTL = function (scene, data, rootUrl) {
         if (data instanceof ArrayBuffer) {
@@ -394,29 +396,52 @@ var MTLFileLoader = /** @class */ (function () {
     return MTLFileLoader;
 }());
 exports.MTLFileLoader = MTLFileLoader;
+/**
+ * OBJ file type loader.
+ * This is a babylon scene loader plugin.
+ */
 var OBJFileLoader = /** @class */ (function () {
     function OBJFileLoader() {
+        /**
+         * Defines the name of the plugin.
+         */
         this.name = "obj";
+        /**
+         * Defines the extension the plugin is able to load.
+         */
         this.extensions = ".obj";
+        /** @hidden */
         this.obj = /^o/;
+        /** @hidden */
         this.group = /^g/;
+        /** @hidden */
         this.mtllib = /^mtllib /;
+        /** @hidden */
         this.usemtl = /^usemtl /;
+        /** @hidden */
         this.smooth = /^s /;
+        /** @hidden */
         this.vertexPattern = /v( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
         // vn float float float
+        /** @hidden */
         this.normalPattern = /vn( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
         // vt float float
+        /** @hidden */
         this.uvPattern = /vt( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
         // f vertex vertex vertex ...
+        /** @hidden */
         this.facePattern1 = /f\s+(([\d]{1,}[\s]?){3,})+/;
         // f vertex/uvs vertex/uvs vertex/uvs ...
+        /** @hidden */
         this.facePattern2 = /f\s+((([\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
         // f vertex/uvs/normal vertex/uvs/normal vertex/uvs/normal ...
+        /** @hidden */
         this.facePattern3 = /f\s+((([\d]{1,}\/[\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
         // f vertex//normal vertex//normal vertex//normal ...
+        /** @hidden */
         this.facePattern4 = /f\s+((([\d]{1,}\/\/[\d]{1,}[\s]?){3,})+)/;
         // f -vertex/-uvs/-normal -vertex/-uvs/-normal -vertex/-uvs/-normal ...
+        /** @hidden */
         this.facePattern5 = /f\s+(((-[\d]{1,}\/-[\d]{1,}\/-[\d]{1,}[\s]?){3,})+)/;
     }
     /**
@@ -1057,7 +1082,13 @@ var OBJFileLoader = /** @class */ (function () {
             return babylonMeshesArray;
         });
     };
+    /**
+     * Defines if UVs are optimized by default during load.
+     */
     OBJFileLoader.OPTIMIZE_WITH_UV = false;
+    /**
+     * Defines if Y is inverted by default during load.
+     */
     OBJFileLoader.INVERT_Y = false;
     return OBJFileLoader;
 }());

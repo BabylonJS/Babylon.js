@@ -1,11 +1,9 @@
 import { GLTFLoaderExtension } from "./glTFLoaderExtension";
 import { GLTFUtils } from "./glTFLoaderUtils";
-import { GLTFLoaderBase } from "./glTFLoaderV1";
 import { Scene } from "babylonjs";
 import { IGLTFLoaderData } from "../glTFFileLoader";
 import { IGLTFRuntime, IGLTFTexture, IGLTFImage, IGLTFBufferView, EComponentType, IGLTFShader } from "./glTFLoaderInterfaces";
-
-import { GLTFLoaderV1 } from "./glTFLoaderV1";
+import { GLTFLoaderV1, GLTFLoaderBase } from "./glTFLoaderV1";
 
 const BinaryExtensionBufferName = "binary_glTF";
 
@@ -20,6 +18,7 @@ interface IGLTFBinaryExtensionImage {
     width: number;
 }
 
+/** @hidden */
 export class GLTFBinaryExtension extends GLTFLoaderExtension {
     private _bin : ArrayBufferView;
 

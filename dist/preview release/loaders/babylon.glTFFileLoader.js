@@ -192,10 +192,10 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var glTFLoaderExtension_1 = __webpack_require__(/*! ./glTFLoaderExtension */ "./src/glTF/1.0/glTFLoaderExtension.ts");
 var glTFLoaderUtils_1 = __webpack_require__(/*! ./glTFLoaderUtils */ "./src/glTF/1.0/glTFLoaderUtils.ts");
-var glTFLoaderV1_1 = __webpack_require__(/*! ./glTFLoaderV1 */ "./src/glTF/1.0/glTFLoaderV1.ts");
 var glTFLoaderInterfaces_1 = __webpack_require__(/*! ./glTFLoaderInterfaces */ "./src/glTF/1.0/glTFLoaderInterfaces.ts");
-var glTFLoaderV1_2 = __webpack_require__(/*! ./glTFLoaderV1 */ "./src/glTF/1.0/glTFLoaderV1.ts");
+var glTFLoaderV1_1 = __webpack_require__(/*! ./glTFLoaderV1 */ "./src/glTF/1.0/glTFLoaderV1.ts");
 var BinaryExtensionBufferName = "binary_glTF";
+/** @hidden */
 var GLTFBinaryExtension = /** @class */ (function (_super) {
     __extends(GLTFBinaryExtension, _super);
     function GLTFBinaryExtension() {
@@ -249,7 +249,7 @@ var GLTFBinaryExtension = /** @class */ (function (_super) {
     return GLTFBinaryExtension;
 }(glTFLoaderExtension_1.GLTFLoaderExtension));
 exports.GLTFBinaryExtension = GLTFBinaryExtension;
-glTFLoaderV1_2.GLTFLoaderV1.RegisterExtension(new GLTFBinaryExtension());
+glTFLoaderV1_1.GLTFLoaderV1.RegisterExtension(new GLTFBinaryExtension());
 
 
 /***/ }),
@@ -265,6 +265,7 @@ glTFLoaderV1_2.GLTFLoaderV1.RegisterExtension(new GLTFBinaryExtension());
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var glTFLoaderV1_1 = __webpack_require__(/*! ./glTFLoaderV1 */ "./src/glTF/1.0/glTFLoaderV1.ts");
+/** @hidden */
 var GLTFLoaderExtension = /** @class */ (function () {
     function GLTFLoaderExtension(name) {
         this._name = name;
@@ -419,6 +420,7 @@ exports.GLTFLoaderExtension = GLTFLoaderExtension;
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
 * Enums
+* @hidden
 */
 var EComponentType;
 (function (EComponentType) {
@@ -428,11 +430,13 @@ var EComponentType;
     EComponentType[EComponentType["UNSIGNED_SHORT"] = 5123] = "UNSIGNED_SHORT";
     EComponentType[EComponentType["FLOAT"] = 5126] = "FLOAT";
 })(EComponentType = exports.EComponentType || (exports.EComponentType = {}));
+/** @hidden */
 var EShaderType;
 (function (EShaderType) {
     EShaderType[EShaderType["FRAGMENT"] = 35632] = "FRAGMENT";
     EShaderType[EShaderType["VERTEX"] = 35633] = "VERTEX";
 })(EShaderType = exports.EShaderType || (exports.EShaderType = {}));
+/** @hidden */
 var EParameterType;
 (function (EParameterType) {
     EParameterType[EParameterType["BYTE"] = 5120] = "BYTE";
@@ -457,12 +461,14 @@ var EParameterType;
     EParameterType[EParameterType["FLOAT_MAT4"] = 35676] = "FLOAT_MAT4";
     EParameterType[EParameterType["SAMPLER_2D"] = 35678] = "SAMPLER_2D";
 })(EParameterType = exports.EParameterType || (exports.EParameterType = {}));
+/** @hidden */
 var ETextureWrapMode;
 (function (ETextureWrapMode) {
     ETextureWrapMode[ETextureWrapMode["CLAMP_TO_EDGE"] = 33071] = "CLAMP_TO_EDGE";
     ETextureWrapMode[ETextureWrapMode["MIRRORED_REPEAT"] = 33648] = "MIRRORED_REPEAT";
     ETextureWrapMode[ETextureWrapMode["REPEAT"] = 10497] = "REPEAT";
 })(ETextureWrapMode = exports.ETextureWrapMode || (exports.ETextureWrapMode = {}));
+/** @hidden */
 var ETextureFilterType;
 (function (ETextureFilterType) {
     ETextureFilterType[ETextureFilterType["NEAREST"] = 9728] = "NEAREST";
@@ -472,6 +478,7 @@ var ETextureFilterType;
     ETextureFilterType[ETextureFilterType["NEAREST_MIPMAP_LINEAR"] = 9986] = "NEAREST_MIPMAP_LINEAR";
     ETextureFilterType[ETextureFilterType["LINEAR_MIPMAP_LINEAR"] = 9987] = "LINEAR_MIPMAP_LINEAR";
 })(ETextureFilterType = exports.ETextureFilterType || (exports.ETextureFilterType = {}));
+/** @hidden */
 var ETextureFormat;
 (function (ETextureFormat) {
     ETextureFormat[ETextureFormat["ALPHA"] = 6406] = "ALPHA";
@@ -480,12 +487,14 @@ var ETextureFormat;
     ETextureFormat[ETextureFormat["LUMINANCE"] = 6409] = "LUMINANCE";
     ETextureFormat[ETextureFormat["LUMINANCE_ALPHA"] = 6410] = "LUMINANCE_ALPHA";
 })(ETextureFormat = exports.ETextureFormat || (exports.ETextureFormat = {}));
+/** @hidden */
 var ECullingType;
 (function (ECullingType) {
     ECullingType[ECullingType["FRONT"] = 1028] = "FRONT";
     ECullingType[ECullingType["BACK"] = 1029] = "BACK";
     ECullingType[ECullingType["FRONT_AND_BACK"] = 1032] = "FRONT_AND_BACK";
 })(ECullingType = exports.ECullingType || (exports.ECullingType = {}));
+/** @hidden */
 var EBlendingFunction;
 (function (EBlendingFunction) {
     EBlendingFunction[EBlendingFunction["ZERO"] = 0] = "ZERO";
@@ -522,6 +531,7 @@ var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
 var glTFLoaderInterfaces_1 = __webpack_require__(/*! ./glTFLoaderInterfaces */ "./src/glTF/1.0/glTFLoaderInterfaces.ts");
 /**
 * Utils functions for GLTF
+* @hidden
 */
 var GLTFUtils = /** @class */ (function () {
     function GLTFUtils() {
@@ -1733,6 +1743,7 @@ var importMaterials = function (gltfRuntime) {
 };
 /**
 * Implementation of the base glTF spec
+* @hidden
 */
 var GLTFLoaderBase = /** @class */ (function () {
     function GLTFLoaderBase() {
@@ -2049,6 +2060,7 @@ var GLTFLoaderBase = /** @class */ (function () {
 exports.GLTFLoaderBase = GLTFLoaderBase;
 /**
 * glTF V1 Loader
+* @hidden
 */
 var GLTFLoaderV1 = /** @class */ (function () {
     function GLTFLoaderV1() {
@@ -2298,6 +2310,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var _1 = __webpack_require__(/*! . */ "./src/glTF/1.0/index.ts");
 var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
 var glTFLoaderV1_1 = __webpack_require__(/*! ./glTFLoaderV1 */ "./src/glTF/1.0/glTFLoaderV1.ts");
+/** @hidden */
 var GLTFMaterialsCommonExtension = /** @class */ (function (_super) {
     __extends(GLTFMaterialsCommonExtension, _super);
     function GLTFMaterialsCommonExtension() {

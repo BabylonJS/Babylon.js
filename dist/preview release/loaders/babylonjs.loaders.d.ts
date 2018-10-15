@@ -326,6 +326,9 @@ declare module BABYLON {
         * Class reading and parsing the MTL file bundled with the obj file.
         */
     export class MTLFileLoader {
+            /**
+                * All material loaded from the mtl will be set here
+                */
             materials: BABYLON.StandardMaterial[];
             /**
                 * This function will read the mtl file and create each material described inside
@@ -333,29 +336,58 @@ declare module BABYLON {
                 * -some component missing (Ni, Tf...)
                 * -including the specific options available
                 *
-                * @param scene
-                * @param data
-                * @param rootUrl
+                * @param scene defines the scene the material will be created in
+                * @param data defines the mtl data to parse
+                * @param rootUrl defines the rooturl to use in order to load relative dependencies
                 */
             parseMTL(scene: BABYLON.Scene, data: string | ArrayBuffer, rootUrl: string): void;
     }
+    /**
+        * OBJ file type loader.
+        * This is a babylon scene loader plugin.
+        */
     export class OBJFileLoader implements BABYLON.ISceneLoaderPluginAsync {
+            /**
+                * Defines if UVs are optimized by default during load.
+                */
             static OPTIMIZE_WITH_UV: boolean;
+            /**
+                * Defines if Y is inverted by default during load.
+                */
             static INVERT_Y: boolean;
+            /**
+                * Defines the name of the plugin.
+                */
             name: string;
+            /**
+                * Defines the extension the plugin is able to load.
+                */
             extensions: string;
+            /** @hidden */
             obj: RegExp;
+            /** @hidden */
             group: RegExp;
+            /** @hidden */
             mtllib: RegExp;
+            /** @hidden */
             usemtl: RegExp;
+            /** @hidden */
             smooth: RegExp;
+            /** @hidden */
             vertexPattern: RegExp;
+            /** @hidden */
             normalPattern: RegExp;
+            /** @hidden */
             uvPattern: RegExp;
+            /** @hidden */
             facePattern1: RegExp;
+            /** @hidden */
             facePattern2: RegExp;
+            /** @hidden */
             facePattern3: RegExp;
+            /** @hidden */
             facePattern4: RegExp;
+            /** @hidden */
             facePattern5: RegExp;
             /**
                 * Imports one or more meshes from the loaded glTF data and adds them to the scene
@@ -396,19 +428,64 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+        * STL file type loader.
+        * This is a babylon scene loader plugin.
+        */
     export class STLFileLoader implements BABYLON.ISceneLoaderPlugin {
-        solidPattern: RegExp;
-        facetsPattern: RegExp;
-        normalPattern: RegExp;
-        vertexPattern: RegExp;
-        name: string;
-        extensions: BABYLON.ISceneLoaderPluginExtensions;
-        importMesh(meshesNames: any, scene: BABYLON.Scene, data: any, rootUrl: string, meshes: BABYLON.Nullable<BABYLON.AbstractMesh[]>, particleSystems: BABYLON.Nullable<BABYLON.IParticleSystem[]>, skeletons: BABYLON.Nullable<BABYLON.Skeleton[]>): boolean;
-        load(scene: BABYLON.Scene, data: any, rootUrl: string): boolean;
-        loadAssetContainer(scene: BABYLON.Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): BABYLON.AssetContainer;
+            /** @hidden */
+            solidPattern: RegExp;
+            /** @hidden */
+            facetsPattern: RegExp;
+            /** @hidden */
+            normalPattern: RegExp;
+            /** @hidden */
+            vertexPattern: RegExp;
+            /**
+                * Defines the name of the plugin.
+                */
+            name: string;
+            /**
+                * Defines the extensions the stl loader is able to load.
+                * force data to come in as an ArrayBuffer
+                * we'll convert to string if it looks like it's an ASCII .stl
+                */
+            extensions: BABYLON.ISceneLoaderPluginExtensions;
+            /**
+                * Import meshes into a scene.
+                * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+                * @param scene The scene to import into
+                * @param data The data to import
+                * @param rootUrl The root url for scene and resources
+                * @param meshes The meshes array to import into
+                * @param particleSystems The particle systems array to import into
+                * @param skeletons The skeletons array to import into
+                * @param onError The callback when import fails
+                * @returns True if successful or false otherwise
+                */
+            importMesh(meshesNames: any, scene: BABYLON.Scene, data: any, rootUrl: string, meshes: BABYLON.Nullable<BABYLON.AbstractMesh[]>, particleSystems: BABYLON.Nullable<BABYLON.IParticleSystem[]>, skeletons: BABYLON.Nullable<BABYLON.Skeleton[]>): boolean;
+            /**
+                * Load into a scene.
+                * @param scene The scene to load into
+                * @param data The data to import
+                * @param rootUrl The root url for scene and resources
+                * @param onError The callback when import fails
+                * @returns true if successful or false otherwise
+                */
+            load(scene: BABYLON.Scene, data: any, rootUrl: string): boolean;
+            /**
+                * Load into an asset container.
+                * @param scene The scene to load into
+                * @param data The data to import
+                * @param rootUrl The root url for scene and resources
+                * @param onError The callback when import fails
+                * @returns The loaded asset container
+                */
+            loadAssetContainer(scene: BABYLON.Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): BABYLON.AssetContainer;
     }
 }
 declare module BABYLON {
+    /** @hidden */
     export class GLTFBinaryExtension extends GLTFLoaderExtension {
         constructor();
         loadRuntimeAsync(scene: BABYLON.Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: (message: string) => void): boolean;
@@ -420,6 +497,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Implementation of the base glTF spec
+     * @hidden
      */
     export class GLTFLoaderBase {
         static CreateRuntime(parsedData: any, scene: BABYLON.Scene, rootUrl: string): IGLTFRuntime;
@@ -431,6 +509,7 @@ declare module BABYLON {
     }
     /**
      * glTF V1 Loader
+     * @hidden
      */
     export class GLTFLoaderV1 implements IGLTFLoader {
         static Extensions: {
@@ -466,6 +545,7 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
     export abstract class GLTFLoaderExtension {
             constructor(name: string);
             readonly name: string;
@@ -515,6 +595,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Enums
+     * @hidden
      */
     export enum EComponentType {
         BYTE = 5120,
@@ -523,10 +604,12 @@ declare module BABYLON {
         UNSIGNED_SHORT = 5123,
         FLOAT = 5126
     }
+    /** @hidden */
     export enum EShaderType {
         FRAGMENT = 35632,
         VERTEX = 35633
     }
+    /** @hidden */
     export enum EParameterType {
         BYTE = 5120,
         UNSIGNED_BYTE = 5121,
@@ -550,11 +633,13 @@ declare module BABYLON {
         FLOAT_MAT4 = 35676,
         SAMPLER_2D = 35678
     }
+    /** @hidden */
     export enum ETextureWrapMode {
         CLAMP_TO_EDGE = 33071,
         MIRRORED_REPEAT = 33648,
         REPEAT = 10497
     }
+    /** @hidden */
     export enum ETextureFilterType {
         NEAREST = 9728,
         LINEAR = 9728,
@@ -563,6 +648,7 @@ declare module BABYLON {
         NEAREST_MIPMAP_LINEAR = 9986,
         LINEAR_MIPMAP_LINEAR = 9987
     }
+    /** @hidden */
     export enum ETextureFormat {
         ALPHA = 6406,
         RGB = 6407,
@@ -570,11 +656,13 @@ declare module BABYLON {
         LUMINANCE = 6409,
         LUMINANCE_ALPHA = 6410
     }
+    /** @hidden */
     export enum ECullingType {
         FRONT = 1028,
         BACK = 1029,
         FRONT_AND_BACK = 1032
     }
+    /** @hidden */
     export enum EBlendingFunction {
         ZERO = 0,
         ONE = 1,
@@ -592,18 +680,18 @@ declare module BABYLON {
         ONE_MINUS_CONSTANT_ALPHA = 32772,
         SRC_ALPHA_SATURATE = 776
     }
-    /**
-     * Interfaces
-     */
+    /** @hidden */
     export interface IGLTFProperty {
         extensions?: {
             [key: string]: any;
         };
         extras?: Object;
     }
+    /** @hidden */
     export interface IGLTFChildRootProperty extends IGLTFProperty {
         name?: string;
     }
+    /** @hidden */
     export interface IGLTFAccessor extends IGLTFChildRootProperty {
         bufferView: string;
         byteOffset: number;
@@ -615,6 +703,7 @@ declare module BABYLON {
         min?: number[];
         name?: string;
     }
+    /** @hidden */
     export interface IGLTFBufferView extends IGLTFChildRootProperty {
         buffer: string;
         byteOffset: number;
@@ -622,20 +711,24 @@ declare module BABYLON {
         byteStride: number;
         target?: number;
     }
+    /** @hidden */
     export interface IGLTFBuffer extends IGLTFChildRootProperty {
         uri: string;
         byteLength?: number;
         type?: string;
     }
+    /** @hidden */
     export interface IGLTFShader extends IGLTFChildRootProperty {
         uri: string;
         type: EShaderType;
     }
+    /** @hidden */
     export interface IGLTFProgram extends IGLTFChildRootProperty {
         attributes: string[];
         fragmentShader: string;
         vertexShader: string;
     }
+    /** @hidden */
     export interface IGLTFTechniqueParameter {
         type: number;
         count?: number;
@@ -645,11 +738,13 @@ declare module BABYLON {
         source?: string;
         babylonValue?: any;
     }
+    /** @hidden */
     export interface IGLTFTechniqueCommonProfile {
         lightingModel: string;
         texcoordBindings: Object;
         parameters?: Array<any>;
     }
+    /** @hidden */
     export interface IGLTFTechniqueStatesFunctions {
         blendColor?: number[];
         blendEquationSeparate?: number[];
@@ -657,10 +752,12 @@ declare module BABYLON {
         colorMask: boolean[];
         cullFace: number[];
     }
+    /** @hidden */
     export interface IGLTFTechniqueStates {
         enable: number[];
         functions: IGLTFTechniqueStatesFunctions;
     }
+    /** @hidden */
     export interface IGLTFTechnique extends IGLTFChildRootProperty {
         parameters: {
             [key: string]: IGLTFTechniqueParameter;
@@ -674,10 +771,12 @@ declare module BABYLON {
         };
         states: IGLTFTechniqueStates;
     }
+    /** @hidden */
     export interface IGLTFMaterial extends IGLTFChildRootProperty {
         technique?: string;
         values: string[];
     }
+    /** @hidden */
     export interface IGLTFMeshPrimitive extends IGLTFProperty {
         attributes: {
             [key: string]: string;
@@ -686,18 +785,22 @@ declare module BABYLON {
         material: string;
         mode?: number;
     }
+    /** @hidden */
     export interface IGLTFMesh extends IGLTFChildRootProperty {
         primitives: IGLTFMeshPrimitive[];
     }
+    /** @hidden */
     export interface IGLTFImage extends IGLTFChildRootProperty {
         uri: string;
     }
+    /** @hidden */
     export interface IGLTFSampler extends IGLTFChildRootProperty {
         magFilter?: number;
         minFilter?: number;
         wrapS?: number;
         wrapT?: number;
     }
+    /** @hidden */
     export interface IGLTFTexture extends IGLTFChildRootProperty {
         sampler: string;
         source: string;
@@ -707,18 +810,22 @@ declare module BABYLON {
         type?: number;
         babylonTexture?: BABYLON.Texture;
     }
+    /** @hidden */
     export interface IGLTFAmbienLight {
         color?: number[];
     }
+    /** @hidden */
     export interface IGLTFDirectionalLight {
         color?: number[];
     }
+    /** @hidden */
     export interface IGLTFPointLight {
         color?: number[];
         constantAttenuation?: number;
         linearAttenuation?: number;
         quadraticAttenuation?: number;
     }
+    /** @hidden */
     export interface IGLTFSpotLight {
         color?: number[];
         constantAttenuation?: number;
@@ -727,37 +834,45 @@ declare module BABYLON {
         linearAttenuation?: number;
         quadraticAttenuation?: number;
     }
+    /** @hidden */
     export interface IGLTFLight extends IGLTFChildRootProperty {
         type: string;
     }
+    /** @hidden */
     export interface IGLTFCameraOrthographic {
         xmag: number;
         ymag: number;
         zfar: number;
         znear: number;
     }
+    /** @hidden */
     export interface IGLTFCameraPerspective {
         aspectRatio: number;
         yfov: number;
         zfar: number;
         znear: number;
     }
+    /** @hidden */
     export interface IGLTFCamera extends IGLTFChildRootProperty {
         type: string;
     }
+    /** @hidden */
     export interface IGLTFAnimationChannelTarget {
         id: string;
         path: string;
     }
+    /** @hidden */
     export interface IGLTFAnimationChannel {
         sampler: string;
         target: IGLTFAnimationChannelTarget;
     }
+    /** @hidden */
     export interface IGLTFAnimationSampler {
         input: string;
         output: string;
         interpolation?: string;
     }
+    /** @hidden */
     export interface IGLTFAnimation extends IGLTFChildRootProperty {
         channels?: IGLTFAnimationChannel[];
         parameters?: {
@@ -767,17 +882,20 @@ declare module BABYLON {
             [key: string]: IGLTFAnimationSampler;
         };
     }
+    /** @hidden */
     export interface IGLTFNodeInstanceSkin {
         skeletons: string[];
         skin: string;
         meshes: string[];
     }
+    /** @hidden */
     export interface IGLTFSkins extends IGLTFChildRootProperty {
         bindShapeMatrix: number[];
         inverseBindMatrices: string;
         jointNames: string[];
         babylonSkeleton?: BABYLON.Skeleton;
     }
+    /** @hidden */
     export interface IGLTFNode extends IGLTFChildRootProperty {
         camera?: string;
         children: string[];
@@ -792,12 +910,11 @@ declare module BABYLON {
         translation?: number[];
         babylonNode?: BABYLON.Node;
     }
+    /** @hidden */
     export interface IGLTFScene extends IGLTFChildRootProperty {
         nodes: string[];
     }
-    /**
-     * Runtime
-     */
+    /** @hidden */
     export interface IGLTFRuntime {
         extensions: {
             [key: string]: any;
@@ -869,14 +986,13 @@ declare module BABYLON {
         importMeshesNames?: string[];
         dummyNodes: BABYLON.Node[];
     }
-    /**
-     * Bones
-     */
+    /** @hidden */
     export interface INodeToRoot {
         bone: BABYLON.Bone;
         node: IGLTFNode;
         id: string;
     }
+    /** @hidden */
     export interface IJointNode {
         node: IGLTFNode;
         id: string;
@@ -885,6 +1001,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Utils functions for GLTF
+     * @hidden
      */
     export class GLTFUtils {
             /**
@@ -940,6 +1057,7 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
     export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
         constructor();
         loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: (message: string) => void): boolean;

@@ -186,26 +186,52 @@ __export(__webpack_require__(/*! ./stlFileLoader */ "./src/STL/stlFileLoader.ts"
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
+/**
+ * STL file type loader.
+ * This is a babylon scene loader plugin.
+ */
 var STLFileLoader = /** @class */ (function () {
     function STLFileLoader() {
+        /** @hidden */
         this.solidPattern = /solid (\S*)([\S\s]*)endsolid[ ]*(\S*)/g;
+        /** @hidden */
         this.facetsPattern = /facet([\s\S]*?)endfacet/g;
+        /** @hidden */
         this.normalPattern = /normal[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
+        /** @hidden */
         this.vertexPattern = /vertex[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
+        /**
+         * Defines the name of the plugin.
+         */
         this.name = "stl";
-        // force data to come in as an ArrayBuffer
-        // we'll convert to string if it looks like it's an ASCII .stl
+        /**
+         * Defines the extensions the stl loader is able to load.
+         * force data to come in as an ArrayBuffer
+         * we'll convert to string if it looks like it's an ASCII .stl
+         */
         this.extensions = {
             ".stl": { isBinary: true },
         };
     }
+    /**
+     * Import meshes into a scene.
+     * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+     * @param scene The scene to import into
+     * @param data The data to import
+     * @param rootUrl The root url for scene and resources
+     * @param meshes The meshes array to import into
+     * @param particleSystems The particle systems array to import into
+     * @param skeletons The skeletons array to import into
+     * @param onError The callback when import fails
+     * @returns True if successful or false otherwise
+     */
     STLFileLoader.prototype.importMesh = function (meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons) {
         var matches;
         if (typeof data !== "string") {
-            if (this.isBinary(data)) {
+            if (this._isBinary(data)) {
                 // binary .stl
                 var babylonMesh = new babylonjs_1.Mesh("stlmesh", scene);
-                this.parseBinary(babylonMesh, data);
+                this._parseBinary(babylonMesh, data);
                 if (meshes) {
                     meshes.push(babylonMesh);
                 }
@@ -244,13 +270,21 @@ var STLFileLoader = /** @class */ (function () {
             // stl mesh name can be empty as well
             meshName = meshName || "stlmesh";
             var babylonMesh = new babylonjs_1.Mesh(meshName, scene);
-            this.parseASCII(babylonMesh, matches[2]);
+            this._parseASCII(babylonMesh, matches[2]);
             if (meshes) {
                 meshes.push(babylonMesh);
             }
         }
         return true;
     };
+    /**
+     * Load into a scene.
+     * @param scene The scene to load into
+     * @param data The data to import
+     * @param rootUrl The root url for scene and resources
+     * @param onError The callback when import fails
+     * @returns true if successful or false otherwise
+     */
     STLFileLoader.prototype.load = function (scene, data, rootUrl) {
         var result = this.importMesh(null, scene, data, rootUrl, null, null, null);
         if (result) {
@@ -258,13 +292,21 @@ var STLFileLoader = /** @class */ (function () {
         }
         return result;
     };
+    /**
+     * Load into an asset container.
+     * @param scene The scene to load into
+     * @param data The data to import
+     * @param rootUrl The root url for scene and resources
+     * @param onError The callback when import fails
+     * @returns The loaded asset container
+     */
     STLFileLoader.prototype.loadAssetContainer = function (scene, data, rootUrl, onError) {
         var container = new babylonjs_1.AssetContainer(scene);
         this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
         container.removeAllFromScene();
         return container;
     };
-    STLFileLoader.prototype.isBinary = function (data) {
+    STLFileLoader.prototype._isBinary = function (data) {
         // check if file size is correct for binary stl
         var faceSize, nFaces, reader;
         reader = new DataView(data);
@@ -282,7 +324,7 @@ var STLFileLoader = /** @class */ (function () {
         }
         return false;
     };
-    STLFileLoader.prototype.parseBinary = function (mesh, data) {
+    STLFileLoader.prototype._parseBinary = function (mesh, data) {
         var reader = new DataView(data);
         var faces = reader.getUint32(80, true);
         var dataOffset = 84;
@@ -317,7 +359,7 @@ var STLFileLoader = /** @class */ (function () {
         mesh.setIndices(indices);
         mesh.computeWorldMatrix(true);
     };
-    STLFileLoader.prototype.parseASCII = function (mesh, solidData) {
+    STLFileLoader.prototype._parseASCII = function (mesh, solidData) {
         var positions = [];
         var normals = [];
         var indices = [];

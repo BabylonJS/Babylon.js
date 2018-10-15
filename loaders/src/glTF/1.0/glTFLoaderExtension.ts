@@ -3,6 +3,7 @@ import { IGLTFLoaderData } from "../glTFFileLoader";
 import { IGLTFRuntime } from "./glTFLoaderInterfaces";
 import { GLTFLoaderV1, GLTFLoaderBase } from "./glTFLoaderV1";
 
+/** @hidden */
 export abstract class GLTFLoaderExtension {
         private _name: string;
 

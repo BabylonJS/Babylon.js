@@ -1,7 +1,3 @@
-/**
- * @ignoreChildren
- * @ignore
- */
 declare module "babylonjs-gltf2interface" {
     /**
      * The datatype of the components in the attribute
@@ -898,6 +894,8 @@ declare module "babylonjs-gltf2interface" {
 
 /**
  * Module for glTF 2.0 Interface
+ * @ignoreChildren
+ * @ignore
  */
 declare module BABYLON.GLTF2 {
     /**
