@@ -5,7 +5,8 @@ import { ImageMimeType, IMeshPrimitive } from "babylonjs-gltf2interface";
 import { _BinaryWriter } from "./glTFExporter";
 import { IGLTFExporterExtension } from "../glTFFileExporter";
 
-export var toto2 = 0;
+/** @hidden */
+export var __IGLTFExporterExtensionV2 = 0; // I am here to allow dts to be created
 
 /**
  * Interface for a glTF exporter extension

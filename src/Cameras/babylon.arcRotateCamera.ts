@@ -814,9 +814,11 @@ module BABYLON {
 
             if (this.lowerRadiusLimit !== null && this.radius < this.lowerRadiusLimit) {
                 this.radius = this.lowerRadiusLimit;
+                this.inertialRadiusOffset = 0;
             }
             if (this.upperRadiusLimit !== null && this.radius > this.upperRadiusLimit) {
                 this.radius = this.upperRadiusLimit;
+                this.inertialRadiusOffset = 0;
             }
         }
 
@@ -925,8 +927,8 @@ module BABYLON {
 
                 this._computeViewMatrix(this.position, target, up);
 
-                this._viewMatrix.m[12] += this.targetScreenOffset.x;
-                this._viewMatrix.m[13] += this.targetScreenOffset.y;
+                this._viewMatrix.addAtIndex(12, this.targetScreenOffset.x);
+                this._viewMatrix.addAtIndex(13, this.targetScreenOffset.y);
             }
             this._currentTarget = target;
             return this._viewMatrix;
@@ -970,8 +972,8 @@ module BABYLON {
             }
 
             this._computeViewMatrix(this.position, target, up);
-            this._viewMatrix.m[12] += this.targetScreenOffset.x;
-            this._viewMatrix.m[13] += this.targetScreenOffset.y;
+            this._viewMatrix.addAtIndex(12, this.targetScreenOffset.x);
+            this._viewMatrix.addAtIndex(13, this.targetScreenOffset.y);
 
             this._collisionTriggered = false;
         }
