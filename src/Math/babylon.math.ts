@@ -4232,7 +4232,7 @@ module BABYLON {
         }
 
         /** @hidden */
-        private _updateIdentityStatus(isIdentity: boolean, isIdentityDirty: boolean = false, isIdentity3x2: boolean = false, isIdentity3x2Dirty : boolean= true) {
+        private _updateIdentityStatus(isIdentity: boolean, isIdentityDirty: boolean = false, isIdentity3x2: boolean = false, isIdentity3x2Dirty: boolean = true) {
             this.updateFlag = Matrix._updateFlagSeed++;
             this._isIdentity = isIdentity;
             this._isIdentity3x2 = isIdentity || isIdentity3x2;
@@ -4258,9 +4258,9 @@ module BABYLON {
                 this._isIdentityDirty = false;
                 const m = this._m;
                 this._isIdentity = (
-                    m[0]  === 1.0 && m[1]  === 0.0 && m[2]  === 0.0 && m[3]  === 0.0 &&
-                    m[4]  === 0.0 && m[5]  === 1.0 && m[6]  === 0.0 && m[7]  === 0.0 &&
-                    m[8]  === 0.0 && m[9]  === 0.0 && m[10] === 1.0 && m[11] === 0.0 &&
+                    m[0] === 1.0 && m[1] === 0.0 && m[2] === 0.0 && m[3] === 0.0 &&
+                    m[4] === 0.0 && m[5] === 1.0 && m[6] === 0.0 && m[7] === 0.0 &&
+                    m[8] === 0.0 && m[9] === 0.0 && m[10] === 1.0 && m[11] === 0.0 &&
                     m[12] === 0.0 && m[13] === 0.0 && m[14] === 0.0 && m[15] === 1.0
                 );
             }
@@ -4308,10 +4308,10 @@ module BABYLON {
             const temp6 = m[8] * m[13] - m[9] * m[12];
 
             return (
-              m[0] * (m[5] * temp1 - m[6] * temp2 + m[7] * temp3) -
-              m[1] * (m[4] * temp1 - m[6] * temp4 + m[7] * temp5) +
-              m[2] * (m[4] * temp2 - m[5] * temp4 + m[7] * temp6) -
-              m[3] * (m[4] * temp3 - m[5] * temp5 + m[6] * temp6)
+                m[0] * (m[5] * temp1 - m[6] * temp2 + m[7] * temp3) -
+                m[1] * (m[4] * temp1 - m[6] * temp4 + m[7] * temp5) +
+                m[2] * (m[4] * temp2 - m[5] * temp4 + m[7] * temp6) -
+                m[3] * (m[4] * temp3 - m[5] * temp5 + m[6] * temp6)
             );
         }
 
@@ -4532,9 +4532,9 @@ module BABYLON {
         public removeRotationAndScaling(): Matrix {
             const m = this.m;
             Matrix.FromValuesToRef(
-                  1.0,   0.0,   0.0,   0.0,
-                  0.0,   1.0,   0.0,   0.0,
-                  0.0,   0.0,   1.0,   0.0,
+                1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
                 m[12], m[13], m[14], m[15],
                 this
             );
@@ -4619,7 +4619,7 @@ module BABYLON {
             var om8 = otherM[8], om9 = otherM[9], om10 = otherM[10], om11 = otherM[11];
             var om12 = otherM[12], om13 = otherM[13], om14 = otherM[14], om15 = otherM[15];
 
-            result[offset    ] = tm0 * om0 + tm1 * om4 + tm2 * om8 + tm3 * om12;
+            result[offset] = tm0 * om0 + tm1 * om4 + tm2 * om8 + tm3 * om12;
             result[offset + 1] = tm0 * om1 + tm1 * om5 + tm2 * om9 + tm3 * om13;
             result[offset + 2] = tm0 * om2 + tm1 * om6 + tm2 * om10 + tm3 * om14;
             result[offset + 3] = tm0 * om3 + tm1 * om7 + tm2 * om11 + tm3 * om15;
@@ -4661,9 +4661,9 @@ module BABYLON {
             const m = this.m;
             const om = other.m;
             return (
-                m[0]  === om[0]  && m[1]  === om[1]  && m[2]  === om[2]  && m[3]  === om[3] &&
-                m[4]  === om[4]  && m[5]  === om[5]  && m[6]  === om[6]  && m[7]  === om[7] &&
-                m[8]  === om[8]  && m[9]  === om[9]  && m[10] === om[10] && m[11] === om[11] &&
+                m[0] === om[0] && m[1] === om[1] && m[2] === om[2] && m[3] === om[3] &&
+                m[4] === om[4] && m[5] === om[5] && m[6] === om[6] && m[7] === om[7] &&
+                m[8] === om[8] && m[9] === om[9] && m[10] === om[10] && m[11] === om[11] &&
                 m[12] === om[12] && m[13] === om[13] && m[14] === om[14] && m[15] === om[15]
             );
         }
@@ -4743,10 +4743,10 @@ module BABYLON {
             if (rotation) {
                 const sx = 1 / scale.x, sy = 1 / scale.y, sz = 1 / scale.z;
                 Matrix.FromValuesToRef(
-                    m[0] * sx, m[1] * sx,  m[2] * sx, 0.0,
-                    m[4] * sy, m[5] * sy,  m[6] * sy, 0.0,
+                    m[0] * sx, m[1] * sx, m[2] * sx, 0.0,
+                    m[4] * sy, m[5] * sy, m[6] * sy, 0.0,
                     m[8] * sz, m[9] * sz, m[10] * sz, 0.0,
-                          0.0,       0.0,        0.0, 1.0,
+                    0.0, 0.0, 0.0, 1.0,
                     MathTmp.Matrix[0]
                 );
 
@@ -4869,10 +4869,10 @@ module BABYLON {
             tmp.transposeToRef(ref);
             var m = ref._m;
             Matrix.FromValuesToRef(
-                m[0], m[1],  m[2], 0.0,
-                m[4], m[5],  m[6], 0.0,
+                m[0], m[1], m[2], 0.0,
+                m[4], m[5], m[6], 0.0,
                 m[8], m[9], m[10], 0.0,
-                 0.0,  0.0,   0.0, 1.0,
+                0.0, 0.0, 0.0, 1.0,
                 ref
             );
         }
@@ -4902,10 +4902,10 @@ module BABYLON {
             const m = this._m;
             const sx = 1 / scale.x, sy = 1 / scale.y, sz = 1 / scale.z;
             Matrix.FromValuesToRef(
-                m[0] * sx, m[1] * sx,  m[2] * sx, 0.0,
-                m[4] * sy, m[5] * sy,  m[6] * sy, 0.0,
+                m[0] * sx, m[1] * sx, m[2] * sx, 0.0,
+                m[4] * sy, m[5] * sy, m[6] * sy, 0.0,
                 m[8] * sz, m[9] * sz, m[10] * sz, 0.0,
-                      0.0,       0.0,        0.0, 1.0,
+                0.0, 0.0, 0.0, 1.0,
                 result
             );
             return this;
@@ -5155,8 +5155,8 @@ module BABYLON {
             var c = Math.cos(angle);
             Matrix.FromValuesToRef(
                 1.0, 0.0, 0.0, 0.0,
-                0.0,   c,   s, 0.0,
-                0.0,  -s,   c, 0.0,
+                0.0, c, s, 0.0,
+                0.0, -s, c, 0.0,
                 0.0, 0.0, 0.0, 1.0,
                 result
             );
@@ -5184,14 +5184,14 @@ module BABYLON {
             var s = Math.sin(angle);
             var c = Math.cos(angle);
             Matrix.FromValuesToRef(
-                c, 0.0,  -s, 0.0,
-              0.0, 1.0, 0.0, 0.0,
-                s, 0.0,   c, 0.0,
-              0.0, 0.0, 0.0, 1.0,
-              result
-          );
+                c, 0.0, -s, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+                s, 0.0, c, 0.0,
+                0.0, 0.0, 0.0, 1.0,
+                result
+            );
 
-          result._updateIdentityStatus(c === 1 && s === 0);
+            result._updateIdentityStatus(c === 1 && s === 0);
         }
 
         /**
@@ -5214,11 +5214,11 @@ module BABYLON {
             var s = Math.sin(angle);
             var c = Math.cos(angle);
             Matrix.FromValuesToRef(
-                c,   s, 0.0, 0.0,
-               -s,   c, 0.0, 0.0,
-              0.0, 0.0, 1.0, 0.0,
-              0.0, 0.0, 0.0, 1.0,
-             result
+                c, s, 0.0, 0.0,
+                -s, c, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                0.0, 0.0, 0.0, 1.0,
+                result
             );
 
             result._updateIdentityStatus(c === 1 && s === 0);
@@ -5264,6 +5264,9 @@ module BABYLON {
             m[10] = (axis.z * axis.z) * c1 + c;
             m[11] = 0.0;
 
+            m[12] = 0.0;
+            m[13] = 0.0;
+            m[14] = 0.0;
             m[15] = 1.0;
 
             result._markAsUpdated();
@@ -5317,13 +5320,13 @@ module BABYLON {
         public static ScalingToRef(x: number, y: number, z: number, result: Matrix): void {
             Matrix.FromValuesToRef(
                 x, 0.0, 0.0, 0.0,
-              0.0,   y, 0.0, 0.0,
-              0.0, 0.0,   z, 0.0,
-              0.0, 0.0, 0.0, 1.0,
-              result
-          );
+                0.0, y, 0.0, 0.0,
+                0.0, 0.0, z, 0.0,
+                0.0, 0.0, 0.0, 1.0,
+                result
+            );
 
-          result._updateIdentityStatus(x === 1 && y === 1 && z === 1);
+            result._updateIdentityStatus(x === 1 && y === 1 && z === 1);
         }
 
         /**
@@ -5351,7 +5354,7 @@ module BABYLON {
                 1.0, 0.0, 0.0, 0.0,
                 0.0, 1.0, 0.0, 0.0,
                 0.0, 0.0, 1.0, 0.0,
-                  x,   y,   z, 1.0,
+                x, y, z, 1.0,
                 result
             );
             result._updateIdentityStatus(x === 0 && y === 0 && z === 0);
@@ -5486,7 +5489,7 @@ module BABYLON {
                 xAxis.x, yAxis.x, zAxis.x, 0.0,
                 xAxis.y, yAxis.y, zAxis.y, 0.0,
                 xAxis.z, yAxis.z, zAxis.z, 0.0,
-                     ex,      ey,      ez, 1.0,
+                ex, ey, ez, 1.0,
                 result
             );
         }
@@ -5545,7 +5548,7 @@ module BABYLON {
                 xAxis.x, yAxis.x, zAxis.x, 0.0,
                 xAxis.y, yAxis.y, zAxis.y, 0.0,
                 xAxis.z, yAxis.z, zAxis.z, 0.0,
-                     ex,      ey,      ez, 1.0,
+                ex, ey, ez, 1.0,
                 result
             );
         }
@@ -5844,10 +5847,10 @@ module BABYLON {
             var cy = viewport.y;
 
             var viewportMatrix = Matrix.FromValues(
-                     cw / 2.0,           0.0,         0.0, 0.0,
-                          0.0,     -ch / 2.0,         0.0, 0.0,
-                          0.0,           0.0, zmax - zmin, 0.0,
-                cx + cw / 2.0, ch / 2.0 + cy,        zmin, 1.0);
+                cw / 2.0, 0.0, 0.0, 0.0,
+                0.0, -ch / 2.0, 0.0, 0.0,
+                0.0, 0.0, zmax - zmin, 0.0,
+                cx + cw / 2.0, ch / 2.0 + cy, zmin, 1.0);
 
             var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(view, matrix);
@@ -5946,9 +5949,9 @@ module BABYLON {
             var temp2 = -2 * y;
             var temp3 = -2 * z;
             Matrix.FromValuesToRef(
-                  temp * x + 1,       temp2 * x,       temp3 * x, 0.0,
-                      temp * y,   temp2 * y + 1,       temp3 * y, 0.0,
-                      temp * z,       temp2 * z,   temp3 * z + 1, 0.0,
+                temp * x + 1, temp2 * x, temp3 * x, 0.0,
+                temp * y, temp2 * y + 1, temp3 * y, 0.0,
+                temp * z, temp2 * z, temp3 * z + 1, 0.0,
                 temp * plane.d, temp2 * plane.d, temp3 * plane.d, 1.0,
                 result
             );
@@ -5966,7 +5969,7 @@ module BABYLON {
                 xaxis.x, xaxis.y, xaxis.z, 0.0,
                 yaxis.x, yaxis.y, yaxis.z, 0.0,
                 zaxis.x, zaxis.y, zaxis.z, 0.0,
-                    0.0,     0.0,    0.0,  1.0,
+                0.0, 0.0, 0.0, 1.0,
                 result
             );
         }

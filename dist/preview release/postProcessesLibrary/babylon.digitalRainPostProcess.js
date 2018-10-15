@@ -209,10 +209,7 @@ var BABYLON;
             var textureSize = _this._digitalRainFontTexture.getSize();
             var alpha = 0.0;
             var cosTimeZeroOne = 0.0;
-            var matrix = new BABYLON.Matrix();
-            for (var i = 0; i < 16; i++) {
-                matrix.m[i] = Math.random();
-            }
+            var matrix = BABYLON.Matrix.FromValues(Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random());
             _this.onApply = function (effect) {
                 effect.setTexture("digitalRainFont", _this._digitalRainFontTexture);
                 effect.setFloat4("digitalRainFontInfos", _this._digitalRainFontTexture.charSize, characterSet.length, textureSize.width, textureSize.height);
