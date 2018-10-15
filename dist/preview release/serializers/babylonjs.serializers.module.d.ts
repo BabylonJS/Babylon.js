@@ -19,9 +19,25 @@ declare module 'babylonjs-serializers/src/glTF' {
 
 declare module 'babylonjs-serializers/src/OBJ/objSerializer' {
     import { Mesh } from "babylonjs";
+    /**
+        * Class for generating OBJ data from a Babylon scene.
+        */
     export class OBJExport {
-        static OBJ(mesh: Mesh[], materials?: boolean, matlibname?: string, globalposition?: boolean): string;
-        static MTL(mesh: Mesh): string;
+            /**
+                * Exports the geometry of a Mesh array in .OBJ file format (text)
+                * @param mesh defines the list of meshes to serialize
+                * @param materials defines if materials should be exported
+                * @param matlibname defines the name of the associated mtl file
+                * @param globalposition defines if the exported positions are globals or local to the exported mesh
+                * @returns the OBJ content
+                */
+            static OBJ(mesh: Mesh[], materials?: boolean, matlibname?: string, globalposition?: boolean): string;
+            /**
+                * Exports the material(s) of a mesh in .MTL file format (text)
+                * @param mesh defines the mesh to extract the material from
+                * @returns the mtl content
+                */
+            static MTL(mesh: Mesh): string;
     }
 }
 
@@ -603,9 +619,25 @@ declare module 'babylonjs-serializers/src/glTF/2.0/glTFUtilities' {
 //   ../../../../Tools/Gulp/babylonjs
 //   ../../../../Tools/Gulp/babylonjs-gltf2interface
 declare module BABYLON {
+    /**
+        * Class for generating OBJ data from a Babylon scene.
+        */
     export class OBJExport {
-        static OBJ(mesh: BABYLON.Mesh[], materials?: boolean, matlibname?: string, globalposition?: boolean): string;
-        static MTL(mesh: BABYLON.Mesh): string;
+            /**
+                * Exports the geometry of a BABYLON.Mesh array in .OBJ file format (text)
+                * @param mesh defines the list of meshes to serialize
+                * @param materials defines if materials should be exported
+                * @param matlibname defines the name of the associated mtl file
+                * @param globalposition defines if the exported positions are globals or local to the exported mesh
+                * @returns the OBJ content
+                */
+            static OBJ(mesh: BABYLON.Mesh[], materials?: boolean, matlibname?: string, globalposition?: boolean): string;
+            /**
+                * Exports the material(s) of a mesh in .MTL file format (text)
+                * @param mesh defines the mesh to extract the material from
+                * @returns the mtl content
+                */
+            static MTL(mesh: BABYLON.Mesh): string;
     }
 }
 declare module BABYLON {

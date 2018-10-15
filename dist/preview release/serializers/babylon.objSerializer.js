@@ -186,10 +186,20 @@ __export(__webpack_require__(/*! ./objSerializer */ "./src/OBJ/objSerializer.ts"
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
+/**
+ * Class for generating OBJ data from a Babylon scene.
+ */
 var OBJExport = /** @class */ (function () {
     function OBJExport() {
     }
-    //Exports the geometry of a Mesh array in .OBJ file format (text)
+    /**
+     * Exports the geometry of a Mesh array in .OBJ file format (text)
+     * @param mesh defines the list of meshes to serialize
+     * @param materials defines if materials should be exported
+     * @param matlibname defines the name of the associated mtl file
+     * @param globalposition defines if the exported positions are globals or local to the exported mesh
+     * @returns the OBJ content
+     */
     OBJExport.OBJ = function (mesh, materials, matlibname, globalposition) {
         var output = [];
         var v = 1;
@@ -264,7 +274,11 @@ var OBJExport = /** @class */ (function () {
         var text = output.join("\n");
         return (text);
     };
-    //Exports the material(s) of a mesh in .MTL file format (text)
+    /**
+     * Exports the material(s) of a mesh in .MTL file format (text)
+     * @param mesh defines the mesh to extract the material from
+     * @returns the mtl content
+     */
     //TODO: Export the materials of mesh array
     OBJExport.MTL = function (mesh) {
         var output = [];
