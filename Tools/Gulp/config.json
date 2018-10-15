@@ -1588,7 +1588,7 @@
         ],
         "build": {
             "webpack": "../../../materialsLibrary/webpack.config.js",
-            "srcOutputDirectory": "../../materialsLibrary/src/",
+            "srcDirectory": "../../materialsLibrary/src/",
             "distOutputDirectory": "/materialsLibrary/",
             "dtsBundle": {
                 "name": "babylonjs-materials",
@@ -1629,7 +1629,7 @@
         ],
         "build": {
             "webpack": "../../../postProcessLibrary/webpack.config.js",
-            "srcOutputDirectory": "../../postProcessLibrary/src/",
+            "srcDirectory": "../../postProcessLibrary/src/",
             "distOutputDirectory": "/postProcessesLibrary/",
             "dtsBundle": {
                 "name": "babylonjs-postProcessLibrary",
@@ -1710,7 +1710,7 @@
         ],
         "build": {
             "webpack": "../../../proceduralTexturesLibrary/webpack.config.js",
-            "srcOutputDirectory": "../../proceduralTexturesLibrary/src/",
+            "srcDirectory": "../../proceduralTexturesLibrary/src/",
             "distOutputDirectory": "/proceduralTexturesLibrary/",
             "dtsBundle": {
                 "name": "babylonjs-procedural-textures",
@@ -1766,7 +1766,7 @@
         ],
         "build": {
             "webpack": "../../../loaders/webpack.config.js",
-            "srcOutputDirectory": "../../loaders/src/",
+            "srcDirectory": "../../loaders/src/",
             "distOutputDirectory": "/loaders/",
             "dtsBundle": {
                 "name": "babylonjs-loaders",
@@ -1808,7 +1808,7 @@
         ],
         "build": {
             "webpack": "../../../serializers/webpack.config.js",
-            "srcOutputDirectory": "../../serializers/src/",
+            "srcDirectory": "../../serializers/src/",
             "distOutputDirectory": "/serializers/",
             "dtsBundle": {
                 "name": "babylonjs-serializers",
@@ -1840,7 +1840,7 @@
         ],
         "build": {
             "webpack": "../../../gui/webpack.config.js",
-            "srcOutputDirectory": "../../gui/src/",
+            "srcDirectory": "../../gui/src/",
             "distOutputDirectory": "/gui/",
             "dtsBundle": {
                 "name": "babylonjs-gui",
@@ -1878,7 +1878,7 @@
         ],
         "build": {
             "webpack": "../../../inspector/webpack.config.js",
-            "srcOutputDirectory": "../../inspector/src/",
+            "srcDirectory": "../../inspector/src/",
             "distOutputDirectory": "/inspector/",
             "dtsBundle": {
                 "name": "babylonjs-inspector",
@@ -1915,7 +1915,6 @@
         "build": {
             "webpack": "../../../Viewer/webpack.gulp.config.js",
             "srcDirectory": "../../Viewer/src/",
-            "srcOutputDirectory": "../../Viewer/",
             "distOutputDirectory": "/viewer/",
             "dtsBundle": {
                 "name": "babylonjs-viewer",
@@ -1984,7 +1983,6 @@
         "build": {
             "webpack": "../../../Viewer/webpack.assets.config.js",
             "srcDirectory": "../../Viewer/src/",
-            "srcOutputDirectory": "../../Viewer/",
             "distOutputDirectory": "/viewer/",
             "dtsBundle": {
                 "name": "babylonjs-viewer-assets",

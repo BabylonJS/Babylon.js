@@ -35,16 +35,9 @@ gulp.task("typescript-tsLint", function() {
  * TsLint all typescript files from the src directory.
  */
 var tsLintExternalLibrary = function(library, settings, watch) {
-    if (library.files && library.files.length) {
-        return gulp.src(library.files, { base: settings.build.srcOutputDirectory })
-            .pipe(gulpTslint(tsLintConfig))
-            .pipe(gulpTslint.report());
-    }
-    else {
-        return gulp.src((settings.build.srcDirectory || settings.build.srcOutputDirectory) + "/**/*.ts")
-            .pipe(gulpTslint(tsLintConfig))
-            .pipe(gulpTslint.report());
-    }
+    return gulp.src((settings.build.srcDirectory) + "/**/*.ts")
+        .pipe(gulpTslint(tsLintConfig))
+        .pipe(gulpTslint.report());
 }
 
 /**
