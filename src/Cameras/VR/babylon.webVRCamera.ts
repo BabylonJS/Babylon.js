@@ -320,11 +320,9 @@ module BABYLON {
                     this._standingMatrix = new Matrix();
                     Matrix.FromFloat32ArrayToRefScaled(result.vrDisplay.stageParameters.sittingToStandingTransform, 0, 1, this._standingMatrix);
                     if (!this.getScene().useRightHandedSystem) {
-                        [2, 6, 8, 9, 14].forEach((num) => {
-                            if (this._standingMatrix) {
-                                this._standingMatrix.m[num] *= -1;
-                            }
-                        });
+                        if (this._standingMatrix) {
+                            this._standingMatrix.toggleModelMatrixHandInPlace();
+                        }
                     }
                     callback(true);
                 }
@@ -634,9 +632,7 @@ module BABYLON {
             Matrix.FromArrayToRef(viewArray, 0, this._webvrViewMatrix);
 
             if (!this.getScene().useRightHandedSystem) {
-                [2, 6, 8, 9, 14].forEach((num) => {
-                    this._webvrViewMatrix.m[num] *= -1;
-                });
+                this._webvrViewMatrix.toggleModelMatrixHandInPlace();
             }
 
             // update the camera rotation matrix
@@ -651,9 +647,9 @@ module BABYLON {
                 this._webvrViewMatrix.invert();
                 // scale the position, if set
                 if (parentCamera.deviceScaleFactor) {
-                    this._webvrViewMatrix.m[12] *= parentCamera.deviceScaleFactor;
-                    this._webvrViewMatrix.m[13] *= parentCamera.deviceScaleFactor;
-                    this._webvrViewMatrix.m[14] *= parentCamera.deviceScaleFactor;
+                    this._webvrViewMatrix.multiplyAtIndex(12, parentCamera.deviceScaleFactor);
+                    this._webvrViewMatrix.multiplyAtIndex(13, parentCamera.deviceScaleFactor);
+                    this._webvrViewMatrix.multiplyAtIndex(14, parentCamera.deviceScaleFactor);
                 }
 
                 this._webvrViewMatrix.invert();
@@ -686,9 +682,7 @@ module BABYLON {
 
             //babylon compatible matrix
             if (!this.getScene().useRightHandedSystem) {
-                [8, 9, 10, 11].forEach((num) => {
-                    this._projectionMatrix.m[num] *= -1;
-                });
+                this._projectionMatrix.toggleProjectionMatrixHandInPlace();
             }
 
             return this._projectionMatrix;

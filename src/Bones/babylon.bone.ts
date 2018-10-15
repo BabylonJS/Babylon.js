@@ -413,9 +413,9 @@ module BABYLON {
             var lm = this.getLocalMatrix();
 
             if (space == Space.LOCAL) {
-                lm.m[12] += vec.x;
-                lm.m[13] += vec.y;
-                lm.m[14] += vec.z;
+                lm.addAtIndex(12, vec.x);
+                lm.addAtIndex(13, vec.y);
+                lm.addAtIndex(14, vec.z);
             } else {
                 var wm: Nullable<Matrix> = null;
 
@@ -437,17 +437,13 @@ module BABYLON {
                     }
                 }
 
-                tmat.m[12] = 0;
-                tmat.m[13] = 0;
-                tmat.m[14] = 0;
-
+                tmat.setTranslationFromFloats(0, 0, 0);
                 tmat.invert();
                 Vector3.TransformCoordinatesToRef(vec, tmat, tvec);
 
-                lm.m[12] += tvec.x;
-                lm.m[13] += tvec.y;
-                lm.m[14] += tvec.z;
-
+                lm.addAtIndex(12, tvec.x);
+                lm.addAtIndex(13, tvec.y);
+                lm.addAtIndex(14, tvec.z);
             }
 
             this._markAsDirtyAndDecompose();
@@ -463,9 +459,7 @@ module BABYLON {
             var lm = this.getLocalMatrix();
 
             if (space == Space.LOCAL) {
-                lm.m[12] = position.x;
-                lm.m[13] = position.y;
-                lm.m[14] = position.z;
+                lm.setTranslationFromFloats(position.x, position.y, position.z);
             } else {
                 var wm: Nullable<Matrix> = null;
 
@@ -490,11 +484,7 @@ module BABYLON {
 
                 tmat.invert();
                 Vector3.TransformCoordinatesToRef(position, tmat, vec);
-
-                lm.m[12] = vec.x;
-                lm.m[13] = vec.y;
-                lm.m[14] = vec.z;
-
+                lm.setTranslationFromFloats(vec.x, vec.y, vec.z);
             }
 
             this._markAsDirtyAndDecompose();
@@ -530,9 +520,9 @@ module BABYLON {
             for (var child of this.children) {
                 var cm = child.getLocalMatrix();
                 cm.multiplyToRef(scaleMat, cm);
-                cm.m[12] *= x;
-                cm.m[13] *= y;
-                cm.m[14] *= z;
+                cm.multiplyAtIndex(12, x);
+                cm.multiplyAtIndex(13, y);
+                cm.multiplyAtIndex(14, z);
 
                 child._markAsDirtyAndDecompose();
             }
@@ -612,12 +602,8 @@ module BABYLON {
          */
         public rotate(axis: Vector3, amount: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
             var rmat = Bone._tmpMats[0];
-            rmat.m[12] = 0;
-            rmat.m[13] = 0;
-            rmat.m[14] = 0;
-
+            rmat.setTranslationFromFloats(0, 0, 0);
             Matrix.RotationAxisToRef(axis, amount, rmat);
-
             this._rotateWithMatrix(rmat, space, mesh);
         }
 
@@ -751,9 +737,7 @@ module BABYLON {
                 }
             }
 
-            lmat.m[12] = lx;
-            lmat.m[13] = ly;
-            lmat.m[14] = lz;
+            lmat.setTranslationFromFloats(lx, ly, lz);
 
             this.computeAbsoluteTransforms();
             this._markAsDirtyAndDecompose();
@@ -775,7 +759,7 @@ module BABYLON {
                 return false;
             }
 
-            scaleMatrix.m[0] *= this._scalingDeterminant;
+            scaleMatrix.multiplyAtIndex(0, this._scalingDeterminant);
             rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
 
             return true;
@@ -986,9 +970,9 @@ module BABYLON {
                     mat.copyFrom(amat);
                 }
 
-                mat.m[0] *= this._scalingDeterminant;
-                mat.m[1] *= this._scalingDeterminant;
-                mat.m[2] *= this._scalingDeterminant;
+                mat.multiplyAtIndex(0, this._scalingDeterminant);
+                mat.multiplyAtIndex(1, this._scalingDeterminant);
+                mat.multiplyAtIndex(2, this._scalingDeterminant);
 
                 mat.decompose(undefined, result, undefined);
             }
@@ -1028,9 +1012,9 @@ module BABYLON {
                     mat.copyFrom(amat);
                 }
 
-                mat.m[0] *= this._scalingDeterminant;
-                mat.m[1] *= this._scalingDeterminant;
-                mat.m[2] *= this._scalingDeterminant;
+                mat.multiplyAtIndex(0, this._scalingDeterminant);
+                mat.multiplyAtIndex(1, this._scalingDeterminant);
+                mat.multiplyAtIndex(2, this._scalingDeterminant);
 
                 mat.getRotationMatrixToRef(result);
             }
