@@ -17,7 +17,7 @@ var config = require("../config.json");
 /**
  * Build a single library (one of the material of mat lib) from a module (materialsLibrary for instance)
  */
-var buildExternalLibrary = function(library, settings) {
+var buildExternalLibrary = function(library, settings, cb) {
     const sequence = [];
     var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
 
@@ -40,17 +40,21 @@ var buildExternalLibrary = function(library, settings) {
     let buildEventMax = wpBuildMax.pipe(gulp.dest(outputDirectory));
     sequence.push(buildEventMax);
 
+    var minAndMax = merge2(sequence);
+
     // TODO. Generate all d.ts
     if (!library.preventLoadLibrary) {
-        buildEventMin.on("end", function() {
+        minAndMax.on("end", function() {
             dtsBundle.bundle(settings.build.dtsBundle);
 
             let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
             processDeclaration(fileLocation, settings.build.processDeclaration);
+
+            cb();
         });
     }
 
-    return merge2(sequence);
+    return minAndMax;
 }
 
 /**
@@ -59,7 +63,7 @@ var buildExternalLibrary = function(library, settings) {
 function buildExternalLibraries(settings) {
     var tasks = settings.libraries.map(function(library) {
         var build = function(cb) {
-            return buildExternalLibrary(library, settings);
+            return buildExternalLibrary(library, settings, cb);
         }
         return build;
     });
