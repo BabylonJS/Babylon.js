@@ -4312,7 +4312,7 @@ module BABYLON {
             //  - sign(i,j) = (i+j) % 2 === 0 ? 1 : -1
             //  - Minor(i, j) is the 3x3 matrix we get by removing row i and column j from current Matrix
             //
-            // Herre we do that for the 1st row.
+            // Here we do that for the 1st row.
 
             const det_22_33 = m22 * m33 - m32 * m23;
             const det_21_33 = m21 * m33 - m31 * m23;
