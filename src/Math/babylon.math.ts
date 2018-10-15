@@ -4613,6 +4613,15 @@ module BABYLON {
          * @returns the current matrix
          */
         public multiplyToRef(other: Readonly<Matrix>, result: Matrix): Matrix {
+            if (this._isIdentity) {
+                result.copyFrom(other);
+                return this;
+            }
+            if ((other as Matrix)._isIdentity) {
+                result.copyFrom(this);
+                return this;
+            }
+
             this.multiplyToArray(other, result._m, 0);
             result._markAsUpdated();
             return this;
@@ -4626,15 +4635,6 @@ module BABYLON {
          * @returns the current matrix
          */
         public multiplyToArray(other: Readonly<Matrix>, result: Float32Array, offset: number): Matrix {
-            if (this._isIdentity) {
-                other.copyToArray(result, offset);
-                return this;
-            }
-            if ((other as Matrix)._isIdentity) {
-                this.copyToArray(result, offset);
-                return this;
-            }
-
             const m = this._m;
             const otherM = other.m;
             var tm0 = m[0], tm1 = m[1], tm2 = m[2], tm3 = m[3];
@@ -4822,7 +4822,6 @@ module BABYLON {
          */
         public transposeToRef(result: Matrix): Matrix {
             Matrix.TransposeToRef(this, result);
-
             return this;
         }
 
@@ -4911,7 +4910,7 @@ module BABYLON {
          * @returns a new matrix sets to the extracted rotation matrix from the current one
          */
         public getRotationMatrix(): Matrix {
-            var result = Matrix.Identity();
+            var result = new Matrix();
             this.getRotationMatrixToRef(result);
             return result;
         }
@@ -4977,6 +4976,7 @@ module BABYLON {
             Matrix.FromArrayToRef(array, offset, result);
             return result;
         }
+
         /**
          * Copy the content of an array into a given matrix
          * @param array defines the source array
@@ -5001,7 +5001,6 @@ module BABYLON {
             for (var index = 0; index < 16; index++) {
                 result._m[index] = array[index + offset] * scale;
             }
-
             result._markAsUpdated();
         }
 
@@ -5077,7 +5076,7 @@ module BABYLON {
             m[4] = initialM21; m[5] = initialM22; m[6] = initialM23; m[7] = initialM24;
             m[8] = initialM31; m[9] = initialM32; m[10] = initialM33; m[11] = initialM34;
             m[12] = initialM41; m[13] = initialM42; m[14] = initialM43; m[15] = initialM44;
-
+            result._markAsUpdated();
             return result;
         }
 
@@ -5089,7 +5088,7 @@ module BABYLON {
          * @returns a new matrix
          */
         public static Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix {
-            var result = Matrix.Identity();
+            var result = new Matrix();
             Matrix.ComposeToRef(scale, rotation, translation, result);
             return result;
         }
@@ -5363,7 +5362,7 @@ module BABYLON {
          * @returns the new matrix
          */
         public static Translation(x: number, y: number, z: number): Matrix {
-            var result = Matrix.Identity();
+            var result = new Matrix();
             Matrix.TranslationToRef(x, y, z, result);
             return result;
         }
@@ -5633,9 +5632,7 @@ module BABYLON {
          */
         public static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
             var matrix = new Matrix();
-
             Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, matrix);
-
             return matrix;
         }
 
@@ -5668,7 +5665,7 @@ module BABYLON {
                 result
             );
 
-            result._updateIdentityStatus(a === 1 && b === 1 && c === 1 && d === 0 && i0 === 0 && i1 === 0);
+            result._markAsUpdated();
         }
 
         /**
@@ -5699,7 +5696,7 @@ module BABYLON {
          */
         public static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
             Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result);
-            result._m[10] *= -1.0;
+            result._m[10] *= -1; // No need to call _markAsUpdated as previous function already called it and let _isIdentityDirty to true
         }
 
         /**
@@ -5843,16 +5840,17 @@ module BABYLON {
             var rightTan = Math.tan(fov.rightDegrees * Math.PI / 180.0);
             var xScale = 2.0 / (leftTan + rightTan);
             var yScale = 2.0 / (upTan + downTan);
-            result._m[0] = xScale;
-            result._m[1] = result._m[2] = result._m[3] = result._m[4] = 0.0;
-            result._m[5] = yScale;
-            result._m[6] = result._m[7] = 0.0;
-            result._m[8] = ((leftTan - rightTan) * xScale * 0.5);
-            result._m[9] = -((upTan - downTan) * yScale * 0.5);
-            result._m[10] = -zfar / (znear - zfar);
-            result._m[11] = 1.0 * rightHandedFactor;
-            result._m[12] = result._m[13] = result._m[15] = 0.0;
-            result._m[14] = -(2.0 * zfar * znear) / (zfar - znear);
+            const m = result._m;
+            m[0] = xScale;
+            m[1] = m[2] = m[3] = m[4] = 0.0;
+            m[5] = yScale;
+            m[6] = m[7] = 0.0;
+            m[8] = ((leftTan - rightTan) * xScale * 0.5);
+            m[9] = -((upTan - downTan) * yScale * 0.5);
+            m[10] = -zfar / (znear - zfar);
+            m[11] = 1.0 * rightHandedFactor;
+            m[12] = m[13] = m[15] = 0.0;
+            m[14] = -(2.0 * zfar * znear) / (zfar - znear);
 
             result._markAsUpdated();
         }
@@ -5873,12 +5871,16 @@ module BABYLON {
             var cx = viewport.x;
             var cy = viewport.y;
 
-            var viewportMatrix = Matrix.FromValues(cw / 2.0, 0.0, 0.0, 0.0,
-                0.0, -ch / 2.0, 0.0, 0.0,
-                0.0, 0.0, zmax - zmin, 0.0,
-                cx + cw / 2.0, ch / 2.0 + cy, zmin, 1);
+            var viewportMatrix = Matrix.FromValues(
+                     cw / 2.0,           0.0,         0.0, 0.0,
+                          0.0,     -ch / 2.0,         0.0, 0.0,
+                          0.0,           0.0, zmax - zmin, 0.0,
+                cx + cw / 2.0, ch / 2.0 + cy,        zmin, 1.0);
 
-            return world.multiply(view).multiply(projection).multiply(viewportMatrix);
+            var matrix = MathTmp.Matrix[0];
+            world.multiplyToRef(view, matrix);
+            matrix.multiplyToRef(projection, matrix);
+            return matrix.multiply(viewportMatrix);
         }
 
         /**
@@ -5912,9 +5914,7 @@ module BABYLON {
          */
         public static Transpose(matrix: Matrix): Matrix {
             var result = new Matrix();
-
             Matrix.TransposeToRef(matrix, result);
-
             return result;
         }
 
@@ -5945,6 +5945,8 @@ module BABYLON {
             rm[13] = mm[7];
             rm[14] = mm[11];
             rm[15] = mm[15];
+            // identity-ness does not change when transposing
+            result._updateIdentityStatus(matrix._isIdentity, matrix._isIdentityDirty);
         }
 
         /**

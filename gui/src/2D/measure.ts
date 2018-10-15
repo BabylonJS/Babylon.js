@@ -34,6 +34,20 @@ export class Measure {
     }
 
     /**
+     * Copy from a group of 4 floats
+     * @param left defines left coordinate
+     * @param top defines top coordinate
+     * @param width defines width dimension
+     * @param height defines height dimension
+     */
+    public copyFromFloats(left: number, top: number, width: number, height: number): void {
+        this.left = left;
+        this.top = top;
+        this.width = width;
+        this.height = height;
+    }
+
+    /**
      * Check equality between this measure and another one
      * @param other defines the other measures
      * @returns true if both measures are equals
