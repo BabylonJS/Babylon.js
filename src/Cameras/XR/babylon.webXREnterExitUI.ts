@@ -7,14 +7,18 @@ module BABYLON {
          * Context to enter xr with
          */
         outputCanvasContext?: Nullable<WebGLRenderingContext>;
-        customButtons?: Array<{element: HTMLElement, initializationOptions: XRSessionCreationOptions}>;
+
+        /**
+         * User provided buttons to enable/disable WebXR. The system will provide default if not set
+         */
+        customButtons?: Array<{ element: HTMLElement, initializationOptions: XRSessionCreationOptions }>;
     }
     /**
      * UI to allow the user to enter/exit XR mode
      */
     export class WebXREnterExitUI implements IDisposable {
         private _overlay: HTMLDivElement;
-        private _buttons: Array<{element: HTMLElement, initializationOptions: XRSessionCreationOptions}> = [];
+        private _buttons: Array<{ element: HTMLElement, initializationOptions: XRSessionCreationOptions }> = [];
         /**
          * Creates UI to allow the user to enter/exit XR mode
          * @param scene the scene to add the ui to
@@ -35,7 +39,7 @@ module BABYLON {
                             if (helper.state == BABYLON.WebXRState.IN_XR) {
                                 await helper.exitXR();
                                 return;
-                            }else if (helper.state == BABYLON.WebXRState.NOT_IN_XR) {
+                            } else if (helper.state == BABYLON.WebXRState.NOT_IN_XR) {
                                 await helper.enterXR(ui._buttons[i].initializationOptions, "eye-level");
                             }
                         };
@@ -43,22 +47,23 @@ module BABYLON {
                 });
             });
         }
+
         private constructor(private scene: BABYLON.Scene, options: WebXREnterExitUIOptions) {
             this._overlay = document.createElement("div");
             this._overlay.style.cssText = "z-index:11;position: absolute; right: 20px;bottom: 50px;";
 
             if (options.customButtons) {
                 this._buttons = options.customButtons;
-            }else {
+            } else {
                 var hmdBtn = document.createElement("button");
                 hmdBtn.style.cssText = "color: #868686; border-color: #868686; border-style: solid; margin-left: 10px; height: 50px; width: 80px; background-color: rgba(51,51,51,0.7); background-repeat:no-repeat; background-position: center; outline: none;";
                 hmdBtn.innerText = "HMD";
-                this._buttons.push({element: hmdBtn, initializationOptions: {immersive: true}});
+                this._buttons.push({ element: hmdBtn, initializationOptions: { immersive: true } });
 
                 var windowBtn = document.createElement("button");
                 windowBtn.style.cssText = hmdBtn.style.cssText;
                 windowBtn.innerText = "Window";
-                this._buttons.push({element: windowBtn, initializationOptions: {immersive: false, environmentIntegration: true, outputContext: options.outputCanvasContext}});
+                this._buttons.push({ element: windowBtn, initializationOptions: { immersive: false, environmentIntegration: true, outputContext: options.outputCanvasContext } });
             }
 
             var renderCanvas = scene.getEngine().getRenderingCanvas();
