@@ -177,6 +177,10 @@ module BABYLON {
         return null;
     };
 
+    Scene.prototype.createDefaultVRExperience = function(webVROptions: VRExperienceHelperOptions = {}): VRExperienceHelper {
+        return new VRExperienceHelper(this, webVROptions);
+    };
+
     Scene.prototype.createDefaultXRExperienceAsync = function(): Promise<BABYLON.WebXRExperienceHelper> {
         return BABYLON.WebXRExperienceHelper.CreateAsync(this).then((helper) => {
             var outputCanvas = new BABYLON.WebXRManagedOutputCanvas(helper);
