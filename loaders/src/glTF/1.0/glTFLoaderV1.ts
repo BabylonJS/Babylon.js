@@ -1169,6 +1169,7 @@ var importMaterials = (gltfRuntime: IGLTFRuntime) => {
 
 /**
 * Implementation of the base glTF spec
+* @hidden
 */
 export class GLTFLoaderBase {
     public static CreateRuntime(parsedData: any, scene: Scene, rootUrl: string): IGLTFRuntime {
@@ -1554,6 +1555,7 @@ export class GLTFLoaderBase {
 
 /**
 * glTF V1 Loader
+* @hidden
 */
 export class GLTFLoaderV1 implements IGLTFLoader {
     public static Extensions: { [name: string]: GLTFLoaderExtension } = {};

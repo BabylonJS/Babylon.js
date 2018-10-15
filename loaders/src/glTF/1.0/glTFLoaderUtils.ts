@@ -3,6 +3,7 @@ import { IGLTFTechniqueParameter, EParameterType, ETextureWrapMode, IGLTFAccesso
 
 /**
 * Utils functions for GLTF
+* @hidden
 */
 export class GLTFUtils {
     /**

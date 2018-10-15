@@ -2,6 +2,7 @@ import { Texture, Skeleton, Scene, Bone, Node } from "babylonjs";
 
 /**
 * Enums
+* @hidden
 */
 export enum EComponentType {
     BYTE = 5120,
@@ -11,11 +12,13 @@ export enum EComponentType {
     FLOAT = 5126
 }
 
+/** @hidden */
 export enum EShaderType {
     FRAGMENT = 35632,
     VERTEX = 35633
 }
 
+/** @hidden */
 export enum EParameterType {
     BYTE = 5120,
     UNSIGNED_BYTE = 5121,
@@ -40,12 +43,14 @@ export enum EParameterType {
     SAMPLER_2D = 35678
 }
 
+/** @hidden */
 export enum ETextureWrapMode {
     CLAMP_TO_EDGE = 33071,
     MIRRORED_REPEAT = 33648,
     REPEAT = 10497
 }
 
+/** @hidden */
 export enum ETextureFilterType {
     NEAREST = 9728,
     LINEAR = 9728,
@@ -55,6 +60,7 @@ export enum ETextureFilterType {
     LINEAR_MIPMAP_LINEAR = 9987
 }
 
+/** @hidden */
 export enum ETextureFormat {
     ALPHA = 6406,
     RGB = 6407,
@@ -63,12 +69,14 @@ export enum ETextureFormat {
     LUMINANCE_ALPHA = 6410
 }
 
+/** @hidden */
 export enum ECullingType {
     FRONT = 1028,
     BACK = 1029,
     FRONT_AND_BACK = 1032
 }
 
+/** @hidden */
 export enum EBlendingFunction {
     ZERO = 0,
     ONE = 1,
@@ -87,18 +95,18 @@ export enum EBlendingFunction {
     SRC_ALPHA_SATURATE = 776
 }
 
-/**
-* Interfaces
-*/
+/** @hidden */
 export interface IGLTFProperty {
     extensions?: {[key: string]: any};
     extras?: Object;
 }
 
+/** @hidden */
 export interface IGLTFChildRootProperty extends IGLTFProperty {
     name?: string;
 }
 
+/** @hidden */
 export interface IGLTFAccessor extends IGLTFChildRootProperty {
     bufferView: string;
     byteOffset: number;
@@ -112,6 +120,7 @@ export interface IGLTFAccessor extends IGLTFChildRootProperty {
     name?: string;
 }
 
+/** @hidden */
 export interface IGLTFBufferView extends IGLTFChildRootProperty {
     buffer: string;
     byteOffset: number;
@@ -121,6 +130,7 @@ export interface IGLTFBufferView extends IGLTFChildRootProperty {
     target?: number;
 }
 
+/** @hidden */
 export interface IGLTFBuffer extends IGLTFChildRootProperty {
     uri: string;
 
@@ -128,17 +138,20 @@ export interface IGLTFBuffer extends IGLTFChildRootProperty {
     type?: string;
 }
 
+/** @hidden */
 export interface IGLTFShader extends IGLTFChildRootProperty {
     uri: string;
     type: EShaderType;
 }
 
+/** @hidden */
 export interface IGLTFProgram extends IGLTFChildRootProperty {
     attributes: string[];
     fragmentShader: string;
     vertexShader: string;
 }
 
+/** @hidden */
 export interface IGLTFTechniqueParameter {
     type: number;
 
@@ -151,6 +164,7 @@ export interface IGLTFTechniqueParameter {
     babylonValue?: any;
 }
 
+/** @hidden */
 export interface IGLTFTechniqueCommonProfile {
     lightingModel: string;
     texcoordBindings: Object;
@@ -158,6 +172,7 @@ export interface IGLTFTechniqueCommonProfile {
     parameters?: Array<any>;
 }
 
+/** @hidden */
 export interface IGLTFTechniqueStatesFunctions {
     blendColor?: number[];
     blendEquationSeparate?: number[];
@@ -166,11 +181,13 @@ export interface IGLTFTechniqueStatesFunctions {
     cullFace: number[];
 }
 
+/** @hidden */
 export interface IGLTFTechniqueStates {
     enable: number[];
     functions: IGLTFTechniqueStatesFunctions;
 }
 
+/** @hidden */
 export interface IGLTFTechnique extends IGLTFChildRootProperty {
     parameters: {[key: string]: IGLTFTechniqueParameter};
     program: string;
@@ -180,11 +197,13 @@ export interface IGLTFTechnique extends IGLTFChildRootProperty {
     states: IGLTFTechniqueStates;
 }
 
+/** @hidden */
 export interface IGLTFMaterial extends IGLTFChildRootProperty {
     technique?: string;
     values: string[];
 }
 
+/** @hidden */
 export interface IGLTFMeshPrimitive extends IGLTFProperty {
     attributes: {[key: string]: string};
     indices: string;
@@ -193,14 +212,17 @@ export interface IGLTFMeshPrimitive extends IGLTFProperty {
     mode?: number;
 }
 
+/** @hidden */
 export interface IGLTFMesh extends IGLTFChildRootProperty {
     primitives: IGLTFMeshPrimitive[];
 }
 
+/** @hidden */
 export interface IGLTFImage extends IGLTFChildRootProperty {
     uri: string;
 }
 
+/** @hidden */
 export interface IGLTFSampler extends IGLTFChildRootProperty {
     magFilter?: number;
     minFilter?: number;
@@ -208,6 +230,7 @@ export interface IGLTFSampler extends IGLTFChildRootProperty {
     wrapT?: number;
 }
 
+/** @hidden */
 export interface IGLTFTexture extends IGLTFChildRootProperty {
     sampler: string;
     source: string;
@@ -221,14 +244,17 @@ export interface IGLTFTexture extends IGLTFChildRootProperty {
     babylonTexture?: Texture;
 }
 
+/** @hidden */
 export interface IGLTFAmbienLight {
     color?: number[];
 }
 
+/** @hidden */
 export interface IGLTFDirectionalLight {
     color?: number[];
 }
 
+/** @hidden */
 export interface IGLTFPointLight {
     color?: number[];
     constantAttenuation?: number;
@@ -236,6 +262,7 @@ export interface IGLTFPointLight {
     quadraticAttenuation?: number;
 }
 
+/** @hidden */
 export interface IGLTFSpotLight {
     color?: number[];
     constantAttenuation?: number;
@@ -245,10 +272,12 @@ export interface IGLTFSpotLight {
     quadraticAttenuation?: number;
 }
 
+/** @hidden */
 export interface IGLTFLight extends IGLTFChildRootProperty {
     type: string;
 }
 
+/** @hidden */
 export interface IGLTFCameraOrthographic {
     xmag: number;
     ymag: number;
@@ -256,6 +285,7 @@ export interface IGLTFCameraOrthographic {
     znear: number;
 }
 
+/** @hidden */
 export interface IGLTFCameraPerspective {
     aspectRatio: number;
     yfov: number;
@@ -263,20 +293,24 @@ export interface IGLTFCameraPerspective {
     znear: number;
 }
 
+/** @hidden */
 export interface IGLTFCamera extends IGLTFChildRootProperty {
     type: string;
 }
 
+/** @hidden */
 export interface IGLTFAnimationChannelTarget {
     id: string;
     path: string;
 }
 
+/** @hidden */
 export interface IGLTFAnimationChannel {
     sampler: string;
     target: IGLTFAnimationChannelTarget;
 }
 
+/** @hidden */
 export interface IGLTFAnimationSampler {
     input: string;
     output: string;
@@ -284,18 +318,21 @@ export interface IGLTFAnimationSampler {
     interpolation?: string;
 }
 
+/** @hidden */
 export interface IGLTFAnimation extends IGLTFChildRootProperty {
     channels?: IGLTFAnimationChannel[];
     parameters?:  {[key: string]: string};
     samplers?: {[key: string]: IGLTFAnimationSampler};
 }
 
+/** @hidden */
 export interface IGLTFNodeInstanceSkin {
     skeletons: string[];
     skin: string;
     meshes: string[];
 }
 
+/** @hidden */
 export interface IGLTFSkins extends IGLTFChildRootProperty {
     bindShapeMatrix: number[];
     inverseBindMatrices: string;
@@ -304,6 +341,7 @@ export interface IGLTFSkins extends IGLTFChildRootProperty {
     babylonSkeleton?: Skeleton;
 }
 
+/** @hidden */
 export interface IGLTFNode extends IGLTFChildRootProperty {
     camera?: string;
     children: string[];
@@ -321,13 +359,12 @@ export interface IGLTFNode extends IGLTFChildRootProperty {
     babylonNode?: Node;
 }
 
+/** @hidden */
 export interface IGLTFScene extends IGLTFChildRootProperty {
     nodes: string[];
 }
 
-/**
-* Runtime
-*/
+/** @hidden */
 export interface IGLTFRuntime {
     extensions: {[key: string]: any};
     accessors: {[key: string]: IGLTFAccessor};
@@ -370,15 +407,14 @@ export interface IGLTFRuntime {
     dummyNodes: Node[];
 }
 
-/**
-* Bones
-*/
+/** @hidden */
 export interface INodeToRoot {
     bone: Bone;
     node: IGLTFNode;
     id: string;
 }
 
+/** @hidden */
 export interface IJointNode {
     node: IGLTFNode;
     id: string;

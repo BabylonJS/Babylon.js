@@ -1,29 +1,55 @@
 import { SceneLoader, ISceneLoaderPlugin, ISceneLoaderPluginExtensions, Scene, Nullable, AbstractMesh, IParticleSystem, Skeleton, Mesh, Tools, AssetContainer, VertexBuffer } from "babylonjs";
 
+/**
+ * STL file type loader.
+ * This is a babylon scene loader plugin.
+ */
 export class STLFileLoader implements ISceneLoaderPlugin {
 
+    /** @hidden */
     public solidPattern = /solid (\S*)([\S\s]*)endsolid[ ]*(\S*)/g;
+    /** @hidden */
     public facetsPattern = /facet([\s\S]*?)endfacet/g;
+    /** @hidden */
     public normalPattern = /normal[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
+    /** @hidden */
     public vertexPattern = /vertex[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
 
+    /**
+     * Defines the name of the plugin.
+     */
     public name = "stl";
 
-    // force data to come in as an ArrayBuffer
-    // we'll convert to string if it looks like it's an ASCII .stl
+    /**
+     * Defines the extensions the stl loader is able to load.
+     * force data to come in as an ArrayBuffer
+     * we'll convert to string if it looks like it's an ASCII .stl
+     */
     public extensions: ISceneLoaderPluginExtensions = {
         ".stl": { isBinary: true },
     };
 
+    /**
+     * Import meshes into a scene.
+     * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+     * @param scene The scene to import into
+     * @param data The data to import
+     * @param rootUrl The root url for scene and resources
+     * @param meshes The meshes array to import into
+     * @param particleSystems The particle systems array to import into
+     * @param skeletons The skeletons array to import into
+     * @param onError The callback when import fails
+     * @returns True if successful or false otherwise
+     */
     public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<IParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean {
         var matches;
 
         if (typeof data !== "string") {
 
-            if (this.isBinary(data)) {
+            if (this._isBinary(data)) {
                 // binary .stl
                 var babylonMesh = new Mesh("stlmesh", scene);
-                this.parseBinary(babylonMesh, data);
+                this._parseBinary(babylonMesh, data);
                 if (meshes) {
                     meshes.push(babylonMesh);
                 }
@@ -68,7 +94,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             meshName = meshName || "stlmesh";
 
             var babylonMesh = new Mesh(meshName, scene);
-            this.parseASCII(babylonMesh, matches[2]);
+            this._parseASCII(babylonMesh, matches[2]);
             if (meshes) {
                 meshes.push(babylonMesh);
             }
@@ -78,6 +104,14 @@ export class STLFileLoader implements ISceneLoaderPlugin {
 
     }
 
+    /**
+     * Load into a scene.
+     * @param scene The scene to load into
+     * @param data The data to import
+     * @param rootUrl The root url for scene and resources
+     * @param onError The callback when import fails
+     * @returns true if successful or false otherwise
+     */
     public load(scene: Scene, data: any, rootUrl: string): boolean {
         var result = this.importMesh(null, scene, data, rootUrl, null, null, null);
 
@@ -88,6 +122,14 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         return result;
     }
 
+    /**
+     * Load into an asset container.
+     * @param scene The scene to load into
+     * @param data The data to import
+     * @param rootUrl The root url for scene and resources
+     * @param onError The callback when import fails
+     * @returns The loaded asset container
+     */
     public loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer {
         var container = new AssetContainer(scene);
         this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
@@ -95,7 +137,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         return container;
     }
 
-    private isBinary(data: any) {
+    private _isBinary(data: any) {
 
         // check if file size is correct for binary stl
         var faceSize, nFaces, reader;
@@ -118,7 +160,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         return false;
     }
 
-    private parseBinary(mesh: Mesh, data: ArrayBuffer) {
+    private _parseBinary(mesh: Mesh, data: ArrayBuffer) {
 
         var reader = new DataView(data);
         var faces = reader.getUint32(80, true);
@@ -166,7 +208,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         mesh.computeWorldMatrix(true);
     }
 
-    private parseASCII(mesh: Mesh, solidData: string) {
+    private _parseASCII(mesh: Mesh, solidData: string) {
 
         var positions = [];
         var normals = [];
