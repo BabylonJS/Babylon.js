@@ -58,7 +58,7 @@ module BABYLON {
                 var hmdBtn = document.createElement("button");
                 hmdBtn.style.cssText = "color: #868686; border-color: #868686; border-style: solid; margin-left: 10px; height: 50px; width: 80px; background-color: rgba(51,51,51,0.7); background-repeat:no-repeat; background-position: center; outline: none;";
                 hmdBtn.innerText = "HMD";
-                this._buttons.push({ element: hmdBtn, initializationOptions: { immersive: true } });
+                this._buttons.push({element: hmdBtn, initializationOptions: {immersive: true, outputContext: options.outputCanvasContext}});
 
                 var windowBtn = document.createElement("button");
                 windowBtn.style.cssText = hmdBtn.style.cssText;
