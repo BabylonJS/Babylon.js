@@ -7,6 +7,7 @@ module BABYLON {
          * Context to enter xr with
          */
         outputCanvasContext?: Nullable<WebGLRenderingContext>;
+        customButtons?: Array<{element: HTMLElement, initializationOptions: XRSessionCreationOptions}>;
     }
     /**
      * UI to allow the user to enter/exit XR mode
@@ -46,15 +47,19 @@ module BABYLON {
             this._overlay = document.createElement("div");
             this._overlay.style.cssText = "z-index:11;position: absolute; right: 20px;bottom: 50px;";
 
-            var hmdBtn = document.createElement("button");
-            hmdBtn.style.cssText = "color: #868686; border-color: #868686; border-style: solid; margin-left: 10px; height: 50px; width: 80px; background-color: rgba(51,51,51,0.7); background-repeat:no-repeat; background-position: center; outline: none;";
-            hmdBtn.innerText = "HMD";
-            this._buttons.push({element: hmdBtn, initializationOptions: {immersive: true}});
+            if (options.customButtons) {
+                this._buttons = options.customButtons;
+            }else {
+                var hmdBtn = document.createElement("button");
+                hmdBtn.style.cssText = "color: #868686; border-color: #868686; border-style: solid; margin-left: 10px; height: 50px; width: 80px; background-color: rgba(51,51,51,0.7); background-repeat:no-repeat; background-position: center; outline: none;";
+                hmdBtn.innerText = "HMD";
+                this._buttons.push({element: hmdBtn, initializationOptions: {immersive: true}});
 
-            var windowBtn = document.createElement("button");
-            windowBtn.style.cssText = hmdBtn.style.cssText;
-            windowBtn.innerText = "Window";
-            this._buttons.push({element: windowBtn, initializationOptions: {immersive: false, environmentIntegration: true, outputContext: options.outputCanvasContext}});
+                var windowBtn = document.createElement("button");
+                windowBtn.style.cssText = hmdBtn.style.cssText;
+                windowBtn.innerText = "Window";
+                this._buttons.push({element: windowBtn, initializationOptions: {immersive: false, environmentIntegration: true, outputContext: options.outputCanvasContext}});
+            }
 
             var renderCanvas = scene.getEngine().getRenderingCanvas();
             if (renderCanvas && renderCanvas.parentNode) {

@@ -10,7 +10,7 @@ module BABYLON {
         public canvasContext: Nullable<WebGLRenderingContext> = null;
         /**
          * Initializes the canvas to be added/removed upon entering/exiting xr
-         * @param helper the xr expreince helper used to trigger adding/removing of the canvas
+         * @param helper the xr experience helper used to trigger adding/removing of the canvas
          * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
          */
         public constructor(helper: WebXRExperienceHelper, canvas?: HTMLCanvasElement) {

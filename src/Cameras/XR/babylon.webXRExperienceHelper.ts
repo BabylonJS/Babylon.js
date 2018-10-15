@@ -58,7 +58,7 @@ module BABYLON {
 
         /**
          * Creates the experience helper
-         * @param scene the scene to attach the exprience helper to
+         * @param scene the scene to attach the experience helper to
          * @returns a promise for the experience helper
          */
         public static CreateAsync(scene: BABYLON.Scene): Promise<WebXRExperienceHelper> {
