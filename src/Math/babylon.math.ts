@@ -4323,7 +4323,7 @@ module BABYLON {
             const cofact_00 = +(m11 * det_22_33 - m12 * det_21_33 + m13 * det_21_32);
             const cofact_01 = -(m10 * det_22_33 - m12 * det_20_33 + m13 * det_20_32);
             const cofact_02 = +(m10 * det_21_33 - m11 * det_20_33 + m13 * det_20_31);
-            const cofact_03 = -(m10 * det_21_32 - m11 * det_20_32 + m12 * det_20_31)
+            const cofact_03 = -(m10 * det_21_32 - m11 * det_20_32 + m12 * det_20_31);
             return m00 * cofact_00 + m01 * cofact_01 + m02 * cofact_02 + m03 * cofact_03;
         }
 
@@ -4434,7 +4434,7 @@ module BABYLON {
             const cofact_00 = +(m11 * det_22_33 - m12 * det_21_33 + m13 * det_21_32);
             const cofact_01 = -(m10 * det_22_33 - m12 * det_20_33 + m13 * det_20_32);
             const cofact_02 = +(m10 * det_21_33 - m11 * det_20_33 + m13 * det_20_31);
-            const cofact_03 = -(m10 * det_21_32 - m11 * det_20_32 + m12 * det_20_31)
+            const cofact_03 = -(m10 * det_21_32 - m11 * det_20_32 + m12 * det_20_31);
 
             const det = m00 * cofact_00 + m01 * cofact_01 + m02 * cofact_02 + m03 * cofact_03;
 
@@ -4473,14 +4473,13 @@ module BABYLON {
             const cofact_32 = -(m00 * det_11_23 - m01 * det_10_23 + m03 * det_10_21);
             const cofact_33 = +(m00 * det_11_22 - m01 * det_10_22 + m02 * det_10_21);
 
-
             Matrix.FromValuesToRef(
                 cofact_00 * detInv, cofact_10 * detInv, cofact_20 * detInv, cofact_30 * detInv,
                 cofact_01 * detInv, cofact_11 * detInv, cofact_21 * detInv, cofact_31 * detInv,
                 cofact_02 * detInv, cofact_12 * detInv, cofact_22 * detInv, cofact_32 * detInv,
                 cofact_03 * detInv, cofact_13 * detInv, cofact_23 * detInv, cofact_33 * detInv,
                 other
-            )
+            );
 
             return this;
         }
