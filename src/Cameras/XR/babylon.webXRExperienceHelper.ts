@@ -131,6 +131,15 @@ module BABYLON {
         }
 
         /**
+         * Fires a ray and returns the closest hit in the xr sessions enviornment, useful to place objects in AR
+         * @param ray ray to cast into the environment
+         * @returns Promise which resolves with a collision point in the environment if it exists
+         */
+        public environmentPointHitTest(ray: BABYLON.Ray): Promise<Nullable<Vector3>> {
+            return this._sessionManager.environmentPointHitTest(ray);
+        }
+
+        /**
          * Checks if the creation options are supported by the xr session
          * @param options creation options
          * @returns true if supported
