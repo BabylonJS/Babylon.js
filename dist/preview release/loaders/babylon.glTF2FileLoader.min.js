@@ -148,11 +148,12 @@ var LoadersV2 = __webpack_require__(/*! ../src/glTF/2.0 */ "./src/glTF/2.0/index
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
+    globalObject.BABYLON = globalObject.BABYLON || {};
     for (var key in FileLoader) {
         globalObject.BABYLON[key] = FileLoader[key];
     }
     for (var key in LoadersV2) {
-        globalObject.BABYLON[key] = FileLoader[key];
+        globalObject.BABYLON[key] = LoadersV2[key];
     }
 }
 __export(__webpack_require__(/*! ../src/glTF/glTFFileLoader */ "./src/glTF/glTFFileLoader.ts"));
@@ -3713,7 +3714,7 @@ var GLTFFileLoader = /** @class */ (function () {
             }
         }
         var createLoaders = {
-            1: GLTFFileLoader._CreateGLTFLoaderV1,
+            1: GLTFFileLoader._CreateGLTF1Loader,
             2: GLTFFileLoader._CreateGLTFLoaderV2
         };
         var createLoader = createLoaders[version.major];

@@ -4,13 +4,14 @@ var fs = require("fs");
 var processData = function(data, options) {
     var str = "" + data;
 
-    // Start process
+    // Start process by extracting all lines.
     let lines = str.split('\n');
     var firstIndex = lines.findIndex((line => { return line.indexOf(`'${options.packageName}/'`) !== -1 }));
     var lastIndex = lines.findIndex(((line, idx) => { return line.trim() === '}' && idx > firstIndex }));
     lines.splice(firstIndex, lastIndex - firstIndex + 1);
 
     // Let's go line by line and check if we have special folder replacements
+    // Replaces declare module 'babylonjs'; by declare module BABYLON for instance
     for (var index = 0; index < lines.length; index++) {
         var namespace = options.moduleName;
         var regex = /declare module '(.*)' {/g;
@@ -34,12 +35,16 @@ var processData = function(data, options) {
         lines[index] = lines[index].replace(regex, `declare module ${namespace} {`);
     }
 
+    // Recreate the file.
     str = lines.join('\n');
 
+    // Let s clean up all the import * from BABYLON or the package itself as we know it is part of
+    // the same namespace... Should be
     str = str.replace("import * as BABYLON from 'babylonjs';", "");
     let regexp = new RegExp(`import {(.*)} from ['"]${options.packageName}(.*)['"];`, 'g');
     str = str.replace(regexp, '');
 
+    // Let s clean other chosen imports from the mix.
     if (options.importsToRemove) {
         while (options.importsToRemove.length) {
             let remove = options.importsToRemove.pop();
@@ -47,7 +52,8 @@ var processData = function(data, options) {
         }
     }
 
-    // Find all used BABYLON and BABYLON-Loaders classes:
+    // Find all other imported classes (Part of BABYLON or Loaders for instance)
+    // and suffix them by the namespace.
     if ((options.classMap)) {
         Object.keys(options.classMap).forEach(package => {
             var babylonRegex = new RegExp(`import {(.*)} from ['"](${package})['"];`, "g");
@@ -70,14 +76,15 @@ var processData = function(data, options) {
         })
     }
 
+    // Clean up export.
     str = str.replace(/export {(.*)};/g, '');
-
+    // Clean up left import.
     str = str.replace(/import (.*);/g, "");
 
+    // Rearrange the d.ts.
     str = str.split("\n").filter(line => line.trim()).filter(line => line.indexOf("export * from") === -1).join("\n");
 
     // Remove empty module declaration
-
     var cleanEmptyNamespace = function(str, moduleName) {
         let emptyDeclareRegexp = new RegExp("declare module " + moduleName + " {\n}\n", "g");
         str = str.replace(emptyDeclareRegexp, "");
@@ -86,9 +93,9 @@ var processData = function(data, options) {
 
         return str;
     }
-
     str = cleanEmptyNamespace(str, options.moduleName);
 
+    // Remove empty module declaration of specific modules
     if (options.moduleSpecifics) {
         options.moduleSpecifics.forEach(function(specific) {
             str = cleanEmptyNamespace(str, specific.namespace);

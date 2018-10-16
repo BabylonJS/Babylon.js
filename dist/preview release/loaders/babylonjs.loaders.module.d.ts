@@ -115,7 +115,7 @@ declare module 'babylonjs-loaders/src/glTF/glTFFileLoader' {
         */
     export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
             /** @hidden */
-            static _CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
+            static _CreateGLTF1Loader: (parent: GLTFFileLoader) => IGLTFLoader;
             /** @hidden */
             static _CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
             /**
@@ -347,7 +347,7 @@ declare module 'babylonjs-loaders/src/glTF/glTFFileLoader' {
 
 declare module 'babylonjs-loaders/src/glTF/1.0' {
     export * from "babylonjs-loaders/src/glTF/1.0/glTFBinaryExtension";
-    export * from "babylonjs-loaders/src/glTF/1.0/glTFLoaderV1";
+    export * from "babylonjs-loaders/src/glTF/1.0/GLTF1Loader";
     export * from "babylonjs-loaders/src/glTF/1.0/glTFLoaderExtension";
     export * from "babylonjs-loaders/src/glTF/1.0/glTFLoaderInterfaces";
     export * from "babylonjs-loaders/src/glTF/1.0/glTFLoaderUtils";
@@ -543,7 +543,7 @@ declare module 'babylonjs-loaders/src/glTF/1.0/glTFBinaryExtension' {
     }
 }
 
-declare module 'babylonjs-loaders/src/glTF/1.0/glTFLoaderV1' {
+declare module 'babylonjs-loaders/src/glTF/1.0/GLTF1Loader' {
     import { IGLTFRuntime } from "babylonjs-loaders/src/glTF/1.0/glTFLoaderInterfaces";
     import { Nullable, Skeleton, Material, AbstractMesh, Texture, Scene, SceneLoaderProgressEvent, IParticleSystem, AnimationGroup } from "babylonjs";
     import { IGLTFLoader, GLTFLoaderState, IGLTFLoaderData } from "babylonjs-loaders/src/glTF/glTFFileLoader";
@@ -564,7 +564,7 @@ declare module 'babylonjs-loaders/src/glTF/1.0/glTFLoaderV1' {
      * glTF V1 Loader
      * @hidden
      */
-    export class GLTFLoaderV1 implements IGLTFLoader {
+    export class GLTF1Loader implements IGLTFLoader {
         static Extensions: {
             [name: string]: GLTFLoaderExtension;
         };
@@ -1973,7 +1973,7 @@ declare module BABYLON {
         */
     export class GLTFFileLoader implements BABYLON.IDisposable, BABYLON.ISceneLoaderPluginAsync, BABYLON.ISceneLoaderPluginFactory {
             /** @hidden */
-            static _CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
+            static _CreateGLTF1Loader: (parent: GLTFFileLoader) => IGLTFLoader;
             /** @hidden */
             static _CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
             /**
@@ -2365,7 +2365,7 @@ declare module BABYLON {
             loadAssetContainer(scene: BABYLON.Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): BABYLON.AssetContainer;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF1 {
     /** @hidden */
     export class GLTFBinaryExtension extends GLTFLoaderExtension {
         constructor();
@@ -2375,7 +2375,7 @@ declare module BABYLON {
         loadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void, onError: (message: string) => void): boolean;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF1 {
     /**
      * Implementation of the base glTF spec
      * @hidden
@@ -2392,7 +2392,7 @@ declare module BABYLON {
      * glTF V1 Loader
      * @hidden
      */
-    export class GLTFLoaderV1 implements IGLTFLoader {
+    export class GLTF1Loader implements IGLTFLoader {
         static Extensions: {
             [name: string]: GLTFLoaderExtension;
         };
@@ -2425,7 +2425,7 @@ declare module BABYLON {
         loadAsync(scene: BABYLON.Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: BABYLON.SceneLoaderProgressEvent) => void): Promise<void>;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF1 {
     /** @hidden */
     export abstract class GLTFLoaderExtension {
             constructor(name: string);
@@ -2473,7 +2473,7 @@ declare module BABYLON {
             static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: BABYLON.Material) => void, onError: (message: string) => void): void;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF1 {
     /**
      * Enums
      * @hidden
@@ -2879,7 +2879,7 @@ declare module BABYLON {
         id: string;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF1 {
     /**
      * Utils functions for GLTF
      * @hidden
@@ -2937,7 +2937,7 @@ declare module BABYLON {
             static GetDefaultMaterial(scene: BABYLON.Scene): BABYLON.ShaderMaterial;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF1 {
     /** @hidden */
     export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
         constructor();

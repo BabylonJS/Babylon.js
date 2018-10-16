@@ -1781,11 +1781,15 @@
                 "filename": "babylonjs.loaders.module.d.ts",
                 "packageName": "babylonjs-loaders",
                 "moduleName": "BABYLON",
+                "moduleSpecifics": [
+                    {
+                        "path": "babylonjs-loaders/src/glTF/1.0",
+                        "namespace": "BABYLON.GLTF1"
+                    }
+                ],
                 "importsToRemove": [],
                 "classMap": {
                     "babylonjs": "BABYLON",
-                    "babylonjs-loaders": "BABYLON",
-                    "babylonjs-serializers": "BABYLON",
                     "babylonjs-gltf2interface": "BABYLON.GLTF2"
                 }
             }
@@ -1855,12 +1859,6 @@
                 "filename": "babylon.gui.module.d.ts",
                 "packageName": "babylonjs-gui",
                 "moduleName": "BABYLON.GUI",
-                "moduleSpecifics": [
-                    {
-                        "path": "babylonjs-loaders/glTF/2.0/Extensions",
-                        "namespace": "BABYLON.GLTF2.Loader.Extensions"
-                    }
-                ],
                 "importsToRemove": [],
                 "classMap": {
                     "babylonjs": "BABYLON",

@@ -105,7 +105,7 @@ export interface IGLTFLoader extends IDisposable {
  */
 export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
     /** @hidden */
-    public static _CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
+    public static _CreateGLTF1Loader: (parent: GLTFFileLoader) => IGLTFLoader;
 
     /** @hidden */
     public static _CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
@@ -624,7 +624,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         }
 
         const createLoaders: { [key: number]: (parent: GLTFFileLoader) => IGLTFLoader } = {
-            1: GLTFFileLoader._CreateGLTFLoaderV1,
+            1: GLTFFileLoader._CreateGLTF1Loader,
             2: GLTFFileLoader._CreateGLTFLoaderV2
         };
 

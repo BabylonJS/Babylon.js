@@ -1,5 +1,5 @@
 export * from "./glTFBinaryExtension";
-export * from "./glTFLoaderV1";
+export * from "./GLTF1Loader";
 export * from "./glTFLoaderExtension";
 export * from "./glTFLoaderInterfaces";
 export * from "./glTFLoaderUtils";
