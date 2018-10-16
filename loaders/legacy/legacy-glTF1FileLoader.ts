@@ -7,11 +7,13 @@ import * as LoadersV1 from "../src/glTF/1.0";
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
+    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || { };
     for (var key in FileLoader) {
         (<any>globalObject).BABYLON[key] = (<any>FileLoader)[key];
     }
+    (<any>globalObject).BABYLON.GLTF1 = (<any>globalObject).BABYLON.GLTF1 || { };
     for (var key in LoadersV1) {
-        (<any>globalObject).BABYLON[key] = (<any>FileLoader)[key];
+        (<any>globalObject).BABYLON.GLTF1[key] = (<any>LoadersV1)[key];
     }
 }
 

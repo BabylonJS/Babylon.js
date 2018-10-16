@@ -3,7 +3,7 @@ import { GLTFUtils } from "./glTFLoaderUtils";
 import { Scene } from "babylonjs";
 import { IGLTFLoaderData } from "../glTFFileLoader";
 import { IGLTFRuntime, IGLTFTexture, IGLTFImage, IGLTFBufferView, EComponentType, IGLTFShader } from "./glTFLoaderInterfaces";
-import { GLTFLoaderV1, GLTFLoaderBase } from "./glTFLoaderV1";
+import { GLTF1Loader, GLTFLoaderBase } from "./GLTF1Loader";
 
 const BinaryExtensionBufferName = "binary_glTF";
 
@@ -83,4 +83,4 @@ export class GLTFBinaryExtension extends GLTFLoaderExtension {
     }
 }
 
-GLTFLoaderV1.RegisterExtension(new GLTFBinaryExtension());
+GLTF1Loader.RegisterExtension(new GLTFBinaryExtension());
