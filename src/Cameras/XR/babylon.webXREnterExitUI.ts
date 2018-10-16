@@ -53,7 +53,7 @@ module BABYLON {
         public static CreateAsync(scene: BABYLON.Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions) {
             var ui = new WebXREnterExitUI(scene, options);
             var supportedPromises = ui._buttons.map((btn) => {
-                return helper.supportsSession(btn.initializationOptions);
+                return helper.supportsSessionAsync(btn.initializationOptions);
             });
             helper.onStateChangedObservable.add((state) => {
                 if (state == WebXRState.NOT_IN_XR) {
@@ -67,11 +67,11 @@ module BABYLON {
                         ui._buttons[i].element.onclick = async() => {
                             if (helper.state == BABYLON.WebXRState.IN_XR) {
                                 ui._updateButtons(null);
-                                await helper.exitXR();
+                                await helper.exitXRAsync();
                                 return;
                             } else if (helper.state == BABYLON.WebXRState.NOT_IN_XR) {
                                 ui._updateButtons(ui._buttons[i]);
-                                await helper.enterXR(ui._buttons[i].initializationOptions, "eye-level");
+                                await helper.enterXRAsync(ui._buttons[i].initializationOptions, "eye-level");
                             }
                         };
                     }
