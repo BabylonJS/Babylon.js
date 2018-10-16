@@ -4,7 +4,8 @@
     {
       "title": "Sliders",
       "playgroundId": "#HATGQZ#3",
-      "referenceImage": "Sliders.png"
+      "referenceImage": "Sliders.png",
+      "excludeFromAutomaticTesting": true
     },
     {
       "title": "Pointers",
