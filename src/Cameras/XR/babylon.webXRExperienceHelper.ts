@@ -49,7 +49,8 @@ module BABYLON {
          */
         public onStateChangedObservable = new Observable<WebXRState>();
 
-        private _sessionManager: WebXRSessionManager;
+        /** @hidden */
+        public _sessionManager: WebXRSessionManager;
 
         private _nonVRCamera: Nullable<Camera> = null;
         private _originalSceneAutoClear = true;
@@ -127,6 +128,15 @@ module BABYLON {
                 });
                 this._setState(WebXRState.IN_XR);
             });
+        }
+
+        /**
+         * Fires a ray and returns the closest hit in the xr sessions enviornment, useful to place objects in AR
+         * @param ray ray to cast into the environment
+         * @returns Promise which resolves with a collision point in the environment if it exists
+         */
+        public environmentPointHitTest(ray: BABYLON.Ray): Promise<Nullable<Vector3>> {
+            return this._sessionManager.environmentPointHitTest(ray);
         }
 
         /**
