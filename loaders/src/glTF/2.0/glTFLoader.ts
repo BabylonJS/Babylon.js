@@ -1037,6 +1037,10 @@ export class GLTFLoaderV2 implements IGLTFLoader {
     }
 
     private _loadAnimationChannelAsync(context: string, animationContext: string, animation: IAnimationV2, channel: IAnimationChannelV2, babylonAnimationGroup: AnimationGroup): Promise<void> {
+        if (channel.target.node == undefined) {
+            return Promise.resolve();
+        }
+
         const targetNode = ArrayItem.Get(`${context}/target/node`, this.gltf.nodes, channel.target.node);
 
         // Ignore animations that have no animation targets.
