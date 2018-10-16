@@ -43,6 +43,7 @@ module BABYLON {
         private _overlay: HTMLDivElement;
         private _buttons: Array<WebXREnterExitUIButton> = [];
         private _activeButton: Nullable<WebXREnterExitUIButton> = null;
+        public activeButtonChangedObservable = new BABYLON.Observable<Nullable<WebXREnterExitUIButton>>();
         /**
          * Creates UI to allow the user to enter/exit XR mode
          * @param scene the scene to add the ui to
@@ -50,7 +51,7 @@ module BABYLON {
          * @param options options to configure the UI
          * @returns the created ui
          */
-        public static CreateAsync(scene: BABYLON.Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions) {
+        public static CreateAsync(scene: BABYLON.Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions):Promise<WebXREnterExitUI> {
             var ui = new WebXREnterExitUI(scene, options);
             var supportedPromises = ui._buttons.map((btn) => {
                 return helper.supportsSessionAsync(btn.initializationOptions);
@@ -76,6 +77,7 @@ module BABYLON {
                         };
                     }
                 });
+                return ui;
             });
         }
 
@@ -120,6 +122,7 @@ module BABYLON {
             this._buttons.forEach((b) => {
                 b.update(this._activeButton);
             });
+            this.activeButtonChangedObservable.notifyObservers(this._activeButton);
         }
 
         /**
@@ -130,6 +133,7 @@ module BABYLON {
             if (renderCanvas && renderCanvas.parentNode && renderCanvas.parentNode.contains(this._overlay)) {
                 renderCanvas.parentNode.removeChild(this._overlay);
             }
+            this.activeButtonChangedObservable.clear();
         }
     }
 }
