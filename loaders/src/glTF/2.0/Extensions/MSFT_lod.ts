@@ -1,7 +1,7 @@
 import { Observable, Nullable, Deferred, Mesh, Material } from "babylonjs";
 import { INodeV2, IMaterialV2 } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
-import { GLTFLoaderV2, ArrayItem } from "../glTFLoader";
+import { GLTF2Loader, ArrayItem } from "../glTF2Loader";
 
 const NAME = "MSFT_lod";
 
@@ -38,7 +38,7 @@ export class MSFT_lod implements IGLTFLoaderExtensionV2 {
      */
     public onMaterialLODsLoadedObservable = new Observable<number>();
 
-    private _loader: GLTFLoaderV2;
+    private _loader: GLTF2Loader;
 
     private _nodeIndexLOD: Nullable<number> = null;
     private _nodeSignalLODs = new Array<Deferred<void>>();
@@ -49,7 +49,7 @@ export class MSFT_lod implements IGLTFLoaderExtensionV2 {
     private _materialPromiseLODs = new Array<Array<Promise<any>>>();
 
     /** @hidden */
-    constructor(loader: GLTFLoaderV2) {
+    constructor(loader: GLTF2Loader) {
         this._loader = loader;
     }
 
@@ -114,7 +114,7 @@ export class MSFT_lod implements IGLTFLoaderExtensionV2 {
 
     /** @hidden */
     public loadNodeAsync(context: string, node: INodeV2, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> {
-        return GLTFLoaderV2.LoadExtensionAsync<IMSFTLOD, Mesh>(context, node, this.name, (extensionContext, extension) => {
+        return GLTF2Loader.LoadExtensionAsync<IMSFTLOD, Mesh>(context, node, this.name, (extensionContext, extension) => {
             let firstPromise: Promise<Mesh>;
 
             const nodeLODs = this._getLODs(extensionContext, node, this._loader.gltf.nodes, extension.ids);
@@ -165,7 +165,7 @@ export class MSFT_lod implements IGLTFLoaderExtensionV2 {
             return null;
         }
 
-        return GLTFLoaderV2.LoadExtensionAsync<IMSFTLOD, Material>(context, material, this.name, (extensionContext, extension) => {
+        return GLTF2Loader.LoadExtensionAsync<IMSFTLOD, Material>(context, material, this.name, (extensionContext, extension) => {
             let firstPromise: Promise<Material>;
 
             const materialLODs = this._getLODs(extensionContext, material, this._loader.gltf.materials, extension.ids);
@@ -276,4 +276,4 @@ export class MSFT_lod implements IGLTFLoaderExtensionV2 {
     }
 }
 
-GLTFLoaderV2.RegisterExtension(NAME, (loader) => new MSFT_lod(loader));
+GLTF2Loader.RegisterExtension(NAME, (loader) => new MSFT_lod(loader));

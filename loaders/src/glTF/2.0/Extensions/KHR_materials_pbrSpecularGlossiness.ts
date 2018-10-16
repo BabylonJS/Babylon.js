@@ -1,7 +1,7 @@
 import { Material, Nullable, PBRMaterial, Color3 } from "babylonjs";
 import { ITextureInfoV2, IMaterialV2 } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
-import { GLTFLoaderV2 } from "../glTFLoader";
+import { GLTF2Loader } from "../glTF2Loader";
 
 const NAME = "KHR_materials_pbrSpecularGlossiness";
 
@@ -23,10 +23,10 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
     /** Defines whether this extension is enabled. */
     public enabled = true;
 
-    private _loader: GLTFLoaderV2;
+    private _loader: GLTF2Loader;
 
     /** @hidden */
-    constructor(loader: GLTFLoaderV2) {
+    constructor(loader: GLTF2Loader) {
         this._loader = loader;
     }
 
@@ -37,7 +37,7 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
 
     /** @hidden */
     public loadMaterialPropertiesAsync(context: string, material: IMaterialV2, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoaderV2.LoadExtensionAsync<IKHRMaterialsPbrSpecularGlossiness>(context, material, this.name, (extensionContext, extension) => {
+        return GLTF2Loader.LoadExtensionAsync<IKHRMaterialsPbrSpecularGlossiness>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadSpecularGlossinessPropertiesAsync(extensionContext, material, extension, babylonMaterial));
@@ -88,4 +88,4 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
     }
 }
 
-GLTFLoaderV2.RegisterExtension(NAME, (loader) => new KHR_materials_pbrSpecularGlossiness(loader));
+GLTF2Loader.RegisterExtension(NAME, (loader) => new KHR_materials_pbrSpecularGlossiness(loader));

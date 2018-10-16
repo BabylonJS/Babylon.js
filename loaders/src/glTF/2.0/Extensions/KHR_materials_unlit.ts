@@ -1,7 +1,7 @@
 import { Material, Nullable, PBRMaterial, Color3 } from "babylonjs";
 import { IMaterialV2 } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
-import { GLTFLoaderV2 } from "../glTFLoader";
+import { GLTF2Loader } from "../glTF2Loader";
 
 const NAME = "KHR_materials_unlit";
 
@@ -15,10 +15,10 @@ export class KHR_materials_unlit implements IGLTFLoaderExtensionV2 {
     /** Defines whether this extension is enabled. */
     public enabled = true;
 
-    private _loader: GLTFLoaderV2;
+    private _loader: GLTF2Loader;
 
     /** @hidden */
-    constructor(loader: GLTFLoaderV2) {
+    constructor(loader: GLTF2Loader) {
         this._loader = loader;
     }
 
@@ -29,7 +29,7 @@ export class KHR_materials_unlit implements IGLTFLoaderExtensionV2 {
 
     /** @hidden */
     public loadMaterialPropertiesAsync(context: string, material: IMaterialV2, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoaderV2.LoadExtensionAsync(context, material, this.name, () => {
+        return GLTF2Loader.LoadExtensionAsync(context, material, this.name, () => {
             return this._loadUnlitPropertiesAsync(context, material, babylonMaterial);
         });
     }
@@ -72,4 +72,4 @@ export class KHR_materials_unlit implements IGLTFLoaderExtensionV2 {
     }
 }
 
-GLTFLoaderV2.RegisterExtension(NAME, (loader) => new KHR_materials_unlit(loader));
+GLTF2Loader.RegisterExtension(NAME, (loader) => new KHR_materials_unlit(loader));

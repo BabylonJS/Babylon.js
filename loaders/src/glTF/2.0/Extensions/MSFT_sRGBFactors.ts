@@ -1,7 +1,7 @@
 import { Material, Nullable, PBRMaterial } from "babylonjs";
 import { IMaterialV2 } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
-import { GLTFLoaderV2 } from "../glTFLoader";
+import { GLTF2Loader } from "../glTF2Loader";
 
 const NAME = "MSFT_sRGBFactors";
 
@@ -10,9 +10,9 @@ export class MSFT_sRGBFactors implements IGLTFLoaderExtensionV2 {
     public readonly name = NAME;
     public enabled = true;
 
-    private _loader: GLTFLoaderV2;
+    private _loader: GLTF2Loader;
 
-    constructor(loader: GLTFLoaderV2) {
+    constructor(loader: GLTF2Loader) {
         this._loader = loader;
     }
 
@@ -21,7 +21,7 @@ export class MSFT_sRGBFactors implements IGLTFLoaderExtensionV2 {
     }
 
     public loadMaterialPropertiesAsync(context: string, material: IMaterialV2, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoaderV2.LoadExtraAsync<boolean>(context, material, this.name, (extraContext, extra) => {
+        return GLTF2Loader.LoadExtraAsync<boolean>(context, material, this.name, (extraContext, extra) => {
             if (extra) {
                 if (!(babylonMaterial instanceof PBRMaterial)) {
                     throw new Error(`${extraContext}: Material type not supported`);
@@ -45,4 +45,4 @@ export class MSFT_sRGBFactors implements IGLTFLoaderExtensionV2 {
     }
 }
 
-GLTFLoaderV2.RegisterExtension(NAME, (loader) => new MSFT_sRGBFactors(loader));
+GLTF2Loader.RegisterExtension(NAME, (loader) => new MSFT_sRGBFactors(loader));

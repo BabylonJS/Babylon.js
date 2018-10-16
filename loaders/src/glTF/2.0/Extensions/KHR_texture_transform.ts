@@ -1,7 +1,7 @@
 import { BaseTexture, Nullable, Texture } from "babylonjs";
 import { ITextureInfoV2 } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
-import { GLTFLoaderV2 } from "../glTFLoader";
+import { GLTF2Loader } from "../glTF2Loader";
 
 const NAME = "KHR_texture_transform";
 
@@ -22,10 +22,10 @@ export class KHR_texture_transform implements IGLTFLoaderExtensionV2 {
     /** Defines whether this extension is enabled. */
     public enabled = true;
 
-    private _loader: GLTFLoaderV2;
+    private _loader: GLTF2Loader;
 
     /** @hidden */
-    constructor(loader: GLTFLoaderV2) {
+    constructor(loader: GLTF2Loader) {
         this._loader = loader;
     }
 
@@ -36,7 +36,7 @@ export class KHR_texture_transform implements IGLTFLoaderExtensionV2 {
 
     /** @hidden */
     public loadTextureInfoAsync(context: string, textureInfo: ITextureInfoV2, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
-        return GLTFLoaderV2.LoadExtensionAsync<IKHRTextureTransform, BaseTexture>(context, textureInfo, this.name, (extensionContext, extension) => {
+        return GLTF2Loader.LoadExtensionAsync<IKHRTextureTransform, BaseTexture>(context, textureInfo, this.name, (extensionContext, extension) => {
             return this._loader.loadTextureInfoAsync(context, textureInfo, (babylonTexture) => {
                 if (!(babylonTexture instanceof Texture)) {
                     throw new Error(`${extensionContext}: Texture type not supported`);
@@ -70,4 +70,4 @@ export class KHR_texture_transform implements IGLTFLoaderExtensionV2 {
     }
 }
 
-GLTFLoaderV2.RegisterExtension(NAME, (loader) => new KHR_texture_transform(loader));
+GLTF2Loader.RegisterExtension(NAME, (loader) => new KHR_texture_transform(loader));

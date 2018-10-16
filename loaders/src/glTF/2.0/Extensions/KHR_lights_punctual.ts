@@ -2,7 +2,7 @@ import { Mesh, Nullable, Light, DirectionalLight, Vector3, PointLight, SpotLight
 import { IChildRootProperty } from "babylonjs-gltf2interface";
 import { INodeV2 } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
-import { GLTFLoaderV2, ArrayItem } from "../glTFLoader";
+import { GLTF2Loader, ArrayItem } from "../glTF2Loader";
 
 const NAME = "KHR_lights_punctual";
 
@@ -41,11 +41,11 @@ export class KHR_lights implements IGLTFLoaderExtensionV2 {
     /** Defines whether this extension is enabled. */
     public enabled = true;
 
-    private _loader: GLTFLoaderV2;
+    private _loader: GLTF2Loader;
     private _lights?: ILight[];
 
     /** @hidden */
-    constructor(loader: GLTFLoaderV2) {
+    constructor(loader: GLTF2Loader) {
         this._loader = loader;
     }
 
@@ -66,7 +66,7 @@ export class KHR_lights implements IGLTFLoaderExtensionV2 {
 
     /** @hidden */
     public loadNodeAsync(context: string, node: INodeV2, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> {
-        return GLTFLoaderV2.LoadExtensionAsync<ILightReference, Mesh>(context, node, this.name, (extensionContext, extension) => {
+        return GLTF2Loader.LoadExtensionAsync<ILightReference, Mesh>(context, node, this.name, (extensionContext, extension) => {
             return this._loader.loadNodeAsync(context, node, (babylonMesh) => {
                 let babylonLight: Light;
 
@@ -106,4 +106,4 @@ export class KHR_lights implements IGLTFLoaderExtensionV2 {
     }
 }
 
-GLTFLoaderV2.RegisterExtension(NAME, (loader) => new KHR_lights(loader));
+GLTF2Loader.RegisterExtension(NAME, (loader) => new KHR_lights(loader));
