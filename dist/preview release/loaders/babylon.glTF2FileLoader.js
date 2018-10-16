@@ -1637,6 +1637,9 @@ var BABYLON;
             };
             GLTFLoader.prototype._loadAnimationChannelAsync = function (context, animationContext, animation, channel, babylonAnimationGroup) {
                 var _this = this;
+                if (channel.target.node == undefined) {
+                    return Promise.resolve();
+                }
                 var targetNode = ArrayItem.Get(context + "/target/node", this.gltf.nodes, channel.target.node);
                 // Ignore animations that have no animation targets.
                 if ((channel.target.path === "weights" /* WEIGHTS */ && !targetNode._numMorphTargets) ||

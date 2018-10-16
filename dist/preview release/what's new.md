@@ -13,6 +13,8 @@
   - webXRExperienceHelper to setup a default XR experience ([TrevorDev](https://github.com/TrevorDev))
   - WebXREnterExitUI and WebXRManagedOutputCanvas classes to configure the XR experience ([TrevorDev](https://github.com/TrevorDev))
   - WebXRInput manage controllers for the XR experience ([TrevorDev](https://github.com/TrevorDev))
+- GUI:
+  - Added new [ImageBasedSlider](http://doc.babylonjs.com/how_to/gui#imagebasedslider) to let users customize sliders using images ([Deltakosh](https://github.com/deltakosh))
 
 ## Updates
 
