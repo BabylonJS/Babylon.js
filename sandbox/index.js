@@ -119,11 +119,14 @@ if (BABYLON.Engine.isSupported()) {
 
         // Sync the slider with the current frame
         babylonScene.registerBeforeRender(function() {
-            if (currentGroup != null && currentGroup.targetedAnimations[0].animation.runtimeAnimations[0] != null) {
-                var currentValue = slider.valueAsNumber;
-                var newValue = currentGroup.targetedAnimations[0].animation.runtimeAnimations[0].currentFrame;
-                var range = Math.abs(currentGroup.from - currentGroup.to);
-                slider.value = newValue;
+            if (currentGroup) {
+                var targetedAnimations = currentGroup.targetedAnimations;
+                if (targetedAnimations.length > 0) {
+                    var runtimeAnimations = currentGroup.targetedAnimations[0].animation.runtimeAnimations;
+                    if (runtimeAnimations.length > 0) {
+                        slider.value = runtimeAnimations[0].currentFrame;
+                    }
+                }
             }
         });
 
