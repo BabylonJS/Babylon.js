@@ -2983,7 +2983,7 @@ var GLTFFileLoader = /** @class */ (function () {
         }
         var createLoaders = {
             1: GLTFFileLoader._CreateGLTF1Loader,
-            2: GLTFFileLoader._CreateGLTFLoaderV2
+            2: GLTFFileLoader._CreateGLTF2Loader
         };
         var createLoader = createLoaders[version.major];
         if (!createLoader) {
