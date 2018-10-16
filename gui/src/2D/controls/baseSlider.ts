@@ -13,6 +13,7 @@ export class BaseSlider extends Control {
     private _isVertical = false;
     protected _barOffset = new ValueAndUnit(5, ValueAndUnit.UNITMODE_PIXEL, false);
     private _isThumbClamped = false;
+    protected _displayThumb = true;
 
     // Shared rendering info
     protected _effectiveBarOffset = 0;
@@ -26,6 +27,20 @@ export class BaseSlider extends Control {
 
     /** Observable raised when the sldier value changes */
     public onValueChangedObservable = new Observable<number>();
+
+    /** Gets or sets a boolean indicating if the thumb must be rendered */
+    public get displayThumb(): boolean {
+        return this._displayThumb;
+    }
+
+    public set displayThumb(value: boolean) {
+        if (this._displayThumb === value) {
+            return;
+        }
+
+        this._displayThumb = value;
+        this._markAsDirty();
+    }
 
     /** Gets or sets main bar offset (ie. the margin applied to the value bar) */
     public get barOffset(): string | number {
@@ -200,7 +215,9 @@ export class BaseSlider extends Control {
         this._backgroundBoxThickness = Math.min(this._currentMeasure.width, this._currentMeasure.height);
         this._effectiveThumbThickness = this._getThumbThickness(type);
 
-        this._backgroundBoxLength -= this._effectiveThumbThickness;
+        if (this.displayThumb) {
+            this._backgroundBoxLength -= this._effectiveThumbThickness;
+        }
         //throw error when height is less than width for vertical slider
         if ((this.isVertical && this._currentMeasure.height < this._currentMeasure.width)) {
             console.error("Height should be greater than width");
@@ -217,7 +234,7 @@ export class BaseSlider extends Control {
 
         if (this.isVertical) {
             this._renderLeft += this._effectiveBarOffset;
-            if (!this.isThumbClamped) {
+            if (!this.isThumbClamped && this.displayThumb) {
                 this._renderTop += (this._effectiveThumbThickness / 2);
             }
 
@@ -227,7 +244,7 @@ export class BaseSlider extends Control {
         }
         else {
             this._renderTop += this._effectiveBarOffset;
-            if (!this.isThumbClamped) {
+            if (!this.isThumbClamped && this.displayThumb) {
                 this._renderLeft += (this._effectiveThumbThickness / 2);
             }
             this._renderHeight = this._backgroundBoxThickness;
