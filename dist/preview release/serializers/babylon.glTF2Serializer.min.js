@@ -162,6 +162,122 @@ __export(__webpack_require__(/*! ../src/glTF/2.0 */ "./src/glTF/2.0/index.ts"));
 
 /***/ }),
 
+/***/ "./src/glTF/2.0/Extensions/KHR_texture_transform.ts":
+/*!**********************************************************!*\
+  !*** ./src/glTF/2.0/Extensions/KHR_texture_transform.ts ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
+var glTFExporter_1 = __webpack_require__(/*! ../glTFExporter */ "./src/glTF/2.0/glTFExporter.ts");
+var NAME = "KHR_texture_transform";
+babylonjs_1.Effect.ShadersStore["textureTransformPixelShader"] = __webpack_require__(/*! ../shaders/textureTransform.fragment.fx */ "./src/glTF/2.0/shaders/textureTransform.fragment.fx");
+/**
+ * @hidden
+ */
+var KHR_texture_transform = /** @class */ (function () {
+    function KHR_texture_transform(exporter) {
+        /** Name of this extension */
+        this.name = NAME;
+        /** Defines whether this extension is enabled */
+        this.enabled = true;
+        /** Defines whether this extension is required */
+        this.required = false;
+        this._exporter = exporter;
+    }
+    KHR_texture_transform.prototype.dispose = function () {
+        delete this._exporter;
+    };
+    KHR_texture_transform.prototype.preExportTextureAsync = function (context, babylonTexture, mimeType) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var texture_transform_extension = {};
+            if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {
+                texture_transform_extension.offset = [babylonTexture.uOffset, babylonTexture.vOffset];
+            }
+            if (babylonTexture.uScale !== 1 || babylonTexture.vScale !== 1) {
+                texture_transform_extension.scale = [babylonTexture.uScale, babylonTexture.vScale];
+            }
+            if (babylonTexture.wAng !== 0) {
+                texture_transform_extension.rotation = babylonTexture.wAng;
+            }
+            if (!Object.keys(texture_transform_extension).length) {
+                resolve(babylonTexture);
+            }
+            var scale = texture_transform_extension.scale ? new babylonjs_1.Vector2(texture_transform_extension.scale[0], texture_transform_extension.scale[1]) : babylonjs_1.Vector2.One();
+            var rotation = texture_transform_extension.rotation != null ? texture_transform_extension.rotation : 0;
+            var offset = texture_transform_extension.offset ? new babylonjs_1.Vector2(texture_transform_extension.offset[0], texture_transform_extension.offset[1]) : babylonjs_1.Vector2.Zero();
+            var scene = babylonTexture.getScene();
+            if (!scene) {
+                reject(context + ": \"scene\" is not defined for Babylon texture " + babylonTexture.name + "!");
+            }
+            else {
+                _this.textureTransformTextureAsync(babylonTexture, offset, rotation, scale, scene).then(function (texture) {
+                    resolve(texture);
+                });
+            }
+        });
+    };
+    /**
+     * Transform the babylon texture by the offset, rotation and scale parameters using a procedural texture
+     * @param babylonTexture
+     * @param offset
+     * @param rotation
+     * @param scale
+     * @param scene
+     */
+    KHR_texture_transform.prototype.textureTransformTextureAsync = function (babylonTexture, offset, rotation, scale, scene) {
+        return new Promise(function (resolve, reject) {
+            var proceduralTexture = new babylonjs_1.ProceduralTexture("" + babylonTexture.name, babylonTexture.getSize(), "textureTransform", scene);
+            if (!proceduralTexture) {
+                babylonjs_1.Tools.Log("Cannot create procedural texture for " + babylonTexture.name + "!");
+                resolve(babylonTexture);
+            }
+            proceduralTexture.setTexture("textureSampler", babylonTexture);
+            proceduralTexture.setMatrix("textureTransformMat", babylonTexture.getTextureMatrix());
+            // isReady trigger creation of effect if it doesnt exist yet
+            if (proceduralTexture.isReady()) {
+                proceduralTexture.render();
+                resolve(proceduralTexture);
+            }
+            else {
+                proceduralTexture.getEffect().executeWhenCompiled(function () {
+                    proceduralTexture.render();
+                    resolve(proceduralTexture);
+                });
+            }
+        });
+    };
+    return KHR_texture_transform;
+}());
+exports.KHR_texture_transform = KHR_texture_transform;
+glTFExporter_1._Exporter.RegisterExtension(NAME, function (exporter) { return new KHR_texture_transform(exporter); });
+
+
+/***/ }),
+
+/***/ "./src/glTF/2.0/Extensions/index.ts":
+/*!******************************************!*\
+  !*** ./src/glTF/2.0/Extensions/index.ts ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(/*! ./KHR_texture_transform */ "./src/glTF/2.0/Extensions/KHR_texture_transform.ts"));
+
+
+/***/ }),
+
 /***/ "./src/glTF/2.0/glTFAnimation.ts":
 /*!***************************************!*\
   !*** ./src/glTF/2.0/glTFAnimation.ts ***!
@@ -3669,7 +3785,19 @@ __export(__webpack_require__(/*! ./glTFExporterExtension */ "./src/glTF/2.0/glTF
 __export(__webpack_require__(/*! ./glTFMaterialExporter */ "./src/glTF/2.0/glTFMaterialExporter.ts"));
 __export(__webpack_require__(/*! ./glTFSerializer */ "./src/glTF/2.0/glTFSerializer.ts"));
 __export(__webpack_require__(/*! ./glTFUtilities */ "./src/glTF/2.0/glTFUtilities.ts"));
+__export(__webpack_require__(/*! ./Extensions */ "./src/glTF/2.0/Extensions/index.ts"));
 
+
+/***/ }),
+
+/***/ "./src/glTF/2.0/shaders/textureTransform.fragment.fx":
+/*!***********************************************************!*\
+  !*** ./src/glTF/2.0/shaders/textureTransform.fragment.fx ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "precision highp float;\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform mat4 textureTransformMat;\nvoid main(void) {\nvec2 uvTransformed=(textureTransformMat*vec4(vUV.xy,1,1)).xy;\ngl_FragColor=texture2D(textureSampler,uvTransformed);\n}"
 
 /***/ }),
 

@@ -557,4 +557,29 @@ declare module BABYLON {
             static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]): void;
             static _NormalizeTangentFromRef(tangent: BABYLON.Vector4): void;
     }
+}
+declare module BABYLON {
+    /**
+        * @hidden
+        */
+    export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
+            /** Name of this extension */
+            readonly name: string;
+            /** Defines whether this extension is enabled */
+            enabled: boolean;
+            /** Defines whether this extension is required */
+            required: boolean;
+            constructor(exporter: _Exporter);
+            dispose(): void;
+            preExportTextureAsync(context: string, babylonTexture: BABYLON.Texture, mimeType: BABYLON.GLTF2.ImageMimeType): BABYLON.Nullable<Promise<BABYLON.Texture>>;
+            /**
+                * Transform the babylon texture by the offset, rotation and scale parameters using a procedural texture
+                * @param babylonTexture
+                * @param offset
+                * @param rotation
+                * @param scale
+                * @param scene
+                */
+            textureTransformTextureAsync(babylonTexture: BABYLON.Texture, offset: BABYLON.Vector2, rotation: number, scale: BABYLON.Vector2, scene: BABYLON.Scene): Promise<BABYLON.BaseTexture>;
+    }
 }

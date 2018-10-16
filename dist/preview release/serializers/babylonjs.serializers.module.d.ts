@@ -72,6 +72,7 @@ declare module 'babylonjs-serializers/src/glTF/2.0' {
     export * from "babylonjs-serializers/src/glTF/2.0/glTFMaterialExporter";
     export * from "babylonjs-serializers/src/glTF/2.0/glTFSerializer";
     export * from "babylonjs-serializers/src/glTF/2.0/glTFUtilities";
+    export * from "babylonjs-serializers/src/glTF/2.0/Extensions";
 }
 
 declare module 'babylonjs-serializers/src/glTF/2.0/glTFAnimation' {
@@ -610,6 +611,40 @@ declare module 'babylonjs-serializers/src/glTF/2.0/glTFUtilities' {
                 */
             static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]): void;
             static _NormalizeTangentFromRef(tangent: Vector4): void;
+    }
+}
+
+declare module 'babylonjs-serializers/src/glTF/2.0/Extensions' {
+    export * from "babylonjs-serializers/src/glTF/2.0/Extensions/KHR_texture_transform";
+}
+
+declare module 'babylonjs-serializers/src/glTF/2.0/Extensions/KHR_texture_transform' {
+    import { Texture, Nullable, Vector2, Scene, BaseTexture } from "babylonjs";
+    import { ImageMimeType } from "babylonjs-gltf2interface";
+    import { IGLTFExporterExtensionV2 } from "babylonjs-serializers/src/glTF/2.0/glTFExporterExtension";
+    import { _Exporter } from "babylonjs-serializers/src/glTF/2.0/glTFExporter";
+    /**
+        * @hidden
+        */
+    export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
+            /** Name of this extension */
+            readonly name: string;
+            /** Defines whether this extension is enabled */
+            enabled: boolean;
+            /** Defines whether this extension is required */
+            required: boolean;
+            constructor(exporter: _Exporter);
+            dispose(): void;
+            preExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Nullable<Promise<Texture>>;
+            /**
+                * Transform the babylon texture by the offset, rotation and scale parameters using a procedural texture
+                * @param babylonTexture
+                * @param offset
+                * @param rotation
+                * @param scale
+                * @param scene
+                */
+            textureTransformTextureAsync(babylonTexture: Texture, offset: Vector2, rotation: number, scale: Vector2, scene: Scene): Promise<BaseTexture>;
     }
 }
 
@@ -1172,5 +1207,30 @@ declare module BABYLON {
                 */
             static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]): void;
             static _NormalizeTangentFromRef(tangent: BABYLON.Vector4): void;
+    }
+}
+declare module BABYLON {
+    /**
+        * @hidden
+        */
+    export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
+            /** Name of this extension */
+            readonly name: string;
+            /** Defines whether this extension is enabled */
+            enabled: boolean;
+            /** Defines whether this extension is required */
+            required: boolean;
+            constructor(exporter: _Exporter);
+            dispose(): void;
+            preExportTextureAsync(context: string, babylonTexture: BABYLON.Texture, mimeType: BABYLON.GLTF2.ImageMimeType): BABYLON.Nullable<Promise<BABYLON.Texture>>;
+            /**
+                * Transform the babylon texture by the offset, rotation and scale parameters using a procedural texture
+                * @param babylonTexture
+                * @param offset
+                * @param rotation
+                * @param scale
+                * @param scene
+                */
+            textureTransformTextureAsync(babylonTexture: BABYLON.Texture, offset: BABYLON.Vector2, rotation: number, scale: BABYLON.Vector2, scene: BABYLON.Scene): Promise<BABYLON.BaseTexture>;
     }
 }

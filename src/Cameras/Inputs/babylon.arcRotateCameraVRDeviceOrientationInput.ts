@@ -15,11 +15,6 @@ module BABYLON {
         public alphaCorrection = 1;
 
         /**
-         * Defines a correction factor applied on the beta value retrieved from the orientation events.
-         */
-        public betaCorrection = 1;
-
-        /**
          * Defines a correction factor applied on the gamma value retrieved from the orientation events.
          */
         public gammaCorrection = 1;
@@ -50,11 +45,11 @@ module BABYLON {
         /** @hidden */
         public _onOrientationEvent(evt: DeviceOrientationEvent): void {
             if (evt.alpha !== null) {
-                this._alpha = +evt.alpha | 0;
+                this._alpha = (+evt.alpha | 0) * this.alphaCorrection;
             }
 
             if (evt.gamma !== null) {
-                this._gamma = +evt.gamma | 0;
+                this._gamma = (+evt.gamma | 0) * this.gammaCorrection;
             }
             this._dirty = true;
         }

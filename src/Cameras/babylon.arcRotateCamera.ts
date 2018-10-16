@@ -598,7 +598,7 @@ module BABYLON {
 
         protected _getTargetPosition(): Vector3 {
             if (this._targetHost && this._targetHost.getAbsolutePosition) {
-                var pos: Vector3 = this._targetHost.getAbsolutePosition();
+                var pos: Vector3 = this._targetHost.absolutePosition;
                 if (this._targetBoundingCenter) {
                     pos.addToRef(this._targetBoundingCenter, this._target);
                 } else {
