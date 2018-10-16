@@ -16,7 +16,7 @@ module BABYLON {
         public constructor(helper: WebXRExperienceHelper, canvas?: HTMLCanvasElement) {
             if (!canvas) {
                 canvas = document.createElement('canvas');
-                canvas.style.cssText = "position:absolute; bottom:0px;right:0px;z-index:10;width:100%;height:100%;background-color: #48989e;";
+                canvas.style.cssText = "position:absolute; bottom:0px;right:0px;z-index:10;width:100%;height:100%;background-color: #000000;";
             }
             this._setManagedOutputCanvas(canvas);
             helper.onStateChangedObservable.add((stateInfo) => {
