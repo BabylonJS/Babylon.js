@@ -3,9 +3,9 @@
 ## Major updates
 
 - Added support for [parallel shader compilation](https://www.khronos.org/registry/webgl/extensions/KHR_parallel_shader_compile/) ([Deltakosh](https://github.com/deltakosh))
-@NEED DEMO- Added FlyCamera for free navigation in 3D space, with a limited set of settings ([Phuein](https://github.com/phuein))
+- Added FlyCamera for free navigation in 3D space, with a limited set of settings ([Phuein](https://github.com/phuein)) [@NEED DEMO]
 - Added [Object Based Motion Blur](http://doc.babylonjs.com/how_to/using_motionblurpostprocess) post-process ([julien-moreau](https://github.com/julien-moreau))
-@NEED DEMO- WebXR ([TrevorDev](https://github.com/TrevorDev))
+- WebXR ([TrevorDev](https://github.com/TrevorDev)) [@NEED DEMO]
   - Add customAnimationFrameRequester to allow sessions to hook into engine's render loop ([TrevorDev](https://github.com/TrevorDev))
   - camera customDefaultRenderTarget to allow cameras to render to a custom render target (eg. xr framebuffer) instead of the canvas ([TrevorDev](https://github.com/TrevorDev))
   - webXR camera which can be updated by a webXRSession ([TrevorDev](https://github.com/TrevorDev))
