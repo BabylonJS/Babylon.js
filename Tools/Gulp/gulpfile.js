@@ -355,17 +355,13 @@ gulp.task("typescript-compile", function() {
             summarizeFailureOutput: true
         }));
 
-    //If this gulp task is running on travis, file the build!
-    if (process.env.TRAVIS) {
-        tsResult.once("error", function(e) {
-            tsResult.once("finish", function(ee) {
-                console.log("Typescript compile failed");
-                //process.exit(1);
-
-                console.error(e);console.error(ee);
-            });
+    tsResult.once("error", function(err) {
+        tsResult.once("finish", function() {
+            console.log("Typescript compile failed");
+            console.error(err);
+            process.exit(1);
         });
-    }
+    });
 
     return merge2([
         tsResult.dts
@@ -893,14 +889,13 @@ gulp.task("modules-compile", function() {
         .pipe(tsProject());
 
     // If this gulp task is running on travis
-    if (process.env.TRAVIS) {
-        tsResult.once("error", function() {
-            tsResult.once("finish", function() {
-                console.log("Typescript compile failed");
-                process.exit(1);
-            });
+    tsResult.once("error", function(err) {
+        tsResult.once("finish", function() {
+            console.log("Typescript compile failed");
+            console.error(err);
+            process.exit(1);
         });
-    }
+    });
 
     return merge2([
         tsResult.dts
@@ -1207,8 +1202,9 @@ gulp.task("tests-unit-transpile", function(done) {
         .pipe(tsProject());
 
     tsResult.once("error", function() {
-        tsResult.once("finish", function() {
+        tsResult.once("finish", function(err) {
             console.log("Typescript compile failed");
+            console.error(err);
             process.exit(1);
         });
     });
