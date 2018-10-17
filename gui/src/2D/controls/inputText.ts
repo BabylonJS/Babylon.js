@@ -295,7 +295,7 @@ export class InputText extends Control implements IFocusableControl {
                 key = " "; //ie11 key for space is "Spacebar"
                 break;
             case 191: //SLASH
-                if(evt){
+                if (evt) {
                     evt.preventDefault();
                 }
                 break;
@@ -310,7 +310,7 @@ export class InputText extends Control implements IFocusableControl {
                         }
                     }
                 }
-                if(evt){
+                if (evt) {
                     evt.preventDefault();
                 }
                 return;
@@ -351,7 +351,7 @@ export class InputText extends Control implements IFocusableControl {
                 this._markAsDirty();
                 return;
             case 222: // Dead
-                if(evt){
+                if (evt) {
                     evt.preventDefault();
                 }
                 this.deadKey = true;
