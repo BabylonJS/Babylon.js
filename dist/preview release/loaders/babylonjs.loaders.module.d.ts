@@ -3248,7 +3248,7 @@ declare module BABYLON {
     /**
         * Loader interface with additional members.
         */
-    export interface IAccessor extends IGLTF2.IAccessor, IArrayItem {
+    export interface IAccessor extends BABYLON.GLTF2.IAccessor, IArrayItem {
             /** @hidden */
             _data?: Promise<ArrayBufferView>;
             /** @hidden */
@@ -3257,25 +3257,25 @@ declare module BABYLON {
     /**
         * Loader interface with additional members.
         */
-    export interface IAnimationChannel extends IGLTF2.IAnimationChannel, IArrayItem {
+    export interface IAnimationChannel extends BABYLON.GLTF2.IAnimationChannel, IArrayItem {
     }
     /** @hidden */
     export interface _IAnimationSamplerData {
             input: Float32Array;
-            interpolation: IGLTF2.AnimationSamplerInterpolation;
+            interpolation: BABYLON.GLTF2.AnimationSamplerInterpolation;
             output: Float32Array;
     }
     /**
         * Loader interface with additional members.
         */
-    export interface IAnimationSampler extends IGLTF2.IAnimationSampler, IArrayItem {
+    export interface IAnimationSampler extends BABYLON.GLTF2.IAnimationSampler, IArrayItem {
             /** @hidden */
             _data?: Promise<_IAnimationSamplerData>;
     }
     /**
         * Loader interface with additional members.
         */
-    export interface IAnimation extends IGLTF2.IAnimation, IArrayItem {
+    export interface IAnimation extends BABYLON.GLTF2.IAnimation, IArrayItem {
             channels: IAnimationChannel[];
             samplers: IAnimationSampler[];
             /** @hidden */
@@ -3284,14 +3284,14 @@ declare module BABYLON {
     /**
         * Loader interface with additional members.
         */
-    export interface IBuffer extends IGLTF2.IBuffer, IArrayItem {
+    export interface IBuffer extends BABYLON.GLTF2.IBuffer, IArrayItem {
             /** @hidden */
             _data?: Promise<ArrayBufferView>;
     }
     /**
         * Loader interface with additional members.
         */
-    export interface IBufferView extends IGLTF2.IBufferView, IArrayItem {
+    export interface IBufferView extends BABYLON.GLTF2.IBufferView, IArrayItem {
             /** @hidden */
             _data?: Promise<ArrayBufferView>;
             /** @hidden */
@@ -3300,36 +3300,36 @@ declare module BABYLON {
     /**
         * Loader interface with additional members.
         */
-    export interface ICamera extends IGLTF2.ICamera, IArrayItem {
+    export interface ICamera extends BABYLON.GLTF2.ICamera, IArrayItem {
     }
     /**
         * Loader interface with additional members.
         */
-    export interface IImage extends IGLTF2.IImage, IArrayItem {
+    export interface IImage extends BABYLON.GLTF2.IImage, IArrayItem {
             /** @hidden */
             _data?: Promise<ArrayBufferView>;
     }
     /**
         * Loader interface with additional members.
         */
-    export interface IMaterialNormalTextureInfo extends IGLTF2.IMaterialNormalTextureInfo, IGLTF2.ITextureInfo {
+    export interface IMaterialNormalTextureInfo extends BABYLON.GLTF2.IMaterialNormalTextureInfo, BABYLON.GLTF2.ITextureInfo {
     }
     /**
         * Loader interface with additional members.
         */
-    export interface IMaterialOcclusionTextureInfo extends IGLTF2.IMaterialOcclusionTextureInfo, IGLTF2.ITextureInfo {
+    export interface IMaterialOcclusionTextureInfo extends BABYLON.GLTF2.IMaterialOcclusionTextureInfo, BABYLON.GLTF2.ITextureInfo {
     }
     /**
         * Loader interface with additional members.
         */
-    export interface IMaterialPbrMetallicRoughness extends IGLTF2.IMaterialPbrMetallicRoughness {
+    export interface IMaterialPbrMetallicRoughness extends BABYLON.GLTF2.IMaterialPbrMetallicRoughness {
             baseColorTexture?: ITextureInfo;
             metallicRoughnessTexture?: ITextureInfo;
     }
     /**
         * Loader interface with additional members.
         */
-    export interface IMaterial extends IGLTF2.IMaterial, IArrayItem {
+    export interface IMaterial extends BABYLON.GLTF2.IMaterial, IArrayItem {
             pbrMetallicRoughness?: IMaterialPbrMetallicRoughness;
             normalTexture?: IMaterialNormalTextureInfo;
             occlusionTexture?: IMaterialOcclusionTextureInfo;
@@ -3346,18 +3346,18 @@ declare module BABYLON {
     /**
         * Loader interface with additional members.
         */
-    export interface IMesh extends IGLTF2.IMesh, IArrayItem {
+    export interface IMesh extends BABYLON.GLTF2.IMesh, IArrayItem {
             primitives: IMeshPrimitive[];
     }
     /**
         * Loader interface with additional members.
         */
-    export interface IMeshPrimitive extends IGLTF2.IMeshPrimitive, IArrayItem {
+    export interface IMeshPrimitive extends BABYLON.GLTF2.IMeshPrimitive, IArrayItem {
     }
     /**
         * Loader interface with additional members.
         */
-    export interface INode extends IGLTF2.INode, IArrayItem {
+    export interface INode extends BABYLON.GLTF2.INode, IArrayItem {
             /**
                 * The parent glTF node.
                 */
@@ -3381,19 +3381,19 @@ declare module BABYLON {
     /**
         * Loader interface with additional members.
         */
-    export interface ISampler extends IGLTF2.ISampler, IArrayItem {
+    export interface ISampler extends BABYLON.GLTF2.ISampler, IArrayItem {
             /** @hidden */
             _data?: _ISamplerData;
     }
     /**
         * Loader interface with additional members.
         */
-    export interface IScene extends IGLTF2.IScene, IArrayItem {
+    export interface IScene extends BABYLON.GLTF2.IScene, IArrayItem {
     }
     /**
         * Loader interface with additional members.
         */
-    export interface ISkin extends IGLTF2.ISkin, IArrayItem {
+    export interface ISkin extends BABYLON.GLTF2.ISkin, IArrayItem {
             /** @hidden */
             _babylonSkeleton?: BABYLON.Skeleton;
             /** @hidden */
@@ -3402,17 +3402,17 @@ declare module BABYLON {
     /**
         * Loader interface with additional members.
         */
-    export interface ITexture extends IGLTF2.ITexture, IArrayItem {
+    export interface ITexture extends BABYLON.GLTF2.ITexture, IArrayItem {
     }
     /**
         * Loader interface with additional members.
         */
-    export interface ITextureInfo extends IGLTF2.ITextureInfo {
+    export interface ITextureInfo extends BABYLON.GLTF2.ITextureInfo {
     }
     /**
         * Loader interface with additional members.
         */
-    export interface IGLTF extends IGLTF2.IGLTF {
+    export interface IGLTF extends BABYLON.GLTF2.IGLTF {
             accessors?: IAccessor[];
             animations?: IAnimation[];
             buffers?: IBuffer[];

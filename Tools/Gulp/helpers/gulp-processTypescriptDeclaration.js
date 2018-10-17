@@ -73,7 +73,25 @@ var processData = function(data, options) {
                 let rg = new RegExp(`([ <])(${cls})([^\\w])`, "g")
                 str = str.replace(rg, `$1${options.classMap[package]}.$2$3`);
             });
-        })
+        });
+
+        // Replace import * as ...
+        Object.keys(options.classMap).forEach(package => {
+            var babylonRegex = new RegExp(`import \\* as (.*) from ['"](${package})['"];`, "g");
+
+            var match = babylonRegex.exec(str);
+            let localNamespace = "";
+            if (match && match[1]) {
+                localNamespace = match[1].trim();
+            }
+            else {
+                return;
+            }
+            str = str.replace(babylonRegex, '');
+
+            let rg = new RegExp(`([ <])(${localNamespace}.)([A-Za-z])`, "g")
+            str = str.replace(rg, `$1${options.classMap[package]}.$3`);
+        });
     }
 
     // Clean up export.
