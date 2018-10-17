@@ -38,7 +38,7 @@ module BABYLON {
          * After initialization enterXR can be called to start an XR session
          * @returns Promise which resolves after it is initialized
          */
-        public initialize(): Promise<void> {
+        public initializeAsync(): Promise<void> {
              // Check if the browser supports webXR
             this._xrNavigator = navigator;
             if (!this._xrNavigator.xr) {
@@ -57,7 +57,7 @@ module BABYLON {
          * @param frameOfReferenceType option to configure how the xr pose is expressed
          * @returns Promise which resolves after it enters XR
          */
-        public enterXR(sessionCreationOptions: XRSessionCreationOptions, frameOfReferenceType: string): Promise<void> {
+        public enterXRAsync(sessionCreationOptions: XRSessionCreationOptions, frameOfReferenceType: string): Promise<void> {
             // initialize session
             return this._xrDevice.requestSession(sessionCreationOptions).then((session: XRSession) => {
                 this._xrSession = session;
@@ -103,7 +103,7 @@ module BABYLON {
          * Stops the xrSession and restores the renderloop
          * @returns Promise which resolves after it exits XR
          */
-        public exitXR() {
+        public exitXRAsync() {
             return this._xrSession.end();
         }
 
@@ -112,7 +112,7 @@ module BABYLON {
          * @param ray ray to cast into the environment
          * @returns Promise which resolves with a collision point in the environment if it exists
          */
-        public environmentPointHitTest(ray: BABYLON.Ray): Promise<Nullable<Vector3>> {
+        public environmentPointHitTestAsync(ray: BABYLON.Ray): Promise<Nullable<Vector3>> {
             return new Promise((res, rej) => {
                 // Compute left handed inputs to request hit test
                 var origin = new Float32Array([ray.origin.x, ray.origin.y, ray.origin.z]);
@@ -146,7 +146,7 @@ module BABYLON {
          * @param options creation options to check if they are supported
          * @returns true if supported
          */
-        public supportsSession(options: XRSessionCreationOptions) {
+        public supportsSessionAsync(options: XRSessionCreationOptions) {
             return this._xrDevice.supportsSession(options).then(() => {
                 return true;
             }).catch((e) => {

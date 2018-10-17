@@ -865,7 +865,7 @@ module BABYLON {
             var engine = scene.getEngine();
             let material = subMesh.getMaterial();
 
-            if (!material) {
+            if (!material || subMesh.verticesCount === 0) {
                 return;
             }
 
@@ -912,6 +912,11 @@ module BABYLON {
 
                     if (skeleton.isUsingTextureForMatrices) {
                         const boneTexture = skeleton.getTransformMatrixTexture();
+
+                        if (!boneTexture) {
+                            return;
+                        }
+
                         this._effect.setTexture("boneSampler", boneTexture);
                         this._effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
                     } else {

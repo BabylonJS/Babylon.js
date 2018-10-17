@@ -49,7 +49,8 @@ module BABYLON {
          */
         public onStateChangedObservable = new Observable<WebXRState>();
 
-        private _sessionManager: WebXRSessionManager;
+        /** @hidden */
+        public _sessionManager: WebXRSessionManager;
 
         private _nonVRCamera: Nullable<Camera> = null;
         private _originalSceneAutoClear = true;
@@ -63,7 +64,7 @@ module BABYLON {
          */
         public static CreateAsync(scene: BABYLON.Scene): Promise<WebXRExperienceHelper> {
             var helper = new WebXRExperienceHelper(scene);
-            return helper._sessionManager.initialize().then(() => {
+            return helper._sessionManager.initializeAsync().then(() => {
                 helper._supported = true;
                 return helper;
             }).catch(() => {
@@ -85,9 +86,9 @@ module BABYLON {
          * Exits XR mode and returns the scene to its original state
          * @returns promise that resolves after xr mode has exited
          */
-        public exitXR() {
+        public exitXRAsync() {
             this._setState(WebXRState.EXITING_XR);
-            return this._sessionManager.exitXR();
+            return this._sessionManager.exitXRAsync();
         }
 
         /**
@@ -96,10 +97,10 @@ module BABYLON {
          * @param frameOfReference frame of reference of the XR session
          * @returns promise that resolves after xr mode has entered
          */
-        public enterXR(sessionCreationOptions: XRSessionCreationOptions, frameOfReference: string) {
+        public enterXRAsync(sessionCreationOptions: XRSessionCreationOptions, frameOfReference: string) {
             this._setState(WebXRState.ENTERING_XR);
 
-            return this._sessionManager.enterXR(sessionCreationOptions, frameOfReference).then(() => {
+            return this._sessionManager.enterXRAsync(sessionCreationOptions, frameOfReference).then(() => {
                 // Cache pre xr scene settings
                 this._originalSceneAutoClear = this.scene.autoClear;
                 this._nonVRCamera = this.scene.activeCamera;
@@ -130,15 +131,24 @@ module BABYLON {
         }
 
         /**
+         * Fires a ray and returns the closest hit in the xr sessions enviornment, useful to place objects in AR
+         * @param ray ray to cast into the environment
+         * @returns Promise which resolves with a collision point in the environment if it exists
+         */
+        public environmentPointHitTestAsync(ray: BABYLON.Ray): Promise<Nullable<Vector3>> {
+            return this._sessionManager.environmentPointHitTestAsync(ray);
+        }
+
+        /**
          * Checks if the creation options are supported by the xr session
          * @param options creation options
          * @returns true if supported
          */
-        public supportsSession(options: XRSessionCreationOptions) {
+        public supportsSessionAsync(options: XRSessionCreationOptions) {
             if (!this._supported) {
                 return Promise.resolve(false);
             }
-            return this._sessionManager.supportsSession(options);
+            return this._sessionManager.supportsSessionAsync(options);
         }
 
         /**
