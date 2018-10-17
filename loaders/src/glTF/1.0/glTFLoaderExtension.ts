@@ -1,7 +1,7 @@
 import { Scene, Texture, Material, Nullable } from "babylonjs";
 import { IGLTFLoaderData } from "../glTFFileLoader";
 import { IGLTFRuntime } from "./glTFLoaderInterfaces";
-import { GLTF1Loader, GLTFLoaderBase } from "./GLTF1Loader";
+import { GLTF1Loader, GLTFLoaderBase } from "./glTF1Loader";
 
 /** @hidden */
 export abstract class GLTFLoaderExtension {
