@@ -1,5 +1,5 @@
 import { Material, Nullable, PBRMaterial, Color3 } from "babylonjs";
-import { ITextureInfoV2, IMaterialV2 } from "../glTFLoaderInterfaces";
+import { ITextureInfo, IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
 import { GLTF2Loader } from "../glTF2Loader";
 
@@ -7,10 +7,10 @@ const NAME = "KHR_materials_pbrSpecularGlossiness";
 
 interface IKHRMaterialsPbrSpecularGlossiness {
     diffuseFactor: number[];
-    diffuseTexture: ITextureInfoV2;
+    diffuseTexture: ITextureInfo;
     specularFactor: number[];
     glossinessFactor: number;
-    specularGlossinessTexture: ITextureInfoV2;
+    specularGlossinessTexture: ITextureInfo;
 }
 
 /**
@@ -36,7 +36,7 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
     }
 
     /** @hidden */
-    public loadMaterialPropertiesAsync(context: string, material: IMaterialV2, babylonMaterial: Material): Nullable<Promise<void>> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTF2Loader.LoadExtensionAsync<IKHRMaterialsPbrSpecularGlossiness>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
@@ -46,7 +46,7 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
         });
     }
 
-    private _loadSpecularGlossinessPropertiesAsync(context: string, material: IMaterialV2, properties: IKHRMaterialsPbrSpecularGlossiness, babylonMaterial: Material): Promise<void> {
+    private _loadSpecularGlossinessPropertiesAsync(context: string, material: IMaterial, properties: IKHRMaterialsPbrSpecularGlossiness, babylonMaterial: Material): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }

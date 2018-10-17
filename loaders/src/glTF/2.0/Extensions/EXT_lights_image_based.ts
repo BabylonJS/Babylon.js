@@ -1,6 +1,6 @@
 import { BaseTexture, Nullable, RawCubeTexture, Quaternion, Matrix, SphericalHarmonics, SphericalPolynomial, Scalar } from "babylonjs";
 import { IChildRootProperty } from "babylonjs-gltf2interface";
-import { ISceneV2 } from "../glTFLoaderInterfaces";
+import { IScene } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
 import { GLTF2Loader, ArrayItem } from "../glTF2Loader";
 
@@ -59,7 +59,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtensionV2 {
     }
 
     /** @hidden */
-    public loadSceneAsync(context: string, scene: ISceneV2): Nullable<Promise<void>> {
+    public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
         return GLTF2Loader.LoadExtensionAsync<ILightReference>(context, scene, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
 
