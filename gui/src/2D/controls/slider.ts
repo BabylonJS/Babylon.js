@@ -8,21 +8,6 @@ export class Slider extends BaseSlider {
     private _background = "black";
     private _borderColor = "white";
     private _isThumbCircle = false;
-    private _displayThumb = true;
-
-    /** Gets or sets a boolean indicating if the thumb must be rendered */
-    public get displayThumb(): boolean {
-        return this._displayThumb;
-    }
-
-    public set displayThumb(value: boolean) {
-        if (this._displayThumb === value) {
-            return;
-        }
-
-        this._displayThumb = value;
-        this._markAsDirty();
-    }
 
     /** Gets or sets border color */
     public get borderColor(): string {
@@ -166,7 +151,7 @@ export class Slider extends BaseSlider {
                         context.fillRect(left, top + thumbPosition, width, height - thumbPosition);
                     }
                     else {
-                        context.fillRect(left, top + thumbPosition, width, this._currentMeasure.height - thumbPosition);
+                        context.fillRect(left, top + thumbPosition, width, height - thumbPosition + this._effectiveThumbThickness);
                     }
                 }
                 else {

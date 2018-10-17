@@ -2,6 +2,12 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
+      "title": "Sliders",
+      "playgroundId": "#HATGQZ#3",
+      "referenceImage": "Sliders.png",
+      "excludeFromAutomaticTesting": true
+    },
+    {
       "title": "Pointers",
       "playgroundId": "#1GLEJK#5",
       "referenceImage": "pointers.png",
