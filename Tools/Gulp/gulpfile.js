@@ -357,10 +357,12 @@ gulp.task("typescript-compile", function() {
 
     //If this gulp task is running on travis, file the build!
     if (process.env.TRAVIS) {
-        tsResult.once("error", function() {
-            tsResult.once("finish", function() {
+        tsResult.once("error", function(e) {
+            tsResult.once("finish", function(ee) {
                 console.log("Typescript compile failed");
-                process.exit(1);
+                //process.exit(1);
+
+                console.error(e);console.error(ee);
             });
         });
     }
