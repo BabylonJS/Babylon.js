@@ -69,10 +69,9 @@ gulp.task("tests-unit-transpile", function(done) {
     var tsResult = gulp.src(rootDir + "tests/unit/**/*.ts", { base: relativeRootDir })
         .pipe(tsProject());
 
-    tsResult.once("error", function(err) {
+    tsResult.once("error", function() {
         tsResult.once("finish", function() {
             console.log("Typescript compile failed");
-            console.error(err);
             process.exit(1);
         });
     });
