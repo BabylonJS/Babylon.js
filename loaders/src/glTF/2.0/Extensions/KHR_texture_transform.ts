@@ -1,5 +1,5 @@
 import { BaseTexture, Nullable, Texture } from "babylonjs";
-import { ITextureInfoV2 } from "../glTFLoaderInterfaces";
+import { ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
 import { GLTF2Loader } from "../glTF2Loader";
 
@@ -35,7 +35,7 @@ export class KHR_texture_transform implements IGLTFLoaderExtensionV2 {
     }
 
     /** @hidden */
-    public loadTextureInfoAsync(context: string, textureInfo: ITextureInfoV2, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
+    public loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
         return GLTF2Loader.LoadExtensionAsync<IKHRTextureTransform, BaseTexture>(context, textureInfo, this.name, (extensionContext, extension) => {
             return this._loader.loadTextureInfoAsync(context, textureInfo, (babylonTexture) => {
                 if (!(babylonTexture instanceof Texture)) {

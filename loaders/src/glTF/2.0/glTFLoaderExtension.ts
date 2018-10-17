@@ -1,5 +1,5 @@
 ﻿import { IDisposable, Nullable, Mesh, Camera, Geometry, Material, BaseTexture, AnimationGroup } from "babylonjs";
-import { ISceneV2, INodeV2, ICameraV2, IMeshPrimitiveV2, IMaterialV2, ITextureInfoV2, IAnimationV2 } from "./glTFLoaderInterfaces";
+import { IScene, INode, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation } from "./glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFFileLoader";
 
 /** @hidden */
@@ -25,7 +25,7 @@ export interface IGLTFLoaderExtensionV2 extends IGLTFLoaderExtension, IDisposabl
      * @param scene The glTF scene property
      * @returns A promise that resolves when the load is complete or null if not handled
      */
-    loadSceneAsync?(context: string, scene: ISceneV2): Nullable<Promise<void>>;
+    loadSceneAsync?(context: string, scene: IScene): Nullable<Promise<void>>;
 
     /**
      * Define this method to modify the default behavior when loading nodes.
@@ -34,7 +34,7 @@ export interface IGLTFLoaderExtensionV2 extends IGLTFLoaderExtension, IDisposabl
      * @param assign A function called synchronously after parsing the glTF properties
      * @returns A promise that resolves with the loaded Babylon mesh when the load is complete or null if not handled
      */
-    loadNodeAsync?(context: string, node: INodeV2, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
+    loadNodeAsync?(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
 
     /**
      * Define this method to modify the default behavior when loading cameras.
@@ -43,7 +43,7 @@ export interface IGLTFLoaderExtensionV2 extends IGLTFLoaderExtension, IDisposabl
      * @param assign A function called synchronously after parsing the glTF properties
      * @returns A promise that resolves with the loaded Babylon camera when the load is complete or null if not handled
      */
-    loadCameraAsync?(context: string, camera: ICameraV2, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>>;
+    loadCameraAsync?(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>>;
 
     /**
      * @hidden Define this method to modify the default behavior when loading vertex data for mesh primitives.
@@ -51,7 +51,7 @@ export interface IGLTFLoaderExtensionV2 extends IGLTFLoaderExtension, IDisposabl
      * @param primitive The glTF mesh primitive property
      * @returns A promise that resolves with the loaded geometry when the load is complete or null if not handled
      */
-    _loadVertexDataAsync?(context: string, primitive: IMeshPrimitiveV2, babylonMesh: Mesh): Nullable<Promise<Geometry>>;
+    _loadVertexDataAsync?(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>>;
 
     /**
      * @hidden Define this method to modify the default behavior when loading materials. Load material creates the material and then loads material properties.
@@ -60,7 +60,7 @@ export interface IGLTFLoaderExtensionV2 extends IGLTFLoaderExtension, IDisposabl
      * @param assign A function called synchronously after parsing the glTF properties
      * @returns A promise that resolves with the loaded Babylon material when the load is complete or null if not handled
      */
-    _loadMaterialAsync?(context: string, material: IMaterialV2, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
+    _loadMaterialAsync?(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
 
     /**
      * Define this method to modify the default behavior when creating materials.
@@ -69,7 +69,7 @@ export interface IGLTFLoaderExtensionV2 extends IGLTFLoaderExtension, IDisposabl
      * @param babylonDrawMode The draw mode for the Babylon material
      * @returns The Babylon material or null if not handled
      */
-    createMaterial?(context: string, material: IMaterialV2, babylonDrawMode: number): Nullable<Material>;
+    createMaterial?(context: string, material: IMaterial, babylonDrawMode: number): Nullable<Material>;
 
     /**
      * Define this method to modify the default behavior when loading material properties.
@@ -78,7 +78,7 @@ export interface IGLTFLoaderExtensionV2 extends IGLTFLoaderExtension, IDisposabl
      * @param babylonMaterial The Babylon material
      * @returns A promise that resolves when the load is complete or null if not handled
      */
-    loadMaterialPropertiesAsync?(context: string, material: IMaterialV2, babylonMaterial: Material): Nullable<Promise<void>>;
+    loadMaterialPropertiesAsync?(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
 
     /**
      * Define this method to modify the default behavior when loading texture infos.
@@ -87,7 +87,7 @@ export interface IGLTFLoaderExtensionV2 extends IGLTFLoaderExtension, IDisposabl
      * @param assign A function called synchronously after parsing the glTF properties
      * @returns A promise that resolves with the loaded Babylon texture when the load is complete or null if not handled
      */
-    loadTextureInfoAsync?(context: string, textureInfo: ITextureInfoV2, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
+    loadTextureInfoAsync?(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
 
     /**
      * Define this method to modify the default behavior when loading animations.
@@ -95,7 +95,7 @@ export interface IGLTFLoaderExtensionV2 extends IGLTFLoaderExtension, IDisposabl
      * @param animation The glTF animation property
      * @returns A promise that resolves with the loaded Babylon animation group when the load is complete or null if not handled
      */
-    loadAnimationAsync?(context: string, animation: IAnimationV2): Nullable<Promise<AnimationGroup>>;
+    loadAnimationAsync?(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>>;
 
     /**
      * Define this method to modify the default behavior when loading uris.

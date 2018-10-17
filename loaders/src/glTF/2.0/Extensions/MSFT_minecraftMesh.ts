@@ -1,5 +1,5 @@
 import { Material, Nullable, PBRMaterial } from "babylonjs";
-import { IMaterialV2 } from "../glTFLoaderInterfaces";
+import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
 import { GLTF2Loader } from "../glTF2Loader";
 
@@ -20,7 +20,7 @@ export class MSFT_minecraftMesh implements IGLTFLoaderExtensionV2 {
         delete this._loader;
     }
 
-    public loadMaterialPropertiesAsync(context: string, material: IMaterialV2, babylonMaterial: Material): Nullable<Promise<void>> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTF2Loader.LoadExtraAsync<boolean>(context, material, this.name, (extraContext, extra) => {
             if (extra) {
                 if (!(babylonMaterial instanceof PBRMaterial)) {

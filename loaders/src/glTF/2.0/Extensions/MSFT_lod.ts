@@ -1,5 +1,5 @@
 import { Observable, Nullable, Deferred, Mesh, Material } from "babylonjs";
-import { INodeV2, IMaterialV2 } from "../glTFLoaderInterfaces";
+import { INode, IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
 import { GLTF2Loader, ArrayItem } from "../glTF2Loader";
 
@@ -113,7 +113,7 @@ export class MSFT_lod implements IGLTFLoaderExtensionV2 {
     }
 
     /** @hidden */
-    public loadNodeAsync(context: string, node: INodeV2, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> {
+    public loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> {
         return GLTF2Loader.LoadExtensionAsync<IMSFTLOD, Mesh>(context, node, this.name, (extensionContext, extension) => {
             let firstPromise: Promise<Mesh>;
 
@@ -159,7 +159,7 @@ export class MSFT_lod implements IGLTFLoaderExtensionV2 {
     }
 
     /** @hidden */
-    public _loadMaterialAsync(context: string, material: IMaterialV2, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>> {
+    public _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>> {
         // Don't load material LODs if already loading a node LOD.
         if (this._nodeIndexLOD) {
             return null;

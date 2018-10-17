@@ -1,5 +1,5 @@
 import { Material, Nullable, PBRMaterial, Color3 } from "babylonjs";
-import { IMaterialV2 } from "../glTFLoaderInterfaces";
+import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
 import { GLTF2Loader } from "../glTF2Loader";
 
@@ -28,13 +28,13 @@ export class KHR_materials_unlit implements IGLTFLoaderExtensionV2 {
     }
 
     /** @hidden */
-    public loadMaterialPropertiesAsync(context: string, material: IMaterialV2, babylonMaterial: Material): Nullable<Promise<void>> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTF2Loader.LoadExtensionAsync(context, material, this.name, () => {
             return this._loadUnlitPropertiesAsync(context, material, babylonMaterial);
         });
     }
 
-    private _loadUnlitPropertiesAsync(context: string, material: IMaterialV2, babylonMaterial: Material): Promise<void> {
+    private _loadUnlitPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
