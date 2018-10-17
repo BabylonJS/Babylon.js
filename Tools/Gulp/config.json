@@ -1302,7 +1302,8 @@
                 "../../src/Cameras/XR/babylon.webXRSessionManager.js",
                 "../../src/Cameras/XR/babylon.webXRExperienceHelper.js",
                 "../../src/Cameras/XR/babylon.webXREnterExitUI.js",
-                "../../src/Cameras/XR/babylon.webXRManagedOutputCanvas.js"
+                "../../src/Cameras/XR/babylon.webXRManagedOutputCanvas.js",
+                "../../src/Cameras/XR/babylon.webXRInput.js"
             ],
             "dependUpon": [
                 "core",
