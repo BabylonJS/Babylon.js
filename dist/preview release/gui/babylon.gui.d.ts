@@ -2070,6 +2070,7 @@ declare module BABYLON.GUI {
             name?: string | undefined;
             protected _thumbWidth: ValueAndUnit;
             protected _barOffset: ValueAndUnit;
+            protected _displayThumb: boolean;
             protected _effectiveBarOffset: number;
             protected _renderLeft: number;
             protected _renderTop: number;
@@ -2080,6 +2081,8 @@ declare module BABYLON.GUI {
             protected _effectiveThumbThickness: number;
             /** BABYLON.Observable raised when the sldier value changes */
             onValueChangedObservable: BABYLON.Observable<number>;
+            /** Gets or sets a boolean indicating if the thumb must be rendered */
+            displayThumb: boolean;
             /** Gets or sets main bar offset (ie. the margin applied to the value bar) */
             barOffset: string | number;
             /** Gets main bar offset in pixels*/
@@ -2118,8 +2121,6 @@ declare module BABYLON.GUI {
         */
     export class Slider extends BaseSlider {
             name?: string | undefined;
-            /** Gets or sets a boolean indicating if the thumb must be rendered */
-            displayThumb: boolean;
             /** Gets or sets border color */
             borderColor: string;
             /** Gets or sets background color */
@@ -2141,6 +2142,7 @@ declare module BABYLON.GUI {
         */
     export class ImageBasedSlider extends BaseSlider {
             name?: string | undefined;
+            displayThumb: boolean;
             /**
                 * Gets or sets the image used to render the background
                 */

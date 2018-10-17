@@ -890,6 +890,7 @@ var BaseSlider = /** @class */ (function (_super) {
         _this._isVertical = false;
         _this._barOffset = new valueAndUnit_1.ValueAndUnit(5, valueAndUnit_1.ValueAndUnit.UNITMODE_PIXEL, false);
         _this._isThumbClamped = false;
+        _this._displayThumb = true;
         // Shared rendering info
         _this._effectiveBarOffset = 0;
         /** Observable raised when the sldier value changes */
@@ -899,6 +900,21 @@ var BaseSlider = /** @class */ (function (_super) {
         _this.isPointerBlocker = true;
         return _this;
     }
+    Object.defineProperty(BaseSlider.prototype, "displayThumb", {
+        /** Gets or sets a boolean indicating if the thumb must be rendered */
+        get: function () {
+            return this._displayThumb;
+        },
+        set: function (value) {
+            if (this._displayThumb === value) {
+                return;
+            }
+            this._displayThumb = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(BaseSlider.prototype, "barOffset", {
         /** Gets or sets main bar offset (ie. the margin applied to the value bar) */
         get: function () {
@@ -1066,7 +1082,9 @@ var BaseSlider = /** @class */ (function (_super) {
         this._backgroundBoxLength = Math.max(this._currentMeasure.width, this._currentMeasure.height);
         this._backgroundBoxThickness = Math.min(this._currentMeasure.width, this._currentMeasure.height);
         this._effectiveThumbThickness = this._getThumbThickness(type);
-        this._backgroundBoxLength -= this._effectiveThumbThickness;
+        if (this.displayThumb) {
+            this._backgroundBoxLength -= this._effectiveThumbThickness;
+        }
         //throw error when height is less than width for vertical slider
         if ((this.isVertical && this._currentMeasure.height < this._currentMeasure.width)) {
             console.error("Height should be greater than width");
@@ -1081,7 +1099,7 @@ var BaseSlider = /** @class */ (function (_super) {
         this._backgroundBoxThickness -= (this._effectiveBarOffset * 2);
         if (this.isVertical) {
             this._renderLeft += this._effectiveBarOffset;
-            if (!this.isThumbClamped) {
+            if (!this.isThumbClamped && this.displayThumb) {
                 this._renderTop += (this._effectiveThumbThickness / 2);
             }
             this._renderHeight = this._backgroundBoxLength;
@@ -1089,7 +1107,7 @@ var BaseSlider = /** @class */ (function (_super) {
         }
         else {
             this._renderTop += this._effectiveBarOffset;
-            if (!this.isThumbClamped) {
+            if (!this.isThumbClamped && this.displayThumb) {
                 this._renderLeft += (this._effectiveThumbThickness / 2);
             }
             this._renderHeight = this._backgroundBoxThickness;
@@ -4835,6 +4853,20 @@ var ImageBasedSlider = /** @class */ (function (_super) {
         _this._tempMeasure = new measure_1.Measure(0, 0, 0, 0);
         return _this;
     }
+    Object.defineProperty(ImageBasedSlider.prototype, "displayThumb", {
+        get: function () {
+            return this._displayThumb && this.thumbImage != null;
+        },
+        set: function (value) {
+            if (this._displayThumb === value) {
+                return;
+            }
+            this._displayThumb = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(ImageBasedSlider.prototype, "backgroundImage", {
         /**
          * Gets or sets the image used to render the background
@@ -4914,7 +4946,7 @@ var ImageBasedSlider = /** @class */ (function (_super) {
             // Background
             if (this._backgroundImage) {
                 this._tempMeasure.copyFromFloats(left, top, width, height);
-                if (this.isThumbClamped) {
+                if (this.isThumbClamped && this.displayThumb) {
                     if (this.isVertical) {
                         this._tempMeasure.height += this._effectiveThumbThickness;
                     }
@@ -4927,21 +4959,25 @@ var ImageBasedSlider = /** @class */ (function (_super) {
             // Bar
             if (this._valueBarImage) {
                 if (this.isVertical) {
-                    this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, height - thumbPosition);
-                    if (this.isThumbClamped) {
-                        this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, this._currentMeasure.height - thumbPosition);
+                    if (this.isThumbClamped && this.displayThumb) {
+                        this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, height - thumbPosition + this._effectiveThumbThickness);
                     }
                     else {
                         this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, height - thumbPosition);
                     }
                 }
                 else {
-                    this._tempMeasure.copyFromFloats(left, top, thumbPosition + this._effectiveThumbThickness / 2, height);
+                    if (this.isThumbClamped && this.displayThumb) {
+                        this._tempMeasure.copyFromFloats(left, top, thumbPosition + this._effectiveThumbThickness / 2, height);
+                    }
+                    else {
+                        this._tempMeasure.copyFromFloats(left, top, thumbPosition, height);
+                    }
                 }
                 this._valueBarImage._draw(this._tempMeasure, context);
             }
             // Thumb
-            if (this._thumbImage) {
+            if (this.displayThumb) {
                 if (this.isVertical) {
                     this._tempMeasure.copyFromFloats(left - this._effectiveBarOffset, this._currentMeasure.top + thumbPosition, this._currentMeasure.width, this._effectiveThumbThickness);
                 }
@@ -7204,24 +7240,8 @@ var Slider = /** @class */ (function (_super) {
         _this._background = "black";
         _this._borderColor = "white";
         _this._isThumbCircle = false;
-        _this._displayThumb = true;
         return _this;
     }
-    Object.defineProperty(Slider.prototype, "displayThumb", {
-        /** Gets or sets a boolean indicating if the thumb must be rendered */
-        get: function () {
-            return this._displayThumb;
-        },
-        set: function (value) {
-            if (this._displayThumb === value) {
-                return;
-            }
-            this._displayThumb = value;
-            this._markAsDirty();
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(Slider.prototype, "borderColor", {
         /** Gets or sets border color */
         get: function () {
@@ -7348,7 +7368,7 @@ var Slider = /** @class */ (function (_super) {
                         context.fillRect(left, top + thumbPosition, width, height - thumbPosition);
                     }
                     else {
-                        context.fillRect(left, top + thumbPosition, width, this._currentMeasure.height - thumbPosition);
+                        context.fillRect(left, top + thumbPosition, width, height - thumbPosition + this._effectiveThumbThickness);
                     }
                 }
                 else {
