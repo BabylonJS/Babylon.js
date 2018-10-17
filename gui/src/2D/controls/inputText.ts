@@ -315,7 +315,7 @@ export class InputText extends Control implements IFocusableControl {
                 }
                 return;
             case 46: // DELETE
-                if (this._text && this._text.length > 0) {
+                if (this._text && this._text.length > 0  && this._cursorOffset > 0) {
                     let deletePosition = this._text.length - this._cursorOffset;
                     this.text = this._text.slice(0, deletePosition) + this._text.slice(deletePosition + 1);
                     this._cursorOffset--;
