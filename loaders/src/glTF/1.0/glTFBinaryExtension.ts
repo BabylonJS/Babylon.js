@@ -3,7 +3,7 @@ import { GLTFUtils } from "./glTFLoaderUtils";
 import { Scene } from "babylonjs";
 import { IGLTFLoaderData } from "../glTFFileLoader";
 import { IGLTFRuntime, IGLTFTexture, IGLTFImage, IGLTFBufferView, EComponentType, IGLTFShader } from "./glTFLoaderInterfaces";
-import { GLTF1Loader, GLTFLoaderBase } from "./GLTF1Loader";
+import { GLTF1Loader, GLTFLoaderBase } from "./glTF1Loader";
 
 const BinaryExtensionBufferName = "binary_glTF";
 

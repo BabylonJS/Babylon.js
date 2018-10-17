@@ -4,7 +4,7 @@ import { IGLTFRuntime, IGLTFMaterial } from "./glTFLoaderInterfaces";
 
 import { HemisphericLight, Vector3, Color3, PointLight, DirectionalLight, SpotLight, Tools, Material, StandardMaterial } from "babylonjs";
 
-import { GLTF1Loader } from "./GLTF1Loader";
+import { GLTF1Loader } from "./glTF1Loader";
 
 interface IGLTFMaterialsCommonExtensionValues {
     ambient?: number[] | string;
