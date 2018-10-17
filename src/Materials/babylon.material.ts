@@ -1154,29 +1154,49 @@ module BABYLON {
             });
         }
 
+        private static readonly _imageProcessingDirtyCallBack = (defines: MaterialDefines) => defines.markAsImageProcessingDirty();
+        private static readonly _textureDirtyCallBack = (defines: MaterialDefines) => defines.markAsTexturesDirty();
+        private static readonly _fresnelDirtyCallBack = (defines: MaterialDefines) => defines.markAsFresnelDirty();
+        private static readonly _miscDirtyCallBack = (defines: MaterialDefines) => defines.markAsMiscDirty();
+        private static readonly _lightsDirtyCallBack = (defines: MaterialDefines) => defines.markAsLightDirty();
+        private static readonly _attributeDirtyCallBack = (defines: MaterialDefines) => defines.markAsAttributesDirty();
+        private static readonly _callbackArray: Array<(defines: MaterialDefines) => void> = [];
+        private static readonly _runCallBacks = (defines: MaterialDefines) => {
+            for (const cb of Material._callbackArray) {
+                cb(defines);
+            }
+        }
+
         /**
          * Marks a define in the material to indicate that it needs to be re-computed
          * @param flag defines a flag used to determine which parts of the material have to be marked as dirty
          */
         public markAsDirty(flag: number): void {
+            Material._callbackArray.length = 0;
+
             if (flag & Material.TextureDirtyFlag) {
-                this._markAllSubMeshesAsTexturesDirty();
+                Material._callbackArray.push(Material._textureDirtyCallBack);
             }
 
             if (flag & Material.LightDirtyFlag) {
-                this._markAllSubMeshesAsLightsDirty();
+                Material._callbackArray.push(Material._lightsDirtyCallBack);
             }
 
             if (flag & Material.FresnelDirtyFlag) {
-                this._markAllSubMeshesAsFresnelDirty();
+                Material._callbackArray.push(Material._fresnelDirtyCallBack);
             }
 
             if (flag & Material.AttributesDirtyFlag) {
-                this._markAllSubMeshesAsAttributesDirty();
+                Material._callbackArray.push(Material._attributeDirtyCallBack);
             }
 
             if (flag & Material.MiscDirtyFlag) {
-                this._markAllSubMeshesAsMiscDirty();
+                Material._callbackArray.push(Material._miscDirtyCallBack);
+
+            }
+
+            if (Material._callbackArray.length) {
+                this._markAllSubMeshesAsDirty(Material._runCallBacks);
             }
 
             this.getScene().resetCachedMaterial();
@@ -1187,7 +1207,8 @@ module BABYLON {
          * @param func defines a function which checks material defines against the submeshes
          */
         protected _markAllSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {
-            for (var mesh of this.getScene().meshes) {
+            const meshes = this.getScene().meshes;
+            for (var mesh of meshes) {
                 if (!mesh.subMeshes) {
                     continue;
                 }
@@ -1209,62 +1230,66 @@ module BABYLON {
          * Indicates that image processing needs to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsImageProcessingDirty() {
-            this._markAllSubMeshesAsDirty((defines) => defines.markAsImageProcessingDirty());
+            this._markAllSubMeshesAsDirty(Material._imageProcessingDirtyCallBack);
         }
 
         /**
          * Indicates that textures need to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsTexturesDirty() {
-            this._markAllSubMeshesAsDirty((defines) => defines.markAsTexturesDirty());
+            this._markAllSubMeshesAsDirty(Material._textureDirtyCallBack);
         }
 
         /**
          * Indicates that fresnel needs to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsFresnelDirty() {
-            this._markAllSubMeshesAsDirty((defines) => defines.markAsFresnelDirty());
+            this._markAllSubMeshesAsDirty(Material._fresnelDirtyCallBack);
+        }
+
+        private static _fresnelAndMiscDirtyCallBack = (defines: MaterialDefines) => {
+            Material._fresnelDirtyCallBack(defines);
+            Material._miscDirtyCallBack(defines);
         }
 
         /**
          * Indicates that fresnel and misc need to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsFresnelAndMiscDirty() {
-            this._markAllSubMeshesAsDirty((defines) => {
-                defines.markAsFresnelDirty();
-                defines.markAsMiscDirty();
-            });
+            this._markAllSubMeshesAsDirty(Material._fresnelAndMiscDirtyCallBack);
         }
 
         /**
          * Indicates that lights need to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsLightsDirty() {
-            this._markAllSubMeshesAsDirty((defines) => defines.markAsLightDirty());
+            this._markAllSubMeshesAsDirty(Material._lightsDirtyCallBack);
         }
 
         /**
          * Indicates that attributes need to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsAttributesDirty() {
-            this._markAllSubMeshesAsDirty((defines) => defines.markAsAttributesDirty());
+            this._markAllSubMeshesAsDirty(Material._attributeDirtyCallBack);
         }
 
         /**
          * Indicates that misc needs to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsMiscDirty() {
-            this._markAllSubMeshesAsDirty((defines) => defines.markAsMiscDirty());
+            this._markAllSubMeshesAsDirty(Material._miscDirtyCallBack);
+        }
+
+        private static _textureAndMiscDirtyCallBack = (defines: MaterialDefines) => {
+            Material._textureDirtyCallBack(defines);
+            Material._miscDirtyCallBack(defines);
         }
 
         /**
          * Indicates that textures and misc need to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsTexturesAndMiscDirty() {
-            this._markAllSubMeshesAsDirty((defines) => {
-                defines.markAsTexturesDirty();
-                defines.markAsMiscDirty();
-            });
+            this._markAllSubMeshesAsDirty(Material._textureAndMiscDirtyCallBack);
         }
 
         /**
