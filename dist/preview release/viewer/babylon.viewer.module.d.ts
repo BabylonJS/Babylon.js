@@ -1576,7 +1576,6 @@ declare module 'babylonjs-viewer/managers/sceneManager' {
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/modelConfiguration' {
-<<<<<<< HEAD
     import { IModelAnimationConfiguration } from "babylonjs-viewer/configuration/interfaces/modelAnimationConfiguration";
     export interface IModelConfiguration {
             id?: string;
@@ -1642,9 +1641,6 @@ declare module 'babylonjs-viewer/configuration/interfaces/modelConfiguration' {
                     progressiveLoading?: boolean;
             };
     }
-=======
-    
->>>>>>> upstream/master
 }
 
 declare module 'babylonjs-viewer/loader/plugins' {
@@ -1796,7 +1792,6 @@ declare module 'babylonjs-viewer/labs/viewerLabs' {
     }
 }
 
-<<<<<<< HEAD
 declare module 'babylonjs-viewer/configuration/interfaces/modelAnimationConfiguration' {
     /**
         * Defines an animation to be applied to a model (translation, scale or rotation).
@@ -1826,8 +1821,6 @@ declare module 'babylonjs-viewer/configuration/interfaces/modelAnimationConfigur
     }
 }
 
-=======
->>>>>>> upstream/master
 declare module 'babylonjs-viewer/loader/plugins/telemetryLoaderPlugin' {
     import { ILoaderPlugin } from "babylonjs-viewer/loader/plugins/loaderPlugin";
     import { ViewerModel } from "babylonjs-viewer/model/viewerModel";
@@ -2153,35 +2146,6 @@ declare module 'babylonjs-viewer/configuration/interfaces/lightConfiguration' {
                 [propName: string]: any;
             };
         };
-    }
-}
-
-declare module 'babylonjs-viewer/configuration/interfaces/modelAnimationConfiguration' {
-    /**
-        * Defines an animation to be applied to a model (translation, scale or rotation).
-        */
-    export interface IModelAnimationConfiguration {
-            /**
-                * Time of animation, in seconds
-                */
-            time?: number;
-            /**
-                * Scale to apply
-                */
-            scaling?: {
-                    x: number;
-                    y: number;
-                    z: number;
-            };
-            /**
-                * Easing function to apply
-                */
-            easingFunction?: number;
-            /**
-                * An Easing mode to apply to the easing function
-                * See BABYLON.EasingFunction
-                */
-            easingMode?: number;
     }
 }
 

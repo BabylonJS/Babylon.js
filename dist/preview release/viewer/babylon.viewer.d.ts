@@ -1478,7 +1478,6 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
-<<<<<<< HEAD
     export interface IModelConfiguration {
             id?: string;
             url?: string;
@@ -1543,8 +1542,6 @@ declare module BabylonViewer {
                     progressiveLoading?: boolean;
             };
     }
-=======
->>>>>>> upstream/master
 }
 declare module BabylonViewer {
     /**
@@ -1560,11 +1557,6 @@ declare module BabylonViewer {
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
 }
 declare module BabylonViewer {
-<<<<<<< HEAD
-=======
-}
-declare module BabylonViewer {
->>>>>>> upstream/master
     export interface IEnvironmentMapConfiguration {
             /**
                 * Environment map texture path in relative to the asset folder.
@@ -1589,42 +1581,6 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
-<<<<<<< HEAD
-=======
-    /**
-        * The EventManager is in charge of registering user interctions with the viewer.
-        * It is used in the TemplateManager
-        */
-    export class EventManager {
-            constructor(_templateManager: TemplateManager);
-            /**
-                * Register a new callback to a specific template.
-                * The best example for the usage can be found in the DefaultViewer
-                *
-                * @param templateName the templateName to register the event to
-                * @param callback The callback to be executed
-                * @param eventType the type of event to register
-                * @param selector an optional selector. if not defined the parent object in the template will be selected
-                */
-            registerCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
-            /**
-                * This will remove a registered event from the defined template.
-                * Each one of the variables apart from the template name are optional, but one must be provided.
-                *
-                * @param templateName the templateName
-                * @param callback the callback to remove (optional)
-                * @param eventType the event type to remove (optional)
-                * @param selector the selector from which to remove the event (optional)
-                */
-            unregisterCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
-            /**
-                * Dispose the event manager
-                */
-            dispose(): void;
-    }
-}
-declare module BabylonViewer {
->>>>>>> upstream/master
     /**
         * The EventManager is in charge of registering user interctions with the viewer.
         * It is used in the TemplateManager
@@ -1706,7 +1662,6 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
-<<<<<<< HEAD
     /**
         * Defines an animation to be applied to a model (translation, scale or rotation).
         */
@@ -1735,8 +1690,6 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
-=======
->>>>>>> upstream/master
     export class TelemetryLoaderPlugin implements ILoaderPlugin {
         onInit(loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync, model: ViewerModel): void;
         onLoaded(model: ViewerModel): void;
@@ -2039,34 +1992,6 @@ declare module BabylonViewer {
                 [propName: string]: any;
             };
         };
-    }
-}
-declare module BabylonViewer {
-    /**
-        * Defines an animation to be applied to a model (translation, scale or rotation).
-        */
-    export interface IModelAnimationConfiguration {
-            /**
-                * Time of animation, in seconds
-                */
-            time?: number;
-            /**
-                * Scale to apply
-                */
-            scaling?: {
-                    x: number;
-                    y: number;
-                    z: number;
-            };
-            /**
-                * Easing function to apply
-                */
-            easingFunction?: number;
-            /**
-                * An Easing mode to apply to the easing function
-                * See BABYLON.EasingFunction
-                */
-            easingMode?: number;
     }
 }
 declare module BabylonViewer {

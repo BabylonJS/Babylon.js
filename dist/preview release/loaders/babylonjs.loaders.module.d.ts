@@ -347,7 +347,7 @@ declare module 'babylonjs-loaders/src/glTF/glTFFileLoader' {
 
 declare module 'babylonjs-loaders/src/glTF/1.0' {
     export * from "babylonjs-loaders/src/glTF/1.0/glTFBinaryExtension";
-    export * from "babylonjs-loaders/src/glTF/1.0/GLTF1Loader";
+    export * from "babylonjs-loaders/src/glTF/1.0/glTF1Loader";
     export * from "babylonjs-loaders/src/glTF/1.0/glTFLoaderExtension";
     export * from "babylonjs-loaders/src/glTF/1.0/glTFLoaderInterfaces";
     export * from "babylonjs-loaders/src/glTF/1.0/glTFLoaderUtils";
@@ -543,7 +543,7 @@ declare module 'babylonjs-loaders/src/glTF/1.0/glTFBinaryExtension' {
     }
 }
 
-declare module 'babylonjs-loaders/src/glTF/1.0/GLTF1Loader' {
+declare module 'babylonjs-loaders/src/glTF/1.0/glTF1Loader' {
     import { IGLTFRuntime } from "babylonjs-loaders/src/glTF/1.0/glTFLoaderInterfaces";
     import { Nullable, Skeleton, Material, AbstractMesh, Texture, Scene, SceneLoaderProgressEvent, IParticleSystem, AnimationGroup } from "babylonjs";
     import { IGLTFLoader, GLTFLoaderState, IGLTFLoaderData } from "babylonjs-loaders/src/glTF/glTFFileLoader";
