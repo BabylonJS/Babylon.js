@@ -288,11 +288,16 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** @hidden */
-    public processKey(keyCode: number, key?: string) {
+    public processKey(keyCode: number, key?: string, evt?: KeyboardEvent) {
         // Specific cases
         switch (keyCode) {
             case 32: //SPACE
                 key = " "; //ie11 key for space is "Spacebar"
+                break;
+            case 191: //SLASH
+                if(evt){
+                    evt.preventDefault();
+                }
                 break;
             case 8: // BACKSPACE
                 if (this._text && this._text.length > 0) {
@@ -304,6 +309,9 @@ export class InputText extends Control implements IFocusableControl {
                             this.text = this._text.slice(0, deletePosition - 1) + this._text.slice(deletePosition);
                         }
                     }
+                }
+                if(evt){
+                    evt.preventDefault();
                 }
                 return;
             case 46: // DELETE
@@ -343,8 +351,11 @@ export class InputText extends Control implements IFocusableControl {
                 this._markAsDirty();
                 return;
             case 222: // Dead
+                if(evt){
+                    evt.preventDefault();
+                }
                 this.deadKey = true;
-                return;
+                break;
         }
 
         // Printable characters
@@ -353,7 +364,7 @@ export class InputText extends Control implements IFocusableControl {
                 (keyCode === 32) ||                     // Space
                 (keyCode > 47 && keyCode < 60) ||       // Numbers
                 (keyCode > 64 && keyCode < 91) ||       // Letters
-                (keyCode > 185 && keyCode < 193) ||     // Special characters
+                (keyCode > 159 && keyCode < 193) ||     // Special characters
                 (keyCode > 218 && keyCode < 223) ||     // Special characters
                 (keyCode > 95 && keyCode < 112))) {     // Numpad
             this._currentKey = key;
@@ -373,7 +384,7 @@ export class InputText extends Control implements IFocusableControl {
 
     /** @hidden */
     public processKeyboard(evt: KeyboardEvent): void {
-        this.processKey(evt.keyCode, evt.key);
+        this.processKey(evt.keyCode, evt.key, evt);
     }
 
     public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
