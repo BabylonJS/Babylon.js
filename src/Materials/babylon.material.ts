@@ -1172,6 +1172,10 @@ module BABYLON {
          * @param flag defines a flag used to determine which parts of the material have to be marked as dirty
          */
         public markAsDirty(flag: number): void {
+            if (this.getScene().blockMaterialDirtyMechanism) {
+                return;
+            }
+
             Material._callbackArray.length = 0;
 
             if (flag & Material.TextureDirtyFlag) {
@@ -1207,6 +1211,10 @@ module BABYLON {
          * @param func defines a function which checks material defines against the submeshes
          */
         protected _markAllSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {
+            if (this.getScene().blockMaterialDirtyMechanism) {
+                return;
+            }
+
             const meshes = this.getScene().meshes;
             for (var mesh of meshes) {
                 if (!mesh.subMeshes) {
