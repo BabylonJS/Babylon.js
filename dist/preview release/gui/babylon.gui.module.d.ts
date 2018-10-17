@@ -1363,11 +1363,20 @@ declare module 'babylonjs-gui/2D/controls/grid' {
     import { Container } from "babylonjs-gui/2D/controls/container";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Measure } from "babylonjs-gui/2D/measure";
+    import { Nullable } from "babylonjs";
     /**
         * Class used to create a 2D grid container
         */
     export class Grid extends Container {
             name?: string | undefined;
+            /**
+                * Gets the number of columns
+                */
+            readonly columnCount: number;
+            /**
+                * Gets the number of rows
+                */
+            readonly rowCount: number;
             /** Gets the list of children */
             readonly children: Control[];
             /**
@@ -1400,6 +1409,13 @@ declare module 'babylonjs-gui/2D/controls/grid' {
                 * @returns the current grid
                 */
             setColumnDefinition(index: number, width: number, isPixel?: boolean): Grid;
+            /**
+                * Gets the list of children stored in a specific cell
+                * @param row defines the row to check
+                * @param column defines the column to check
+                * @returns the list of controls
+                */
+            getChildrenAt(row: number, column: number): Nullable<Array<Control>>;
             /**
                 * Remove a column definition at specified index
                 * @param index defines the index of the column to remove
@@ -4170,6 +4186,14 @@ declare module BABYLON.GUI {
         */
     export class Grid extends Container {
             name?: string | undefined;
+            /**
+                * Gets the number of columns
+                */
+            readonly columnCount: number;
+            /**
+                * Gets the number of rows
+                */
+            readonly rowCount: number;
             /** Gets the list of children */
             readonly children: Control[];
             /**
@@ -4202,6 +4226,13 @@ declare module BABYLON.GUI {
                 * @returns the current grid
                 */
             setColumnDefinition(index: number, width: number, isPixel?: boolean): Grid;
+            /**
+                * Gets the list of children stored in a specific cell
+                * @param row defines the row to check
+                * @param column defines the column to check
+                * @returns the list of controls
+                */
+            getChildrenAt(row: number, column: number): BABYLON.Nullable<Array<Control>>;
             /**
                 * Remove a column definition at specified index
                 * @param index defines the index of the column to remove
