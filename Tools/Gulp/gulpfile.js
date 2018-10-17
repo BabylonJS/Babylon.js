@@ -247,15 +247,13 @@ gulp.task("typescript-compile", function() {
             summarizeFailureOutput: true
         }));
 
-    //If this gulp task is running on travis, file the build!
-    if (process.env.TRAVIS) {
-        tsResult.once("error", function() {
-            tsResult.once("finish", function() {
-                console.log("Typescript compile failed");
-                process.exit(1);
-            });
+    tsResult.once("error", function(err) {
+        tsResult.once("finish", function() {
+            console.log("Typescript compile failed");
+            console.error(err);
+            process.exit(1);
         });
-    }
+    });
 
     return merge2([
         tsResult.dts
