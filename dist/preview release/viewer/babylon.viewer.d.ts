@@ -1479,6 +1479,70 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
+    export interface IModelConfiguration {
+            id?: string;
+            url?: string;
+            root?: string;
+            file?: string | File;
+            loader?: string;
+            position?: {
+                    x: number;
+                    y: number;
+                    z: number;
+            };
+            rotation?: {
+                    x: number;
+                    y: number;
+                    z: number;
+                    w?: number;
+            };
+            scaling?: {
+                    x: number;
+                    y: number;
+                    z: number;
+            };
+            parentObjectIndex?: number;
+            castShadow?: boolean;
+            receiveShadows?: boolean;
+            normalize?: boolean | {
+                    center?: boolean;
+                    unitSize?: boolean;
+                    parentIndex?: number;
+            };
+            title?: string;
+            subtitle?: string;
+            thumbnail?: string;
+            animation?: {
+                    autoStart?: boolean | string;
+                    playOnce?: boolean;
+                    autoStartIndex?: number;
+            };
+            entryAnimation?: IModelAnimationConfiguration;
+            exitAnimation?: IModelAnimationConfiguration;
+            material?: {
+                    directEnabled?: boolean;
+                    directIntensity?: number;
+                    emissiveIntensity?: number;
+                    environmentIntensity?: number;
+                    [propName: string]: any;
+            };
+            /**
+                * Rotation offset axis definition
+                */
+            rotationOffsetAxis?: {
+                    x: number;
+                    y: number;
+                    z: number;
+            };
+            /**
+                * the offset angle
+                */
+            rotationOffsetAngle?: number;
+            loaderConfiguration?: {
+                    maxLODsToLoad?: number;
+                    progressiveLoading?: boolean;
+            };
+    }
 }
 declare module BabylonViewer {
     /**
@@ -1598,6 +1662,34 @@ declare module BabylonViewer {
                 */
             getAssetUrl(url: string): string;
             rotateShadowLight(shadowLight: BABYLON.ShadowLight, amount: number, point?: BABYLON.Vector3, axis?: BABYLON.Vector3, target?: BABYLON.Vector3): void;
+    }
+}
+declare module BabylonViewer {
+    /**
+        * Defines an animation to be applied to a model (translation, scale or rotation).
+        */
+    export interface IModelAnimationConfiguration {
+            /**
+                * Time of animation, in seconds
+                */
+            time?: number;
+            /**
+                * Scale to apply
+                */
+            scaling?: {
+                    x: number;
+                    y: number;
+                    z: number;
+            };
+            /**
+                * Easing function to apply
+                */
+            easingFunction?: number;
+            /**
+                * An Easing mode to apply to the easing function
+                * See BABYLON.EasingFunction
+                */
+            easingMode?: number;
     }
 }
 declare module BabylonViewer {
@@ -1903,34 +1995,6 @@ declare module BabylonViewer {
                 [propName: string]: any;
             };
         };
-    }
-}
-declare module BabylonViewer {
-    /**
-        * Defines an animation to be applied to a model (translation, scale or rotation).
-        */
-    export interface IModelAnimationConfiguration {
-            /**
-                * Time of animation, in seconds
-                */
-            time?: number;
-            /**
-                * Scale to apply
-                */
-            scaling?: {
-                    x: number;
-                    y: number;
-                    z: number;
-            };
-            /**
-                * Easing function to apply
-                */
-            easingFunction?: number;
-            /**
-                * An Easing mode to apply to the easing function
-                * See BABYLON.EasingFunction
-                */
-            easingMode?: number;
     }
 }
 declare module BabylonViewer {

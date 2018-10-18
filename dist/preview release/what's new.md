@@ -77,3 +77,21 @@
 - `scene.database` was renamed to `scene.offlineProvider` ([Deltakosh](https://github.com/deltakosh))
 - `BoundingBox.setWorldMatrix` was removed. `BoundingBox.getWorldMatrix` now returns a `Readonly<Matrix>` ([barroij](https://github.com/barroij))
 - `Matrix`'s accessor `m` and method `toArray` and `asArray` now returns a `Readonly<Float32Array>` as the matrix underlying array is not supposed to be modified manually from the outside of the class ([barroij](https://github.com/barroij))
+- Removed some deprecated (flagged since 3.0) properties and functions ([Deltakosh](https://github.com/deltakosh))
+  - `scene.getInterFramePerfCounter()`: use SceneInstrumentation class instead
+  - `scene.interFramePerfCounter`: use SceneInstrumentation class instead
+  - `scene.getLastFrameDuration()`: use SceneInstrumentation class instead
+  - `scene.lastFramePerfCounter`: use SceneInstrumentation class instead
+  - `scene.getEvaluateActiveMeshesDuration()`: use SceneInstrumentation class instead
+  - `scene.evaluateActiveMeshesDurationPerfCounter`: use SceneInstrumentation class instead
+  - `scene.getRenderTargetsDuration()`: use SceneInstrumentation class instead
+  - `scene.getRenderDuration()`: use SceneInstrumentation class instead
+  - `scene.renderDurationPerfCounter`: use SceneInstrumentation class instead
+  - `scene.getParticlesDuration()`: use SceneInstrumentation class instead
+  - `scene.particlesDurationPerfCounter`: use SceneInstrumentation class instead
+  - `scene.getSpritesDuration()`: use SceneInstrumentation class instead
+  - `scene.spriteDuractionPerfCounter`: use SceneInstrumentation class instead
+  - `engine.drawCalls`: use SceneInstrumentation class instead
+  - `engine.drawCallsPerfCounter`: use SceneInstrumentation class instead
+  - `shadowGenerator.useVarianceShadowMap`: use useExponentialShadowMap instead
+  - `shadowGenerator.useBlurVarianceShadowMap`: use useBlurExponentialShadowMap instead

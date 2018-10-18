@@ -1575,7 +1575,71 @@ declare module 'babylonjs-viewer/managers/sceneManager' {
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/modelConfiguration' {
-    
+    import { IModelAnimationConfiguration } from "babylonjs-viewer/configuration/interfaces/modelAnimationConfiguration";
+    export interface IModelConfiguration {
+            id?: string;
+            url?: string;
+            root?: string;
+            file?: string | File;
+            loader?: string;
+            position?: {
+                    x: number;
+                    y: number;
+                    z: number;
+            };
+            rotation?: {
+                    x: number;
+                    y: number;
+                    z: number;
+                    w?: number;
+            };
+            scaling?: {
+                    x: number;
+                    y: number;
+                    z: number;
+            };
+            parentObjectIndex?: number;
+            castShadow?: boolean;
+            receiveShadows?: boolean;
+            normalize?: boolean | {
+                    center?: boolean;
+                    unitSize?: boolean;
+                    parentIndex?: number;
+            };
+            title?: string;
+            subtitle?: string;
+            thumbnail?: string;
+            animation?: {
+                    autoStart?: boolean | string;
+                    playOnce?: boolean;
+                    autoStartIndex?: number;
+            };
+            entryAnimation?: IModelAnimationConfiguration;
+            exitAnimation?: IModelAnimationConfiguration;
+            material?: {
+                    directEnabled?: boolean;
+                    directIntensity?: number;
+                    emissiveIntensity?: number;
+                    environmentIntensity?: number;
+                    [propName: string]: any;
+            };
+            /**
+                * Rotation offset axis definition
+                */
+            rotationOffsetAxis?: {
+                    x: number;
+                    y: number;
+                    z: number;
+            };
+            /**
+                * the offset angle
+                */
+            rotationOffsetAngle?: number;
+            loaderConfiguration?: {
+                    maxLODsToLoad?: number;
+                    progressiveLoading?: boolean;
+            };
+    }
 }
 
 declare module 'babylonjs-viewer/loader/plugins' {
@@ -1724,6 +1788,35 @@ declare module 'babylonjs-viewer/labs/viewerLabs' {
                 */
             getAssetUrl(url: string): string;
             rotateShadowLight(shadowLight: ShadowLight, amount: number, point?: Vector3, axis?: Vector3, target?: Vector3): void;
+    }
+}
+
+declare module 'babylonjs-viewer/configuration/interfaces/modelAnimationConfiguration' {
+    /**
+        * Defines an animation to be applied to a model (translation, scale or rotation).
+        */
+    export interface IModelAnimationConfiguration {
+            /**
+                * Time of animation, in seconds
+                */
+            time?: number;
+            /**
+                * Scale to apply
+                */
+            scaling?: {
+                    x: number;
+                    y: number;
+                    z: number;
+            };
+            /**
+                * Easing function to apply
+                */
+            easingFunction?: number;
+            /**
+                * An Easing mode to apply to the easing function
+                * See BABYLON.EasingFunction
+                */
+            easingMode?: number;
     }
 }
 
@@ -2052,35 +2145,6 @@ declare module 'babylonjs-viewer/configuration/interfaces/lightConfiguration' {
                 [propName: string]: any;
             };
         };
-    }
-}
-
-declare module 'babylonjs-viewer/configuration/interfaces/modelAnimationConfiguration' {
-    /**
-        * Defines an animation to be applied to a model (translation, scale or rotation).
-        */
-    export interface IModelAnimationConfiguration {
-            /**
-                * Time of animation, in seconds
-                */
-            time?: number;
-            /**
-                * Scale to apply
-                */
-            scaling?: {
-                    x: number;
-                    y: number;
-                    z: number;
-            };
-            /**
-                * Easing function to apply
-                */
-            easingFunction?: number;
-            /**
-                * An Easing mode to apply to the easing function
-                * See BABYLON.EasingFunction
-                */
-            easingMode?: number;
     }
 }
 
