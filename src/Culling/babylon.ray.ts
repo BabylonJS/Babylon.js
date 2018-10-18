@@ -328,7 +328,7 @@ module BABYLON {
             var c = Vector3.Dot(v, v);                  // always >= 0
             var d = Vector3.Dot(u, w);
             var e = Vector3.Dot(v, w);
-            var D = a * c - b * b;  // always >= 0
+            var D = a * c - b * b;                      // always >= 0
             var sc: number, sN: number, sD = D;         // sc = sN / sD, default sD = D >= 0
             var tc: number, tN: number, tD = D;         // tc = tN / tD, default tD = D >= 0
 
