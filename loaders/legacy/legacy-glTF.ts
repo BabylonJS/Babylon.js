@@ -1,15 +1,15 @@
-import * as postProcessLibrary from "./index";
+import * as FileLoader from "../src/glTF/glTFFileLoader";
 
 /**
- *
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    for (var key in postProcessLibrary) {
-        (<any>globalObject).BABYLON[key] = (<any>postProcessLibrary)[key];
+    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || { };
+    for (var key in FileLoader) {
+        (<any>globalObject).BABYLON[key] = (<any>FileLoader)[key];
     }
 }
 
-export * from "./index";
+export * from "../src/glTF/glTFFileLoader";

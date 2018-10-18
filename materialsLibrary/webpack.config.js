@@ -6,7 +6,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 module.exports = {
     context: __dirname,
     entry: {
-        'babylonjs-materials': path.resolve(__dirname, './src/legacy.ts'),
+        'babylonjs-materials': path.resolve(__dirname, './legacy/legacy.ts'),
     },
     output: {
         path: path.resolve(__dirname, '../dist/preview release/materialsLibrary'),

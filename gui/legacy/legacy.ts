@@ -1,7 +1,7 @@
-import * as MatLib from "./index";
+import * as GUI from "../src/index";
 
 /**
- * Legacy support, defining window.BABYLON.GridMaterial... (global variable).
+ * Legacy support, defining window.BABYLON.GUI (global variable).
  *
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
@@ -9,11 +9,7 @@ import * as MatLib from "./index";
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
     (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    for (var mat in MatLib) {
-        if (MatLib.hasOwnProperty(mat)) {
-            (<any>globalObject).BABYLON[mat] = (<any>MatLib)[mat];
-        }
-    }
+    (<any>globalObject).BABYLON.GUI = GUI;
 }
 
-export * from "./index";
+export * from "../src/index";

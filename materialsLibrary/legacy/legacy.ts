@@ -1,4 +1,4 @@
-import * as ProceduralTexturesLib from "./index";
+import * as MatLib from "../src/index";
 
 /**
  * Legacy support, defining window.BABYLON.GridMaterial... (global variable).
@@ -9,11 +9,11 @@ import * as ProceduralTexturesLib from "./index";
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
     (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    for (var mat in ProceduralTexturesLib) {
-        if (ProceduralTexturesLib.hasOwnProperty(mat)) {
-            (<any>globalObject).BABYLON[mat] = (<any>ProceduralTexturesLib)[mat];
+    for (var mat in MatLib) {
+        if (MatLib.hasOwnProperty(mat)) {
+            (<any>globalObject).BABYLON[mat] = (<any>MatLib)[mat];
         }
     }
 }
 
-export * from "./index";
+export * from "../src/index";

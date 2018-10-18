@@ -20,12 +20,16 @@
         "skipDefaultLibCheck": true,
         "skipLibCheck": true,
         "baseUrl": "./src/",
-        "rootDir": "./src/",
+        "rootDir": "./",
         "paths": {
             "babylonjs": [
                 "../../dist/preview release/babylon.d.ts"
             ]
         },
-        "outDir": "./build"
+        "outDir": "./build",
+        "exclude": [
+            "node_modules",
+            "**/*.spec.ts"
+        ]
     }
 }
