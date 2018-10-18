@@ -311,16 +311,17 @@ module BABYLON {
          * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
          */
         intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number {
+            const o = this.origin;
             const u =  Tmp.Vector3[0];
+            const rsegb  = Tmp.Vector3[1];
+            const v =  Tmp.Vector3[2];
+            const w =  Tmp.Vector3[3];
+
             segb.subtractToRef(sega, u);
 
-            const o = this.origin;
-            const p = Tmp.Vector3[1];
-            const v =  Tmp.Vector3[2];
             this.direction.scaleToRef(Ray.rayl, v);
-            o.addToRef(v, p);
+            o.addToRef(v, rsegb);
 
-            const w =  Tmp.Vector3[3];
             sega.subtractToRef(o, w);
 
             var a = Vector3.Dot(u, u);                  // always >= 0
