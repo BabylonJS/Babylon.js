@@ -12430,6 +12430,510 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * Single axis drag gizmo
+     */
+    class AxisDragGizmo extends Gizmo {
+        /**
+         * Drag behavior responsible for the gizmos dragging interactions
+         */
+        dragBehavior: PointerDragBehavior;
+        private _pointerObserver;
+        /**
+         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Event that fires each time the gizmo snaps to a new location.
+         * * snapDistance is the the change in distance
+         */
+        onSnapObservable: Observable<{
+            snapDistance: number;
+        }>;
+        /**
+         * Creates an AxisDragGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param dragAxis The axis which the gizmo will be able to drag on
+         * @param color The color of the gizmo
+         */
+        constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer);
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Single axis scale gizmo
+     */
+    class AxisScaleGizmo extends Gizmo {
+        private _coloredMaterial;
+        /**
+         * Drag behavior responsible for the gizmos dragging interactions
+         */
+        dragBehavior: PointerDragBehavior;
+        private _pointerObserver;
+        /**
+         * Scale distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Event that fires each time the gizmo snaps to a new location.
+         * * snapDistance is the the change in distance
+         */
+        onSnapObservable: Observable<{
+            snapDistance: number;
+        }>;
+        /**
+         * If the scaling operation should be done on all axis (default: false)
+         */
+        uniformScaling: boolean;
+        /**
+         * Creates an AxisScaleGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param dragAxis The axis which the gizmo will be able to scale on
+         * @param color The color of the gizmo
+         */
+        constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer);
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+        /**
+         * Disposes and replaces the current meshes in the gizmo with the specified mesh
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         * @param useGizmoMaterial If the gizmo's default material should be used (default: false)
+         */
+        setCustomMesh(mesh: Mesh, useGizmoMaterial?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Bounding box gizmo
+     */
+    class BoundingBoxGizmo extends Gizmo {
+        private _lineBoundingBox;
+        private _rotateSpheresParent;
+        private _scaleBoxesParent;
+        private _boundingDimensions;
+        private _renderObserver;
+        private _pointerObserver;
+        private _scaleDragSpeed;
+        private _tmpQuaternion;
+        private _tmpVector;
+        private _tmpRotationMatrix;
+        /**
+         * If child meshes should be ignored when calculating the boudning box. This should be set to true to avoid perf hits with heavily nested meshes (Default: false)
+         */
+        ignoreChildren: boolean;
+        /**
+         * Returns true if a descendant should be included when computing the bounding box. When null, all descendants are included. If ignoreChildren is set this will be ignored. (Default: null)
+         */
+        includeChildPredicate: Nullable<(abstractMesh: AbstractMesh) => boolean>;
+        /**
+         * The size of the rotation spheres attached to the bounding box (Default: 0.1)
+         */
+        rotationSphereSize: number;
+        /**
+         * The size of the scale boxes attached to the bounding box (Default: 0.1)
+         */
+        scaleBoxSize: number;
+        /**
+         * If set, the rotation spheres and scale boxes will increase in size based on the distance away from the camera to have a consistent screen size (Default: false)
+         */
+        fixedDragMeshScreenSize: boolean;
+        /**
+         * The distance away from the object which the draggable meshes should appear world sized when fixedDragMeshScreenSize is set to true (default: 10)
+         */
+        fixedDragMeshScreenSizeDistanceFactor: number;
+        /**
+         * Fired when a rotation sphere or scale box is dragged
+         */
+        onDragStartObservable: Observable<{}>;
+        /**
+         * Fired when a scale box is dragged
+         */
+        onScaleBoxDragObservable: Observable<{}>;
+        /**
+          * Fired when a scale box drag is ended
+         */
+        onScaleBoxDragEndObservable: Observable<{}>;
+        /**
+         * Fired when a rotation sphere is dragged
+         */
+        onRotationSphereDragObservable: Observable<{}>;
+        /**
+         * Fired when a rotation sphere drag is ended
+         */
+        onRotationSphereDragEndObservable: Observable<{}>;
+        /**
+         * Relative bounding box pivot used when scaling the attached mesh. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
+         */
+        scalePivot: Nullable<Vector3>;
+        private _anchorMesh;
+        private _existingMeshScale;
+        private static _PivotCached;
+        private static _OldPivotPoint;
+        private static _PivotTranslation;
+        private static _PivotTmpVector;
+        /** @hidden */
+private static _RemoveAndStorePivotPoint(mesh: AbstractMesh): void;
+        /** @hidden */
+private static _RestorePivotPoint(mesh: AbstractMesh): void;
+        /**
+         * Creates an BoundingBoxGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param color The color of the gizmo
+         */
+        constructor(color?: Color3, gizmoLayer?: UtilityLayerRenderer);
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        private _selectNode;
+        /**
+         * Updates the bounding box information for the Gizmo
+         */
+        updateBoundingBox(): void;
+        /**
+         * Enables rotation on the specified axis and disables rotation on the others
+         * @param axis The list of axis that should be enabled (eg. "xy" or "xyz")
+         */
+        setEnabledRotationAxis(axis: string): void;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+        /**
+         * Makes a mesh not pickable and wraps the mesh inside of a bounding box mesh that is pickable. (This is useful to avoid picking within complex geometry)
+         * @param mesh the mesh to wrap in the bounding box mesh and make not pickable
+         * @returns the bounding box mesh with the passed in mesh as a child
+         */
+        static MakeNotPickableAndWrapInBoundingBox(mesh: Mesh): Mesh;
+        /**
+         * CustomMeshes are not supported by this gizmo
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         */
+        setCustomMesh(mesh: Mesh): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
+     */
+    class Gizmo implements IDisposable {
+        /** The utility layer the gizmo will be added to */
+        gizmoLayer: UtilityLayerRenderer;
+        /**
+         * The root mesh of the gizmo
+         */
+        protected _rootMesh: Mesh;
+        private _attachedMesh;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        scaleRatio: number;
+        private _tmpMatrix;
+        /**
+         * If a custom mesh has been set (Default: false)
+         */
+        protected _customMeshSet: boolean;
+        /**
+         * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
+         * * When set, interactions will be enabled
+         */
+        attachedMesh: Nullable<AbstractMesh>;
+        /**
+         * Disposes and replaces the current meshes in the gizmo with the specified mesh
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         */
+        setCustomMesh(mesh: Mesh): void;
+        /**
+         * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
+         */
+        updateGizmoRotationToMatchAttachedMesh: boolean;
+        /**
+         * If set the gizmo's position will be updated to match the attached mesh each frame (Default: true)
+         */
+        updateGizmoPositionToMatchAttachedMesh: boolean;
+        /**
+         * When set, the gizmo will always appear the same size no matter where the camera is (default: false)
+         */
+        protected _updateScale: boolean;
+        protected _interactionsEnabled: boolean;
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        private _beforeRenderObserver;
+        /**
+         * Creates a gizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         */
+        constructor(
+        /** The utility layer the gizmo will be added to */
+        gizmoLayer?: UtilityLayerRenderer);
+        private _tempVector;
+        /**
+         * @hidden
+         * Updates the gizmo to match the attached mesh's position/rotation
+         */
+        protected _update(): void;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Helps setup gizmo's in the scene to rotate/scale/position meshes
+     */
+    class GizmoManager implements IDisposable {
+        private scene;
+        /**
+         * Gizmo's created by the gizmo manager, gizmo will be null until gizmo has been enabled for the first time
+         */
+        gizmos: {
+            positionGizmo: Nullable<PositionGizmo>;
+            rotationGizmo: Nullable<RotationGizmo>;
+            scaleGizmo: Nullable<ScaleGizmo>;
+            boundingBoxGizmo: Nullable<BoundingBoxGizmo>;
+        };
+        private _gizmosEnabled;
+        private _pointerObserver;
+        private _attachedMesh;
+        private _boundingBoxColor;
+        private _defaultUtilityLayer;
+        private _defaultKeepDepthUtilityLayer;
+        /**
+         * When bounding box gizmo is enabled, this can be used to track drag/end events
+         */
+        boundingBoxDragBehavior: SixDofDragBehavior;
+        /**
+         * Array of meshes which will have the gizmo attached when a pointer selected them. If null, all meshes are attachable. (Default: null)
+         */
+        attachableMeshes: Nullable<Array<AbstractMesh>>;
+        /**
+         * If pointer events should perform attaching/detaching a gizmo, if false this can be done manually via attachToMesh. (Default: true)
+         */
+        usePointerToAttachGizmos: boolean;
+        /**
+         * Instatiates a gizmo manager
+         * @param scene the scene to overlay the gizmos on top of
+         */
+        constructor(scene: Scene);
+        /**
+         * Attaches a set of gizmos to the specified mesh
+         * @param mesh The mesh the gizmo's should be attached to
+         */
+        attachToMesh(mesh: Nullable<AbstractMesh>): void;
+        /**
+         * If the position gizmo is enabled
+         */
+        positionGizmoEnabled: boolean;
+        /**
+         * If the rotation gizmo is enabled
+         */
+        rotationGizmoEnabled: boolean;
+        /**
+         * If the scale gizmo is enabled
+         */
+        scaleGizmoEnabled: boolean;
+        /**
+         * If the boundingBox gizmo is enabled
+         */
+        boundingBoxGizmoEnabled: boolean;
+        /**
+         * Disposes of the gizmo manager
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Single plane rotation gizmo
+     */
+    class PlaneRotationGizmo extends Gizmo {
+        /**
+         * Drag behavior responsible for the gizmos dragging interactions
+         */
+        dragBehavior: PointerDragBehavior;
+        private _pointerObserver;
+        /**
+         * Rotation distance in radians that the gizmo will snap to (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Event that fires each time the gizmo snaps to a new location.
+         * * snapDistance is the the change in distance
+         */
+        onSnapObservable: Observable<{
+            snapDistance: number;
+        }>;
+        /**
+         * Creates a PlaneRotationGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param planeNormal The normal of the plane which the gizmo will be able to rotate on
+         * @param color The color of the gizmo
+         * @param tessellation Amount of tessellation to be used when creating rotation circles
+         */
+        constructor(planeNormal: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, tessellation?: number);
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Gizmo that enables dragging a mesh along 3 axis
+     */
+    class PositionGizmo extends Gizmo {
+        /**
+         * Internal gizmo used for interactions on the x axis
+         */
+        xGizmo: AxisDragGizmo;
+        /**
+         * Internal gizmo used for interactions on the y axis
+         */
+        yGizmo: AxisDragGizmo;
+        /**
+         * Internal gizmo used for interactions on the z axis
+         */
+        zGizmo: AxisDragGizmo;
+        /** Fires an event when any of it's sub gizmos are dragged */
+        onDragStartObservable: Observable<{}>;
+        /** Fires an event when any of it's sub gizmos are released from dragging */
+        onDragEndObservable: Observable<{}>;
+        attachedMesh: Nullable<AbstractMesh>;
+        /**
+         * Creates a PositionGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         */
+        constructor(gizmoLayer?: UtilityLayerRenderer);
+        updateGizmoRotationToMatchAttachedMesh: boolean;
+        /**
+         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        scaleRatio: number;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+        /**
+         * CustomMeshes are not supported by this gizmo
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         */
+        setCustomMesh(mesh: Mesh): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Gizmo that enables rotating a mesh along 3 axis
+     */
+    class RotationGizmo extends Gizmo {
+        /**
+         * Internal gizmo used for interactions on the x axis
+         */
+        xGizmo: PlaneRotationGizmo;
+        /**
+         * Internal gizmo used for interactions on the y axis
+         */
+        yGizmo: PlaneRotationGizmo;
+        /**
+         * Internal gizmo used for interactions on the z axis
+         */
+        zGizmo: PlaneRotationGizmo;
+        /** Fires an event when any of it's sub gizmos are dragged */
+        onDragStartObservable: Observable<{}>;
+        /** Fires an event when any of it's sub gizmos are released from dragging */
+        onDragEndObservable: Observable<{}>;
+        attachedMesh: Nullable<AbstractMesh>;
+        /**
+         * Creates a RotationGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param tessellation Amount of tessellation to be used when creating rotation circles
+         */
+        constructor(gizmoLayer?: UtilityLayerRenderer, tessellation?: number);
+        updateGizmoRotationToMatchAttachedMesh: boolean;
+        /**
+         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        scaleRatio: number;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+        /**
+         * CustomMeshes are not supported by this gizmo
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         */
+        setCustomMesh(mesh: Mesh): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Gizmo that enables scaling a mesh along 3 axis
+     */
+    class ScaleGizmo extends Gizmo {
+        /**
+         * Internal gizmo used for interactions on the x axis
+         */
+        xGizmo: AxisScaleGizmo;
+        /**
+         * Internal gizmo used for interactions on the y axis
+         */
+        yGizmo: AxisScaleGizmo;
+        /**
+         * Internal gizmo used for interactions on the z axis
+         */
+        zGizmo: AxisScaleGizmo;
+        /**
+         * Internal gizmo used to scale all axis equally
+         */
+        uniformScaleGizmo: AxisScaleGizmo;
+        /** Fires an event when any of it's sub gizmos are dragged */
+        onDragStartObservable: Observable<{}>;
+        /** Fires an event when any of it's sub gizmos are released from dragging */
+        onDragEndObservable: Observable<{}>;
+        attachedMesh: Nullable<AbstractMesh>;
+        /**
+         * Creates a ScaleGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         */
+        constructor(gizmoLayer?: UtilityLayerRenderer);
+        updateGizmoRotationToMatchAttachedMesh: boolean;
+        /**
+         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        scaleRatio: number;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
      * Represents a gamepad control stick position
      */
     class StickValues {
@@ -12981,510 +13485,6 @@ declare module BABYLON {
         update(): void;
         /**
          * Disposes the gamepad
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Single axis drag gizmo
-     */
-    class AxisDragGizmo extends Gizmo {
-        /**
-         * Drag behavior responsible for the gizmos dragging interactions
-         */
-        dragBehavior: PointerDragBehavior;
-        private _pointerObserver;
-        /**
-         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Event that fires each time the gizmo snaps to a new location.
-         * * snapDistance is the the change in distance
-         */
-        onSnapObservable: Observable<{
-            snapDistance: number;
-        }>;
-        /**
-         * Creates an AxisDragGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param dragAxis The axis which the gizmo will be able to drag on
-         * @param color The color of the gizmo
-         */
-        constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Single axis scale gizmo
-     */
-    class AxisScaleGizmo extends Gizmo {
-        private _coloredMaterial;
-        /**
-         * Drag behavior responsible for the gizmos dragging interactions
-         */
-        dragBehavior: PointerDragBehavior;
-        private _pointerObserver;
-        /**
-         * Scale distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Event that fires each time the gizmo snaps to a new location.
-         * * snapDistance is the the change in distance
-         */
-        onSnapObservable: Observable<{
-            snapDistance: number;
-        }>;
-        /**
-         * If the scaling operation should be done on all axis (default: false)
-         */
-        uniformScaling: boolean;
-        /**
-         * Creates an AxisScaleGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param dragAxis The axis which the gizmo will be able to scale on
-         * @param color The color of the gizmo
-         */
-        constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-        /**
-         * Disposes and replaces the current meshes in the gizmo with the specified mesh
-         * @param mesh The mesh to replace the default mesh of the gizmo
-         * @param useGizmoMaterial If the gizmo's default material should be used (default: false)
-         */
-        setCustomMesh(mesh: Mesh, useGizmoMaterial?: boolean): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Bounding box gizmo
-     */
-    class BoundingBoxGizmo extends Gizmo {
-        private _lineBoundingBox;
-        private _rotateSpheresParent;
-        private _scaleBoxesParent;
-        private _boundingDimensions;
-        private _renderObserver;
-        private _pointerObserver;
-        private _scaleDragSpeed;
-        private _tmpQuaternion;
-        private _tmpVector;
-        private _tmpRotationMatrix;
-        /**
-         * If child meshes should be ignored when calculating the boudning box. This should be set to true to avoid perf hits with heavily nested meshes (Default: false)
-         */
-        ignoreChildren: boolean;
-        /**
-         * Returns true if a descendant should be included when computing the bounding box. When null, all descendants are included. If ignoreChildren is set this will be ignored. (Default: null)
-         */
-        includeChildPredicate: Nullable<(abstractMesh: AbstractMesh) => boolean>;
-        /**
-         * The size of the rotation spheres attached to the bounding box (Default: 0.1)
-         */
-        rotationSphereSize: number;
-        /**
-         * The size of the scale boxes attached to the bounding box (Default: 0.1)
-         */
-        scaleBoxSize: number;
-        /**
-         * If set, the rotation spheres and scale boxes will increase in size based on the distance away from the camera to have a consistent screen size (Default: false)
-         */
-        fixedDragMeshScreenSize: boolean;
-        /**
-         * The distance away from the object which the draggable meshes should appear world sized when fixedDragMeshScreenSize is set to true (default: 10)
-         */
-        fixedDragMeshScreenSizeDistanceFactor: number;
-        /**
-         * Fired when a rotation sphere or scale box is dragged
-         */
-        onDragStartObservable: Observable<{}>;
-        /**
-         * Fired when a scale box is dragged
-         */
-        onScaleBoxDragObservable: Observable<{}>;
-        /**
-          * Fired when a scale box drag is ended
-         */
-        onScaleBoxDragEndObservable: Observable<{}>;
-        /**
-         * Fired when a rotation sphere is dragged
-         */
-        onRotationSphereDragObservable: Observable<{}>;
-        /**
-         * Fired when a rotation sphere drag is ended
-         */
-        onRotationSphereDragEndObservable: Observable<{}>;
-        /**
-         * Relative bounding box pivot used when scaling the attached mesh. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
-         */
-        scalePivot: Nullable<Vector3>;
-        private _anchorMesh;
-        private _existingMeshScale;
-        private static _PivotCached;
-        private static _OldPivotPoint;
-        private static _PivotTranslation;
-        private static _PivotTmpVector;
-        /** @hidden */
-private static _RemoveAndStorePivotPoint(mesh: AbstractMesh): void;
-        /** @hidden */
-private static _RestorePivotPoint(mesh: AbstractMesh): void;
-        /**
-         * Creates an BoundingBoxGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param color The color of the gizmo
-         */
-        constructor(color?: Color3, gizmoLayer?: UtilityLayerRenderer);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        private _selectNode;
-        /**
-         * Updates the bounding box information for the Gizmo
-         */
-        updateBoundingBox(): void;
-        /**
-         * Enables rotation on the specified axis and disables rotation on the others
-         * @param axis The list of axis that should be enabled (eg. "xy" or "xyz")
-         */
-        setEnabledRotationAxis(axis: string): void;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-        /**
-         * Makes a mesh not pickable and wraps the mesh inside of a bounding box mesh that is pickable. (This is useful to avoid picking within complex geometry)
-         * @param mesh the mesh to wrap in the bounding box mesh and make not pickable
-         * @returns the bounding box mesh with the passed in mesh as a child
-         */
-        static MakeNotPickableAndWrapInBoundingBox(mesh: Mesh): Mesh;
-        /**
-         * CustomMeshes are not supported by this gizmo
-         * @param mesh The mesh to replace the default mesh of the gizmo
-         */
-        setCustomMesh(mesh: Mesh): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
-     */
-    class Gizmo implements IDisposable {
-        /** The utility layer the gizmo will be added to */
-        gizmoLayer: UtilityLayerRenderer;
-        /**
-         * The root mesh of the gizmo
-         */
-        protected _rootMesh: Mesh;
-        private _attachedMesh;
-        /**
-         * Ratio for the scale of the gizmo (Default: 1)
-         */
-        scaleRatio: number;
-        private _tmpMatrix;
-        /**
-         * If a custom mesh has been set (Default: false)
-         */
-        protected _customMeshSet: boolean;
-        /**
-         * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
-         * * When set, interactions will be enabled
-         */
-        attachedMesh: Nullable<AbstractMesh>;
-        /**
-         * Disposes and replaces the current meshes in the gizmo with the specified mesh
-         * @param mesh The mesh to replace the default mesh of the gizmo
-         */
-        setCustomMesh(mesh: Mesh): void;
-        /**
-         * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
-         */
-        updateGizmoRotationToMatchAttachedMesh: boolean;
-        /**
-         * If set the gizmo's position will be updated to match the attached mesh each frame (Default: true)
-         */
-        updateGizmoPositionToMatchAttachedMesh: boolean;
-        /**
-         * When set, the gizmo will always appear the same size no matter where the camera is (default: false)
-         */
-        protected _updateScale: boolean;
-        protected _interactionsEnabled: boolean;
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        private _beforeRenderObserver;
-        /**
-         * Creates a gizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         */
-        constructor(
-        /** The utility layer the gizmo will be added to */
-        gizmoLayer?: UtilityLayerRenderer);
-        private _tempVector;
-        /**
-         * @hidden
-         * Updates the gizmo to match the attached mesh's position/rotation
-         */
-        protected _update(): void;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Helps setup gizmo's in the scene to rotate/scale/position meshes
-     */
-    class GizmoManager implements IDisposable {
-        private scene;
-        /**
-         * Gizmo's created by the gizmo manager, gizmo will be null until gizmo has been enabled for the first time
-         */
-        gizmos: {
-            positionGizmo: Nullable<PositionGizmo>;
-            rotationGizmo: Nullable<RotationGizmo>;
-            scaleGizmo: Nullable<ScaleGizmo>;
-            boundingBoxGizmo: Nullable<BoundingBoxGizmo>;
-        };
-        private _gizmosEnabled;
-        private _pointerObserver;
-        private _attachedMesh;
-        private _boundingBoxColor;
-        private _defaultUtilityLayer;
-        private _defaultKeepDepthUtilityLayer;
-        /**
-         * When bounding box gizmo is enabled, this can be used to track drag/end events
-         */
-        boundingBoxDragBehavior: SixDofDragBehavior;
-        /**
-         * Array of meshes which will have the gizmo attached when a pointer selected them. If null, all meshes are attachable. (Default: null)
-         */
-        attachableMeshes: Nullable<Array<AbstractMesh>>;
-        /**
-         * If pointer events should perform attaching/detaching a gizmo, if false this can be done manually via attachToMesh. (Default: true)
-         */
-        usePointerToAttachGizmos: boolean;
-        /**
-         * Instatiates a gizmo manager
-         * @param scene the scene to overlay the gizmos on top of
-         */
-        constructor(scene: Scene);
-        /**
-         * Attaches a set of gizmos to the specified mesh
-         * @param mesh The mesh the gizmo's should be attached to
-         */
-        attachToMesh(mesh: Nullable<AbstractMesh>): void;
-        /**
-         * If the position gizmo is enabled
-         */
-        positionGizmoEnabled: boolean;
-        /**
-         * If the rotation gizmo is enabled
-         */
-        rotationGizmoEnabled: boolean;
-        /**
-         * If the scale gizmo is enabled
-         */
-        scaleGizmoEnabled: boolean;
-        /**
-         * If the boundingBox gizmo is enabled
-         */
-        boundingBoxGizmoEnabled: boolean;
-        /**
-         * Disposes of the gizmo manager
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Single plane rotation gizmo
-     */
-    class PlaneRotationGizmo extends Gizmo {
-        /**
-         * Drag behavior responsible for the gizmos dragging interactions
-         */
-        dragBehavior: PointerDragBehavior;
-        private _pointerObserver;
-        /**
-         * Rotation distance in radians that the gizmo will snap to (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Event that fires each time the gizmo snaps to a new location.
-         * * snapDistance is the the change in distance
-         */
-        onSnapObservable: Observable<{
-            snapDistance: number;
-        }>;
-        /**
-         * Creates a PlaneRotationGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param planeNormal The normal of the plane which the gizmo will be able to rotate on
-         * @param color The color of the gizmo
-         * @param tessellation Amount of tessellation to be used when creating rotation circles
-         */
-        constructor(planeNormal: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, tessellation?: number);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Gizmo that enables dragging a mesh along 3 axis
-     */
-    class PositionGizmo extends Gizmo {
-        /**
-         * Internal gizmo used for interactions on the x axis
-         */
-        xGizmo: AxisDragGizmo;
-        /**
-         * Internal gizmo used for interactions on the y axis
-         */
-        yGizmo: AxisDragGizmo;
-        /**
-         * Internal gizmo used for interactions on the z axis
-         */
-        zGizmo: AxisDragGizmo;
-        /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
-        /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
-        attachedMesh: Nullable<AbstractMesh>;
-        /**
-         * Creates a PositionGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         */
-        constructor(gizmoLayer?: UtilityLayerRenderer);
-        updateGizmoRotationToMatchAttachedMesh: boolean;
-        /**
-         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Ratio for the scale of the gizmo (Default: 1)
-         */
-        scaleRatio: number;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-        /**
-         * CustomMeshes are not supported by this gizmo
-         * @param mesh The mesh to replace the default mesh of the gizmo
-         */
-        setCustomMesh(mesh: Mesh): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Gizmo that enables rotating a mesh along 3 axis
-     */
-    class RotationGizmo extends Gizmo {
-        /**
-         * Internal gizmo used for interactions on the x axis
-         */
-        xGizmo: PlaneRotationGizmo;
-        /**
-         * Internal gizmo used for interactions on the y axis
-         */
-        yGizmo: PlaneRotationGizmo;
-        /**
-         * Internal gizmo used for interactions on the z axis
-         */
-        zGizmo: PlaneRotationGizmo;
-        /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
-        /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
-        attachedMesh: Nullable<AbstractMesh>;
-        /**
-         * Creates a RotationGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param tessellation Amount of tessellation to be used when creating rotation circles
-         */
-        constructor(gizmoLayer?: UtilityLayerRenderer, tessellation?: number);
-        updateGizmoRotationToMatchAttachedMesh: boolean;
-        /**
-         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Ratio for the scale of the gizmo (Default: 1)
-         */
-        scaleRatio: number;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-        /**
-         * CustomMeshes are not supported by this gizmo
-         * @param mesh The mesh to replace the default mesh of the gizmo
-         */
-        setCustomMesh(mesh: Mesh): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Gizmo that enables scaling a mesh along 3 axis
-     */
-    class ScaleGizmo extends Gizmo {
-        /**
-         * Internal gizmo used for interactions on the x axis
-         */
-        xGizmo: AxisScaleGizmo;
-        /**
-         * Internal gizmo used for interactions on the y axis
-         */
-        yGizmo: AxisScaleGizmo;
-        /**
-         * Internal gizmo used for interactions on the z axis
-         */
-        zGizmo: AxisScaleGizmo;
-        /**
-         * Internal gizmo used to scale all axis equally
-         */
-        uniformScaleGizmo: AxisScaleGizmo;
-        /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
-        /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
-        attachedMesh: Nullable<AbstractMesh>;
-        /**
-         * Creates a ScaleGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         */
-        constructor(gizmoLayer?: UtilityLayerRenderer);
-        updateGizmoRotationToMatchAttachedMesh: boolean;
-        /**
-         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Ratio for the scale of the gizmo (Default: 1)
-         */
-        scaleRatio: number;
-        /**
-         * Disposes of the gizmo
          */
         dispose(): void;
     }
@@ -34138,6 +34138,73 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface Scene {
+        /**
+         * The list of reflection probes added to the scene
+         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+         */
+        reflectionProbes: Array<ReflectionProbe>;
+    }
+    /**
+     * Class used to generate realtime reflection / refraction cube textures
+     * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+     */
+    class ReflectionProbe {
+        /** defines the name of the probe */
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        private _invertYAxis;
+        /** Gets or sets probe position (center of the cube map) */
+        position: Vector3;
+        /**
+         * Creates a new reflection probe
+         * @param name defines the name of the probe
+         * @param size defines the texture resolution (for each face)
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
+         * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
+         */
+        constructor(
+        /** defines the name of the probe */
+        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean);
+        /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
+        samples: number;
+        /** Gets or sets the refresh rate to use (on every frame by default) */
+        refreshRate: number;
+        /**
+         * Gets the hosting scene
+         * @returns a Scene
+         */
+        getScene(): Scene;
+        /** Gets the internal CubeTexture used to render to */
+        readonly cubeTexture: RenderTargetTexture;
+        /** Gets the list of meshes to render */
+        readonly renderList: Nullable<AbstractMesh[]>;
+        /**
+         * Attach the probe to a specific mesh (Rendering will be done from attached mesh's position)
+         * @param mesh defines the mesh to attach to
+         */
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        /**
+         * Clean all associated resources
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     /**
      * Postprocess used to generate anaglyphic rendering
      */
@@ -35593,73 +35660,6 @@ declare module BABYLON {
          * @param vrMetrics All the required metrics for the VR camera
          */
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
-    }
-}
-
-declare module BABYLON {
-    interface Scene {
-        /**
-         * The list of reflection probes added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
-         */
-        reflectionProbes: Array<ReflectionProbe>;
-    }
-    /**
-     * Class used to generate realtime reflection / refraction cube textures
-     * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
-     */
-    class ReflectionProbe {
-        /** defines the name of the probe */
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        private _invertYAxis;
-        /** Gets or sets probe position (center of the cube map) */
-        position: Vector3;
-        /**
-         * Creates a new reflection probe
-         * @param name defines the name of the probe
-         * @param size defines the texture resolution (for each face)
-         * @param scene defines the hosting scene
-         * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
-         * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
-         */
-        constructor(
-        /** defines the name of the probe */
-        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean);
-        /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
-        samples: number;
-        /** Gets or sets the refresh rate to use (on every frame by default) */
-        refreshRate: number;
-        /**
-         * Gets the hosting scene
-         * @returns a Scene
-         */
-        getScene(): Scene;
-        /** Gets the internal CubeTexture used to render to */
-        readonly cubeTexture: RenderTargetTexture;
-        /** Gets the list of meshes to render */
-        readonly renderList: Nullable<AbstractMesh[]>;
-        /**
-         * Attach the probe to a specific mesh (Rendering will be done from attached mesh's position)
-         * @param mesh defines the mesh to attach to
-         */
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        /**
-         * Clean all associated resources
-         */
-        dispose(): void;
     }
 }
 
@@ -40285,6 +40285,352 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * A behavior that when attached to a mesh will will place a specified node on the meshes face pointing towards the camera
+     */
+    class AttachToBoxBehavior implements BABYLON.Behavior<BABYLON.Mesh> {
+        private ui;
+        /**
+         *  The name of the behavior
+         */
+        name: string;
+        /**
+         * The distance away from the face of the mesh that the UI should be attached to (default: 0.15)
+         */
+        distanceAwayFromFace: number;
+        /**
+         * The distance from the bottom of the face that the UI should be attached to (default: 0.15)
+         */
+        distanceAwayFromBottomOfFace: number;
+        private _faceVectors;
+        private _target;
+        private _scene;
+        private _onRenderObserver;
+        private _tmpMatrix;
+        private _tmpVector;
+        /**
+         * Creates the AttachToBoxBehavior, used to attach UI to the closest face of the box to a camera
+         * @param ui The transform node that should be attched to the mesh
+         */
+        constructor(ui: BABYLON.TransformNode);
+        /**
+         *  Initializes the behavior
+         */
+        init(): void;
+        private _closestFace;
+        private _zeroVector;
+        private _lookAtTmpMatrix;
+        private _lookAtToRef;
+        /**
+         * Attaches the AttachToBoxBehavior to the passed in mesh
+         * @param target The mesh that the specified node will be attached to
+         */
+        attach(target: BABYLON.Mesh): void;
+        /**
+         *  Detaches the behavior from the mesh
+         */
+        detach(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * A behavior that when attached to a mesh will allow the mesh to fade in and out
+     */
+    class FadeInOutBehavior implements Behavior<Mesh> {
+        /**
+         * Time in milliseconds to delay before fading in (Default: 0)
+         */
+        delay: number;
+        /**
+         * Time in milliseconds for the mesh to fade in (Default: 300)
+         */
+        fadeInTime: number;
+        private _millisecondsPerFrame;
+        private _hovered;
+        private _hoverValue;
+        private _ownerNode;
+        /**
+         * Instatiates the FadeInOutBehavior
+         */
+        constructor();
+        /**
+         *  The name of the behavior
+         */
+        readonly name: string;
+        /**
+         *  Initializes the behavior
+         */
+        init(): void;
+        /**
+         * Attaches the fade behavior on the passed in mesh
+         * @param ownerNode The mesh that will be faded in/out once attached
+         */
+        attach(ownerNode: Mesh): void;
+        /**
+         *  Detaches the behavior from the mesh
+         */
+        detach(): void;
+        /**
+         * Triggers the mesh to begin fading in or out
+         * @param value if the object should fade in or out (true to fade in)
+         */
+        fadeIn(value: boolean): void;
+        private _update;
+        private _setAllVisibility;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * A behavior that when attached to a mesh will allow the mesh to be scaled
+     */
+    class MultiPointerScaleBehavior implements Behavior<Mesh> {
+        private _dragBehaviorA;
+        private _dragBehaviorB;
+        private _startDistance;
+        private _initialScale;
+        private _targetScale;
+        private _ownerNode;
+        private _sceneRenderObserver;
+        /**
+         * Instantiate a new behavior that when attached to a mesh will allow the mesh to be scaled
+         */
+        constructor();
+        /**
+         *  The name of the behavior
+         */
+        readonly name: string;
+        /**
+         *  Initializes the behavior
+         */
+        init(): void;
+        private _getCurrentDistance;
+        /**
+         * Attaches the scale behavior the passed in mesh
+         * @param ownerNode The mesh that will be scaled around once attached
+         */
+        attach(ownerNode: Mesh): void;
+        /**
+         *  Detaches the behavior from the mesh
+         */
+        detach(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
+     */
+    class PointerDragBehavior implements Behavior<Mesh> {
+        private static _AnyMouseID;
+        private _attachedNode;
+        private _dragPlane;
+        private _scene;
+        private _pointerObserver;
+        private _beforeRenderObserver;
+        private static _planeScene;
+        /**
+         * The maximum tolerated angle between the drag plane and dragging pointer rays to trigger pointer events. Set to 0 to allow any angle (default: 0)
+         */
+        maxDragAngle: number;
+        /**
+         * @hidden
+         */
+
+        /**
+         * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
+         */
+        currentDraggingPointerID: number;
+        /**
+         * The last position where the pointer hit the drag plane in world space
+         */
+        lastDragPosition: Vector3;
+        /**
+         * If the behavior is currently in a dragging state
+         */
+        dragging: boolean;
+        /**
+         * The distance towards the target drag position to move each frame. This can be useful to avoid jitter. Set this to 1 for no delay. (Default: 0.2)
+         */
+        dragDeltaRatio: number;
+        /**
+         * If the drag plane orientation should be updated during the dragging (Default: true)
+         */
+        updateDragPlane: boolean;
+        private _debugMode;
+        private _moving;
+        /**
+         *  Fires each time the attached mesh is dragged with the pointer
+         *  * delta between last drag position and current drag position in world space
+         *  * dragDistance along the drag axis
+         *  * dragPlaneNormal normal of the current drag plane used during the drag
+         *  * dragPlanePoint in world space where the drag intersects the drag plane
+         */
+        onDragObservable: Observable<{
+            delta: Vector3;
+            dragPlanePoint: Vector3;
+            dragPlaneNormal: Vector3;
+            dragDistance: number;
+            pointerId: number;
+        }>;
+        /**
+         *  Fires each time a drag begins (eg. mouse down on mesh)
+         */
+        onDragStartObservable: Observable<{
+            dragPlanePoint: Vector3;
+            pointerId: number;
+        }>;
+        /**
+         *  Fires each time a drag ends (eg. mouse release after drag)
+         */
+        onDragEndObservable: Observable<{
+            dragPlanePoint: Vector3;
+            pointerId: number;
+        }>;
+        /**
+         *  If the attached mesh should be moved when dragged
+         */
+        moveAttached: boolean;
+        /**
+         *  If the drag behavior will react to drag events (Default: true)
+         */
+        enabled: boolean;
+        /**
+         * If camera controls should be detached during the drag
+         */
+        detachCameraControls: boolean;
+        /**
+         * If set, the drag plane/axis will be rotated based on the attached mesh's world rotation (Default: true)
+         */
+        useObjectOrienationForDragging: boolean;
+        private _options;
+        /**
+         * Creates a pointer drag behavior that can be attached to a mesh
+         * @param options The drag axis or normal of the plane that will be dragged across. If no options are specified the drag plane will always face the ray's origin (eg. camera)
+         */
+        constructor(options?: {
+            dragAxis?: Vector3;
+            dragPlaneNormal?: Vector3;
+        });
+        /**
+         *  The name of the behavior
+         */
+        readonly name: string;
+        /**
+         *  Initializes the behavior
+         */
+        init(): void;
+        private _tmpVector;
+        private _alternatePickedPoint;
+        private _worldDragAxis;
+        private _targetPosition;
+        private _attachedElement;
+        /**
+         * Attaches the drag behavior the passed in mesh
+         * @param ownerNode The mesh that will be dragged around once attached
+         */
+        attach(ownerNode: Mesh): void;
+        /**
+         * Force relase the drag action by code.
+         */
+        releaseDrag(): void;
+        private _startDragRay;
+        private _lastPointerRay;
+        /**
+         * Simulates the start of a pointer drag event on the behavior
+         * @param pointerId pointerID of the pointer that should be simulated (Default: Any mouse pointer ID)
+         * @param fromRay initial ray of the pointer to be simulated (Default: Ray from camera to attached mesh)
+         * @param startPickedPoint picked point of the pointer to be simulated (Default: attached mesh position)
+         */
+        startDrag(pointerId?: number, fromRay?: Ray, startPickedPoint?: Vector3): void;
+        private _startDrag;
+        private _dragDelta;
+        private _moveDrag;
+        private _pickWithRayOnDragPlane;
+        private _pointA;
+        private _pointB;
+        private _pointC;
+        private _lineA;
+        private _lineB;
+        private _localAxis;
+        private _lookAt;
+        private _updateDragPlanePosition;
+        /**
+         *  Detaches the behavior from the mesh
+         */
+        detach(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
+     */
+    class SixDofDragBehavior implements Behavior<Mesh> {
+        private static _virtualScene;
+        private _ownerNode;
+        private _sceneRenderObserver;
+        private _scene;
+        private _targetPosition;
+        private _virtualOriginMesh;
+        private _virtualDragMesh;
+        private _pointerObserver;
+        private _moving;
+        private _startingOrientation;
+        /**
+         * How much faster the object should move when the controller is moving towards it. This is useful to bring objects that are far away from the user to them faster. Set this to 0 to avoid any speed increase. (Default: 3)
+         */
+        private zDragFactor;
+        /**
+         * If the behavior is currently in a dragging state
+         */
+        dragging: boolean;
+        /**
+         * The distance towards the target drag position to move each frame. This can be useful to avoid jitter. Set this to 1 for no delay. (Default: 0.2)
+         */
+        dragDeltaRatio: number;
+        /**
+         * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
+         */
+        currentDraggingPointerID: number;
+        /**
+         * If camera controls should be detached during the drag
+         */
+        detachCameraControls: boolean;
+        /**
+         * Fires each time a drag starts
+         */
+        onDragStartObservable: Observable<{}>;
+        /**
+         *  Fires each time a drag ends (eg. mouse release after drag)
+         */
+        onDragEndObservable: Observable<{}>;
+        /**
+         * Instantiates a behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
+         */
+        constructor();
+        /**
+         *  The name of the behavior
+         */
+        readonly name: string;
+        /**
+         *  Initializes the behavior
+         */
+        init(): void;
+        /**
+         * Attaches the scale behavior the passed in mesh
+         * @param ownerNode The mesh that will be scaled around once attached
+         */
+        attach(ownerNode: Mesh): void;
+        /**
+         *  Detaches the behavior from the mesh
+         */
+        detach(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
      * The autoRotation behavior (BABYLON.AutoRotationBehavior) is designed to create a smooth rotation of an ArcRotateCamera when there is no user interaction.
      * @see http://doc.babylonjs.com/how_to/camera_behaviors#autorotation-behavior
      */
@@ -40637,538 +40983,6 @@ declare module BABYLON {
          * The camera is not allowed to zoom closer to the mesh than the point at which the adjusted bounding sphere touches the frustum sides
          */
         static FitFrustumSidesMode: number;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * A behavior that when attached to a mesh will will place a specified node on the meshes face pointing towards the camera
-     */
-    class AttachToBoxBehavior implements BABYLON.Behavior<BABYLON.Mesh> {
-        private ui;
-        /**
-         *  The name of the behavior
-         */
-        name: string;
-        /**
-         * The distance away from the face of the mesh that the UI should be attached to (default: 0.15)
-         */
-        distanceAwayFromFace: number;
-        /**
-         * The distance from the bottom of the face that the UI should be attached to (default: 0.15)
-         */
-        distanceAwayFromBottomOfFace: number;
-        private _faceVectors;
-        private _target;
-        private _scene;
-        private _onRenderObserver;
-        private _tmpMatrix;
-        private _tmpVector;
-        /**
-         * Creates the AttachToBoxBehavior, used to attach UI to the closest face of the box to a camera
-         * @param ui The transform node that should be attched to the mesh
-         */
-        constructor(ui: BABYLON.TransformNode);
-        /**
-         *  Initializes the behavior
-         */
-        init(): void;
-        private _closestFace;
-        private _zeroVector;
-        private _lookAtTmpMatrix;
-        private _lookAtToRef;
-        /**
-         * Attaches the AttachToBoxBehavior to the passed in mesh
-         * @param target The mesh that the specified node will be attached to
-         */
-        attach(target: BABYLON.Mesh): void;
-        /**
-         *  Detaches the behavior from the mesh
-         */
-        detach(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * A behavior that when attached to a mesh will allow the mesh to fade in and out
-     */
-    class FadeInOutBehavior implements Behavior<Mesh> {
-        /**
-         * Time in milliseconds to delay before fading in (Default: 0)
-         */
-        delay: number;
-        /**
-         * Time in milliseconds for the mesh to fade in (Default: 300)
-         */
-        fadeInTime: number;
-        private _millisecondsPerFrame;
-        private _hovered;
-        private _hoverValue;
-        private _ownerNode;
-        /**
-         * Instatiates the FadeInOutBehavior
-         */
-        constructor();
-        /**
-         *  The name of the behavior
-         */
-        readonly name: string;
-        /**
-         *  Initializes the behavior
-         */
-        init(): void;
-        /**
-         * Attaches the fade behavior on the passed in mesh
-         * @param ownerNode The mesh that will be faded in/out once attached
-         */
-        attach(ownerNode: Mesh): void;
-        /**
-         *  Detaches the behavior from the mesh
-         */
-        detach(): void;
-        /**
-         * Triggers the mesh to begin fading in or out
-         * @param value if the object should fade in or out (true to fade in)
-         */
-        fadeIn(value: boolean): void;
-        private _update;
-        private _setAllVisibility;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * A behavior that when attached to a mesh will allow the mesh to be scaled
-     */
-    class MultiPointerScaleBehavior implements Behavior<Mesh> {
-        private _dragBehaviorA;
-        private _dragBehaviorB;
-        private _startDistance;
-        private _initialScale;
-        private _targetScale;
-        private _ownerNode;
-        private _sceneRenderObserver;
-        /**
-         * Instantiate a new behavior that when attached to a mesh will allow the mesh to be scaled
-         */
-        constructor();
-        /**
-         *  The name of the behavior
-         */
-        readonly name: string;
-        /**
-         *  Initializes the behavior
-         */
-        init(): void;
-        private _getCurrentDistance;
-        /**
-         * Attaches the scale behavior the passed in mesh
-         * @param ownerNode The mesh that will be scaled around once attached
-         */
-        attach(ownerNode: Mesh): void;
-        /**
-         *  Detaches the behavior from the mesh
-         */
-        detach(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
-     */
-    class PointerDragBehavior implements Behavior<Mesh> {
-        private static _AnyMouseID;
-        private _attachedNode;
-        private _dragPlane;
-        private _scene;
-        private _pointerObserver;
-        private _beforeRenderObserver;
-        private static _planeScene;
-        /**
-         * The maximum tolerated angle between the drag plane and dragging pointer rays to trigger pointer events. Set to 0 to allow any angle (default: 0)
-         */
-        maxDragAngle: number;
-        /**
-         * @hidden
-         */
-
-        /**
-         * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
-         */
-        currentDraggingPointerID: number;
-        /**
-         * The last position where the pointer hit the drag plane in world space
-         */
-        lastDragPosition: Vector3;
-        /**
-         * If the behavior is currently in a dragging state
-         */
-        dragging: boolean;
-        /**
-         * The distance towards the target drag position to move each frame. This can be useful to avoid jitter. Set this to 1 for no delay. (Default: 0.2)
-         */
-        dragDeltaRatio: number;
-        /**
-         * If the drag plane orientation should be updated during the dragging (Default: true)
-         */
-        updateDragPlane: boolean;
-        private _debugMode;
-        private _moving;
-        /**
-         *  Fires each time the attached mesh is dragged with the pointer
-         *  * delta between last drag position and current drag position in world space
-         *  * dragDistance along the drag axis
-         *  * dragPlaneNormal normal of the current drag plane used during the drag
-         *  * dragPlanePoint in world space where the drag intersects the drag plane
-         */
-        onDragObservable: Observable<{
-            delta: Vector3;
-            dragPlanePoint: Vector3;
-            dragPlaneNormal: Vector3;
-            dragDistance: number;
-            pointerId: number;
-        }>;
-        /**
-         *  Fires each time a drag begins (eg. mouse down on mesh)
-         */
-        onDragStartObservable: Observable<{
-            dragPlanePoint: Vector3;
-            pointerId: number;
-        }>;
-        /**
-         *  Fires each time a drag ends (eg. mouse release after drag)
-         */
-        onDragEndObservable: Observable<{
-            dragPlanePoint: Vector3;
-            pointerId: number;
-        }>;
-        /**
-         *  If the attached mesh should be moved when dragged
-         */
-        moveAttached: boolean;
-        /**
-         *  If the drag behavior will react to drag events (Default: true)
-         */
-        enabled: boolean;
-        /**
-         * If camera controls should be detached during the drag
-         */
-        detachCameraControls: boolean;
-        /**
-         * If set, the drag plane/axis will be rotated based on the attached mesh's world rotation (Default: true)
-         */
-        useObjectOrienationForDragging: boolean;
-        private _options;
-        /**
-         * Creates a pointer drag behavior that can be attached to a mesh
-         * @param options The drag axis or normal of the plane that will be dragged across. If no options are specified the drag plane will always face the ray's origin (eg. camera)
-         */
-        constructor(options?: {
-            dragAxis?: Vector3;
-            dragPlaneNormal?: Vector3;
-        });
-        /**
-         *  The name of the behavior
-         */
-        readonly name: string;
-        /**
-         *  Initializes the behavior
-         */
-        init(): void;
-        private _tmpVector;
-        private _alternatePickedPoint;
-        private _worldDragAxis;
-        private _targetPosition;
-        private _attachedElement;
-        /**
-         * Attaches the drag behavior the passed in mesh
-         * @param ownerNode The mesh that will be dragged around once attached
-         */
-        attach(ownerNode: Mesh): void;
-        /**
-         * Force relase the drag action by code.
-         */
-        releaseDrag(): void;
-        private _startDragRay;
-        private _lastPointerRay;
-        /**
-         * Simulates the start of a pointer drag event on the behavior
-         * @param pointerId pointerID of the pointer that should be simulated (Default: Any mouse pointer ID)
-         * @param fromRay initial ray of the pointer to be simulated (Default: Ray from camera to attached mesh)
-         * @param startPickedPoint picked point of the pointer to be simulated (Default: attached mesh position)
-         */
-        startDrag(pointerId?: number, fromRay?: Ray, startPickedPoint?: Vector3): void;
-        private _startDrag;
-        private _dragDelta;
-        private _moveDrag;
-        private _pickWithRayOnDragPlane;
-        private _pointA;
-        private _pointB;
-        private _pointC;
-        private _lineA;
-        private _lineB;
-        private _localAxis;
-        private _lookAt;
-        private _updateDragPlanePosition;
-        /**
-         *  Detaches the behavior from the mesh
-         */
-        detach(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
-     */
-    class SixDofDragBehavior implements Behavior<Mesh> {
-        private static _virtualScene;
-        private _ownerNode;
-        private _sceneRenderObserver;
-        private _scene;
-        private _targetPosition;
-        private _virtualOriginMesh;
-        private _virtualDragMesh;
-        private _pointerObserver;
-        private _moving;
-        private _startingOrientation;
-        /**
-         * How much faster the object should move when the controller is moving towards it. This is useful to bring objects that are far away from the user to them faster. Set this to 0 to avoid any speed increase. (Default: 3)
-         */
-        private zDragFactor;
-        /**
-         * If the behavior is currently in a dragging state
-         */
-        dragging: boolean;
-        /**
-         * The distance towards the target drag position to move each frame. This can be useful to avoid jitter. Set this to 1 for no delay. (Default: 0.2)
-         */
-        dragDeltaRatio: number;
-        /**
-         * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
-         */
-        currentDraggingPointerID: number;
-        /**
-         * If camera controls should be detached during the drag
-         */
-        detachCameraControls: boolean;
-        /**
-         * Fires each time a drag starts
-         */
-        onDragStartObservable: Observable<{}>;
-        /**
-         *  Fires each time a drag ends (eg. mouse release after drag)
-         */
-        onDragEndObservable: Observable<{}>;
-        /**
-         * Instantiates a behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
-         */
-        constructor();
-        /**
-         *  The name of the behavior
-         */
-        readonly name: string;
-        /**
-         *  Initializes the behavior
-         */
-        init(): void;
-        /**
-         * Attaches the scale behavior the passed in mesh
-         * @param ownerNode The mesh that will be scaled around once attached
-         */
-        attach(ownerNode: Mesh): void;
-        /**
-         *  Detaches the behavior from the mesh
-         */
-        detach(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new AnaglyphArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphFreeCamera extends FreeCamera {
-        /**
-         * Creates a new AnaglyphFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new AnaglyphGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new AnaglyphUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphUniversalCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new StereoscopicArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicFreeCamera extends FreeCamera {
-        /**
-         * Creates a new StereoscopicFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new StereoscopicGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new StereoscopicUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicUniversalCamera
-         */
-        getClassName(): string;
     }
 }
 
@@ -41988,6 +41802,192 @@ declare module BABYLON {
          * @returns the input friendly name
          */
         getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new AnaglyphArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphFreeCamera extends FreeCamera {
+        /**
+         * Creates a new AnaglyphFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new AnaglyphGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new AnaglyphUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphUniversalCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new StereoscopicArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicFreeCamera extends FreeCamera {
+        /**
+         * Creates a new StereoscopicFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new StereoscopicGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new StereoscopicUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicUniversalCamera
+         */
+        getClassName(): string;
     }
 }
 
@@ -53392,7 +53392,7 @@ declare module BABYLON {
             /**
                 * The BIN chunk of a binary glTF.
                 */
-            bin: BABYLON.Nullable<ArrayBufferView>;
+            bin: Nullable<ArrayBufferView>;
     }
     /**
         * Interface for extending the loader.
@@ -53425,26 +53425,26 @@ declare module BABYLON {
             COMPLETE = 2
     }
     /** @hidden */
-    export interface IGLTFLoader extends BABYLON.IDisposable {
-            readonly state: BABYLON.Nullable<GLTFLoaderState>;
-            importMeshAsync: (meshesNames: any, scene: BABYLON.Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: BABYLON.SceneLoaderProgressEvent) => void, fileName?: string) => Promise<{
-                    meshes: BABYLON.AbstractMesh[];
-                    particleSystems: BABYLON.IParticleSystem[];
-                    skeletons: BABYLON.Skeleton[];
-                    animationGroups: BABYLON.AnimationGroup[];
+    export interface IGLTFLoader extends IDisposable {
+            readonly state: Nullable<GLTFLoaderState>;
+            importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<{
+                    meshes: AbstractMesh[];
+                    particleSystems: IParticleSystem[];
+                    skeletons: Skeleton[];
+                    animationGroups: AnimationGroup[];
             }>;
-            loadAsync: (scene: BABYLON.Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: BABYLON.SceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
+            loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
     }
     /**
         * File loader for loading glTF files into a scene.
         */
-    export class GLTFFileLoader implements BABYLON.IDisposable, BABYLON.ISceneLoaderPluginAsync, BABYLON.ISceneLoaderPluginFactory {
+    export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
             /** @hidden */private static _CreateGLTF1Loader: (parent: GLTFFileLoader) => IGLTFLoader;
             /** @hidden */private static _CreateGLTF2Loader: (parent: GLTFFileLoader) => IGLTFLoader;
             /**
                 * Raised when the asset has been parsed
                 */
-            onParsedObservable: BABYLON.Observable<IGLTFLoaderData>;
+            onParsedObservable: Observable<IGLTFLoaderData>;
             /**
                 * Raised when the asset has been parsed
                 */
@@ -53493,43 +53493,43 @@ declare module BABYLON {
                 */
             preprocessUrlAsync: (url: string) => Promise<string>;
             /**
-                * BABYLON.Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
+                * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
                 */
-            readonly onMeshLoadedObservable: BABYLON.Observable<BABYLON.AbstractMesh>;
+            readonly onMeshLoadedObservable: Observable<AbstractMesh>;
             /**
                 * Callback raised when the loader creates a mesh after parsing the glTF properties of the mesh.
                 */
-            onMeshLoaded: (mesh: BABYLON.AbstractMesh) => void;
+            onMeshLoaded: (mesh: AbstractMesh) => void;
             /**
-                * BABYLON.Observable raised when the loader creates a texture after parsing the glTF properties of the texture.
+                * Observable raised when the loader creates a texture after parsing the glTF properties of the texture.
                 */
-            readonly onTextureLoadedObservable: BABYLON.Observable<BABYLON.BaseTexture>;
+            readonly onTextureLoadedObservable: Observable<BaseTexture>;
             /**
                 * Callback raised when the loader creates a texture after parsing the glTF properties of the texture.
                 */
-            onTextureLoaded: (texture: BABYLON.BaseTexture) => void;
+            onTextureLoaded: (texture: BaseTexture) => void;
             /**
-                * BABYLON.Observable raised when the loader creates a material after parsing the glTF properties of the material.
+                * Observable raised when the loader creates a material after parsing the glTF properties of the material.
                 */
-            readonly onMaterialLoadedObservable: BABYLON.Observable<BABYLON.Material>;
+            readonly onMaterialLoadedObservable: Observable<Material>;
             /**
                 * Callback raised when the loader creates a material after parsing the glTF properties of the material.
                 */
-            onMaterialLoaded: (material: BABYLON.Material) => void;
+            onMaterialLoaded: (material: Material) => void;
             /**
-                * BABYLON.Observable raised when the loader creates a camera after parsing the glTF properties of the camera.
+                * Observable raised when the loader creates a camera after parsing the glTF properties of the camera.
                 */
-            readonly onCameraLoadedObservable: BABYLON.Observable<BABYLON.Camera>;
+            readonly onCameraLoadedObservable: Observable<Camera>;
             /**
                 * Callback raised when the loader creates a camera after parsing the glTF properties of the camera.
                 */
-            onCameraLoaded: (camera: BABYLON.Camera) => void;
+            onCameraLoaded: (camera: Camera) => void;
             /**
-                * BABYLON.Observable raised when the asset is completely loaded, immediately before the loader is disposed.
+                * Observable raised when the asset is completely loaded, immediately before the loader is disposed.
                 * For assets with LODs, raised when all of the LODs are complete.
                 * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
                 */
-            readonly onCompleteObservable: BABYLON.Observable<void>;
+            readonly onCompleteObservable: Observable<void>;
             /**
                 * Callback raised when the asset is completely loaded, immediately before the loader is disposed.
                 * For assets with LODs, raised when all of the LODs are complete.
@@ -53537,26 +53537,26 @@ declare module BABYLON {
                 */
             onComplete: () => void;
             /**
-                * BABYLON.Observable raised when an error occurs.
+                * Observable raised when an error occurs.
                 */
-            readonly onErrorObservable: BABYLON.Observable<any>;
+            readonly onErrorObservable: Observable<any>;
             /**
                 * Callback raised when an error occurs.
                 */
             onError: (reason: any) => void;
             /**
-                * BABYLON.Observable raised after the loader is disposed.
+                * Observable raised after the loader is disposed.
                 */
-            readonly onDisposeObservable: BABYLON.Observable<void>;
+            readonly onDisposeObservable: Observable<void>;
             /**
                 * Callback raised after the loader is disposed.
                 */
             onDispose: () => void;
             /**
-                * BABYLON.Observable raised after a loader extension is created.
+                * Observable raised after a loader extension is created.
                 * Set additional options for a loader extension in this event.
                 */
-            readonly onExtensionLoadedObservable: BABYLON.Observable<IGLTFLoaderExtension>;
+            readonly onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
             /**
                 * Callback raised after a loader extension is created.
                 */
@@ -53574,13 +53574,13 @@ declare module BABYLON {
                 */
             validate: boolean;
             /**
-                * BABYLON.Observable raised after validation when validate is set to true. The event data is the result of the validation.
+                * Observable raised after validation when validate is set to true. The event data is the result of the validation.
                 */
-            readonly onValidatedObservable: BABYLON.Observable<BABYLON.GLTF2.IGLTFValidationResults>;
+            readonly onValidatedObservable: Observable<IGLTFValidationResults>;
             /**
                 * Callback raised after a loader extension is created.
                 */
-            onValidated: (results: BABYLON.GLTF2.IGLTFValidationResults) => void;
+            onValidated: (results: IGLTFValidationResults) => void;
             /**
                 * Name of the loader ("gltf")
                 */
@@ -53588,7 +53588,7 @@ declare module BABYLON {
             /**
                 * Supported file extensions of the loader (.gltf, .glb)
                 */
-            extensions: BABYLON.ISceneLoaderPluginExtensions;
+            extensions: ISceneLoaderPluginExtensions;
             /**
                 * Disposes the loader, releases resources during load, and cancels any outstanding requests.
                 */
@@ -53604,11 +53604,11 @@ declare module BABYLON {
                 * @param fileName Defines the name of the file to load
                 * @returns a promise containg the loaded meshes, particles, skeletons and animations
                 */
-            importMeshAsync(meshesNames: any, scene: BABYLON.Scene, data: any, rootUrl: string, onProgress?: (event: BABYLON.SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
-                    meshes: BABYLON.AbstractMesh[];
-                    particleSystems: BABYLON.IParticleSystem[];
-                    skeletons: BABYLON.Skeleton[];
-                    animationGroups: BABYLON.AnimationGroup[];
+            importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
+                    meshes: AbstractMesh[];
+                    particleSystems: IParticleSystem[];
+                    skeletons: Skeleton[];
+                    animationGroups: AnimationGroup[];
             }>;
             /**
                 * Imports all objects from the loaded glTF data and adds them to the scene
@@ -53619,7 +53619,7 @@ declare module BABYLON {
                 * @param fileName Defines the name of the file to load
                 * @returns a promise which completes when objects have been loaded to the scene
                 */
-            loadAsync(scene: BABYLON.Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: BABYLON.SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
+            loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
             /**
                 * Load into an asset container.
                 * @param scene The scene to load into
@@ -53629,7 +53629,7 @@ declare module BABYLON {
                 * @param fileName Defines the name of the file to load
                 * @returns The loaded asset container
                 */
-            loadAssetContainerAsync(scene: BABYLON.Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: BABYLON.SceneLoaderProgressEvent) => void, fileName?: string): Promise<BABYLON.AssetContainer>;
+            loadAssetContainerAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
             /**
                 * If the data string can be loaded directly.
                 * @param data string contianing the file data
@@ -53644,11 +53644,11 @@ declare module BABYLON {
                 * Instantiates a glTF file loader plugin.
                 * @returns the created plugin
                 */
-            createPlugin(): BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync;
+            createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
             /**
                 * The loader state or null if the loader is not active.
                 */
-            readonly loaderState: BABYLON.Nullable<GLTFLoaderState>;
+            readonly loaderState: Nullable<GLTFLoaderState>;
             /**
                 * Returns a promise that resolves when the asset is completely loaded.
                 * @returns a promise that resolves when the asset is completely loaded.
@@ -53669,7 +53669,7 @@ declare module BABYLON {
             /**
                 * All material loaded from the mtl will be set here
                 */
-            materials: BABYLON.StandardMaterial[];
+            materials: StandardMaterial[];
             /**
                 * This function will read the mtl file and create each material described inside
                 * This function could be improve by adding :
@@ -53680,13 +53680,13 @@ declare module BABYLON {
                 * @param data defines the mtl data to parse
                 * @param rootUrl defines the rooturl to use in order to load relative dependencies
                 */
-            parseMTL(scene: BABYLON.Scene, data: string | ArrayBuffer, rootUrl: string): void;
+            parseMTL(scene: Scene, data: string | ArrayBuffer, rootUrl: string): void;
     }
     /**
         * OBJ file type loader.
         * This is a babylon scene loader plugin.
         */
-    export class OBJFileLoader implements BABYLON.ISceneLoaderPluginAsync {
+    export class OBJFileLoader implements ISceneLoaderPluginAsync {
             /**
                 * Defines if UVs are optimized by default during load.
                 */
@@ -53739,11 +53739,11 @@ declare module BABYLON {
                 * @param fileName Defines the name of the file to load
                 * @returns a promise containg the loaded meshes, particles, skeletons and animations
                 */
-            importMeshAsync(meshesNames: any, scene: BABYLON.Scene, data: any, rootUrl: string, onProgress?: (event: BABYLON.SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
-                    meshes: BABYLON.AbstractMesh[];
-                    particleSystems: BABYLON.IParticleSystem[];
-                    skeletons: BABYLON.Skeleton[];
-                    animationGroups: BABYLON.AnimationGroup[];
+            importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
+                    meshes: AbstractMesh[];
+                    particleSystems: IParticleSystem[];
+                    skeletons: Skeleton[];
+                    animationGroups: AnimationGroup[];
             }>;
             /**
                 * Imports all objects from the loaded glTF data and adds them to the scene
@@ -53754,7 +53754,7 @@ declare module BABYLON {
                 * @param fileName Defines the name of the file to load
                 * @returns a promise which completes when objects have been loaded to the scene
                 */
-            loadAsync(scene: BABYLON.Scene, data: string, rootUrl: string, onProgress?: (event: BABYLON.SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
+            loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
             /**
                 * Load into an asset container.
                 * @param scene The scene to load into
@@ -53764,7 +53764,7 @@ declare module BABYLON {
                 * @param fileName Defines the name of the file to load
                 * @returns The loaded asset container
                 */
-            loadAssetContainerAsync(scene: BABYLON.Scene, data: string, rootUrl: string, onProgress?: (event: BABYLON.SceneLoaderProgressEvent) => void, fileName?: string): Promise<BABYLON.AssetContainer>;
+            loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
     }
 }
 declare module BABYLON {
@@ -53772,7 +53772,7 @@ declare module BABYLON {
         * STL file type loader.
         * This is a babylon scene loader plugin.
         */
-    export class STLFileLoader implements BABYLON.ISceneLoaderPlugin {
+    export class STLFileLoader implements ISceneLoaderPlugin {
             /** @hidden */
             solidPattern: RegExp;
             /** @hidden */
@@ -53790,7 +53790,7 @@ declare module BABYLON {
                 * force data to come in as an ArrayBuffer
                 * we'll convert to string if it looks like it's an ASCII .stl
                 */
-            extensions: BABYLON.ISceneLoaderPluginExtensions;
+            extensions: ISceneLoaderPluginExtensions;
             /**
                 * Import meshes into a scene.
                 * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
@@ -53803,7 +53803,7 @@ declare module BABYLON {
                 * @param onError The callback when import fails
                 * @returns True if successful or false otherwise
                 */
-            importMesh(meshesNames: any, scene: BABYLON.Scene, data: any, rootUrl: string, meshes: BABYLON.Nullable<BABYLON.AbstractMesh[]>, particleSystems: BABYLON.Nullable<BABYLON.IParticleSystem[]>, skeletons: BABYLON.Nullable<BABYLON.Skeleton[]>): boolean;
+            importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<IParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean;
             /**
                 * Load into a scene.
                 * @param scene The scene to load into
@@ -53812,7 +53812,7 @@ declare module BABYLON {
                 * @param onError The callback when import fails
                 * @returns true if successful or false otherwise
                 */
-            load(scene: BABYLON.Scene, data: any, rootUrl: string): boolean;
+            load(scene: Scene, data: any, rootUrl: string): boolean;
             /**
                 * Load into an asset container.
                 * @param scene The scene to load into
@@ -53821,14 +53821,14 @@ declare module BABYLON {
                 * @param onError The callback when import fails
                 * @returns The loaded asset container
                 */
-            loadAssetContainer(scene: BABYLON.Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): BABYLON.AssetContainer;
+            loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
     }
 }
 declare module BABYLON.GLTF1 {
     /** @hidden */
     export class GLTFBinaryExtension extends GLTFLoaderExtension {
         constructor();
-        loadRuntimeAsync(scene: BABYLON.Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: (message: string) => void): boolean;
+        loadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: (message: string) => void): boolean;
         loadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void): boolean;
         loadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void): boolean;
         loadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void, onError: (message: string) => void): boolean;
@@ -53840,12 +53840,12 @@ declare module BABYLON.GLTF1 {
      * @hidden
      */
     export class GLTFLoaderBase {
-        static CreateRuntime(parsedData: any, scene: BABYLON.Scene, rootUrl: string): IGLTFRuntime;
+        static CreateRuntime(parsedData: any, scene: Scene, rootUrl: string): IGLTFRuntime;
         static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void, onProgress?: () => void): void;
-        static LoadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: BABYLON.Nullable<ArrayBufferView>) => void, onError: (message: string) => void): void;
-        static CreateTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: BABYLON.Nullable<ArrayBufferView>, onSuccess: (texture: BABYLON.Texture) => void, onError: (message: string) => void): void;
+        static LoadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: Nullable<ArrayBufferView>) => void, onError: (message: string) => void): void;
+        static CreateTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: Nullable<ArrayBufferView>, onSuccess: (texture: Texture) => void, onError: (message: string) => void): void;
         static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string | ArrayBuffer) => void, onError?: (message: string) => void): void;
-        static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: BABYLON.Material) => void, onError: (message: string) => void): void;
+        static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): void;
     }
     /**
      * glTF V1 Loader
@@ -53856,7 +53856,7 @@ declare module BABYLON.GLTF1 {
             [name: string]: GLTFLoaderExtension;
         };
         static RegisterExtension(extension: GLTFLoaderExtension): void;
-        state: BABYLON.Nullable<GLTFLoaderState>;
+        state: Nullable<GLTFLoaderState>;
         dispose(): void;
         /**
          * Imports one or more meshes from a loaded gltf file and adds them to the scene
@@ -53867,11 +53867,11 @@ declare module BABYLON.GLTF1 {
          * @param onProgress event that fires when loading progress has occured
          * @returns a promise containg the loaded meshes, particles, skeletons and animations
          */
-        importMeshAsync(meshesNames: any, scene: BABYLON.Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: BABYLON.SceneLoaderProgressEvent) => void): Promise<{
-            meshes: BABYLON.AbstractMesh[];
-            particleSystems: BABYLON.IParticleSystem[];
-            skeletons: BABYLON.Skeleton[];
-            animationGroups: BABYLON.AnimationGroup[];
+        importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: IParticleSystem[];
+            skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
         }>;
         /**
          * Imports all objects from a loaded gltf file and adds them to the scene
@@ -53881,7 +53881,7 @@ declare module BABYLON.GLTF1 {
          * @param onProgress event that fires when loading progress has occured
          * @returns a promise which completes when objects have been loaded to the scene
          */
-        loadAsync(scene: BABYLON.Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: BABYLON.SceneLoaderProgressEvent) => void): Promise<void>;
+        loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
     }
 }
 declare module BABYLON.GLTF1 {
@@ -53893,7 +53893,7 @@ declare module BABYLON.GLTF1 {
              * Defines an override for loading the runtime
              * Return true to stop further extensions from loading the runtime
              */
-            loadRuntimeAsync(scene: BABYLON.Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (gltfRuntime: IGLTFRuntime) => void, onError?: (message: string) => void): boolean;
+            loadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (gltfRuntime: IGLTFRuntime) => void, onError?: (message: string) => void): boolean;
             /**
                 * Defines an onverride for creating gltf runtime
                 * Return true to stop further extensions from creating the runtime
@@ -53913,7 +53913,7 @@ declare module BABYLON.GLTF1 {
              * Defines an override for creating textures
              * Return true to stop further extensions from loading this texture
              */
-            createTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: ArrayBufferView, onSuccess: (texture: BABYLON.Texture) => void, onError: (message: string) => void): boolean;
+            createTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: ArrayBufferView, onSuccess: (texture: Texture) => void, onError: (message: string) => void): boolean;
             /**
              * Defines an override for loading shader strings
              * Return true to stop further extensions from loading this shader data
@@ -53923,13 +53923,13 @@ declare module BABYLON.GLTF1 {
              * Defines an override for loading materials
              * Return true to stop further extensions from loading this material
              */
-            loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: BABYLON.Material) => void, onError: (message: string) => void): boolean;
-            static LoadRuntimeAsync(scene: BABYLON.Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (gltfRuntime: IGLTFRuntime) => void, onError?: (message: string) => void): void;
+            loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): boolean;
+            static LoadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (gltfRuntime: IGLTFRuntime) => void, onError?: (message: string) => void): void;
             static LoadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError?: (message: string) => void): void;
             static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (bufferView: ArrayBufferView) => void, onError: (message: string) => void, onProgress?: () => void): void;
-            static LoadTextureAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (texture: BABYLON.Texture) => void, onError: (message: string) => void): void;
+            static LoadTextureAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (texture: Texture) => void, onError: (message: string) => void): void;
             static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderData: string | ArrayBuffer) => void, onError: (message: string) => void): void;
-            static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: BABYLON.Material) => void, onError: (message: string) => void): void;
+            static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): void;
     }
 }
 declare module BABYLON.GLTF1 {
@@ -54148,7 +54148,7 @@ declare module BABYLON.GLTF1 {
         internalFormat?: ETextureFormat;
         target?: number;
         type?: number;
-        babylonTexture?: BABYLON.Texture;
+        babylonTexture?: Texture;
     }
     /** @hidden */
     export interface IGLTFAmbienLight {
@@ -54233,7 +54233,7 @@ declare module BABYLON.GLTF1 {
         bindShapeMatrix: number[];
         inverseBindMatrices: string;
         jointNames: string[];
-        babylonSkeleton?: BABYLON.Skeleton;
+        babylonSkeleton?: Skeleton;
     }
     /** @hidden */
     export interface IGLTFNode extends IGLTFChildRootProperty {
@@ -54248,7 +54248,7 @@ declare module BABYLON.GLTF1 {
         rotation?: number[];
         scale?: number[];
         translation?: number[];
-        babylonNode?: BABYLON.Node;
+        babylonNode?: Node;
     }
     /** @hidden */
     export interface IGLTFScene extends IGLTFChildRootProperty {
@@ -54315,7 +54315,7 @@ declare module BABYLON.GLTF1 {
         extensionsRequired?: string[];
         buffersCount: number;
         shaderscount: number;
-        scene: BABYLON.Scene;
+        scene: Scene;
         rootUrl: string;
         loadedBufferCount: number;
         loadedBufferViews: {
@@ -54324,11 +54324,11 @@ declare module BABYLON.GLTF1 {
         loadedShaderCount: number;
         importOnlyMeshes: boolean;
         importMeshesNames?: string[];
-        dummyNodes: BABYLON.Node[];
+        dummyNodes: Node[];
     }
     /** @hidden */
     export interface INodeToRoot {
-        bone: BABYLON.Bone;
+        bone: Bone;
         node: IGLTFNode;
         id: string;
     }
@@ -54346,13 +54346,13 @@ declare module BABYLON.GLTF1 {
     export class GLTFUtils {
             /**
                 * Sets the given "parameter" matrix
-                * @param scene: the BABYLON.Scene object
+                * @param scene: the Scene object
                 * @param source: the source node where to pick the matrix
                 * @param parameter: the GLTF technique parameter
                 * @param uniformName: the name of the shader's uniform
                 * @param shaderMaterial: the shader material
                 */
-            static SetMatrix(scene: BABYLON.Scene, source: BABYLON.Node, parameter: IGLTFTechniqueParameter, uniformName: string, shaderMaterial: BABYLON.ShaderMaterial | BABYLON.Effect): void;
+            static SetMatrix(scene: Scene, source: Node, parameter: IGLTFTechniqueParameter, uniformName: string, shaderMaterial: ShaderMaterial | Effect): void;
             /**
                 * Sets the given "parameter" matrix
                 * @param shaderMaterial: the shader material
@@ -54360,7 +54360,7 @@ declare module BABYLON.GLTF1 {
                 * @param value: the value of the uniform
                 * @param type: the uniform's type (EParameterType FLOAT, VEC2, VEC3 or VEC4)
                 */
-            static SetUniform(shaderMaterial: BABYLON.ShaderMaterial | BABYLON.Effect, uniform: string, value: any, type: number): boolean;
+            static SetUniform(shaderMaterial: ShaderMaterial | Effect, uniform: string, value: any, type: number): boolean;
             /**
              * Returns the wrap mode of the texture
              * @param mode: the mode value
@@ -54393,7 +54393,7 @@ declare module BABYLON.GLTF1 {
                 * https://github.com/KhronosGroup/glTF/tree/master/specification/1.0#appendix-a-default-material
                 * @param scene: the Babylon.js scene
                 */
-            static GetDefaultMaterial(scene: BABYLON.Scene): BABYLON.ShaderMaterial;
+            static GetDefaultMaterial(scene: Scene): ShaderMaterial;
     }
 }
 declare module BABYLON.GLTF1 {
@@ -54401,7 +54401,7 @@ declare module BABYLON.GLTF1 {
     export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
         constructor();
         loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: (message: string) => void): boolean;
-        loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: BABYLON.Material) => void, onError: (message: string) => void): boolean;
+        loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): boolean;
     }
 }
 declare module BABYLON.GLTF2 {
@@ -54430,7 +54430,7 @@ declare module BABYLON.GLTF2 {
             /** The glTF object parsed from the JSON. */
             gltf: IGLTF;
             /** The Babylon scene when loading the asset. */
-            babylonScene: BABYLON.Scene;
+            babylonScene: Scene;
             /** @hidden */
             /**
                 * Registers a loader extension.
@@ -54447,20 +54447,20 @@ declare module BABYLON.GLTF2 {
             /**
                 * Gets the loader state.
                 */
-            readonly state: BABYLON.Nullable<GLTFLoaderState>;
+            readonly state: Nullable<GLTFLoaderState>;
             /** @hidden */
             constructor(parent: GLTFFileLoader);
             /** @hidden */
             dispose(): void;
             /** @hidden */
-            importMeshAsync(meshesNames: any, scene: BABYLON.Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: BABYLON.SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
-                    meshes: BABYLON.AbstractMesh[];
-                    particleSystems: BABYLON.IParticleSystem[];
-                    skeletons: BABYLON.Skeleton[];
-                    animationGroups: BABYLON.AnimationGroup[];
+            importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
+                    meshes: AbstractMesh[];
+                    particleSystems: IParticleSystem[];
+                    skeletons: Skeleton[];
+                    animationGroups: AnimationGroup[];
             }>;
             /** @hidden */
-            loadAsync(scene: BABYLON.Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: BABYLON.SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
+            loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
             /**
                 * Loads a glTF scene.
                 * @param context The context when loading the asset
@@ -54475,7 +54475,7 @@ declare module BABYLON.GLTF2 {
                 * @param assign A function called synchronously after parsing the glTF properties
                 * @returns A promise that resolves with the loaded Babylon mesh when the load is complete
                 */
-            loadNodeAsync(context: string, node: INode, assign?: (babylonMesh: BABYLON.Mesh) => void): Promise<BABYLON.Mesh>;
+            loadNodeAsync(context: string, node: INode, assign?: (babylonMesh: Mesh) => void): Promise<Mesh>;
             /**
                 * Loads a glTF camera.
                 * @param context The context when loading the asset
@@ -54483,14 +54483,14 @@ declare module BABYLON.GLTF2 {
                 * @param assign A function called synchronously after parsing the glTF properties
                 * @returns A promise that resolves with the loaded Babylon camera when the load is complete
                 */
-            loadCameraAsync(context: string, camera: ICamera, assign?: (babylonCamera: BABYLON.Camera) => void): Promise<BABYLON.Camera>;
+            loadCameraAsync(context: string, camera: ICamera, assign?: (babylonCamera: Camera) => void): Promise<Camera>;
             /**
                 * Loads a glTF animation.
                 * @param context The context when loading the asset
                 * @param animation The glTF animation property
                 * @returns A promise that resolves with the loaded Babylon animation group when the load is complete
                 */
-            loadAnimationAsync(context: string, animation: IAnimation): Promise<BABYLON.AnimationGroup>;
+            loadAnimationAsync(context: string, animation: IAnimation): Promise<AnimationGroup>;
             /**
                 * Loads a glTF buffer view.
                 * @param context The context when loading the asset
@@ -54506,7 +54506,7 @@ declare module BABYLON.GLTF2 {
                 * @param babylonDrawMode The draw mode for the Babylon material
                 * @returns The Babylon material
                 */
-            createMaterial(context: string, material: IMaterial, babylonDrawMode: number): BABYLON.Material;
+            createMaterial(context: string, material: IMaterial, babylonDrawMode: number): Material;
             /**
                 * Loads properties from a glTF material into a Babylon material.
                 * @param context The context when loading the asset
@@ -54514,7 +54514,7 @@ declare module BABYLON.GLTF2 {
                 * @param babylonMaterial The Babylon material
                 * @returns A promise that resolves when the load is complete
                 */
-            loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: BABYLON.Material): Promise<void>;
+            loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void>;
             /**
                 * Loads the normal, occlusion, and emissive properties from a glTF material into a Babylon material.
                 * @param context The context when loading the asset
@@ -54522,7 +54522,7 @@ declare module BABYLON.GLTF2 {
                 * @param babylonMaterial The Babylon material
                 * @returns A promise that resolves when the load is complete
                 */
-            loadMaterialBasePropertiesAsync(context: string, material: IMaterial, babylonMaterial: BABYLON.Material): Promise<void>;
+            loadMaterialBasePropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void>;
             /**
                 * Loads the alpha properties from a glTF material into a Babylon material.
                 * Must be called after the setting the albedo texture of the Babylon material when the material has an albedo texture.
@@ -54530,7 +54530,7 @@ declare module BABYLON.GLTF2 {
                 * @param material The glTF material property
                 * @param babylonMaterial The Babylon material
                 */
-            loadMaterialAlphaProperties(context: string, material: IMaterial, babylonMaterial: BABYLON.Material): void;
+            loadMaterialAlphaProperties(context: string, material: IMaterial, babylonMaterial: Material): void;
             /**
                 * Loads a glTF texture info.
                 * @param context The context when loading the asset
@@ -54538,7 +54538,7 @@ declare module BABYLON.GLTF2 {
                 * @param assign A function called synchronously after parsing the glTF properties
                 * @returns A promise that resolves with the loaded Babylon texture when the load is complete
                 */
-            loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign?: (babylonTexture: BABYLON.BaseTexture) => void): Promise<BABYLON.BaseTexture>;
+            loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign?: (babylonTexture: BaseTexture) => void): Promise<BaseTexture>;
             /**
                 * Loads a glTF image.
                 * @param context The context when loading the asset
@@ -54561,7 +54561,7 @@ declare module BABYLON.GLTF2 {
                 * @param actionAsync The action to run
                 * @returns The promise returned by actionAsync or null if the extension does not exist
                 */
-            static LoadExtensionAsync<TExtension = any, TResult = void>(context: string, property: BABYLON.GLTF2.IProperty, extensionName: string, actionAsync: (extensionContext: string, extension: TExtension) => BABYLON.Nullable<Promise<TResult>>): BABYLON.Nullable<Promise<TResult>>;
+            static LoadExtensionAsync<TExtension = any, TResult = void>(context: string, property: IProperty, extensionName: string, actionAsync: (extensionContext: string, extension: TExtension) => Nullable<Promise<TResult>>): Nullable<Promise<TResult>>;
             /**
                 * Helper method called by a loader extension to load a glTF extra.
                 * @param context The context when loading the asset
@@ -54570,7 +54570,7 @@ declare module BABYLON.GLTF2 {
                 * @param actionAsync The action to run
                 * @returns The promise returned by actionAsync or null if the extra does not exist
                 */
-            static LoadExtraAsync<TExtra = any, TResult = void>(context: string, property: BABYLON.GLTF2.IProperty, extensionName: string, actionAsync: (extraContext: string, extra: TExtra) => BABYLON.Nullable<Promise<TResult>>): BABYLON.Nullable<Promise<TResult>>;
+            static LoadExtraAsync<TExtra = any, TResult = void>(context: string, property: IProperty, extensionName: string, actionAsync: (extraContext: string, extra: TExtra) => Nullable<Promise<TResult>>): Nullable<Promise<TResult>>;
             /**
                 * Increments the indentation level and logs a message.
                 * @param message The message to log
@@ -54603,7 +54603,7 @@ declare module BABYLON.GLTF2 {
     /**
         * Interface for a glTF loader extension.
         */
-    export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, BABYLON.IDisposable {
+    export interface IGLTFLoaderExtension extends BABYLON.IGLTFLoaderExtension, IDisposable {
             /**
                 * Called after the loader state changes to LOADING.
                 */
@@ -54618,7 +54618,7 @@ declare module BABYLON.GLTF2 {
                 * @param scene The glTF scene property
                 * @returns A promise that resolves when the load is complete or null if not handled
                 */
-            loadSceneAsync?(context: string, scene: IScene): BABYLON.Nullable<Promise<void>>;
+            loadSceneAsync?(context: string, scene: IScene): Nullable<Promise<void>>;
             /**
                 * Define this method to modify the default behavior when loading nodes.
                 * @param context The context when loading the asset
@@ -54626,7 +54626,7 @@ declare module BABYLON.GLTF2 {
                 * @param assign A function called synchronously after parsing the glTF properties
                 * @returns A promise that resolves with the loaded Babylon mesh when the load is complete or null if not handled
                 */
-            loadNodeAsync?(context: string, node: INode, assign: (babylonMesh: BABYLON.Mesh) => void): BABYLON.Nullable<Promise<BABYLON.Mesh>>;
+            loadNodeAsync?(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
             /**
                 * Define this method to modify the default behavior when loading cameras.
                 * @param context The context when loading the asset
@@ -54634,7 +54634,7 @@ declare module BABYLON.GLTF2 {
                 * @param assign A function called synchronously after parsing the glTF properties
                 * @returns A promise that resolves with the loaded Babylon camera when the load is complete or null if not handled
                 */
-            loadCameraAsync?(context: string, camera: ICamera, assign: (babylonCamera: BABYLON.Camera) => void): BABYLON.Nullable<Promise<BABYLON.Camera>>;
+            loadCameraAsync?(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>>;
             /**
                 * @hidden Define this method to modify the default behavior when loading vertex data for mesh primitives.
                 * @param context The context when loading the asset
@@ -54655,7 +54655,7 @@ declare module BABYLON.GLTF2 {
                 * @param babylonDrawMode The draw mode for the Babylon material
                 * @returns The Babylon material or null if not handled
                 */
-            createMaterial?(context: string, material: IMaterial, babylonDrawMode: number): BABYLON.Nullable<BABYLON.Material>;
+            createMaterial?(context: string, material: IMaterial, babylonDrawMode: number): Nullable<Material>;
             /**
                 * Define this method to modify the default behavior when loading material properties.
                 * @param context The context when loading the asset
@@ -54663,7 +54663,7 @@ declare module BABYLON.GLTF2 {
                 * @param babylonMaterial The Babylon material
                 * @returns A promise that resolves when the load is complete or null if not handled
                 */
-            loadMaterialPropertiesAsync?(context: string, material: IMaterial, babylonMaterial: BABYLON.Material): BABYLON.Nullable<Promise<void>>;
+            loadMaterialPropertiesAsync?(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
             /**
                 * Define this method to modify the default behavior when loading texture infos.
                 * @param context The context when loading the asset
@@ -54671,14 +54671,14 @@ declare module BABYLON.GLTF2 {
                 * @param assign A function called synchronously after parsing the glTF properties
                 * @returns A promise that resolves with the loaded Babylon texture when the load is complete or null if not handled
                 */
-            loadTextureInfoAsync?(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BABYLON.BaseTexture) => void): BABYLON.Nullable<Promise<BABYLON.BaseTexture>>;
+            loadTextureInfoAsync?(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
             /**
                 * Define this method to modify the default behavior when loading animations.
                 * @param context The context when loading the asset
                 * @param animation The glTF animation property
                 * @returns A promise that resolves with the loaded Babylon animation group when the load is complete or null if not handled
                 */
-            loadAnimationAsync?(context: string, animation: IAnimation): BABYLON.Nullable<Promise<BABYLON.AnimationGroup>>;
+            loadAnimationAsync?(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>>;
             /**
                 * Define this method to modify the default behavior when loading uris.
                 * @param context The context when loading the asset
@@ -54687,7 +54687,7 @@ declare module BABYLON.GLTF2 {
                 */
     }
 }
-declare module BABYLON.GLTF2 {
+declare module BABYLON.GLTF2.Loader {
     /** @hidden */
     export var __IGLTFLoaderInterfacesV2: number;
     /**
@@ -54877,7 +54877,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         onLoading(): void;
         /** @hidden */
-        loadSceneAsync(context: string, scene: IScene): BABYLON.Nullable<Promise<void>>;
+        loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>>;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
@@ -54912,7 +54912,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         onLoading(): void;
         /** @hidden */
-        loadNodeAsync(context: string, node: INode, assign: (babylonMesh: BABYLON.Mesh) => void): BABYLON.Nullable<Promise<BABYLON.Mesh>>;
+        loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
@@ -54929,7 +54929,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         dispose(): void;
         /** @hidden */
-        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: BABYLON.Material): BABYLON.Nullable<Promise<void>>;
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
@@ -54946,7 +54946,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         dispose(): void;
         /** @hidden */
-        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: BABYLON.Material): BABYLON.Nullable<Promise<void>>;
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
@@ -54963,7 +54963,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         dispose(): void;
         /** @hidden */
-        loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BABYLON.BaseTexture) => void): BABYLON.Nullable<Promise<BABYLON.BaseTexture>>;
+        loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
@@ -54982,11 +54982,11 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         onLoading(): void;
         /** @hidden */
-        loadSceneAsync(context: string, scene: IScene): BABYLON.Nullable<Promise<void>>;
+        loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>>;
         /** @hidden */
-        loadNodeAsync(context: string, node: INode, assign: (babylonMesh: BABYLON.Mesh) => void): BABYLON.Nullable<Promise<BABYLON.Mesh>>;
+        loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
         /** @hidden */
-        loadAnimationAsync(context: string, animation: IAnimation): BABYLON.Nullable<Promise<BABYLON.AnimationGroup>>;
+        loadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>>;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
@@ -55003,17 +55003,17 @@ declare module BABYLON.GLTF2.Loader.Extensions {
                 */
             maxLODsToLoad: number;
             /**
-                * BABYLON.Observable raised when all node LODs of one level are loaded.
+                * Observable raised when all node LODs of one level are loaded.
                 * The event data is the index of the loaded LOD starting from zero.
                 * Dispose the loader to cancel the loading of the next level of LODs.
                 */
-            onNodeLODsLoadedObservable: BABYLON.Observable<number>;
+            onNodeLODsLoadedObservable: Observable<number>;
             /**
-                * BABYLON.Observable raised when all material LODs of one level are loaded.
+                * Observable raised when all material LODs of one level are loaded.
                 * The event data is the index of the loaded LOD starting from zero.
                 * Dispose the loader to cancel the loading of the next level of LODs.
                 */
-            onMaterialLODsLoadedObservable: BABYLON.Observable<number>;
+            onMaterialLODsLoadedObservable: Observable<number>;
             /** @hidden */
             constructor(loader: GLTFLoader);
             /** @hidden */
@@ -55021,7 +55021,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
             /** @hidden */
             onReady(): void;
             /** @hidden */
-            loadNodeAsync(context: string, node: INode, assign: (babylonMesh: BABYLON.Mesh) => void): BABYLON.Nullable<Promise<BABYLON.Mesh>>;
+            loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
             /** @hidden */
             /** @hidden */
     }
@@ -55033,7 +55033,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         enabled: boolean;
         constructor(loader: GLTFLoader);
         dispose(): void;
-        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: BABYLON.Material): BABYLON.Nullable<Promise<void>>;
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
@@ -55043,7 +55043,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         enabled: boolean;
         constructor(loader: GLTFLoader);
         dispose(): void;
-        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: BABYLON.Material): BABYLON.Nullable<Promise<void>>;
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
     }
 }
 /*BabylonJS serializers*/
@@ -55056,20 +55056,20 @@ declare module BABYLON {
         */
     export class OBJExport {
             /**
-                * Exports the geometry of a BABYLON.Mesh array in .OBJ file format (text)
+                * Exports the geometry of a Mesh array in .OBJ file format (text)
                 * @param mesh defines the list of meshes to serialize
                 * @param materials defines if materials should be exported
                 * @param matlibname defines the name of the associated mtl file
                 * @param globalposition defines if the exported positions are globals or local to the exported mesh
                 * @returns the OBJ content
                 */
-            static OBJ(mesh: BABYLON.Mesh[], materials?: boolean, matlibname?: string, globalposition?: boolean): string;
+            static OBJ(mesh: Mesh[], materials?: boolean, matlibname?: string, globalposition?: boolean): string;
             /**
                 * Exports the material(s) of a mesh in .MTL file format (text)
                 * @param mesh defines the mesh to extract the material from
                 * @returns the mtl content
                 */
-            static MTL(mesh: BABYLON.Mesh): string;
+            static MTL(mesh: Mesh): string;
     }
 }
 declare module BABYLON {
@@ -55109,9 +55109,9 @@ declare module BABYLON.GLTF2.Exporter {
                 */
             outputs: number[][];
             /**
-                * BABYLON.Animation interpolation data.
+                * Animation interpolation data.
                 */
-            samplerInterpolation: BABYLON.GLTF2.AnimationSamplerInterpolation;
+            samplerInterpolation: AnimationSamplerInterpolation;
             /**
                 * Minimum keyframe value.
                 */
@@ -55128,11 +55128,11 @@ declare module BABYLON.GLTF2.Exporter {
             /**
                 * The target channel for the animation
                 */
-            animationChannelTargetPath: BABYLON.GLTF2.AnimationChannelTargetPath;
+            animationChannelTargetPath: AnimationChannelTargetPath;
             /**
                 * The glTF accessor type for the data.
                 */
-            dataAccessorType: BABYLON.GLTF2.AccessorType.VEC3 | BABYLON.GLTF2.AccessorType.VEC4;
+            dataAccessorType: AccessorType.VEC3 | AccessorType.VEC4;
             /**
                 * Specifies if quaternions should be used.
                 */
@@ -55153,7 +55153,7 @@ declare module BABYLON.GLTF2.Exporter {
                 * @param convertToRightHandedSystem - Specifies if the values should be converted to right-handed.
                 * @param useQuaternion - Specifies if quaternions are used.
                 * @returns nullable IAnimationData
-                */private static _CreateNodeAnimation(babylonTransformNode: BABYLON.TransformNode, animation: BABYLON.Animation, animationChannelTargetPath: BABYLON.GLTF2.AnimationChannelTargetPath, convertToRightHandedSystem: boolean, useQuaternion: boolean, animationSampleRate: number): BABYLON.Nullable<_IAnimationData>;
+                */private static _CreateNodeAnimation(babylonTransformNode: TransformNode, animation: Animation, animationChannelTargetPath: AnimationChannelTargetPath, convertToRightHandedSystem: boolean, useQuaternion: boolean, animationSampleRate: number): Nullable<_IAnimationData>;
             /**
                 * @ignore
                 * Create node animations from the transform node animations
@@ -55166,9 +55166,9 @@ declare module BABYLON.GLTF2.Exporter {
                 * @param bufferViews
                 * @param accessors
                 * @param convertToRightHandedSystem
-                */private static _CreateNodeAnimationFromTransformNodeAnimations(babylonTransformNode: BABYLON.TransformNode, runtimeGLTFAnimation: BABYLON.GLTF2.IAnimation, idleGLTFAnimations: BABYLON.GLTF2.IAnimation[], nodeMap: {
+                */private static _CreateNodeAnimationFromTransformNodeAnimations(babylonTransformNode: TransformNode, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: {
                     [key: number]: number;
-            }, nodes: BABYLON.GLTF2.INode[], binaryWriter: _BinaryWriter, bufferViews: BABYLON.GLTF2.IBufferView[], accessors: BABYLON.GLTF2.IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
+            }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
             /**
                 * @ignore
                 * Create node animations from the animation groups
@@ -55180,9 +55180,9 @@ declare module BABYLON.GLTF2.Exporter {
                 * @param bufferViews
                 * @param accessors
                 * @param convertToRightHandedSystem
-                */private static _CreateNodeAnimationFromAnimationGroups(babylonScene: BABYLON.Scene, glTFAnimations: BABYLON.GLTF2.IAnimation[], nodeMap: {
+                */private static _CreateNodeAnimationFromAnimationGroups(babylonScene: Scene, glTFAnimations: IAnimation[], nodeMap: {
                     [key: number]: number;
-            }, nodes: BABYLON.GLTF2.INode[], binaryWriter: _BinaryWriter, bufferViews: BABYLON.GLTF2.IBufferView[], accessors: BABYLON.GLTF2.IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
+            }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
     }
 }
 declare module BABYLON {
@@ -55208,7 +55208,7 @@ declare module BABYLON {
 }
 declare module BABYLON.GLTF2.Exporter {
     /**
-        * Converts Babylon BABYLON.Scene into glTF 2.0.
+        * Converts Babylon Scene into glTF 2.0.
         * @hidden
         */
     export class _Exporter {
@@ -55240,7 +55240,7 @@ declare module BABYLON.GLTF2.Exporter {
                 * @param babylonScene Babylon scene object
                 * @param options Options to modify the behavior of the exporter
                 */
-            constructor(babylonScene: BABYLON.Scene, options?: IExportOptions);
+            constructor(babylonScene: Scene, options?: IExportOptions);
             /**
                 * Registers a glTF exporter extension
                 * @param name Name of the extension to export
@@ -55264,7 +55264,7 @@ declare module BABYLON.GLTF2.Exporter {
                 * @param binaryWriter The buffer to write the binary data to
                 * @param indices Used to specify the order of the vertex data
                 */
-            writeAttributeData(vertexBufferKind: string, meshAttributeArray: BABYLON.FloatArray, byteStride: number, binaryWriter: _BinaryWriter): void;
+            writeAttributeData(vertexBufferKind: string, meshAttributeArray: FloatArray, byteStride: number, binaryWriter: _BinaryWriter): void;
             /**
                 * Generates data for .gltf and .bin files based on the glTF prefix string
                 * @param glTFPrefix Text to use when prefixing a glTF file
@@ -55310,10 +55310,10 @@ declare module BABYLON.GLTF2.Exporter {
                 * @param byteOffset If defined, specifies where to set the value as an offset.
                 */
             getUInt32(byteOffset: number): number;
-            getVector3Float32FromRef(vector3: BABYLON.Vector3, byteOffset: number): void;
-            setVector3Float32FromRef(vector3: BABYLON.Vector3, byteOffset: number): void;
-            getVector4Float32FromRef(vector4: BABYLON.Vector4, byteOffset: number): void;
-            setVector4Float32FromRef(vector4: BABYLON.Vector4, byteOffset: number): void;
+            getVector3Float32FromRef(vector3: Vector3, byteOffset: number): void;
+            setVector3Float32FromRef(vector3: Vector3, byteOffset: number): void;
+            getVector4Float32FromRef(vector4: Vector4, byteOffset: number): void;
+            setVector4Float32FromRef(vector4: Vector4, byteOffset: number): void;
             /**
                 * Stores a Float32 in the array buffer
                 * @param entry
@@ -55334,7 +55334,7 @@ declare module BABYLON.GLTF2.Exporter {
         * Interface for a glTF exporter extension
         * @hidden
         */
-    export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, BABYLON.IDisposable {
+    export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDisposable {
             /**
                 * Define this method to modify the default behavior before exporting a texture
                 * @param context The context when loading the asset
@@ -55342,7 +55342,7 @@ declare module BABYLON.GLTF2.Exporter {
                 * @param mimeType The mime-type of the generated image
                 * @returns A promise that resolves with the exported glTF texture info when the export is complete, or null if not handled
                 */
-            preExportTextureAsync?(context: string, babylonTexture: BABYLON.Texture, mimeType: BABYLON.GLTF2.ImageMimeType): BABYLON.Nullable<Promise<BABYLON.Texture>>;
+            preExportTextureAsync?(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Nullable<Promise<Texture>>;
             /**
                 * Define this method to modify the default behavior when exporting texture info
                 * @param context The context when loading the asset
@@ -55350,7 +55350,7 @@ declare module BABYLON.GLTF2.Exporter {
                 * @param babylonSubMesh Babylon submesh
                 * @param binaryWriter glTF serializer binary writer instance
                 */
-            postExportMeshPrimitiveAsync?(context: string, meshPrimitive: BABYLON.GLTF2.IMeshPrimitive, babylonSubMesh: BABYLON.SubMesh, binaryWriter: _BinaryWriter): BABYLON.Nullable<Promise<BABYLON.GLTF2.IMeshPrimitive>>;
+            postExportMeshPrimitiveAsync?(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Nullable<Promise<IMeshPrimitive>>;
     }
 }
 declare module BABYLON.GLTF2.Exporter {
@@ -55377,13 +55377,13 @@ declare module BABYLON.GLTF2.Exporter {
                 */
             /**
                 * Specifies if the material has any texture parameters present
-                * @param material glTF BABYLON.Material
+                * @param material glTF Material
                 * @returns boolean specifying if texture parameters are present
                 */
             /**
-                * Converts a Babylon BABYLON.StandardMaterial to a glTF Metallic Roughness BABYLON.Material
+                * Converts a Babylon StandardMaterial to a glTF Metallic Roughness Material
                 * @param babylonStandardMaterial
-                * @returns glTF Metallic Roughness BABYLON.Material representation
+                * @returns glTF Metallic Roughness Material representation
                 */
             /**
                 * Computes the metallic factor
@@ -55393,13 +55393,13 @@ declare module BABYLON.GLTF2.Exporter {
                 * @returns metallic value
                 */private static _SolveMetallic(diffuse: number, specular: number, oneMinusSpecularStrength: number): number;
             /**
-                * Gets the glTF alpha mode from the Babylon BABYLON.Material
-                * @param babylonMaterial Babylon BABYLON.Material
+                * Gets the glTF alpha mode from the Babylon Material
+                * @param babylonMaterial Babylon Material
                 * @returns The Babylon alpha mode value
                 */
             /**
-                * Converts a Babylon Standard BABYLON.Material to a glTF BABYLON.Material
-                * @param babylonStandardMaterial BJS Standard BABYLON.Material
+                * Converts a Babylon Standard Material to a glTF Material
+                * @param babylonStandardMaterial BJS Standard Material
                 * @param mimeType mime type to use for the textures
                 * @param images array of glTF image interfaces
                 * @param textures array of glTF texture interfaces
@@ -55408,8 +55408,8 @@ declare module BABYLON.GLTF2.Exporter {
                 * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
                 */
             /**
-                * Converts a Babylon PBR Metallic Roughness BABYLON.Material to a glTF BABYLON.Material
-                * @param babylonPBRMetalRoughMaterial BJS PBR Metallic Roughness BABYLON.Material
+                * Converts a Babylon PBR Metallic Roughness Material to a glTF Material
+                * @param babylonPBRMetalRoughMaterial BJS PBR Metallic Roughness Material
                 * @param mimeType mime type to use for the textures
                 * @param images array of glTF image interfaces
                 * @param textures array of glTF texture interfaces
@@ -55418,8 +55418,8 @@ declare module BABYLON.GLTF2.Exporter {
                 * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
                 */
             /**
-                * Converts a Babylon PBR Metallic Roughness BABYLON.Material to a glTF BABYLON.Material
-                * @param babylonPBRMaterial BJS PBR Metallic Roughness BABYLON.Material
+                * Converts a Babylon PBR Metallic Roughness Material to a glTF Material
+                * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
                 * @param mimeType mime type to use for the textures
                 * @param images array of glTF image interfaces
                 * @param textures array of glTF texture interfaces
@@ -55445,7 +55445,7 @@ declare module BABYLON {
                 * @param transformNode source Babylon transform node. It is used to check whether it should be exported to glTF or not
                 * @returns boolean, which indicates whether the mesh should be exported (true) or not (false)
                 */
-            shouldExportTransformNode?(transformNode: BABYLON.TransformNode): boolean;
+            shouldExportTransformNode?(transformNode: TransformNode): boolean;
             /**
                 * The sample rate to bake animation curves
                 */
@@ -55467,7 +55467,7 @@ declare module BABYLON {
                 * @returns Returns an object with a .gltf file and associates texture names
                 * as keys and their data and paths as values
                 */
-            static GLTFAsync(scene: BABYLON.Scene, filePrefix: string, options?: IExportOptions): Promise<GLTFData>;
+            static GLTFAsync(scene: Scene, filePrefix: string, options?: IExportOptions): Promise<GLTFData>;
             /**
                 * Exports the geometry of the scene to .glb file format asychronously
                 * @param scene Babylon scene with scene hierarchy information
@@ -55475,7 +55475,7 @@ declare module BABYLON {
                 * @param options Exporter options
                 * @returns Returns an object with a .glb filename as key and data as value
                 */
-            static GLBAsync(scene: BABYLON.Scene, filePrefix: string, options?: IExportOptions): Promise<GLTFData>;
+            static GLBAsync(scene: Scene, filePrefix: string, options?: IExportOptions): Promise<GLTFData>;
     }
 }
 declare module BABYLON.GLTF2.Exporter {
@@ -55491,7 +55491,7 @@ declare module BABYLON.GLTF2.Exporter {
                 * @param byteStride byte distance between conequential elements
                 * @param name name of the buffer view
                 * @returns bufferView for glTF
-                */private static _CreateBufferView(bufferIndex: number, byteOffset: number, byteLength: number, byteStride?: number, name?: string): BABYLON.GLTF2.IBufferView;
+                */private static _CreateBufferView(bufferIndex: number, byteOffset: number, byteLength: number, byteStride?: number, name?: string): IBufferView;
             /**
                 * Creates an accessor based on the supplied arguments
                 * @param bufferviewIndex The index of the bufferview referenced by this accessor
@@ -55503,59 +55503,59 @@ declare module BABYLON.GLTF2.Exporter {
                 * @param min Minimum value of each component in this attribute
                 * @param max Maximum value of each component in this attribute
                 * @returns accessor for glTF
-                */private static _CreateAccessor(bufferviewIndex: number, name: string, type: BABYLON.GLTF2.AccessorType, componentType: BABYLON.GLTF2.AccessorComponentType, count: number, byteOffset: BABYLON.Nullable<number>, min: BABYLON.Nullable<number[]>, max: BABYLON.Nullable<number[]>): BABYLON.GLTF2.IAccessor;
+                */private static _CreateAccessor(bufferviewIndex: number, name: string, type: AccessorType, componentType: AccessorComponentType, count: number, byteOffset: Nullable<number>, min: Nullable<number[]>, max: Nullable<number[]>): IAccessor;
             /**
                 * Calculates the minimum and maximum values of an array of position floats
                 * @param positions Positions array of a mesh
                 * @param vertexStart Starting vertex offset to calculate min and max values
                 * @param vertexCount Number of vertices to check for min and max values
                 * @returns min number array and max number array
-                */private static _CalculateMinMaxPositions(positions: BABYLON.FloatArray, vertexStart: number, vertexCount: number, convertToRightHandedSystem: boolean): {
+                */private static _CalculateMinMaxPositions(positions: FloatArray, vertexStart: number, vertexCount: number, convertToRightHandedSystem: boolean): {
                     min: number[];
                     max: number[];
             };
             /**
-                * Converts a new right-handed BABYLON.Vector3
+                * Converts a new right-handed Vector3
                 * @param vector vector3 array
-                * @returns right-handed BABYLON.Vector3
-                */private static _GetRightHandedPositionVector3(vector: BABYLON.Vector3): BABYLON.Vector3;
+                * @returns right-handed Vector3
+                */private static _GetRightHandedPositionVector3(vector: Vector3): Vector3;
             /**
-                * Converts a BABYLON.Vector3 to right-handed
-                * @param vector BABYLON.Vector3 to convert to right-handed
-                */private static _GetRightHandedPositionVector3FromRef(vector: BABYLON.Vector3): void;
+                * Converts a Vector3 to right-handed
+                * @param vector Vector3 to convert to right-handed
+                */private static _GetRightHandedPositionVector3FromRef(vector: Vector3): void;
             /**
                 * Converts a three element number array to right-handed
                 * @param vector number array to convert to right-handed
                 */private static _GetRightHandedPositionArray3FromRef(vector: number[]): void;
             /**
-                * Converts a new right-handed BABYLON.Vector3
+                * Converts a new right-handed Vector3
                 * @param vector vector3 array
-                * @returns right-handed BABYLON.Vector3
-                */private static _GetRightHandedNormalVector3(vector: BABYLON.Vector3): BABYLON.Vector3;
+                * @returns right-handed Vector3
+                */private static _GetRightHandedNormalVector3(vector: Vector3): Vector3;
             /**
-                * Converts a BABYLON.Vector3 to right-handed
-                * @param vector BABYLON.Vector3 to convert to right-handed
-                */private static _GetRightHandedNormalVector3FromRef(vector: BABYLON.Vector3): void;
+                * Converts a Vector3 to right-handed
+                * @param vector Vector3 to convert to right-handed
+                */private static _GetRightHandedNormalVector3FromRef(vector: Vector3): void;
             /**
                 * Converts a three element number array to right-handed
                 * @param vector number array to convert to right-handed
                 */private static _GetRightHandedNormalArray3FromRef(vector: number[]): void;
             /**
-                * Converts a BABYLON.Vector4 to right-handed
-                * @param vector BABYLON.Vector4 to convert to right-handed
-                */private static _GetRightHandedVector4FromRef(vector: BABYLON.Vector4): void;
+                * Converts a Vector4 to right-handed
+                * @param vector Vector4 to convert to right-handed
+                */private static _GetRightHandedVector4FromRef(vector: Vector4): void;
             /**
-                * Converts a BABYLON.Vector4 to right-handed
-                * @param vector BABYLON.Vector4 to convert to right-handed
+                * Converts a Vector4 to right-handed
+                * @param vector Vector4 to convert to right-handed
                 */private static _GetRightHandedArray4FromRef(vector: number[]): void;
             /**
-                * Converts a BABYLON.Quaternion to right-handed
+                * Converts a Quaternion to right-handed
                 * @param quaternion Source quaternion to convert to right-handed
-                */private static _GetRightHandedQuaternionFromRef(quaternion: BABYLON.Quaternion): void;
+                */private static _GetRightHandedQuaternionFromRef(quaternion: Quaternion): void;
             /**
-                * Converts a BABYLON.Quaternion to right-handed
+                * Converts a Quaternion to right-handed
                 * @param quaternion Source quaternion to convert to right-handed
-                */private static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]): void;private static _NormalizeTangentFromRef(tangent: BABYLON.Vector4): void;
+                */private static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]): void;private static _NormalizeTangentFromRef(tangent: Vector4): void;
     }
 }
 declare module BABYLON.GLTF2.Exporter.Extensions {
@@ -55571,7 +55571,7 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
             required: boolean;
             constructor(exporter: _Exporter);
             dispose(): void;
-            preExportTextureAsync(context: string, babylonTexture: BABYLON.Texture, mimeType: BABYLON.GLTF2.ImageMimeType): BABYLON.Nullable<Promise<BABYLON.Texture>>;
+            preExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Nullable<Promise<Texture>>;
             /**
                 * Transform the babylon texture by the offset, rotation and scale parameters using a procedural texture
                 * @param babylonTexture
@@ -55580,7 +55580,7 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
                 * @param scale
                 * @param scene
                 */
-            textureTransformTextureAsync(babylonTexture: BABYLON.Texture, offset: BABYLON.Vector2, rotation: number, scale: BABYLON.Vector2, scene: BABYLON.Scene): Promise<BABYLON.BaseTexture>;
+            textureTransformTextureAsync(babylonTexture: Texture, offset: Vector2, rotation: number, scale: Vector2, scene: Scene): Promise<BaseTexture>;
     }
 }
 declare module "babylonjs-gltf2interface" {
