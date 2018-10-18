@@ -1352,7 +1352,7 @@ declare module BABYLON.GLTF2 {
             _loadUriAsync?(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
     }
 }
-declare module BABYLON.GLTF2 {
+declare module BABYLON.GLTF2.Loader {
     /** @hidden */
     export var __IGLTFLoaderInterfacesV2: number;
     /**

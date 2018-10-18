@@ -59,7 +59,7 @@ describe('Babylon glTF Serializer', () => {
         it('should serialize empty Babylon scene to glTF with only asset property', () => {
             const scene = new BABYLON.Scene(subject);
 
-            return BABYLON.GLTF2.Exporter.GLTF2Export.GLTFAsync(scene, 'test').then(glTFData => {
+            return BABYLON.GLTF2Export.GLTFAsync(scene, 'test').then(glTFData => {
                 const jsonString = glTFData.glTFFiles['test.gltf'] as string;
                 const jsonData = JSON.parse(jsonString);
 
@@ -72,7 +72,7 @@ describe('Babylon glTF Serializer', () => {
             const scene = new BABYLON.Scene(subject);
             BABYLON.Mesh.CreateSphere('sphere', 16, 2, scene);
 
-            return BABYLON.GLTF2.Exporter.GLTF2Export.GLTFAsync(scene, 'test')
+            return BABYLON.GLTF2Export.GLTFAsync(scene, 'test')
                 .then(glTFData => {
                     const jsonString = glTFData.glTFFiles['test.gltf'] as string;
                     const jsonData = JSON.parse(jsonString);
