@@ -18,6 +18,8 @@
 
 ## Updates
 
+- Updated ES6 example on how to getting started [Readme](https://github.com/BabylonJS/Babylon.js/)
+
 ### GUI
 
 - Added `button.image` and `button.textBlock` to simplify access to button internal parts ([Deltakosh](https://github.com/deltakosh))
