@@ -1042,13 +1042,13 @@ declare module BABYLON {
         private _onPointerMove;
         private _onPointerDown;
         private _onPointerUp;
-        /** Deprecated. Use onPointerObservable instead */
+        /** Callback called when a pointer move is detected */
         onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
-        /** Deprecated. Use onPointerObservable instead */
+        /** Callback called when a pointer down is detected  */
         onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
-        /** Deprecated. Use onPointerObservable instead */
+        /** Callback called when a pointer up is detected  */
         onPointerUp: (evt: PointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
-        /** Deprecated. Use onPointerObservable instead */
+        /** Callback called when a pointer pick is detected */
         onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         /**
          * This observable event is triggered when any ponter event is triggered. It is registered during Scene.attachControl() and it is called BEFORE the 3D engine process anything (mesh/sprite picking for instance).
@@ -1606,37 +1606,11 @@ protected readonly _isAlternateRenderingEnabled: boolean;
          * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
          */
         readonly activeBonesPerfCounter: PerfCounter;
-        /** @hidden */
-        getInterFramePerfCounter(): number;
-        /** @hidden */
-        readonly interFramePerfCounter: Nullable<PerfCounter>;
-        /** @hidden */
-        getLastFrameDuration(): number;
-        /** @hidden */
-        readonly lastFramePerfCounter: Nullable<PerfCounter>;
-        /** @hidden */
-        getEvaluateActiveMeshesDuration(): number;
-        /** @hidden */
-        readonly evaluateActiveMeshesDurationPerfCounter: Nullable<PerfCounter>;
         /**
          * Gets the array of active meshes
          * @returns an array of AbstractMesh
          */
         getActiveMeshes(): SmartArray<AbstractMesh>;
-        /** @hidden */
-        getRenderTargetsDuration(): number;
-        /** @hidden */
-        getRenderDuration(): number;
-        /** @hidden */
-        readonly renderDurationPerfCounter: Nullable<PerfCounter>;
-        /** @hidden */
-        getParticlesDuration(): number;
-        /** @hidden */
-        readonly particlesDurationPerfCounter: Nullable<PerfCounter>;
-        /** @hidden */
-        getSpritesDuration(): number;
-        /** @hidden */
-        readonly spriteDuractionPerfCounter: Nullable<PerfCounter>;
         /**
          * Gets the animation ratio (which is 1.0 is the scene renders at 60fps and 2 if the scene renders at 30fps, etc.)
          * @returns a number
@@ -9532,347 +9506,6 @@ declare module BABYLON {
     }
 }
 
-/**
- * Module Debug contains the (visual) components to debug a scene correctly
- */
-declare module BABYLON.Debug {
-    /**
-     * The Axes viewer will show 3 axes in a specific point in space
-     */
-    class AxesViewer {
-        private _xline;
-        private _yline;
-        private _zline;
-        private _xmesh;
-        private _ymesh;
-        private _zmesh;
-        /**
-         * Gets the hosting scene
-         */
-        scene: Nullable<Scene>;
-        /**
-         * Gets or sets a number used to scale line length
-         */
-        scaleLines: number;
-        /**
-         * Creates a new AxesViewer
-         * @param scene defines the hosting scene
-         * @param scaleLines defines a number used to scale line length (1 by default)
-         */
-        constructor(scene: Scene, scaleLines?: number);
-        /**
-         * Force the viewer to update
-         * @param position defines the position of the viewer
-         * @param xaxis defines the x axis of the viewer
-         * @param yaxis defines the y axis of the viewer
-         * @param zaxis defines the z axis of the viewer
-         */
-        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
-        /** Releases resources */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
-     * @see demo here: https://www.babylonjs-playground.com/#0DE8F4#8
-     */
-    class BoneAxesViewer extends AxesViewer {
-        /**
-         * Gets or sets the target mesh where to display the axes viewer
-         */
-        mesh: Nullable<Mesh>;
-        /**
-         * Gets or sets the target bone where to display the axes viewer
-         */
-        bone: Nullable<Bone>;
-        /** Gets current position */
-        pos: Vector3;
-        /** Gets direction of X axis */
-        xaxis: Vector3;
-        /** Gets direction of Y axis */
-        yaxis: Vector3;
-        /** Gets direction of Z axis */
-        zaxis: Vector3;
-        /**
-         * Creates a new BoneAxesViewer
-         * @param scene defines the hosting scene
-         * @param bone defines the target bone
-         * @param mesh defines the target mesh
-         * @param scaleLines defines a scaling factor for line length (1 by default)
-         */
-        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
-        /**
-         * Force the viewer to update
-         */
-        update(): void;
-        /** Releases resources */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    interface Scene {
-        /**
-         * @hidden
-         * Backing field
-         */
-
-        /**
-         * Gets the debug layer (aka Inspector) associated with the scene
-         * @see http://doc.babylonjs.com/features/playground_debuglayer
-         */
-        debugLayer: DebugLayer;
-    }
-    /**
-     * The debug layer (aka Inspector) is the go to tool in order to better understand
-     * what is happening in your scene
-     * @see http://doc.babylonjs.com/features/playground_debuglayer
-     */
-    class DebugLayer {
-        /**
-         * Define the url to get the inspector script from.
-         * By default it uses the babylonjs CDN.
-         * @ignoreNaming
-         */
-        static InspectorURL: string;
-        private _scene;
-        private _inspector;
-        private BJSINSPECTOR;
-        /**
-         * Observable triggered when a property is changed through the inspector.
-         */
-        onPropertyChangedObservable: Observable<{
-            object: any;
-            property: string;
-            value: any;
-            initialValue: any;
-        }>;
-        /**
-         * Instantiates a new debug layer.
-         * The debug layer (aka Inspector) is the go to tool in order to better understand
-         * what is happening in your scene
-         * @see http://doc.babylonjs.com/features/playground_debuglayer
-         * @param scene Defines the scene to inspect
-         */
-        constructor(scene: Scene);
-        /** Creates the inspector window. */
-        private _createInspector;
-        /**
-         * Get if the inspector is visible or not.
-         * @returns true if visible otherwise, false
-         */
-        isVisible(): boolean;
-        /**
-         * Hide the inspector and close its window.
-         */
-        hide(): void;
-        /**
-        *
-        * Launch the debugLayer.
-        *
-        * initialTab:
-        * | Value | Tab Name |
-        * | --- | --- |
-        * | 0 | Scene |
-        * | 1 | Console |
-        * | 2 | Stats |
-        * | 3 | Textures |
-        * | 4 | Mesh |
-        * | 5 | Light |
-        * | 6 | Material |
-        * | 7 | GLTF |
-        * | 8 | GUI |
-        * | 9 | Physics |
-        * | 10 | Camera |
-        * | 11 | Audio |
-        *
-        * @param config Define the configuration of the inspector
-        */
-        show(config?: {
-            popup?: boolean;
-            initialTab?: number | string;
-            parentElement?: HTMLElement;
-            newColors?: {
-                backgroundColor?: string;
-                backgroundColorLighter?: string;
-                backgroundColorLighter2?: string;
-                backgroundColorLighter3?: string;
-                color?: string;
-                colorTop?: string;
-                colorBot?: string;
-            };
-        }): void;
-        /**
-         * Gets the active tab
-         * @return the index of the active tab or -1 if the inspector is hidden
-         */
-        getActiveTab(): number;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * Used to show the physics impostor around the specific mesh
-     */
-    class PhysicsViewer {
-        /** @hidden */
-        protected _impostors: Array<Nullable<PhysicsImpostor>>;
-        /** @hidden */
-        protected _meshes: Array<Nullable<AbstractMesh>>;
-        /** @hidden */
-        protected _scene: Nullable<Scene>;
-        /** @hidden */
-        protected _numMeshes: number;
-        /** @hidden */
-        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
-        private _renderFunction;
-        private _debugBoxMesh;
-        private _debugSphereMesh;
-        private _debugMaterial;
-        /**
-         * Creates a new PhysicsViewer
-         * @param scene defines the hosting scene
-         */
-        constructor(scene: Scene);
-        /** @hidden */
-        protected _updateDebugMeshes(): void;
-        /**
-         * Renders a specified physic impostor
-         * @param impostor defines the impostor to render
-         */
-        showImpostor(impostor: PhysicsImpostor): void;
-        /**
-         * Hides a specified physic impostor
-         * @param impostor defines the impostor to hide
-         */
-        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
-        private _getDebugMaterial;
-        private _getDebugBoxMesh;
-        private _getDebugSphereMesh;
-        private _getDebugMesh;
-        /** Releases all resources */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * As raycast might be hard to debug, the RayHelper can help rendering the different rays
-     * in order to better appreciate the issue one might have.
-     * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
-     */
-    class RayHelper {
-        /**
-         * Defines the ray we are currently tryin to visualize.
-         */
-        ray: Nullable<Ray>;
-        private _renderPoints;
-        private _renderLine;
-        private _renderFunction;
-        private _scene;
-        private _updateToMeshFunction;
-        private _attachedToMesh;
-        private _meshSpaceDirection;
-        private _meshSpaceOrigin;
-        /**
-         * Helper function to create a colored helper in a scene in one line.
-         * @param ray Defines the ray we are currently tryin to visualize
-         * @param scene Defines the scene the ray is used in
-         * @param color Defines the color we want to see the ray in
-         * @returns The newly created ray helper.
-         */
-        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
-        /**
-         * Instantiate a new ray helper.
-         * As raycast might be hard to debug, the RayHelper can help rendering the different rays
-         * in order to better appreciate the issue one might have.
-         * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
-         * @param ray Defines the ray we are currently tryin to visualize
-         */
-        constructor(ray: Ray);
-        /**
-         * Shows the ray we are willing to debug.
-         * @param scene Defines the scene the ray needs to be rendered in
-         * @param color Defines the color the ray needs to be rendered in
-         */
-        show(scene: Scene, color?: Color3): void;
-        /**
-         * Hides the ray we are debugging.
-         */
-        hide(): void;
-        private _render;
-        /**
-         * Attach a ray helper to a mesh so that we can easily see its orientation for instance or information like its normals.
-         * @param mesh Defines the mesh we want the helper attached to
-         * @param meshSpaceDirection Defines the direction of the Ray in mesh space (local space of the mesh node)
-         * @param meshSpaceOrigin Defines the origin of the Ray in mesh space (local space of the mesh node)
-         * @param length Defines the length of the ray
-         */
-        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
-        /**
-         * Detach the ray helper from the mesh it has previously been attached to.
-         */
-        detachFromMesh(): void;
-        private _updateToMesh;
-        /**
-         * Dispose the helper and release its associated resources.
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * Class used to render a debug view of a given skeleton
-     * @see http://www.babylonjs-playground.com/#1BZJVJ#8
-     */
-    class SkeletonViewer {
-        /** defines the skeleton to render */
-        skeleton: Skeleton;
-        /** defines the mesh attached to the skeleton */
-        mesh: AbstractMesh;
-        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
-        autoUpdateBonesMatrices: boolean;
-        /** defines the rendering group id to use with the viewer */
-        renderingGroupId: number;
-        /** Gets or sets the color used to render the skeleton */
-        color: Color3;
-        private _scene;
-        private _debugLines;
-        private _debugMesh;
-        private _isEnabled;
-        private _renderFunction;
-        /**
-         * Creates a new SkeletonViewer
-         * @param skeleton defines the skeleton to render
-         * @param mesh defines the mesh attached to the skeleton
-         * @param scene defines the hosting scene
-         * @param autoUpdateBonesMatrices defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)
-         * @param renderingGroupId defines the rendering group id to use with the viewer
-         */
-        constructor(
-        /** defines the skeleton to render */
-        skeleton: Skeleton, 
-        /** defines the mesh attached to the skeleton */
-        mesh: AbstractMesh, scene: Scene, 
-        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
-        autoUpdateBonesMatrices?: boolean, 
-        /** defines the rendering group id to use with the viewer */
-        renderingGroupId?: number);
-        /** Gets or sets a boolean indicating if the viewer is enabled */
-        isEnabled: boolean;
-        private _getBonePosition;
-        private _getLinesForBonesWithLength;
-        private _getLinesForBonesNoLength;
-        /** Update the viewer to sync with current skeleton state */
-        update(): void;
-        /** Release associated resources */
-        dispose(): void;
-    }
-}
-
 declare module BABYLON {
     /**
      * Interface for attribute information associated with buffer instanciation
@@ -10715,10 +10348,6 @@ private static _TextureLoaders: IInternalTextureLoader[];
          * @returns the EngineCapabilities object
          */
         getCaps(): EngineCapabilities;
-        /** @hidden */
-        readonly drawCalls: number;
-        /** @hidden */
-        readonly drawCallsPerfCounter: Nullable<PerfCounter>;
         /**
          * Gets the current depth function
          * @returns a number defining the depth function
@@ -12241,6 +11870,347 @@ declare var WebGLVertexArrayObject: {
     new (): WebGLVertexArrayObject;
 };
 
+/**
+ * Module Debug contains the (visual) components to debug a scene correctly
+ */
+declare module BABYLON.Debug {
+    /**
+     * The Axes viewer will show 3 axes in a specific point in space
+     */
+    class AxesViewer {
+        private _xline;
+        private _yline;
+        private _zline;
+        private _xmesh;
+        private _ymesh;
+        private _zmesh;
+        /**
+         * Gets the hosting scene
+         */
+        scene: Nullable<Scene>;
+        /**
+         * Gets or sets a number used to scale line length
+         */
+        scaleLines: number;
+        /**
+         * Creates a new AxesViewer
+         * @param scene defines the hosting scene
+         * @param scaleLines defines a number used to scale line length (1 by default)
+         */
+        constructor(scene: Scene, scaleLines?: number);
+        /**
+         * Force the viewer to update
+         * @param position defines the position of the viewer
+         * @param xaxis defines the x axis of the viewer
+         * @param yaxis defines the y axis of the viewer
+         * @param zaxis defines the z axis of the viewer
+         */
+        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+        /** Releases resources */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
+     * @see demo here: https://www.babylonjs-playground.com/#0DE8F4#8
+     */
+    class BoneAxesViewer extends AxesViewer {
+        /**
+         * Gets or sets the target mesh where to display the axes viewer
+         */
+        mesh: Nullable<Mesh>;
+        /**
+         * Gets or sets the target bone where to display the axes viewer
+         */
+        bone: Nullable<Bone>;
+        /** Gets current position */
+        pos: Vector3;
+        /** Gets direction of X axis */
+        xaxis: Vector3;
+        /** Gets direction of Y axis */
+        yaxis: Vector3;
+        /** Gets direction of Z axis */
+        zaxis: Vector3;
+        /**
+         * Creates a new BoneAxesViewer
+         * @param scene defines the hosting scene
+         * @param bone defines the target bone
+         * @param mesh defines the target mesh
+         * @param scaleLines defines a scaling factor for line length (1 by default)
+         */
+        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
+        /**
+         * Force the viewer to update
+         */
+        update(): void;
+        /** Releases resources */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    interface Scene {
+        /**
+         * @hidden
+         * Backing field
+         */
+
+        /**
+         * Gets the debug layer (aka Inspector) associated with the scene
+         * @see http://doc.babylonjs.com/features/playground_debuglayer
+         */
+        debugLayer: DebugLayer;
+    }
+    /**
+     * The debug layer (aka Inspector) is the go to tool in order to better understand
+     * what is happening in your scene
+     * @see http://doc.babylonjs.com/features/playground_debuglayer
+     */
+    class DebugLayer {
+        /**
+         * Define the url to get the inspector script from.
+         * By default it uses the babylonjs CDN.
+         * @ignoreNaming
+         */
+        static InspectorURL: string;
+        private _scene;
+        private _inspector;
+        private BJSINSPECTOR;
+        /**
+         * Observable triggered when a property is changed through the inspector.
+         */
+        onPropertyChangedObservable: Observable<{
+            object: any;
+            property: string;
+            value: any;
+            initialValue: any;
+        }>;
+        /**
+         * Instantiates a new debug layer.
+         * The debug layer (aka Inspector) is the go to tool in order to better understand
+         * what is happening in your scene
+         * @see http://doc.babylonjs.com/features/playground_debuglayer
+         * @param scene Defines the scene to inspect
+         */
+        constructor(scene: Scene);
+        /** Creates the inspector window. */
+        private _createInspector;
+        /**
+         * Get if the inspector is visible or not.
+         * @returns true if visible otherwise, false
+         */
+        isVisible(): boolean;
+        /**
+         * Hide the inspector and close its window.
+         */
+        hide(): void;
+        /**
+        *
+        * Launch the debugLayer.
+        *
+        * initialTab:
+        * | Value | Tab Name |
+        * | --- | --- |
+        * | 0 | Scene |
+        * | 1 | Console |
+        * | 2 | Stats |
+        * | 3 | Textures |
+        * | 4 | Mesh |
+        * | 5 | Light |
+        * | 6 | Material |
+        * | 7 | GLTF |
+        * | 8 | GUI |
+        * | 9 | Physics |
+        * | 10 | Camera |
+        * | 11 | Audio |
+        *
+        * @param config Define the configuration of the inspector
+        */
+        show(config?: {
+            popup?: boolean;
+            initialTab?: number | string;
+            parentElement?: HTMLElement;
+            newColors?: {
+                backgroundColor?: string;
+                backgroundColorLighter?: string;
+                backgroundColorLighter2?: string;
+                backgroundColorLighter3?: string;
+                color?: string;
+                colorTop?: string;
+                colorBot?: string;
+            };
+        }): void;
+        /**
+         * Gets the active tab
+         * @return the index of the active tab or -1 if the inspector is hidden
+         */
+        getActiveTab(): number;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * Used to show the physics impostor around the specific mesh
+     */
+    class PhysicsViewer {
+        /** @hidden */
+        protected _impostors: Array<Nullable<PhysicsImpostor>>;
+        /** @hidden */
+        protected _meshes: Array<Nullable<AbstractMesh>>;
+        /** @hidden */
+        protected _scene: Nullable<Scene>;
+        /** @hidden */
+        protected _numMeshes: number;
+        /** @hidden */
+        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
+        private _renderFunction;
+        private _debugBoxMesh;
+        private _debugSphereMesh;
+        private _debugMaterial;
+        /**
+         * Creates a new PhysicsViewer
+         * @param scene defines the hosting scene
+         */
+        constructor(scene: Scene);
+        /** @hidden */
+        protected _updateDebugMeshes(): void;
+        /**
+         * Renders a specified physic impostor
+         * @param impostor defines the impostor to render
+         */
+        showImpostor(impostor: PhysicsImpostor): void;
+        /**
+         * Hides a specified physic impostor
+         * @param impostor defines the impostor to hide
+         */
+        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
+        private _getDebugMaterial;
+        private _getDebugBoxMesh;
+        private _getDebugSphereMesh;
+        private _getDebugMesh;
+        /** Releases all resources */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * As raycast might be hard to debug, the RayHelper can help rendering the different rays
+     * in order to better appreciate the issue one might have.
+     * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
+     */
+    class RayHelper {
+        /**
+         * Defines the ray we are currently tryin to visualize.
+         */
+        ray: Nullable<Ray>;
+        private _renderPoints;
+        private _renderLine;
+        private _renderFunction;
+        private _scene;
+        private _updateToMeshFunction;
+        private _attachedToMesh;
+        private _meshSpaceDirection;
+        private _meshSpaceOrigin;
+        /**
+         * Helper function to create a colored helper in a scene in one line.
+         * @param ray Defines the ray we are currently tryin to visualize
+         * @param scene Defines the scene the ray is used in
+         * @param color Defines the color we want to see the ray in
+         * @returns The newly created ray helper.
+         */
+        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
+        /**
+         * Instantiate a new ray helper.
+         * As raycast might be hard to debug, the RayHelper can help rendering the different rays
+         * in order to better appreciate the issue one might have.
+         * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
+         * @param ray Defines the ray we are currently tryin to visualize
+         */
+        constructor(ray: Ray);
+        /**
+         * Shows the ray we are willing to debug.
+         * @param scene Defines the scene the ray needs to be rendered in
+         * @param color Defines the color the ray needs to be rendered in
+         */
+        show(scene: Scene, color?: Color3): void;
+        /**
+         * Hides the ray we are debugging.
+         */
+        hide(): void;
+        private _render;
+        /**
+         * Attach a ray helper to a mesh so that we can easily see its orientation for instance or information like its normals.
+         * @param mesh Defines the mesh we want the helper attached to
+         * @param meshSpaceDirection Defines the direction of the Ray in mesh space (local space of the mesh node)
+         * @param meshSpaceOrigin Defines the origin of the Ray in mesh space (local space of the mesh node)
+         * @param length Defines the length of the ray
+         */
+        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
+        /**
+         * Detach the ray helper from the mesh it has previously been attached to.
+         */
+        detachFromMesh(): void;
+        private _updateToMesh;
+        /**
+         * Dispose the helper and release its associated resources.
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * Class used to render a debug view of a given skeleton
+     * @see http://www.babylonjs-playground.com/#1BZJVJ#8
+     */
+    class SkeletonViewer {
+        /** defines the skeleton to render */
+        skeleton: Skeleton;
+        /** defines the mesh attached to the skeleton */
+        mesh: AbstractMesh;
+        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
+        autoUpdateBonesMatrices: boolean;
+        /** defines the rendering group id to use with the viewer */
+        renderingGroupId: number;
+        /** Gets or sets the color used to render the skeleton */
+        color: Color3;
+        private _scene;
+        private _debugLines;
+        private _debugMesh;
+        private _isEnabled;
+        private _renderFunction;
+        /**
+         * Creates a new SkeletonViewer
+         * @param skeleton defines the skeleton to render
+         * @param mesh defines the mesh attached to the skeleton
+         * @param scene defines the hosting scene
+         * @param autoUpdateBonesMatrices defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)
+         * @param renderingGroupId defines the rendering group id to use with the viewer
+         */
+        constructor(
+        /** defines the skeleton to render */
+        skeleton: Skeleton, 
+        /** defines the mesh attached to the skeleton */
+        mesh: AbstractMesh, scene: Scene, 
+        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
+        autoUpdateBonesMatrices?: boolean, 
+        /** defines the rendering group id to use with the viewer */
+        renderingGroupId?: number);
+        /** Gets or sets a boolean indicating if the viewer is enabled */
+        isEnabled: boolean;
+        private _getBonePosition;
+        private _getLinesForBonesWithLength;
+        private _getLinesForBonesNoLength;
+        /** Update the viewer to sync with current skeleton state */
+        update(): void;
+        /** Release associated resources */
+        dispose(): void;
+    }
+}
+
 declare module BABYLON {
     /**
      * Gather the list of keyboard event types as constants.
@@ -12425,510 +12395,6 @@ declare module BABYLON {
          * Defines the picking info associated to the info (if any)\
          */
         pickInfo: Nullable<PickingInfo>);
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Single axis drag gizmo
-     */
-    class AxisDragGizmo extends Gizmo {
-        /**
-         * Drag behavior responsible for the gizmos dragging interactions
-         */
-        dragBehavior: PointerDragBehavior;
-        private _pointerObserver;
-        /**
-         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Event that fires each time the gizmo snaps to a new location.
-         * * snapDistance is the the change in distance
-         */
-        onSnapObservable: Observable<{
-            snapDistance: number;
-        }>;
-        /**
-         * Creates an AxisDragGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param dragAxis The axis which the gizmo will be able to drag on
-         * @param color The color of the gizmo
-         */
-        constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Single axis scale gizmo
-     */
-    class AxisScaleGizmo extends Gizmo {
-        private _coloredMaterial;
-        /**
-         * Drag behavior responsible for the gizmos dragging interactions
-         */
-        dragBehavior: PointerDragBehavior;
-        private _pointerObserver;
-        /**
-         * Scale distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Event that fires each time the gizmo snaps to a new location.
-         * * snapDistance is the the change in distance
-         */
-        onSnapObservable: Observable<{
-            snapDistance: number;
-        }>;
-        /**
-         * If the scaling operation should be done on all axis (default: false)
-         */
-        uniformScaling: boolean;
-        /**
-         * Creates an AxisScaleGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param dragAxis The axis which the gizmo will be able to scale on
-         * @param color The color of the gizmo
-         */
-        constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-        /**
-         * Disposes and replaces the current meshes in the gizmo with the specified mesh
-         * @param mesh The mesh to replace the default mesh of the gizmo
-         * @param useGizmoMaterial If the gizmo's default material should be used (default: false)
-         */
-        setCustomMesh(mesh: Mesh, useGizmoMaterial?: boolean): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Bounding box gizmo
-     */
-    class BoundingBoxGizmo extends Gizmo {
-        private _lineBoundingBox;
-        private _rotateSpheresParent;
-        private _scaleBoxesParent;
-        private _boundingDimensions;
-        private _renderObserver;
-        private _pointerObserver;
-        private _scaleDragSpeed;
-        private _tmpQuaternion;
-        private _tmpVector;
-        private _tmpRotationMatrix;
-        /**
-         * If child meshes should be ignored when calculating the boudning box. This should be set to true to avoid perf hits with heavily nested meshes (Default: false)
-         */
-        ignoreChildren: boolean;
-        /**
-         * Returns true if a descendant should be included when computing the bounding box. When null, all descendants are included. If ignoreChildren is set this will be ignored. (Default: null)
-         */
-        includeChildPredicate: Nullable<(abstractMesh: AbstractMesh) => boolean>;
-        /**
-         * The size of the rotation spheres attached to the bounding box (Default: 0.1)
-         */
-        rotationSphereSize: number;
-        /**
-         * The size of the scale boxes attached to the bounding box (Default: 0.1)
-         */
-        scaleBoxSize: number;
-        /**
-         * If set, the rotation spheres and scale boxes will increase in size based on the distance away from the camera to have a consistent screen size (Default: false)
-         */
-        fixedDragMeshScreenSize: boolean;
-        /**
-         * The distance away from the object which the draggable meshes should appear world sized when fixedDragMeshScreenSize is set to true (default: 10)
-         */
-        fixedDragMeshScreenSizeDistanceFactor: number;
-        /**
-         * Fired when a rotation sphere or scale box is dragged
-         */
-        onDragStartObservable: Observable<{}>;
-        /**
-         * Fired when a scale box is dragged
-         */
-        onScaleBoxDragObservable: Observable<{}>;
-        /**
-          * Fired when a scale box drag is ended
-         */
-        onScaleBoxDragEndObservable: Observable<{}>;
-        /**
-         * Fired when a rotation sphere is dragged
-         */
-        onRotationSphereDragObservable: Observable<{}>;
-        /**
-         * Fired when a rotation sphere drag is ended
-         */
-        onRotationSphereDragEndObservable: Observable<{}>;
-        /**
-         * Relative bounding box pivot used when scaling the attached mesh. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
-         */
-        scalePivot: Nullable<Vector3>;
-        private _anchorMesh;
-        private _existingMeshScale;
-        private static _PivotCached;
-        private static _OldPivotPoint;
-        private static _PivotTranslation;
-        private static _PivotTmpVector;
-        /** @hidden */
-private static _RemoveAndStorePivotPoint(mesh: AbstractMesh): void;
-        /** @hidden */
-private static _RestorePivotPoint(mesh: AbstractMesh): void;
-        /**
-         * Creates an BoundingBoxGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param color The color of the gizmo
-         */
-        constructor(color?: Color3, gizmoLayer?: UtilityLayerRenderer);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        private _selectNode;
-        /**
-         * Updates the bounding box information for the Gizmo
-         */
-        updateBoundingBox(): void;
-        /**
-         * Enables rotation on the specified axis and disables rotation on the others
-         * @param axis The list of axis that should be enabled (eg. "xy" or "xyz")
-         */
-        setEnabledRotationAxis(axis: string): void;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-        /**
-         * Makes a mesh not pickable and wraps the mesh inside of a bounding box mesh that is pickable. (This is useful to avoid picking within complex geometry)
-         * @param mesh the mesh to wrap in the bounding box mesh and make not pickable
-         * @returns the bounding box mesh with the passed in mesh as a child
-         */
-        static MakeNotPickableAndWrapInBoundingBox(mesh: Mesh): Mesh;
-        /**
-         * CustomMeshes are not supported by this gizmo
-         * @param mesh The mesh to replace the default mesh of the gizmo
-         */
-        setCustomMesh(mesh: Mesh): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
-     */
-    class Gizmo implements IDisposable {
-        /** The utility layer the gizmo will be added to */
-        gizmoLayer: UtilityLayerRenderer;
-        /**
-         * The root mesh of the gizmo
-         */
-        protected _rootMesh: Mesh;
-        private _attachedMesh;
-        /**
-         * Ratio for the scale of the gizmo (Default: 1)
-         */
-        scaleRatio: number;
-        private _tmpMatrix;
-        /**
-         * If a custom mesh has been set (Default: false)
-         */
-        protected _customMeshSet: boolean;
-        /**
-         * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
-         * * When set, interactions will be enabled
-         */
-        attachedMesh: Nullable<AbstractMesh>;
-        /**
-         * Disposes and replaces the current meshes in the gizmo with the specified mesh
-         * @param mesh The mesh to replace the default mesh of the gizmo
-         */
-        setCustomMesh(mesh: Mesh): void;
-        /**
-         * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
-         */
-        updateGizmoRotationToMatchAttachedMesh: boolean;
-        /**
-         * If set the gizmo's position will be updated to match the attached mesh each frame (Default: true)
-         */
-        updateGizmoPositionToMatchAttachedMesh: boolean;
-        /**
-         * When set, the gizmo will always appear the same size no matter where the camera is (default: false)
-         */
-        protected _updateScale: boolean;
-        protected _interactionsEnabled: boolean;
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        private _beforeRenderObserver;
-        /**
-         * Creates a gizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         */
-        constructor(
-        /** The utility layer the gizmo will be added to */
-        gizmoLayer?: UtilityLayerRenderer);
-        private _tempVector;
-        /**
-         * @hidden
-         * Updates the gizmo to match the attached mesh's position/rotation
-         */
-        protected _update(): void;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Helps setup gizmo's in the scene to rotate/scale/position meshes
-     */
-    class GizmoManager implements IDisposable {
-        private scene;
-        /**
-         * Gizmo's created by the gizmo manager, gizmo will be null until gizmo has been enabled for the first time
-         */
-        gizmos: {
-            positionGizmo: Nullable<PositionGizmo>;
-            rotationGizmo: Nullable<RotationGizmo>;
-            scaleGizmo: Nullable<ScaleGizmo>;
-            boundingBoxGizmo: Nullable<BoundingBoxGizmo>;
-        };
-        private _gizmosEnabled;
-        private _pointerObserver;
-        private _attachedMesh;
-        private _boundingBoxColor;
-        private _defaultUtilityLayer;
-        private _defaultKeepDepthUtilityLayer;
-        /**
-         * When bounding box gizmo is enabled, this can be used to track drag/end events
-         */
-        boundingBoxDragBehavior: SixDofDragBehavior;
-        /**
-         * Array of meshes which will have the gizmo attached when a pointer selected them. If null, all meshes are attachable. (Default: null)
-         */
-        attachableMeshes: Nullable<Array<AbstractMesh>>;
-        /**
-         * If pointer events should perform attaching/detaching a gizmo, if false this can be done manually via attachToMesh. (Default: true)
-         */
-        usePointerToAttachGizmos: boolean;
-        /**
-         * Instatiates a gizmo manager
-         * @param scene the scene to overlay the gizmos on top of
-         */
-        constructor(scene: Scene);
-        /**
-         * Attaches a set of gizmos to the specified mesh
-         * @param mesh The mesh the gizmo's should be attached to
-         */
-        attachToMesh(mesh: Nullable<AbstractMesh>): void;
-        /**
-         * If the position gizmo is enabled
-         */
-        positionGizmoEnabled: boolean;
-        /**
-         * If the rotation gizmo is enabled
-         */
-        rotationGizmoEnabled: boolean;
-        /**
-         * If the scale gizmo is enabled
-         */
-        scaleGizmoEnabled: boolean;
-        /**
-         * If the boundingBox gizmo is enabled
-         */
-        boundingBoxGizmoEnabled: boolean;
-        /**
-         * Disposes of the gizmo manager
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Single plane rotation gizmo
-     */
-    class PlaneRotationGizmo extends Gizmo {
-        /**
-         * Drag behavior responsible for the gizmos dragging interactions
-         */
-        dragBehavior: PointerDragBehavior;
-        private _pointerObserver;
-        /**
-         * Rotation distance in radians that the gizmo will snap to (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Event that fires each time the gizmo snaps to a new location.
-         * * snapDistance is the the change in distance
-         */
-        onSnapObservable: Observable<{
-            snapDistance: number;
-        }>;
-        /**
-         * Creates a PlaneRotationGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param planeNormal The normal of the plane which the gizmo will be able to rotate on
-         * @param color The color of the gizmo
-         * @param tessellation Amount of tessellation to be used when creating rotation circles
-         */
-        constructor(planeNormal: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, tessellation?: number);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Gizmo that enables dragging a mesh along 3 axis
-     */
-    class PositionGizmo extends Gizmo {
-        /**
-         * Internal gizmo used for interactions on the x axis
-         */
-        xGizmo: AxisDragGizmo;
-        /**
-         * Internal gizmo used for interactions on the y axis
-         */
-        yGizmo: AxisDragGizmo;
-        /**
-         * Internal gizmo used for interactions on the z axis
-         */
-        zGizmo: AxisDragGizmo;
-        /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
-        /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
-        attachedMesh: Nullable<AbstractMesh>;
-        /**
-         * Creates a PositionGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         */
-        constructor(gizmoLayer?: UtilityLayerRenderer);
-        updateGizmoRotationToMatchAttachedMesh: boolean;
-        /**
-         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Ratio for the scale of the gizmo (Default: 1)
-         */
-        scaleRatio: number;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-        /**
-         * CustomMeshes are not supported by this gizmo
-         * @param mesh The mesh to replace the default mesh of the gizmo
-         */
-        setCustomMesh(mesh: Mesh): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Gizmo that enables rotating a mesh along 3 axis
-     */
-    class RotationGizmo extends Gizmo {
-        /**
-         * Internal gizmo used for interactions on the x axis
-         */
-        xGizmo: PlaneRotationGizmo;
-        /**
-         * Internal gizmo used for interactions on the y axis
-         */
-        yGizmo: PlaneRotationGizmo;
-        /**
-         * Internal gizmo used for interactions on the z axis
-         */
-        zGizmo: PlaneRotationGizmo;
-        /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
-        /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
-        attachedMesh: Nullable<AbstractMesh>;
-        /**
-         * Creates a RotationGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param tessellation Amount of tessellation to be used when creating rotation circles
-         */
-        constructor(gizmoLayer?: UtilityLayerRenderer, tessellation?: number);
-        updateGizmoRotationToMatchAttachedMesh: boolean;
-        /**
-         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Ratio for the scale of the gizmo (Default: 1)
-         */
-        scaleRatio: number;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-        /**
-         * CustomMeshes are not supported by this gizmo
-         * @param mesh The mesh to replace the default mesh of the gizmo
-         */
-        setCustomMesh(mesh: Mesh): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Gizmo that enables scaling a mesh along 3 axis
-     */
-    class ScaleGizmo extends Gizmo {
-        /**
-         * Internal gizmo used for interactions on the x axis
-         */
-        xGizmo: AxisScaleGizmo;
-        /**
-         * Internal gizmo used for interactions on the y axis
-         */
-        yGizmo: AxisScaleGizmo;
-        /**
-         * Internal gizmo used for interactions on the z axis
-         */
-        zGizmo: AxisScaleGizmo;
-        /**
-         * Internal gizmo used to scale all axis equally
-         */
-        uniformScaleGizmo: AxisScaleGizmo;
-        /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
-        /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
-        attachedMesh: Nullable<AbstractMesh>;
-        /**
-         * Creates a ScaleGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         */
-        constructor(gizmoLayer?: UtilityLayerRenderer);
-        updateGizmoRotationToMatchAttachedMesh: boolean;
-        /**
-         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Ratio for the scale of the gizmo (Default: 1)
-         */
-        scaleRatio: number;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
     }
 }
 
@@ -13485,6 +12951,510 @@ declare module BABYLON {
         update(): void;
         /**
          * Disposes the gamepad
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Single axis drag gizmo
+     */
+    class AxisDragGizmo extends Gizmo {
+        /**
+         * Drag behavior responsible for the gizmos dragging interactions
+         */
+        dragBehavior: PointerDragBehavior;
+        private _pointerObserver;
+        /**
+         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Event that fires each time the gizmo snaps to a new location.
+         * * snapDistance is the the change in distance
+         */
+        onSnapObservable: Observable<{
+            snapDistance: number;
+        }>;
+        /**
+         * Creates an AxisDragGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param dragAxis The axis which the gizmo will be able to drag on
+         * @param color The color of the gizmo
+         */
+        constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer);
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Single axis scale gizmo
+     */
+    class AxisScaleGizmo extends Gizmo {
+        private _coloredMaterial;
+        /**
+         * Drag behavior responsible for the gizmos dragging interactions
+         */
+        dragBehavior: PointerDragBehavior;
+        private _pointerObserver;
+        /**
+         * Scale distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Event that fires each time the gizmo snaps to a new location.
+         * * snapDistance is the the change in distance
+         */
+        onSnapObservable: Observable<{
+            snapDistance: number;
+        }>;
+        /**
+         * If the scaling operation should be done on all axis (default: false)
+         */
+        uniformScaling: boolean;
+        /**
+         * Creates an AxisScaleGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param dragAxis The axis which the gizmo will be able to scale on
+         * @param color The color of the gizmo
+         */
+        constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer);
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+        /**
+         * Disposes and replaces the current meshes in the gizmo with the specified mesh
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         * @param useGizmoMaterial If the gizmo's default material should be used (default: false)
+         */
+        setCustomMesh(mesh: Mesh, useGizmoMaterial?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Bounding box gizmo
+     */
+    class BoundingBoxGizmo extends Gizmo {
+        private _lineBoundingBox;
+        private _rotateSpheresParent;
+        private _scaleBoxesParent;
+        private _boundingDimensions;
+        private _renderObserver;
+        private _pointerObserver;
+        private _scaleDragSpeed;
+        private _tmpQuaternion;
+        private _tmpVector;
+        private _tmpRotationMatrix;
+        /**
+         * If child meshes should be ignored when calculating the boudning box. This should be set to true to avoid perf hits with heavily nested meshes (Default: false)
+         */
+        ignoreChildren: boolean;
+        /**
+         * Returns true if a descendant should be included when computing the bounding box. When null, all descendants are included. If ignoreChildren is set this will be ignored. (Default: null)
+         */
+        includeChildPredicate: Nullable<(abstractMesh: AbstractMesh) => boolean>;
+        /**
+         * The size of the rotation spheres attached to the bounding box (Default: 0.1)
+         */
+        rotationSphereSize: number;
+        /**
+         * The size of the scale boxes attached to the bounding box (Default: 0.1)
+         */
+        scaleBoxSize: number;
+        /**
+         * If set, the rotation spheres and scale boxes will increase in size based on the distance away from the camera to have a consistent screen size (Default: false)
+         */
+        fixedDragMeshScreenSize: boolean;
+        /**
+         * The distance away from the object which the draggable meshes should appear world sized when fixedDragMeshScreenSize is set to true (default: 10)
+         */
+        fixedDragMeshScreenSizeDistanceFactor: number;
+        /**
+         * Fired when a rotation sphere or scale box is dragged
+         */
+        onDragStartObservable: Observable<{}>;
+        /**
+         * Fired when a scale box is dragged
+         */
+        onScaleBoxDragObservable: Observable<{}>;
+        /**
+          * Fired when a scale box drag is ended
+         */
+        onScaleBoxDragEndObservable: Observable<{}>;
+        /**
+         * Fired when a rotation sphere is dragged
+         */
+        onRotationSphereDragObservable: Observable<{}>;
+        /**
+         * Fired when a rotation sphere drag is ended
+         */
+        onRotationSphereDragEndObservable: Observable<{}>;
+        /**
+         * Relative bounding box pivot used when scaling the attached mesh. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
+         */
+        scalePivot: Nullable<Vector3>;
+        private _anchorMesh;
+        private _existingMeshScale;
+        private static _PivotCached;
+        private static _OldPivotPoint;
+        private static _PivotTranslation;
+        private static _PivotTmpVector;
+        /** @hidden */
+private static _RemoveAndStorePivotPoint(mesh: AbstractMesh): void;
+        /** @hidden */
+private static _RestorePivotPoint(mesh: AbstractMesh): void;
+        /**
+         * Creates an BoundingBoxGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param color The color of the gizmo
+         */
+        constructor(color?: Color3, gizmoLayer?: UtilityLayerRenderer);
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        private _selectNode;
+        /**
+         * Updates the bounding box information for the Gizmo
+         */
+        updateBoundingBox(): void;
+        /**
+         * Enables rotation on the specified axis and disables rotation on the others
+         * @param axis The list of axis that should be enabled (eg. "xy" or "xyz")
+         */
+        setEnabledRotationAxis(axis: string): void;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+        /**
+         * Makes a mesh not pickable and wraps the mesh inside of a bounding box mesh that is pickable. (This is useful to avoid picking within complex geometry)
+         * @param mesh the mesh to wrap in the bounding box mesh and make not pickable
+         * @returns the bounding box mesh with the passed in mesh as a child
+         */
+        static MakeNotPickableAndWrapInBoundingBox(mesh: Mesh): Mesh;
+        /**
+         * CustomMeshes are not supported by this gizmo
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         */
+        setCustomMesh(mesh: Mesh): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
+     */
+    class Gizmo implements IDisposable {
+        /** The utility layer the gizmo will be added to */
+        gizmoLayer: UtilityLayerRenderer;
+        /**
+         * The root mesh of the gizmo
+         */
+        protected _rootMesh: Mesh;
+        private _attachedMesh;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        scaleRatio: number;
+        private _tmpMatrix;
+        /**
+         * If a custom mesh has been set (Default: false)
+         */
+        protected _customMeshSet: boolean;
+        /**
+         * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
+         * * When set, interactions will be enabled
+         */
+        attachedMesh: Nullable<AbstractMesh>;
+        /**
+         * Disposes and replaces the current meshes in the gizmo with the specified mesh
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         */
+        setCustomMesh(mesh: Mesh): void;
+        /**
+         * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
+         */
+        updateGizmoRotationToMatchAttachedMesh: boolean;
+        /**
+         * If set the gizmo's position will be updated to match the attached mesh each frame (Default: true)
+         */
+        updateGizmoPositionToMatchAttachedMesh: boolean;
+        /**
+         * When set, the gizmo will always appear the same size no matter where the camera is (default: false)
+         */
+        protected _updateScale: boolean;
+        protected _interactionsEnabled: boolean;
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        private _beforeRenderObserver;
+        /**
+         * Creates a gizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         */
+        constructor(
+        /** The utility layer the gizmo will be added to */
+        gizmoLayer?: UtilityLayerRenderer);
+        private _tempVector;
+        /**
+         * @hidden
+         * Updates the gizmo to match the attached mesh's position/rotation
+         */
+        protected _update(): void;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Helps setup gizmo's in the scene to rotate/scale/position meshes
+     */
+    class GizmoManager implements IDisposable {
+        private scene;
+        /**
+         * Gizmo's created by the gizmo manager, gizmo will be null until gizmo has been enabled for the first time
+         */
+        gizmos: {
+            positionGizmo: Nullable<PositionGizmo>;
+            rotationGizmo: Nullable<RotationGizmo>;
+            scaleGizmo: Nullable<ScaleGizmo>;
+            boundingBoxGizmo: Nullable<BoundingBoxGizmo>;
+        };
+        private _gizmosEnabled;
+        private _pointerObserver;
+        private _attachedMesh;
+        private _boundingBoxColor;
+        private _defaultUtilityLayer;
+        private _defaultKeepDepthUtilityLayer;
+        /**
+         * When bounding box gizmo is enabled, this can be used to track drag/end events
+         */
+        boundingBoxDragBehavior: SixDofDragBehavior;
+        /**
+         * Array of meshes which will have the gizmo attached when a pointer selected them. If null, all meshes are attachable. (Default: null)
+         */
+        attachableMeshes: Nullable<Array<AbstractMesh>>;
+        /**
+         * If pointer events should perform attaching/detaching a gizmo, if false this can be done manually via attachToMesh. (Default: true)
+         */
+        usePointerToAttachGizmos: boolean;
+        /**
+         * Instatiates a gizmo manager
+         * @param scene the scene to overlay the gizmos on top of
+         */
+        constructor(scene: Scene);
+        /**
+         * Attaches a set of gizmos to the specified mesh
+         * @param mesh The mesh the gizmo's should be attached to
+         */
+        attachToMesh(mesh: Nullable<AbstractMesh>): void;
+        /**
+         * If the position gizmo is enabled
+         */
+        positionGizmoEnabled: boolean;
+        /**
+         * If the rotation gizmo is enabled
+         */
+        rotationGizmoEnabled: boolean;
+        /**
+         * If the scale gizmo is enabled
+         */
+        scaleGizmoEnabled: boolean;
+        /**
+         * If the boundingBox gizmo is enabled
+         */
+        boundingBoxGizmoEnabled: boolean;
+        /**
+         * Disposes of the gizmo manager
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Single plane rotation gizmo
+     */
+    class PlaneRotationGizmo extends Gizmo {
+        /**
+         * Drag behavior responsible for the gizmos dragging interactions
+         */
+        dragBehavior: PointerDragBehavior;
+        private _pointerObserver;
+        /**
+         * Rotation distance in radians that the gizmo will snap to (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Event that fires each time the gizmo snaps to a new location.
+         * * snapDistance is the the change in distance
+         */
+        onSnapObservable: Observable<{
+            snapDistance: number;
+        }>;
+        /**
+         * Creates a PlaneRotationGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param planeNormal The normal of the plane which the gizmo will be able to rotate on
+         * @param color The color of the gizmo
+         * @param tessellation Amount of tessellation to be used when creating rotation circles
+         */
+        constructor(planeNormal: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, tessellation?: number);
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Gizmo that enables dragging a mesh along 3 axis
+     */
+    class PositionGizmo extends Gizmo {
+        /**
+         * Internal gizmo used for interactions on the x axis
+         */
+        xGizmo: AxisDragGizmo;
+        /**
+         * Internal gizmo used for interactions on the y axis
+         */
+        yGizmo: AxisDragGizmo;
+        /**
+         * Internal gizmo used for interactions on the z axis
+         */
+        zGizmo: AxisDragGizmo;
+        /** Fires an event when any of it's sub gizmos are dragged */
+        onDragStartObservable: Observable<{}>;
+        /** Fires an event when any of it's sub gizmos are released from dragging */
+        onDragEndObservable: Observable<{}>;
+        attachedMesh: Nullable<AbstractMesh>;
+        /**
+         * Creates a PositionGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         */
+        constructor(gizmoLayer?: UtilityLayerRenderer);
+        updateGizmoRotationToMatchAttachedMesh: boolean;
+        /**
+         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        scaleRatio: number;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+        /**
+         * CustomMeshes are not supported by this gizmo
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         */
+        setCustomMesh(mesh: Mesh): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Gizmo that enables rotating a mesh along 3 axis
+     */
+    class RotationGizmo extends Gizmo {
+        /**
+         * Internal gizmo used for interactions on the x axis
+         */
+        xGizmo: PlaneRotationGizmo;
+        /**
+         * Internal gizmo used for interactions on the y axis
+         */
+        yGizmo: PlaneRotationGizmo;
+        /**
+         * Internal gizmo used for interactions on the z axis
+         */
+        zGizmo: PlaneRotationGizmo;
+        /** Fires an event when any of it's sub gizmos are dragged */
+        onDragStartObservable: Observable<{}>;
+        /** Fires an event when any of it's sub gizmos are released from dragging */
+        onDragEndObservable: Observable<{}>;
+        attachedMesh: Nullable<AbstractMesh>;
+        /**
+         * Creates a RotationGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param tessellation Amount of tessellation to be used when creating rotation circles
+         */
+        constructor(gizmoLayer?: UtilityLayerRenderer, tessellation?: number);
+        updateGizmoRotationToMatchAttachedMesh: boolean;
+        /**
+         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        scaleRatio: number;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+        /**
+         * CustomMeshes are not supported by this gizmo
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         */
+        setCustomMesh(mesh: Mesh): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Gizmo that enables scaling a mesh along 3 axis
+     */
+    class ScaleGizmo extends Gizmo {
+        /**
+         * Internal gizmo used for interactions on the x axis
+         */
+        xGizmo: AxisScaleGizmo;
+        /**
+         * Internal gizmo used for interactions on the y axis
+         */
+        yGizmo: AxisScaleGizmo;
+        /**
+         * Internal gizmo used for interactions on the z axis
+         */
+        zGizmo: AxisScaleGizmo;
+        /**
+         * Internal gizmo used to scale all axis equally
+         */
+        uniformScaleGizmo: AxisScaleGizmo;
+        /** Fires an event when any of it's sub gizmos are dragged */
+        onDragStartObservable: Observable<{}>;
+        /** Fires an event when any of it's sub gizmos are released from dragging */
+        onDragEndObservable: Observable<{}>;
+        attachedMesh: Nullable<AbstractMesh>;
+        /**
+         * Creates a ScaleGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         */
+        constructor(gizmoLayer?: UtilityLayerRenderer);
+        updateGizmoRotationToMatchAttachedMesh: boolean;
+        /**
+         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        scaleRatio: number;
+        /**
+         * Disposes of the gizmo
          */
         dispose(): void;
     }
@@ -18499,6 +18469,16 @@ declare module BABYLON {
         forceCompilationAsync(mesh: AbstractMesh, options?: Partial<{
             clipPlane: boolean;
         }>): Promise<void>;
+        private static readonly _ImageProcessingDirtyCallBack;
+        private static readonly _TextureDirtyCallBack;
+        private static readonly _FresnelDirtyCallBack;
+        private static readonly _MiscDirtyCallBack;
+        private static readonly _LightsDirtyCallBack;
+        private static readonly _AttributeDirtyCallBack;
+        private static _FresnelAndMiscDirtyCallBack;
+        private static _TextureAndMiscDirtyCallBack;
+        private static readonly _DirtyCallbackArray;
+        private static readonly _RunDirtyCallBacks;
         /**
          * Marks a define in the material to indicate that it needs to be re-computed
          * @param flag defines a flag used to determine which parts of the material have to be marked as dirty
@@ -21459,7 +21439,7 @@ declare module BABYLON {
         static FromArray(array: ArrayLike<number>, offset?: number): Vector3;
         /**
          * Returns a new Vector3 set from the index "offset" of the given Float32Array
-         * This function is deprecated.  Use FromArray instead
+         * This function is deprecated. Use FromArray instead
          * @param array defines the source array
          * @param offset defines the offset in the source array
          * @returns the new Vector3
@@ -40988,6 +40968,969 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * This represents all the required metrics to create a VR camera.
+     * @see http://doc.babylonjs.com/babylon101/cameras#device-orientation-camera
+     */
+    class VRCameraMetrics {
+        /**
+         * Define the horizontal resolution off the screen.
+         */
+        hResolution: number;
+        /**
+         * Define the vertical resolution off the screen.
+         */
+        vResolution: number;
+        /**
+         * Define the horizontal screen size.
+         */
+        hScreenSize: number;
+        /**
+         * Define the vertical screen size.
+         */
+        vScreenSize: number;
+        /**
+         * Define the vertical screen center position.
+         */
+        vScreenCenter: number;
+        /**
+         * Define the distance of the eyes to the screen.
+         */
+        eyeToScreenDistance: number;
+        /**
+         * Define the distance between both lenses
+         */
+        lensSeparationDistance: number;
+        /**
+         * Define the distance between both viewer's eyes.
+         */
+        interpupillaryDistance: number;
+        /**
+         * Define the distortion factor of the VR postprocess.
+         * Please, touch with care.
+         */
+        distortionK: number[];
+        /**
+         * Define the chromatic aberration correction factors for the VR post process.
+         */
+        chromaAbCorrection: number[];
+        /**
+         * Define the scale factor of the post process.
+         * The smaller the better but the slower.
+         */
+        postProcessScaleFactor: number;
+        /**
+         * Define an offset for the lens center.
+         */
+        lensCenterOffset: number;
+        /**
+         * Define if the current vr camera should compensate the distortion of the lense or not.
+         */
+        compensateDistortion: boolean;
+        /**
+         * Gets the rendering aspect ratio based on the provided resolutions.
+         */
+        readonly aspectRatio: number;
+        /**
+         * Gets the aspect ratio based on the FOV, scale factors, and real screen sizes.
+         */
+        readonly aspectRatioFov: number;
+        /**
+         * @hidden
+         */
+        readonly leftHMatrix: Matrix;
+        /**
+         * @hidden
+         */
+        readonly rightHMatrix: Matrix;
+        /**
+         * @hidden
+         */
+        readonly leftPreViewMatrix: Matrix;
+        /**
+         * @hidden
+         */
+        readonly rightPreViewMatrix: Matrix;
+        /**
+         * Get the default VRMetrics based on the most generic setup.
+         * @returns the default vr metrics
+         */
+        static GetDefault(): VRCameraMetrics;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate VR rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/babylon101/cameras#vr-device-orientation-cameras
+     */
+    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new VRDeviceOrientationArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines the camera rotation along the logitudinal axis
+         * @param beta defines the camera rotation along the latitudinal axis
+         * @param radius defines the camera distance from its target
+         * @param target defines the camera target
+         * @param scene defines the scene the camera belongs to
+         * @param compensateDistortion defines if the camera needs to compensate the lens distorsion
+         * @param vrCameraMetrics defines the vr metrics associated to the camera
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        /**
+         * Gets camera class name
+         * @returns VRDeviceOrientationArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate VR rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/babylon101/cameras#vr-device-orientation-cameras
+     */
+    class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
+        /**
+         * Creates a new VRDeviceOrientationFreeCamera
+         * @param name defines camera name
+         * @param position defines the start position of the camera
+         * @param scene defines the scene the camera belongs to
+         * @param compensateDistortion defines if the camera needs to compensate the lens distorsion
+         * @param vrCameraMetrics defines the vr metrics associated to the camera
+         */
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        /**
+         * Gets camera class name
+         * @returns VRDeviceOrientationFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate VR rendering (based on VRDeviceOrientationFreeCamera)
+     * @see http://doc.babylonjs.com/babylon101/cameras#vr-device-orientation-cameras
+     */
+    class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCamera {
+        /**
+         * Creates a new VRDeviceOrientationGamepadCamera
+         * @param name defines camera name
+         * @param position defines the start position of the camera
+         * @param scene defines the scene the camera belongs to
+         * @param compensateDistortion defines if the camera needs to compensate the lens distorsion
+         * @param vrCameraMetrics defines the vr metrics associated to the camera
+         */
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        /**
+         * Gets camera class name
+         * @returns VRDeviceOrientationGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Options to modify the vr teleportation behavior.
+     */
+    interface VRTeleportationOptions {
+        /**
+         * The name of the mesh which should be used as the teleportation floor. (default: null)
+         */
+        floorMeshName?: string;
+        /**
+         * A list of meshes to be used as the teleportation floor. (default: empty)
+         */
+        floorMeshes?: Mesh[];
+    }
+    /**
+     * Options to modify the vr experience helper's behavior.
+     */
+    interface VRExperienceHelperOptions extends WebVROptions {
+        /**
+         * Create a DeviceOrientationCamera to be used as your out of vr camera. (default: true)
+         */
+        createDeviceOrientationCamera?: boolean;
+        /**
+         * Create a VRDeviceOrientationFreeCamera to be used for VR when no external HMD is found. (default: true)
+         */
+        createFallbackVRDeviceOrientationFreeCamera?: boolean;
+        /**
+         * Uses the main button on the controller to toggle the laser casted. (default: true)
+         */
+        laserToggle?: boolean;
+        /**
+         * A list of meshes to be used as the teleportation floor. If specified, teleportation will be enabled (default: undefined)
+         */
+        floorMeshes?: Mesh[];
+    }
+    /**
+     * Helps to quickly add VR support to an existing scene.
+     * See http://doc.babylonjs.com/how_to/webvr_helper
+     */
+    class VRExperienceHelper {
+        /** Options to modify the vr experience helper's behavior. */
+        webVROptions: VRExperienceHelperOptions;
+        private _scene;
+        private _position;
+        private _btnVR;
+        private _btnVRDisplayed;
+        private _webVRsupported;
+        private _webVRready;
+        private _webVRrequesting;
+        private _webVRpresenting;
+        private _hasEnteredVR;
+        private _fullscreenVRpresenting;
+        private _canvas;
+        private _webVRCamera;
+        private _vrDeviceOrientationCamera;
+        private _deviceOrientationCamera;
+        private _existingCamera;
+        private _onKeyDown;
+        private _onVrDisplayPresentChange;
+        private _onVRDisplayChanged;
+        private _onVRRequestPresentStart;
+        private _onVRRequestPresentComplete;
+        /**
+         * Observable raised when entering VR.
+         */
+        onEnteringVRObservable: Observable<VRExperienceHelper>;
+        /**
+         * Observable raised when exiting VR.
+         */
+        onExitingVRObservable: Observable<VRExperienceHelper>;
+        /**
+         * Observable raised when controller mesh is loaded.
+         */
+        onControllerMeshLoadedObservable: Observable<WebVRController>;
+        /** Return this.onEnteringVRObservable
+         * Note: This one is for backward compatibility. Please use onEnteringVRObservable directly
+         */
+        readonly onEnteringVR: Observable<VRExperienceHelper>;
+        /** Return this.onExitingVRObservable
+         * Note: This one is for backward compatibility. Please use onExitingVRObservable directly
+         */
+        readonly onExitingVR: Observable<VRExperienceHelper>;
+        /** Return this.onControllerMeshLoadedObservable
+         * Note: This one is for backward compatibility. Please use onControllerMeshLoadedObservable directly
+         */
+        readonly onControllerMeshLoaded: Observable<WebVRController>;
+        private _rayLength;
+        private _useCustomVRButton;
+        private _teleportationRequested;
+        private _teleportActive;
+        private _floorMeshName;
+        private _floorMeshesCollection;
+        private _rotationAllowed;
+        private _teleportBackwardsVector;
+        private _teleportationTarget;
+        private _isDefaultTeleportationTarget;
+        private _postProcessMove;
+        private _teleportationFillColor;
+        private _teleportationBorderColor;
+        private _rotationAngle;
+        private _haloCenter;
+        private _cameraGazer;
+        private _padSensibilityUp;
+        private _padSensibilityDown;
+        private _leftController;
+        private _rightController;
+        /**
+         * Observable raised when a new mesh is selected based on meshSelectionPredicate
+         */
+        onNewMeshSelected: Observable<AbstractMesh>;
+        /**
+         * Observable raised when a new mesh is picked based on meshSelectionPredicate
+         */
+        onNewMeshPicked: Observable<PickingInfo>;
+        private _circleEase;
+        /**
+         * Observable raised before camera teleportation
+        */
+        onBeforeCameraTeleport: Observable<Vector3>;
+        /**
+         *  Observable raised after camera teleportation
+        */
+        onAfterCameraTeleport: Observable<Vector3>;
+        /**
+        * Observable raised when current selected mesh gets unselected
+        */
+        onSelectedMeshUnselected: Observable<AbstractMesh>;
+        private _raySelectionPredicate;
+        /**
+         * To be optionaly changed by user to define custom ray selection
+         */
+        raySelectionPredicate: (mesh: AbstractMesh) => boolean;
+        /**
+         * To be optionaly changed by user to define custom selection logic (after ray selection)
+         */
+        meshSelectionPredicate: (mesh: AbstractMesh) => boolean;
+        /**
+         * Set teleportation enabled. If set to false camera teleportation will be disabled but camera rotation will be kept.
+         */
+        teleportationEnabled: boolean;
+        private _defaultHeight;
+        private _teleportationInitialized;
+        private _interactionsEnabled;
+        private _interactionsRequested;
+        private _displayGaze;
+        private _displayLaserPointer;
+        /**
+         * The mesh used to display where the user is going to teleport.
+         */
+        /**
+        * Sets the mesh to be used to display where the user is going to teleport.
+        */
+        teleportationTarget: Mesh;
+        /**
+         * The mesh used to display where the user is selecting, this mesh will be cloned and set as the gazeTracker for the left and right controller
+         * when set bakeCurrentTransformIntoVertices will be called on the mesh.
+         * See http://doc.babylonjs.com/resources/baking_transformations
+         */
+        gazeTrackerMesh: Mesh;
+        /**
+         * If the gaze trackers scale should be updated to be constant size when pointing at near/far meshes
+         */
+        updateGazeTrackerScale: boolean;
+        /**
+         * The gaze tracking mesh corresponding to the left controller
+         */
+        readonly leftControllerGazeTrackerMesh: Nullable<Mesh>;
+        /**
+         * The gaze tracking mesh corresponding to the right controller
+         */
+        readonly rightControllerGazeTrackerMesh: Nullable<Mesh>;
+        /**
+         * If the ray of the gaze should be displayed.
+         */
+        /**
+        * Sets if the ray of the gaze should be displayed.
+        */
+        displayGaze: boolean;
+        /**
+         * If the ray of the LaserPointer should be displayed.
+         */
+        /**
+        * Sets if the ray of the LaserPointer should be displayed.
+        */
+        displayLaserPointer: boolean;
+        /**
+         * The deviceOrientationCamera used as the camera when not in VR.
+         */
+        readonly deviceOrientationCamera: Nullable<DeviceOrientationCamera>;
+        /**
+         * Based on the current WebVR support, returns the current VR camera used.
+         */
+        readonly currentVRCamera: Nullable<Camera>;
+        /**
+         * The webVRCamera which is used when in VR.
+         */
+        readonly webVRCamera: WebVRFreeCamera;
+        /**
+         * The deviceOrientationCamera that is used as a fallback when vr device is not connected.
+         */
+        readonly vrDeviceOrientationCamera: Nullable<VRDeviceOrientationFreeCamera>;
+        private readonly _teleportationRequestInitiated;
+        /**
+         * Instantiates a VRExperienceHelper.
+         * Helps to quickly add VR support to an existing scene.
+         * @param scene The scene the VRExperienceHelper belongs to.
+         * @param webVROptions Options to modify the vr experience helper's behavior.
+         */
+        constructor(scene: Scene, 
+        /** Options to modify the vr experience helper's behavior. */
+        webVROptions?: VRExperienceHelperOptions);
+        private _onDefaultMeshLoaded;
+        private _onResize;
+        private _onFullscreenChange;
+        /**
+         * Gets a value indicating if we are currently in VR mode.
+         */
+        readonly isInVRMode: boolean;
+        private onVrDisplayPresentChange;
+        private onVRDisplayChanged;
+        private moveButtonToBottomRight;
+        private displayVRButton;
+        private updateButtonVisibility;
+        /**
+         * Attempt to enter VR. If a headset is connected and ready, will request present on that.
+         * Otherwise, will use the fullscreen API.
+         */
+        enterVR(): void;
+        /**
+         * Attempt to exit VR, or fullscreen.
+         */
+        exitVR(): void;
+        /**
+         * The position of the vr experience helper.
+         */
+        /**
+        * Sets the position of the vr experience helper.
+        */
+        position: Vector3;
+        /**
+         * Enables controllers and user interactions such as selecting and object or clicking on an object.
+         */
+        enableInteractions(): void;
+        private readonly _noControllerIsActive;
+        private beforeRender;
+        private _isTeleportationFloor;
+        /**
+         * Adds a floor mesh to be used for teleportation.
+         * @param floorMesh the mesh to be used for teleportation.
+         */
+        addFloorMesh(floorMesh: Mesh): void;
+        /**
+         * Removes a floor mesh from being used for teleportation.
+         * @param floorMesh the mesh to be removed.
+         */
+        removeFloorMesh(floorMesh: Mesh): void;
+        /**
+         * Enables interactions and teleportation using the VR controllers and gaze.
+         * @param vrTeleportationOptions options to modify teleportation behavior.
+         */
+        enableTeleportation(vrTeleportationOptions?: VRTeleportationOptions): void;
+        private _onNewGamepadConnected;
+        private _tryEnableInteractionOnController;
+        private _onNewGamepadDisconnected;
+        private _enableInteractionOnController;
+        private _checkTeleportWithRay;
+        private _checkRotate;
+        private _checkTeleportBackwards;
+        private _enableTeleportationOnController;
+        private _createTeleportationCircles;
+        private _displayTeleportationTarget;
+        private _hideTeleportationTarget;
+        private _rotateCamera;
+        private _moveTeleportationSelectorTo;
+        private _workingVector;
+        private _workingQuaternion;
+        private _workingMatrix;
+        /**
+         * Teleports the users feet to the desired location
+         * @param location The location where the user's feet should be placed
+         */
+        teleportCamera(location: Vector3): void;
+        private _convertNormalToDirectionOfRay;
+        private _castRayAndSelectObject;
+        private _notifySelectedMeshUnselected;
+        /**
+         * Sets the color of the laser ray from the vr controllers.
+         * @param color new color for the ray.
+         */
+        changeLaserColor(color: Color3): void;
+        /**
+         * Sets the color of the ray from the vr headsets gaze.
+         * @param color new color for the ray.
+         */
+        changeGazeColor(color: Color3): void;
+        /**
+         * Exits VR and disposes of the vr experience helper
+         */
+        dispose(): void;
+        /**
+         * Gets the name of the VRExperienceHelper class
+         * @returns "VRExperienceHelper"
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This is a copy of VRPose. See https://developer.mozilla.org/en-US/docs/Web/API/VRPose
+     * IMPORTANT!! The data is right-hand data.
+     * @export
+     * @interface DevicePose
+     */
+    interface DevicePose {
+        /**
+         * The position of the device, values in array are [x,y,z].
+         */
+        readonly position: Nullable<Float32Array>;
+        /**
+         * The linearVelocity of the device, values in array are [x,y,z].
+         */
+        readonly linearVelocity: Nullable<Float32Array>;
+        /**
+         * The linearAcceleration of the device, values in array are [x,y,z].
+         */
+        readonly linearAcceleration: Nullable<Float32Array>;
+        /**
+         * The orientation of the device in a quaternion array, values in array are [x,y,z,w].
+         */
+        readonly orientation: Nullable<Float32Array>;
+        /**
+         * The angularVelocity of the device, values in array are [x,y,z].
+         */
+        readonly angularVelocity: Nullable<Float32Array>;
+        /**
+         * The angularAcceleration of the device, values in array are [x,y,z].
+         */
+        readonly angularAcceleration: Nullable<Float32Array>;
+    }
+    /**
+    * Interface representing a pose controlled object in Babylon.
+    * A pose controlled object has both regular pose values as well as pose values
+    * from an external device such as a VR head mounted display
+    */
+    interface PoseControlled {
+        /**
+         * The position of the object in babylon space.
+         */
+        position: Vector3;
+        /**
+         * The rotation quaternion of the object in babylon space.
+         */
+        rotationQuaternion: Quaternion;
+        /**
+         * The position of the device in babylon space.
+         */
+        devicePosition?: Vector3;
+        /**
+         * The rotation quaternion of the device in babylon space.
+         */
+        deviceRotationQuaternion: Quaternion;
+        /**
+         * The raw pose coming from the device.
+         */
+        rawPose: Nullable<DevicePose>;
+        /**
+         * The scale of the device to be used when translating from device space to babylon space.
+         */
+        deviceScaleFactor: number;
+        /**
+         * Updates the poseControlled values based on the input device pose.
+         * @param poseData the pose data to update the object with
+         */
+        updateFromDevice(poseData: DevicePose): void;
+    }
+    /**
+     * Set of options to customize the webVRCamera
+     */
+    interface WebVROptions {
+        /**
+         * Sets if the webVR camera should be tracked to the vrDevice. (default: true)
+         */
+        trackPosition?: boolean;
+        /**
+         * Sets the scale of the vrDevice in babylon space. (default: 1)
+         */
+        positionScale?: number;
+        /**
+         * If there are more than one VRDisplays, this will choose the display matching this name. (default: pick first vrDisplay)
+         */
+        displayName?: string;
+        /**
+         * Should the native controller meshes be initialized. (default: true)
+         */
+        controllerMeshes?: boolean;
+        /**
+         * Creating a default HemiLight only on controllers. (default: true)
+         */
+        defaultLightingOnControllers?: boolean;
+        /**
+         * If you don't want to use the default VR button of the helper. (default: false)
+         */
+        useCustomVRButton?: boolean;
+        /**
+         * If you'd like to provide your own button to the VRHelper. (default: standard babylon vr button)
+         */
+        customVRButton?: HTMLButtonElement;
+        /**
+         * To change the length of the ray for gaze/controllers. Will be scaled by positionScale. (default: 100)
+         */
+        rayLength?: number;
+        /**
+         * To change the default offset from the ground to account for user's height in meters. Will be scaled by positionScale. (default: 1.7)
+         */
+        defaultHeight?: number;
+    }
+    /**
+     * This represents a WebVR camera.
+     * The WebVR camera is Babylon's simple interface to interaction with Windows Mixed Reality, HTC Vive and Oculus Rift.
+     * @example http://doc.babylonjs.com/how_to/webvr_camera
+     */
+    class WebVRFreeCamera extends FreeCamera implements PoseControlled {
+        private webVROptions;
+        /**
+         * @hidden
+         * The vrDisplay tied to the camera. See https://developer.mozilla.org/en-US/docs/Web/API/VRDisplay
+         */
+
+        /**
+         * The rawPose of the vrDevice.
+         */
+        rawPose: Nullable<DevicePose>;
+        private _onVREnabled;
+        private _specsVersion;
+        private _attached;
+        private _frameData;
+        protected _descendants: Array<Node>;
+        private _deviceRoomPosition;
+        /** @hidden */
+
+        private _standingMatrix;
+        /**
+         * Represents device position in babylon space.
+         */
+        devicePosition: Vector3;
+        /**
+         * Represents device rotation in babylon space.
+         */
+        deviceRotationQuaternion: Quaternion;
+        /**
+         * The scale of the device to be used when translating from device space to babylon space.
+         */
+        deviceScaleFactor: number;
+        private _deviceToWorld;
+        private _worldToDevice;
+        /**
+         * References to the webVR controllers for the vrDevice.
+         */
+        controllers: Array<WebVRController>;
+        /**
+         * Emits an event when a controller is attached.
+         */
+        onControllersAttachedObservable: Observable<WebVRController[]>;
+        /**
+         * Emits an event when a controller's mesh has been loaded;
+         */
+        onControllerMeshLoadedObservable: Observable<WebVRController>;
+        /**
+         * Emits an event when the HMD's pose has been updated.
+         */
+        onPoseUpdatedFromDeviceObservable: Observable<any>;
+        private _poseSet;
+        /**
+         * If the rig cameras be used as parent instead of this camera.
+         */
+        rigParenting: boolean;
+        private _lightOnControllers;
+        private _defaultHeight?;
+        /**
+         * Instantiates a WebVRFreeCamera.
+         * @param name The name of the WebVRFreeCamera
+         * @param position The starting anchor position for the camera
+         * @param scene The scene the camera belongs to
+         * @param webVROptions a set of customizable options for the webVRCamera
+         */
+        constructor(name: string, position: Vector3, scene: Scene, webVROptions?: WebVROptions);
+        /**
+         * Gets the device distance from the ground in meters.
+         * @returns the distance in meters from the vrDevice to ground in device space. If standing matrix is not supported for the vrDevice 0 is returned.
+         */
+        deviceDistanceToRoomGround(): number;
+        /**
+         * Enables the standing matrix when supported. This can be used to position the user's view the correct height from the ground.
+         * @param callback will be called when the standing matrix is set. Callback parameter is if the standing matrix is supported.
+         */
+        useStandingMatrix(callback?: (bool: boolean) => void): void;
+        /**
+         * Enables the standing matrix when supported. This can be used to position the user's view the correct height from the ground.
+         * @returns A promise with a boolean set to if the standing matrix is supported.
+         */
+        useStandingMatrixAsync(): Promise<boolean>;
+        /**
+         * Disposes the camera
+         */
+        dispose(): void;
+        /**
+         * Gets a vrController by name.
+         * @param name The name of the controller to retreive
+         * @returns the controller matching the name specified or null if not found
+         */
+        getControllerByName(name: string): Nullable<WebVRController>;
+        private _leftController;
+        /**
+         * The controller corrisponding to the users left hand.
+         */
+        readonly leftController: Nullable<WebVRController>;
+        private _rightController;
+        /**
+         * The controller corrisponding to the users right hand.
+         */
+        readonly rightController: Nullable<WebVRController>;
+        /**
+         * Casts a ray forward from the vrCamera's gaze.
+         * @param length Length of the ray (default: 100)
+         * @returns the ray corrisponding to the gaze
+         */
+        getForwardRay(length?: number): Ray;
+        /**
+         * @hidden
+         * Updates the camera based on device's frame data
+         */
+
+        /**
+         * Updates the poseControlled values based on the input device pose.
+         * @param poseData Pose coming from the device
+         */
+        updateFromDevice(poseData: DevicePose): void;
+        private _htmlElementAttached;
+        private _detachIfAttached;
+        /**
+         * WebVR's attach control will start broadcasting frames to the device.
+         * Note that in certain browsers (chrome for example) this function must be called
+         * within a user-interaction callback. Example:
+         * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
+         *
+         * @param element html element to attach the vrDevice to
+         * @param noPreventDefault prevent the default html element operation when attaching the vrDevice
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detaches the camera from the html element and disables VR
+         *
+         * @param element html element to detach from
+         */
+        detachControl(element: HTMLElement): void;
+        /**
+         * @returns the name of this class
+         */
+        getClassName(): string;
+        /**
+         * Calls resetPose on the vrDisplay
+         * See: https://developer.mozilla.org/en-US/docs/Web/API/VRDisplay/resetPose
+         */
+        resetToCurrentRotation(): void;
+        /**
+         * @hidden
+         * Updates the rig cameras (left and right eye)
+         */
+
+        private _workingVector;
+        private _oneVector;
+        private _workingMatrix;
+        private updateCacheCalled;
+        private _correctPositionIfNotTrackPosition;
+        /**
+         * @hidden
+         * Updates the cached values of the camera
+         * @param ignoreParentClass ignores updating the parent class's cache (default: false)
+         */
+
+        /**
+         * @hidden
+         * Get current device position in babylon world
+         */
+
+        /**
+         * Updates the current device position and rotation in the babylon world
+         */
+        update(): void;
+        /**
+         * @hidden
+         * Gets the view matrix of this camera (Always set to identity as left and right eye cameras contain the actual view matrix)
+         * @returns an identity matrix
+         */
+
+        private _tmpMatrix;
+        /**
+         * This function is called by the two RIG cameras.
+         * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
+         */
+        protected _getWebVRViewMatrix(): Matrix;
+        protected _getWebVRProjectionMatrix(): Matrix;
+        private _onGamepadConnectedObserver;
+        private _onGamepadDisconnectedObserver;
+        private _updateCacheWhenTrackingDisabledObserver;
+        /**
+         * Initializes the controllers and their meshes
+         */
+        initControllers(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new AnaglyphArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphFreeCamera extends FreeCamera {
+        /**
+         * Creates a new AnaglyphFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new AnaglyphGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new AnaglyphUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphUniversalCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new StereoscopicArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicFreeCamera extends FreeCamera {
+        /**
+         * Creates a new StereoscopicFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new StereoscopicGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new StereoscopicUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicUniversalCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
      * Manage the gamepad inputs to control an arc rotate camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
      */
@@ -41802,969 +42745,6 @@ declare module BABYLON {
          * @returns the input friendly name
          */
         getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new AnaglyphArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphFreeCamera extends FreeCamera {
-        /**
-         * Creates a new AnaglyphFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new AnaglyphGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new AnaglyphUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphUniversalCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new StereoscopicArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicFreeCamera extends FreeCamera {
-        /**
-         * Creates a new StereoscopicFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new StereoscopicGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new StereoscopicUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicUniversalCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This represents all the required metrics to create a VR camera.
-     * @see http://doc.babylonjs.com/babylon101/cameras#device-orientation-camera
-     */
-    class VRCameraMetrics {
-        /**
-         * Define the horizontal resolution off the screen.
-         */
-        hResolution: number;
-        /**
-         * Define the vertical resolution off the screen.
-         */
-        vResolution: number;
-        /**
-         * Define the horizontal screen size.
-         */
-        hScreenSize: number;
-        /**
-         * Define the vertical screen size.
-         */
-        vScreenSize: number;
-        /**
-         * Define the vertical screen center position.
-         */
-        vScreenCenter: number;
-        /**
-         * Define the distance of the eyes to the screen.
-         */
-        eyeToScreenDistance: number;
-        /**
-         * Define the distance between both lenses
-         */
-        lensSeparationDistance: number;
-        /**
-         * Define the distance between both viewer's eyes.
-         */
-        interpupillaryDistance: number;
-        /**
-         * Define the distortion factor of the VR postprocess.
-         * Please, touch with care.
-         */
-        distortionK: number[];
-        /**
-         * Define the chromatic aberration correction factors for the VR post process.
-         */
-        chromaAbCorrection: number[];
-        /**
-         * Define the scale factor of the post process.
-         * The smaller the better but the slower.
-         */
-        postProcessScaleFactor: number;
-        /**
-         * Define an offset for the lens center.
-         */
-        lensCenterOffset: number;
-        /**
-         * Define if the current vr camera should compensate the distortion of the lense or not.
-         */
-        compensateDistortion: boolean;
-        /**
-         * Gets the rendering aspect ratio based on the provided resolutions.
-         */
-        readonly aspectRatio: number;
-        /**
-         * Gets the aspect ratio based on the FOV, scale factors, and real screen sizes.
-         */
-        readonly aspectRatioFov: number;
-        /**
-         * @hidden
-         */
-        readonly leftHMatrix: Matrix;
-        /**
-         * @hidden
-         */
-        readonly rightHMatrix: Matrix;
-        /**
-         * @hidden
-         */
-        readonly leftPreViewMatrix: Matrix;
-        /**
-         * @hidden
-         */
-        readonly rightPreViewMatrix: Matrix;
-        /**
-         * Get the default VRMetrics based on the most generic setup.
-         * @returns the default vr metrics
-         */
-        static GetDefault(): VRCameraMetrics;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate VR rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/babylon101/cameras#vr-device-orientation-cameras
-     */
-    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new VRDeviceOrientationArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines the camera rotation along the logitudinal axis
-         * @param beta defines the camera rotation along the latitudinal axis
-         * @param radius defines the camera distance from its target
-         * @param target defines the camera target
-         * @param scene defines the scene the camera belongs to
-         * @param compensateDistortion defines if the camera needs to compensate the lens distorsion
-         * @param vrCameraMetrics defines the vr metrics associated to the camera
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        /**
-         * Gets camera class name
-         * @returns VRDeviceOrientationArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate VR rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/babylon101/cameras#vr-device-orientation-cameras
-     */
-    class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
-        /**
-         * Creates a new VRDeviceOrientationFreeCamera
-         * @param name defines camera name
-         * @param position defines the start position of the camera
-         * @param scene defines the scene the camera belongs to
-         * @param compensateDistortion defines if the camera needs to compensate the lens distorsion
-         * @param vrCameraMetrics defines the vr metrics associated to the camera
-         */
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        /**
-         * Gets camera class name
-         * @returns VRDeviceOrientationFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate VR rendering (based on VRDeviceOrientationFreeCamera)
-     * @see http://doc.babylonjs.com/babylon101/cameras#vr-device-orientation-cameras
-     */
-    class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCamera {
-        /**
-         * Creates a new VRDeviceOrientationGamepadCamera
-         * @param name defines camera name
-         * @param position defines the start position of the camera
-         * @param scene defines the scene the camera belongs to
-         * @param compensateDistortion defines if the camera needs to compensate the lens distorsion
-         * @param vrCameraMetrics defines the vr metrics associated to the camera
-         */
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        /**
-         * Gets camera class name
-         * @returns VRDeviceOrientationGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Options to modify the vr teleportation behavior.
-     */
-    interface VRTeleportationOptions {
-        /**
-         * The name of the mesh which should be used as the teleportation floor. (default: null)
-         */
-        floorMeshName?: string;
-        /**
-         * A list of meshes to be used as the teleportation floor. (default: empty)
-         */
-        floorMeshes?: Mesh[];
-    }
-    /**
-     * Options to modify the vr experience helper's behavior.
-     */
-    interface VRExperienceHelperOptions extends WebVROptions {
-        /**
-         * Create a DeviceOrientationCamera to be used as your out of vr camera. (default: true)
-         */
-        createDeviceOrientationCamera?: boolean;
-        /**
-         * Create a VRDeviceOrientationFreeCamera to be used for VR when no external HMD is found. (default: true)
-         */
-        createFallbackVRDeviceOrientationFreeCamera?: boolean;
-        /**
-         * Uses the main button on the controller to toggle the laser casted. (default: true)
-         */
-        laserToggle?: boolean;
-        /**
-         * A list of meshes to be used as the teleportation floor. If specified, teleportation will be enabled (default: undefined)
-         */
-        floorMeshes?: Mesh[];
-    }
-    /**
-     * Helps to quickly add VR support to an existing scene.
-     * See http://doc.babylonjs.com/how_to/webvr_helper
-     */
-    class VRExperienceHelper {
-        /** Options to modify the vr experience helper's behavior. */
-        webVROptions: VRExperienceHelperOptions;
-        private _scene;
-        private _position;
-        private _btnVR;
-        private _btnVRDisplayed;
-        private _webVRsupported;
-        private _webVRready;
-        private _webVRrequesting;
-        private _webVRpresenting;
-        private _hasEnteredVR;
-        private _fullscreenVRpresenting;
-        private _canvas;
-        private _webVRCamera;
-        private _vrDeviceOrientationCamera;
-        private _deviceOrientationCamera;
-        private _existingCamera;
-        private _onKeyDown;
-        private _onVrDisplayPresentChange;
-        private _onVRDisplayChanged;
-        private _onVRRequestPresentStart;
-        private _onVRRequestPresentComplete;
-        /**
-         * Observable raised when entering VR.
-         */
-        onEnteringVRObservable: Observable<VRExperienceHelper>;
-        /**
-         * Observable raised when exiting VR.
-         */
-        onExitingVRObservable: Observable<VRExperienceHelper>;
-        /**
-         * Observable raised when controller mesh is loaded.
-         */
-        onControllerMeshLoadedObservable: Observable<WebVRController>;
-        /** Return this.onEnteringVRObservable
-         * Note: This one is for backward compatibility. Please use onEnteringVRObservable directly
-         */
-        readonly onEnteringVR: Observable<VRExperienceHelper>;
-        /** Return this.onExitingVRObservable
-         * Note: This one is for backward compatibility. Please use onExitingVRObservable directly
-         */
-        readonly onExitingVR: Observable<VRExperienceHelper>;
-        /** Return this.onControllerMeshLoadedObservable
-         * Note: This one is for backward compatibility. Please use onControllerMeshLoadedObservable directly
-         */
-        readonly onControllerMeshLoaded: Observable<WebVRController>;
-        private _rayLength;
-        private _useCustomVRButton;
-        private _teleportationRequested;
-        private _teleportActive;
-        private _floorMeshName;
-        private _floorMeshesCollection;
-        private _rotationAllowed;
-        private _teleportBackwardsVector;
-        private _teleportationTarget;
-        private _isDefaultTeleportationTarget;
-        private _postProcessMove;
-        private _teleportationFillColor;
-        private _teleportationBorderColor;
-        private _rotationAngle;
-        private _haloCenter;
-        private _cameraGazer;
-        private _padSensibilityUp;
-        private _padSensibilityDown;
-        private _leftController;
-        private _rightController;
-        /**
-         * Observable raised when a new mesh is selected based on meshSelectionPredicate
-         */
-        onNewMeshSelected: Observable<AbstractMesh>;
-        /**
-         * Observable raised when a new mesh is picked based on meshSelectionPredicate
-         */
-        onNewMeshPicked: Observable<PickingInfo>;
-        private _circleEase;
-        /**
-         * Observable raised before camera teleportation
-        */
-        onBeforeCameraTeleport: Observable<Vector3>;
-        /**
-         *  Observable raised after camera teleportation
-        */
-        onAfterCameraTeleport: Observable<Vector3>;
-        /**
-        * Observable raised when current selected mesh gets unselected
-        */
-        onSelectedMeshUnselected: Observable<AbstractMesh>;
-        private _raySelectionPredicate;
-        /**
-         * To be optionaly changed by user to define custom ray selection
-         */
-        raySelectionPredicate: (mesh: AbstractMesh) => boolean;
-        /**
-         * To be optionaly changed by user to define custom selection logic (after ray selection)
-         */
-        meshSelectionPredicate: (mesh: AbstractMesh) => boolean;
-        /**
-         * Set teleportation enabled. If set to false camera teleportation will be disabled but camera rotation will be kept.
-         */
-        teleportationEnabled: boolean;
-        private _defaultHeight;
-        private _teleportationInitialized;
-        private _interactionsEnabled;
-        private _interactionsRequested;
-        private _displayGaze;
-        private _displayLaserPointer;
-        /**
-         * The mesh used to display where the user is going to teleport.
-         */
-        /**
-        * Sets the mesh to be used to display where the user is going to teleport.
-        */
-        teleportationTarget: Mesh;
-        /**
-         * The mesh used to display where the user is selecting, this mesh will be cloned and set as the gazeTracker for the left and right controller
-         * when set bakeCurrentTransformIntoVertices will be called on the mesh.
-         * See http://doc.babylonjs.com/resources/baking_transformations
-         */
-        gazeTrackerMesh: Mesh;
-        /**
-         * If the gaze trackers scale should be updated to be constant size when pointing at near/far meshes
-         */
-        updateGazeTrackerScale: boolean;
-        /**
-         * The gaze tracking mesh corresponding to the left controller
-         */
-        readonly leftControllerGazeTrackerMesh: Nullable<Mesh>;
-        /**
-         * The gaze tracking mesh corresponding to the right controller
-         */
-        readonly rightControllerGazeTrackerMesh: Nullable<Mesh>;
-        /**
-         * If the ray of the gaze should be displayed.
-         */
-        /**
-        * Sets if the ray of the gaze should be displayed.
-        */
-        displayGaze: boolean;
-        /**
-         * If the ray of the LaserPointer should be displayed.
-         */
-        /**
-        * Sets if the ray of the LaserPointer should be displayed.
-        */
-        displayLaserPointer: boolean;
-        /**
-         * The deviceOrientationCamera used as the camera when not in VR.
-         */
-        readonly deviceOrientationCamera: Nullable<DeviceOrientationCamera>;
-        /**
-         * Based on the current WebVR support, returns the current VR camera used.
-         */
-        readonly currentVRCamera: Nullable<Camera>;
-        /**
-         * The webVRCamera which is used when in VR.
-         */
-        readonly webVRCamera: WebVRFreeCamera;
-        /**
-         * The deviceOrientationCamera that is used as a fallback when vr device is not connected.
-         */
-        readonly vrDeviceOrientationCamera: Nullable<VRDeviceOrientationFreeCamera>;
-        private readonly _teleportationRequestInitiated;
-        /**
-         * Instantiates a VRExperienceHelper.
-         * Helps to quickly add VR support to an existing scene.
-         * @param scene The scene the VRExperienceHelper belongs to.
-         * @param webVROptions Options to modify the vr experience helper's behavior.
-         */
-        constructor(scene: Scene, 
-        /** Options to modify the vr experience helper's behavior. */
-        webVROptions?: VRExperienceHelperOptions);
-        private _onDefaultMeshLoaded;
-        private _onResize;
-        private _onFullscreenChange;
-        /**
-         * Gets a value indicating if we are currently in VR mode.
-         */
-        readonly isInVRMode: boolean;
-        private onVrDisplayPresentChange;
-        private onVRDisplayChanged;
-        private moveButtonToBottomRight;
-        private displayVRButton;
-        private updateButtonVisibility;
-        /**
-         * Attempt to enter VR. If a headset is connected and ready, will request present on that.
-         * Otherwise, will use the fullscreen API.
-         */
-        enterVR(): void;
-        /**
-         * Attempt to exit VR, or fullscreen.
-         */
-        exitVR(): void;
-        /**
-         * The position of the vr experience helper.
-         */
-        /**
-        * Sets the position of the vr experience helper.
-        */
-        position: Vector3;
-        /**
-         * Enables controllers and user interactions such as selecting and object or clicking on an object.
-         */
-        enableInteractions(): void;
-        private readonly _noControllerIsActive;
-        private beforeRender;
-        private _isTeleportationFloor;
-        /**
-         * Adds a floor mesh to be used for teleportation.
-         * @param floorMesh the mesh to be used for teleportation.
-         */
-        addFloorMesh(floorMesh: Mesh): void;
-        /**
-         * Removes a floor mesh from being used for teleportation.
-         * @param floorMesh the mesh to be removed.
-         */
-        removeFloorMesh(floorMesh: Mesh): void;
-        /**
-         * Enables interactions and teleportation using the VR controllers and gaze.
-         * @param vrTeleportationOptions options to modify teleportation behavior.
-         */
-        enableTeleportation(vrTeleportationOptions?: VRTeleportationOptions): void;
-        private _onNewGamepadConnected;
-        private _tryEnableInteractionOnController;
-        private _onNewGamepadDisconnected;
-        private _enableInteractionOnController;
-        private _checkTeleportWithRay;
-        private _checkRotate;
-        private _checkTeleportBackwards;
-        private _enableTeleportationOnController;
-        private _createTeleportationCircles;
-        private _displayTeleportationTarget;
-        private _hideTeleportationTarget;
-        private _rotateCamera;
-        private _moveTeleportationSelectorTo;
-        private _workingVector;
-        private _workingQuaternion;
-        private _workingMatrix;
-        /**
-         * Teleports the users feet to the desired location
-         * @param location The location where the user's feet should be placed
-         */
-        teleportCamera(location: Vector3): void;
-        private _convertNormalToDirectionOfRay;
-        private _castRayAndSelectObject;
-        private _notifySelectedMeshUnselected;
-        /**
-         * Sets the color of the laser ray from the vr controllers.
-         * @param color new color for the ray.
-         */
-        changeLaserColor(color: Color3): void;
-        /**
-         * Sets the color of the ray from the vr headsets gaze.
-         * @param color new color for the ray.
-         */
-        changeGazeColor(color: Color3): void;
-        /**
-         * Exits VR and disposes of the vr experience helper
-         */
-        dispose(): void;
-        /**
-         * Gets the name of the VRExperienceHelper class
-         * @returns "VRExperienceHelper"
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This is a copy of VRPose. See https://developer.mozilla.org/en-US/docs/Web/API/VRPose
-     * IMPORTANT!! The data is right-hand data.
-     * @export
-     * @interface DevicePose
-     */
-    interface DevicePose {
-        /**
-         * The position of the device, values in array are [x,y,z].
-         */
-        readonly position: Nullable<Float32Array>;
-        /**
-         * The linearVelocity of the device, values in array are [x,y,z].
-         */
-        readonly linearVelocity: Nullable<Float32Array>;
-        /**
-         * The linearAcceleration of the device, values in array are [x,y,z].
-         */
-        readonly linearAcceleration: Nullable<Float32Array>;
-        /**
-         * The orientation of the device in a quaternion array, values in array are [x,y,z,w].
-         */
-        readonly orientation: Nullable<Float32Array>;
-        /**
-         * The angularVelocity of the device, values in array are [x,y,z].
-         */
-        readonly angularVelocity: Nullable<Float32Array>;
-        /**
-         * The angularAcceleration of the device, values in array are [x,y,z].
-         */
-        readonly angularAcceleration: Nullable<Float32Array>;
-    }
-    /**
-    * Interface representing a pose controlled object in Babylon.
-    * A pose controlled object has both regular pose values as well as pose values
-    * from an external device such as a VR head mounted display
-    */
-    interface PoseControlled {
-        /**
-         * The position of the object in babylon space.
-         */
-        position: Vector3;
-        /**
-         * The rotation quaternion of the object in babylon space.
-         */
-        rotationQuaternion: Quaternion;
-        /**
-         * The position of the device in babylon space.
-         */
-        devicePosition?: Vector3;
-        /**
-         * The rotation quaternion of the device in babylon space.
-         */
-        deviceRotationQuaternion: Quaternion;
-        /**
-         * The raw pose coming from the device.
-         */
-        rawPose: Nullable<DevicePose>;
-        /**
-         * The scale of the device to be used when translating from device space to babylon space.
-         */
-        deviceScaleFactor: number;
-        /**
-         * Updates the poseControlled values based on the input device pose.
-         * @param poseData the pose data to update the object with
-         */
-        updateFromDevice(poseData: DevicePose): void;
-    }
-    /**
-     * Set of options to customize the webVRCamera
-     */
-    interface WebVROptions {
-        /**
-         * Sets if the webVR camera should be tracked to the vrDevice. (default: true)
-         */
-        trackPosition?: boolean;
-        /**
-         * Sets the scale of the vrDevice in babylon space. (default: 1)
-         */
-        positionScale?: number;
-        /**
-         * If there are more than one VRDisplays, this will choose the display matching this name. (default: pick first vrDisplay)
-         */
-        displayName?: string;
-        /**
-         * Should the native controller meshes be initialized. (default: true)
-         */
-        controllerMeshes?: boolean;
-        /**
-         * Creating a default HemiLight only on controllers. (default: true)
-         */
-        defaultLightingOnControllers?: boolean;
-        /**
-         * If you don't want to use the default VR button of the helper. (default: false)
-         */
-        useCustomVRButton?: boolean;
-        /**
-         * If you'd like to provide your own button to the VRHelper. (default: standard babylon vr button)
-         */
-        customVRButton?: HTMLButtonElement;
-        /**
-         * To change the length of the ray for gaze/controllers. Will be scaled by positionScale. (default: 100)
-         */
-        rayLength?: number;
-        /**
-         * To change the default offset from the ground to account for user's height in meters. Will be scaled by positionScale. (default: 1.7)
-         */
-        defaultHeight?: number;
-    }
-    /**
-     * This represents a WebVR camera.
-     * The WebVR camera is Babylon's simple interface to interaction with Windows Mixed Reality, HTC Vive and Oculus Rift.
-     * @example http://doc.babylonjs.com/how_to/webvr_camera
-     */
-    class WebVRFreeCamera extends FreeCamera implements PoseControlled {
-        private webVROptions;
-        /**
-         * @hidden
-         * The vrDisplay tied to the camera. See https://developer.mozilla.org/en-US/docs/Web/API/VRDisplay
-         */
-
-        /**
-         * The rawPose of the vrDevice.
-         */
-        rawPose: Nullable<DevicePose>;
-        private _onVREnabled;
-        private _specsVersion;
-        private _attached;
-        private _frameData;
-        protected _descendants: Array<Node>;
-        private _deviceRoomPosition;
-        /** @hidden */
-
-        private _standingMatrix;
-        /**
-         * Represents device position in babylon space.
-         */
-        devicePosition: Vector3;
-        /**
-         * Represents device rotation in babylon space.
-         */
-        deviceRotationQuaternion: Quaternion;
-        /**
-         * The scale of the device to be used when translating from device space to babylon space.
-         */
-        deviceScaleFactor: number;
-        private _deviceToWorld;
-        private _worldToDevice;
-        /**
-         * References to the webVR controllers for the vrDevice.
-         */
-        controllers: Array<WebVRController>;
-        /**
-         * Emits an event when a controller is attached.
-         */
-        onControllersAttachedObservable: Observable<WebVRController[]>;
-        /**
-         * Emits an event when a controller's mesh has been loaded;
-         */
-        onControllerMeshLoadedObservable: Observable<WebVRController>;
-        /**
-         * Emits an event when the HMD's pose has been updated.
-         */
-        onPoseUpdatedFromDeviceObservable: Observable<any>;
-        private _poseSet;
-        /**
-         * If the rig cameras be used as parent instead of this camera.
-         */
-        rigParenting: boolean;
-        private _lightOnControllers;
-        private _defaultHeight?;
-        /**
-         * Instantiates a WebVRFreeCamera.
-         * @param name The name of the WebVRFreeCamera
-         * @param position The starting anchor position for the camera
-         * @param scene The scene the camera belongs to
-         * @param webVROptions a set of customizable options for the webVRCamera
-         */
-        constructor(name: string, position: Vector3, scene: Scene, webVROptions?: WebVROptions);
-        /**
-         * Gets the device distance from the ground in meters.
-         * @returns the distance in meters from the vrDevice to ground in device space. If standing matrix is not supported for the vrDevice 0 is returned.
-         */
-        deviceDistanceToRoomGround(): number;
-        /**
-         * Enables the standing matrix when supported. This can be used to position the user's view the correct height from the ground.
-         * @param callback will be called when the standing matrix is set. Callback parameter is if the standing matrix is supported.
-         */
-        useStandingMatrix(callback?: (bool: boolean) => void): void;
-        /**
-         * Enables the standing matrix when supported. This can be used to position the user's view the correct height from the ground.
-         * @returns A promise with a boolean set to if the standing matrix is supported.
-         */
-        useStandingMatrixAsync(): Promise<boolean>;
-        /**
-         * Disposes the camera
-         */
-        dispose(): void;
-        /**
-         * Gets a vrController by name.
-         * @param name The name of the controller to retreive
-         * @returns the controller matching the name specified or null if not found
-         */
-        getControllerByName(name: string): Nullable<WebVRController>;
-        private _leftController;
-        /**
-         * The controller corrisponding to the users left hand.
-         */
-        readonly leftController: Nullable<WebVRController>;
-        private _rightController;
-        /**
-         * The controller corrisponding to the users right hand.
-         */
-        readonly rightController: Nullable<WebVRController>;
-        /**
-         * Casts a ray forward from the vrCamera's gaze.
-         * @param length Length of the ray (default: 100)
-         * @returns the ray corrisponding to the gaze
-         */
-        getForwardRay(length?: number): Ray;
-        /**
-         * @hidden
-         * Updates the camera based on device's frame data
-         */
-
-        /**
-         * Updates the poseControlled values based on the input device pose.
-         * @param poseData Pose coming from the device
-         */
-        updateFromDevice(poseData: DevicePose): void;
-        private _htmlElementAttached;
-        private _detachIfAttached;
-        /**
-         * WebVR's attach control will start broadcasting frames to the device.
-         * Note that in certain browsers (chrome for example) this function must be called
-         * within a user-interaction callback. Example:
-         * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
-         *
-         * @param element html element to attach the vrDevice to
-         * @param noPreventDefault prevent the default html element operation when attaching the vrDevice
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detaches the camera from the html element and disables VR
-         *
-         * @param element html element to detach from
-         */
-        detachControl(element: HTMLElement): void;
-        /**
-         * @returns the name of this class
-         */
-        getClassName(): string;
-        /**
-         * Calls resetPose on the vrDisplay
-         * See: https://developer.mozilla.org/en-US/docs/Web/API/VRDisplay/resetPose
-         */
-        resetToCurrentRotation(): void;
-        /**
-         * @hidden
-         * Updates the rig cameras (left and right eye)
-         */
-
-        private _workingVector;
-        private _oneVector;
-        private _workingMatrix;
-        private updateCacheCalled;
-        private _correctPositionIfNotTrackPosition;
-        /**
-         * @hidden
-         * Updates the cached values of the camera
-         * @param ignoreParentClass ignores updating the parent class's cache (default: false)
-         */
-
-        /**
-         * @hidden
-         * Get current device position in babylon world
-         */
-
-        /**
-         * Updates the current device position and rotation in the babylon world
-         */
-        update(): void;
-        /**
-         * @hidden
-         * Gets the view matrix of this camera (Always set to identity as left and right eye cameras contain the actual view matrix)
-         * @returns an identity matrix
-         */
-
-        private _tmpMatrix;
-        /**
-         * This function is called by the two RIG cameras.
-         * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
-         */
-        protected _getWebVRViewMatrix(): Matrix;
-        protected _getWebVRProjectionMatrix(): Matrix;
-        private _onGamepadConnectedObserver;
-        private _onGamepadDisconnectedObserver;
-        private _updateCacheWhenTrackingDisabledObserver;
-        /**
-         * Initializes the controllers and their meshes
-         */
-        initControllers(): void;
     }
 }
 
@@ -44384,24 +44364,6 @@ declare module BABYLON {
         * Sets the current filter to Poisson Sampling.
         */
         usePoissonSampling: boolean;
-        /**
-         * Gets if the current filter is set to VSM.
-         * DEPRECATED. Should use useExponentialShadowMap instead.
-         */
-        /**
-        * Sets the current filter is to VSM.
-        * DEPRECATED. Should use useExponentialShadowMap instead.
-        */
-        useVarianceShadowMap: boolean;
-        /**
-         * Gets if the current filter is set to blurred VSM.
-         * DEPRECATED. Should use useBlurExponentialShadowMap instead.
-         */
-        /**
-        * Sets the current filter is to blurred VSM.
-        * DEPRECATED. Should use useBlurExponentialShadowMap instead.
-        */
-        useBlurVarianceShadowMap: boolean;
         /**
          * Gets if the current filter is set to ESM.
          */
@@ -54421,7 +54383,7 @@ declare module BABYLON.GLTF2 {
                 * Assign an `index` field to each item of the given array.
                 * @param array The array of items
                 */
-            static Assign(array?: IArrayItem[]): void;
+            static Assign(array?: BABYLON.GLTF2.Loader.IArrayItem[]): void;
     }
     /**
         * The glTF 2.0 loader
