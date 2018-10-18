@@ -1740,6 +1740,31 @@
             {
                 "output": "babylonjs.loaders.min.js",
                 "entry": "./legacy/legacy.ts"
+            },
+            {
+                "output": "babylon.objFileLoader.min.js",
+                "entry": "./legacy/legacy-objFileLoader.ts",
+                "preventLoadLibrary": true
+            },
+            {
+                "output": "babylon.stlFileLoader.min.js",
+                "entry": "./legacy/legacy-stlFileLoader.ts",
+                "preventLoadLibrary": true
+            },
+            {
+                "output": "babylon.glTF1FileLoader.min.js",
+                "entry": "./legacy/legacy-glTF1FileLoader.ts",
+                "preventLoadLibrary": true
+            },
+            {
+                "output": "babylon.glTF2FileLoader.min.js",
+                "entry": "./legacy/legacy-glTF2FileLoader.ts",
+                "preventLoadLibrary": true
+            },
+            {
+                "output": "babylon.glTFFileLoader.min.js",
+                "entry": "./legacy/legacy-glTFFileLoader.ts",
+                "preventLoadLibrary": true
             }
         ],
         "build": {
