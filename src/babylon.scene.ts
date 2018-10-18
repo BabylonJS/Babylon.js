@@ -2083,6 +2083,8 @@ module BABYLON {
                 }
 
                 this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => {
+                    this._pointerCaptures[evt.pointerId] = false;
+
                     // PreObservable support
                     if (this.onPrePointerObservable.hasObservers()) {
                         if (!clickInfo.ignore) {
@@ -2107,8 +2109,6 @@ module BABYLON {
                     if (!this.cameraToUseForPointers && !this.activeCamera) {
                         return;
                     }
-
-                    this._pointerCaptures[evt.pointerId] = false;
 
                     if (!this.pointerUpPredicate) {
                         this.pointerUpPredicate = (mesh: AbstractMesh): boolean => {
