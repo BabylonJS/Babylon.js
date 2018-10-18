@@ -5079,7 +5079,7 @@ module BABYLON {
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
 
-            result.update(x, y, viewport.width, viewport.height, world ? world : Matrix.IdentityReadOnly(), cameraViewSpace ? Matrix.IdentityReadOnly() : camera.getViewMatrix(), camera.getProjectionMatrix());
+            result.update(x, y, viewport.width, viewport.height, world ? world : Matrix.IdentityReadOnly, cameraViewSpace ? Matrix.IdentityReadOnly : camera.getViewMatrix(), camera.getProjectionMatrix());
             return this;
         }
 

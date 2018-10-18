@@ -2602,8 +2602,8 @@ module BABYLON {
             nearScreenSource.y = -(sourceY / viewportHeight * 2 - 1);
             nearScreenSource.z = -1.0;
             var farScreenSource = MathTmp.Vector3[1].copyFromFloats(nearScreenSource.x, nearScreenSource.y, 1.0);
-            const nearVec3 = MathTmp.Vector3[3];
-            const farVec3 = MathTmp.Vector3[4];
+            const nearVec3 = MathTmp.Vector3[2];
+            const farVec3 = MathTmp.Vector3[3];
             Vector3.UnprojectFromInvertedMatrixToRef(nearScreenSource, matrix, nearVec3);
             Vector3.UnprojectFromInvertedMatrixToRef(farScreenSource, matrix, farVec3);
 
