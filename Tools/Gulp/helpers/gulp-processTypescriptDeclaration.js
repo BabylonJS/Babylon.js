@@ -55,6 +55,7 @@ var processData = function(data, options) {
     // Find all other imported classes (Part of BABYLON or Loaders for instance)
     // and suffix them by the namespace.
     if ((options.classMap)) {
+        // Replace import { foo, bar } from ...
         Object.keys(options.classMap).forEach(package => {
             var babylonRegex = new RegExp(`import {(.*)} from ['"](${package})['"];`, "g");
 
@@ -74,6 +75,27 @@ var processData = function(data, options) {
                 str = str.replace(rg, `$1${options.classMap[package]}.$2$3`);
             });
         });
+
+        // Replace import { foo as A, bar as B } from ...
+        // Object.keys(options.classMap).forEach(package => {
+        //     var babylonRegex = new RegExp(`import {(.*)} from ['"](${package})['"];`, "g");
+
+        //     var match = babylonRegex.exec(str);
+        //     let classes = new Set();
+        //     while (match != null) {
+        //         if (match[1]) {
+        //             match[1].split(",").forEach(element => {
+        //                 classes.add(element.trim());
+        //             });
+        //         }
+        //         match = babylonRegex.exec(str);
+        //     }
+        //     str = str.replace(babylonRegex, '');
+        //     classes.forEach(cls => {
+        //         let rg = new RegExp(`([ <])(${cls})([^\\w])`, "g")
+        //         str = str.replace(rg, `$1${options.classMap[package]}.$2$3`);
+        //     });
+        // });
 
         // Replace import * as ...
         Object.keys(options.classMap).forEach(package => {
