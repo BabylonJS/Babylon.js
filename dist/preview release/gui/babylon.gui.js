@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/legacy.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy/legacy.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -124,6 +124,37 @@ try {
 
 module.exports = g;
 
+
+/***/ }),
+
+/***/ "./legacy/legacy.ts":
+/*!**************************!*\
+  !*** ./legacy/legacy.ts ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+var GUI = __webpack_require__(/*! ../src/index */ "./src/index.ts");
+/**
+ * Legacy support, defining window.BABYLON.GUI (global variable).
+ *
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    globalObject.BABYLON = globalObject.BABYLON || {};
+    globalObject.BABYLON.GUI = GUI;
+}
+__export(__webpack_require__(/*! ../src/index */ "./src/index.ts"));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
@@ -11801,37 +11832,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __export(__webpack_require__(/*! ./2D */ "./src/2D/index.ts"));
 __export(__webpack_require__(/*! ./3D */ "./src/3D/index.ts"));
 
-
-/***/ }),
-
-/***/ "./src/legacy.ts":
-/*!***********************!*\
-  !*** ./src/legacy.ts ***!
-  \***********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-var GUI = __webpack_require__(/*! ./index */ "./src/index.ts");
-/**
- * Legacy support, defining window.BABYLON.GUI (global variable).
- *
- * This is the entry point for the UMD module.
- * The entry point for a future ESM package should be index.ts
- */
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
-if (typeof globalObject !== "undefined") {
-    globalObject.BABYLON = globalObject.BABYLON || {};
-    globalObject.BABYLON.GUI = GUI;
-}
-__export(__webpack_require__(/*! ./index */ "./src/index.ts"));
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 

@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/legacy.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy/legacy.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -123,6 +123,191 @@ try {
 // easier to handle this case. if(!global) { ...}
 
 module.exports = g;
+
+
+/***/ }),
+
+/***/ "./legacy/legacy-glTF.ts":
+/*!*******************************!*\
+  !*** ./legacy/legacy-glTF.ts ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+var FileLoader = __webpack_require__(/*! ../src/glTF/glTFFileLoader */ "./src/glTF/glTFFileLoader.ts");
+/**
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    globalObject.BABYLON = globalObject.BABYLON || {};
+    for (var key in FileLoader) {
+        globalObject.BABYLON[key] = FileLoader[key];
+    }
+}
+__export(__webpack_require__(/*! ../src/glTF/glTFFileLoader */ "./src/glTF/glTFFileLoader.ts"));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./legacy/legacy-glTF1.ts":
+/*!********************************!*\
+  !*** ./legacy/legacy-glTF1.ts ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+Object.defineProperty(exports, "__esModule", { value: true });
+var GLTF1 = __webpack_require__(/*! ../src/glTF/1.0 */ "./src/glTF/1.0/index.ts");
+exports.GLTF1 = GLTF1;
+/**
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    globalObject.BABYLON = globalObject.BABYLON || {};
+    globalObject.BABYLON.GLTF1 = globalObject.BABYLON.GLTF1 || {};
+    for (var key in GLTF1) {
+        globalObject.BABYLON.GLTF1[key] = GLTF1[key];
+    }
+}
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./legacy/legacy-glTF2.ts":
+/*!********************************!*\
+  !*** ./legacy/legacy-glTF2.ts ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+Object.defineProperty(exports, "__esModule", { value: true });
+var Extensions = __webpack_require__(/*! ../src/glTF/2.0/Extensions */ "./src/glTF/2.0/Extensions/index.ts");
+var GLTF2 = __webpack_require__(/*! ../src/glTF/2.0 */ "./src/glTF/2.0/index.ts");
+exports.GLTF2 = GLTF2;
+/**
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    globalObject.BABYLON = globalObject.BABYLON || {};
+    var BABYLON = globalObject.BABYLON;
+    BABYLON.GLTF2 = BABYLON.GLTF2 || {};
+    BABYLON.GLTF2.Loader = BABYLON.GLTF2.Loader || {};
+    BABYLON.GLTF2.Loader.Extensions = BABYLON.GLTF2.Loader.Extensions || {};
+    var keys = [];
+    for (var key in Extensions) {
+        BABYLON.GLTF2.Loader.Extensions[key] = Extensions[key];
+        keys.push(key);
+    }
+    for (var key in GLTF2) {
+        // Prevent Reassignment.
+        if (keys.indexOf(key) > -1) {
+            continue;
+        }
+        BABYLON.GLTF2[key] = GLTF2[key];
+    }
+}
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./legacy/legacy-objFileLoader.ts":
+/*!****************************************!*\
+  !*** ./legacy/legacy-objFileLoader.ts ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+var Loaders = __webpack_require__(/*! ../src/OBJ */ "./src/OBJ/index.ts");
+/**
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    for (var key in Loaders) {
+        globalObject.BABYLON[key] = Loaders[key];
+    }
+}
+__export(__webpack_require__(/*! ../src/OBJ */ "./src/OBJ/index.ts"));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./legacy/legacy-stlFileLoader.ts":
+/*!****************************************!*\
+  !*** ./legacy/legacy-stlFileLoader.ts ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+var Loaders = __webpack_require__(/*! ../src/STL */ "./src/STL/index.ts");
+/**
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    for (var key in Loaders) {
+        globalObject.BABYLON[key] = Loaders[key];
+    }
+}
+__export(__webpack_require__(/*! ../src/STL */ "./src/STL/index.ts"));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./legacy/legacy.ts":
+/*!**************************!*\
+  !*** ./legacy/legacy.ts ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__webpack_require__(/*! ../src */ "./src/index.ts");
+__export(__webpack_require__(/*! ./legacy-glTF */ "./legacy/legacy-glTF.ts"));
+__export(__webpack_require__(/*! ./legacy-glTF1 */ "./legacy/legacy-glTF1.ts"));
+__export(__webpack_require__(/*! ./legacy-glTF2 */ "./legacy/legacy-glTF2.ts"));
+__export(__webpack_require__(/*! ./legacy-objFileLoader */ "./legacy/legacy-objFileLoader.ts"));
+__export(__webpack_require__(/*! ./legacy-stlFileLoader */ "./legacy/legacy-stlFileLoader.ts"));
 
 
 /***/ }),
@@ -7417,56 +7602,6 @@ __export(__webpack_require__(/*! ./glTF */ "./src/glTF/index.ts"));
 __export(__webpack_require__(/*! ./OBJ */ "./src/OBJ/index.ts"));
 __export(__webpack_require__(/*! ./STL */ "./src/STL/index.ts"));
 
-
-/***/ }),
-
-/***/ "./src/legacy.ts":
-/*!***********************!*\
-  !*** ./src/legacy.ts ***!
-  \***********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-var FileLoader = __webpack_require__(/*! ./glTF/glTFFileLoader */ "./src/glTF/glTFFileLoader.ts");
-var LoadersV1 = __webpack_require__(/*! ./glTF/1.0 */ "./src/glTF/1.0/index.ts");
-var LoadersV2 = __webpack_require__(/*! ./glTF/2.0 */ "./src/glTF/2.0/index.ts");
-var LoadersOBJ = __webpack_require__(/*! ./OBJ */ "./src/OBJ/index.ts");
-var LoadersSTL = __webpack_require__(/*! ./STL */ "./src/STL/index.ts");
-/**
- * Legacy support, defining window.BABYLON.OBJLoader... (global variable).
- *
- * This is the entry point for the UMD module.
- * The entry point for a future ESM package should be index.ts
- */
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
-if (typeof globalObject !== "undefined") {
-    globalObject.BABYLON = globalObject.BABYLON || {};
-    for (var key in FileLoader) {
-        globalObject.BABYLON[key] = FileLoader[key];
-    }
-    globalObject.BABYLON.GLTF1 = globalObject.BABYLON.GLTF1 || {};
-    for (var key in LoadersV1) {
-        globalObject.BABYLON.GLTF1[key] = LoadersV1[key];
-    }
-    for (var key in LoadersV2) {
-        globalObject.BABYLON[key] = LoadersV2[key];
-    }
-    for (var key in LoadersOBJ) {
-        globalObject.BABYLON[key] = LoadersOBJ[key];
-    }
-    for (var key in LoadersSTL) {
-        globalObject.BABYLON[key] = LoadersSTL[key];
-    }
-}
-__export(__webpack_require__(/*! ./index */ "./src/index.ts"));
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 

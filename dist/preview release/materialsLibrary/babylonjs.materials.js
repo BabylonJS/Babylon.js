@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/legacy.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy/legacy.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -124,6 +124,41 @@ try {
 
 module.exports = g;
 
+
+/***/ }),
+
+/***/ "./legacy/legacy.ts":
+/*!**************************!*\
+  !*** ./legacy/legacy.ts ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+var MatLib = __webpack_require__(/*! ../src/index */ "./src/index.ts");
+/**
+ * Legacy support, defining window.BABYLON.GridMaterial... (global variable).
+ *
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    globalObject.BABYLON = globalObject.BABYLON || {};
+    for (var mat in MatLib) {
+        if (MatLib.hasOwnProperty(mat)) {
+            globalObject.BABYLON[mat] = MatLib[mat];
+        }
+    }
+}
+__export(__webpack_require__(/*! ../src/index */ "./src/index.ts"));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
@@ -2704,41 +2739,6 @@ var LavaMaterial = /** @class */ (function (_super) {
 }(babylonjs_1.PushMaterial));
 exports.LavaMaterial = LavaMaterial;
 
-
-/***/ }),
-
-/***/ "./src/legacy.ts":
-/*!***********************!*\
-  !*** ./src/legacy.ts ***!
-  \***********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-var MatLib = __webpack_require__(/*! ./index */ "./src/index.ts");
-/**
- * Legacy support, defining window.BABYLON.GridMaterial... (global variable).
- *
- * This is the entry point for the UMD module.
- * The entry point for a future ESM package should be index.ts
- */
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
-if (typeof globalObject !== "undefined") {
-    globalObject.BABYLON = globalObject.BABYLON || {};
-    for (var mat in MatLib) {
-        if (MatLib.hasOwnProperty(mat)) {
-            globalObject.BABYLON[mat] = MatLib[mat];
-        }
-    }
-}
-__export(__webpack_require__(/*! ./index */ "./src/index.ts"));
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 

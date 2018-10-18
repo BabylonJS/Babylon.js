@@ -127,10 +127,10 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "./legacy/legacy-glTF1FileLoader.ts":
-/*!******************************************!*\
-  !*** ./legacy/legacy-glTF1FileLoader.ts ***!
-  \******************************************/
+/***/ "./legacy/legacy-glTF.ts":
+/*!*******************************!*\
+  !*** ./legacy/legacy-glTF.ts ***!
+  \*******************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -141,8 +141,6 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 var FileLoader = __webpack_require__(/*! ../src/glTF/glTFFileLoader */ "./src/glTF/glTFFileLoader.ts");
-var GLTF1 = __webpack_require__(/*! ../src/glTF/1.0 */ "./src/glTF/1.0/index.ts");
-exports.GLTF1 = GLTF1;
 /**
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
@@ -153,14 +151,58 @@ if (typeof globalObject !== "undefined") {
     for (var key in FileLoader) {
         globalObject.BABYLON[key] = FileLoader[key];
     }
+}
+__export(__webpack_require__(/*! ../src/glTF/glTFFileLoader */ "./src/glTF/glTFFileLoader.ts"));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./legacy/legacy-glTF1.ts":
+/*!********************************!*\
+  !*** ./legacy/legacy-glTF1.ts ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+Object.defineProperty(exports, "__esModule", { value: true });
+var GLTF1 = __webpack_require__(/*! ../src/glTF/1.0 */ "./src/glTF/1.0/index.ts");
+exports.GLTF1 = GLTF1;
+/**
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    globalObject.BABYLON = globalObject.BABYLON || {};
     globalObject.BABYLON.GLTF1 = globalObject.BABYLON.GLTF1 || {};
     for (var key in GLTF1) {
         globalObject.BABYLON.GLTF1[key] = GLTF1[key];
     }
 }
-__export(__webpack_require__(/*! ../src/glTF/glTFFileLoader */ "./src/glTF/glTFFileLoader.ts"));
 
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./legacy/legacy-glTF1FileLoader.ts":
+/*!******************************************!*\
+  !*** ./legacy/legacy-glTF1FileLoader.ts ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(/*! ./legacy-glTF */ "./legacy/legacy-glTF.ts"));
+__export(__webpack_require__(/*! ./legacy-glTF1 */ "./legacy/legacy-glTF1.ts"));
+
 
 /***/ }),
 
