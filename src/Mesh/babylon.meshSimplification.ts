@@ -1,7 +1,7 @@
-﻿module BABYLON {
-
+module BABYLON {
     /**
-     * A simplifier interface for future simplification implementations.
+     * A simplifier interface for future simplification implementations
+     * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
      */
     export interface ISimplifier {
         /**
@@ -14,43 +14,104 @@
         simplify(settings: ISimplificationSettings, successCallback: (simplifiedMeshes: Mesh) => void, errorCallback?: () => void): void;
     }
 
-
     /**
      * Expected simplification settings.
-     * Quality should be between 0 and 1 (1 being 100%, 0 being 0%);
+     * Quality should be between 0 and 1 (1 being 100%, 0 being 0%)
+     * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
      */
     export interface ISimplificationSettings {
+        /**
+         * Gets or sets the expected quality
+         */
         quality: number;
+        /**
+         * Gets or sets the distance when this optimized version should be used
+         */
         distance: number;
+        /**
+         * Gets an already optimized mesh
+         */
         optimizeMesh?: boolean;
     }
 
+    /**
+     * Class used to specify simplification options
+     * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+     */
     export class SimplificationSettings implements ISimplificationSettings {
-        constructor(public quality: number, public distance: number, public optimizeMesh?: boolean) {
+        /**
+         * Creates a SimplificationSettings
+         * @param quality expected quality
+         * @param distance distance when this optimized version should be used
+         * @param optimizeMesh already optimized mesh
+         */
+        constructor(
+            /** expected quality */
+            public quality: number,
+            /** distance when this optimized version should be used */
+            public distance: number,
+            /** already optimized mesh  */
+            public optimizeMesh?: boolean) {
         }
     }
 
+    /**
+     * Interface used to define a simplification task
+     */
     export interface ISimplificationTask {
+        /**
+         * Array of settings
+         */
         settings: Array<ISimplificationSettings>;
+        /**
+         * Simplification type
+         */
         simplificationType: SimplificationType;
+        /**
+         * Mesh to simplify
+         */
         mesh: Mesh;
+        /**
+         * Callback called on success
+         */
         successCallback?: () => void;
+        /**
+         * Defines if parallel processing can be used
+         */
         parallelProcessing: boolean;
     }
 
+    /**
+     * Queue used to order the simplification tasks
+     * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+     */
     export class SimplificationQueue {
         private _simplificationArray: Array<ISimplificationTask>;
+
+        /**
+         * Gets a boolean indicating that the process is still running
+         */
         public running: boolean;
 
+        /**
+         * Creates a new queue
+         */
         constructor() {
             this.running = false;
             this._simplificationArray = [];
         }
 
+        /**
+         * Adds a new simplification task
+         * @param task defines a task to add
+         */
         public addTask(task: ISimplificationTask) {
             this._simplificationArray.push(task);
         }
 
+        /**
+         * Execute next task
+         */
         public executeNext() {
             var task = this._simplificationArray.pop();
             if (task) {
@@ -61,6 +122,10 @@
             }
         }
 
+        /**
+         * Execute a simplification task
+         * @param task defines the task to run
+         */
         public runSimplification(task: ISimplificationTask) {
             if (task.parallelProcessing) {
                 //parallel simplifier
@@ -88,7 +153,7 @@
                         //run the next quality level
                         callback();
                     });
-                }
+                };
 
                 AsyncLoop.Run(task.settings.length, (loop: AsyncLoop) => {
                     runDecimation(task.settings[loop.index], () => {
@@ -116,13 +181,14 @@
     /**
      * The implemented types of simplification
      * At the moment only Quadratic Error Decimation is implemented
+     * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
      */
     export enum SimplificationType {
         /** Quadratic error decimation */
         QUADRATIC
     }
 
-    export class DecimationTriangle {
+     class DecimationTriangle {
         public normal: Vector3;
         public error: Array<number>;
         public deleted: boolean;
@@ -141,7 +207,7 @@
         }
     }
 
-    export class DecimationVertex {
+    class DecimationVertex {
         public q: QuadraticMatrix;
         public isBorder: boolean;
 
@@ -163,7 +229,7 @@
         }
     }
 
-    export class QuadraticMatrix {
+    class QuadraticMatrix {
         public data: Array<number>;
 
         constructor(data?: Array<number>) {
@@ -214,7 +280,7 @@
         }
     }
 
-    export class Reference {
+    class Reference {
         constructor(public vertexId: number, public triangleId: number) { }
     }
 
@@ -223,8 +289,9 @@
      * Original paper : http://www1.cs.columbia.edu/~cs4162/html05s/garland97.pdf
      * Ported mostly from QSlim and http://voxels.blogspot.de/2014/05/quadric-mesh-simplification-with-source.html to babylon JS
      * @author RaananW
+     * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
      */
-    export class QuadraticErrorSimplification implements ISimplifier {
+    class QuadraticErrorSimplification implements ISimplifier {
 
         private triangles: Array<DecimationTriangle>;
         private vertices: Array<DecimationVertex>;
@@ -282,8 +349,8 @@
                     var trianglesIterator = (i: number) => {
                         var tIdx = ~~(((this.triangles.length / 2) + i) % this.triangles.length);
                         var t = this.triangles[tIdx];
-                        if (!t) return;
-                        if (t.error[3] > threshold || t.deleted || t.isDirty) { return }
+                        if (!t) { return; }
+                        if (t.error[3] > threshold || t.deleted || t.isDirty) { return; }
                         for (var j = 0; j < 3; ++j) {
                             if (t.error[j] < threshold) {
                                 var deleted0: Array<boolean> = [];
@@ -292,7 +359,7 @@
                                 var v0 = t.vertices[j];
                                 var v1 = t.vertices[(j + 1) % 3];
 
-                                if (v0.isBorder || v1.isBorder) continue;
+                                if (v0.isBorder || v1.isBorder) { continue; }
 
                                 var p = Vector3.Zero();
                                 var n = Vector3.Zero();
@@ -303,14 +370,15 @@
 
                                 var delTr = new Array<DecimationTriangle>();
 
-                                if (this.isFlipped(v0, v1, p, deleted0, t.borderFactor, delTr)) continue;
-                                if (this.isFlipped(v1, v0, p, deleted1, t.borderFactor, delTr)) continue;
+                                if (this.isFlipped(v0, v1, p, deleted0, t.borderFactor, delTr)) { continue; }
+                                if (this.isFlipped(v1, v0, p, deleted1, t.borderFactor, delTr)) { continue; }
 
-                                if (deleted0.indexOf(true) < 0 || deleted1.indexOf(true) < 0)
+                                if (deleted0.indexOf(true) < 0 || deleted1.indexOf(true) < 0) {
                                     continue;
+                                }
 
                                 var uniqueArray = new Array<DecimationTriangle>();
-                                delTr.forEach(deletedT => {
+                                delTr.forEach((deletedT) => {
                                     if (uniqueArray.indexOf(deletedT) === -1) {
                                         deletedT.deletePending = true;
                                         uniqueArray.push(deletedT);
@@ -347,12 +415,12 @@
                             }
                         }
                     };
-                    AsyncLoop.SyncAsyncForLoop(this.triangles.length, this.syncIterations, trianglesIterator, callback, () => { return (triangleCount - deletedTriangles <= targetCount) });
+                    AsyncLoop.SyncAsyncForLoop(this.triangles.length, this.syncIterations, trianglesIterator, callback, () => { return (triangleCount - deletedTriangles <= targetCount); });
                 }, 0);
             };
 
             AsyncLoop.Run(this.decimationIterations, (loop: AsyncLoop) => {
-                if (triangleCount - deletedTriangles <= targetCount) loop.breakLoop();
+                if (triangleCount - deletedTriangles <= targetCount) { loop.breakLoop(); }
                 else {
                     iterationFunction(loop.index, () => {
                         loop.executeNext();
@@ -386,7 +454,7 @@
                     }
                 }
                 return null;
-            }
+            };
 
             var vertexReferences: Array<number> = [];
 
@@ -488,7 +556,7 @@
                 var vertex = this.vertices[i];
                 vertex.id = vertexCount;
                 if (vertex.triangleCount) {
-                    vertex.originalOffsets.forEach(originalOffset => {
+                    vertex.originalOffsets.forEach((originalOffset) => {
                         if (!normalData) {
                             return;
                         }
@@ -523,10 +591,10 @@
             var originalIndices = <IndicesArray>this._mesh.getIndices();
             for (i = 0; i < newTriangles.length; ++i) {
                 t = newTriangles[i]; //now get the new referencing point for each vertex
-                [0, 1, 2].forEach(idx => {
-                    var id = originalIndices[t.originalOffset + idx]
+                [0, 1, 2].forEach((idx) => {
+                    var id = originalIndices[t.originalOffset + idx];
                     var offset = t.vertices[idx].originalOffsets.indexOf(id);
-                    if (offset < 0) offset = 0;
+                    if (offset < 0) { offset = 0; }
                     newIndicesArray.push(t.vertices[idx].id + offset + startingVertex);
                 });
             }
@@ -536,19 +604,21 @@
             this._reconstructedMesh.setIndices(newIndicesArray);
             this._reconstructedMesh.setVerticesData(VertexBuffer.PositionKind, newPositionData);
             this._reconstructedMesh.setVerticesData(VertexBuffer.NormalKind, newNormalData);
-            if (newUVsData.length > 0)
+            if (newUVsData.length > 0) {
                 this._reconstructedMesh.setVerticesData(VertexBuffer.UVKind, newUVsData);
-            if (newColorsData.length > 0)
+            }
+            if (newColorsData.length > 0) {
                 this._reconstructedMesh.setVerticesData(VertexBuffer.ColorKind, newColorsData);
+            }
 
             //create submesh
             var originalSubmesh = this._mesh.subMeshes[submeshIndex];
             if (submeshIndex > 0) {
                 this._reconstructedMesh.subMeshes = [];
-                submeshesArray.forEach(submesh => {
-                    SubMesh.AddToMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount,/* 0, newPositionData.length/3, */submesh.indexStart, submesh.indexCount, submesh.getMesh());
+                submeshesArray.forEach((submesh) => {
+                    SubMesh.AddToMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount, /* 0, newPositionData.length/3, */submesh.indexStart, submesh.indexCount, submesh.getMesh());
                 });
-                SubMesh.AddToMesh(originalSubmesh.materialIndex, startingVertex, vertexCount,/* 0, newPositionData.length / 3, */startingIndex, newTriangles.length * 3, this._reconstructedMesh);
+                SubMesh.AddToMesh(originalSubmesh.materialIndex, startingVertex, vertexCount, /* 0, newPositionData.length / 3, */startingIndex, newTriangles.length * 3, this._reconstructedMesh);
             }
         }
 
@@ -564,7 +634,7 @@
 
             for (var i = 0; i < vertex1.triangleCount; ++i) {
                 var t = this.triangles[this.references[vertex1.triangleStart + i].triangleId];
-                if (t.deleted) continue;
+                if (t.deleted) { continue; }
 
                 var s = this.references[vertex1.triangleStart + i].vertexId;
 
@@ -581,10 +651,10 @@
                 d1 = d1.normalize();
                 var d2 = v2.position.subtract(point);
                 d2 = d2.normalize();
-                if (Math.abs(Vector3.Dot(d1, d2)) > 0.999) return true;
+                if (Math.abs(Vector3.Dot(d1, d2)) > 0.999) { return true; }
                 var normal = Vector3.Cross(d1, d2).normalize();
                 deletedArray[i] = false;
-                if (Vector3.Dot(normal, t.normal) < 0.2) return true;
+                if (Vector3.Dot(normal, t.normal) < 0.2) { return true; }
             }
 
             return false;
@@ -595,7 +665,7 @@
             for (var i = 0; i < vertex.triangleCount; ++i) {
                 var ref = this.references[vertex.triangleStart + i];
                 var t = this.triangles[ref.triangleId];
-                if (t.deleted) continue;
+                if (t.deleted) { continue; }
                 if (deletedArray[i] && t.deletePending) {
                     t.deleted = true;
                     newDeleted++;
@@ -625,7 +695,7 @@
                         var ofs = 0;
                         var vv = triangle.vertices[ii];
                         while (ofs < vCount.length) {
-                            if (vId[ofs] === vv.id) break;
+                            if (vId[ofs] === vv.id) { break; }
                             ++ofs;
                         }
                         if (ofs === vCount.length) {
@@ -699,7 +769,6 @@
             }
         }
 
-
         private vertexError(q: QuadraticMatrix, point: Vector3): number {
             var x = point.x;
             var y = point.y;
@@ -746,4 +815,4 @@
             return error;
         }
     }
-} 
+}

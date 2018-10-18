@@ -1,20 +1,52 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * Options allowed during the creation of a sound track.
+     */
+    export interface ISoundTrackOptions {
+        /**
+         * The volume the sound track should take during creation
+         */
+        volume?: number;
+        /**
+         * Define if the sound track is the main sound track of the scene
+         */
+        mainTrack?: boolean;
+    }
+
+    /**
+     * It could be useful to isolate your music & sounds on several tracks to better manage volume on a grouped instance of sounds.
+     * It will be also used in a future release to apply effects on a specific track.
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
+     */
     export class SoundTrack {
+        /**
+         * The unique identifier of the sound track in the scene.
+         */
+        public id: number = -1;
+        /**
+         * The list of sounds included in the sound track.
+         */
+        public soundCollection: Array<Sound>;
+
         private _outputAudioNode: Nullable<GainNode>;
         private _scene: Scene;
-        public id: number = -1;
-        public soundCollection: Array<Sound>;
         private _isMainTrack: boolean = false;
         private _connectedAnalyser: Analyser;
-        private _options: any;
+        private _options: ISoundTrackOptions;
         private _isInitialized = false;
 
-        constructor(scene: Scene, options?: any) {
+        /**
+         * Creates a new sound track.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
+         * @param scene Define the scene the sound track belongs to
+         * @param options
+         */
+        constructor(scene: Scene, options: ISoundTrackOptions = { }) {
             this._scene = scene;
             this.soundCollection = new Array();
             this._options = options;
 
-            if (!this._isMainTrack) {
+            if (!this._isMainTrack && this._scene.soundTracks) {
                 this._scene.soundTracks.push(this);
                 this.id = this._scene.soundTracks.length - 1;
             }
@@ -34,7 +66,10 @@
             }
         }
 
-        public dispose() {
+        /**
+         * Release the sound track and its associated resources
+         */
+        public dispose(): void {
             if (Engine.audioEngine && Engine.audioEngine.canUseWebAudio) {
                 if (this._connectedAnalyser) {
                     this._connectedAnalyser.stopDebugCanvas();
@@ -49,7 +84,12 @@
             }
         }
 
-        public AddSound(sound: Sound) {
+        /**
+         * Adds a sound to this sound track
+         * @param sound define the cound to add
+         * @ignoreNaming
+         */
+        public AddSound(sound: Sound): void {
             if (!this._isInitialized) {
                 this._initializeSoundTrackAudioGraph();
             }
@@ -60,7 +100,7 @@
                 if (sound.soundTrackId === -1) {
                     this._scene.mainSoundTrack.RemoveSound(sound);
                 }
-                else {
+                else if (this._scene.soundTracks) {
                     this._scene.soundTracks[sound.soundTrackId].RemoveSound(sound);
                 }
             }
@@ -69,20 +109,34 @@
             sound.soundTrackId = this.id;
         }
 
-        public RemoveSound(sound: Sound) {
+        /**
+         * Removes a sound to this sound track
+         * @param sound define the cound to remove
+         * @ignoreNaming
+         */
+        public RemoveSound(sound: Sound): void {
             var index = this.soundCollection.indexOf(sound);
             if (index !== -1) {
                 this.soundCollection.splice(index, 1);
             }
         }
 
-        public setVolume(newVolume: number) {
+        /**
+         * Set a global volume for the full sound track.
+         * @param newVolume Define the new volume of the sound track
+         */
+        public setVolume(newVolume: number): void {
             if (Engine.audioEngine.canUseWebAudio && this._outputAudioNode) {
                 this._outputAudioNode.gain.value = newVolume;
             }
         }
 
-        public switchPanningModelToHRTF() {
+        /**
+         * Switch the panning model to HRTF:
+         * Renders a stereo output of higher quality than equalpower — it uses a convolution with measured impulse responses from human subjects.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
+        public switchPanningModelToHRTF(): void {
             if (Engine.audioEngine.canUseWebAudio) {
                 for (var i = 0; i < this.soundCollection.length; i++) {
                     this.soundCollection[i].switchPanningModelToHRTF();
@@ -90,7 +144,12 @@
             }
         }
 
-        public switchPanningModelToEqualPower() {
+        /**
+         * Switch the panning model to Equal Power:
+         * Represents the equal-power panning algorithm, generally regarded as simple and efficient. equalpower is the default value.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
+        public switchPanningModelToEqualPower(): void {
             if (Engine.audioEngine.canUseWebAudio) {
                 for (var i = 0; i < this.soundCollection.length; i++) {
                     this.soundCollection[i].switchPanningModelToEqualPower();
@@ -98,7 +157,13 @@
             }
         }
 
-        public connectToAnalyser(analyser: Analyser) {
+        /**
+         * Connect the sound track to an audio analyser allowing some amazing
+         * synchornization between the sounds/music and your visualization (VuMeter for instance).
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
+         * @param analyser The analyser to connect to the engine
+         */
+        public connectToAnalyser(analyser: Analyser): void {
             if (this._connectedAnalyser) {
                 this._connectedAnalyser.stopDebugCanvas();
             }

@@ -15,7 +15,7 @@ var seed = 100000,
     prime = 37,
     maximum = Math.pow(2, 50);
 
-Math.random = function () {
+Math.random = function() {
     seed *= constant;
     seed += prime;
     seed %= maximum;
@@ -47,6 +47,10 @@ function compare(renderData, referenceCanvas) {
     }
 
     referenceContext.putImageData(referenceData, 0, 0);
+
+    if (differencesCount) {
+        console.log("Pixel difference: " + differencesCount + " pixels.");
+    }
 
     return (differencesCount * 100) / (width * height) > errorRatio;
 }
@@ -123,6 +127,7 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done
     var renderB64 = saveRenderImage(renderData, canvas);
     renderImage.src = renderB64;
 
+    engine.applyStates();
     currentScene.dispose();
     currentScene = null;
     engine.setHardwareScalingLevel(1);
@@ -133,12 +138,12 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done
 function processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done) {
     currentScene.useConstantAnimationDeltaTime = true;
     var renderCount = test.renderCount || 1;
-   
-    currentScene.executeWhenReady(function () {
+
+    currentScene.executeWhenReady(function() {
         if (currentScene.activeCamera && currentScene.activeCamera.useAutoRotationBehavior) {
             currentScene.activeCamera.useAutoRotationBehavior = false;
         }
-        engine.runRenderLoop(function () {
+        engine.runRenderLoop(function() {
             try {
                 currentScene.render();
                 renderCount--;
@@ -195,7 +200,7 @@ function runTest(index, done) {
 
     var resultContext = resultCanvas.getContext("2d");
     var img = new Image();
-    img.onload = function () {
+    img.onload = function() {
         resultCanvas.width = img.width;
         resultCanvas.height = img.height;
         resultContext.drawImage(img, 0, 0);
@@ -210,12 +215,12 @@ function runTest(index, done) {
     location.href = "#" + container.id;
 
     if (test.sceneFolder) {
-        BABYLON.SceneLoader.Load(config.root + test.sceneFolder, test.sceneFilename, engine, function (newScene) {
+        BABYLON.SceneLoader.Load(config.root + test.sceneFolder, test.sceneFilename, engine, function(newScene) {
             currentScene = newScene;
             processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
         },
             null,
-            function (loadedScene, msg) {
+            function(loadedScene, msg) {
                 console.error(msg);
                 done(false);
             });
@@ -227,35 +232,70 @@ function runTest(index, done) {
             return;
         }
 
-        var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
+        var snippetUrl = "https://snippet.babylonjs.com";
         var pgRoot = "/Playground"
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function () {
-            if (xmlHttp.readyState === 4) {
-                try {
-                    xmlHttp.onreadystatechange = null;
-                    var snippet = JSON.parse(xmlHttp.responseText)[0];
-                    var code = JSON.parse(snippet.jsonPayload).code.toString();
-                    code = code.replace(/\/textures\//g, pgRoot + "/textures/");
-                    code = code.replace(/"textures\//g, "\"" + pgRoot + "/textures/");
-                    code = code.replace(/\/scenes\//g, pgRoot + "/scenes/");
-                    code = code.replace(/"scenes\//g, "\"" + pgRoot + "/scenes/");
-                    currentScene = eval(code + "\r\ncreateScene(engine)");
-                    processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
-                }
-                catch (e) {
-                    console.error(e);
-                    done(false);
-                }
+
+        var retryTime = 500;
+        var maxRetry = 5;
+        var retry = 0;
+
+        var onError = function() {
+            retry++;
+            if (retry < maxRetry) {
+                setTimeout(function() {
+                    loadPG();
+                }, retryTime);
+            }
+            else {
+                // Skip the test as we can not fetch the source.
+                done(true);
             }
         }
-        xmlHttp.onerror = function () {
-            console.error("Network error during test load.");
-            done(false);
+
+        var loadPG = function() {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function() {
+                if (xmlHttp.readyState === 4) {
+                    try {
+                        xmlHttp.onreadystatechange = null;
+                        var snippet = JSON.parse(xmlHttp.responseText);
+                        var code = JSON.parse(snippet.jsonPayload).code.toString();
+                        code = code.replace(/\/textures\//g, pgRoot + "/textures/");
+                        code = code.replace(/"textures\//g, "\"" + pgRoot + "/textures/");
+                        code = code.replace(/\/scenes\//g, pgRoot + "/scenes/");
+                        code = code.replace(/"scenes\//g, "\"" + pgRoot + "/scenes/");
+                        currentScene = eval(code + "\r\ncreateScene(engine)");
+
+                        if (currentScene.then) {
+                            // Handle if createScene returns a promise
+                            currentScene.then(function(scene) {
+                                currentScene = scene;
+                                processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
+                            }).catch(function(e) {
+                                console.error(e);
+                                onError();
+                            })
+                        } else {
+                            // Handle if createScene returns a scene
+                            processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
+                        }
+                    }
+                    catch (e) {
+                        console.error(e);
+                        onError();
+                    }
+                }
+            }
+            xmlHttp.onerror = function() {
+                console.error("Network error during test load.");
+                onError();
+            }
+
+            xmlHttp.open("GET", snippetUrl + test.playgroundId.replace(/#/g, "/"));
+            xmlHttp.send();
         }
 
-        xmlHttp.open("GET", snippetUrl + test.playgroundId.replace(/#/g, "/"));
-        xmlHttp.send();
+        loadPG();
     } else {
         // Fix references
         if (test.specificRoot) {
@@ -265,7 +305,7 @@ function runTest(index, done) {
         var request = new XMLHttpRequest();
         request.open('GET', config.root + test.scriptToRun, true);
 
-        request.onreadystatechange = () => {
+        request.onreadystatechange = function() {
             if (request.readyState === 4) {
                 try {
                     request.onreadystatechange = null;
@@ -302,7 +342,7 @@ function runTest(index, done) {
                 }
             }
         };
-        request.onerror = function () {
+        request.onerror = function() {
             console.error("Network error during test load.");
             done(false);
         }

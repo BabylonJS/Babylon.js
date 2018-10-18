@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * The action to be carried out following a trigger
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#available-actions
@@ -11,7 +11,7 @@
 
         /**
          * Internal only - manager for action
-         * @hidden 
+         * @hidden
          */
         public _actionManager: ActionManager;
 
@@ -28,7 +28,7 @@
         /**
          * Creates a new Action
          * @param triggerOptions the trigger, with or without parameters, for the action
-         * @param condition an optional determinant of action 
+         * @param condition an optional determinant of action
          */
         constructor(
             /** the trigger, with or without parameters, for the action */
@@ -37,6 +37,8 @@
             if (triggerOptions.parameter) {
                 this.trigger = triggerOptions.trigger;
                 this._triggerParameter = triggerOptions.parameter;
+            } else if (triggerOptions.trigger) {
+                this.trigger = triggerOptions.trigger;
             } else {
                 this.trigger = triggerOptions;
             }
@@ -47,7 +49,7 @@
 
         /**
          * Internal only
-         * @hidden 
+         * @hidden
          */
         public _prepare(): void {
         }
@@ -62,7 +64,7 @@
 
         /**
          * Internal only - executes current action event
-         * @hidden 
+         * @hidden
          */
         public _executeCurrent(evt?: ActionEvent): void {
             if (this._nextActiveAction._condition) {
@@ -85,7 +87,7 @@
                     condition._currentResult = true;
                 }
             }
-            
+
             this.onBeforeExecuteObservable.notifyObservers(this);
             this._nextActiveAction.execute(evt);
 
@@ -133,7 +135,7 @@
 
         /**
          * Internal only
-         * @hidden 
+         * @hidden
          */
         public _getProperty(propertyPath: string): string {
             return this._actionManager._getProperty(propertyPath);
@@ -141,12 +143,12 @@
 
         /**
          * Internal only
-         * @hidden 
+         * @hidden
          */
         public _getEffectiveTarget(target: any, propertyPath: string): any {
             return this._actionManager._getEffectiveTarget(target, propertyPath);
         }
-        
+
         /**
          * Serialize placeholder for child classes
          * @param parent of child
@@ -154,74 +156,74 @@
          */
         public serialize(parent: any): any {
         }
-        
+
         /**
          * Internal only called by serialize
-         * @hidden 
+         * @hidden
          */
         protected _serialize(serializedAction: any, parent?: any): any {
-            var serializationObject: any = { 
+            var serializationObject: any = {
                 type: 1,
                 children: [],
                 name: serializedAction.name,
                 properties: serializedAction.properties || []
             };
-            
+
             // Serialize child
-            if (this._child) { 
+            if (this._child) {
                 this._child.serialize(serializationObject);
             }
-            
+
             // Check if "this" has a condition
             if (this._condition) {
                 var serializedCondition = this._condition.serialize();
                 serializedCondition.children.push(serializationObject);
-                
+
                 if (parent) {
                     parent.children.push(serializedCondition);
                 }
                 return serializedCondition;
             }
-            
+
             if (parent) {
                 parent.children.push(serializationObject);
             }
             return serializationObject;
         }
-        
+
         /**
          * Internal only
-         * @hidden 
+         * @hidden
          */
         public static _SerializeValueAsString = (value: any): string => {
             if (typeof value === "number") {
                 return value.toString();
             }
-            
+
             if (typeof value === "boolean") {
                 return value ? "true" : "false";
             }
-            
+
             if (value instanceof Vector2) {
                 return value.x + ", " + value.y;
             }
             if (value instanceof Vector3) {
                 return value.x + ", " + value.y + ", " + value.z;
             }
-            
+
             if (value instanceof Color3) {
                 return value.r + ", " + value.g + ", " + value.b;
             }
             if (value instanceof Color4) {
                 return value.r + ", " + value.g + ", " + value.b + ", " + value.a;
             }
-            
+
             return value; // string
-        };
-        
+        }
+
         /**
          * Internal only
-         * @hidden 
+         * @hidden
          */
         public static _GetTargetProperty = (target: Scene | Node) => {
             return {
@@ -231,7 +233,7 @@
                             : target instanceof Camera ? "CameraProperties"
                             : "SceneProperties",
                 value: target instanceof Scene ? "Scene" : (<Node>target).name
-            }  
-        };
+            };
+        }
     }
 }

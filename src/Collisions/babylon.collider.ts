@@ -1,34 +1,41 @@
-﻿module BABYLON {
+module BABYLON {
     var intersectBoxAASphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean => {
-        if (boxMin.x > sphereCenter.x + sphereRadius)
+        if (boxMin.x > sphereCenter.x + sphereRadius) {
             return false;
+        }
 
-        if (sphereCenter.x - sphereRadius > boxMax.x)
+        if (sphereCenter.x - sphereRadius > boxMax.x) {
             return false;
+        }
 
-        if (boxMin.y > sphereCenter.y + sphereRadius)
+        if (boxMin.y > sphereCenter.y + sphereRadius) {
             return false;
+        }
 
-        if (sphereCenter.y - sphereRadius > boxMax.y)
+        if (sphereCenter.y - sphereRadius > boxMax.y) {
             return false;
+        }
 
-        if (boxMin.z > sphereCenter.z + sphereRadius)
+        if (boxMin.z > sphereCenter.z + sphereRadius) {
             return false;
+        }
 
-        if (sphereCenter.z - sphereRadius > boxMax.z)
+        if (sphereCenter.z - sphereRadius > boxMax.z) {
             return false;
+        }
 
         return true;
     };
 
     var getLowestRoot: (a: number, b: number, c: number, maxR: number) => { root: number, found: boolean } =
-        (function () {
+        (function() {
             var result = { root: 0, found: false };
-            return function (a: number, b: number, c: number, maxR: number) {
+            return function(a: number, b: number, c: number, maxR: number) {
                 result.root = 0; result.found = false;
                 var determinant = b * b - 4.0 * a * c;
-                if (determinant < 0)
+                if (determinant < 0) {
                     return result;
+                }
 
                 var sqrtD = Math.sqrt(determinant);
                 var r1 = (-b - sqrtD) / (2.0 * a);
@@ -53,10 +60,11 @@
                 }
 
                 return result;
-            }
+            };
         }
         )();
 
+    /** @hidden */
     export class Collider {
         /** Define if a collision was found */
         public collisionFound: boolean;
@@ -83,16 +91,22 @@
         private _slidePlaneNormal = Vector3.Zero();
         private _displacementVector = Vector3.Zero();
 
+        /** @hidden */
         public _radius = Vector3.One();
+        /** @hidden */
         public _retry = 0;
         private _velocity: Vector3;
         private _basePoint: Vector3;
         private _epsilon: number;
+        /** @hidden */
         public _velocityWorldLength: number;
+        /** @hidden */
         public _basePointWorld = Vector3.Zero();
         private _velocityWorld = Vector3.Zero();
         private _normalizedVelocity = Vector3.Zero();
+        /** @hidden */
         public _initialVelocity: Vector3;
+        /** @hidden */
         public _initialPosition: Vector3;
         private _nearestDistance: number;
 
@@ -114,6 +128,7 @@
         }
 
         // Methods
+        /** @hidden */
         public _initialize(source: Vector3, dir: Vector3, e: number): void {
             this._velocity = dir;
             Vector3.NormalizeToRef(dir, this._normalizedVelocity);
@@ -128,26 +143,30 @@
             this.collisionFound = false;
         }
 
+        /** @hidden */
         public _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean {
             pa.subtractToRef(point, this._tempVector);
             pb.subtractToRef(point, this._tempVector2);
 
             Vector3.CrossToRef(this._tempVector, this._tempVector2, this._tempVector4);
             var d = Vector3.Dot(this._tempVector4, n);
-            if (d < 0)
+            if (d < 0) {
                 return false;
+            }
 
             pc.subtractToRef(point, this._tempVector3);
             Vector3.CrossToRef(this._tempVector2, this._tempVector3, this._tempVector4);
             d = Vector3.Dot(this._tempVector4, n);
-            if (d < 0)
+            if (d < 0) {
                 return false;
+            }
 
             Vector3.CrossToRef(this._tempVector3, this._tempVector, this._tempVector4);
             d = Vector3.Dot(this._tempVector4, n);
             return d >= 0;
         }
 
+        /** @hidden */
         public _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean {
             var distance = Vector3.Distance(this._basePointWorld, sphereCenter);
 
@@ -157,12 +176,14 @@
                 return false;
             }
 
-            if (!intersectBoxAASphere(vecMin, vecMax, this._basePointWorld, this._velocityWorldLength + max))
+            if (!intersectBoxAASphere(vecMin, vecMax, this._basePointWorld, this._velocityWorldLength + max)) {
                 return false;
+            }
 
             return true;
         }
 
+        /** @hidden */
         public _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void {
             var t0;
             var embeddedInPlane = false;
@@ -179,15 +200,17 @@
 
             var trianglePlane = trianglePlaneArray[faceIndex];
 
-            if ((!hasMaterial) && !trianglePlane.isFrontFacingTo(this._normalizedVelocity, 0))
+            if ((!hasMaterial) && !trianglePlane.isFrontFacingTo(this._normalizedVelocity, 0)) {
                 return;
+            }
 
             var signedDistToTrianglePlane = trianglePlane.signedDistanceTo(this._basePoint);
             var normalDotVelocity = Vector3.Dot(trianglePlane.normal, this._velocity);
 
             if (normalDotVelocity == 0) {
-                if (Math.abs(signedDistToTrianglePlane) >= 1.0)
+                if (Math.abs(signedDistToTrianglePlane) >= 1.0) {
                     return;
+                }
                 embeddedInPlane = true;
                 t0 = 0;
             }
@@ -201,13 +224,16 @@
                     t0 = temp;
                 }
 
-                if (t0 > 1.0 || t1 < 0.0)
+                if (t0 > 1.0 || t1 < 0.0) {
                     return;
+                }
 
-                if (t0 < 0)
+                if (t0 < 0) {
                     t0 = 0;
-                if (t0 > 1.0)
+                }
+                if (t0 > 1.0) {
                     t0 = 1.0;
+                }
             }
 
             this._collisionPoint.copyFromFloats(0, 0, 0);
@@ -346,6 +372,7 @@
             }
         }
 
+        /** @hidden */
         public _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void {
             for (var i = indexStart; i < indexEnd; i += 3) {
                 var p1 = pts[indices[i] - decal];
@@ -356,6 +383,7 @@
             }
         }
 
+        /** @hidden */
         public _getResponse(pos: Vector3, vel: Vector3): void {
             pos.addToRef(vel, this._destinationPoint);
             vel.scaleInPlace((this._nearestDistance / vel.length()));
@@ -374,4 +402,4 @@
             this._destinationPoint.subtractToRef(this.intersectionPoint, vel);
         }
     }
-} 
+}

@@ -1,14 +1,14 @@
-module INSPECTOR {
-     
-    export class RefreshTool extends AbstractTool {
+import { Inspector } from "../Inspector";
+import { AbstractTool } from "./AbstractTool";
 
-        constructor(parent:HTMLElement, inspector:Inspector) {
-            super('fa', 'fa-sync', parent, inspector, 'Refresh the current tab');
-        }
+export class RefreshTool extends AbstractTool {
 
-        // Action : refresh the whole panel
-        public action() {
-            this._inspector.refresh();
-        }
+    constructor(parent: HTMLElement, inspector: Inspector) {
+        super('fa', 'fa-sync', parent, inspector, 'Refresh the current tab');
+    }
+
+    // Action : refresh the whole panel
+    public action() {
+        this._inspector.refresh();
     }
 }

@@ -37,6 +37,10 @@ uniform vec3 vBumpInfos;
 uniform mat4 bumpMatrix;
 #endif
 
+#ifdef REFLECTION
+uniform mat4 reflectionMatrix;
+#endif
+
 #ifdef POINTSIZE
 	uniform float pointSize;
 #endif

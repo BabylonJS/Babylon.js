@@ -13,6 +13,9 @@ in vec3 size;
 #ifndef BILLBOARD
 in vec3 initialDirection;
 #endif
+#ifdef BILLBOARDSTRETCHED
+in vec3 direction;
+#endif
 in float angle;
 #ifdef ANIMATESHEET
 in float cellIndex;
@@ -23,11 +26,11 @@ in vec2 uv;
 out vec2 vUV;
 out vec4 vColor;
 
-#ifdef CLIPPLANE
-uniform vec4 vClipPlane;
+#if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4)
 uniform mat4 invView;
-out float fClipDistance;
 #endif
+
+#include<clipPlaneVertexDeclaration2>
 
 #ifdef COLORGRADIENTS
 uniform sampler2D colorGradientSampler;
@@ -58,6 +61,23 @@ vec3 rotate(vec3 yaxis, vec3 rotatedCorner) {
 
 	return position + alignedCorner;
 }
+
+#ifdef BILLBOARDSTRETCHED
+vec3 rotateAlign(vec3 toCamera, vec3 rotatedCorner) {
+	vec3 normalizedToCamera = normalize(toCamera);
+	vec3 normalizedCrossDirToCamera = normalize(cross(normalize(direction), normalizedToCamera));
+	vec3 crossProduct = normalize(cross(normalizedToCamera, normalizedCrossDirToCamera));
+
+	vec3 row0 = vec3(normalizedCrossDirToCamera.x, normalizedCrossDirToCamera.y, normalizedCrossDirToCamera.z);
+	vec3 row1 = vec3(crossProduct.x, crossProduct.y, crossProduct.z);
+	vec3 row2 = vec3(normalizedToCamera.x, normalizedToCamera.y, normalizedToCamera.z);
+
+	mat3 rotMatrix =  mat3(row0, row1, row2);
+
+	vec3 alignedCorner = rotMatrix * rotatedCorner;
+	return position + alignedCorner; 
+}
+#endif
 
 void main() {
 
@@ -94,6 +114,15 @@ void main() {
 		vec3 worldPos = rotate(normalize(yaxis), rotatedCorner.xyz);
 
 		vec4 viewPosition = (view * vec4(worldPos, 1.0)); 
+	#elif defined(BILLBOARDSTRETCHED)
+		rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
+		rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
+		rotatedCorner.z = 0.;
+
+		vec3 toCamera = position - eyePosition;	
+		vec3 worldPos = rotateAlign(toCamera, rotatedCorner.xyz);
+		
+		vec4 viewPosition = (view * vec4(worldPos, 1.0)); 	
 	#else
 		// Rotate
 		rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
@@ -120,8 +149,8 @@ void main() {
 	gl_Position = projection * viewPosition;
 
 	// Clip plane
-#ifdef CLIPPLANE
+#if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4)
 	vec4 worldPos = invView * viewPosition;
-	fClipDistance = dot(worldPos, vClipPlane);
 #endif  
+	#include<clipPlaneVertex>
 }

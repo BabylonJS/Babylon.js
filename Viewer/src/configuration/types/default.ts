@@ -51,17 +51,21 @@ export let defaultConfiguration: ViewerConfiguration = {
                 hideHelp: true,
                 hideHd: true,
                 hideVr: true,
+                hidePrint: true,
                 disableOnFullscreen: false,
                 text: {
                     hdButton: "Toggle HD",
-                    fullscreenButton: "Fullscreen",
+                    fullscreenButton: "Toggle Fullscreen",
                     helpButton: "Help",
-                    vrButton: "Toggle VR"
+                    vrButton: "Toggle VR",
+                    printButton: "3D Print Object"
                 }
             },
             events: {
+                click: {
+                    '.navbar-control': true
+                },
                 pointerdown: {
-                    '.navbar-control': true,
                     '.help-button': true
                 },
                 input: {
@@ -115,4 +119,4 @@ export let defaultConfiguration: ViewerConfiguration = {
     },
     scene: {
     }
-}
+};

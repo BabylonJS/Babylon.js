@@ -29,17 +29,17 @@ module BABYLON {
 
     /**
      * Draco compression (https://google.github.io/draco/)
-     * 
+     *
      * This class wraps the Draco module.
-     * 
+     *
      * **Encoder**
-     * 
+     *
      * The encoder is not currently implemented.
-     * 
+     *
      * **Decoder**
-     * 
-     * By default, the configuration points to a copy of the Draco decoder files for glTF from https://preview.babylonjs.com.
-     * 
+     *
+     * By default, the configuration points to a copy of the Draco decoder files for glTF from the babylon.js preview cdn https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js.
+     *
      * To update the configuration, use the following code:
      * ```javascript
      *     BABYLON.DracoCompression.Configuration = {
@@ -50,11 +50,11 @@ module BABYLON {
      *         }
      *     };
      * ```
-     * 
+     *
      * Draco has two versions, one for WebAssembly and one for JavaScript. The decoder configuration can be set to only support Webssembly or only support the JavaScript version.
      * Decoding will automatically fallback to the JavaScript version if WebAssembly version is not configured or if WebAssembly is not supported by the browser.
      * Use `BABYLON.DracoCompression.DecoderAvailable` to determine if the decoder is available for the current session.
-     * 
+     *
      * To decode Draco compressed data, create a DracoCompression object and call decodeMeshAsync:
      * ```javascript
      *     var dracoCompression = new BABYLON.DracoCompression();
@@ -62,7 +62,7 @@ module BABYLON {
      *         [BABYLON.VertexBuffer.PositionKind]: 0
      *     });
      * ```
-     * 
+     *
      * @see https://www.babylonjs-playground.com/#N3EK4B#0
      */
     export class DracoCompression implements IDisposable {
@@ -125,7 +125,7 @@ module BABYLON {
         public decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes: { [kind: string]: number }): Promise<VertexData> {
             const dataView = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
 
-            return DracoCompression._GetDecoderModule().then(wrappedModule => {
+            return DracoCompression._GetDecoderModule().then((wrappedModule) => {
                 const module = wrappedModule.module;
                 const vertexData = new VertexData();
 
@@ -220,7 +220,7 @@ module BABYLON {
                         if (decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object") {
                             promise = Promise.all([
                                 DracoCompression._LoadScriptAsync(decoder.wasmUrl),
-                                DracoCompression._LoadFileAsync(decoder.wasmBinaryUrl).then(data => {
+                                DracoCompression._LoadFileAsync(decoder.wasmBinaryUrl).then((data) => {
                                     config.wasmBinary = data;
                                 })
                             ]);
@@ -236,7 +236,7 @@ module BABYLON {
                 }
 
                 DracoCompression._DecoderModulePromise = promise.then(() => {
-                    return new Promise(resolve => {
+                    return new Promise((resolve) => {
                         config.onModuleLoaded = (decoderModule: any) => {
                             // decoderModule is Promise-like. Wrap before resolving to avoid loop.
                             resolve({ module: decoderModule });
@@ -254,7 +254,7 @@ module BABYLON {
             return new Promise((resolve, reject) => {
                 Tools.LoadScript(url, () => {
                     resolve();
-                }, message => {
+                }, (message) => {
                     reject(new Error(message));
                 });
             });
@@ -262,7 +262,7 @@ module BABYLON {
 
         private static _LoadFileAsync(url: string): Promise<ArrayBuffer> {
             return new Promise((resolve, reject) => {
-                Tools.LoadFile(url, data => {
+                Tools.LoadFile(url, (data) => {
                     resolve(data as ArrayBuffer);
                 }, undefined, undefined, true, (request, exception) => {
                     reject(exception);

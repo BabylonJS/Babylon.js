@@ -1,44 +1,56 @@
 module BABYLON {
+    /**
+     * Gather the list of pointer event types as constants.
+     */
     export class PointerEventTypes {
-        static _POINTERDOWN = 0x01;
-        static _POINTERUP = 0x02;
-        static _POINTERMOVE = 0x04;
-        static _POINTERWHEEL = 0x08;
-        static _POINTERPICK = 0x10;
-        static _POINTERTAP = 0x20;
-        static _POINTERDOUBLETAP = 0x40;
-
-        public static get POINTERDOWN(): number {
-            return PointerEventTypes._POINTERDOWN;
-        }
-
-        public static get POINTERUP(): number {
-            return PointerEventTypes._POINTERUP;
-        }
-
-        public static get POINTERMOVE(): number {
-            return PointerEventTypes._POINTERMOVE;
-        }
-
-        public static get POINTERWHEEL(): number {
-            return PointerEventTypes._POINTERWHEEL;
-        }
-
-        public static get POINTERPICK(): number {
-            return PointerEventTypes._POINTERPICK;
-        }
-
-        public static get POINTERTAP(): number {
-            return PointerEventTypes._POINTERTAP;
-        }
-
-        public static get POINTERDOUBLETAP(): number {
-            return PointerEventTypes._POINTERDOUBLETAP;
-        }
+        /**
+         * The pointerdown event is fired when a pointer becomes active. For mouse, it is fired when the device transitions from no buttons depressed to at least one button depressed. For touch, it is fired when physical contact is made with the digitizer. For pen, it is fired when the stylus makes physical contact with the digitizer.
+         */
+        public static readonly POINTERDOWN = 0x01;
+        /**
+         * The pointerup event is fired when a pointer is no longer active.
+         */
+        public static readonly POINTERUP = 0x02;
+        /**
+         * The pointermove event is fired when a pointer changes coordinates.
+         */
+        public static readonly POINTERMOVE = 0x04;
+        /**
+         * The pointerwheel event is fired when a mouse wheel has been rotated.
+         */
+        public static readonly POINTERWHEEL = 0x08;
+        /**
+         * The pointerpick event is fired when a mesh or sprite has been picked by the pointer.
+         */
+        public static readonly POINTERPICK = 0x10;
+        /**
+         * The pointertap event is fired when a the object has been touched and released without drag.
+         */
+        public static readonly POINTERTAP = 0x20;
+        /**
+         * The pointerdoubletap event is fired when a the object has been touched and released twice without drag.
+         */
+        public static readonly POINTERDOUBLETAP = 0x40;
     }
 
+    /**
+     * Base class of pointer info types.
+     */
     export class PointerInfoBase {
-        constructor(public type: number, public event: PointerEvent | MouseWheelEvent) {
+        /**
+         * Instantiates the base class of pointers info.
+         * @param type Defines the type of event (BABYLON.PointerEventTypes)
+         * @param event Defines the related dom event
+         */
+        constructor(
+            /**
+             * Defines the type of event (BABYLON.PointerEventTypes)
+             */
+            public type: number,
+            /**
+             * Defines the related dom event
+             */
+            public event: PointerEvent | MouseWheelEvent) {
         }
     }
 
@@ -50,15 +62,30 @@ module BABYLON {
         /**
          * Ray from a pointer if availible (eg. 6dof controller)
          */
-        public ray:Nullable<Ray> = null;
+        public ray: Nullable<Ray> = null;
+
+        /**
+         * Defines the local position of the pointer on the canvas.
+         */
+        public localPosition: Vector2;
+
+        /**
+         * Defines whether the engine should skip the next OnPointerObservable associated to this pre.
+         */
+        public skipOnPointerObservable: boolean;
+
+        /**
+         * Instantiates a PointerInfoPre to store pointer related info to the onPrePointerObservable event.
+         * @param type Defines the type of event (BABYLON.PointerEventTypes)
+         * @param event Defines the related dom event
+         * @param localX Defines the local x coordinates of the pointer when the event occured
+         * @param localY Defines the local y coordinates of the pointer when the event occured
+         */
         constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number) {
             super(type, event);
             this.skipOnPointerObservable = false;
             this.localPosition = new Vector2(localX, localY);
         }
-
-        public localPosition: Vector2;
-        public skipOnPointerObservable: boolean;
     }
 
     /**
@@ -66,8 +93,19 @@ module BABYLON {
      * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
      */
     export class PointerInfo extends PointerInfoBase {
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, public pickInfo: Nullable<PickingInfo>) {
+        /**
+         * Instantiates a PointerInfo to store pointer related info to the onPointerObservable event.
+         * @param type Defines the type of event (BABYLON.PointerEventTypes)
+         * @param event Defines the related dom event
+         * @param pickInfo Defines the picking info associated to the info (if any)\
+         */
+        constructor(type: number,
+            event: PointerEvent | MouseWheelEvent,
+            /**
+             * Defines the picking info associated to the info (if any)\
+             */
+            public pickInfo: Nullable<PickingInfo>) {
             super(type, event);
         }
-    }    
+    }
 }

@@ -8,6 +8,7 @@
         "declarationModuleFilename": "babylon.module.d.ts",
         "outputDirectory": "../../dist/preview release",
         "playgroundDirectory": "../../Playground/",
+        "tempDirectory": "../../.temp/",
         "intellisenseFile": "babylon.d.txt",
         "intellisenseSources": [
             "../../dist/preview release/babylon.d.ts",
@@ -43,6 +44,7 @@
         "all": [
             "pbrMaterial",
             "freeCamera",
+            "flyCamera",
             "arcRotateCamera",
             "hemisphericLight",
             "pointLight",
@@ -87,6 +89,7 @@
             "additionalPostProcess_depthOfFieldEffect",
             "additionalPostProcess_bloomEffect",
             "additionalPostProcess_imageProcessing",
+            "additionalPostProcess_motionBlur",
             "bones",
             "hdr",
             "polygonMesh",
@@ -99,6 +102,8 @@
             "gizmos",
             "morphTargets",
             "octrees",
+            "anaglyph",
+            "stereoscopic",
             "vr",
             "virtualJoystick",
             "optimizations",
@@ -118,11 +123,17 @@
             "videoDome",
             "photoDome",
             "behaviors",
-            "imageProcessing"            
+            "imageProcessing",
+            "occlusionQuery",
+            "transformFeedback",
+            "noise",
+            "videoRecorder",
+            "sceneHelpers"
         ],
         "minimal": [
             "meshBuilder",
             "freeCamera",
+            "flyCamera",
             "hemisphericLight"
         ],
         "360Viewer": [
@@ -131,7 +142,14 @@
             "picking",
             "backgroundMaterial",
             "videoDome"
-        ]      
+        ],
+        "glTFViewer": [
+            "arcRotateCamera",
+            "imageProcessing",
+            "backgroundMaterial",
+            "pbrMaterial",
+            "hdr"
+        ]
     },
     "workloads": {
         "core": {
@@ -140,6 +158,7 @@
                 "../../src/babylon.types.js",
                 "../../src/Events/babylon.keyboardEvents.js",
                 "../../src/Events/babylon.pointerEvents.js",
+                "../../src/Tools/babylon.tools.js",
                 "../../src/Math/babylon.math.js",
                 "../../src/Math/babylon.math.scalar.js",
                 "../../src/babylon.mixins.js",
@@ -148,7 +167,6 @@
                 "../../src/Tools/babylon.deferred.js",
                 "../../src/Tools/babylon.observable.js",
                 "../../src/Tools/babylon.smartArray.js",
-                "../../src/Tools/babylon.tools.js",
                 "../../src/Tools/babylon.promise.js",
                 "../../src/Tools/babylon.workerPool.js",
                 "../../src/States/babylon.alphaCullingState.js",
@@ -171,6 +189,7 @@
                 "../../src/babylon.assetContainer.js",
                 "../../src/Mesh/babylon.buffer.js",
                 "../../src/Mesh/babylon.vertexBuffer.js",
+                "../../src/Materials/Textures/babylon.internalTextureLoader.js",
                 "../../src/Materials/Textures/babylon.internalTextureTracker.js",
                 "../../src/Materials/Textures/babylon.internalTexture.js",
                 "../../src/Materials/Textures/babylon.baseTexture.js",
@@ -221,7 +240,7 @@
                 "fresnelFunction",
                 "reflectionFunction",
                 "imageProcessingDeclaration",
-                "imageProcessingFunctions",                
+                "imageProcessingFunctions",
                 "bumpFragmentFunctions",
                 "clipPlaneFragmentDeclaration",
                 "fogFragmentDeclaration",
@@ -232,6 +251,24 @@
                 "fogFragment"
             ]
         },
+        "transformFeedback": {
+            "files": [
+                "../../src/Engine/Extensions/babylon.engine.transformFeedback.js"
+            ],
+            "dependUpon": [
+                "core",
+                "debug"
+            ]
+        },
+        "occlusionQuery": {
+            "files": [
+                "../../src/Engine/Extensions/babylon.engine.occlusionQuery.js"
+            ],
+            "dependUpon": [
+                "core",
+                "debug"
+            ]
+        },
         "behaviors": {
             "files": [
                 "../../src/Behaviors/babylon.behavior.js"
@@ -239,7 +276,7 @@
             "dependUpon": [
                 "core"
             ]
-        },   
+        },
         "imageProcessing": {
             "files": [
                 "../../src/Materials/babylon.imageProcessingConfiguration.js",
@@ -249,15 +286,32 @@
             "dependUpon": [
                 "core"
             ]
-        },        
+        },
+        "noise": {
+            "files": [
+                "../../src/Materials/Textures/Procedurals/babylon.noiseProceduralTexture.js"
+            ],
+            "dependUpon": [
+                "core",
+                "procedural"
+            ],
+            "shaders": [
+                "noise.fragment"
+            ]
+        },
         "particles": {
             "files": [
                 "../../src/Particles/babylon.particle.js",
+                "../../src/Particles/babylon.baseParticleSystem.js",
                 "../../src/Particles/babylon.particleSystem.js",
-                "../../src/Particles/EmitterTypes/babylon.IParticleEmitterType.js",
                 "../../src/Particles/EmitterTypes/babylon.boxParticleEmitter.js",
+                "../../src/Particles/EmitterTypes/babylon.cylinderParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.coneParticleEmitter.js",
-                "../../src/Particles/EmitterTypes/babylon.sphereParticleEmitter.js"
+                "../../src/Particles/EmitterTypes/babylon.sphereParticleEmitter.js",
+                "../../src/Particles/EmitterTypes/babylon.hemisphericParticleEmitter.js",
+                "../../src/Particles/EmitterTypes/babylon.pointParticleEmitter.js",
+                "../../src/Particles/babylon.particleSystemComponent.js",
+                "../../src/Particles/babylon.subEmitter.js"
             ],
             "dependUpon": [
                 "core"
@@ -265,6 +319,10 @@
             "shaders": [
                 "particles.vertex",
                 "particles.fragment"
+            ],
+            "shaderIncludes": [
+                "clipPlaneVertexDeclaration2",
+                "clipPlaneFragmentDeclaration2"
             ]
         },
         "gpuParticles": {
@@ -273,7 +331,8 @@
             ],
             "dependUpon": [
                 "core",
-                "particles"
+                "particles",
+                "transformFeedback"
             ],
             "shaders": [
                 "gpuRenderParticles.vertex",
@@ -317,7 +376,9 @@
             "files": [
                 "../../src/Behaviors/Mesh/babylon.pointerDragBehavior.js",
                 "../../src/Behaviors/Mesh/babylon.multiPointerScaleBehavior.js",
-                "../../src/Behaviors/Mesh/babylon.sixDofDragBehavior.js"
+                "../../src/Behaviors/Mesh/babylon.sixDofDragBehavior.js",
+                "../../src/Behaviors/Mesh/babylon.attachToBoxBehavior.js",
+                "../../src/Behaviors/Mesh/babylon.fadeInOutBehavior.js"
             ],
             "dependUpon": [
                 "behaviors"
@@ -362,7 +423,8 @@
         "sprites": {
             "files": [
                 "../../src/Sprites/babylon.spriteManager.js",
-                "../../src/Sprites/babylon.sprite.js"
+                "../../src/Sprites/babylon.sprite.js",
+                "../../src/Sprites/babylon.spriteSceneComponent.js"
             ],
             "dependUpon": [
                 "core"
@@ -443,7 +505,8 @@
                 "../../src/Materials/PBR/babylon.pbrSpecularGlossinessMaterial.js"
             ],
             "dependUpon": [
-                "core"
+                "core",
+                "harmonics"
             ],
             "shaders": [
                 "pbr.vertex",
@@ -475,6 +538,17 @@
                 "../../src/Cameras/Inputs/babylon.freeCameraKeyboardMoveInput.js",
                 "../../src/Cameras/babylon.freeCameraInputsManager.js",
                 "../../src/Cameras/babylon.freeCamera.js"
+            ],
+            "dependUpon": [
+                "targetCamera"
+            ]
+        },
+        "flyCamera": {
+            "files": [
+                "../../src/Cameras/Inputs/babylon.flyCameraMouseInput.js",
+                "../../src/Cameras/Inputs/babylon.flyCameraKeyboardInput.js",
+                "../../src/Cameras/babylon.flyCameraInputsManager.js",
+                "../../src/Cameras/babylon.flyCamera.js"
             ],
             "dependUpon": [
                 "targetCamera"
@@ -532,7 +606,10 @@
                 "../../src/Audio/babylon.audioEngine.js",
                 "../../src/Audio/babylon.sound.js",
                 "../../src/Audio/babylon.soundtrack.js",
-                "../../src/Audio/babylon.analyser.js"
+                "../../src/Audio/babylon.analyser.js",
+                "../../src/Audio/babylon.weightedsound.js",
+                "../../src/Audio/babylon.audioSceneComponent.js",
+                "../../src/Actions/babylon.directAudioActions.js"
             ],
             "dependUpon": [
                 "core"
@@ -557,7 +634,8 @@
         },
         "shadows": {
             "files": [
-                "../../src/Lights/Shadows/babylon.shadowGenerator.js"
+                "../../src/Lights/Shadows/babylon.shadowGenerator.js",
+                "../../src/Lights/Shadows/babylon.shadowGeneratorSceneComponent.js"
             ],
             "dependUpon": [
                 "postProcesses"
@@ -598,7 +676,7 @@
         },
         "offline": {
             "files": [
-                "../../src/Tools/babylon.database.js"
+                "../../src/Offline/babylon.database.js"
             ],
             "dependUpon": [
                 "core"
@@ -632,6 +710,7 @@
         "procedural": {
             "files": [
                 "../../src/Materials/Textures/Procedurals/babylon.proceduralTexture.js",
+                "../../src/Materials/Textures/Procedurals/babylon.proceduralTextureSceneComponent.js",
                 "../../src/Materials/Textures/Procedurals/babylon.customProceduralTexture.js"
             ],
             "dependUpon": [
@@ -655,7 +734,8 @@
                 "../../src/Gamepad/Controllers/babylon.genericController.js",
                 "../../src/Gamepad/Controllers/babylon.windowsMotionController.js",
                 "../../src/Gamepad/Controllers/babylon.gearVRController.js",
-                "../../src/Gamepad/Controllers/babylon.daydreamController.js"
+                "../../src/Gamepad/Controllers/babylon.daydreamController.js",
+                "../../src/Gamepad/babylon.gamepadSceneComponent.js"
             ],
             "dependUpon": [
                 "core"
@@ -673,7 +753,8 @@
         },
         "depthRenderer": {
             "files": [
-                "../../src/Rendering/babylon.depthRenderer.js"
+                "../../src/Rendering/babylon.depthRenderer.js",
+                "../../src/Rendering/babylon.depthRendererSceneComponent.js"
             ],
             "dependUpon": [
                 "core"
@@ -686,7 +767,8 @@
         },
         "geometryBufferRenderer": {
             "files": [
-                "../../src/Rendering/babylon.geometryBufferRenderer.js"
+                "../../src/Rendering/babylon.geometryBufferRenderer.js",
+                "../../src/Rendering/babylon.geometryBufferRendererSceneComponent.js"
             ],
             "dependUpon": [
                 "core"
@@ -885,6 +967,17 @@
             ],
             "shaderIncludes": []
         },
+        "additionalPostProcess_motionBlur": {
+            "files": [
+                "../../src/PostProcess/babylon.motionBlurPostProcess.js"
+            ],
+            "dependUpon": [
+                "postProcesses"
+            ],
+            "shaders": [
+                "motionBlur.fragment"
+            ]
+        },
         "additionalPostProcesses": {
             "files": [
                 "../../src/PostProcess/babylon.refractionPostProcess.js",
@@ -901,7 +994,8 @@
                 "../../src/PostProcess/babylon.displayPassPostProcess.js",
                 "../../src/PostProcess/babylon.highlightsPostProcess.js",
                 "../../src/PostProcess/babylon.extractHighlightsPostProcess.js",
-                "../../src/PostProcess/babylon.imageProcessingPostProcess.js"
+                "../../src/PostProcess/babylon.imageProcessingPostProcess.js",
+                "../../src/PostProcess/babylon.motionBlurPostProcess.js"
             ],
             "dependUpon": [
                 "postProcesses",
@@ -920,12 +1014,14 @@
                 "tonemap.fragment",
                 "displayPass.fragment",
                 "highlights.fragment",
-                "imageProcessing.fragment"
+                "imageProcessing.fragment",
+                "motionBlur.fragment"
             ]
         },
         "renderingPipeline": {
             "files": [
                 "../../src/PostProcess/RenderPipeline/babylon.postProcessRenderPipelineManager.js",
+                "../../src/PostProcess/RenderPipeline/babylon.postProcessRenderPipelineManagerSceneComponent.js",
                 "../../src/PostProcess/RenderPipeline/babylon.postProcessRenderEffect.js",
                 "../../src/PostProcess/RenderPipeline/babylon.postProcessRenderPipeline.js"
             ],
@@ -942,7 +1038,8 @@
             ],
             "dependUpon": [
                 "renderingPipeline",
-                "depthRenderer"
+                "depthRenderer",
+                "geometryBufferRenderer"
             ],
             "shaders": [
                 "ssao.fragment",
@@ -980,15 +1077,13 @@
         },
         "hdr": {
             "files": [
-                "../../src/Math/babylon.sphericalPolynomial.js",
-                "../../src/Tools/HDR/babylon.cubemapToSphericalPolynomial.js",
-                "../../src/Tools/HDR/babylon.panoramaToCubemap.js",
                 "../../src/Tools/HDR/babylon.hdr.js",
-                "../../src/Tools/babylon.environmentTextureTools.js",
-                "../../src/Materials/Textures/babylon.hdrCubeTexture.js"
+                "../../src/Materials/Textures/babylon.hdrCubeTexture.js",
+                "../../src/Tools/HDR/babylon.panoramaToCubemap.js"
             ],
             "dependUpon": [
-                "core"
+                "core",
+                "harmonics"
             ]
         },
         "csg": {
@@ -1028,21 +1123,67 @@
                 "../../src/Physics/babylon.physicsEngine.js",
                 "../../src/Physics/babylon.physicsHelper.js",
                 "../../src/Physics/Plugins/babylon.cannonJSPlugin.js",
-                "../../src/Physics/Plugins/babylon.oimoJSPlugin.js"
+                "../../src/Physics/Plugins/babylon.oimoJSPlugin.js",
+                "../../src/Physics/babylon.physicsEngineComponent.js"
             ],
             "dependUpon": [
                 "core",
                 "picking"
             ]
         },
-        "textureFormats": {
+        "harmonics": {
             "files": [
-                "../../src/Tools/babylon.tga.js",
-                "../../src/Tools/babylon.dds.js",
-                "../../src/Tools/babylon.khronosTextureContainer.js"
+                "../../src/Math/babylon.sphericalPolynomial.js",
+                "../../src/Tools/HDR/babylon.cubemapToSphericalPolynomial.js"
             ],
             "dependUpon": [
                 "core"
+            ]
+        },
+        "textureFormats": {
+            "files": [],
+            "dependUpon": [
+                "dds",
+                "tga",
+                "ktx",
+                "env"
+            ]
+        },
+        "dds": {
+            "files": [
+                "../../src/Tools/babylon.dds.js",
+                "../../src/Materials/Textures/Loaders/babylon.ddsTextureLoader.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },
+        "tga": {
+            "files": [
+                "../../src/Tools/babylon.tga.js",
+                "../../src/Materials/Textures/Loaders/babylon.tgaTextureLoader.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },
+        "ktx": {
+            "files": [
+                "../../src/Tools/babylon.khronosTextureContainer.js",
+                "../../src/Materials/Textures/Loaders/babylon.ktxTextureLoader.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },
+        "env": {
+            "files": [
+                "../../src/Tools/babylon.environmentTextureTools.js",
+                "../../src/Materials/Textures/Loaders/babylon.envTextureLoader.js"
+            ],
+            "dependUpon": [
+                "core",
+                "harmonics"
             ]
         },
         "debug": {
@@ -1102,34 +1243,75 @@
         "octrees": {
             "files": [
                 "../../src/Culling/Octrees/babylon.octree.js",
-                "../../src/Culling/Octrees/babylon.octreeBlock.js"
+                "../../src/Culling/Octrees/babylon.octreeBlock.js",
+                "../../src/Culling/Octrees/babylon.octreeSceneComponent.js"
             ],
             "dependUpon": [
                 "core"
             ]
         },
+        "anaglyph": {
+            "files": [
+                "../../src/PostProcess/babylon.anaglyphPostProcess.js",
+                "../../src/Cameras/Stereoscopic/babylon.anaglyphArcRotateCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.anaglyphFreeCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.anaglyphGamepadCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.anaglyphUniversalCamera.js"
+            ],
+            "dependUpon": [
+                "core",
+                "postProcesses",
+                "freeCamera",
+                "gamepad"
+            ],
+            "shaders": [
+                "anaglyph.fragment"
+            ]
+        },
+        "stereoscopic": {
+            "files": [
+                "../../src/PostProcess/babylon.stereoscopicInterlacePostProcess.js",
+                "../../src/Cameras/Stereoscopic/babylon.stereoscopicArcRotateCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.stereoscopicFreeCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.stereoscopicGamepadCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.stereoscopicUniversalCamera.js"
+            ],
+            "dependUpon": [
+                "core",
+                "postProcesses",
+                "freeCamera",
+                "gamepad"
+            ],
+            "shaders": [
+                "stereoscopicInterlace.fragment"
+            ]
+        },
         "vr": {
             "files": [
                 "../../src/PostProcess/babylon.vrDistortionCorrectionPostProcess.js",
-                "../../src/PostProcess/babylon.anaglyphPostProcess.js",
-                "../../src/PostProcess/babylon.stereoscopicInterlacePostProcess.js",
                 "../../src/Cameras/Inputs/babylon.freeCameraDeviceOrientationInput.js",
                 "../../src/Cameras/Inputs/babylon.arcRotateCameraVRDeviceOrientationInput.js",
                 "../../src/Cameras/VR/babylon.vrCameraMetrics.js",
                 "../../src/Cameras/VR/babylon.webVRCamera.js",
                 "../../src/Cameras/babylon.deviceOrientationCamera.js",
-                "../../src/Cameras/VR/babylon.vrDeviceOrientationCamera.js",
-                "../../src/Cameras/babylon.stereoscopicCameras.js",
-                "../../src/Cameras/VR/babylon.vrExperienceHelper.js"
+                "../../src/Cameras/VR/babylon.vrDeviceOrientationFreeCamera.js",
+                "../../src/Cameras/VR/babylon.vrDeviceOrientationArcRotateCamera.js",
+                "../../src/Cameras/VR/babylon.vrDeviceOrientationGamepadCamera.js",
+                "../../src/Cameras/VR/babylon.vrExperienceHelper.js",
+                "../../src/Cameras/XR/babylon.webXRCamera.js",
+                "../../src/Cameras/XR/babylon.webXRSessionManager.js",
+                "../../src/Cameras/XR/babylon.webXRExperienceHelper.js",
+                "../../src/Cameras/XR/babylon.webXREnterExitUI.js",
+                "../../src/Cameras/XR/babylon.webXRManagedOutputCanvas.js",
+                "../../src/Cameras/XR/babylon.webXRInput.js"
             ],
             "dependUpon": [
                 "core",
                 "postProcesses",
-                "freeCamera"
+                "freeCamera",
+                "gamepad"
             ],
             "shaders": [
-                "anaglyph.fragment",
-                "stereoscopicInterlace.fragment",
                 "vrDistortionCorrection.fragment"
             ]
         },
@@ -1146,6 +1328,7 @@
         "optimizations": {
             "files": [
                 "../../src/Mesh/babylon.meshSimplification.js",
+                "../../src/Mesh/babylon.meshSimplificationSceneComponent.js",
                 "../../src/Mesh/babylon.meshLODLevel.js",
                 "../../src/Tools/babylon.sceneOptimizer.js"
             ],
@@ -1157,6 +1340,7 @@
             "files": [
                 "../../src/Rendering/babylon.outlineRenderer.js",
                 "../../src/Rendering/babylon.edgesRenderer.js",
+                "../../src/Rendering/babylon.lineEdgesRenderer.js",
                 "../../src/Layer/babylon.effectLayerSceneComponent.js",
                 "../../src/Layer/babylon.effectLayer.js",
                 "../../src/Layer/babylon.highlightLayer.js",
@@ -1231,6 +1415,20 @@
                 "backgroundUboDeclaration"
             ]
         },
+        "sceneHelpers": {
+            "files": [
+                "../../src/Helpers/babylon.sceneHelpers.js"
+            ],
+            "dependUpon": [
+                "core",
+                "arcRotateCamera",
+                "freeCamera",
+                "hemisphericLight",
+                "pbrMaterial",
+                "environmentHelper",
+                "vr"
+            ]
+        },
         "environmentHelper": {
             "files": [
                 "../../src/Helpers/babylon.environmentHelper.js"
@@ -1269,11 +1467,18 @@
                 "meshBuilder",
                 "additionalTextures"
             ]
+        },
+        "videoRecorder": {
+            "files": [
+                "../../src/Tools/babylon.videoRecorder.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
         }
     },
     "typescript": [
-        "../../src/**/*.ts",
-        "!../../src/**/*.d.ts"
+        "../../src/**/*.ts"
     ],
     "workers": [
         {
@@ -1292,8 +1497,8 @@
         "proceduralTexturesLibrary",
         "loaders",
         "serializers",
-        "inspector",
         "gui",
+        "inspector",
         "viewer",
         "viewer-assets"
     ],
@@ -1635,12 +1840,13 @@
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_minecraftMesh.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_sRGBFactors.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/MSFT_audio_emitter.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_unlit.ts",
-                    "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_texture_transform.ts",
-                    "../../loaders/src/glTF/2.0/Extensions/EXT_lights_imageBased.ts"
+                    "../../loaders/src/glTF/2.0/Extensions/EXT_lights_image_based.ts"
                 ],
                 "doNotIncludeInBundle": true,
                 "output": "babylon.glTF2FileLoader.js"
@@ -1660,12 +1866,13 @@
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_minecraftMesh.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_sRGBFactors.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/MSFT_audio_emitter.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_unlit.ts",
-                    "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_texture_transform.ts",
-                    "../../loaders/src/glTF/2.0/Extensions/EXT_lights_imageBased.ts"
+                    "../../loaders/src/glTF/2.0/Extensions/EXT_lights_image_based.ts"
                 ],
                 "output": "babylon.glTFFileLoader.js"
             }
@@ -1702,7 +1909,17 @@
                     "../../serializers/src/glTF/2.0/babylon.glTFData.ts",
                     "../../serializers/src/glTF/2.0/babylon.glTFMaterialExporter.ts",
                     "../../serializers/src/glTF/2.0/babylon.glTFAnimation.ts",
-                    "../../serializers/src/glTF/2.0/babylon.glTFUtilities.ts"
+                    "../../serializers/src/glTF/2.0/babylon.glTFUtilities.ts",
+                    "../../serializers/src/glTF/2.0/babylon.glTFExporterExtension.ts",
+                    "../../serializers/src/glTF/babylon.glTFFileExporter.ts",
+                    "../../serializers/src/glTF/2.0/Extensions/KHR_texture_transform.ts"
+                ],
+                "excludeFromLoader": [
+                    "../../serializers/src/glTF/2.0/babylon.glTFExporterExtension.ts",
+                    "../../serializers/src/glTF/babylon.glTFFileExporter.ts"
+                ],
+                "shaderFiles": [
+                    "../../serializers/src/glTF/2.0/shaders/textureTransform.fragment.fx"
                 ],
                 "output": "babylon.glTF2Serializer.js"
             }
@@ -1727,145 +1944,72 @@
     "gui": {
         "libraries": [
             {
-                "files": [
-                    "../../gui/src/2D/style.ts",
-                    "../../gui/src/2D/valueAndUnit.ts",
-                    "../../gui/src/2D/advancedDynamicTexture.ts",
-                    "../../gui/src/2D/measure.ts",
-                    "../../gui/src/2D/math2D.ts",
-                    "../../gui/src/2D/multiLinePoint.ts",
-                    "../../gui/src/2D/controls/control.ts",
-                    "../../gui/src/2D/controls/container.ts",
-                    "../../gui/src/2D/controls/stackPanel.ts",
-                    "../../gui/src/2D/controls/rectangle.ts",
-                    "../../gui/src/2D/controls/ellipse.ts",
-                    "../../gui/src/2D/controls/line.ts",
-                    "../../gui/src/2D/controls/slider.ts",
-                    "../../gui/src/2D/controls/checkbox.ts",
-                    "../../gui/src/2D/controls/radioButton.ts",
-                    "../../gui/src/2D/controls/textBlock.ts",
-                    "../../gui/src/2D/controls/image.ts",
-                    "../../gui/src/2D/controls/button.ts",
-                    "../../gui/src/2D/controls/colorpicker.ts",
-                    "../../gui/src/2D/controls/inputText.ts",
-                    "../../gui/src/2D/controls/virtualKeyboard.ts",
-                    "../../gui/src/2D/controls/multiLine.ts",
-                    "../../gui/src/2D/controls/grid.ts",                    
-                    "../../gui/src/3D/gui3DManager.ts",
-                    "../../gui/src/3D/materials/fluentMaterial.ts",
-                    "../../gui/src/3D/vector3WithInfo.ts",
-                    "../../gui/src/3D/controls/control3D.ts",
-                    "../../gui/src/3D/controls/container3D.ts",
-                    "../../gui/src/3D/controls/abstractButton3D.ts",
-                    "../../gui/src/3D/controls/button3D.ts",
-                    "../../gui/src/3D/controls/meshButton3D.ts",
-                    "../../gui/src/3D/controls/holographicButton.ts",
-                    "../../gui/src/3D/controls/stackPanel3D.ts",
-                    "../../gui/src/3D/controls/volumeBasedPanel.ts",
-                    "../../gui/src/3D/controls/spherePanel.ts",
-                    "../../gui/src/3D/controls/planePanel.ts",
-                    "../../gui/src/3D/controls/scatterPanel.ts",
-                    "../../gui/src/3D/controls/cylinderPanel.ts"
-                ],
-                "shaderFiles": [
-                    "../../gui/src/3D/materials/shaders/fluent.vertex.fx",
-                    "../../gui/src/3D/materials/shaders/fluent.fragment.fx"
-                ],
-                "output": "babylon.gui.js",
-                "buildAsModule": true,
-                "moduleName": "babylonjs-gui",
-                "moduleDeclaration": {
-                    "name": "GUI",
-                    "module": "babylonjs-gui"
-                }
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.gui.min.js",
+                "webpack": "../../gui/webpack.config.js",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
             }
         ],
         "build": {
-            "srcOutputDirectory": "../../gui/",
-            "distOutputDirectory": "/gui/"
+            "srcOutputDirectory": "../../gui/src/",
+            "distOutputDirectory": "/gui/",
+            "dtsBundle": {
+                "name": "babylonjs-gui",
+                "main": "../../dist/preview release/gui/build/index.d.ts",
+                "out": "../babylon.gui.module.d.ts",
+                "baseDir": "../../dist/preview release/gui/build/",
+                "headerText": "BabylonJS GUI"
+            },
+            "processDeclaration": {
+                "filename": "babylon.gui.module.d.ts",
+                "packageName": "babylonjs-gui",
+                "moduleName": "BABYLON.GUI",
+                "importsToRemove": [],
+                "classMap": {
+                    "babylonjs": "BABYLON",
+                    "babylonjs-loaders": "BABYLON",
+                    "babylonjs-serializers": "BABYLON"
+                }
+            }
         }
     },
     "inspector": {
         "libraries": [
             {
-                "files": [
-                    "../../inspector/src/Inspector.ts",
-                    "../../inspector/src/properties.ts",
-                    "../../inspector/src/properties_gui.ts",
-                    "../../inspector/src/gui/BasicElement.ts",
-                    "../../inspector/src/adapters/Adapter.ts",
-                    "../../inspector/src/adapters/CameraAdapter.ts",
-                    "../../inspector/src/adapters/PhysicsImpostorAdapter.ts",
-                    "../../inspector/src/adapters/GUIAdapter.ts",
-                    "../../inspector/src/adapters/SoundAdapter.ts",
-                    "../../inspector/src/adapters/TextureAdapter.ts",
-                    "../../inspector/src/adapters/LightAdapter.ts",
-                    "../../inspector/src/adapters/MaterialAdapter.ts",
-                    "../../inspector/src/adapters/MeshAdapter.ts",
-                    "../../inspector/src/adapters/PhysicsImpostorAdapter.ts",
-                    "../../inspector/src/details/DetailPanel.ts",
-                    "../../inspector/src/details/Property.ts",
-                    "../../inspector/src/details/PropertyLine.ts",
-                    "../../inspector/src/gui/ColorElement.ts",
-                    "../../inspector/src/gui/ColorPickerElement.ts",
-                    "../../inspector/src/gui/CubeTextureElement.ts",
-                    "../../inspector/src/gui/HDRCubeTextureElement.ts",
-                    "../../inspector/src/gui/SearchBar.ts",
-                    "../../inspector/src/gui/TextureElement.ts",
-                    "../../inspector/src/gui/Tooltip.ts",
-                    "../../inspector/src/helpers/Helpers.ts",
-                    "../../inspector/src/scheduler/Scheduler.ts",
-                    "../../inspector/src/tabs/Tab.ts",
-                    "../../inspector/src/tabs/PropertyTab.ts",
-                    "../../inspector/src/tabs/CameraTab.ts",
-                    "../../inspector/src/tabs/GUITab.ts",
-                    "../../inspector/src/tabs/PhysicsTab.ts",
-                    "../../inspector/src/tabs/SoundTab.ts",
-                    "../../inspector/src/tabs/TextureTab.ts",
-                    "../../inspector/src/tabs/LightTab.ts",
-                    "../../inspector/src/tabs/MaterialTab.ts",
-                    "../../inspector/src/tabs/MeshTab.ts",
-                    "../../inspector/src/tabs/SceneTab.ts",
-                    "../../inspector/src/tabs/ConsoleTab.ts",
-                    "../../inspector/src/tabs/StatsTab.ts",
-                    "../../inspector/src/tabs/GLTFTab.ts",
-                    "../../inspector/src/tabs/ToolsTab.ts",
-                    "../../inspector/src/tabs/TabBar.ts",
-                    "../../inspector/src/tools/AbstractTool.ts",
-                    "../../inspector/src/tools/PauseScheduleTool.ts",
-                    "../../inspector/src/tools/PickTool.ts",
-                    "../../inspector/src/tools/PopupTool.ts",
-                    "../../inspector/src/tools/RefreshTool.ts",
-                    "../../inspector/src/tools/LabelTool.ts",
-                    "../../inspector/src/tools/Toolbar.ts",
-                    "../../inspector/src/tools/DisposeTool.ts",
-                    "../../inspector/src/tools/FullscreenTool.ts",
-                    "../../inspector/src/tree/TreeItem.ts",
-                    "../../inspector/src/treetools/AbstractTreeTool.ts",
-                    "../../inspector/src/treetools/BoundingBox.ts",
-                    "../../inspector/src/treetools/CameraPOV.ts",
-                    "../../inspector/src/treetools/SoundInteractions.ts",
-                    "../../inspector/src/treetools/Checkbox.ts",
-                    "../../inspector/src/treetools/DebugArea.ts",
-                    "../../inspector/src/treetools/Info.ts",
-                    "../../inspector/src/lib.d.ts"
-                ],
-                "sassFiles": [
-                    "../../inspector/sass/**/*.scss"
-                ],
-                "output": "babylon.inspector.js",
+                "files": [],
+                "sassFiles": [],
+                "output": "babylon.inspector.bundle.js",
                 "webpack": "../../inspector/webpack.config.js",
                 "bundle": "true",
-                "moduleDeclaration": {
-                    "name": "INSPECTOR",
-                    "module": "babylonjs-inspector"
-                },
-                "extendsRoot": true
+                "extendsRoot": true,
+                "useOutputForDebugging": true
             }
         ],
         "build": {
-            "srcOutputDirectory": "../../inspector/",
-            "distOutputDirectory": "/inspector/"
+            "srcOutputDirectory": "../../inspector/src/",
+            "distOutputDirectory": "/inspector/",
+            "dtsBundle": {
+                "name": "babylonjs-inspector",
+                "main": "../../dist/preview release/inspector/build/index.d.ts",
+                "out": "../babylon.inspector.module.d.ts",
+                "baseDir": "../../dist/preview release/inspector/build/",
+                "headerText": "BabylonJS Inspector"
+            },
+            "processDeclaration": {
+                "filename": "babylon.inspector.module.d.ts",
+                "packageName": "babylonjs-inspector",
+                "moduleName": "INSPECTOR",
+                "importsToRemove": [],
+                "classMap": {
+                    "babylonjs": "BABYLON",
+                    "babylonjs-loaders": "BABYLON",
+                    "babylonjs-serializers": "BABYLON",
+                    "babylonjs-gui": "BABYLON.GUI"
+                }
+            }
         }
     },
     "viewer": {
@@ -1880,21 +2024,36 @@
                     "name": "BabylonViewer",
                     "module": "babylonjs-viewer"
                 },
-                "babylonIncluded": true
+                "babylonIncluded": true,
+                "noWatch": true,
+                "preventLoadLibrary": true
             }
         ],
         "build": {
+            "srcDirectory": "../../Viewer/src/",
             "srcOutputDirectory": "../../Viewer/",
+            "distOutputDirectory": "/viewer/",
             "dtsBundle": {
                 "name": "babylonjs-viewer",
-                "main": "../../Viewer/dist/build/src/index.d.ts",
-                "out": "../../../../dist/preview release/viewer/babylon.viewer.module.d.ts",
-                "legacyDeclaration": true,
+                "main": "../../dist/preview release/viewer/build/src/index.d.ts",
+                "out": "../../babylon.viewer.module.d.ts",
                 "prependText": "/// <reference path=\"./babylon.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n"
+            },
+            "processDeclaration": {
+                "packageName": "babylonjs-viewer",
+                "moduleName": "BabylonViewer",
+                "importsToRemove": [
+                    "pep",
+                    "babylonjs-loaders"
+                ],
+                "classMap": {
+                    "babylonjs": "BABYLON",
+                    "babylonjs-loaders": "BABYLON"
+                }
             },
             "outputs": [
                 {
-                    "destination": [
+                    "destinations": [
                         {
                             "filename": "viewer.js",
                             "outputDirectory": "/../../Viewer/dist/"
@@ -1912,7 +2071,7 @@
                     "minified": true
                 },
                 {
-                    "destination": [
+                    "destinations": [
                         {
                             "filename": "viewer.max.js",
                             "outputDirectory": "/../../Viewer/dist/"
@@ -1938,23 +2097,26 @@
                     "name": "BabylonViewerAssets",
                     "module": "babylonjs-viewer-assets"
                 },
-                "babylonIncluded": true
+                "babylonIncluded": true,
+                "noWatch": true,
+                "preventLoadLibrary": true
             }
         ],
         "build": {
+            "srcDirectory": "../../Viewer/src/",
             "srcOutputDirectory": "../../Viewer/",
+            "distOutputDirectory": "/viewer/",
             "dtsBundle": {
                 "name": "babylonjs-viewer-assets",
-                "baseDir": "../../Viewer/dist/build/src/assets/",
-                "main": "../../Viewer/dist/build/src/assets/index.d.ts",
-                "out": "../../../build/assets/babylon.viewer.assets.module.d.ts"
+                "main": "../../dist/preview release/viewer/build/src/assets/index.d.ts",
+                "out": "../../../../../../Viewer/build/assets/babylon.viewer.assets.module.d.ts"
             },
             "outputs": [
                 {
-                    "destination": [
+                    "destinations": [
                         {
                             "filename": "babylon.viewer.assets.js",
-                            "outputDirectory": "/../../Viewer/dist/build/assets/"
+                            "outputDirectory": "/../../Viewer/build/assets/"
                         }
                     ],
                     "minified": true

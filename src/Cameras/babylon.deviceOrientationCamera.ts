@@ -1,4 +1,9 @@
 module BABYLON {
+
+    Node.AddNodeConstructor("DeviceOrientationCamera", (name, scene) => {
+        return () => new DeviceOrientationCamera(name, Vector3.Zero(), scene);
+    });
+
     // We're mainly based on the logic defined into the FreeCamera code
     /**
      * This is a camera specifically designed to react to device orientation events such as a modern mobile device
@@ -31,6 +36,7 @@ module BABYLON {
         }
 
         /**
+         * @hidden
          * Checks and applies the current values of the inputs to the camera. (Internal use only)
          */
         public _checkInputs(): void {
@@ -48,7 +54,7 @@ module BABYLON {
         public resetToCurrentRotation(axis: Axis = Axis.Y): void {
 
             //can only work if this camera has a rotation quaternion already.
-            if (!this.rotationQuaternion) return;
+            if (!this.rotationQuaternion) { return; }
 
             if (!this._initialQuaternion) {
                 this._initialQuaternion = new Quaternion();

@@ -2,51 +2,51 @@ module BABYLON {
     /**
      * The bloom effect spreads bright areas of an image to simulate artifacts seen in cameras
      */
-    export class BloomEffect extends PostProcessRenderEffect{
+    export class BloomEffect extends PostProcessRenderEffect {
         /**
-         * Internal
+         * @hidden Internal
          */
         public _effects: Array<PostProcess> = [];
 
         /**
-         * Internal
+         * @hidden Internal
          */
-        public _downscale:ExtractHighlightsPostProcess;
-        private _blurX:BlurPostProcess;
-        private _blurY:BlurPostProcess;
-        private _merge:BloomMergePostProcess;
-        
+        public _downscale: ExtractHighlightsPostProcess;
+        private _blurX: BlurPostProcess;
+        private _blurY: BlurPostProcess;
+        private _merge: BloomMergePostProcess;
+
         /**
-         * The luminance threshold to find bright areas of the image to bloom. 
+         * The luminance threshold to find bright areas of the image to bloom.
          */
-        public get threshold():number{
+        public get threshold(): number {
             return this._downscale.threshold;
         }
-        public set threshold(value: number){
+        public set threshold(value: number) {
             this._downscale.threshold = value;
         }
 
         /**
          * The strength of the bloom.
          */
-        public get weight():number{
+        public get weight(): number {
             return this._merge.weight;
         }
-        public set weight(value: number){
+        public set weight(value: number) {
             this._merge.weight = value;
         }
 
         /**
          * Specifies the size of the bloom blur kernel, relative to the final output size
          */
-        public get kernel():number{
+        public get kernel(): number {
             return this._blurX.kernel / this.bloomScale;
         }
-        public set kernel(value: number){
+        public set kernel(value: number) {
             this._blurX.kernel = value * this.bloomScale;
             this._blurY.kernel = value * this.bloomScale;
         }
-        
+
         /**
          * Creates a new instance of @see BloomEffect
          * @param scene The scene the effect belongs to.
@@ -56,8 +56,8 @@ module BABYLON {
          * @param pipelineTextureType The type of texture to be used when performing the post processing.
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(scene: Scene, private bloomScale:number, bloomWeight:number, bloomKernel:number, pipelineTextureType = 0, blockCompilation = false) {
-            super(scene.getEngine(), "bloom", ()=>{
+        constructor(scene: Scene, private bloomScale: number, bloomWeight: number, bloomKernel: number, pipelineTextureType = 0, blockCompilation = false) {
+            super(scene.getEngine(), "bloom", () => {
                 return this._effects;
             }, true);
             this._downscale = new ExtractHighlightsPostProcess("highlights", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
@@ -83,17 +83,17 @@ module BABYLON {
          * Disposes each of the internal effects for a given camera.
          * @param camera The camera to dispose the effect on.
          */
-        public disposeEffects(camera:Camera){
-            for(var effectIndex = 0; effectIndex < this._effects.length; effectIndex++){
+        public disposeEffects(camera: Camera) {
+            for (var effectIndex = 0; effectIndex < this._effects.length; effectIndex++) {
                 this._effects[effectIndex].dispose(camera);
             }
         }
-        
+
         /**
-         * Internal
+         * @hidden Internal
          */
-        public _updateEffects(){
-            for(var effectIndex = 0; effectIndex < this._effects.length; effectIndex++){
+        public _updateEffects() {
+            for (var effectIndex = 0; effectIndex < this._effects.length; effectIndex++) {
                 this._effects[effectIndex].updateEffect();
             }
         }
@@ -101,10 +101,11 @@ module BABYLON {
         /**
          * Internal
          * @returns if all the contained post processes are ready.
+         * @hidden
          */
-        public _isReady(){
-            for(var effectIndex = 0; effectIndex < this._effects.length; effectIndex++){
-                if(!this._effects[effectIndex].isReady()){
+        public _isReady() {
+            for (var effectIndex = 0; effectIndex < this._effects.length; effectIndex++) {
+                if (!this._effects[effectIndex].isReady()) {
                     return false;
                 }
             }

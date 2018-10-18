@@ -3,7 +3,13 @@ module BABYLON {
      * This class defines the direct association between an animation and a target
      */
     export class TargetedAnimation {
+        /**
+         * Animation to perform
+         */
         public animation: Animation;
+        /**
+         * Target to animate
+         */
         public target: any;
     }
 
@@ -20,12 +26,20 @@ module BABYLON {
         private _isStarted: boolean;
         private _speedRatio = 1;
 
+        /**
+         * This observable will notify when one animation have ended.
+         */
         public onAnimationEndObservable = new Observable<TargetedAnimation>();
 
         /**
          * This observable will notify when all animations have ended.
          */
         public onAnimationGroupEndObservable = new Observable<AnimationGroup>();
+
+        /**
+         * This observable will notify when all animations have paused.
+         */
+        public onAnimationGroupPauseObservable = new Observable<AnimationGroup>();
 
         /**
          * Gets the first frame
@@ -85,7 +99,17 @@ module BABYLON {
             return this._animatables;
         }
 
-        public constructor(public name: string, scene: Nullable<Scene> = null) {
+        /**
+         * Instantiates a new Animation Group.
+         * This helps managing several animations at once.
+         * @see http://doc.babylonjs.com/how_to/group
+         * @param name Defines the name of the group
+         * @param scene Defines the scene the group belongs to
+         */
+        public constructor(
+            /** The name of the animation group */
+            public name: string,
+            scene: Nullable<Scene> = null) {
             this._scene = scene || Engine.LastCreatedScene!;
 
             this._scene.animationGroups.push(this);
@@ -95,7 +119,7 @@ module BABYLON {
          * Add an animation (with its target) in the group
          * @param animation defines the animation we want to add
          * @param target defines the target of the animation
-         * @returns the {BABYLON.TargetedAnimation} object
+         * @returns the TargetedAnimation object
          */
         public addTargetedAnimation(animation: Animation, target: any): TargetedAnimation {
             let targetedAnimation = {
@@ -122,10 +146,11 @@ module BABYLON {
          * It can add constant keys at begin or end
          * @param beginFrame defines the new begin frame for all animations or the smallest begin frame of all animations if null (defaults to null)
          * @param endFrame defines the new end frame for all animations or the largest end frame of all animations if null (defaults to null)
+         * @returns the animation group
          */
         public normalize(beginFrame: Nullable<number> = null, endFrame: Nullable<number> = null): AnimationGroup {
-            if (beginFrame == null) beginFrame = this._from;
-            if (endFrame == null) endFrame = this._to;
+            if (beginFrame == null) { beginFrame = this._from; }
+            if (endFrame == null) { endFrame = this._to; }
 
             for (var index = 0; index < this._targetedAnimations.length; index++) {
                 let targetedAnimation = this._targetedAnimations[index];
@@ -140,7 +165,7 @@ module BABYLON {
                         inTangent: startKey.inTangent,
                         outTangent: startKey.outTangent,
                         interpolation: startKey.interpolation
-                    }
+                    };
                     keys.splice(0, 0, newKey);
                 }
 
@@ -151,7 +176,7 @@ module BABYLON {
                         inTangent: endKey.outTangent,
                         outTangent: endKey.outTangent,
                         interpolation: endKey.interpolation
-                    }
+                    };
                     keys.push(newKey);
                 }
             }
@@ -180,7 +205,7 @@ module BABYLON {
                 animatable.onAnimationEnd = () => {
                     this.onAnimationEndObservable.notifyObservers(targetedAnimation);
                     this._checkAnimationGroupEnded(animatable);
-                }
+                };
                 this._animatables.push(animatable);
             }
 
@@ -193,6 +218,7 @@ module BABYLON {
 
         /**
          * Pause all animations
+         * @returns the animation group
          */
         public pause(): AnimationGroup {
             if (!this._isStarted) {
@@ -204,6 +230,8 @@ module BABYLON {
                 animatable.pause();
             }
 
+            this.onAnimationGroupPauseObservable.notifyObservers(this);
+
             return this;
         }
 
@@ -211,6 +239,7 @@ module BABYLON {
          * Play all animations to initial state
          * This function will start() the animations if they were not started or will restart() them if they were paused
          * @param loop defines if animations must loop
+         * @returns the animation group
          */
         public play(loop?: boolean): AnimationGroup {
             // only if all animatables are ready and exist
@@ -232,6 +261,7 @@ module BABYLON {
 
         /**
          * Reset all animations to initial state
+         * @returns the animation group
          */
         public reset(): AnimationGroup {
             if (!this._isStarted) {
@@ -248,6 +278,7 @@ module BABYLON {
 
         /**
          * Restart animations from key 0
+         * @returns the animation group
          */
         public restart(): AnimationGroup {
             if (!this._isStarted) {
@@ -264,6 +295,7 @@ module BABYLON {
 
         /**
          * Stop all animations
+         * @returns the animation group
          */
         public stop(): AnimationGroup {
             if (!this._isStarted) {
@@ -355,5 +387,60 @@ module BABYLON {
                 this.onAnimationGroupEndObservable.notifyObservers(this);
             }
         }
+
+        // Statics
+        /**
+         * Returns a new AnimationGroup object parsed from the source provided.
+         * @param parsedAnimationGroup defines the source
+         * @param scene defines the scene that will receive the animationGroup
+         * @returns a new AnimationGroup
+         */
+        public static Parse(parsedAnimationGroup: any, scene: Scene): AnimationGroup {
+            var animationGroup = new BABYLON.AnimationGroup(parsedAnimationGroup.name, scene);
+            for (var i = 0; i < parsedAnimationGroup.targetedAnimations.length; i++) {
+                var targetedAnimation = parsedAnimationGroup.targetedAnimations[i];
+                var animation = Animation.Parse(targetedAnimation.animation);
+                var id = targetedAnimation.targetId;
+                var targetNode = scene.getNodeByID(id);
+
+                if (targetNode != null) {
+                    animationGroup.addTargetedAnimation(animation, targetNode);
+                }
+            }
+
+            if (parsedAnimationGroup.from !== null && parsedAnimationGroup.from !== null) {
+                animationGroup.normalize(parsedAnimationGroup.from, parsedAnimationGroup.to);
+            }
+
+            return animationGroup;
+        }
+
+        /**
+         * Returns the string "AnimationGroup"
+         * @returns "AnimationGroup"
+         */
+        public getClassName(): string {
+            return "AnimationGroup";
+        }
+
+        /**
+         * Creates a detailled string about the object
+         * @param fullDetails defines if the output string will support multiple levels of logging within scene loading
+         * @returns a string representing the object
+         */
+        public toString(fullDetails?: boolean): string {
+            var ret = "Name: " + this.name;
+            ret += ", type: " + this.getClassName();
+            if (fullDetails) {
+                ret += ", from: " + this._from;
+                ret += ", to: " + this._to;
+                ret += ", isStarted: " + this._isStarted;
+                ret += ", speedRatio: " + this._speedRatio;
+                ret += ", targetedAnimations length: " + this._targetedAnimations.length;
+                ret += ", animatables length: " + this._animatables;
+            }
+            return ret;
+        }
+
     }
 }

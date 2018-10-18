@@ -57,7 +57,11 @@ varying vec3 vDirectionW;
 void main(void) {
 
 #ifdef REFLECTIONMAP_SKYBOX
-    vPositionUVW = position;
+    #ifdef REFLECTIONMAP_SKYBOX_TRANSFORMED
+        vPositionUVW = (reflectionMatrix * vec4(position, 1.0)).xyz;
+    #else
+        vPositionUVW = position;
+    #endif
 #endif 
 
 #include<instancesVertex>

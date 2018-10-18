@@ -1,132 +1,227 @@
 ﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
-/// <reference path="../../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"/>
 
-module BABYLON.GLTF2 {
-    /** @hidden */
-    export interface _IArrayItem {
-        _index: number;
+module BABYLON.GLTF2.Loader {
+    /**
+     * Loader interface with an index field.
+     */
+    export interface IArrayItem {
+        /**
+         * The index of this item in the array.
+         */
+        index: number;
     }
 
-    /** @hidden */
-    export interface _ILoaderAccessor extends IAccessor, _IArrayItem {
+    /**
+     * Loader interface with additional members.
+     */
+    export interface IAccessor extends GLTF2.IAccessor, IArrayItem {
+        /** @hidden */
         _data?: Promise<ArrayBufferView>;
+
+        /** @hidden */
         _babylonVertexBuffer?: Promise<VertexBuffer>;
     }
 
-    /** @hidden */
-    export interface _ILoaderAnimationChannel extends IAnimationChannel, _IArrayItem {
+    /**
+     * Loader interface with additional members.
+     */
+    export interface IAnimationChannel extends GLTF2.IAnimationChannel, IArrayItem {
     }
 
     /** @hidden */
-    export interface _ILoaderAnimationSamplerData {
+    export interface _IAnimationSamplerData {
         input: Float32Array;
         interpolation: AnimationSamplerInterpolation;
         output: Float32Array;
     }
 
-    /** @hidden */
-    export interface _ILoaderAnimationSampler extends IAnimationSampler, _IArrayItem {
-        _data?: Promise<_ILoaderAnimationSamplerData>;
+    /**
+     * Loader interface with additional members.
+     */
+    export interface IAnimationSampler extends GLTF2.IAnimationSampler, IArrayItem {
+        /** @hidden */
+        _data?: Promise<_IAnimationSamplerData>;
     }
 
-    /** @hidden */
-    export interface _ILoaderAnimation extends IAnimation, _IArrayItem {
-        channels: _ILoaderAnimationChannel[];
-        samplers: _ILoaderAnimationSampler[];
+    /**
+     * Loader interface with additional members.
+     */
+    export interface IAnimation extends GLTF2.IAnimation, IArrayItem {
+        channels: IAnimationChannel[];
+        samplers: IAnimationSampler[];
 
+        /** @hidden */
         _babylonAnimationGroup?: AnimationGroup;
     }
 
-    /** @hidden */
-    export interface _ILoaderBuffer extends IBuffer, _IArrayItem {
+    /**
+     * Loader interface with additional members.
+     */
+    export interface IBuffer extends GLTF2.IBuffer, IArrayItem {
+        /** @hidden */
         _data?: Promise<ArrayBufferView>;
     }
 
-    /** @hidden */
-    export interface _ILoaderBufferView extends IBufferView, _IArrayItem {
+    /**
+     * Loader interface with additional members.
+     */
+    export interface IBufferView extends GLTF2.IBufferView, IArrayItem {
+        /** @hidden */
         _data?: Promise<ArrayBufferView>;
+
+        /** @hidden */
         _babylonBuffer?: Promise<Buffer>;
     }
 
-    /** @hidden */
-    export interface _ILoaderCamera extends ICamera, _IArrayItem {
+    /**
+     * Loader interface with additional members.
+     */
+    export interface ICamera extends GLTF2.ICamera, IArrayItem {
     }
 
-    /** @hidden */
-    export interface _ILoaderImage extends IImage, _IArrayItem {
+    /**
+     * Loader interface with additional members.
+     */
+    export interface IImage extends GLTF2.IImage, IArrayItem {
+        /** @hidden */
         _data?: Promise<ArrayBufferView>;
     }
 
-    /** @hidden */
-    export interface _ILoaderMaterial extends IMaterial, _IArrayItem {
+    /**
+     * Loader interface with additional members.
+     */
+    export interface IMaterialNormalTextureInfo extends GLTF2.IMaterialNormalTextureInfo, ITextureInfo {
+    }
+
+    /**
+     * Loader interface with additional members.
+     */
+    export interface IMaterialOcclusionTextureInfo extends GLTF2.IMaterialOcclusionTextureInfo, ITextureInfo {
+    }
+
+    /**
+     * Loader interface with additional members.
+     */
+    export interface IMaterialPbrMetallicRoughness extends GLTF2.IMaterialPbrMetallicRoughness {
+        baseColorTexture?: ITextureInfo;
+        metallicRoughnessTexture?: ITextureInfo;
+    }
+
+    /**
+     * Loader interface with additional members.
+     */
+    export interface IMaterial extends GLTF2.IMaterial, IArrayItem {
+        pbrMetallicRoughness?: IMaterialPbrMetallicRoughness;
+        normalTexture?: IMaterialNormalTextureInfo;
+        occlusionTexture?: IMaterialOcclusionTextureInfo;
+        emissiveTexture?: ITextureInfo;
+
+        /** @hidden */
         _babylonData?: {
             [drawMode: number]: {
                 material: Material;
                 meshes: AbstractMesh[];
-                loaded: Promise<void>;
+                promise: Promise<void>;
             }
         };
     }
 
-    /** @hidden */
-    export interface _ILoaderMesh extends IMesh, _IArrayItem {
-        primitives: _ILoaderMeshPrimitive[];
+    /**
+     * Loader interface with additional members.
+     */
+    export interface IMesh extends GLTF2.IMesh, IArrayItem {
+        primitives: IMeshPrimitive[];
     }
 
-    /** @hidden */
-    export interface _ILoaderMeshPrimitive extends IMeshPrimitive, _IArrayItem {
+    /**
+     * Loader interface with additional members.
+     */
+    export interface IMeshPrimitive extends GLTF2.IMeshPrimitive, IArrayItem {
     }
 
-    /** @hidden */
-    export interface _ILoaderNode extends INode, _IArrayItem {
-        _parent?: _ILoaderNode;
+    /**
+     * Loader interface with additional members.
+     */
+    export interface INode extends GLTF2.INode, IArrayItem {
+        /**
+         * The parent glTF node.
+         */
+        parent?: INode;
+
+        /** @hidden */
         _babylonMesh?: Mesh;
+
+        /** @hidden */
         _primitiveBabylonMeshes?: Mesh[];
+
+        /** @hidden */
         _babylonBones?: Bone[];
+
+        /** @hidden */
         _numMorphTargets?: number;
     }
 
     /** @hidden */
-    export interface _ILoaderSamplerData {
+    export interface _ISamplerData {
         noMipMaps: boolean;
         samplingMode: number;
         wrapU: number;
         wrapV: number;
     }
 
-    /** @hidden */
-    export interface _ILoaderSampler extends ISampler, _IArrayItem {
-        _data?: _ILoaderSamplerData;
+    /**
+     * Loader interface with additional members.
+     */
+    export interface ISampler extends GLTF2.ISampler, IArrayItem {
+        /** @hidden */
+        _data?: _ISamplerData;
     }
 
-    /** @hidden */
-    export interface _ILoaderScene extends IScene, _IArrayItem {
+    /**
+     * Loader interface with additional members.
+     */
+    export interface IScene extends GLTF2.IScene, IArrayItem {
     }
 
-    /** @hidden */
-    export interface _ILoaderSkin extends ISkin, _IArrayItem {
+    /**
+     * Loader interface with additional members.
+     */
+    export interface ISkin extends GLTF2.ISkin, IArrayItem {
+        /** @hidden */
         _babylonSkeleton?: Skeleton;
-        _loaded?: Promise<void>;
+
+        /** @hidden */
+        _promise?: Promise<void>;
     }
 
-    /** @hidden */
-    export interface _ILoaderTexture extends ITexture, _IArrayItem {
+    /**
+     * Loader interface with additional members.
+     */
+    export interface ITexture extends GLTF2.ITexture, IArrayItem {
     }
 
-    /** @hidden */
-    export interface _ILoaderGLTF extends IGLTF {
-        accessors?: _ILoaderAccessor[];
-        animations?: _ILoaderAnimation[];
-        buffers?: _ILoaderBuffer[];
-        bufferViews?: _ILoaderBufferView[];
-        cameras?: _ILoaderCamera[];
-        images?: _ILoaderImage[];
-        materials?: _ILoaderMaterial[];
-        meshes?: _ILoaderMesh[];
-        nodes?: _ILoaderNode[];
-        samplers?: _ILoaderSampler[];
-        scenes?: _ILoaderScene[];
-        skins?: _ILoaderSkin[];
-        textures?: _ILoaderTexture[];
+    /**
+     * Loader interface with additional members.
+     */
+    export interface ITextureInfo extends GLTF2.ITextureInfo {
+    }
+
+    /**
+     * Loader interface with additional members.
+     */
+    export interface IGLTF extends GLTF2.IGLTF {
+        accessors?: IAccessor[];
+        animations?: IAnimation[];
+        buffers?: IBuffer[];
+        bufferViews?: IBufferView[];
+        cameras?: ICamera[];
+        images?: IImage[];
+        materials?: IMaterial[];
+        meshes?: IMesh[];
+        nodes?: INode[];
+        samplers?: ISampler[];
+        scenes?: IScene[];
+        skins?: ISkin[];
+        textures?: ITexture[];
     }
 }

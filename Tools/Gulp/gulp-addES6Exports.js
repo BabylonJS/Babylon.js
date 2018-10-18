@@ -75,10 +75,10 @@ ${exportsText}
         try {
             if (externalUsingBabylon) {
                 //file.contents = new Buffer(optionalRequire.concat(String(file.contents)));
-                file.contents = new Buffer(optionalRequire.concat(new Buffer(String(file.contents).concat(moduleExportAddition(baseModule)))));
+                file.contents = Buffer.from(optionalRequire.concat(Buffer.from(String(file.contents).concat(moduleExportAddition(baseModule)))));
             } else {
                 let pretext = subModule ? optionalRequire : '';
-                file.contents = new Buffer(pretext.concat(decorateAddition).concat(new Buffer(extendsAddition.concat(String(file.contents)).concat(moduleExportAddition(baseModule)))));
+                file.contents = Buffer.from(pretext.concat(decorateAddition).concat(Buffer.from(extendsAddition.concat(String(file.contents)).concat(moduleExportAddition(baseModule)))));
             }
             this.push(file);
         } catch (err) {

@@ -1,160 +1,24 @@
-﻿module BABYLON {
-
+module BABYLON {
     /**
      * This represents a particle system in Babylon.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
      * Particles can take different shapes while emitted like box, sphere, cone or you can write your custom function.
      * @example https://doc.babylonjs.com/babylon101/particles
      */
-    export class ParticleSystem implements IDisposable, IAnimatable, IParticleSystem {
-        /**
-         * Source color is added to the destination color without alpha affecting the result.
-         */
-        public static BLENDMODE_ONEONE = 0;
-        /**
-         * Blend current color and particle color using particle’s alpha.
-         */
-        public static BLENDMODE_STANDARD = 1;
+    export class ParticleSystem extends BaseParticleSystem implements IDisposable, IAnimatable, IParticleSystem {
 
         /**
-         * Add current color and particle color multiplied by particle’s alpha.
+         * Billboard mode will only apply to Y axis
          */
-        public static BLENDMODE_ADD = 2;
-
+        public static readonly BILLBOARDMODE_Y = 2;
         /**
-         * List of animations used by the particle system.
+         * Billboard mode will apply to all axes
          */
-        public animations: Animation[] = [];
-
+        public static readonly BILLBOARDMODE_ALL = 7;
         /**
-         * The id of the Particle system.
+         * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
          */
-        public id: string;
-
-        /**
-         * The friendly name of the Particle system.
-         */
-        public name: string;
-
-        /**
-         * The rendering group used by the Particle system to chose when to render.
-         */
-        public renderingGroupId = 0;
-
-        /**
-         * The emitter represents the Mesh or position we are attaching the particle system to.
-         */
-        public emitter: Nullable<AbstractMesh | Vector3> = null;
-
-        /**
-         * The maximum number of particles to emit per frame
-         */
-        public emitRate = 10;
-
-        /**
-         * If you want to launch only a few particles at once, that can be done, as well.
-         */
-        public manualEmitCount = -1;
-
-        /**
-         * The overall motion speed (0.01 is default update speed, faster updates = faster animation)
-         */
-        public updateSpeed = 0.01;
-
-        /**
-         * The amount of time the particle system is running (depends of the overall update speed).
-         */
-        public targetStopDuration = 0;
-
-        /**
-         * Specifies whether the particle system will be disposed once it reaches the end of the animation.
-         */
-        public disposeOnStop = false;
-
-        /**
-         * Minimum power of emitting particles.
-         */
-        public minEmitPower = 1;
-        /**
-         * Maximum power of emitting particles.
-         */
-        public maxEmitPower = 1;
-
-        /**
-         * Minimum life time of emitting particles.
-         */
-        public minLifeTime = 1;
-        /**
-         * Maximum life time of emitting particles.
-         */
-        public maxLifeTime = 1;
-
-        /**
-         * Minimum Size of emitting particles.
-         */
-        public minSize = 1;
-        /**
-         * Maximum Size of emitting particles.
-         */
-        public maxSize = 1;
-
-        /**
-         * Minimum scale of emitting particles on X axis.
-         */
-        public minScaleX = 1;
-        /**
-         * Maximum scale of emitting particles on X axis.
-         */
-        public maxScaleX = 1;        
-
-        /**
-         * Minimum scale of emitting particles on Y axis.
-         */
-        public minScaleY = 1;
-        /**
-         * Maximum scale of emitting particles on Y axis.
-         */
-        public maxScaleY = 1;          
-        
-        /**
-         * Gets or sets the minimal initial rotation in radians.         
-         */
-        public minInitialRotation = 0;
-        /**
-         * Gets or sets the maximal initial rotation in radians.         
-         */
-        public maxInitialRotation = 0;             
-
-        /**
-         * Minimum angular speed of emitting particles (Z-axis rotation for each particle).
-         */
-        public minAngularSpeed = 0;
-        /**
-         * Maximum angular speed of emitting particles (Z-axis rotation for each particle).
-         */
-        public maxAngularSpeed = 0;
-
-        /**
-         * The texture used to render each particle. (this can be a spritesheet)
-         */
-        public particleTexture: Nullable<Texture>;
-
-        /**
-         * The layer mask we are rendering the particles through.
-         */
-        public layerMask: number = 0x0FFFFFFF;
-
-        /**
-         * This can help using your own shader to render the particle system.
-         * The according effect will be created 
-         */
-        public customShader: any = null;
-
-        /**
-         * By default particle system starts as soon as they are created. This prevents the 
-         * automatic start to happen and let you decide when to start emitting particles.
-         */
-        public preventAutoStart: boolean = false;
+        public static readonly BILLBOARDMODE_STRETCHED = 8;
 
         /**
          * This function can be defined to provide custom update for active particles.
@@ -163,173 +27,7 @@
          */
         public updateFunction: (particles: Particle[]) => void;
 
-        /**
-         * Callback triggered when the particle animation is ending.
-         */
-        public onAnimationEnd: Nullable<() => void> = null;
-
-        /**
-         * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE or ParticleSystem.BLENDMODE_STANDARD.
-         */
-        public blendMode = ParticleSystem.BLENDMODE_ONEONE;
-
-        /**
-         * Forces the particle to write their depth information to the depth buffer. This can help preventing other draw calls
-         * to override the particles.
-         */
-        public forceDepthWrite = false;
-
-        /**
-         * You can use gravity if you want to give an orientation to your particles.
-         */
-        public gravity = Vector3.Zero();
-
-        private _colorGradients: Nullable<Array<ColorGradient>> = null;
-        private _sizeGradients: Nullable<Array<FactorGradient>> = null;
-        private _lifeTimeGradients: Nullable<Array<FactorGradient>> = null;
-        private _angularSpeedGradients: Nullable<Array<FactorGradient>> = null;
-        private _velocityGradients: Nullable<Array<FactorGradient>> = null;
-
-        /**
-         * Gets the current list of color gradients.
-         * You must use addColorGradient and removeColorGradient to udpate this list
-         * @returns the list of color gradients
-         */
-        public getColorGradients(): Nullable<Array<ColorGradient>> {
-            return this._colorGradients;
-        }
-
-        /**
-         * Gets the current list of size gradients.
-         * You must use addSizeGradient and removeSizeGradient to udpate this list
-         * @returns the list of size gradients
-         */
-        public getSizeGradients(): Nullable<Array<FactorGradient>> {
-            return this._sizeGradients;
-        }        
-
-        /**
-         * Gets the current list of life time gradients.
-         * You must use addLifeTimeGradient and removeLifeTimeGradient to udpate this list
-         * @returns the list of life time gradients
-         */
-        public getLifeTimeGradients(): Nullable<Array<FactorGradient>> {
-            return this._lifeTimeGradients;
-        }   
-        
-        /**
-         * Gets the current list of angular speed gradients.
-         * You must use addAngularSpeedGradient and removeAngularSpeedGradient to udpate this list
-         * @returns the list of angular speed gradients
-         */
-        public getAngularSpeedGradients(): Nullable<Array<FactorGradient>> {
-            return this._angularSpeedGradients;
-        } 
-
-        /**
-         * Gets the current list of velocity gradients.
-         * You must use addVelocityGradient and removeVelocityGradient to udpate this list
-         * @returns the list of velocity gradients
-         */
-        public getVelocityGradients(): Nullable<Array<FactorGradient>> {
-            return this._velocityGradients;
-        }         
-
-        /**
-         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
-         * This only works when particleEmitterTyps is a BoxParticleEmitter
-         */
-        public get direction1(): Vector3 {
-            if ((<BoxParticleEmitter>this.particleEmitterType).direction1) {
-                return (<BoxParticleEmitter>this.particleEmitterType).direction1;
-            }
-
-            return Vector3.Zero();
-        }
-
-        public set direction1(value: Vector3) {
-            if ((<BoxParticleEmitter>this.particleEmitterType).direction1) {
-                (<BoxParticleEmitter>this.particleEmitterType).direction1 = value;
-            }
-        }
-
-        /**
-         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
-         * This only works when particleEmitterTyps is a BoxParticleEmitter
-         */
-        public get direction2(): Vector3 {
-            if ((<BoxParticleEmitter>this.particleEmitterType).direction2) {
-                return (<BoxParticleEmitter>this.particleEmitterType).direction2;
-            }
-
-            return Vector3.Zero();
-        }
-
-        public set direction2(value: Vector3) {
-            if ((<BoxParticleEmitter>this.particleEmitterType).direction2) {
-                (<BoxParticleEmitter>this.particleEmitterType).direction2 = value;
-            }
-        }
-
-        /**
-         * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
-         * This only works when particleEmitterTyps is a BoxParticleEmitter
-         */
-        public get minEmitBox(): Vector3 {
-            if ((<BoxParticleEmitter>this.particleEmitterType).minEmitBox) {
-                return (<BoxParticleEmitter>this.particleEmitterType).minEmitBox;
-            }
-
-            return Vector3.Zero();
-        }
-
-        public set minEmitBox(value: Vector3) {
-            if ((<BoxParticleEmitter>this.particleEmitterType).minEmitBox) {
-                (<BoxParticleEmitter>this.particleEmitterType).minEmitBox = value;
-            }
-        }
-
-        /**
-         * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
-         * This only works when particleEmitterTyps is a BoxParticleEmitter
-         */
-        public get maxEmitBox(): Vector3 {
-            if ((<BoxParticleEmitter>this.particleEmitterType).maxEmitBox) {
-                return (<BoxParticleEmitter>this.particleEmitterType).maxEmitBox;
-            }
-
-            return Vector3.Zero();
-        }
-
-        public set maxEmitBox(value: Vector3) {
-            if ((<BoxParticleEmitter>this.particleEmitterType).maxEmitBox) {
-                (<BoxParticleEmitter>this.particleEmitterType).maxEmitBox = value;
-            }
-        }
-
-        /**
-         * Random color of each particle after it has been emitted, between color1 and color2 vectors
-         */
-        public color1 = new Color4(1.0, 1.0, 1.0, 1.0);
-        /**
-         * Random color of each particle after it has been emitted, between color1 and color2 vectors
-         */
-        public color2 = new Color4(1.0, 1.0, 1.0, 1.0);
-        /**
-         * Color the particle will have at the end of its lifetime
-         */
-        public colorDead = new Color4(0, 0, 0, 1.0);
-
-        /**
-         * An optional mask to filter some colors out of the texture, or filter a part of the alpha channel
-         */
-        public textureMask = new Color4(1.0, 1.0, 1.0, 1.0);
-
-        /**
-         * The particle emitter type defines the emitter used by the particle system.
-         * It can be for example box, sphere, or cone...
-         */
-        public particleEmitterType: IParticleEmitterType;
+        private _emitterWorldMatrix: Matrix;
 
         /**
          * This function can be defined to specify initial direction for every new particle.
@@ -343,35 +41,9 @@
         public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
 
         /**
-         * If using a spritesheet (isAnimationSheetEnabled) defines the speed of the sprite loop (default is 1 meaning the animation will play once during the entire particle lifetime)
+         * @hidden
          */
-        public spriteCellChangeSpeed = 1;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled) defines the first sprite cell to display
-         */
-        public startSpriteCellID = 0;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled) defines the last sprite cell to display
-         */
-        public endSpriteCellID = 0;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use
-         */
-        public spriteCellWidth = 0;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use
-         */
-        public spriteCellHeight = 0;
-
-        /** Gets or sets a value indicating how many cycles (or frames) must be executed before first rendering (this value has to be set before starting the system). Default is 0 */
-        public preWarmCycles = 0;
-
-        /** Gets or sets a value indicating the time step multiplier to use in pre-warm mode (default is 1) */
-        public preWarmStepOffset = 1;
-
-        /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
-        public translationPivot = new Vector2(0, 0);
-
+        public _inheritedVelocityOffset = new BABYLON.Vector3();
         /**
         * An event triggered when the system is disposed
         */
@@ -388,39 +60,9 @@
             this._onDisposeObserver = this.onDisposeObservable.add(callback);
         }
 
-        /**
-         * Gets whether an animation sprite sheet is enabled or not on the particle system
-         */
-        public get isAnimationSheetEnabled(): boolean {
-            return this._isAnimationSheetEnabled;
-        }
-
-        /**
-         * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
-         */
-        public get isBillboardBased(): boolean {
-            return this._isBillboardBased;
-        }      
-        
-        public set isBillboardBased(value: boolean) {
-            if (this._isBillboardBased === value) {
-                return;
-            }
-
-            this._isBillboardBased = value;
-            this._resetEffect();
-        }     
-        
-        /**
-         * Gets or sets the billboard mode to use when isBillboardBased = true.
-         * Only BABYLON.AbstractMesh.BILLBOARDMODE_ALL and AbstractMesh.BILLBOARDMODE_Y are supported so far
-         */
-        public billboardMode = AbstractMesh.BILLBOARDMODE_ALL;
-
         private _particles = new Array<Particle>();
         private _epsilon: number;
         private _capacity: number;
-        private _scene: Scene;
         private _stockParticles = new Array<Particle>();
         private _newPartsExcess = 0;
         private _vertexData: Float32Array;
@@ -444,22 +86,61 @@
         private _actualFrame = 0;
         private _scaledUpdateSpeed: number;
         private _vertexBufferSize: number;
-        private _isAnimationSheetEnabled: boolean;
-        private _isBillboardBased = true;
 
-        // end of sheet animation
+        /** @hidden */
+        public _currentEmitRateGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        public _currentEmitRate1 = 0;
+        /** @hidden */
+        public _currentEmitRate2 = 0;
+
+        /** @hidden */
+        public _currentStartSizeGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        public _currentStartSize1 = 0;
+        /** @hidden */
+        public _currentStartSize2 = 0;
+
+        private readonly _rawTextureWidth = 256;
+        private _rampGradientsTexture: Nullable<RawTexture>;
+        private _useRampGradients = false;
+
+        /** Gets or sets a boolean indicating that ramp gradients must be used
+         * @see http://doc.babylonjs.com/babylon101/particles#ramp-gradients
+         */
+        public get useRampGradients(): boolean {
+            return this._useRampGradients;
+        }
+
+        public set useRampGradients(value: boolean) {
+            if (this._useRampGradients === value) {
+                return;
+            }
+
+            this._useRampGradients = value;
+
+            this._resetEffect();
+        }
 
         // Sub-emitters
         /**
-         * this is the Sub-emitters templates that will be used to generate particle system when the particle dies, this property is used by the root particle system only.
+         * The Sub-emitters templates that will be used to generate the sub particle system to be associated with the system, this property is used by the root particle system only.
+         * When a particle is spawned, an array will be chosen at random and all the emitters in that array will be attached to the particle.  (Default: [])
          */
-        public subEmitters: ParticleSystem[];
+        public subEmitters: Array<ParticleSystem | SubEmitter | Array<SubEmitter>>;
+        // the subEmitters field above converted to a constant type
+        private _subEmitters: Array<Array<SubEmitter>>;
+        /**
+         * @hidden
+         * If the particle systems emitter should be disposed when the particle system is disposed
+         */
+        public _disposeEmitterOnDispose = false;
         /**
         * The current active Sub-systems, this property is used by the root particle system only.
         */
         public activeSubSystems: Array<ParticleSystem>;
-        
-        private _rootParticleSystem: ParticleSystem;
+
+        private _rootParticleSystem: Nullable<ParticleSystem>;
         //end of Sub-emitter
 
         /**
@@ -475,7 +156,7 @@
          */
         public getClassName(): string {
             return "ParticleSystem";
-        }        
+        }
 
         /**
          * Instantiates a particle system.
@@ -488,8 +169,7 @@
          * @param epsilon Offset used to render the particles
          */
         constructor(name: string, capacity: number, scene: Scene, customEffect: Nullable<Effect> = null, isAnimationSheetEnabled: boolean = false, epsilon: number = 0.01) {
-            this.id = name;
-            this.name = name;
+            super(name);
 
             this._capacity = capacity;
 
@@ -498,9 +178,12 @@
 
             this._scene = scene || Engine.LastCreatedScene;
 
+            // Setup the default processing configuration to the scene.
+            this._attachImageProcessingConfiguration(null);
+
             this._customEffect = customEffect;
 
-            scene.particleSystems.push(this);
+            this._scene.particleSystems.push(this);
 
             this._useInstancing = this._scene.getEngine().getCaps().instancedArrays;
 
@@ -510,87 +193,196 @@
             // Default emitter type
             this.particleEmitterType = new BoxParticleEmitter();
 
+            // Update
             this.updateFunction = (particles: Particle[]): void => {
+                let noiseTextureSize: Nullable<ISize> = null;
+                let noiseTextureData: Nullable<Uint8Array> = null;
+
+                if (this.noiseTexture) { // We need to get texture data back to CPU
+                    noiseTextureSize = this.noiseTexture.getSize();
+                    noiseTextureData = <Nullable<Uint8Array>>(this.noiseTexture.getContent());
+                }
+
                 for (var index = 0; index < particles.length; index++) {
                     var particle = particles[index];
-                    particle.age += this._scaledUpdateSpeed;
+
+                    let scaledUpdateSpeed = this._scaledUpdateSpeed;
+                    let previousAge = particle.age;
+                    particle.age += scaledUpdateSpeed;
+
+                    // Evaluate step to death
+                    if (particle.age > particle.lifeTime) {
+                        let diff = particle.age - previousAge;
+                        let oldDiff = particle.lifeTime - previousAge;
+
+                        scaledUpdateSpeed = (oldDiff * scaledUpdateSpeed) / diff;
+
+                        particle.age = particle.lifeTime;
+                    }
+
+                    let ratio = particle.age / particle.lifeTime;
+
+                    // Color
+                    if (this._colorGradients && this._colorGradients.length > 0) {
+                        Tools.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
+                            if (currentGradient !== particle._currentColorGradient) {
+                                particle._currentColor1.copyFrom(particle._currentColor2);
+                                (<ColorGradient>nextGradient).getColorToRef(particle._currentColor2);
+                                particle._currentColorGradient = (<ColorGradient>currentGradient);
+                            }
+                            Color4.LerpToRef(particle._currentColor1, particle._currentColor2, scale, particle.color);
+                        });
+                    }
+                    else {
+                        particle.colorStep.scaleToRef(scaledUpdateSpeed, this._scaledColorStep);
+                        particle.color.addInPlace(this._scaledColorStep);
+
+                        if (particle.color.a < 0) {
+                            particle.color.a = 0;
+                        }
+                    }
+
+                    // Angular speed
+                    if (this._angularSpeedGradients && this._angularSpeedGradients.length > 0) {
+                        Tools.GetCurrentGradient(ratio, this._angularSpeedGradients, (currentGradient, nextGradient, scale) => {
+                            if (currentGradient !== particle._currentAngularSpeedGradient) {
+                                particle._currentAngularSpeed1 = particle._currentAngularSpeed2;
+                                particle._currentAngularSpeed2 = (<FactorGradient>nextGradient).getFactor();
+                                particle._currentAngularSpeedGradient = (<FactorGradient>currentGradient);
+                            }
+                            particle.angularSpeed = Scalar.Lerp(particle._currentAngularSpeed1, particle._currentAngularSpeed2, scale);
+                        });
+                    }
+                    particle.angle += particle.angularSpeed * scaledUpdateSpeed;
+
+                    // Direction
+                    let directionScale = scaledUpdateSpeed;
+
+                    /// Velocity
+                    if (this._velocityGradients && this._velocityGradients.length > 0) {
+                        Tools.GetCurrentGradient(ratio, this._velocityGradients, (currentGradient, nextGradient, scale) => {
+                            if (currentGradient !== particle._currentVelocityGradient) {
+                                particle._currentVelocity1 = particle._currentVelocity2;
+                                particle._currentVelocity2 = (<FactorGradient>nextGradient).getFactor();
+                                particle._currentVelocityGradient = (<FactorGradient>currentGradient);
+                            }
+                            directionScale *= Scalar.Lerp(particle._currentVelocity1, particle._currentVelocity2, scale);
+                        });
+                    }
+
+                    particle.direction.scaleToRef(directionScale, this._scaledDirection);
+
+                    /// Limit velocity
+                    if (this._limitVelocityGradients && this._limitVelocityGradients.length > 0) {
+                        Tools.GetCurrentGradient(ratio, this._limitVelocityGradients, (currentGradient, nextGradient, scale) => {
+                            if (currentGradient !== particle._currentLimitVelocityGradient) {
+                                particle._currentLimitVelocity1 = particle._currentLimitVelocity2;
+                                particle._currentLimitVelocity2 = (<FactorGradient>nextGradient).getFactor();
+                                particle._currentLimitVelocityGradient = (<FactorGradient>currentGradient);
+                            }
+
+                            let limitVelocity = Scalar.Lerp(particle._currentLimitVelocity1, particle._currentLimitVelocity2, scale);
+                            let currentVelocity = particle.direction.length();
+
+                            if (currentVelocity > limitVelocity) {
+                                particle.direction.scaleInPlace(this.limitVelocityDamping);
+                            }
+                        });
+                    }
+
+                    /// Drag
+                    if (this._dragGradients && this._dragGradients.length > 0) {
+                        Tools.GetCurrentGradient(ratio, this._dragGradients, (currentGradient, nextGradient, scale) => {
+                            if (currentGradient !== particle._currentDragGradient) {
+                                particle._currentDrag1 = particle._currentDrag2;
+                                particle._currentDrag2 = (<FactorGradient>nextGradient).getFactor();
+                                particle._currentDragGradient = (<FactorGradient>currentGradient);
+                            }
+
+                            let drag = Scalar.Lerp(particle._currentDrag1, particle._currentDrag2, scale);
+
+                            this._scaledDirection.scaleInPlace(1.0 - drag);
+                        });
+                    }
+
+                    particle.position.addInPlace(this._scaledDirection);
+
+                    // Noise
+                    if (noiseTextureData && noiseTextureSize) {
+                        let fetchedColorR = this._fetchR(particle._randomNoiseCoordinates1.x, particle._randomNoiseCoordinates1.y, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+                        let fetchedColorG = this._fetchR(particle._randomNoiseCoordinates1.z, particle._randomNoiseCoordinates2.x, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+                        let fetchedColorB = this._fetchR(particle._randomNoiseCoordinates2.y, particle._randomNoiseCoordinates2.z, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+
+                        let force = Tmp.Vector3[0];
+                        let scaledForce = Tmp.Vector3[1];
+
+                        force.copyFromFloats((2 * fetchedColorR - 1) * this.noiseStrength.x, (2 * fetchedColorG - 1) * this.noiseStrength.y, (2 * fetchedColorB - 1) * this.noiseStrength.z);
+
+                        force.scaleToRef(scaledUpdateSpeed, scaledForce);
+                        particle.direction.addInPlace(scaledForce);
+                    }
+
+                    // Gravity
+                    this.gravity.scaleToRef(scaledUpdateSpeed, this._scaledGravity);
+                    particle.direction.addInPlace(this._scaledGravity);
+
+                    // Size
+                    if (this._sizeGradients && this._sizeGradients.length > 0) {
+                        Tools.GetCurrentGradient(ratio, this._sizeGradients, (currentGradient, nextGradient, scale) => {
+                            if (currentGradient !== particle._currentSizeGradient) {
+                                particle._currentSize1 = particle._currentSize2;
+                                particle._currentSize2 = (<FactorGradient>nextGradient).getFactor();
+                                particle._currentSizeGradient = (<FactorGradient>currentGradient);
+                            }
+                            particle.size = Scalar.Lerp(particle._currentSize1, particle._currentSize2, scale);
+                        });
+                    }
+
+                    // Remap data
+                    if (this._useRampGradients) {
+                        if (this._colorRemapGradients && this._colorRemapGradients.length > 0) {
+                            Tools.GetCurrentGradient(ratio, this._colorRemapGradients, (currentGradient, nextGradient, scale) => {
+                                let min = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
+                                let max = Scalar.Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
+
+                                particle.remapData.x = min;
+                                particle.remapData.y = max - min;
+                            });
+                        }
+
+                        if (this._alphaRemapGradients && this._alphaRemapGradients.length > 0) {
+                            Tools.GetCurrentGradient(ratio, this._alphaRemapGradients, (currentGradient, nextGradient, scale) => {
+                                let min = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
+                                let max = Scalar.Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
+
+                                particle.remapData.z = min;
+                                particle.remapData.w = max - min;
+                            });
+                        }
+                    }
+
+                    if (this._isAnimationSheetEnabled) {
+                        particle.updateCellIndex();
+                    }
+
+                    // Update the position of the attached sub-emitters to match their attached particle
+                    particle._inheritParticleInfoToSubEmitters();
 
                     if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
                         this._emitFromParticle(particle);
+                        if (particle._attachedSubEmitters) {
+                            particle._attachedSubEmitters.forEach((subEmitter) => {
+                                subEmitter.particleSystem.disposeOnStop = true;
+                                subEmitter.particleSystem.stop();
+                            });
+                            particle._attachedSubEmitters = null;
+                        }
                         this.recycleParticle(particle);
                         index--;
                         continue;
                     }
-                    else {
-                        let ratio = particle.age / particle.lifeTime;
-
-                        // Color
-                        if (this._colorGradients && this._colorGradients.length > 0) {
-                            Tools.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
-                                if (currentGradient !== particle._currentColorGradient) {
-                                    particle._currentColor1.copyFrom(particle._currentColor2);
-                                    (<ColorGradient>nextGradient).getColorToRef(particle._currentColor2);    
-                                    particle._currentColorGradient = (<ColorGradient>currentGradient);
-                                }
-                                Color4.LerpToRef(particle._currentColor1, particle._currentColor2, scale, particle.color);
-                            });
-                        }
-                        else {
-                            particle.colorStep.scaleToRef(this._scaledUpdateSpeed, this._scaledColorStep);
-                            particle.color.addInPlace(this._scaledColorStep);
-
-                            if (particle.color.a < 0) {
-                                particle.color.a = 0;
-                            }
-                        }
-
-                        if (this._angularSpeedGradients && this._angularSpeedGradients.length > 0) {                  
-                            Tools.GetCurrentGradient(ratio, this._angularSpeedGradients, (currentGradient, nextGradient, scale) => {
-                                if (currentGradient !== particle._currentAngularSpeedGradient) {
-                                    particle._currentAngularSpeed1 = particle._currentAngularSpeed2;
-                                    particle._currentAngularSpeed2 = (<FactorGradient>nextGradient).getFactor();    
-                                    particle._currentAngularSpeedGradient = (<FactorGradient>currentGradient);
-                                }                                
-                                particle.angularSpeed = Scalar.Lerp(particle._currentAngularSpeed1, particle._currentAngularSpeed2, scale);
-                            });
-                        }                        
-                        particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
-
-                        let directionScale = this._scaledUpdateSpeed;
-                        if (this._velocityGradients && this._velocityGradients.length > 0) {                  
-                            Tools.GetCurrentGradient(ratio, this._velocityGradients, (currentGradient, nextGradient, scale) => {
-                                if (currentGradient !== particle._currentVelocityGradient) {
-                                    particle._currentVelocity1 = particle._currentVelocity2;
-                                    particle._currentVelocity2 = (<FactorGradient>nextGradient).getFactor();    
-                                    particle._currentVelocityGradient = (<FactorGradient>currentGradient);
-                                }                                
-                                directionScale *= Scalar.Lerp(particle._currentVelocity1, particle._currentVelocity2, scale);
-                            });
-                        }                          
-                        particle.direction.scaleToRef(directionScale, this._scaledDirection);
-                        particle.position.addInPlace(this._scaledDirection);
-
-                        this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
-                        particle.direction.addInPlace(this._scaledGravity);
-
-                        // Size
-                        if (this._sizeGradients && this._sizeGradients.length > 0) {                  
-                            Tools.GetCurrentGradient(ratio, this._sizeGradients, (currentGradient, nextGradient, scale) => {
-                                if (currentGradient !== particle._currentSizeGradient) {
-                                    particle._currentSize1 = particle._currentSize2;
-                                    particle._currentSize2 = (<FactorGradient>nextGradient).getFactor();    
-                                    particle._currentSizeGradient = (<FactorGradient>currentGradient);
-                                }                                
-                                particle.size = Scalar.Lerp(particle._currentSize1, particle._currentSize2, scale);
-                            });
-                        }
-
-                        if (this._isAnimationSheetEnabled) {
-                            particle.updateCellIndex();
-                        }
-                    }
                 }
-            }
+            };
         }
 
         private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number, factor2?: number) {
@@ -608,7 +400,7 @@
                 }
 
                 return 0;
-            });            
+            });
         }
 
         private _removeFactorGradient(factorGradients: Nullable<FactorGradient[]>, gradient: number) {
@@ -629,11 +421,11 @@
         /**
          * Adds a new life time gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the life time factor to affect to the specified gradient         
+         * @param factor defines the life time factor to affect to the specified gradient
          * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
          * @returns the current particle system
          */
-        public addLifeTimeGradient(gradient: number, factor: number, factor2?: number): ParticleSystem {
+        public addLifeTimeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
             if (!this._lifeTimeGradients) {
                 this._lifeTimeGradients = [];
             }
@@ -648,20 +440,20 @@
          * @param gradient defines the gradient to remove
          * @returns the current particle system
          */
-        public removeLifeTimeGradient(gradient: number): ParticleSystem {
+        public removeLifeTimeGradient(gradient: number): IParticleSystem {
             this._removeFactorGradient(this._lifeTimeGradients, gradient);
 
             return this;
-        }       
+        }
 
         /**
          * Adds a new size gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the size factor to affect to the specified gradient         
+         * @param factor defines the size factor to affect to the specified gradient
          * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
          * @returns the current particle system
          */
-        public addSizeGradient(gradient: number, factor: number, factor2?: number): ParticleSystem {
+        public addSizeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
             if (!this._sizeGradients) {
                 this._sizeGradients = [];
             }
@@ -676,20 +468,76 @@
          * @param gradient defines the gradient to remove
          * @returns the current particle system
          */
-        public removeSizeGradient(gradient: number): ParticleSystem {
+        public removeSizeGradient(gradient: number): IParticleSystem {
             this._removeFactorGradient(this._sizeGradients, gradient);
 
             return this;
-        }        
+        }
+
+        /**
+         * Adds a new color remap gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param min defines the color remap minimal range
+         * @param max defines the color remap maximal range
+         * @returns the current particle system
+         */
+        public addColorRemapGradient(gradient: number, min: number, max: number): IParticleSystem {
+            if (!this._colorRemapGradients) {
+                this._colorRemapGradients = [];
+            }
+
+            this._addFactorGradient(this._colorRemapGradients, gradient, min, max);
+
+            return this;
+        }
+
+        /**
+         * Remove a specific color remap gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeColorRemapGradient(gradient: number): IParticleSystem {
+            this._removeFactorGradient(this._colorRemapGradients, gradient);
+
+            return this;
+        }
+
+        /**
+         * Adds a new alpha remap gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param min defines the alpha remap minimal range
+         * @param max defines the alpha remap maximal range
+         * @returns the current particle system
+         */
+        public addAlphaRemapGradient(gradient: number, min: number, max: number): IParticleSystem {
+            if (!this._alphaRemapGradients) {
+                this._alphaRemapGradients = [];
+            }
+
+            this._addFactorGradient(this._alphaRemapGradients, gradient, min, max);
+
+            return this;
+        }
+
+        /**
+         * Remove a specific alpha remap gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeAlphaRemapGradient(gradient: number): IParticleSystem {
+            this._removeFactorGradient(this._alphaRemapGradients, gradient);
+
+            return this;
+        }
 
         /**
          * Adds a new angular speed gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the size factor to affect to the specified gradient         
+         * @param factor defines the angular speed  to affect to the specified gradient
          * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
          * @returns the current particle system
          */
-        public addAngularSpeedGradient(gradient: number, factor: number, factor2?: number): ParticleSystem {
+        public addAngularSpeedGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
             if (!this._angularSpeedGradients) {
                 this._angularSpeedGradients = [];
             }
@@ -704,20 +552,20 @@
          * @param gradient defines the gradient to remove
          * @returns the current particle system
          */
-        public removeAngularSpeedGradient(gradient: number): ParticleSystem {
+        public removeAngularSpeedGradient(gradient: number): IParticleSystem {
             this._removeFactorGradient(this._angularSpeedGradients, gradient);
 
             return this;
-        }          
-        
+        }
+
         /**
          * Adds a new velocity gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the size factor to affect to the specified gradient         
+         * @param factor defines the velocity to affect to the specified gradient
          * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
          * @returns the current particle system
          */
-        public addVelocityGradient(gradient: number, factor: number, factor2?: number): ParticleSystem {
+        public addVelocityGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
             if (!this._velocityGradients) {
                 this._velocityGradients = [];
             }
@@ -732,26 +580,223 @@
          * @param gradient defines the gradient to remove
          * @returns the current particle system
          */
-        public removeVelocityGradient(gradient: number): ParticleSystem {
+        public removeVelocityGradient(gradient: number): IParticleSystem {
             this._removeFactorGradient(this._velocityGradients, gradient);
 
             return this;
-        }         
+        }
+
+        /**
+         * Adds a new limit velocity gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the limit velocity value to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        public addLimitVelocityGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+            if (!this._limitVelocityGradients) {
+                this._limitVelocityGradients = [];
+            }
+
+            this._addFactorGradient(this._limitVelocityGradients, gradient, factor, factor2);
+
+            return this;
+        }
+
+        /**
+         * Remove a specific limit velocity gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeLimitVelocityGradient(gradient: number): IParticleSystem {
+            this._removeFactorGradient(this._limitVelocityGradients, gradient);
+
+            return this;
+        }
+
+        /**
+         * Adds a new drag gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the drag value to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        public addDragGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+            if (!this._dragGradients) {
+                this._dragGradients = [];
+            }
+
+            this._addFactorGradient(this._dragGradients, gradient, factor, factor2);
+
+            return this;
+        }
+
+        /**
+         * Remove a specific drag gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeDragGradient(gradient: number): IParticleSystem {
+            this._removeFactorGradient(this._dragGradients, gradient);
+
+            return this;
+        }
+
+        /**
+         * Adds a new emit rate gradient (please note that this will only work if you set the targetStopDuration property)
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the emit rate value to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        public addEmitRateGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+            if (!this._emitRateGradients) {
+                this._emitRateGradients = [];
+            }
+
+            this._addFactorGradient(this._emitRateGradients, gradient, factor, factor2);
+            return this;
+        }
+
+        /**
+         * Remove a specific emit rate gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeEmitRateGradient(gradient: number): IParticleSystem {
+            this._removeFactorGradient(this._emitRateGradients, gradient);
+
+            return this;
+        }
+
+        /**
+         * Adds a new start size gradient (please note that this will only work if you set the targetStopDuration property)
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the start size value to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        public addStartSizeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+            if (!this._startSizeGradients) {
+                this._startSizeGradients = [];
+            }
+
+            this._addFactorGradient(this._startSizeGradients, gradient, factor, factor2);
+            return this;
+        }
+
+        /**
+         * Remove a specific start size gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeStartSizeGradient(gradient: number): IParticleSystem {
+            this._removeFactorGradient(this._emitRateGradients, gradient);
+
+            return this;
+        }
+
+        private _createRampGradientTexture() {
+            if (!this._rampGradients || !this._rampGradients.length || this._rampGradientsTexture) {
+                return;
+            }
+
+            let data = new Uint8Array(this._rawTextureWidth * 4);
+            let tmpColor = Tmp.Color3[0];
+
+            for (var x = 0; x < this._rawTextureWidth; x++) {
+                var ratio = x / this._rawTextureWidth;
+
+                Tools.GetCurrentGradient(ratio, this._rampGradients, (currentGradient, nextGradient, scale) => {
+
+                    Color3.LerpToRef((<Color3Gradient>currentGradient).color, (<Color3Gradient>nextGradient).color, scale, tmpColor);
+                    data[x * 4] = tmpColor.r * 255;
+                    data[x * 4 + 1] = tmpColor.g * 255;
+                    data[x * 4 + 2] = tmpColor.b * 255;
+                    data[x * 4 + 3] = 255;
+                });
+
+            }
+
+            this._rampGradientsTexture = RawTexture.CreateRGBATexture(data, this._rawTextureWidth, 1, this._scene, false, false, Texture.NEAREST_SAMPLINGMODE);
+        }
+
+        /**
+         * Gets the current list of ramp gradients.
+         * You must use addRampGradient and removeRampGradient to udpate this list
+         * @returns the list of ramp gradients
+         */
+        public getRampGradients(): Nullable<Array<Color3Gradient>> {
+            return this._rampGradients;
+        }
+
+        /**
+         * Adds a new ramp gradient used to remap particle colors
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param color defines the color to affect to the specified gradient
+         * @returns the current particle system
+         */
+        public addRampGradient(gradient: number, color: Color3): ParticleSystem {
+            if (!this._rampGradients) {
+                this._rampGradients = [];
+            }
+
+            let rampGradient = new Color3Gradient();
+            rampGradient.gradient = gradient;
+            rampGradient.color = color;
+            this._rampGradients.push(rampGradient);
+
+            this._rampGradients.sort((a, b) => {
+                if (a.gradient < b.gradient) {
+                    return -1;
+                } else if (a.gradient > b.gradient) {
+                    return 1;
+                }
+
+                return 0;
+            });
+
+            if (this._rampGradientsTexture) {
+                this._rampGradientsTexture.dispose();
+                (<any>this._rampGradientsTexture) = null;
+            }
+
+            this._createRampGradientTexture();
+
+            return this;
+        }
+
+        /**
+         * Remove a specific ramp gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeRampGradient(gradient: number): ParticleSystem {
+            this._removeGradientAndTexture(gradient, this._rampGradients, this._rampGradientsTexture);
+            (<any>this._rampGradientsTexture) = null;
+
+            if (this._rampGradients && this._rampGradients.length > 0) {
+                this._createRampGradientTexture();
+            }
+
+            return this;
+        }
 
         /**
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param color defines the color to affect to the specified gradient
+         * @param color1 defines the color to affect to the specified gradient
          * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
+         * @returns this particle system
          */
-        public addColorGradient(gradient: number, color: Color4, color2?: Color4): ParticleSystem {
+        public addColorGradient(gradient: number, color1: Color4, color2?: Color4): IParticleSystem {
             if (!this._colorGradients) {
                 this._colorGradients = [];
             }
 
             let colorGradient = new ColorGradient();
             colorGradient.gradient = gradient;
-            colorGradient.color1 = color;
+            colorGradient.color1 = color1;
             colorGradient.color2 = color2;
             this._colorGradients.push(colorGradient);
 
@@ -771,8 +816,9 @@
         /**
          * Remove a specific color gradient
          * @param gradient defines the gradient to remove
+         * @returns this particle system
          */
-        public removeColorGradient(gradient: number): ParticleSystem {
+        public removeColorGradient(gradient: number): IParticleSystem {
             if (!this._colorGradients) {
                 return this;
             }
@@ -789,6 +835,21 @@
             return this;
         }
 
+        private _fetchR(u: number, v: number, width: number, height: number, pixels: Uint8Array): number {
+            u = Math.abs(u) * 0.5 + 0.5;
+            v = Math.abs(v) * 0.5 + 0.5;
+
+            let wrappedU = ((u * width) % width) | 0;
+            let wrappedV = ((v * height) % height) | 0;
+
+            let position = (wrappedU + wrappedV * width) * 4;
+            return pixels[position] / 255;
+        }
+
+        protected _reset() {
+            this._resetEffect();
+        }
+
         private _resetEffect() {
             if (this._vertexBuffer) {
                 this._vertexBuffer.dispose();
@@ -798,9 +859,9 @@
             if (this._spriteBuffer) {
                 this._spriteBuffer.dispose();
                 this._spriteBuffer = null;
-            }            
+            }
 
-            this._createVertexBuffers();           
+            this._createVertexBuffers();
         }
 
         private _createVertexBuffers() {
@@ -809,15 +870,19 @@
                 this._vertexBufferSize += 1;
             }
 
-            if (!this._isBillboardBased) {
+            if (!this._isBillboardBased || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
                 this._vertexBufferSize += 3;
+            }
+
+            if (this._useRampGradients) {
+                this._vertexBufferSize += 4;
             }
 
             let engine = this._scene.getEngine();
             this._vertexData = new Float32Array(this._capacity * this._vertexBufferSize * (this._useInstancing ? 1 : 4));
             this._vertexBuffer = new Buffer(engine, this._vertexData, true, this._vertexBufferSize);
 
-            let dataOffset = 0;        
+            let dataOffset = 0;
             var positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, dataOffset, 3, this._vertexBufferSize, this._useInstancing);
             this._vertexBuffers[VertexBuffer.PositionKind] = positions;
             dataOffset += 3;
@@ -829,7 +894,7 @@
             var options = this._vertexBuffer.createVertexBuffer("angle", dataOffset, 1, this._vertexBufferSize, this._useInstancing);
             this._vertexBuffers["angle"] = options;
             dataOffset += 1;
-            
+
             var size = this._vertexBuffer.createVertexBuffer("size", dataOffset, 2, this._vertexBufferSize, this._useInstancing);
             this._vertexBuffers["size"] = size;
             dataOffset += 2;
@@ -840,22 +905,29 @@
                 dataOffset += 1;
             }
 
-            if (!this._isBillboardBased) {
+            if (!this._isBillboardBased || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
                 var directionBuffer = this._vertexBuffer.createVertexBuffer("direction", dataOffset, 3, this._vertexBufferSize, this._useInstancing);
                 this._vertexBuffers["direction"] = directionBuffer;
                 dataOffset += 3;
             }
 
+            if (this._useRampGradients) {
+                var rampDataBuffer = this._vertexBuffer.createVertexBuffer("remapData", dataOffset, 4, this._vertexBufferSize, this._useInstancing);
+                this._vertexBuffers["remapData"] = rampDataBuffer;
+                dataOffset += 4;
+            }
+
             var offsets: VertexBuffer;
             if (this._useInstancing) {
-                var spriteData = new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]);  
-                this._spriteBuffer = new Buffer(engine, spriteData, false, 2);  
+                var spriteData = new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]);
+                this._spriteBuffer = new Buffer(engine, spriteData, false, 2);
                 offsets = this._spriteBuffer.createVertexBuffer("offset", 0, 2);
             } else {
                 offsets = this._vertexBuffer.createVertexBuffer("offset", dataOffset, 2, this._vertexBufferSize, this._useInstancing);
                 dataOffset += 2;
             }
-            this._vertexBuffers["offset"] = offsets;              
+            this._vertexBuffers["offset"] = offsets;
+
         }
 
         private _createIndexBuffer() {
@@ -886,7 +958,7 @@
         }
 
         /**
-         * Gets Wether there are still active particles in the system.
+         * Gets whether there are still active particles in the system.
          * @returns True if it is alive, otherwise false.
          */
         public isAlive(): boolean {
@@ -894,28 +966,101 @@
         }
 
         /**
-         * Gets Wether the system has been started.
+         * Gets if the system has been started. (Note: this will still be true after stop is called)
          * @returns True if it has been started, otherwise false.
          */
         public isStarted(): boolean {
             return this._started;
         }
 
+        private _prepareSubEmitterInternalArray() {
+            this._subEmitters = new Array<Array<SubEmitter>>();
+            if (this.subEmitters) {
+                this.subEmitters.forEach((subEmitter) => {
+                    if (subEmitter instanceof ParticleSystem) {
+                        this._subEmitters.push([new SubEmitter(subEmitter)]);
+                    } else if (subEmitter instanceof SubEmitter) {
+                        this._subEmitters.push([subEmitter]);
+                    } else if (subEmitter instanceof Array) {
+                        this._subEmitters.push(subEmitter);
+                    }
+                });
+            }
+        }
+
         /**
-         * Starts the particle system and begins to emit.
+         * Starts the particle system and begins to emit
+         * @param delay defines the delay in milliseconds before starting the system (this.startDelay by default)
          */
-        public start(): void {
+        public start(delay = this.startDelay): void {
+            if (!this.targetStopDuration && this._hasTargetStopDurationDependantGradient()) {
+                throw "Particle system started with a targetStopDuration dependant gradient (eg. startSizeGradients) but no targetStopDuration set";
+            }
+            if (delay) {
+                setTimeout(() => {
+                    this.start(0);
+                }, delay);
+                return;
+            }
+            // Convert the subEmitters field to the constant type field _subEmitters
+            this._prepareSubEmitterInternalArray();
+
             this._started = true;
             this._stopped = false;
             this._actualFrame = 0;
-            if (this.subEmitters && this.subEmitters.length != 0) {
+            if (this._subEmitters && this._subEmitters.length != 0) {
                 this.activeSubSystems = new Array<ParticleSystem>();
             }
 
-            if (this.preWarmCycles) {
-                for (var index = 0; index < this.preWarmCycles; index++) {
-                    this.animate(true);
+            // Reset emit gradient so it acts the same on every start
+            if (this._emitRateGradients) {
+                if (this._emitRateGradients.length > 0) {
+                    this._currentEmitRateGradient = this._emitRateGradients[0];
+                    this._currentEmitRate1 = this._currentEmitRateGradient.getFactor();
+                    this._currentEmitRate2 = this._currentEmitRate1;
                 }
+                if (this._emitRateGradients.length > 1) {
+                    this._currentEmitRate2 = this._emitRateGradients[1].getFactor();
+                }
+            }
+            // Reset start size gradient so it acts the same on every start
+            if (this._startSizeGradients) {
+                if (this._startSizeGradients.length > 0) {
+                    this._currentStartSizeGradient = this._startSizeGradients[0];
+                    this._currentStartSize1 = this._currentStartSizeGradient.getFactor();
+                    this._currentStartSize2 = this._currentStartSize1;
+                }
+                if (this._startSizeGradients.length > 1) {
+                    this._currentStartSize2 = this._startSizeGradients[1].getFactor();
+                }
+            }
+
+            if (this.preWarmCycles) {
+                if (this.emitter instanceof AbstractMesh) {
+                    this.emitter.computeWorldMatrix(true);
+                }
+
+                let noiseTextureAsProcedural = this.noiseTexture as ProceduralTexture;
+
+                if (noiseTextureAsProcedural && noiseTextureAsProcedural.onGeneratedObservable) {
+                    noiseTextureAsProcedural.onGeneratedObservable.addOnce(() => {
+                        setTimeout(() => {
+                            for (var index = 0; index < this.preWarmCycles; index++) {
+                                this.animate(true);
+                                noiseTextureAsProcedural.render();
+                            }
+                        });
+                    });
+                } else {
+                    for (var index = 0; index < this.preWarmCycles; index++) {
+                        this.animate(true);
+                    }
+                }
+            }
+
+            // Animations
+            if (this.beginAnimationOnStart && this.animations && this.animations.length > 0) {
+                this.getScene().beginAnimation(this, this.beginAnimationFrom, this.beginAnimationTo, this.beginAnimationLoop);
             }
         }
 
@@ -958,7 +1103,7 @@
 
             this._vertexData[offset++] = particle.scale.x * particle.size;
             this._vertexData[offset++] = particle.scale.y * particle.size;
-            
+
             if (this._isAnimationSheetEnabled) {
                 this._vertexData[offset++] = particle.cellIndex;
             }
@@ -973,23 +1118,38 @@
                     this._vertexData[offset++] = particle.direction.y;
                     this._vertexData[offset++] = particle.direction.z;
                 }
+            } else if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
+                this._vertexData[offset++] = particle.direction.x;
+                this._vertexData[offset++] = particle.direction.y;
+                this._vertexData[offset++] = particle.direction.z;
+            }
+
+            if (this._useRampGradients) {
+                this._vertexData[offset++] = particle.remapData.x;
+                this._vertexData[offset++] = particle.remapData.y;
+                this._vertexData[offset++] = particle.remapData.z;
+                this._vertexData[offset++] = particle.remapData.w;
             }
 
             if (!this._useInstancing) {
                 if (this._isAnimationSheetEnabled) {
-                    if (offsetX === 0)
+                    if (offsetX === 0) {
                         offsetX = this._epsilon;
-                    else if (offsetX === 1)
+                    }
+                    else if (offsetX === 1) {
                         offsetX = 1 - this._epsilon;
-    
-                    if (offsetY === 0)
+                    }
+
+                    if (offsetY === 0) {
                         offsetY = this._epsilon;
-                    else if (offsetY === 1)
+                    }
+                    else if (offsetY === 1) {
                         offsetY = 1 - this._epsilon;
+                    }
                 }
 
                 this._vertexData[offset++] = offsetX;
-                this._vertexData[offset++] = offsetY;   
+                this._vertexData[offset++] = offsetY;
             }
         }
 
@@ -1000,18 +1160,19 @@
          * Its lifetime will start back at 0.
          */
         public recycleParticle: (particle: Particle) => void = (particle) => {
+            // move particle from activeParticle list to stock particles
             var lastParticle = <Particle>this._particles.pop();
             if (lastParticle !== particle) {
                 lastParticle.copyTo(particle);
             }
             this._stockParticles.push(lastParticle);
-        };
+        }
 
         private _stopSubEmitters(): void {
             if (!this.activeSubSystems) {
                 return;
             }
-            this.activeSubSystems.forEach(subSystem => {
+            this.activeSubSystems.forEach((subSystem) => {
                 subSystem.stop(true);
             });
             this.activeSubSystems = new Array<ParticleSystem>();
@@ -1021,37 +1182,54 @@
             var particle: Particle;
             if (this._stockParticles.length !== 0) {
                 particle = <Particle>this._stockParticles.pop();
-                particle.age = 0;
-                particle._currentColorGradient = null;
-                particle.cellIndex = this.startSpriteCellID;
+                particle._reset();
             } else {
                 particle = new Particle(this);
+            }
+
+            // Attach emitters
+            if (this._subEmitters && this._subEmitters.length > 0) {
+                var subEmitters = this._subEmitters[Math.floor(Math.random() * this._subEmitters.length)];
+                particle._attachedSubEmitters = [];
+                subEmitters.forEach((subEmitter) => {
+                    if (subEmitter.type === SubEmitterType.ATTACHED) {
+                        var newEmitter = subEmitter.clone();
+                        (<Array<SubEmitter>>particle._attachedSubEmitters).push(newEmitter);
+                        newEmitter.particleSystem.start();
+                    }
+                });
             }
             return particle;
         }
 
         private _removeFromRoot(): void {
-            if (!this._rootParticleSystem){
+            if (!this._rootParticleSystem) {
                 return;
             }
-            
+
             let index = this._rootParticleSystem.activeSubSystems.indexOf(this);
             if (index !== -1) {
                 this._rootParticleSystem.activeSubSystems.splice(index, 1);
             }
+
+            this._rootParticleSystem = null;
         }
 
         private _emitFromParticle: (particle: Particle) => void = (particle) => {
-            if (!this.subEmitters || this.subEmitters.length === 0) {
+            if (!this._subEmitters || this._subEmitters.length === 0) {
                 return;
             }
+            var templateIndex = Math.floor(Math.random() * this._subEmitters.length);
 
-            var templateIndex = Math.floor(Math.random() * this.subEmitters.length);
-
-            var subSystem = this.subEmitters[templateIndex].clone(this.name + "_sub", particle.position.clone());
-            subSystem._rootParticleSystem = this;
-            this.activeSubSystems.push(subSystem);
-            subSystem.start();
+            this._subEmitters[templateIndex].forEach((subEmitter) => {
+                if (subEmitter.type === SubEmitterType.END) {
+                    var subSystem = subEmitter.clone();
+                    particle._inheritParticleInfoToSubEmitter(subSystem);
+                    subSystem.particleSystem._rootParticleSystem = this;
+                    this.activeSubSystems.push(subSystem.particleSystem);
+                    subSystem.particleSystem.start();
+                }
+            });
         }
 
         // End of sub system methods
@@ -1060,19 +1238,17 @@
             // Update current
             this._alive = this._particles.length > 0;
 
+            if ((<AbstractMesh>this.emitter).position) {
+                var emitterMesh = (<AbstractMesh>this.emitter);
+                this._emitterWorldMatrix = emitterMesh.getWorldMatrix();
+            } else {
+                var emitterPosition = (<Vector3>this.emitter);
+                this._emitterWorldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
+            }
+
             this.updateFunction(this._particles);
 
             // Add new ones
-            var worldMatrix;
-
-            if ((<AbstractMesh>this.emitter).position) {
-                var emitterMesh = (<AbstractMesh>this.emitter);
-                worldMatrix = emitterMesh.getWorldMatrix();
-            } else {
-                var emitterPosition = (<Vector3>this.emitter);
-                worldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
-            }
-
             var particle: Particle;
             for (var index = 0; index < newParticles; index++) {
                 if (this._particles.length === this._capacity) {
@@ -1087,17 +1263,17 @@
                 let emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
 
                 if (this.startPositionFunction) {
-                    this.startPositionFunction(worldMatrix, particle.position, particle);
+                    this.startPositionFunction(this._emitterWorldMatrix, particle.position, particle);
                 }
                 else {
-                    this.particleEmitterType.startPositionFunction(worldMatrix, particle.position, particle);
+                    this.particleEmitterType.startPositionFunction(this._emitterWorldMatrix, particle.position, particle);
                 }
 
                 if (this.startDirectionFunction) {
-                    this.startDirectionFunction(worldMatrix, particle.direction, particle);
+                    this.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle);
                 }
                 else {
-                    this.particleEmitterType.startDirectionFunction(worldMatrix, particle.direction, particle);
+                    this.particleEmitterType.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle);
                 }
 
                 if (emitPower === 0) {
@@ -1118,8 +1294,8 @@
                     Tools.GetCurrentGradient(ratio, this._lifeTimeGradients, (currentGradient, nextGradient, scale) => {
                         let factorGradient1 = (<FactorGradient>currentGradient);
                         let factorGradient2 = (<FactorGradient>nextGradient);
-                        let lifeTime1 = factorGradient1.getFactor(); 
-                        let lifeTime2 = factorGradient2.getFactor(); 
+                        let lifeTime1 = factorGradient1.getFactor();
+                        let lifeTime2 = factorGradient2.getFactor();
                         let gradient = (ratio - factorGradient1.gradient) / (factorGradient2.gradient - factorGradient1.gradient);
                         particle.lifeTime = Scalar.Lerp(lifeTime1, lifeTime2, gradient);
                     });
@@ -1144,12 +1320,27 @@
                 // Size and scale
                 particle.scale.copyFromFloats(Scalar.RandomRange(this.minScaleX, this.maxScaleX), Scalar.RandomRange(this.minScaleY, this.maxScaleY));
 
+                // Adjust scale by start size
+                if (this._startSizeGradients && this._startSizeGradients[0] && this.targetStopDuration) {
+                    const ratio = this._actualFrame / this.targetStopDuration;
+                    Tools.GetCurrentGradient(ratio, this._startSizeGradients, (currentGradient, nextGradient, scale) => {
+                        if (currentGradient !== this._currentStartSizeGradient) {
+                            this._currentStartSize1 = this._currentStartSize2;
+                            this._currentStartSize2 = (<FactorGradient>nextGradient).getFactor();
+                            this._currentStartSizeGradient = (<FactorGradient>currentGradient);
+                        }
+
+                        var value = Scalar.Lerp(this._currentStartSize1, this._currentStartSize2, scale);
+                        particle.scale.scaleInPlace(value);
+                    });
+                }
+
                 // Angle
                 if (!this._angularSpeedGradients || this._angularSpeedGradients.length === 0) {
                     particle.angularSpeed = Scalar.RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
                 } else {
                     particle._currentAngularSpeedGradient = this._angularSpeedGradients[0];
-                    particle.angularSpeed =  particle._currentAngularSpeedGradient.getFactor();
+                    particle.angularSpeed = particle._currentAngularSpeedGradient.getFactor();
                     particle._currentAngularSpeed1 = particle.angularSpeed;
 
                     if (this._angularSpeedGradients.length > 1) {
@@ -1170,7 +1361,31 @@
                     } else {
                         particle._currentVelocity2 = particle._currentVelocity1;
                     }
-                }                
+                }
+
+                // Limit velocity
+                if (this._limitVelocityGradients && this._limitVelocityGradients.length > 0) {
+                    particle._currentLimitVelocityGradient = this._limitVelocityGradients[0];
+                    particle._currentLimitVelocity1 = particle._currentLimitVelocityGradient.getFactor();
+
+                    if (this._limitVelocityGradients.length > 1) {
+                        particle._currentLimitVelocity2 = this._limitVelocityGradients[1].getFactor();
+                    } else {
+                        particle._currentLimitVelocity2 = particle._currentLimitVelocity1;
+                    }
+                }
+
+                // Drag
+                if (this._dragGradients && this._dragGradients.length > 0) {
+                    particle._currentDragGradient = this._dragGradients[0];
+                    particle._currentDrag1 = particle._currentDragGradient.getFactor();
+
+                    if (this._dragGradients.length > 1) {
+                        particle._currentDrag2 = this._dragGradients[1].getFactor();
+                    } else {
+                        particle._currentDrag2 = particle._currentDrag1;
+                    }
+                }
 
                 // Color
                 if (!this._colorGradients || this._colorGradients.length === 0) {
@@ -1197,11 +1412,34 @@
                     particle._initialStartSpriteCellID = this.startSpriteCellID;
                     particle._initialEndSpriteCellID = this.endSpriteCellID;
                 }
+
+                // Inherited Velocity
+                particle.direction.addInPlace(this._inheritedVelocityOffset);
+
+                // Ramp
+                if (this._useRampGradients) {
+                    particle.remapData = new Vector4(0, 1, 0, 1);
+                }
+
+                // Noise texture coordinates
+                if (this.noiseTexture) {
+                    if (particle._randomNoiseCoordinates1) {
+                        particle._randomNoiseCoordinates1.copyFromFloats(Math.random(), Math.random(), Math.random());
+                        particle._randomNoiseCoordinates2.copyFromFloats(Math.random(), Math.random(), Math.random());
+                    } else {
+                        particle._randomNoiseCoordinates1 = new Vector3(Math.random(), Math.random(), Math.random());
+                        particle._randomNoiseCoordinates2 = new Vector3(Math.random(), Math.random(), Math.random());
+                    }
+                }
+
+                // Update the position of the attached sub-emitters to match their attached particle
+                particle._inheritParticleInfoToSubEmitters();
+
             }
         }
 
         /** @hidden */
-        public static _GetAttributeNamesOrOptions(isAnimationSheetEnabled = false, isBillboardBased = false): string[] {
+        public static _GetAttributeNamesOrOptions(isAnimationSheetEnabled = false, isBillboardBased = false, useRampGradients = false): string[] {
             var attributeNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "angle", "offset", "size"];
 
             if (isAnimationSheetEnabled) {
@@ -1210,25 +1448,31 @@
 
             if (!isBillboardBased) {
                 attributeNamesOrOptions.push("direction");
-            }            
+            }
+
+            if (useRampGradients) {
+                attributeNamesOrOptions.push("remapData");
+            }
 
             return attributeNamesOrOptions;
         }
 
+        /** @hidden */
         public static _GetEffectCreationOptions(isAnimationSheetEnabled = false): string[] {
-            var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "textureMask", "translationPivot", "eyePosition"];
+            var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "textureMask", "translationPivot", "eyePosition"];
 
             if (isAnimationSheetEnabled) {
-                effectCreationOption.push("particlesInfos")
+                effectCreationOption.push("particlesInfos");
             }
 
             return effectCreationOption;
         }
 
-        private _getEffect(): Effect {
+        /** @hidden */
+        private _getEffect(blendMode: number): Effect {
             if (this._customEffect) {
                 return this._customEffect;
-            };
+            }
 
             var defines = [];
 
@@ -1236,21 +1480,49 @@
                 defines.push("#define CLIPPLANE");
             }
 
+            if (this._scene.clipPlane2) {
+                defines.push("#define CLIPPLANE2");
+            }
+
+            if (this._scene.clipPlane3) {
+                defines.push("#define CLIPPLANE3");
+            }
+
+            if (this._scene.clipPlane4) {
+                defines.push("#define CLIPPLANE4");
+            }
+
             if (this._isAnimationSheetEnabled) {
                 defines.push("#define ANIMATESHEET");
+            }
+
+            if (blendMode === ParticleSystem.BLENDMODE_MULTIPLY) {
+                defines.push("#define BLENDMULTIPLYMODE");
+            }
+
+            if (this._useRampGradients) {
+                defines.push("#define RAMPGRADIENT");
             }
 
             if (this._isBillboardBased) {
                 defines.push("#define BILLBOARD");
 
                 switch (this.billboardMode) {
-                    case AbstractMesh.BILLBOARDMODE_Y:
+                    case ParticleSystem.BILLBOARDMODE_Y:
                         defines.push("#define BILLBOARDY");
                         break;
-                    case AbstractMesh.BILLBOARDMODE_ALL:
+                    case ParticleSystem.BILLBOARDMODE_STRETCHED:
+                        defines.push("#define BILLBOARDSTRETCHED");
+                        break;
+                    case ParticleSystem.BILLBOARDMODE_ALL:
                     default:
                         break;
                 }
+            }
+
+            if (this._imageProcessingConfiguration) {
+                this._imageProcessingConfiguration.prepareDefines(this._imageProcessingConfigurationDefines);
+                defines.push(this._imageProcessingConfigurationDefines.toString());
             }
 
             // Effect
@@ -1258,14 +1530,21 @@
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
 
-                var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased);
+                var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased && this.billboardMode !== ParticleSystem.BILLBOARDMODE_STRETCHED, this._useRampGradients);
                 var effectCreationOption = ParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled);
+
+                var samplers = ["diffuseSampler", "rampSampler"];
+
+                if (ImageProcessingConfiguration) {
+                    ImageProcessingConfiguration.PrepareUniforms(effectCreationOption, this._imageProcessingConfigurationDefines);
+                    ImageProcessingConfiguration.PrepareSamplers(samplers, this._imageProcessingConfigurationDefines);
+                }
 
                 this._effect = this._scene.getEngine().createEffect(
                     "particles",
                     attributesNamesOrOptions,
                     effectCreationOption,
-                    ["diffuseSampler"], join);
+                    samplers, join);
             }
 
             return this._effect;
@@ -1276,25 +1555,25 @@
          * @param preWarmOnly will prevent the system from updating the vertex buffer (default is false)
          */
         public animate(preWarmOnly = false): void {
-            if (!this._started)
+            if (!this._started) {
                 return;
+            }
 
             if (!preWarmOnly) {
-                var effect = this._getEffect();
-
                 // Check
-                if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady())
-                    return;
-
-                if (this._currentRenderId === this._scene.getRenderId()) {
+                if (!this.isReady()) {
                     return;
                 }
-                this._currentRenderId = this._scene.getRenderId();
+
+                if (this._currentRenderId === this._scene.getFrameId()) {
+                    return;
+                }
+                this._currentRenderId = this._scene.getFrameId();
             }
 
             this._scaledUpdateSpeed = this.updateSpeed * (preWarmOnly ? this.preWarmStepOffset : this._scene.getAnimationRatio());
 
-            // determine the number of particles we need to create
+            // Determine the number of particles we need to create
             var newParticles;
 
             if (this.manualEmitCount > -1) {
@@ -1302,8 +1581,23 @@
                 this._newPartsExcess = 0;
                 this.manualEmitCount = 0;
             } else {
-                newParticles = ((this.emitRate * this._scaledUpdateSpeed) >> 0);
-                this._newPartsExcess += this.emitRate * this._scaledUpdateSpeed - newParticles;
+                let rate = this.emitRate;
+
+                if (this._emitRateGradients && this._emitRateGradients.length > 0 && this.targetStopDuration) {
+                    const ratio = this._actualFrame / this.targetStopDuration;
+                    Tools.GetCurrentGradient(ratio, this._emitRateGradients, (currentGradient, nextGradient, scale) => {
+                        if (currentGradient !== this._currentEmitRateGradient) {
+                            this._currentEmitRate1 = this._currentEmitRate2;
+                            this._currentEmitRate2 = (<FactorGradient>nextGradient).getFactor();
+                            this._currentEmitRateGradient = (<FactorGradient>currentGradient);
+                        }
+
+                        rate = Scalar.Lerp(this._currentEmitRate1, this._currentEmitRate2, scale);
+                    });
+                }
+
+                newParticles = ((rate * this._scaledUpdateSpeed) >> 0);
+                this._newPartsExcess += rate * this._scaledUpdateSpeed - newParticles;
             }
 
             if (this._newPartsExcess > 1.0) {
@@ -1316,8 +1610,9 @@
             if (!this._stopped) {
                 this._actualFrame += this._scaledUpdateSpeed;
 
-                if (this.targetStopDuration && this._actualFrame >= this.targetStopDuration)
+                if (this.targetStopDuration && this._actualFrame >= this.targetStopDuration) {
                     this.stop();
+                }
             } else {
                 newParticles = 0;
             }
@@ -1341,7 +1636,7 @@
                 var offset = 0;
                 for (var index = 0; index < this._particles.length; index++) {
                     var particle = this._particles[index];
-                    this._appendParticleVertices(offset, particle);                
+                    this._appendParticleVertices(offset, particle);
                     offset += this._useInstancing ? 1 : 4;
                 }
 
@@ -1380,31 +1675,33 @@
          * @return true if the system is ready
          */
         public isReady(): boolean {
-            var effect = this._getEffect();
-            if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
+            if (!this.emitter || !this._imageProcessingConfiguration.isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
                 return false;
+            }
+
+            if (this.blendMode !== ParticleSystem.BLENDMODE_MULTIPLYADD) {
+                if (!this._getEffect(this.blendMode).isReady()) {
+                    return false;
+                }
+            } else {
+                if (!this._getEffect(ParticleSystem.BLENDMODE_MULTIPLY).isReady()) {
+                    return false;
+                }
+                if (!this._getEffect(ParticleSystem.BLENDMODE_ADD).isReady()) {
+                    return false;
+                }
             }
 
             return true;
         }
 
-        /**
-         * Renders the particle system in its current state.
-         * @returns the current number of particles
-         */
-        public render(): number {
-            var effect = this._getEffect();
-
-            // Check
-            if (!this.isReady() || !this._particles.length) {
-                return 0;
-            }
+        private _render(blendMode: number) {
+            var effect = this._getEffect(blendMode);
 
             var engine = this._scene.getEngine();
 
             // Render
             engine.enableEffect(effect);
-            engine.setState(false);
 
             var viewMatrix = this._scene.getViewMatrix();
             effect.setTexture("diffuseSampler", this.particleTexture);
@@ -1424,19 +1721,26 @@
                 effect.setVector3("eyePosition", camera.globalPosition);
             }
 
-            if (this._scene.clipPlane) {
-                var clipPlane = this._scene.clipPlane;
+            if (this._rampGradientsTexture) {
+                effect.setTexture("rampSampler", this._rampGradientsTexture);
+            }
+
+            if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4) {
                 var invView = viewMatrix.clone();
                 invView.invert();
                 effect.setMatrix("invView", invView);
-                effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+                MaterialHelper.BindClipPlane(effect, this._scene);
             }
 
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
+            // image processing
+            if (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.applyByPostProcess) {
+                this._imageProcessingConfiguration.bind(effect);
+            }
+
             // Draw order
-            switch(this.blendMode)
-            {
+            switch (blendMode) {
                 case ParticleSystem.BLENDMODE_ADD:
                     engine.setAlphaMode(Engine.ALPHA_ADD);
                     break;
@@ -1446,21 +1750,48 @@
                 case ParticleSystem.BLENDMODE_STANDARD:
                     engine.setAlphaMode(Engine.ALPHA_COMBINE);
                     break;
+                case ParticleSystem.BLENDMODE_MULTIPLY:
+                    engine.setAlphaMode(Engine.ALPHA_MULTIPLY);
+                    break;
             }
+
+            if (this._useInstancing) {
+                engine.drawArraysType(Material.TriangleFanDrawMode, 0, 4, this._particles.length);
+            } else {
+                engine.drawElementsType(Material.TriangleFillMode, 0, this._particles.length * 6);
+            }
+
+            return this._particles.length;
+        }
+
+        /**
+         * Renders the particle system in its current state.
+         * @returns the current number of particles
+         */
+        public render(): number {
+            // Check
+            if (!this.isReady() || !this._particles.length) {
+                return 0;
+            }
+
+            var engine = this._scene.getEngine();
+            engine.setState(false);
 
             if (this.forceDepthWrite) {
                 engine.setDepthWrite(true);
             }
 
-            if (this._useInstancing) {
-                engine.drawArraysType(Material.TriangleFanDrawMode, 0, 4, this._particles.length);  
-                engine.unbindInstanceAttributes();
-            } else {
-                engine.drawElementsType(Material.TriangleFillMode, 0, this._particles.length * 6);
+            let outparticles = 0;
+
+            if (this.blendMode === ParticleSystem.BLENDMODE_MULTIPLYADD) {
+                outparticles = this._render(ParticleSystem.BLENDMODE_MULTIPLY) + this._render(ParticleSystem.BLENDMODE_ADD);
             }
+            outparticles = this._render(this.blendMode);
+
+            engine.unbindInstanceAttributes();
             engine.setAlphaMode(Engine.ALPHA_DISABLE);
 
-            return this._particles.length;
+            return outparticles;
         }
 
         /**
@@ -1488,7 +1819,32 @@
                 this.particleTexture = null;
             }
 
+            if (disposeTexture && this.noiseTexture) {
+                this.noiseTexture.dispose();
+                this.noiseTexture = null;
+            }
+
+            if (this._rampGradientsTexture) {
+                this._rampGradientsTexture.dispose();
+                this._rampGradientsTexture = null;
+            }
+
             this._removeFromRoot();
+
+            if (this._subEmitters && this._subEmitters.length) {
+                for (var index = 0; index < this._subEmitters.length; index++) {
+                    for (var subEmitter of this._subEmitters[index]) {
+                        subEmitter.dispose();
+                    }
+                }
+
+                this._subEmitters = [];
+                this.subEmitters = [];
+            }
+
+            if (this._disposeEmitterOnDispose && this.emitter && (this.emitter as AbstractMesh).dispose) {
+                (<AbstractMesh>this.emitter).dispose(true);
+            }
 
             // Remove from scene
             var index = this._scene.particleSystems.indexOf(this);
@@ -1496,64 +1852,13 @@
                 this._scene.particleSystems.splice(index, 1);
             }
 
+            this._scene._activeParticleSystems.dispose();
+
             // Callback
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
-        }
 
-        /**
-         * Creates a Sphere Emitter for the particle system. (emits along the sphere radius)
-         * @param radius The radius of the sphere to emit from
-         * @returns the emitter
-         */
-        public createSphereEmitter(radius = 1): SphereParticleEmitter {
-            var particleEmitter = new SphereParticleEmitter(radius);
-            this.particleEmitterType = particleEmitter;
-            return particleEmitter;
-        }
-
-        /**
-         * Creates a Directed Sphere Emitter for the particle system. (emits between direction1 and direction2)
-         * @param radius The radius of the sphere to emit from
-         * @param direction1 Particles are emitted between the direction1 and direction2 from within the sphere
-         * @param direction2 Particles are emitted between the direction1 and direction2 from within the sphere
-         * @returns the emitter
-         */
-        public createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
-            var particleEmitter = new SphereDirectedParticleEmitter(radius, direction1, direction2)
-            this.particleEmitterType = particleEmitter;
-            return particleEmitter;
-        }
-
-        /**
-         * Creates a Cone Emitter for the particle system. (emits from the cone to the particle position)
-         * @param radius The radius of the cone to emit from
-         * @param angle The base angle of the cone
-         * @returns the emitter
-         */
-        public createConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
-            var particleEmitter = new ConeParticleEmitter(radius, angle);
-            this.particleEmitterType = particleEmitter;
-            return particleEmitter;
-        }
-
-        // this method needs to be changed when breaking changes will be allowed to match the sphere and cone methods and properties direction1,2 and minEmitBox,maxEmitBox to be removed from the system.
-        /**
-         * Creates a Box Emitter for the particle system. (emits between direction1 and direction2 from withing the box defined by minEmitBox and maxEmitBox)
-         * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
-         * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
-         * @param minEmitBox Particles are emitted from the box between minEmitBox and maxEmitBox
-         * @param maxEmitBox  Particles are emitted from the box between minEmitBox and maxEmitBox
-         * @returns the emitter
-         */
-        public createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
-            var particleEmitter = new BoxParticleEmitter();
-            this.particleEmitterType = particleEmitter;
-            this.direction1 = direction1;
-            this.direction2 = direction2;
-            this.minEmitBox = minEmitBox;
-            this.maxEmitBox = maxEmitBox;
-            return particleEmitter;
+            this.reset();
         }
 
         // Clone
@@ -1576,15 +1881,78 @@
             var result = new ParticleSystem(name, this._capacity, this._scene, custom);
             result.customShader = program;
 
-            Tools.DeepCopy(this, result, ["particles", "customShader"]);
+            Tools.DeepCopy(this, result, ["particles", "customShader", "noiseTexture"]);
 
             if (newEmitter === undefined) {
                 newEmitter = this.emitter;
             }
 
+            result.noiseTexture = this.noiseTexture;
             result.emitter = newEmitter;
             if (this.particleTexture) {
                 result.particleTexture = new Texture(this.particleTexture.url, this._scene);
+            }
+
+            // Clone gradients
+            if (this._colorGradients) {
+                this._colorGradients.forEach((v) => {
+                    result.addColorGradient(v.gradient, v.color1, v.color2);
+                });
+            }
+            if (this._dragGradients) {
+                this._dragGradients.forEach((v) => {
+                    result.addDragGradient(v.gradient, v.factor1, v.factor2);
+                });
+            }
+            if (this._angularSpeedGradients) {
+                this._angularSpeedGradients.forEach((v) => {
+                    result.addAngularSpeedGradient(v.gradient, v.factor1, v.factor2);
+                });
+            }
+            if (this._emitRateGradients) {
+                this._emitRateGradients.forEach((v) => {
+                    result.addEmitRateGradient(v.gradient, v.factor1, v.factor2);
+                });
+            }
+            if (this._lifeTimeGradients) {
+                this._lifeTimeGradients.forEach((v) => {
+                    result.addLifeTimeGradient(v.gradient, v.factor1, v.factor2);
+                });
+            }
+            if (this._limitVelocityGradients) {
+                this._limitVelocityGradients.forEach((v) => {
+                    result.addLimitVelocityGradient(v.gradient, v.factor1, v.factor2);
+                });
+            }
+            if (this._sizeGradients) {
+                this._sizeGradients.forEach((v) => {
+                    result.addSizeGradient(v.gradient, v.factor1, v.factor2);
+                });
+            }
+            if (this._startSizeGradients) {
+                this._startSizeGradients.forEach((v) => {
+                    result.addStartSizeGradient(v.gradient, v.factor1, v.factor2);
+                });
+            }
+            if (this._velocityGradients) {
+                this._velocityGradients.forEach((v) => {
+                    result.addVelocityGradient(v.gradient, v.factor1, v.factor2);
+                });
+            }
+            if (this._rampGradients) {
+                this._rampGradients.forEach((v) => {
+                    result.addRampGradient(v.gradient, v.color);
+                });
+            }
+            if (this._colorRemapGradients) {
+                this._colorRemapGradients.forEach((v) => {
+                    result.addColorRemapGradient(v.gradient, v.factor1, v.factor2!);
+                });
+            }
+            if (this._alphaRemapGradients) {
+                this._alphaRemapGradients.forEach((v) => {
+                    result.addAlphaRemapGradient(v.gradient, v.factor1, v.factor2!);
+                });
             }
 
             if (!this.preventAutoStart) {
@@ -1607,7 +1975,23 @@
             serializationObject.customShader = this.customShader;
             serializationObject.preventAutoStart = this.preventAutoStart;
 
-            serializationObject.isAnimationSheetEnabled = this._isAnimationSheetEnabled;
+            // SubEmitters
+            if (this.subEmitters) {
+                serializationObject.subEmitters = [];
+
+                if (!this._subEmitters) {
+                    this._prepareSubEmitterInternalArray();
+                }
+
+                for (var subs of this._subEmitters) {
+                    let cell = [];
+                    for (var sub of subs) {
+                        cell.push(sub.serialize());
+                    }
+
+                    serializationObject.subEmitters.push(cell);
+                }
+            }
 
             return serializationObject;
         }
@@ -1631,18 +2015,25 @@
             // Emitter
             if (particleSystem.particleEmitterType) {
                 serializationObject.particleEmitterType = particleSystem.particleEmitterType.serialize();
-            }           
-            
+            }
+
             if (particleSystem.particleTexture) {
                 serializationObject.textureName = particleSystem.particleTexture.name;
+                serializationObject.invertY = particleSystem.particleTexture._invertY;
             }
-            
+
             // Animations
             Animation.AppendSerializedAnimations(particleSystem, serializationObject);
+            serializationObject.beginAnimationOnStart = particleSystem.beginAnimationOnStart;
+            serializationObject.beginAnimationFrom = particleSystem.beginAnimationFrom;
+            serializationObject.beginAnimationTo = particleSystem.beginAnimationTo;
+            serializationObject.beginAnimationLoop = particleSystem.beginAnimationLoop;
 
             // Particle system
+            serializationObject.startDelay = particleSystem.startDelay;
             serializationObject.renderingGroupId = particleSystem.renderingGroupId;
             serializationObject.isBillboardBased = particleSystem.isBillboardBased;
+            serializationObject.billboardMode = particleSystem.billboardMode;
             serializationObject.minAngularSpeed = particleSystem.minAngularSpeed;
             serializationObject.maxAngularSpeed = particleSystem.maxAngularSpeed;
             serializationObject.minSize = particleSystem.minSize;
@@ -1650,13 +2041,14 @@
             serializationObject.minScaleX = particleSystem.minScaleX;
             serializationObject.maxScaleX = particleSystem.maxScaleX;
             serializationObject.minScaleY = particleSystem.minScaleY;
-            serializationObject.maxScaleY = particleSystem.maxScaleY;            
+            serializationObject.maxScaleY = particleSystem.maxScaleY;
             serializationObject.minEmitPower = particleSystem.minEmitPower;
             serializationObject.maxEmitPower = particleSystem.maxEmitPower;
             serializationObject.minLifeTime = particleSystem.minLifeTime;
             serializationObject.maxLifeTime = particleSystem.maxLifeTime;
             serializationObject.emitRate = particleSystem.emitRate;
             serializationObject.gravity = particleSystem.gravity.asArray();
+            serializationObject.noiseStrength = particleSystem.noiseStrength.asArray();
             serializationObject.color1 = particleSystem.color1.asArray();
             serializationObject.color2 = particleSystem.color2.asArray();
             serializationObject.colorDead = particleSystem.colorDead.asArray();
@@ -1671,7 +2063,9 @@
             serializationObject.endSpriteCellID = particleSystem.endSpriteCellID;
             serializationObject.spriteCellChangeSpeed = particleSystem.spriteCellChangeSpeed;
             serializationObject.spriteCellWidth = particleSystem.spriteCellWidth;
-            serializationObject.spriteCellHeight = particleSystem.spriteCellHeight;            
+            serializationObject.spriteCellHeight = particleSystem.spriteCellHeight;
+            serializationObject.spriteRandomStartCell = particleSystem.spriteRandomStartCell;
+            serializationObject.isAnimationSheetEnabled = particleSystem.isAnimationSheetEnabled;
 
             let colorGradients = particleSystem.getColorGradients();
             if (colorGradients) {
@@ -1687,6 +2081,56 @@
                     }
 
                     serializationObject.colorGradients.push(serializedGradient);
+                }
+            }
+
+            let rampGradients = particleSystem.getRampGradients();
+            if (rampGradients) {
+                serializationObject.rampGradients = [];
+                for (var rampGradient of rampGradients) {
+                    var serializedGradient: any = {
+                        gradient: rampGradient.gradient,
+                        color: rampGradient.color.asArray()
+                    };
+
+                    serializationObject.rampGradients.push(serializedGradient);
+                }
+                serializationObject.useRampGradients = particleSystem.useRampGradients;
+            }
+
+            let colorRemapGradients = particleSystem.getColorRemapGradients();
+            if (colorRemapGradients) {
+                serializationObject.colorRemapGradients = [];
+                for (var colorRemapGradient of colorRemapGradients) {
+
+                    var serializedGradient: any = {
+                        gradient: colorRemapGradient.gradient,
+                        factor1: colorRemapGradient.factor1
+                    };
+
+                    if (colorRemapGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = colorRemapGradient.factor2;
+                    }
+
+                    serializationObject.colorRemapGradients.push(serializedGradient);
+                }
+            }
+
+            let alphaRemapGradients = particleSystem.getAlphaRemapGradients();
+            if (alphaRemapGradients) {
+                serializationObject.alphaRemapGradients = [];
+                for (var alphaRemapGradient of alphaRemapGradients) {
+
+                    var serializedGradient: any = {
+                        gradient: alphaRemapGradient.gradient,
+                        factor1: alphaRemapGradient.factor1
+                    };
+
+                    if (alphaRemapGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = alphaRemapGradient.factor2;
+                    }
+
+                    serializationObject.alphaRemapGradients.push(serializedGradient);
                 }
             }
 
@@ -1706,8 +2150,8 @@
 
                     serializationObject.sizeGradients.push(serializedGradient);
                 }
-            }       
-                        
+            }
+
             let angularSpeedGradients = particleSystem.getAngularSpeedGradients();
             if (angularSpeedGradients) {
                 serializationObject.angularSpeedGradients = [];
@@ -1724,7 +2168,7 @@
 
                     serializationObject.angularSpeedGradients.push(serializedGradient);
                 }
-            }  
+            }
 
             let velocityGradients = particleSystem.getVelocityGradients();
             if (velocityGradients) {
@@ -1742,22 +2186,118 @@
 
                     serializationObject.velocityGradients.push(serializedGradient);
                 }
-            }              
+            }
+
+            let dragGradients = particleSystem.getDragGradients();
+            if (dragGradients) {
+                serializationObject.dragyGradients = [];
+                for (var dragGradient of dragGradients) {
+
+                    var serializedGradient: any = {
+                        gradient: dragGradient.gradient,
+                        factor1: dragGradient.factor1
+                    };
+
+                    if (dragGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = dragGradient.factor2;
+                    }
+
+                    serializationObject.dragGradients.push(serializedGradient);
+                }
+            }
+
+            let emitRateGradients = particleSystem.getEmitRateGradients();
+            if (emitRateGradients) {
+                serializationObject.emitRateGradients = [];
+                for (var emitRateGradient of emitRateGradients) {
+
+                    var serializedGradient: any = {
+                        gradient: emitRateGradient.gradient,
+                        factor1: emitRateGradient.factor1
+                    };
+
+                    if (emitRateGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = emitRateGradient.factor2;
+                    }
+
+                    serializationObject.emitRateGradients.push(serializedGradient);
+                }
+            }
+
+            let startSizeGradients = particleSystem.getStartSizeGradients();
+            if (startSizeGradients) {
+                serializationObject.startSizeGradients = [];
+                for (var startSizeGradient of startSizeGradients) {
+
+                    var serializedGradient: any = {
+                        gradient: startSizeGradient.gradient,
+                        factor1: startSizeGradient.factor1
+                    };
+
+                    if (startSizeGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = startSizeGradient.factor2;
+                    }
+
+                    serializationObject.startSizeGradients.push(serializedGradient);
+                }
+            }
+
+            let lifeTimeGradients = particleSystem.getLifeTimeGradients();
+            if (lifeTimeGradients) {
+                serializationObject.lifeTimeGradients = [];
+                for (var lifeTimeGradient of lifeTimeGradients) {
+
+                    var serializedGradient: any = {
+                        gradient: lifeTimeGradient.gradient,
+                        factor1: lifeTimeGradient.factor1
+                    };
+
+                    if (lifeTimeGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = lifeTimeGradient.factor2;
+                    }
+
+                    serializationObject.lifeTimeGradients.push(serializedGradient);
+                }
+            }
+
+            let limitVelocityGradients = particleSystem.getLimitVelocityGradients();
+            if (limitVelocityGradients) {
+                serializationObject.limitVelocityGradients = [];
+                for (var limitVelocityGradient of limitVelocityGradients) {
+
+                    var serializedGradient: any = {
+                        gradient: limitVelocityGradient.gradient,
+                        factor1: limitVelocityGradient.factor1
+                    };
+
+                    if (limitVelocityGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = limitVelocityGradient.factor2;
+                    }
+
+                    serializationObject.limitVelocityGradients.push(serializedGradient);
+                }
+
+                serializationObject.limitVelocityDamping = particleSystem.limitVelocityDamping;
+            }
+
+            if (particleSystem.noiseTexture) {
+                serializationObject.noiseTexture = particleSystem.noiseTexture.serialize();
+            }
         }
 
         /** @hidden */
         public static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, scene: Scene, rootUrl: string) {
             // Texture
             if (parsedParticleSystem.textureName) {
-                particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene);
+                particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene, false, parsedParticleSystem.invertY !== undefined ? parsedParticleSystem.invertY : true);
                 particleSystem.particleTexture.name = parsedParticleSystem.textureName;
             }
 
             // Emitter
-            if (parsedParticleSystem.emitterId === undefined) {
+            if (!parsedParticleSystem.emitterId && parsedParticleSystem.emitterId !== 0 && parsedParticleSystem.emitter === undefined) {
                 particleSystem.emitter = Vector3.Zero();
             }
-             else if (parsedParticleSystem.emitterId) {
+            else if (parsedParticleSystem.emitterId) {
                 particleSystem.emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
             } else {
                 particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
@@ -1772,12 +2312,20 @@
                 particleSystem.isBillboardBased = parsedParticleSystem.isBillboardBased;
             }
 
+            if (parsedParticleSystem.billboardMode !== undefined) {
+                particleSystem.billboardMode = parsedParticleSystem.billboardMode;
+            }
+
             // Animations
             if (parsedParticleSystem.animations) {
                 for (var animationIndex = 0; animationIndex < parsedParticleSystem.animations.length; animationIndex++) {
                     var parsedAnimation = parsedParticleSystem.animations[animationIndex];
                     particleSystem.animations.push(Animation.Parse(parsedAnimation));
                 }
+                particleSystem.beginAnimationOnStart = parsedParticleSystem.beginAnimationOnStart;
+                particleSystem.beginAnimationFrom = parsedParticleSystem.beginAnimationFrom;
+                particleSystem.beginAnimationTo = parsedParticleSystem.beginAnimationTo;
+                particleSystem.beginAnimationLoop = parsedParticleSystem.beginAnimationLoop;
             }
 
             if (parsedParticleSystem.autoAnimate) {
@@ -1785,6 +2333,7 @@
             }
 
             // Particle system
+            particleSystem.startDelay = parsedParticleSystem.startDelay | 0;
             particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
             particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
             particleSystem.minSize = parsedParticleSystem.minSize;
@@ -1792,15 +2341,15 @@
 
             if (parsedParticleSystem.minScaleX) {
                 particleSystem.minScaleX = parsedParticleSystem.minScaleX;
-                particleSystem.maxScaleX = parsedParticleSystem.maxScaleX;                
+                particleSystem.maxScaleX = parsedParticleSystem.maxScaleX;
                 particleSystem.minScaleY = parsedParticleSystem.minScaleY;
-                particleSystem.maxScaleY = parsedParticleSystem.maxScaleY;                
+                particleSystem.maxScaleY = parsedParticleSystem.maxScaleY;
             }
 
             if (parsedParticleSystem.preWarmCycles !== undefined) {
                 particleSystem.preWarmCycles = parsedParticleSystem.preWarmCycles;
                 particleSystem.preWarmStepOffset = parsedParticleSystem.preWarmStepOffset;
-            }   
+            }
 
             if (parsedParticleSystem.minInitialRotation !== undefined) {
                 particleSystem.minInitialRotation = parsedParticleSystem.minInitialRotation;
@@ -1813,6 +2362,9 @@
             particleSystem.maxEmitPower = parsedParticleSystem.maxEmitPower;
             particleSystem.emitRate = parsedParticleSystem.emitRate;
             particleSystem.gravity = Vector3.FromArray(parsedParticleSystem.gravity);
+            if (parsedParticleSystem.noiseStrength) {
+                particleSystem.noiseStrength = Vector3.FromArray(parsedParticleSystem.noiseStrength);
+            }
             particleSystem.color1 = Color4.FromArray(parsedParticleSystem.color1);
             particleSystem.color2 = Color4.FromArray(parsedParticleSystem.color2);
             particleSystem.colorDead = Color4.FromArray(parsedParticleSystem.colorDead);
@@ -1820,31 +2372,90 @@
             particleSystem.targetStopDuration = parsedParticleSystem.targetStopDuration;
             particleSystem.blendMode = parsedParticleSystem.blendMode;
 
-
             if (parsedParticleSystem.colorGradients) {
                 for (var colorGradient of parsedParticleSystem.colorGradients) {
                     particleSystem.addColorGradient(colorGradient.gradient, Color4.FromArray(colorGradient.color1), colorGradient.color2 ? Color4.FromArray(colorGradient.color2) : undefined);
                 }
             }
 
+            if (parsedParticleSystem.rampGradients) {
+                for (var rampGradient of parsedParticleSystem.rampGradients) {
+                    particleSystem.addRampGradient(rampGradient.gradient, Color3.FromArray(rampGradient.color));
+                }
+                particleSystem.useRampGradients = parsedParticleSystem.useRampGradients;
+            }
+
+            if (parsedParticleSystem.colorRemapGradients) {
+                for (var colorRemapGradient of parsedParticleSystem.colorRemapGradients) {
+                    particleSystem.addColorRemapGradient(colorRemapGradient.gradient, colorRemapGradient.factor1 !== undefined ? colorRemapGradient.factor1 : colorRemapGradient.factor, colorRemapGradient.factor2);
+                }
+            }
+
+            if (parsedParticleSystem.alphaRemapGradients) {
+                for (var alphaRemapGradient of parsedParticleSystem.alphaRemapGradients) {
+                    particleSystem.addAlphaRemapGradient(alphaRemapGradient.gradient, alphaRemapGradient.factor1 !== undefined ? alphaRemapGradient.factor1 : alphaRemapGradient.factor, alphaRemapGradient.factor2);
+                }
+            }
+
             if (parsedParticleSystem.sizeGradients) {
                 for (var sizeGradient of parsedParticleSystem.sizeGradients) {
-                    particleSystem.addSizeGradient(sizeGradient.gradient, sizeGradient.factor1 !== undefined ?  sizeGradient.factor1 : sizeGradient.factor, sizeGradient.factor2);
+                    particleSystem.addSizeGradient(sizeGradient.gradient, sizeGradient.factor1 !== undefined ? sizeGradient.factor1 : sizeGradient.factor, sizeGradient.factor2);
                 }
-            }       
+            }
+
+            if (parsedParticleSystem.sizeGradients) {
+                for (var sizeGradient of parsedParticleSystem.sizeGradients) {
+                    particleSystem.addSizeGradient(sizeGradient.gradient, sizeGradient.factor1 !== undefined ? sizeGradient.factor1 : sizeGradient.factor, sizeGradient.factor2);
+                }
+            }
 
             if (parsedParticleSystem.angularSpeedGradients) {
                 for (var angularSpeedGradient of parsedParticleSystem.angularSpeedGradients) {
-                    particleSystem.addAngularSpeedGradient(angularSpeedGradient.gradient, angularSpeedGradient.factor1 !== undefined ?  angularSpeedGradient.factor1 : angularSpeedGradient.factor, angularSpeedGradient.factor2);
+                    particleSystem.addAngularSpeedGradient(angularSpeedGradient.gradient, angularSpeedGradient.factor1 !== undefined ? angularSpeedGradient.factor1 : angularSpeedGradient.factor, angularSpeedGradient.factor2);
                 }
-            }       
-            
+            }
+
             if (parsedParticleSystem.velocityGradients) {
                 for (var velocityGradient of parsedParticleSystem.velocityGradients) {
-                    particleSystem.addVelocityGradient(velocityGradient.gradient, velocityGradient.factor1 !== undefined ?  velocityGradient.factor1 : velocityGradient.factor, velocityGradient.factor2);
+                    particleSystem.addVelocityGradient(velocityGradient.gradient, velocityGradient.factor1 !== undefined ? velocityGradient.factor1 : velocityGradient.factor, velocityGradient.factor2);
                 }
-            }              
-            
+            }
+
+            if (parsedParticleSystem.dragGradients) {
+                for (var dragGradient of parsedParticleSystem.dragGradients) {
+                    particleSystem.addDragGradient(dragGradient.gradient, dragGradient.factor1 !== undefined ? dragGradient.factor1 : dragGradient.factor, dragGradient.factor2);
+                }
+            }
+
+            if (parsedParticleSystem.emitRateGradients) {
+                for (var emitRateGradient of parsedParticleSystem.emitRateGradients) {
+                    particleSystem.addEmitRateGradient(emitRateGradient.gradient, emitRateGradient.factor1 !== undefined ? emitRateGradient.factor1 : emitRateGradient.factor, emitRateGradient.factor2);
+                }
+            }
+
+            if (parsedParticleSystem.startSizeGradients) {
+                for (var startSizeGradient of parsedParticleSystem.startSizeGradients) {
+                    particleSystem.addStartSizeGradient(startSizeGradient.gradient, startSizeGradient.factor1 !== undefined ? startSizeGradient.factor1 : startSizeGradient.factor, startSizeGradient.factor2);
+                }
+            }
+
+            if (parsedParticleSystem.lifeTimeGradients) {
+                for (var lifeTimeGradient of parsedParticleSystem.lifeTimeGradients) {
+                    particleSystem.addLifeTimeGradient(lifeTimeGradient.gradient, lifeTimeGradient.factor1 !== undefined ? lifeTimeGradient.factor1 : lifeTimeGradient.factor, lifeTimeGradient.factor2);
+                }
+            }
+
+            if (parsedParticleSystem.limitVelocityGradients) {
+                for (var limitVelocityGradient of parsedParticleSystem.limitVelocityGradients) {
+                    particleSystem.addLimitVelocityGradient(limitVelocityGradient.gradient, limitVelocityGradient.factor1 !== undefined ? limitVelocityGradient.factor1 : limitVelocityGradient.factor, limitVelocityGradient.factor2);
+                }
+                particleSystem.limitVelocityDamping = parsedParticleSystem.limitVelocityDamping;
+            }
+
+            if (parsedParticleSystem.noiseTexture) {
+                particleSystem.noiseTexture = ProceduralTexture.Parse(parsedParticleSystem.noiseTexture, scene, rootUrl);
+            }
+
             // Emitter
             let emitterType: IParticleEmitterType;
             if (parsedParticleSystem.particleEmitterType) {
@@ -1859,11 +2470,17 @@
                     case "ConeParticleEmitter":
                         emitterType = new ConeParticleEmitter();
                         break;
+                    case "CylinderParticleEmitter":
+                        emitterType = new CylinderParticleEmitter();
+                        break;
+                    case "HemisphericParticleEmitter":
+                        emitterType = new HemisphericParticleEmitter();
+                        break;
                     case "BoxEmitter":
                     case "BoxParticleEmitter":
                     default:
                         emitterType = new BoxParticleEmitter();
-                        break;                                                
+                        break;
                 }
 
                 emitterType.parse(parsedParticleSystem.particleEmitterType);
@@ -1879,6 +2496,7 @@
             particleSystem.spriteCellWidth = parsedParticleSystem.spriteCellWidth;
             particleSystem.spriteCellHeight = parsedParticleSystem.spriteCellHeight;
             particleSystem.spriteCellChangeSpeed = parsedParticleSystem.spriteCellChangeSpeed;
+            particleSystem.spriteRandomStartCell = parsedParticleSystem.spriteRandomStartCell;
         }
 
         /**
@@ -1886,9 +2504,10 @@
          * @param parsedParticleSystem The JSON object to parse
          * @param scene The scene to create the particle system in
          * @param rootUrl The root url to use to load external dependencies like texture
+         * @param doNotStart Ignore the preventAutoStart attribute and does not start
          * @returns the Parsed particle system
          */
-        public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
+        public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string, doNotStart = false): ParticleSystem {
             var name = parsedParticleSystem.name;
             var custom: Nullable<Effect> = null;
             var program: any = null;
@@ -1904,16 +2523,29 @@
                 particleSystem.id = parsedParticleSystem.id;
             }
 
-            // Auto start
-            if (parsedParticleSystem.preventAutoStart) {
-                particleSystem.preventAutoStart = parsedParticleSystem.preventAutoStart;
+            // SubEmitters
+            if (parsedParticleSystem.subEmitters) {
+                particleSystem.subEmitters = [];
+                for (var cell of parsedParticleSystem.subEmitters) {
+                    let cellArray = [];
+                    for (var sub of cell) {
+                        cellArray.push(SubEmitter.Parse(sub, scene, rootUrl));
+                    }
+
+                    particleSystem.subEmitters.push(cellArray);
+                }
             }
 
             ParticleSystem._Parse(parsedParticleSystem, particleSystem, scene, rootUrl);
 
             particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
 
-            if (!particleSystem.preventAutoStart) {
+            // Auto start
+            if (parsedParticleSystem.preventAutoStart) {
+                particleSystem.preventAutoStart = parsedParticleSystem.preventAutoStart;
+            }
+
+            if (!doNotStart && !particleSystem.preventAutoStart) {
                 particleSystem.start();
             }
 

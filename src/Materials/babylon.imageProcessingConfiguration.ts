@@ -10,6 +10,7 @@ module BABYLON {
         VIGNETTEBLENDMODEMULTIPLY: boolean;
         VIGNETTEBLENDMODEOPAQUE: boolean;
         TONEMAPPING: boolean;
+        TONEMAPPING_ACES: boolean;
         CONTRAST: boolean;
         EXPOSURE: boolean;
         COLORCURVES: boolean;
@@ -21,14 +22,50 @@ module BABYLON {
     }
 
     /**
+     * @hidden
+     */
+    export class ImageProcessingConfigurationDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+        public IMAGEPROCESSING = false;
+        public VIGNETTE = false;
+        public VIGNETTEBLENDMODEMULTIPLY = false;
+        public VIGNETTEBLENDMODEOPAQUE = false;
+        public TONEMAPPING = false;
+        public TONEMAPPING_ACES = false;
+        public CONTRAST = false;
+        public COLORCURVES = false;
+        public COLORGRADING = false;
+        public COLORGRADING3D = false;
+        public SAMPLER3DGREENDEPTH = false;
+        public SAMPLER3DBGRMAP = false;
+        public IMAGEPROCESSINGPOSTPROCESS = false;
+        public EXPOSURE = false;
+
+        constructor() {
+            super();
+            this.rebuild();
+        }
+    }
+
+    /**
      * This groups together the common properties used for image processing either in direct forward pass
-     * or through post processing effect depending on the use of the image processing pipeline in your scene 
+     * or through post processing effect depending on the use of the image processing pipeline in your scene
      * or not.
      */
     export class ImageProcessingConfiguration {
 
         /**
-         * Color curves setup used in the effect if colorCurvesEnabled is set to true 
+         * Default tone mapping applied in BabylonJS.
+         */
+        public static readonly TONEMAPPING_STANDARD = 0;
+
+        /**
+         * ACES Tone mapping (used by default in unreal and unity). This can help getting closer
+         * to other engines rendering to increase portability.
+         */
+        public static readonly TONEMAPPING_ACES = 1;
+
+        /**
+         * Color curves setup used in the effect if colorCurvesEnabled is set to true
          */
         @serializeAsColorCurves()
         public colorCurves: Nullable<ColorCurves> = new ColorCurves();
@@ -53,11 +90,25 @@ module BABYLON {
             this._updateParameters();
         }
 
+        @serializeAsTexture("colorGradingTexture")
+        private _colorGradingTexture: Nullable<BaseTexture>;
         /**
-         * Color grading LUT texture used in the effect if colorGradingEnabled is set to true 
+         * Color grading LUT texture used in the effect if colorGradingEnabled is set to true
          */
-        @serializeAsTexture()
-        public colorGradingTexture: Nullable<BaseTexture>;
+        public get colorGradingTexture(): Nullable<BaseTexture> {
+            return this._colorGradingTexture;
+        }
+        /**
+         * Color grading LUT texture used in the effect if colorGradingEnabled is set to true
+         */
+        public set colorGradingTexture(value: Nullable<BaseTexture>) {
+            if (this._colorGradingTexture === value) {
+                return;
+            }
+
+            this._colorGradingTexture = value;
+            this._updateParameters();
+        }
 
         @serialize()
         private _colorGradingEnabled = false;
@@ -119,6 +170,7 @@ module BABYLON {
             this._updateParameters();
         }
 
+        /** @hidden */
         @serialize()
         public _exposure = 1.0;
         /**
@@ -156,6 +208,26 @@ module BABYLON {
             }
 
             this._toneMappingEnabled = value;
+            this._updateParameters();
+        }
+
+        @serialize()
+        private _toneMappingType = ImageProcessingConfiguration.TONEMAPPING_STANDARD;
+        /**
+         * Gets the type of tone mapping effect.
+         */
+        public get toneMappingType(): number {
+            return this._toneMappingType;
+        }
+        /**
+         * Sets the type of tone mapping effect used in BabylonJS.
+         */
+        public set toneMappingType(value: number) {
+            if (this._toneMappingType === value) {
+                return;
+            }
+
+            this._toneMappingType = value;
             this._updateParameters();
         }
 
@@ -308,13 +380,17 @@ module BABYLON {
             this.onUpdateParameters.notifyObservers(this);
         }
 
+        /**
+         * Gets the current class name.
+         * @return "ImageProcessingConfiguration"
+         */
         public getClassName(): string {
             return "ImageProcessingConfiguration";
         }
 
         /**
          * Prepare the list of uniforms associated with the Image Processing effects.
-         * @param uniformsList The list of uniforms used in the effect
+         * @param uniforms The list of uniforms used in the effect
          * @param defines the list of defines currently in use
          */
         public static PrepareUniforms(uniforms: string[], defines: IImageProcessingConfigurationDefines): void {
@@ -339,7 +415,7 @@ module BABYLON {
 
         /**
          * Prepare the list of samplers associated with the Image Processing effects.
-         * @param uniformsList The list of uniforms used in the effect
+         * @param samplersList The list of uniforms used in the effect
          * @param defines the list of defines currently in use
          */
         public static PrepareSamplers(samplersList: string[], defines: IImageProcessingConfigurationDefines): void {
@@ -351,11 +427,13 @@ module BABYLON {
         /**
          * Prepare the list of defines associated to the shader.
          * @param defines the list of defines to complete
+         * @param forPostProcess Define if we are currently in post process mode or not
          */
         public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess: boolean = false): void {
             if (forPostProcess !== this.applyByPostProcess || !this._isEnabled) {
                 defines.VIGNETTE = false;
                 defines.TONEMAPPING = false;
+                defines.TONEMAPPING_ACES = false;
                 defines.CONTRAST = false;
                 defines.EXPOSURE = false;
                 defines.COLORCURVES = false;
@@ -369,7 +447,14 @@ module BABYLON {
             defines.VIGNETTE = this.vignetteEnabled;
             defines.VIGNETTEBLENDMODEMULTIPLY = (this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY);
             defines.VIGNETTEBLENDMODEOPAQUE = !defines.VIGNETTEBLENDMODEMULTIPLY;
+
             defines.TONEMAPPING = this.toneMappingEnabled;
+            switch (this._toneMappingType) {
+                case ImageProcessingConfiguration.TONEMAPPING_ACES:
+                    defines.TONEMAPPING_ACES = true;
+                    break;
+            }
+
             defines.CONTRAST = (this.contrast !== 1.0);
             defines.EXPOSURE = (this.exposure !== 1.0);
             defines.COLORCURVES = (this.colorCurvesEnabled && !!this.colorCurves);
@@ -387,6 +472,7 @@ module BABYLON {
 
         /**
          * Returns true if all the image processing information are ready.
+         * @returns True if ready, otherwise, false
          */
         public isReady() {
             // Color Grading texure can not be none blocking.
@@ -396,6 +482,7 @@ module BABYLON {
         /**
          * Binds the image processing to the shader.
          * @param effect The effect to bind to
+         * @param aspectRatio Define the current aspect ratio of the effect
          */
         public bind(effect: Effect, aspectRatio = 1): void {
             // Color Curves
@@ -485,4 +572,4 @@ module BABYLON {
             return this._VIGNETTEMODE_OPAQUE;
         }
     }
-} 
+}

@@ -1,23 +1,49 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * This defines an action responsible to toggle a boolean once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
     export class SwitchBooleanAction extends Action {
+        /**
+         * The path to the boolean property in the target object
+         */
+        public propertyPath: string;
+
         private _target: any;
         private _effectiveTarget: any;
         private _property: string;
 
-        constructor(triggerOptions: any, target: any, public propertyPath: string, condition?: Condition) {
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the object containing the boolean
+         * @param propertyPath defines the path to the boolean property in the target object
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, propertyPath: string, condition?: Condition) {
             super(triggerOptions, condition);
+            this.propertyPath = propertyPath;
             this._target = this._effectiveTarget = target;
         }
 
+        /** @hidden */
         public _prepare(): void {
             this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         }
 
+        /**
+         * Execute the action toggle the boolean value.
+         */
         public execute(): void {
             this._effectiveTarget[this._property] = !this._effectiveTarget[this._property];
         }
-        
+
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
         public serialize(parent: any): any {
             return super._serialize({
                 name: "SwitchBooleanAction",
@@ -29,18 +55,44 @@
         }
     }
 
+    /**
+     * This defines an action responsible to set a the state field of the target
+     *  to a desired value once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
     export class SetStateAction extends Action {
+        /**
+         * The value to store in the state field.
+         */
+        public value: string;
+
         private _target: any;
 
-        constructor(triggerOptions: any, target: any, public value: string, condition?: Condition) {
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the object containing the state property
+         * @param value defines the value to store in the state field
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, value: string, condition?: Condition) {
             super(triggerOptions, condition);
+            this.value = value;
             this._target = target;
         }
 
+        /**
+         * Execute the action and store the value on the target state property.
+         */
         public execute(): void {
             this._target.state = this.value;
         }
-        
+
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
         public serialize(parent: any): any {
             return super._serialize({
                 name: "SetStateAction",
@@ -52,21 +104,50 @@
         }
     }
 
+    /**
+     * This defines an action responsible to set a property of the target
+     *  to a desired value once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
     export class SetValueAction extends Action {
+        /**
+         * The path of the property to set in the target.
+         */
+        public propertyPath: string;
+
+        /**
+         * The value to set in the property
+         */
+        public value: any;
+
         private _target: any;
         private _effectiveTarget: any;
         private _property: string;
 
-        constructor(triggerOptions: any, target: any, public propertyPath: string, public value: any, condition?: Condition) {
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the object containing the property
+         * @param propertyPath defines the path of the property to set in the target
+         * @param value defines the value to set in the property
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, condition?: Condition) {
             super(triggerOptions, condition);
+            this.propertyPath = propertyPath;
+            this.value = value;
             this._target = this._effectiveTarget = target;
         }
 
+        /** @hidden */
         public _prepare(): void {
             this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         }
 
+        /**
+         * Execute the action and set the targetted property to the desired value.
+         */
         public execute(): void {
             this._effectiveTarget[this._property] = this.value;
 
@@ -74,7 +155,12 @@
                 this._target.markAsDirty(this._property);
             }
         }
-        
+
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
         public serialize(parent: any): any {
             return super._serialize({
                 name: "SetValueAction",
@@ -87,16 +173,42 @@
         }
     }
 
+    /**
+     * This defines an action responsible to increment the target value
+     *  to a desired value once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
     export class IncrementValueAction extends Action {
+        /**
+         * The path of the property to increment in the target.
+         */
+        public propertyPath: string;
+
+        /**
+         * The value we should increment the property by.
+         */
+        public value: any;
+
         private _target: any;
         private _effectiveTarget: any;
         private _property: string;
 
-        constructor(triggerOptions: any, target: any, public propertyPath: string, public value: any, condition?: Condition) {
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the object containing the property
+         * @param propertyPath defines the path of the property to increment in the target
+         * @param value defines the value value we should increment the property by
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, condition?: Condition) {
             super(triggerOptions, condition);
+            this.propertyPath = propertyPath;
+            this.value = value;
             this._target = this._effectiveTarget = target;
         }
 
+        /** @hidden */
         public _prepare(): void {
             this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
@@ -106,6 +218,9 @@
             }
         }
 
+        /**
+         * Execute the action and increment the target of the value amount.
+         */
         public execute(): void {
             this._effectiveTarget[this._property] += this.value;
 
@@ -113,7 +228,12 @@
                 this._target.markAsDirty(this._property);
             }
         }
-        
+
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
         public serialize(parent: any): any {
             return super._serialize({
                 name: "IncrementValueAction",
@@ -126,22 +246,62 @@
         }
     }
 
+    /**
+     * This defines an action responsible to start an animation once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
     export class PlayAnimationAction extends Action {
+        /**
+         * Where the animation should start (animation frame)
+         */
+        public from: number;
+
+        /**
+         * Where the animation should stop (animation frame)
+         */
+        public to: number;
+
+        /**
+         * Define if the animation should loop or stop after the first play.
+         */
+        public loop?: boolean;
+
         private _target: any;
 
-        constructor(triggerOptions: any, target: any, public from: number, public to: number, public loop?: boolean, condition?: Condition) {
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the target animation or animation name
+         * @param from defines from where the animation should start (animation frame)
+         * @param end defines where the animation should stop (animation frame)
+         * @param loop defines if the animation should loop or stop after the first play
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, from: number, to: number, loop?: boolean, condition?: Condition) {
             super(triggerOptions, condition);
+            this.from = from;
+            this.to = to;
+            this.loop = loop;
             this._target = target;
         }
 
+        /** @hidden */
         public _prepare(): void {
         }
 
+        /**
+         * Execute the action and play the animation.
+         */
         public execute(): void {
             var scene = this._actionManager.getScene();
             scene.beginAnimation(this._target, this.from, this.to, this.loop);
         }
-        
+
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
         public serialize(parent: any): any {
             return super._serialize({
                 name: "PlayAnimationAction",
@@ -155,22 +315,41 @@
         }
     }
 
+    /**
+     * This defines an action responsible to stop an animation once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
     export class StopAnimationAction extends Action {
         private _target: any;
 
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the target animation or animation name
+         * @param condition defines the trigger related conditions
+         */
         constructor(triggerOptions: any, target: any, condition?: Condition) {
             super(triggerOptions, condition);
             this._target = target;
         }
 
-        public _prepare(): void {           
+        /** @hidden */
+        public _prepare(): void {
         }
 
+        /**
+         * Execute the action and stop the animation.
+         */
         public execute(): void {
             var scene = this._actionManager.getScene();
             scene.stopAnimation(this._target);
         }
-        
+
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
         public serialize(parent: any): any {
             return super._serialize({
                 name: "StopAnimationAction",
@@ -179,14 +358,31 @@
         }
     }
 
+    /**
+     * This defines an action responsible that does nothing once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
     export class DoNothingAction extends Action {
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param condition defines the trigger related conditions
+         */
         constructor(triggerOptions: any = ActionManager.NothingTrigger, condition?: Condition) {
             super(triggerOptions, condition);
         }
 
+        /**
+         * Execute the action and do nothing.
+         */
         public execute(): void {
         }
-        
+
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
         public serialize(parent: any): any {
             return super._serialize({
                 name: "DoNothingAction",
@@ -195,11 +391,28 @@
         }
     }
 
+    /**
+     * This defines an action responsible to trigger several actions once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
     export class CombineAction extends Action {
-        constructor(triggerOptions: any, public children: Action[], condition?: Condition) {
+        /**
+         * The list of aggregated animations to run.
+         */
+        public children: Action[];
+
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param children defines the list of aggregated animations to run
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, children: Action[], condition?: Condition) {
             super(triggerOptions, condition);
+            this.children = children;
         }
 
+        /** @hidden */
         public _prepare(): void {
             for (var index = 0; index < this.children.length; index++) {
                 this.children[index]._actionManager = this._actionManager;
@@ -207,50 +420,92 @@
             }
         }
 
+        /**
+         * Execute the action and executes all the aggregated actions.
+         */
         public execute(evt: ActionEvent): void {
             for (var index = 0; index < this.children.length; index++) {
                 this.children[index].execute(evt);
             }
         }
-        
+
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
         public serialize(parent: any): any {
             var serializationObject = super._serialize({
                 name: "CombineAction",
                 properties: [],
                 combine: []
             }, parent);
-            
-            for (var i=0; i < this.children.length; i++) {
+
+            for (var i = 0; i < this.children.length; i++) {
                 serializationObject.combine.push(this.children[i].serialize(null));
             }
-            
+
             return serializationObject;
         }
     }
 
+    /**
+     * This defines an action responsible to run code (external event) once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
     export class ExecuteCodeAction extends Action {
-        constructor(triggerOptions: any, public func: (evt: ActionEvent) => void, condition?: Condition) {
+        /**
+         * The callback function to run.
+         */
+        public func: (evt: ActionEvent) => void;
+
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param func defines the callback function to run
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, func: (evt: ActionEvent) => void, condition?: Condition) {
             super(triggerOptions, condition);
+            this.func = func;
         }
 
+        /**
+         * Execute the action and run the attached code.
+         */
         public execute(evt: ActionEvent): void {
             this.func(evt);
         }
     }
 
+    /**
+     * This defines an action responsible to set the parent property of the target once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
     export class SetParentAction extends Action {
         private _parent: any;
         private _target: any;
 
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the target containing the parent property
+         * @param parent defines from where the animation should start (animation frame)
+         * @param condition defines the trigger related conditions
+         */
         constructor(triggerOptions: any, target: any, parent: any, condition?: Condition) {
             super(triggerOptions, condition);
             this._target = target;
             this._parent = parent;
         }
 
+        /** @hidden */
         public _prepare(): void {
         }
 
+        /**
+         * Execute the action and set the parent property.
+         */
         public execute(): void {
             if (this._target.parent === this._parent) {
                 return;
@@ -263,7 +518,12 @@
 
             this._target.parent = this._parent;
         }
-        
+
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
         public serialize(parent: any): any {
             return super._serialize({
                 name: "SetParentAction",
@@ -274,52 +534,4 @@
             }, parent);
         }
     }
-
-    export class PlaySoundAction extends Action {
-        private _sound: Sound;
-
-        constructor(triggerOptions: any, sound: Sound, condition?: Condition) {
-            super(triggerOptions, condition);
-            this._sound = sound;
-        }
-
-        public _prepare(): void {
-        }
-
-        public execute(): void {
-            if (this._sound !== undefined)
-                this._sound.play();
-        }
-        
-        public serialize(parent: any): any {
-            return super._serialize({
-                name: "PlaySoundAction",
-                properties: [{ name: "sound", value: this._sound.name }]
-            }, parent);
-        }
-    }
-
-    export class StopSoundAction extends Action {
-        private _sound: Sound;
-
-        constructor(triggerOptions: any, sound: Sound, condition?: Condition) {
-            super(triggerOptions, condition);
-            this._sound = sound;
-        }
-
-        public _prepare(): void {
-        }
-
-        public execute(): void {
-            if (this._sound !== undefined)
-                this._sound.stop();
-        }
-        
-        public serialize(parent: any): any {
-            return super._serialize({
-                name: "StopSoundAction",
-                properties: [{ name: "sound", value: this._sound.name }]
-            }, parent);
-        }
-    }
-} 
+}

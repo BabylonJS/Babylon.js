@@ -1,4 +1,5 @@
 module.exports = {
+    context: __dirname,
     entry: [
         __dirname + '/src/assets/index.ts'
     ],
@@ -10,8 +11,9 @@ module.exports = {
     resolve: {
         extensions: ['.ts']
     },
+    mode: "production",
     module: {
-        loaders: [{
+        rules: [{
             test: /\.tsx?$/,
             use: {
                 loader: 'ts-loader',
@@ -36,7 +38,7 @@ module.exports = {
         },
         {
             test: /\.(woff|ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-            loader: 'base64-font-loader'
+            loader: 'base64-inline-loader?limit=1000&name=[name].[ext]'
         }]
     }
 }

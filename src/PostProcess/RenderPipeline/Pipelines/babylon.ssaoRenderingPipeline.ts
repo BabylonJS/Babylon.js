@@ -1,24 +1,32 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * Render pipeline to produce ssao effect
+     */
     export class SSAORenderingPipeline extends PostProcessRenderPipeline {
         // Members
 
         /**
+         * @ignore
         * The PassPostProcess id in the pipeline that contains the original scene color
         */
         public SSAOOriginalSceneColorEffect: string = "SSAOOriginalSceneColorEffect";
         /**
+         * @ignore
         * The SSAO PostProcess id in the pipeline
         */
         public SSAORenderEffect: string = "SSAORenderEffect";
         /**
+         * @ignore
         * The horizontal blur PostProcess id in the pipeline
         */
         public SSAOBlurHRenderEffect: string = "SSAOBlurHRenderEffect";
         /**
+         * @ignore
         * The vertical blur PostProcess id in the pipeline
         */
         public SSAOBlurVRenderEffect: string = "SSAOBlurVRenderEffect";
         /**
+         * @ignore
         * The PostProcess id in the pipeline that combines the SSAO-Blur output with the original scene color (SSAOOriginalSceneColorEffect)
         */
         public SSAOCombineRenderEffect: string = "SSAOCombineRenderEffect";
@@ -72,10 +80,10 @@
 
         /**
          * @constructor
-         * @param {string} name - The rendering pipeline name
-         * @param {BABYLON.Scene} scene - The scene linked to this pipeline
-         * @param {any} ratio - The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, combineRatio: 1.0 }
-         * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
+         * @param name - The rendering pipeline name
+         * @param scene - The scene linked to this pipeline
+         * @param ratio - The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, combineRatio: 1.0 }
+         * @param cameras - The array of cameras that the rendering pipeline will be attached to
          */
         constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[]) {
             super(scene.getEngine(), name);
@@ -104,8 +112,9 @@
 
             // Finish
             scene.postProcessRenderPipelineManager.addPipeline(this);
-            if (cameras)
+            if (cameras) {
                 scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
+            }
         }
 
         // Public Methods
@@ -126,8 +135,9 @@
 
             this._randomTexture.dispose();
 
-            if (disableDepthRender)
+            if (disableDepthRender) {
                 this._scene.disableDepthRenderer();
+            }
 
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
 
@@ -152,6 +162,7 @@
             });
         }
 
+        /** @hidden */
         public _rebuild() {
             this._firstUpdate = true;
             super._rebuild();
@@ -229,7 +240,7 @@
 
             var rand = (min: number, max: number) => {
                 return Math.random() * (max - min) + min;
-            }
+            };
 
             var randVector = Vector3.Zero();
 

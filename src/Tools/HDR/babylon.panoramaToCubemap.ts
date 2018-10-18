@@ -41,21 +41,21 @@ module BABYLON {
 
         /**
          * The size of the cubemap stored.
-         * 
+         *
          * Each faces will be size * size pixels.
          */
         size: number;
 
         /**
          * The format of the texture.
-         * 
+         *
          * RGBA, RGB.
          */
         format: number;
 
         /**
          * The type of the texture data.
-         * 
+         *
          * UNSIGNED_INT, FLOAT.
          */
         type: number;
@@ -110,12 +110,12 @@ module BABYLON {
 
         /**
          * Converts a panorma stored in RGB right to left up to down format into a cubemap (6 faces).
-         * 
+         *
          * @param float32Array The source data.
          * @param inputWidth The width of the input panorama.
-         * @param inputhHeight The height of the input panorama.
+         * @param inputHeight The height of the input panorama.
          * @param size The willing size of the generated cubemap (each faces will be size * size pixels)
-         * @return The cubemap data 
+         * @return The cubemap data
          */
         public static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number): CubeMapInfo {
             if (!float32Array) {
@@ -186,8 +186,8 @@ module BABYLON {
             var theta = Math.atan2(vDir.z, vDir.x);
             var phi = Math.acos(vDir.y);
 
-            while (theta < -Math.PI) theta += 2 * Math.PI;
-            while (theta > Math.PI) theta -= 2 * Math.PI;
+            while (theta < -Math.PI) { theta += 2 * Math.PI; }
+            while (theta > Math.PI) { theta -= 2 * Math.PI; }
 
             var dx = theta / Math.PI;
             var dy = phi / Math.PI;
@@ -196,12 +196,12 @@ module BABYLON {
             dx = dx * 0.5 + 0.5;
 
             var px = Math.round(dx * inputWidth);
-            if (px < 0) px = 0;
-            else if (px >= inputWidth) px = inputWidth - 1;
+            if (px < 0) { px = 0; }
+            else if (px >= inputWidth) { px = inputWidth - 1; }
 
             var py = Math.round(dy * inputHeight);
-            if (py < 0) py = 0;
-            else if (py >= inputHeight) py = inputHeight - 1;
+            if (py < 0) { py = 0; }
+            else if (py >= inputHeight) { py = inputHeight - 1; }
 
             var inputY = (inputHeight - py - 1);
             var r = float32Array[inputY * inputWidth * 3 + (px * 3) + 0];
@@ -216,4 +216,3 @@ module BABYLON {
         }
     }
 }
-

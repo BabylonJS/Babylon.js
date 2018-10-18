@@ -1,9 +1,12 @@
-﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
     class NormalMaterialDefines extends MaterialDefines {
         public DIFFUSE = false;
         public CLIPPLANE = false;
+        public CLIPPLANE2 = false;
+        public CLIPPLANE3 = false;
+        public CLIPPLANE4 = false;
         public ALPHATEST = false;
         public DEPTHPREPASS = false;
         public POINTSIZE = false;
@@ -101,7 +104,7 @@ module BABYLON {
             return null;
         }
 
-        // Methods   
+        // Methods
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
@@ -151,7 +154,7 @@ module BABYLON {
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
 
@@ -198,10 +201,10 @@ module BABYLON {
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos",
                     "mBones",
-                    "vClipPlane", "diffuseMatrix"
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix"
                 ];
                 var samplers = ["diffuseSampler"];
-                var uniformBuffers = new Array<string>()
+                var uniformBuffers = new Array<string>();
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms,
@@ -248,7 +251,7 @@ module BABYLON {
             }
             this._activeEffect = effect;
 
-            // Matrices        
+            // Matrices
             this.bindOnlyWorldMatrix(world);
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
@@ -256,7 +259,7 @@ module BABYLON {
             MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
 
             if (this._mustRebind(scene, effect)) {
-                // Textures        
+                // Textures
                 if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                     this._activeEffect.setTexture("diffuseSampler", this.diffuseTexture);
 
@@ -352,4 +355,3 @@ module BABYLON {
         }
     }
 }
-

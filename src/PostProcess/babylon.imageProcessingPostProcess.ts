@@ -1,4 +1,8 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * ImageProcessingPostProcess
+     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#imageprocessing
+     */
     export class ImageProcessingPostProcess extends PostProcess {
 
         /**
@@ -15,7 +19,7 @@
 
         /**
          * Sets the Default image processing configuration used either in the this material.
-         * 
+         *
          * If sets to null, the scene one is in use.
          */
         public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
@@ -29,7 +33,7 @@
 
         /**
          * Attaches a new image processing configuration to the PBR Material.
-         * @param configuration 
+         * @param configuration
          */
         protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>, doNotBuild = false): void {
             if (configuration === this._imageProcessingConfiguration) {
@@ -66,7 +70,7 @@
 
             // Attaches observer.
             if (this._imageProcessingConfiguration) {
-                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
+                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add((conf) => {
                     this._updateParameters();
                 });
             }
@@ -147,13 +151,13 @@
          */
         public get toneMappingEnabled(): boolean {
             return this._imageProcessingConfiguration.toneMappingEnabled;
-        };
+        }
         /**
          * Sets wether tonemapping is enabled or not
          */
         public set toneMappingEnabled(value: boolean) {
             this._imageProcessingConfiguration.toneMappingEnabled = value;
-        };
+        }
 
         /**
          * Gets contrast used in the effect.
@@ -303,6 +307,7 @@
             VIGNETTEBLENDMODEMULTIPLY: false,
             VIGNETTEBLENDMODEOPAQUE: false,
             TONEMAPPING: false,
+            TONEMAPPING_ACES: false,
             CONTRAST: false,
             COLORCURVES: false,
             COLORGRADING: false,
@@ -312,13 +317,13 @@
             SAMPLER3DBGRMAP: false,
             IMAGEPROCESSINGPOSTPROCESS: false,
             EXPOSURE: false,
-        }
+        };
 
         constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, imageProcessingConfiguration?: ImageProcessingConfiguration) {
             super(name, "imageProcessing", [], [], options, camera, samplingMode, engine, reusable,
                 null, textureType, "postprocess", null, true);
 
-            // Setup the configuration as forced by the constructor. This would then not force the 
+            // Setup the configuration as forced by the constructor. This would then not force the
             // scene materials output in linear space and let untouched the default forward pass.
             if (imageProcessingConfiguration) {
                 imageProcessingConfiguration.applyByPostProcess = true;
@@ -336,7 +341,10 @@
                 this.imageProcessingConfiguration.bind(effect, this.aspectRatio);
             };
         }
-
+        /**
+         *  "ImageProcessingPostProcess"
+         * @returns "ImageProcessingPostProcess"
+         */
         public getClassName(): string {
             return "ImageProcessingPostProcess";
         }

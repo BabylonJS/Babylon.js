@@ -58,16 +58,16 @@ export class ViewerLabs {
         //@! todo: should loadEnvironment cancel any currently loading environments?
         if (data instanceof ArrayBuffer) {
             this.environment = EnvironmentDeserializer.Parse(data);
-            if (onSuccess) onSuccess(this.environment);
+            if (onSuccess) { onSuccess(this.environment); }
         } else if (typeof data === 'string') {
             let url = this.getAssetUrl(data);
             this._scene._loadFile(
                 url,
                 (arrayBuffer: ArrayBuffer) => {
                     this.environment = EnvironmentDeserializer.Parse(arrayBuffer);
-                    if (onSuccess) onSuccess(this.environment);
+                    if (onSuccess) { onSuccess(this.environment); }
                 },
-                (progressEvent) => { if (onProgress) onProgress(progressEvent.loaded, progressEvent.total); },
+                (progressEvent) => { if (onProgress) { onProgress(progressEvent.loaded, progressEvent.total); } },
                 false,
                 true,
                 (r, e) => {
@@ -79,7 +79,7 @@ export class ViewerLabs {
         } else {
             //data assumed to be PBREnvironment object
             this.environment = data;
-            if (onSuccess) onSuccess(data);
+            if (onSuccess) { onSuccess(data); }
         }
     }
 
@@ -88,7 +88,7 @@ export class ViewerLabs {
      * @param environmentMapConfiguration Environment map configuration to apply
      */
     public applyEnvironmentMapConfiguration(rotationY?: number) {
-        if (!this.environment) return;
+        if (!this.environment) { return; }
 
         //set orientation
         let rotatquatRotationionY = Quaternion.RotationAxis(Axis.Y, rotationY || 0);

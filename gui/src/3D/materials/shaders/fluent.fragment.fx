@@ -22,10 +22,18 @@ uniform vec4 hoverColor;
 uniform float hoverRadius;
 #endif
 
+#ifdef TEXTURE
+uniform sampler2D albedoSampler;
+#endif
+
 void main(void) {
 
 	vec3 albedo = albedoColor.rgb;
 	float alpha = albedoColor.a;
+
+#ifdef TEXTURE
+	albedo = texture2D(albedoSampler, vUV).rgb;
+#endif
 
 #ifdef HOVERLIGHT
 	float pointToHover = (1.0 - clamp(length(hoverPosition - worldPosition) / hoverRadius, 0., 1.)) * hoverColor.a;

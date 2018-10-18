@@ -1,166 +1,7 @@
-﻿module BABYLON {
-    var compileShader = (gl: WebGLRenderingContext, source: string, type: string, defines: Nullable<string>, shaderVersion: string): WebGLShader => {
-        return compileRawShader(gl, shaderVersion + (defines ? defines + "\n" : "") + source, type);
-    };
-
-    var compileRawShader = (gl: WebGLRenderingContext, source: string, type: string): WebGLShader => {
-        var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
-
-        gl.shaderSource(shader, source);
-        gl.compileShader(shader);
-
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            let log = gl.getShaderInfoLog(shader);
-            if (log) {
-                throw new Error(log);
-            }
-        }
-
-        if (!shader) {
-            throw new Error("Something went wrong while compile the shader.");
-        }
-
-        return shader;
-    };
-
-    var getSamplingParameters = (samplingMode: number, generateMipMaps: boolean, gl: WebGLRenderingContext): { min: number; mag: number } => {
-        var magFilter = gl.NEAREST;
-        var minFilter = gl.NEAREST;
-
-        switch (samplingMode) {
-            case Texture.BILINEAR_SAMPLINGMODE:
-                magFilter = gl.LINEAR;
-                if (generateMipMaps) {
-                    minFilter = gl.LINEAR_MIPMAP_NEAREST;
-                } else {
-                    minFilter = gl.LINEAR;
-                }
-                break;
-            case Texture.TRILINEAR_SAMPLINGMODE:
-                magFilter = gl.LINEAR;
-                if (generateMipMaps) {
-                    minFilter = gl.LINEAR_MIPMAP_LINEAR;
-                } else {
-                    minFilter = gl.LINEAR;
-                }
-                break;
-            case Texture.NEAREST_SAMPLINGMODE:
-                magFilter = gl.NEAREST;
-                if (generateMipMaps) {
-                    minFilter = gl.NEAREST_MIPMAP_LINEAR;
-                } else {
-                    minFilter = gl.NEAREST;
-                }
-                break;
-            case Texture.NEAREST_NEAREST_MIPNEAREST:
-                magFilter = gl.NEAREST;
-                if (generateMipMaps) {
-                    minFilter = gl.NEAREST_MIPMAP_NEAREST;
-                } else {
-                    minFilter = gl.NEAREST;
-                }
-                break;
-            case Texture.NEAREST_LINEAR_MIPNEAREST:
-                magFilter = gl.NEAREST;
-                if (generateMipMaps) {
-                    minFilter = gl.LINEAR_MIPMAP_NEAREST;
-                } else {
-                    minFilter = gl.LINEAR;
-                }
-                break;
-            case Texture.NEAREST_LINEAR_MIPLINEAR:
-                magFilter = gl.NEAREST;
-                if (generateMipMaps) {
-                    minFilter = gl.LINEAR_MIPMAP_LINEAR;
-                } else {
-                    minFilter = gl.LINEAR;
-                }
-                break;
-            case Texture.NEAREST_LINEAR:
-                magFilter = gl.NEAREST;
-                minFilter = gl.LINEAR;
-                break;
-            case Texture.NEAREST_NEAREST:
-                magFilter = gl.NEAREST;
-                minFilter = gl.NEAREST;
-                break;
-            case Texture.LINEAR_NEAREST_MIPNEAREST:
-                magFilter = gl.LINEAR;
-                if (generateMipMaps) {
-                    minFilter = gl.NEAREST_MIPMAP_NEAREST;
-                } else {
-                    minFilter = gl.NEAREST;
-                }
-                break;
-            case Texture.LINEAR_NEAREST_MIPLINEAR:
-                magFilter = gl.LINEAR;
-                if (generateMipMaps) {
-                    minFilter = gl.NEAREST_MIPMAP_LINEAR;
-                } else {
-                    minFilter = gl.NEAREST;
-                }
-                break;
-            case Texture.LINEAR_LINEAR:
-                magFilter = gl.LINEAR;
-                minFilter = gl.LINEAR;
-                break;
-            case Texture.LINEAR_NEAREST:
-                magFilter = gl.LINEAR;
-                minFilter = gl.NEAREST;
-                break;
-        }
-
-        return {
-            min: minFilter,
-            mag: magFilter
-        }
-    }
-
-    var partialLoadImg = (url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>,
-        onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null) => {
-
-        var img: HTMLImageElement;
-
-        var onload = () => {
-            loadedImages[index] = img;
-            (<any>loadedImages)._internalCount++;
-
-            if (scene) {
-                scene._removePendingData(img);
-            }
-
-            if ((<any>loadedImages)._internalCount === 6) {
-                onfinish(loadedImages);
-            }
-        };
-
-        var onerror = (message?: string, exception?: any) => {
-            if (scene) {
-                scene._removePendingData(img);
-            }
-
-            if (onErrorCallBack) {
-                onErrorCallBack(message, exception);
-            }
-        };
-
-        img = Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
-        if (scene) {
-            scene._addPendingData(img);
-        }
-    }
-
-    var cascadeLoadImgs = (rootUrl: string, scene: Nullable<Scene>,
-        onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null) => {
-
-        var loadedImages: HTMLImageElement[] = [];
-        (<any>loadedImages)._internalCount = 0;
-
-        for (let index = 0; index < 6; index++) {
-            partialLoadImg(files[index], index, loadedImages, scene, onfinish, onError);
-        }
-    };
-
+module BABYLON {
+    /**
+     * Keeps track of all the buffer info used in engine.
+     */
     class BufferPointer {
         public active: boolean;
         public index: number;
@@ -316,38 +157,44 @@
         public timerQuery: EXT_disjoint_timer_query;
         /** Defines if timestamp can be used with timer query */
         public canUseTimestampForTimerQuery: boolean;
+        /** Function used to let the system compiles shaders in background */
+        public parallelShaderCompile: {
+            MAX_SHADER_COMPILER_THREADS_KHR: number;
+            maxShaderCompilerThreadsKHR: (thread: number) => void;
+            COMPLETION_STATUS_KHR: number;
+        };
     }
 
     /** Interface defining initialization parameters for Engine class */
     export interface EngineOptions extends WebGLContextAttributes {
-        /** 
+        /**
          * Defines if the engine should no exceed a specified device ratio
          * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
          */
         limitDeviceRatio?: number;
-        /** 
-         * Defines if webvr should be enabled automatically 
+        /**
+         * Defines if webvr should be enabled automatically
          * @see http://doc.babylonjs.com/how_to/webvr_camera
          */
         autoEnableWebVR?: boolean;
-        /** 
-         * Defines if webgl2 should be turned off even if supported 
+        /**
+         * Defines if webgl2 should be turned off even if supported
          * @see http://doc.babylonjs.com/features/webgl2
          */
         disableWebGL2Support?: boolean;
-        /** 
+        /**
          * Defines if webaudio should be initialized as well
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         audioEngine?: boolean;
-        /** 
+        /**
          * Defines if animations should run using a deterministic lock step
          * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
          */
         deterministicLockstep?: boolean;
         /** Defines the maximum steps to use with deterministic lock step mode */
         lockstepMaxSteps?: number;
-        /** 
+        /**
          * Defines that engine should ignore context lost events
          * If this event happens when this parameter is true, you will have to reload the page to restore rendering
          */
@@ -423,294 +270,231 @@
             }
         }
 
+        /**
+         * Hidden
+         */
+        public static _TextureLoaders: IInternalTextureLoader[] = [];
+
         // Const statics
-        private static _ALPHA_DISABLE = 0;
-        private static _ALPHA_ADD = 1;
-        private static _ALPHA_COMBINE = 2;
-        private static _ALPHA_SUBTRACT = 3;
-        private static _ALPHA_MULTIPLY = 4;
-        private static _ALPHA_MAXIMIZED = 5;
-        private static _ALPHA_ONEONE = 6;
-        private static _ALPHA_PREMULTIPLIED = 7;
-        private static _ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
-        private static _ALPHA_INTERPOLATE = 9;
-        private static _ALPHA_SCREENMODE = 10;
-
-        private static _DELAYLOADSTATE_NONE = 0;
-        private static _DELAYLOADSTATE_LOADED = 1;
-        private static _DELAYLOADSTATE_LOADING = 2;
-        private static _DELAYLOADSTATE_NOTLOADED = 4;
-
-        private static _TEXTUREFORMAT_ALPHA = 0;
-        private static _TEXTUREFORMAT_LUMINANCE = 1;
-        private static _TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
-        private static _TEXTUREFORMAT_RGB = 4;
-        private static _TEXTUREFORMAT_RGBA = 5;
-        private static _TEXTUREFORMAT_R = 6;
-        private static _TEXTUREFORMAT_RG = 7;
-
-        private static _TEXTURETYPE_UNSIGNED_INT = 0;
-        private static _TEXTURETYPE_FLOAT = 1;
-        private static _TEXTURETYPE_HALF_FLOAT = 2;
-
-        // Depht or Stencil test Constants.
-        private static _NEVER = 0x0200; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn.
-        private static _ALWAYS = 0x0207; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn.
-        private static _LESS = 0x0201; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value.
-        private static _EQUAL = 0x0202; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value.
-        private static _LEQUAL = 0x0203; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value.
-        private static _GREATER = 0x0204; // Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value.
-        private static _GEQUAL = 0x0206; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value.
-        private static _NOTEQUAL = 0x0205; //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value.
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
-        public static get NEVER(): number {
-            return Engine._NEVER;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
-        public static get ALWAYS(): number {
-            return Engine._ALWAYS;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value */
-        public static get LESS(): number {
-            return Engine._LESS;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value */
-        public static get EQUAL(): number {
-            return Engine._EQUAL;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value */
-        public static get LEQUAL(): number {
-            return Engine._LEQUAL;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value */
-        public static get GREATER(): number {
-            return Engine._GREATER;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value */
-        public static get GEQUAL(): number {
-            return Engine._GEQUAL;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value */
-        public static get NOTEQUAL(): number {
-            return Engine._NOTEQUAL;
-        }
-
-        // Stencil Actions Constants.
-        private static _KEEP = 0x1E00;
-        private static _REPLACE = 0x1E01;
-        private static _INCR = 0x1E02;
-        private static _DECR = 0x1E03;
-        private static _INVERT = 0x150A;
-        private static _INCR_WRAP = 0x8507;
-        private static _DECR_WRAP = 0x8508;
-
-        /** Passed to stencilOperation to specify that stencil value must be kept */
-        public static get KEEP(): number {
-            return Engine._KEEP;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be replaced */
-        public static get REPLACE(): number {
-            return Engine._REPLACE;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be incremented */
-        public static get INCR(): number {
-            return Engine._INCR;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be decremented */
-        public static get DECR(): number {
-            return Engine._DECR;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be inverted */
-        public static get INVERT(): number {
-            return Engine._INVERT;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be incremented with wrapping */
-        public static get INCR_WRAP(): number {
-            return Engine._INCR_WRAP;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be decremented with wrapping */
-        public static get DECR_WRAP(): number {
-            return Engine._DECR_WRAP;
-        }
-
-        // Alpha
-
         /** Defines that alpha blending is disabled */
-        public static get ALPHA_DISABLE(): number {
-            return Engine._ALPHA_DISABLE;
-        }
-
-        /** Defines that alpha blending to SRC + DEST */
-        public static get ALPHA_ONEONE(): number {
-            return Engine._ALPHA_ONEONE;
-        }
-
+        public static readonly ALPHA_DISABLE = 0;
         /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
-        public static get ALPHA_ADD(): number {
-            return Engine._ALPHA_ADD;
-        }
-
+        public static readonly ALPHA_ADD = 1;
         /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
-        public static get ALPHA_COMBINE(): number {
-            return Engine._ALPHA_COMBINE;
-        }
-
+        public static readonly ALPHA_COMBINE = 2;
         /** Defines that alpha blending to DEST - SRC * DEST */
-        public static get ALPHA_SUBTRACT(): number {
-            return Engine._ALPHA_SUBTRACT;
-        }
-
+        public static readonly ALPHA_SUBTRACT = 3;
         /** Defines that alpha blending to SRC * DEST */
-        public static get ALPHA_MULTIPLY(): number {
-            return Engine._ALPHA_MULTIPLY;
-        }
-
+        public static readonly ALPHA_MULTIPLY = 4;
         /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC) * DEST */
-        public static get ALPHA_MAXIMIZED(): number {
-            return Engine._ALPHA_MAXIMIZED;
-        }
-
+        public static readonly ALPHA_MAXIMIZED = 5;
+        /** Defines that alpha blending to SRC + DEST */
+        public static readonly ALPHA_ONEONE = 6;
         /** Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST */
-        public static get ALPHA_PREMULTIPLIED(): number {
-            return Engine._ALPHA_PREMULTIPLIED;
-        }
-
-        /** 
+        public static readonly ALPHA_PREMULTIPLIED = 7;
+        /**
          * Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST
          * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
          */
-        public static get ALPHA_PREMULTIPLIED_PORTERDUFF(): number {
-            return Engine._ALPHA_PREMULTIPLIED_PORTERDUFF;
-        }
-
+        public static readonly ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
         /** Defines that alpha blending to CST * SRC + (1 - CST) * DEST */
-        public static get ALPHA_INTERPOLATE(): number {
-            return Engine._ALPHA_INTERPOLATE;
-        }
-
-        /** 
-         * Defines that alpha blending to SRC + (1 - SRC) * DEST 
+        public static readonly ALPHA_INTERPOLATE = 9;
+        /**
+         * Defines that alpha blending to SRC + (1 - SRC) * DEST
          * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
          */
-        public static get ALPHA_SCREENMODE(): number {
-            return Engine._ALPHA_SCREENMODE;
-        }
-
-        // Delays
+        public static readonly ALPHA_SCREENMODE = 10;
 
         /** Defines that the ressource is not delayed*/
-        public static get DELAYLOADSTATE_NONE(): number {
-            return Engine._DELAYLOADSTATE_NONE;
-        }
-
+        public static readonly DELAYLOADSTATE_NONE = 0;
         /** Defines that the ressource was successfully delay loaded */
-        public static get DELAYLOADSTATE_LOADED(): number {
-            return Engine._DELAYLOADSTATE_LOADED;
-        }
-
+        public static readonly DELAYLOADSTATE_LOADED = 1;
         /** Defines that the ressource is currently delay loading */
-        public static get DELAYLOADSTATE_LOADING(): number {
-            return Engine._DELAYLOADSTATE_LOADING;
-        }
-
+        public static readonly DELAYLOADSTATE_LOADING = 2;
         /** Defines that the ressource is delayed and has not started loading */
-        public static get DELAYLOADSTATE_NOTLOADED(): number {
-            return Engine._DELAYLOADSTATE_NOTLOADED;
-        }
+        public static readonly DELAYLOADSTATE_NOTLOADED = 4;
+
+        // Depht or Stencil test Constants.
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
+        public static readonly NEVER = 0x0200;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
+        public static readonly ALWAYS = 0x0207;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value */
+        public static readonly LESS = 0x0201;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value */
+        public static readonly EQUAL = 0x0202;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value */
+        public static readonly LEQUAL = 0x0203;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value */
+        public static readonly GREATER = 0x0204;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value */
+        public static readonly GEQUAL = 0x0206;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value */
+        public static readonly NOTEQUAL = 0x0205;
+
+        // Stencil Actions Constants.
+        /** Passed to stencilOperation to specify that stencil value must be kept */
+        public static readonly KEEP = 0x1E00;
+        /** Passed to stencilOperation to specify that stencil value must be replaced */
+        public static readonly REPLACE = 0x1E01;
+        /** Passed to stencilOperation to specify that stencil value must be incremented */
+        public static readonly INCR = 0x1E02;
+        /** Passed to stencilOperation to specify that stencil value must be decremented */
+        public static readonly DECR = 0x1E03;
+        /** Passed to stencilOperation to specify that stencil value must be inverted */
+        public static readonly INVERT = 0x150A;
+        /** Passed to stencilOperation to specify that stencil value must be incremented with wrapping */
+        public static readonly INCR_WRAP = 0x8507;
+        /** Passed to stencilOperation to specify that stencil value must be decremented with wrapping */
+        public static readonly DECR_WRAP = 0x8508;
+
+        /** Texture is not repeating outside of 0..1 UVs */
+        public static readonly TEXTURE_CLAMP_ADDRESSMODE = 0;
+        /** Texture is repeating outside of 0..1 UVs */
+        public static readonly TEXTURE_WRAP_ADDRESSMODE = 1;
+        /** Texture is repeating and mirrored */
+        public static readonly TEXTURE_MIRROR_ADDRESSMODE = 2;
 
         /** ALPHA */
-        public static get TEXTUREFORMAT_ALPHA(): number {
-            return Engine._TEXTUREFORMAT_ALPHA;
-        }
-
+        public static readonly TEXTUREFORMAT_ALPHA = 0;
         /** LUMINANCE */
-        public static get TEXTUREFORMAT_LUMINANCE(): number {
-            return Engine._TEXTUREFORMAT_LUMINANCE;
-        }
-
-        /**
-         * R
-         */
-        public static get TEXTUREFORMAT_R(): number {
-            return Engine._TEXTUREFORMAT_R;
-        }       
-        
-        /**
-         * RG
-         */
-        public static get TEXTUREFORMAT_RG(): number {
-            return Engine._TEXTUREFORMAT_RG;
-        }
-
+        public static readonly TEXTUREFORMAT_LUMINANCE = 1;
         /** LUMINANCE_ALPHA */
-        public static get TEXTUREFORMAT_LUMINANCE_ALPHA(): number {
-            return Engine._TEXTUREFORMAT_LUMINANCE_ALPHA;
-        }
-
+        public static readonly TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
         /** RGB */
-        public static get TEXTUREFORMAT_RGB(): number {
-            return Engine._TEXTUREFORMAT_RGB;
-        }
-
+        public static readonly TEXTUREFORMAT_RGB = 4;
         /** RGBA */
-        public static get TEXTUREFORMAT_RGBA(): number {
-            return Engine._TEXTUREFORMAT_RGBA;
-        }
+        public static readonly TEXTUREFORMAT_RGBA = 5;
+        /** RED */
+        public static readonly TEXTUREFORMAT_RED = 6;
+        /** RED (2nd reference) */
+        public static readonly TEXTUREFORMAT_R = 6;
+        /** RG */
+        public static readonly TEXTUREFORMAT_RG = 7;
+        /** RED_INTEGER */
+        public static readonly TEXTUREFORMAT_RED_INTEGER = 8;
+        /** RED_INTEGER (2nd reference) */
+        public static readonly TEXTUREFORMAT_R_INTEGER = 8;
+        /** RG_INTEGER */
+        public static readonly TEXTUREFORMAT_RG_INTEGER = 9;
+        /** RGB_INTEGER */
+        public static readonly TEXTUREFORMAT_RGB_INTEGER = 10;
+        /** RGBA_INTEGER */
+        public static readonly TEXTUREFORMAT_RGBA_INTEGER = 11;
 
-        /** UNSIGNED_INT */
-        public static get TEXTURETYPE_UNSIGNED_INT(): number {
-            return Engine._TEXTURETYPE_UNSIGNED_INT;
-        }
-
+        /** UNSIGNED_BYTE */
+        public static readonly TEXTURETYPE_UNSIGNED_BYTE = 0;
+        /** UNSIGNED_BYTE (2nd reference) */
+        public static readonly TEXTURETYPE_UNSIGNED_INT = 0;
         /** FLOAT */
-        public static get TEXTURETYPE_FLOAT(): number {
-            return Engine._TEXTURETYPE_FLOAT;
-        }
-
+        public static readonly TEXTURETYPE_FLOAT = 1;
         /** HALF_FLOAT */
-        public static get TEXTURETYPE_HALF_FLOAT(): number {
-            return Engine._TEXTURETYPE_HALF_FLOAT;
-        }
+        public static readonly TEXTURETYPE_HALF_FLOAT = 2;
+        /** BYTE */
+        public static readonly TEXTURETYPE_BYTE = 3;
+        /** SHORT */
+        public static readonly TEXTURETYPE_SHORT = 4;
+        /** UNSIGNED_SHORT */
+        public static readonly TEXTURETYPE_UNSIGNED_SHORT = 5;
+        /** INT */
+        public static readonly TEXTURETYPE_INT = 6;
+        /** UNSIGNED_INT */
+        public static readonly TEXTURETYPE_UNSIGNED_INTEGER = 7;
+        /** UNSIGNED_SHORT_4_4_4_4 */
+        public static readonly TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 = 8;
+        /** UNSIGNED_SHORT_5_5_5_1 */
+        public static readonly TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 = 9;
+        /** UNSIGNED_SHORT_5_6_5 */
+        public static readonly TEXTURETYPE_UNSIGNED_SHORT_5_6_5 = 10;
+        /** UNSIGNED_INT_2_10_10_10_REV */
+        public static readonly TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV = 11;
+        /** UNSIGNED_INT_24_8 */
+        public static readonly TEXTURETYPE_UNSIGNED_INT_24_8 = 12;
+        /** UNSIGNED_INT_10F_11F_11F_REV */
+        public static readonly TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV = 13;
+        /** UNSIGNED_INT_5_9_9_9_REV */
+        public static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV = 14;
+        /** FLOAT_32_UNSIGNED_INT_24_8_REV */
+        public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = 15;
+
+        /** nearest is mag = nearest and min = nearest and mip = linear */
+        public static readonly TEXTURE_NEAREST_SAMPLINGMODE = 1;
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        public static readonly TEXTURE_BILINEAR_SAMPLINGMODE = 2;
+        /** Trilinear is mag = linear and min = linear and mip = linear */
+        public static readonly TEXTURE_TRILINEAR_SAMPLINGMODE = 3;
+        /** nearest is mag = nearest and min = nearest and mip = linear */
+        public static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR = 1;
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        public static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST = 2;
+        /** Trilinear is mag = linear and min = linear and mip = linear */
+        public static readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR = 3;
+        /** mag = nearest and min = nearest and mip = nearest */
+        public static readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST = 4;
+        /** mag = nearest and min = linear and mip = nearest */
+        public static readonly TEXTURE_NEAREST_LINEAR_MIPNEAREST = 5;
+        /** mag = nearest and min = linear and mip = linear */
+        public static readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR = 6;
+        /** mag = nearest and min = linear and mip = none */
+        public static readonly TEXTURE_NEAREST_LINEAR = 7;
+        /** mag = nearest and min = nearest and mip = none */
+        public static readonly TEXTURE_NEAREST_NEAREST = 8;
+        /** mag = linear and min = nearest and mip = nearest */
+        public static readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST = 9;
+        /** mag = linear and min = nearest and mip = linear */
+        public static readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR = 10;
+        /** mag = linear and min = linear and mip = none */
+        public static readonly TEXTURE_LINEAR_LINEAR = 11;
+        /** mag = linear and min = nearest and mip = none */
+        public static readonly TEXTURE_LINEAR_NEAREST = 12;
+
+        /** Explicit coordinates mode */
+        public static readonly TEXTURE_EXPLICIT_MODE = 0;
+        /** Spherical coordinates mode */
+        public static readonly TEXTURE_SPHERICAL_MODE = 1;
+        /** Planar coordinates mode */
+        public static readonly TEXTURE_PLANAR_MODE = 2;
+        /** Cubic coordinates mode */
+        public static readonly TEXTURE_CUBIC_MODE = 3;
+        /** Projection coordinates mode */
+        public static readonly TEXTURE_PROJECTION_MODE = 4;
+        /** Skybox coordinates mode */
+        public static readonly TEXTURE_SKYBOX_MODE = 5;
+        /** Inverse Cubic coordinates mode */
+        public static readonly TEXTURE_INVCUBIC_MODE = 6;
+        /** Equirectangular coordinates mode */
+        public static readonly TEXTURE_EQUIRECTANGULAR_MODE = 7;
+        /** Equirectangular Fixed coordinates mode */
+        public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MODE = 8;
+        /** Equirectangular Fixed Mirrored coordinates mode */
+        public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE = 9;
 
         // Texture rescaling mode
-        private static _SCALEMODE_FLOOR = 1;
-        private static _SCALEMODE_NEAREST = 2;
-        private static _SCALEMODE_CEILING = 3;
-
         /** Defines that texture rescaling will use a floor to find the closer power of 2 size */
-        public static get SCALEMODE_FLOOR(): number {
-            return Engine._SCALEMODE_FLOOR;
-        }
-
+        public static readonly SCALEMODE_FLOOR = 1;
         /** Defines that texture rescaling will look for the nearest power of 2 size */
-        public static get SCALEMODE_NEAREST(): number {
-            return Engine._SCALEMODE_NEAREST;
-        }
-
+        public static readonly SCALEMODE_NEAREST = 2;
         /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
-        public static get SCALEMODE_CEILING(): number {
-            return Engine._SCALEMODE_CEILING;
-        }
+        public static readonly SCALEMODE_CEILING = 3;
 
         /**
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "3.3.0-alpha.9";
+            return "4.0.0-alpha.4";
+        }
+
+        /**
+         * Returns a string describing the current engine
+         */
+        public get description(): string {
+            let description = "WebGL" + this.webGLVersion;
+
+            if (this._caps.parallelShaderCompile) {
+                description += " - Parallel shader compilation";
+            }
+
+            return description;
         }
 
         // Updatable statics so stick with vars here
@@ -761,15 +545,15 @@
          */
         public preventCacheWipeBetweenFrames = false;
 
-        /** 
+        /**
          * Gets or sets a boolean to enable/disable IndexedDB support and avoid XHR on .manifest
          **/
         public enableOfflineSupport = false;
 
-        /** 
+        /**
          * Gets or sets a boolean to enable/disable checking manifest if IndexedDB support is enabled (Babylon.js will always consider the database is up to date)
          **/
-        public disableManifestCheck = false;        
+        public disableManifestCheck = false;
 
         /**
          * Gets the list of created scenes
@@ -854,6 +638,11 @@
         public onBeginFrameObservable = new Observable<Engine>();
 
         /**
+         * If set, will be used to request the next animation frame for the render loop
+         */
+        public customAnimationFrameRequester: Nullable<ICustomAnimationFrameRequester> = null;
+
+        /**
          * Observable raised when the engine ends the current frame
          */
         public onEndFrameObservable = new Observable<Engine>();
@@ -869,7 +658,9 @@
         public onAfterShaderCompilationObservable = new Observable<Engine>();
 
         // Private Members
-        private _gl: WebGLRenderingContext;
+
+        /** @hidden */
+        public _gl: WebGLRenderingContext;
         private _renderingCanvas: Nullable<HTMLCanvasElement>;
         private _windowIsBackground = false;
         private _webGLVersion = 1.0;
@@ -889,18 +680,30 @@
         public _badDesktopOS = false;
 
         /**
-         * Gets or sets a value indicating if we want to disable texture binding optmization.
+         * Gets or sets a value indicating if we want to disable texture binding optimization.
          * This could be required on some buggy drivers which wants to have textures bound in a progressive order.
          * By default Babylon.js will try to let textures bound where they are and only update the samplers to point where the texture is
          */
         public disableTextureBindingOptimization = false;
 
-        /** 
-         * Gets the audio engine 
+        /**
+         * Gets the audio engine
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
          * @ignorenaming
          */
-        public static audioEngine: AudioEngine;
+        public static audioEngine: IAudioEngine;
+
+        /**
+         * Default AudioEngine factory responsible of creating the Audio Engine.
+         * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
+         */
+        public static AudioEngineFactory: (hostElement: Nullable<HTMLElement>) => IAudioEngine;
+
+        /**
+         * Default offline support factory responsible of creating a tool used to store data locally.
+         * By default, this will create a Database object if the workload has been embedded.
+         */
+        public static OfflineProviderFactory: (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck: boolean) => IOfflineProvider;
 
         // Focus
         private _onFocus: () => void;
@@ -1017,14 +820,14 @@
         protected _internalTexturesCache = new Array<InternalTexture>();
         /** @hidden */
         protected _activeChannel = 0;
-        private _currentTextureChannel = -1;    
+        private _currentTextureChannel = -1;
         /** @hidden */
         protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
         /** @hidden */
         protected _currentEffect: Nullable<Effect>;
         /** @hidden */
         protected _currentProgram: Nullable<WebGLProgram>;
-        private _compiledEffects: { [key: string]: Effect } = {}
+        private _compiledEffects: { [key: string]: Effect } = {};
         private _vertexAttribArraysEnabled: boolean[] = [];
         /** @hidden */
         protected _cachedViewport: Nullable<Viewport>;
@@ -1064,7 +867,8 @@
         private _emptyCubeTexture: Nullable<InternalTexture>;
         private _emptyTexture3D: Nullable<InternalTexture>;
 
-        private _frameHandler: number;
+        /** @hidden */
+        public _frameHandler: number;
 
         private _nextFreeTextureSlots = new Array<number>();
         private _maxSimultaneousTextures = 0;
@@ -1101,7 +905,7 @@
          */
         public get emptyTexture(): InternalTexture {
             if (!this._emptyTexture) {
-                this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.NEAREST_SAMPLINGMODE);
+                this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Engine.TEXTURE_NEAREST_SAMPLINGMODE);
             }
 
             return this._emptyTexture;
@@ -1109,10 +913,10 @@
 
         /**
          * Gets the default empty 3D texture
-         */        
+         */
         public get emptyTexture3D(): InternalTexture {
             if (!this._emptyTexture3D) {
-                this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.NEAREST_SAMPLINGMODE);
+                this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Engine.TEXTURE_NEAREST_SAMPLINGMODE);
             }
 
             return this._emptyTexture3D;
@@ -1120,12 +924,12 @@
 
         /**
          * Gets the default empty cube texture
-         */        
+         */
         public get emptyCubeTexture(): InternalTexture {
             if (!this._emptyCubeTexture) {
                 var faceData = new Uint8Array(4);
                 var cubeData = [faceData, faceData, faceData, faceData, faceData, faceData];
-                this._emptyCubeTexture = this.createRawCubeTexture(cubeData, 1, Engine.TEXTUREFORMAT_RGBA, Engine.TEXTURETYPE_UNSIGNED_INT, false, false, Texture.NEAREST_SAMPLINGMODE);
+                this._emptyCubeTexture = this.createRawCubeTexture(cubeData, 1, Engine.TEXTUREFORMAT_RGBA, Engine.TEXTURETYPE_UNSIGNED_INT, false, false, Engine.TEXTURE_NEAREST_SAMPLINGMODE);
             }
 
             return this._emptyCubeTexture;
@@ -1138,7 +942,7 @@
 
         /**
          * Creates a new engine
-         * @param canvasOrContext defines the canvas or WebGL context to use for rendering
+         * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which alreay used the WebGL context
          * @param antialias defines enable antialiasing (default: false)
          * @param options defines further options to be sent to the getContext() function
          * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
@@ -1230,13 +1034,18 @@
                         }
                     }
                 }
-                
+
                 // GL
                 if (!options.disableWebGL2Support) {
                     try {
                         this._gl = <any>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
                         if (this._gl) {
                             this._webGLVersion = 2.0;
+
+                            // Prevent weird browsers to lie :-)
+                            if (!this._gl.deleteQuery) {
+                                this._webGLVersion = 1.0;
+                            }
                         }
                     } catch (e) {
                         // Do nothing
@@ -1260,11 +1069,11 @@
 
                 this._onCanvasFocus = () => {
                     this.onCanvasFocusObservable.notifyObservers(this);
-                }
+                };
 
                 this._onCanvasBlur = () => {
                     this.onCanvasBlurObservable.notifyObservers(this);
-                }
+                };
 
                 canvas.addEventListener("focus", this._onCanvasFocus);
                 canvas.addEventListener("blur", this._onCanvasBlur);
@@ -1333,13 +1142,16 @@
                 }
             } else {
                 this._gl = <WebGLRenderingContext>canvasOrContext;
-                this._renderingCanvas = this._gl.canvas
+                this._renderingCanvas = this._gl.canvas;
 
                 if (this._gl.renderbufferStorageMultisample) {
                     this._webGLVersion = 2.0;
                 }
 
-                options.stencil = this._gl.getContextAttributes().stencil;
+                const attributes = this._gl.getContextAttributes();
+                if (attributes) {
+                    options.stencil = attributes.stencil;
+                }
             }
 
             // Viewport
@@ -1353,8 +1165,8 @@
             if (canvas) {
                 // Fullscreen
                 this._onFullscreenChange = () => {
-                    if (document.fullscreen !== undefined) {
-                        this.isFullscreen = document.fullscreen;
+                    if ((<any>document).fullscreen !== undefined) {
+                        this.isFullscreen = (<any>document).fullscreen;
                     } else if (document.mozFullScreen !== undefined) {
                         this.isFullscreen = document.mozFullScreen;
                     } else if (document.webkitIsFullScreen !== undefined) {
@@ -1399,18 +1211,19 @@
                     if (canvas) {
                         canvas.requestPointerLock();
                     }
-                }
+                };
 
                 this._onVRDisplayPointerUnrestricted = () => {
                     document.exitPointerLock();
-                }
+                };
 
                 window.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
                 window.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);
             }
 
-            if (options.audioEngine && AudioEngine && !Engine.audioEngine) {
-                Engine.audioEngine = new AudioEngine();
+            // Create Audio Engine if needed.
+            if (!Engine.audioEngine && options.audioEngine && Engine.AudioEngineFactory) {
+                Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas());
             }
 
             // Prepare buffer pointers
@@ -1431,9 +1244,9 @@
             // Detect if we are running on a faulty buggy desktop OS.
             this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-            console.log("Babylon.js engine (v" + Engine.Version + ") launched");
+            console.log(`Babylon.js v${Engine.Version} - ${this.description}`);
 
-            this.enableOfflineSupport = (Database !== undefined);
+            this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
         }
 
         private _rebuildInternalTextures(): void {
@@ -1452,6 +1265,22 @@
             }
 
             Effect.ResetCache();
+        }
+
+        /**
+         * Gets a boolean indicating if all created effects are ready
+         * @returns true if all effects are ready
+         */
+        public areAllEffectsReady(): boolean {
+            for (var key in this._compiledEffects) {
+                let effect = <Effect>this._compiledEffects[key];
+
+                if (!effect.isReady()) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private _rebuildBuffers(): void {
@@ -1525,7 +1354,7 @@
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
             this._caps.uintIndices = this._webGLVersion > 1 || this._gl.getExtension('OES_element_index_uint') !== null;
             this._caps.fragmentDepthSupported = this._webGLVersion > 1 || this._gl.getExtension('EXT_frag_depth') !== null;
-            this._caps.highPrecisionShaderSupported = true;
+            this._caps.highPrecisionShaderSupported = false;
             this._caps.timerQuery = this._gl.getExtension('EXT_disjoint_timer_query_webgl2') || this._gl.getExtension("EXT_disjoint_timer_query");
             if (this._caps.timerQuery) {
                 if (this._webGLVersion === 1) {
@@ -1539,16 +1368,16 @@
 
             this._caps.textureFloat = (this._webGLVersion > 1 || this._gl.getExtension('OES_texture_float')) ? true : false;
             this._caps.textureFloatLinearFiltering = this._caps.textureFloat && this._gl.getExtension('OES_texture_float_linear') ? true : false;
-            this._caps.textureFloatRender = this._caps.textureFloat && this._canRenderToFloatFramebuffer() ? true: false;
+            this._caps.textureFloatRender = this._caps.textureFloat && this._canRenderToFloatFramebuffer() ? true : false;
 
-            this._caps.textureHalfFloat = (this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float')) ? true: false;
+            this._caps.textureHalfFloat = (this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float')) ? true : false;
             this._caps.textureHalfFloatLinearFiltering = (this._webGLVersion > 1 || (this._caps.textureHalfFloat && this._gl.getExtension('OES_texture_half_float_linear'))) ? true : false;
             if (this._webGLVersion > 1) {
                 this._gl.HALF_FLOAT_OES = 0x140B;
             }
             this._caps.textureHalfFloatRender = this._caps.textureHalfFloat && this._canRenderToHalfFloatFramebuffer();
 
-            this._caps.textureLOD = (this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod')) ? true: false;
+            this._caps.textureLOD = (this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod')) ? true : false;
 
             // Draw buffers
             if (this._webGLVersion > 1) {
@@ -1567,6 +1396,13 @@
                 } else {
                     this._caps.drawBuffersExtension = false;
                 }
+            }
+
+            // Shader compiler threads
+            this._caps.parallelShaderCompile = this._gl.getExtension('KHR_parallel_shader_compile');
+            if (this._caps.parallelShaderCompile) {
+                const threads = this._gl.getParameter(this._caps.parallelShaderCompile.MAX_SHADER_COMPILER_THREADS_KHR);
+                this._caps.parallelShaderCompile.maxShaderCompilerThreadsKHR(threads);
             }
 
             // Depth Texture
@@ -1596,6 +1432,7 @@
                     this._caps.vertexArrayObject = false;
                 }
             }
+
             // Instances count
             if (this._webGLVersion > 1) {
                 this._caps.instancedArrays = true;
@@ -1617,17 +1454,18 @@
             // Next PVRTC & DXT, which are probably superior to ETC1/2.
             // Likely no hardware which supports both PVR & DXT, so order matters little.
             // ETC2 is newer and handles ETC1 (no alpha capability), so check for first.
-            if (this._caps.astc) this.texturesSupported.push('-astc.ktx');
-            if (this._caps.s3tc) this.texturesSupported.push('-dxt.ktx');
-            if (this._caps.pvrtc) this.texturesSupported.push('-pvrtc.ktx');
-            if (this._caps.etc2) this.texturesSupported.push('-etc2.ktx');
-            if (this._caps.etc1) this.texturesSupported.push('-etc1.ktx');
+            if (this._caps.astc) { this.texturesSupported.push('-astc.ktx'); }
+            if (this._caps.s3tc) { this.texturesSupported.push('-dxt.ktx'); }
+            if (this._caps.pvrtc) { this.texturesSupported.push('-pvrtc.ktx'); }
+            if (this._caps.etc2) { this.texturesSupported.push('-etc2.ktx'); }
+            if (this._caps.etc1) { this.texturesSupported.push('-etc1.ktx'); }
 
             if (this._gl.getShaderPrecisionFormat) {
-                var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
+                var vertex_highp = this._gl.getShaderPrecisionFormat(this._gl.VERTEX_SHADER, this._gl.HIGH_FLOAT);
+                var fragment_highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
 
-                if (highp) {
-                    this._caps.highPrecisionShaderSupported = highp.precision !== 0;
+                if (vertex_highp && fragment_highp) {
+                    this._caps.highPrecisionShaderSupported = vertex_highp.precision !== 0 && fragment_highp.precision !== 0;
                 }
             }
 
@@ -1683,8 +1521,8 @@
                     this._removeDesignatedSlot(boundTexture);
                 }
                 this._boundTexturesCache[key] = null;
-            }       
-            
+            }
+
             if (!this.disableTextureBindingOptimization) {
                 this._nextFreeTextureSlots = [];
                 for (let slot = 0; slot < this._maxSimultaneousTextures; slot++) {
@@ -1722,7 +1560,7 @@
                 vendor: this._glVendor,
                 renderer: this._glRenderer,
                 version: this._glVersion
-            }
+            };
         }
 
         /**
@@ -1742,7 +1580,7 @@
          */
         public getScreenAspectRatio(): number {
             return (this.getRenderWidth(true)) / (this.getRenderHeight(true));
-        }        
+        }
 
         /**
          * Gets the current render width
@@ -1761,7 +1599,7 @@
          * Gets the current render height
          * @param useScreen defines if screen size must be used (or the current render target if any)
          * @returns a number defining the current render height
-         */        
+         */
         public getRenderHeight(useScreen = false): number {
             if (!useScreen && this._currentRenderTarget) {
                 return this._currentRenderTarget.height;
@@ -1805,7 +1643,7 @@
          * By default the hardware scaling level is computed from the window device ratio.
          * if level = 1 then the engine will render at the exact resolution of the canvas. If level = 0.5 then the engine will render at twice the size of the canvas.
          * @returns a number indicating the current hardware scaling level
-         */        
+         */
         public getHardwareScalingLevel(): number {
             return this._hardwareScalingLevel;
         }
@@ -1856,28 +1694,28 @@
 
         /**
          * Sets the current depth function to GREATER
-         */        
+         */
         public setDepthFunctionToGreater(): void {
             this._depthCullingState.depthFunc = this._gl.GREATER;
         }
 
         /**
          * Sets the current depth function to GEQUAL
-         */        
+         */
         public setDepthFunctionToGreaterOrEqual(): void {
             this._depthCullingState.depthFunc = this._gl.GEQUAL;
         }
 
         /**
          * Sets the current depth function to LESS
-         */          
+         */
         public setDepthFunctionToLess(): void {
             this._depthCullingState.depthFunc = this._gl.LESS;
         }
 
         /**
          * Sets the current depth function to LEQUAL
-         */                
+         */
         public setDepthFunctionToLessOrEqual(): void {
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
         }
@@ -1909,7 +1747,7 @@
         /**
          * Sets the current stencil mask
          * @param mask defines the new stencil mask to use
-         */        
+         */
         public setStencilMask(mask: number): void {
             this._stencilState.stencilMask = mask;
         }
@@ -1917,7 +1755,7 @@
         /**
          * Gets the current stencil function
          * @returns a number defining the stencil function to use
-         */        
+         */
         public getStencilFunction(): number {
             return this._stencilState.stencilFunc;
         }
@@ -1925,7 +1763,7 @@
         /**
          * Gets the current stencil reference value
          * @returns a number defining the stencil reference value to use
-         */             
+         */
         public getStencilFunctionReference(): number {
             return this._stencilState.stencilFuncRef;
         }
@@ -1933,7 +1771,7 @@
         /**
          * Gets the current stencil mask
          * @returns a number defining the stencil mask to use
-         */                 
+         */
         public getStencilFunctionMask(): number {
             return this._stencilState.stencilFuncMask;
         }
@@ -1941,7 +1779,7 @@
         /**
          * Sets the current stencil function
          * @param stencilFunc defines the new stencil function to use
-         */             
+         */
         public setStencilFunction(stencilFunc: number) {
             this._stencilState.stencilFunc = stencilFunc;
         }
@@ -1949,7 +1787,7 @@
         /**
          * Sets the current stencil reference
          * @param reference defines the new stencil reference to use
-         */            
+         */
         public setStencilFunctionReference(reference: number) {
             this._stencilState.stencilFuncRef = reference;
         }
@@ -1957,7 +1795,7 @@
         /**
          * Sets the current stencil mask
          * @param mask defines the new stencil mask to use
-         */            
+         */
         public setStencilFunctionMask(mask: number) {
             this._stencilState.stencilFuncMask = mask;
         }
@@ -1965,7 +1803,7 @@
         /**
          * Gets the current stencil operation when stencil fails
          * @returns a number defining stencil operation to use when stencil fails
-         */           
+         */
         public getStencilOperationFail(): number {
             return this._stencilState.stencilOpStencilFail;
         }
@@ -1973,7 +1811,7 @@
         /**
          * Gets the current stencil operation when depth fails
          * @returns a number defining stencil operation to use when depth fails
-         */           
+         */
         public getStencilOperationDepthFail(): number {
             return this._stencilState.stencilOpDepthFail;
         }
@@ -1981,7 +1819,7 @@
         /**
          * Gets the current stencil operation when stencil passes
          * @returns a number defining stencil operation to use when stencil passes
-         */         
+         */
         public getStencilOperationPass(): number {
             return this._stencilState.stencilOpStencilDepthPass;
         }
@@ -1989,7 +1827,7 @@
         /**
          * Sets the stencil operation to use when stencil fails
          * @param operation defines the stencil operation to use when stencil fails
-         */         
+         */
         public setStencilOperationFail(operation: number): void {
             this._stencilState.stencilOpStencilFail = operation;
         }
@@ -1997,7 +1835,7 @@
         /**
          * Sets the stencil operation to use when depth fails
          * @param operation defines the stencil operation to use when depth fails
-         */         
+         */
         public setStencilOperationDepthFail(operation: number): void {
             this._stencilState.stencilOpDepthFail = operation;
         }
@@ -2005,7 +1843,7 @@
         /**
          * Sets the stencil operation to use when stencil passes
          * @param operation defines the stencil operation to use when stencil passes
-         */        
+         */
         public setStencilOperationPass(operation: number): void {
             this._stencilState.stencilOpStencilDepthPass = operation;
         }
@@ -2025,7 +1863,7 @@
         /**
          * Sets a boolean indicating if the rasterizer state is enabled or disabled
          * @param value defines the rasterizer state
-         */        
+         */
         public setRasterizerState(value: boolean): void {
             if (value) {
                 this._gl.disable(this._gl.RASTERIZER_DISCARD);
@@ -2076,10 +1914,14 @@
 
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                var requester = null;
-                if (this._vrDisplay && this._vrDisplay.isPresenting)
-                    requester = this._vrDisplay;
-                this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, requester);
+                if (this.customAnimationFrameRequester) {
+                    this.customAnimationFrameRequester.requestID = Tools.QueueNewFrame(this.customAnimationFrameRequester.renderFunction || this._bindedRenderFunction, this.customAnimationFrameRequester);
+                    this._frameHandler = this.customAnimationFrameRequester.requestID;
+                } else if (this._vrDisplay && this._vrDisplay.isPresenting) {
+                    this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplay);
+                } else {
+                    this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
+                }
             } else {
                 this._renderingQueueLaunched = false;
             }
@@ -2106,7 +1948,6 @@
         /**
          * Toggle full screen mode
          * @param requestPointerLock defines if a pointer lock should be requested from the user
-         * @param options defines an option object to be sent to the requestFullscreen function
          */
         public switchFullscreen(requestPointerLock: boolean): void {
             if (this.isFullscreen) {
@@ -2121,7 +1962,7 @@
 
         /**
          * Clear the current render buffer or the current render target (if any is set up)
-         * @param color defines the color to use 
+         * @param color defines the color to use
          * @param backBuffer defines if the back buffer must be cleared
          * @param depth defines if the depth buffer must be cleared
          * @param stencil defines if the stencil buffer must be cleared
@@ -2148,7 +1989,7 @@
         /**
          * Executes a scissor clear (ie. a clear on a specific portion of the screen)
          * @param x defines the x-coordinate of the top left corner of the clear rectangle
-         * @param y defines the y-coordinate of the corner of the clear rectangle 
+         * @param y defines the y-coordinate of the corner of the clear rectangle
          * @param width defines the width of the clear rectangle
          * @param height defines the height of the clear rectangle
          * @param clearColor defines the clear color
@@ -2178,14 +2019,13 @@
         }
 
         private _viewportCached = new BABYLON.Vector4(0, 0, 0, 0);
-        
+
         /** @hidden */
         public _viewport(x: number, y: number, width: number, height: number): void {
             if (x !== this._viewportCached.x ||
                 y !== this._viewportCached.y ||
                 width !== this._viewportCached.z ||
-                height !== this._viewportCached.w)
-            {
+                height !== this._viewportCached.w) {
                 this._viewportCached.x = x;
                 this._viewportCached.y = y;
                 this._viewportCached.z = width;
@@ -2340,8 +2180,8 @@
                     vrSupported: this._vrSupported
                 };
                 this.onVRDisplayChangedObservable.notifyObservers(eventArgs);
-                this._webVRInitPromise = new Promise((res)=>{res(eventArgs)});
-            }
+                this._webVRInitPromise = new Promise((res) => { res(eventArgs); });
+            };
 
             if (!this._onVrDisplayConnect) {
                 this._onVrDisplayConnect = (event) => {
@@ -2356,7 +2196,7 @@
                 };
                 this._onVrDisplayPresentChange = () => {
                     this._vrExclusivePointerMode = this._vrDisplay && this._vrDisplay.isPresenting;
-                }
+                };
                 window.addEventListener('vrdisplayconnect', this._onVrDisplayConnect);
                 window.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
                 window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
@@ -2413,10 +2253,10 @@
             }
         }
 
-        private _getVRDisplaysAsync():Promise<IDisplayChangedEventArgs> {
-            return new Promise((res, rej)=>{    
+        private _getVRDisplaysAsync(): Promise<IDisplayChangedEventArgs> {
+            return new Promise((res, rej) => {
                 if (navigator.getVRDisplays) {
-                    navigator.getVRDisplays().then((devices: Array<any>)=>{
+                    navigator.getVRDisplays().then((devices: Array<any>) => {
                         this._vrSupported = true;
                         // note that devices may actually be an empty array. This is fine;
                         // we expect this._vrDisplay to be undefined in this case.
@@ -2542,13 +2382,12 @@
          * @param textures defines the render target textures to unbind
          * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
          * @param onBeforeUnbind defines a function which will be called before the effective unbind
-         */        
+         */
         public unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
             this._currentRenderTarget = null;
 
             // If MSAA, we need to bitblt back to main texture
             var gl = this._gl;
-
 
             if (textures[0]._MSAAFramebuffer) {
                 gl.bindFramebuffer(gl.READ_FRAMEBUFFER, textures[0]._MSAAFramebuffer);
@@ -2671,7 +2510,7 @@
          * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
          * @param elements defines the content of the uniform buffer
          * @returns the webGL uniform buffer
-         */        
+         */
         public createDynamicUniformBuffer(elements: FloatArray): WebGLBuffer {
             var ubo = this._gl.createBuffer();
 
@@ -2724,7 +2563,6 @@
 
             this.bindUniformBuffer(null);
         }
-
 
         // VBOs
         private _resetVertexBufferBinding(): void {
@@ -2921,7 +2759,7 @@
          * Bind a buffer to the current webGL context at a given location
          * @param buffer defines the buffer to bind
          * @param location defines the index where to bind the buffer
-         */        
+         */
         public bindUniformBufferBase(buffer: WebGLBuffer, location: number): void {
             this._gl.bindBufferBase(this._gl.UNIFORM_BUFFER, location, buffer);
         }
@@ -2936,7 +2774,7 @@
             var uniformLocation = this._gl.getUniformBlockIndex(shaderProgram, blockName);
 
             this._gl.uniformBlockBinding(shaderProgram, uniformLocation, index);
-        };
+        }
 
         private bindIndexBuffer(buffer: Nullable<WebGLBuffer>): void {
             if (!this._vaoRecordInProgress) {
@@ -3296,7 +3134,7 @@
         /**
          * Draw a list of unindexed primitives
          * @param useTriangles defines if triangles must be used to draw (else wireframe will be used)
-         * @param verticesStart defines the index of first vertex to draw 
+         * @param verticesStart defines the index of first vertex to draw
          * @param verticesCount defines the count of vertices to draw
          * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
          */
@@ -3331,7 +3169,7 @@
         /**
          * Draw a list of unindexed primitives
          * @param fillMode defines the primitive to use
-         * @param verticesStart defines the index of first vertex to draw 
+         * @param verticesStart defines the index of first vertex to draw
          * @param verticesCount defines the count of vertices to draw
          * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
          */
@@ -3359,15 +3197,15 @@
                     return this._gl.LINES;
                 // Draw modes
                 case Material.PointListDrawMode:
-                    return this._gl.POINTS
+                    return this._gl.POINTS;
                 case Material.LineListDrawMode:
                     return this._gl.LINES;
                 case Material.LineLoopDrawMode:
-                    return this._gl.LINE_LOOP
+                    return this._gl.LINE_LOOP;
                 case Material.LineStripDrawMode:
-                    return this._gl.LINE_STRIP
+                    return this._gl.LINE_STRIP;
                 case Material.TriangleStripDrawMode:
-                    return this._gl.TRIANGLE_STRIP
+                    return this._gl.TRIANGLE_STRIP;
                 case Material.TriangleFanDrawMode:
                     return this._gl.TRIANGLE_FAN;
                 default:
@@ -3376,7 +3214,7 @@
         }
 
         // Shaders
-        
+
         /** @hidden */
         public _releaseEffect(effect: Effect): void {
             if (this._compiledEffects[effect._key]) {
@@ -3399,7 +3237,6 @@
                 this._gl.deleteProgram(program);
             }
         }
-
 
         /**
          * Create a new effect (used to store vertex/fragment shaders)
@@ -3435,40 +3272,29 @@
             return effect;
         }
 
-        /**
-         * Create an effect to use with particle systems.
-         * Please note that some parameters like animation sheets or not being billboard are not supported in this configuration
-         * @param fragmentName defines the base name of the effect (The name of file without .fragment.fx)
-         * @param uniformsNames defines a list of attribute names 
-         * @param samplers defines an array of string used to represent textures
-         * @param defines defines the string containing the defines to use to compile the shaders
-         * @param fallbacks defines the list of potential fallbacks to use if shader conmpilation fails
-         * @param onCompiled defines a function to call when the effect creation is successful
-         * @param onError defines a function to call when the effect creation has failed
-         * @returns the new Effect
-         */
-        public createEffectForParticles(fragmentName: string, uniformsNames: string[] = [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
-            onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
+        private _compileShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string): WebGLShader {
+            return this._compileRawShader(shaderVersion + (defines ? defines + "\n" : "") + source, type);
+        }
 
-            var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions();
-            var effectCreationOption = ParticleSystem._GetEffectCreationOptions();
+        private _compileRawShader(source: string, type: string): WebGLShader {
+            var gl = this._gl;
+            var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
-            if (defines.indexOf(" BILLBOARD") === -1) {
-                defines += "\n#define BILLBOARD\n";
+            if (!shader) {
+                throw new Error("Something went wrong while compile the shader.");
             }
 
-            if (samplers.indexOf("diffuseSampler") === -1) {
-                samplers.push("diffuseSampler");
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                let log = gl.getShaderInfoLog(shader);
+                if (log) {
+                    throw new Error(log);
+                }
             }
 
-            return this.createEffect(
-                {
-                    vertex: "particles",
-                    fragmentElement: fragmentName
-                },
-                attributesNamesOrOptions,
-                effectCreationOption.concat(uniformsNames),
-                samplers, defines, fallbacks, onCompiled, onError);
+            return shader;
         }
 
         /**
@@ -3482,8 +3308,8 @@
         public createRawShaderProgram(vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
             context = context || this._gl;
 
-            var vertexShader = compileRawShader(context, vertexCode, "vertex");
-            var fragmentShader = compileRawShader(context, fragmentCode, "fragment");
+            var vertexShader = this._compileRawShader(vertexCode, "vertex");
+            var fragmentShader = this._compileRawShader(fragmentCode, "fragment");
 
             return this._createShaderProgram(vertexShader, fragmentShader, context, transformFeedbackVaryings);
         }
@@ -3503,8 +3329,8 @@
             this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
             var shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n#define WEBGL2 \n" : "";
-            var vertexShader = compileShader(context, vertexCode, "vertex", defines, shaderVersion);
-            var fragmentShader = compileShader(context, fragmentCode, "fragment", defines, shaderVersion);
+            var vertexShader = this._compileShader(vertexCode, "vertex", defines, shaderVersion);
+            var fragmentShader = this._compileShader(fragmentCode, "fragment", defines, shaderVersion);
 
             let program = this._createShaderProgram(vertexShader, fragmentShader, context, transformFeedbackVaryings);
 
@@ -3537,6 +3363,24 @@
                 this.bindTransformFeedback(null);
             }
 
+            shaderProgram.context = context;
+            shaderProgram.vertexShader = vertexShader;
+            shaderProgram.fragmentShader = fragmentShader;
+
+            if (!this._caps.parallelShaderCompile) {
+                this._finalizeProgram(shaderProgram);
+            } else {
+                shaderProgram.isParallelCompiled = true;
+            }
+
+            return shaderProgram;
+        }
+
+        private _finalizeProgram(shaderProgram: WebGLProgram) {
+            const context = shaderProgram.context!;
+            const vertexShader = shaderProgram.vertexShader!;
+            const fragmentShader = shaderProgram.fragmentShader!;
+
             var linked = context.getProgramParameter(shaderProgram, context.LINK_STATUS);
 
             if (!linked) {
@@ -3550,7 +3394,7 @@
                 context.validateProgram(shaderProgram);
                 var validated = context.getProgramParameter(shaderProgram, context.VALIDATE_STATUS);
 
-                if(!validated) {
+                if (!validated) {
                     var error = context.getProgramInfoLog(shaderProgram);
                     if (error) {
                         throw new Error(error);
@@ -3561,14 +3405,45 @@
             context.deleteShader(vertexShader);
             context.deleteShader(fragmentShader);
 
-            return shaderProgram;
+            shaderProgram.context = undefined;
+            shaderProgram.vertexShader = undefined;
+            shaderProgram.fragmentShader = undefined;
+
+            if (shaderProgram.onCompiled) {
+                shaderProgram.onCompiled();
+                shaderProgram.onCompiled = undefined;
+            }
+        }
+
+        /** @hidden */
+        public _isProgramCompiled(shaderProgram: WebGLProgram): boolean {
+            if (!shaderProgram.isParallelCompiled) {
+                return true;
+            }
+
+            if (this._gl.getProgramParameter(shaderProgram, this._caps.parallelShaderCompile.COMPLETION_STATUS_KHR)) {
+                this._finalizeProgram(shaderProgram);
+                return true;
+            }
+
+            return false;
+        }
+
+        /** @hidden */
+        public _executeWhenProgramIsCompiled(shaderProgram: WebGLProgram, action: () => void) {
+            if (!shaderProgram.isParallelCompiled) {
+                action();
+                return;
+            }
+
+            shaderProgram.onCompiled = action;
         }
 
         /**
          * Gets the list of webGL uniform locations associated with a specific program based on a list of uniform names
          * @param shaderProgram defines the webGL program to use
          * @param uniformsNames defines the list of uniform names
-         * @returns an array of webGL uniform locations 
+         * @returns an array of webGL uniform locations
          */
         public getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): Nullable<WebGLUniformLocation>[] {
             var results = new Array<Nullable<WebGLUniformLocation>>();
@@ -3605,9 +3480,10 @@
          * @param effect defines the effect to activate
          */
         public enableEffect(effect: Nullable<Effect>): void {
-            if (!effect) {
+            if (!effect || effect === this._currentEffect) {
                 return;
             }
+
             // Use program
             this.bindSamplers(effect);
 
@@ -3616,7 +3492,9 @@
             if (effect.onBind) {
                 effect.onBind(effect);
             }
-            effect.onBindObservable.notifyObservers(effect);
+            if (effect._onBindObservable) {
+                effect._onBindObservable.notifyObservers(effect);
+            }
         }
 
         /**
@@ -3625,8 +3503,9 @@
          * @param array defines the array of int32 to store
          */
         public setIntArray(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform1iv(uniform, array);
         }
@@ -3635,10 +3514,11 @@
          * Set the value of an uniform to an array of int32 (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
-         */        
+         */
         public setIntArray2(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
-            if (!uniform || array.length % 2 !== 0)
+            if (!uniform || array.length % 2 !== 0) {
                 return;
+            }
 
             this._gl.uniform2iv(uniform, array);
         }
@@ -3647,10 +3527,11 @@
          * Set the value of an uniform to an array of int32 (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
-         */              
+         */
         public setIntArray3(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
-            if (!uniform || array.length % 3 !== 0)
+            if (!uniform || array.length % 3 !== 0) {
                 return;
+            }
 
             this._gl.uniform3iv(uniform, array);
         }
@@ -3659,10 +3540,11 @@
          * Set the value of an uniform to an array of int32 (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
-         */          
+         */
         public setIntArray4(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
-            if (!uniform || array.length % 4 !== 0)
+            if (!uniform || array.length % 4 !== 0) {
                 return;
+            }
 
             this._gl.uniform4iv(uniform, array);
         }
@@ -3671,10 +3553,11 @@
          * Set the value of an uniform to an array of float32
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of float32 to store
-         */         
+         */
         public setFloatArray(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform1fv(uniform, array);
         }
@@ -3683,10 +3566,11 @@
          * Set the value of an uniform to an array of float32 (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of float32 to store
-         */           
+         */
         public setFloatArray2(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
-            if (!uniform || array.length % 2 !== 0)
+            if (!uniform || array.length % 2 !== 0) {
                 return;
+            }
 
             this._gl.uniform2fv(uniform, array);
         }
@@ -3695,10 +3579,11 @@
          * Set the value of an uniform to an array of float32 (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of float32 to store
-         */                 
+         */
         public setFloatArray3(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
-            if (!uniform || array.length % 3 !== 0)
+            if (!uniform || array.length % 3 !== 0) {
                 return;
+            }
 
             this._gl.uniform3fv(uniform, array);
         }
@@ -3707,10 +3592,11 @@
          * Set the value of an uniform to an array of float32 (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of float32 to store
-         */                 
+         */
         public setFloatArray4(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
-            if (!uniform || array.length % 4 !== 0)
+            if (!uniform || array.length % 4 !== 0) {
                 return;
+            }
 
             this._gl.uniform4fv(uniform, array);
         }
@@ -3719,10 +3605,11 @@
          * Set the value of an uniform to an array of number
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
-         */             
+         */
         public setArray(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform1fv(uniform, <any>array);
         }
@@ -3731,10 +3618,11 @@
          * Set the value of an uniform to an array of number (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
-         */               
+         */
         public setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
-            if (!uniform || array.length % 2 !== 0)
+            if (!uniform || array.length % 2 !== 0) {
                 return;
+            }
 
             this._gl.uniform2fv(uniform, <any>array);
         }
@@ -3743,10 +3631,11 @@
          * Set the value of an uniform to an array of number (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
-         */              
+         */
         public setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
-            if (!uniform || array.length % 3 !== 0)
+            if (!uniform || array.length % 3 !== 0) {
                 return;
+            }
 
             this._gl.uniform3fv(uniform, <any>array);
         }
@@ -3755,10 +3644,11 @@
          * Set the value of an uniform to an array of number (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
-         */          
+         */
         public setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
-            if (!uniform || array.length % 4 !== 0)
+            if (!uniform || array.length % 4 !== 0) {
                 return;
+            }
 
             this._gl.uniform4fv(uniform, <any>array);
         }
@@ -3767,10 +3657,11 @@
          * Set the value of an uniform to an array of float32 (stored as matrices)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrices defines the array of float32 to store
-         */          
+         */
         public setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniformMatrix4fv(uniform, false, matrices);
         }
@@ -3779,10 +3670,11 @@
          * Set the value of an uniform to a matrix
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrix defines the matrix to store
-         */             
+         */
         public setMatrix(uniform: Nullable<WebGLUniformLocation>, matrix: Matrix): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniformMatrix4fv(uniform, false, matrix.toArray());
         }
@@ -3791,10 +3683,11 @@
          * Set the value of an uniform to a matrix (3x3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrix defines the Float32Array representing the 3x3 matrix to store
-         */           
+         */
         public setMatrix3x3(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniformMatrix3fv(uniform, false, matrix);
         }
@@ -3803,10 +3696,11 @@
          * Set the value of an uniform to a matrix (2x2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrix defines the Float32Array representing the 2x2 matrix to store
-         */    
+         */
         public setMatrix2x2(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniformMatrix2fv(uniform, false, matrix);
         }
@@ -3815,10 +3709,11 @@
          * Set the value of an uniform to a number (int)
          * @param uniform defines the webGL uniform location where to store the value
          * @param value defines the int number to store
-         */           
+         */
         public setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform1i(uniform, value);
         }
@@ -3827,10 +3722,11 @@
          * Set the value of an uniform to a number (float)
          * @param uniform defines the webGL uniform location where to store the value
          * @param value defines the float number to store
-         */           
+         */
         public setFloat(uniform: Nullable<WebGLUniformLocation>, value: number): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform1f(uniform, value);
         }
@@ -3842,8 +3738,9 @@
          * @param y defines the 2nd component of the value
          */
         public setFloat2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform2f(uniform, x, y);
         }
@@ -3854,10 +3751,11 @@
          * @param x defines the 1st component of the value
          * @param y defines the 2nd component of the value
          * @param z defines the 3rd component of the value
-         */        
+         */
         public setFloat3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform3f(uniform, x, y, z);
         }
@@ -3866,10 +3764,11 @@
          * Set the value of an uniform to a boolean
          * @param uniform defines the webGL uniform location where to store the value
          * @param bool defines the boolean to store
-         */          
+         */
         public setBool(uniform: Nullable<WebGLUniformLocation>, bool: number): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform1i(uniform, bool);
         }
@@ -3881,10 +3780,11 @@
          * @param y defines the 2nd component of the value
          * @param z defines the 3rd component of the value
          * @param w defines the 4th component of the value
-         */           
+         */
         public setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform4f(uniform, x, y, z, w);
         }
@@ -3893,10 +3793,11 @@
          * Set the value of an uniform to a Color3
          * @param uniform defines the webGL uniform location where to store the value
          * @param color3 defines the color to store
-         */            
+         */
         public setColor3(uniform: Nullable<WebGLUniformLocation>, color3: Color3): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform3f(uniform, color3.r, color3.g, color3.b);
         }
@@ -3906,10 +3807,11 @@
          * @param uniform defines the webGL uniform location where to store the value
          * @param color3 defines the color to store
          * @param alpha defines the alpha component to store
-         */         
+         */
         public setColor4(uniform: Nullable<WebGLUniformLocation>, color3: Color3, alpha: number): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform4f(uniform, color3.r, color3.g, color3.b, alpha);
         }
@@ -3920,11 +3822,12 @@
          * @param color4 defines the value to be set
          */
         public setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: Color4): void {
-            if (!uniform)
+            if (!uniform) {
                 return;
+            }
 
             this._gl.uniform4f(uniform, color4.r, color4.g, color4.b, color4.a);
-        }        
+        }
 
         // States
 
@@ -3996,7 +3899,7 @@
         public setDepthWrite(enable: boolean): void {
             this._depthCullingState.depthMask = enable;
         }
-        
+
         /**
          * Enable or disable color writing
          * @param enable defines the state to set
@@ -4009,7 +3912,7 @@
         /**
          * Gets a boolean indicating if color writing is enabled
          * @returns the current color writing state
-         */        
+         */
         public getColorWrite(): boolean {
             return this._colorWrite;
         }
@@ -4116,7 +4019,6 @@
                 return;
             }
             this._currentEffect = null;
-            this._unpackFlipYCached = null;
             this._viewportCached.x = 0;
             this._viewportCached.y = 0;
             this._viewportCached.z = 0;
@@ -4130,6 +4032,8 @@
                 this._depthCullingState.reset();
                 this.setDepthFunctionToLessOrEqual();
                 this._alphaState.reset();
+
+                this._unpackFlipYCached = null;
             }
 
             this._resetVertexBufferBinding();
@@ -4173,6 +4077,145 @@
             return null;
         }
 
+        private _getSamplingParameters(samplingMode: number, generateMipMaps: boolean): { min: number; mag: number } {
+            var gl = this._gl;
+            var magFilter = gl.NEAREST;
+            var minFilter = gl.NEAREST;
+
+            switch (samplingMode) {
+                case Engine.TEXTURE_BILINEAR_SAMPLINGMODE:
+                    magFilter = gl.LINEAR;
+                    if (generateMipMaps) {
+                        minFilter = gl.LINEAR_MIPMAP_NEAREST;
+                    } else {
+                        minFilter = gl.LINEAR;
+                    }
+                    break;
+                case Engine.TEXTURE_TRILINEAR_SAMPLINGMODE:
+                    magFilter = gl.LINEAR;
+                    if (generateMipMaps) {
+                        minFilter = gl.LINEAR_MIPMAP_LINEAR;
+                    } else {
+                        minFilter = gl.LINEAR;
+                    }
+                    break;
+                case Engine.TEXTURE_NEAREST_SAMPLINGMODE:
+                    magFilter = gl.NEAREST;
+                    if (generateMipMaps) {
+                        minFilter = gl.NEAREST_MIPMAP_LINEAR;
+                    } else {
+                        minFilter = gl.NEAREST;
+                    }
+                    break;
+                case Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
+                    magFilter = gl.NEAREST;
+                    if (generateMipMaps) {
+                        minFilter = gl.NEAREST_MIPMAP_NEAREST;
+                    } else {
+                        minFilter = gl.NEAREST;
+                    }
+                    break;
+                case Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
+                    magFilter = gl.NEAREST;
+                    if (generateMipMaps) {
+                        minFilter = gl.LINEAR_MIPMAP_NEAREST;
+                    } else {
+                        minFilter = gl.LINEAR;
+                    }
+                    break;
+                case Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
+                    magFilter = gl.NEAREST;
+                    if (generateMipMaps) {
+                        minFilter = gl.LINEAR_MIPMAP_LINEAR;
+                    } else {
+                        minFilter = gl.LINEAR;
+                    }
+                    break;
+                case Engine.TEXTURE_NEAREST_LINEAR:
+                    magFilter = gl.NEAREST;
+                    minFilter = gl.LINEAR;
+                    break;
+                case Engine.TEXTURE_NEAREST_NEAREST:
+                    magFilter = gl.NEAREST;
+                    minFilter = gl.NEAREST;
+                    break;
+                case Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
+                    magFilter = gl.LINEAR;
+                    if (generateMipMaps) {
+                        minFilter = gl.NEAREST_MIPMAP_NEAREST;
+                    } else {
+                        minFilter = gl.NEAREST;
+                    }
+                    break;
+                case Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
+                    magFilter = gl.LINEAR;
+                    if (generateMipMaps) {
+                        minFilter = gl.NEAREST_MIPMAP_LINEAR;
+                    } else {
+                        minFilter = gl.NEAREST;
+                    }
+                    break;
+                case Engine.TEXTURE_LINEAR_LINEAR:
+                    magFilter = gl.LINEAR;
+                    minFilter = gl.LINEAR;
+                    break;
+                case Engine.TEXTURE_LINEAR_NEAREST:
+                    magFilter = gl.LINEAR;
+                    minFilter = gl.NEAREST;
+                    break;
+            }
+
+            return {
+                min: minFilter,
+                mag: magFilter
+            };
+        }
+
+        private _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>,
+            onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null) {
+
+            var img: HTMLImageElement;
+
+            var onload = () => {
+                loadedImages[index] = img;
+                (<any>loadedImages)._internalCount++;
+
+                if (scene) {
+                    scene._removePendingData(img);
+                }
+
+                if ((<any>loadedImages)._internalCount === 6) {
+                    onfinish(loadedImages);
+                }
+            };
+
+            var onerror = (message?: string, exception?: any) => {
+                if (scene) {
+                    scene._removePendingData(img);
+                }
+
+                if (onErrorCallBack) {
+                    onErrorCallBack(message, exception);
+                }
+            };
+
+            img = Tools.LoadImage(url, onload, onerror, scene ? scene.offlineProvider : null);
+            if (scene) {
+                scene._addPendingData(img);
+            }
+        }
+
+        private _cascadeLoadImgs(rootUrl: string, scene: Nullable<Scene>,
+            onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null) {
+
+            var loadedImages: HTMLImageElement[] = [];
+            (<any>loadedImages)._internalCount = 0;
+
+            for (let index = 0; index < 6; index++) {
+                this._partialLoadImg(files[index], index, loadedImages, scene, onfinish, onError);
+            }
+        }
+
         /** @hidden */
         public _createTexture(): WebGLTexture {
             let texture = this._gl.createTexture();
@@ -4200,29 +4243,34 @@
          * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
          * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
+         * @param forcedExtension defines the extension to use to pick the right loader
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+        public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
             onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
-            buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null): InternalTexture {
+            buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
+            forcedExtension: Nullable<string> = null): InternalTexture {
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
             var fromData = url.substr(0, 5) === "data:";
             var fromBlob = url.substr(0, 5) === "blob:";
-            var isBase64 = fromData && url.indexOf("base64") !== -1;
+            var isBase64 = fromData && url.indexOf(";base64,") !== -1;
 
             let texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_URL);
 
             // establish the file extension, if possible
             var lastDot = url.lastIndexOf('.');
-            var extension = (lastDot > 0) ? url.substring(lastDot).toLowerCase() : "";
-            var isDDS = this.getCaps().s3tc && (extension.indexOf(".dds") === 0);
-            var isTGA = (extension.indexOf(".tga") === 0);
+            var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
 
-            // determine if a ktx file should be substituted
-            var isKTX = false;
-            if (this._textureFormatInUse && !isBase64 && !fallback && !buffer) {
-                url = url.substring(0, lastDot) + this._textureFormatInUse;
-                isKTX = true;
+            let loader: Nullable<IInternalTextureLoader> = null;
+            for (let availableLoader of Engine._TextureLoaders) {
+                if (availableLoader.canLoad(extension, this._textureFormatInUse, fallback, isBase64, buffer ? true : false)) {
+                    loader = availableLoader;
+                    break;
+                }
+            }
+
+            if (loader) {
+                url = loader.transformUrl(url, this._textureFormatInUse);
             }
 
             if (scene) {
@@ -4243,23 +4291,30 @@
                 onLoadObserver = texture.onLoadedObservable.add(onLoad);
             }
 
-            if (!fallback) this._internalTexturesCache.push(texture);
+            if (!fallback) { this._internalTexturesCache.push(texture); }
 
-            var onerror = (message?: string, exception?: any) => {
+            let onInternalError = (message?: string, exception?: any) => {
                 if (scene) {
                     scene._removePendingData(texture);
                 }
 
-                if (onLoadObserver && !isKTX) {
-                    //dont remove the observer if its a ktx file, since the fallback createTexture call will require it.
-                    texture.onLoadedObservable.remove(onLoadObserver);
+                let customFallback = false;
+                if (loader) {
+                    const fallbackUrl = loader.getFallbackTextureUrl(url, this._textureFormatInUse);
+                    if (fallbackUrl) {
+                        // Add Back
+                        customFallback = true;
+                        this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                    }
                 }
 
-                // fallback for when compressed file not found to try again.  For instance, etc1 does not have an alpha capable type
-                if (isKTX) {
-                    this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
-                } else if (Tools.UseFallbackTexture) {
-                    this.createTexture(Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                if (!customFallback) {
+                    if (onLoadObserver) {
+                        texture.onLoadedObservable.remove(onLoadObserver);
+                    }
+                    if (Tools.UseFallbackTexture) {
+                        this.createTexture(Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                    }
                 }
 
                 if (onError) {
@@ -4267,57 +4322,25 @@
                 }
             };
 
-            var callback: Nullable<(arrayBuffer: any) => void> = null;
-
             // processing for non-image formats
-            if (isKTX || isTGA || isDDS) {
-                if (isKTX) {
-                    callback = (data) => {
-                        var ktx = new KhronosTextureContainer(data, 1);
-
-                        this._prepareWebGLTexture(texture, scene, ktx.pixelWidth, ktx.pixelHeight, invertY, false, true, () => {
-                            ktx.uploadLevels(this._gl, !noMipmap);
+            if (loader) {
+                var callback = (data: string | ArrayBuffer) => {
+                    loader!.loadData(data as ArrayBuffer, texture, (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => {
+                        this._prepareWebGLTexture(texture, scene, width, height, invertY, !loadMipmap, isCompressed, () => {
+                            done();
                             return false;
-                        }, samplingMode);
-                    };
-                } else if (isTGA) {
-                    callback = (arrayBuffer) => {
-                        var data = new Uint8Array(arrayBuffer);
-
-                        var header = TGATools.GetTGAHeader(data);
-
-                        this._prepareWebGLTexture(texture, scene, header.width, header.height, invertY, noMipmap, false, () => {
-                            TGATools.UploadContent(this._gl, data);
-                            return false;
-                        }, samplingMode);
-                    };
-
-                } else if (isDDS) {
-                    callback = (data) => {
-                        var info = DDSTools.GetDDSInfo(data);
-
-                        var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
-                        this._prepareWebGLTexture(texture, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
-                            DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 1);
-                            return false;
-                        }, samplingMode);
-                    };
-                }
+                        },
+                            samplingMode);
+                    });
+                };
 
                 if (!buffer) {
-                    this._loadFile(url, data => {
-                        if (callback) {
-                            callback(data);
-                        }
-                    }, undefined, scene ? scene.database : undefined, true, (request?: XMLHttpRequest, exception?: any) => {
-                        onerror("Unable to load " + (request ? request.responseURL : url, exception));
+                    this._loadFile(url, callback, undefined, scene ? scene.offlineProvider : undefined, true, (request?: XMLHttpRequest, exception?: any) => {
+                        onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
                     });
                 } else {
-                    if (callback) {
-                        callback(buffer);
-                    }
+                    callback(buffer as ArrayBuffer);
                 }
-                // image format processing
             } else {
                 var onload = (img: HTMLImageElement) => {
                     if (fromBlob && !this._doNotHandleContextLost) {
@@ -4346,10 +4369,10 @@
 
                             this._workingCanvas.width = potWidth;
                             this._workingCanvas.height = potHeight;
-        
+
                             this._workingContext.drawImage(img, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
                             gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas);
-    
+
                             texture.width = potWidth;
                             texture.height = potHeight;
 
@@ -4381,11 +4404,11 @@
                     if (buffer instanceof HTMLImageElement) {
                         onload(buffer);
                     } else {
-                        Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
+                        Tools.LoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null);
                     }
                 }
                 else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || buffer instanceof Blob) {
-                    Tools.LoadImage(buffer, onload, onerror, scene ? scene.database : null);
+                    Tools.LoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null);
                 }
                 else {
                     onload(<HTMLImageElement>buffer);
@@ -4402,20 +4425,20 @@
             }, {
                     generateMipMaps: false,
                     type: Engine.TEXTURETYPE_UNSIGNED_INT,
-                    samplingMode: Texture.BILINEAR_SAMPLINGMODE,
+                    samplingMode: Engine.TEXTURE_BILINEAR_SAMPLINGMODE,
                     generateDepthBuffer: false,
                     generateStencilBuffer: false
                 }
             );
 
             if (!this._rescalePostProcess) {
-                this._rescalePostProcess = new PassPostProcess("rescale", 1, null, Texture.BILINEAR_SAMPLINGMODE, this, false, Engine.TEXTURETYPE_UNSIGNED_INT);
+                this._rescalePostProcess = new PassPostProcess("rescale", 1, null, Engine.TEXTURE_BILINEAR_SAMPLINGMODE, this, false, Engine.TEXTURETYPE_UNSIGNED_INT);
             }
 
             this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
-                this._rescalePostProcess.onApply = function (effect) {
+                this._rescalePostProcess.onApply = function(effect) {
                     effect._bindTexture("textureSampler", source);
-                }
+                };
 
                 let hostingScene = scene;
 
@@ -4445,7 +4468,8 @@
          * @param compression defines the compression used (null by default)
          * @param type defines the type fo the data (BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT by default)
          */
-        public updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type = Engine.TEXTURETYPE_UNSIGNED_INT): void {            if (!texture) {
+        public updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type = Engine.TEXTURETYPE_UNSIGNED_INT): void {
+            if (!texture) {
                 return;
             }
             // babylon's internalSizedFomat but gl's texImage2D internalFormat
@@ -4467,7 +4491,7 @@
             if (texture.width % 4 !== 0) {
                 this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
             }
-            
+
             if (compression && data) {
                 this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, (<any>this.getCaps().s3tc)[compression], texture.width, texture.height, 0, <DataView>data);
             } else {
@@ -4516,7 +4540,7 @@
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
 
             // Filters
-            var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
+            var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
 
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
@@ -4527,19 +4551,34 @@
 
             this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
 
-
             this._internalTexturesCache.push(texture);
 
             return texture;
         }
 
         private _unpackFlipYCached: Nullable<boolean> = null;
+
+        /**
+         * In case you are sharing the context with other applications, it might
+         * be interested to not cache the unpack flip y state to ensure a consistent
+         * value would be set.
+         */
+        public enableUnpackFlipYCached = true;
+
         /** @hidden */
-        public _unpackFlipY(value: boolean) {
+        public _unpackFlipY(value: boolean): void {
             if (this._unpackFlipYCached !== value) {
-                this._unpackFlipYCached = value;
                 this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, value ? 1 : 0);
+
+                if (this.enableUnpackFlipYCached) {
+                    this._unpackFlipYCached = value;
+                }
             }
+        }
+
+        /** @hidden */
+        public _getUnpackAlignement(): number {
+            return this._gl.getParameter(this._gl.UNPACK_ALIGNMENT);
         }
 
         /**
@@ -4551,7 +4590,7 @@
          * @returns the dynamic texture inside an InternalTexture
          */
         public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
-            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_DYNAMIC)
+            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_DYNAMIC);
             texture.baseWidth = width;
             texture.baseHeight = height;
 
@@ -4580,7 +4619,7 @@
          * @param texture defines the texture to update
          */
         public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
-            var filters = getSamplingParameters(samplingMode, texture.generateMipMaps, this._gl);
+            var filters = this._getSamplingParameters(samplingMode, texture.generateMipMaps);
 
             if (texture.isCube) {
                 this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
@@ -4671,7 +4710,7 @@
                     }
 
                     texture._workingContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, texture.width, texture.height);
-                    
+
                     this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, texture._workingCanvas);
                 } else {
                     this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
@@ -4740,7 +4779,7 @@
             texture._comparisonFunction = comparisonFunction;
         }
 
-        private _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | { width: number, height: number }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number) : void {
+        private _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | { width: number, height: number }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number): void {
             var width = (<{ width: number, height: number }>size).width || <number>size;
             var height = (<{ width: number, height: number }>size).height || <number>size;
             internalTexture.baseWidth = width;
@@ -4752,13 +4791,13 @@
             internalTexture.generateMipMaps = false;
             internalTexture._generateDepthBuffer = true;
             internalTexture._generateStencilBuffer = generateStencil;
-            internalTexture.samplingMode = bilinearFiltering ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE;
+            internalTexture.samplingMode = bilinearFiltering ? Engine.TEXTURE_BILINEAR_SAMPLINGMODE : Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             internalTexture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
             internalTexture._comparisonFunction = comparisonFunction;
-            
+
             var gl = this._gl;
             var target = internalTexture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
-            var samplingParameters = getSamplingParameters(internalTexture.samplingMode, false, gl);
+            var samplingParameters = this._getSamplingParameters(internalTexture.samplingMode, false);
             gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, samplingParameters.mag);
             gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, samplingParameters.min);
             gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -4781,7 +4820,7 @@
          * @param options The options defining the texture.
          * @returns The texture
          */
-        public createDepthStencilTexture(size: number | { width: number, height: number }, options: DepthTextureCreationOptions) : InternalTexture {
+        public createDepthStencilTexture(size: number | { width: number, height: number }, options: DepthTextureCreationOptions): InternalTexture {
             if (options.isCube) {
                 let width = (<{ width: number, height: number }>size).width || <number>size;
                 return this._createDepthStencilCubeTexture(width, options);
@@ -4798,7 +4837,7 @@
          * @param options The options defining the texture.
          * @returns The texture
          */
-        private _createDepthStencilTexture(size: number | { width: number, height: number }, options: DepthTextureCreationOptions) : InternalTexture {
+        private _createDepthStencilTexture(size: number | { width: number, height: number }, options: DepthTextureCreationOptions): InternalTexture {
             var internalTexture = new InternalTexture(this, InternalTexture.DATASOURCE_DEPTHTEXTURE);
 
             if (!this._caps.depthTextureExtension) {
@@ -4811,7 +4850,7 @@
                 comparisonFunction: 0,
                 generateStencil: false,
                 ...options
-            }
+            };
 
             var gl = this._gl;
             this._bindTextureDirectly(gl.TEXTURE_2D, internalTexture, true);
@@ -4847,7 +4886,7 @@
          * @param options The options defining the cube texture.
          * @returns The cube texture
          */
-        private _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions) : InternalTexture {
+        private _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions): InternalTexture {
             var internalTexture = new InternalTexture(this, InternalTexture.DATASOURCE_UNKNOWN);
             internalTexture.isCube = true;
 
@@ -4861,7 +4900,7 @@
                 comparisonFunction: 0,
                 generateStencil: false,
                 ...options
-            }
+            };
 
             var gl = this._gl;
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, internalTexture, true);
@@ -4931,24 +4970,24 @@
                 fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
                 fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
                 fullOptions.type = options.type === undefined ? Engine.TEXTURETYPE_UNSIGNED_INT : options.type;
-                fullOptions.samplingMode = options.samplingMode === undefined ? Texture.TRILINEAR_SAMPLINGMODE : options.samplingMode;
+                fullOptions.samplingMode = options.samplingMode === undefined ? Engine.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
                 fullOptions.format = options.format === undefined ? Engine.TEXTUREFORMAT_RGBA : options.format;
             } else {
                 fullOptions.generateMipMaps = <boolean>options;
                 fullOptions.generateDepthBuffer = true;
                 fullOptions.generateStencilBuffer = false;
                 fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
-                fullOptions.samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+                fullOptions.samplingMode = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE;
                 fullOptions.format = Engine.TEXTUREFORMAT_RGBA;
             }
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
                 // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-                fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             }
             else if (fullOptions.type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
                 // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-                fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             }
             var gl = this._gl;
 
@@ -4958,7 +4997,7 @@
             var width = (<{ width: number, height: number }>size).width || <number>size;
             var height = (<{ width: number, height: number }>size).height || <number>size;
 
-            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false, gl);
+            var filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false);
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
                 fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
@@ -4999,6 +5038,7 @@
             texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
             texture.samplingMode = fullOptions.samplingMode;
             texture.type = fullOptions.type;
+            texture.format = fullOptions.format;
             texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
             texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
 
@@ -5024,16 +5064,16 @@
             var textureCount = 1;
 
             var defaultType = Engine.TEXTURETYPE_UNSIGNED_INT;
-            var defaultSamplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+            var defaultSamplingMode = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE;
 
             var types = new Array<number>();
             var samplingModes = new Array<number>();
 
             if (options !== undefined) {
-                generateMipMaps = options.generateMipMaps === undefined ? false: options.generateMipMaps;
+                generateMipMaps = options.generateMipMaps === undefined ? false : options.generateMipMaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-                generateStencilBuffer = options.generateStencilBuffer === undefined ? false: options.generateStencilBuffer;
-                generateDepthTexture = options.generateDepthTexture === undefined ? false: options.generateDepthTexture;
+                generateStencilBuffer = options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
+                generateDepthTexture = options.generateDepthTexture === undefined ? false : options.generateDepthTexture;
                 textureCount = options.textureCount || 1;
 
                 if (options.types) {
@@ -5053,7 +5093,7 @@
             var height = size.height || size;
 
             var textures = [];
-            var attachments = []
+            var attachments = [];
 
             var depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, width, height);
 
@@ -5063,14 +5103,14 @@
 
                 if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
                     // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                    samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
                 }
                 else if (type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
                     // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                    samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
                 }
 
-                var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
+                var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
                 if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
                     type = Engine.TEXTURETYPE_UNSIGNED_INT;
                     Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
@@ -5161,7 +5201,7 @@
                 depthTexture._generateDepthBuffer = generateDepthBuffer;
                 depthTexture._generateStencilBuffer = generateStencilBuffer;
 
-                textures.push(depthTexture)
+                textures.push(depthTexture);
                 this._internalTexturesCache.push(depthTexture);
             }
 
@@ -5362,17 +5402,54 @@
         }
 
         /** @hidden */
-        public _uploadDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, format: number, type: number, data: ArrayBufferView) {
-            this._gl.texImage2D(target, lod, internalFormat, width, height, 0, format, type, data);
-        }
+        public _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex: number = 0, lod: number = 0) {
+            var gl = this._gl;
 
-        /** @hidden */
-        public _uploadCompressedDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, data: ArrayBufferView) {
+            var target = gl.TEXTURE_2D;
+            if (texture.isCube) {
+                target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+            }
+
             this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, <DataView>data);
         }
 
         /** @hidden */
-        public _uploadImageToTexture(texture: InternalTexture, faceIndex: number, lod: number, image: HTMLImageElement) {
+        public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+            var gl = this._gl;
+
+            var textureType = this._getWebGLTextureType(texture.type);
+            var format = this._getInternalFormat(texture.format);
+            var internalFormat = this._getRGBABufferInternalSizedFormat(texture.type, format);
+
+            this._unpackFlipY(texture.invertY);
+
+            var target = gl.TEXTURE_2D;
+            if (texture.isCube) {
+                target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+            }
+
+            const lodMaxWidth = Math.round(Scalar.Log2(texture.width));
+            const lodMaxHeight = Math.round(Scalar.Log2(texture.height));
+            const width = Math.pow(2, Math.max(lodMaxWidth - lod, 0));
+            const height = Math.pow(2, Math.max(lodMaxHeight - lod, 0));
+
+            gl.texImage2D(target, lod, internalFormat, width, height, 0, format, textureType, imageData);
+        }
+
+        /** @hidden */
+        public _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+            var gl = this._gl;
+            var bindTarget = texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
+
+            this._bindTextureDirectly(bindTarget, texture, true);
+
+            this._uploadDataToTextureDirectly(texture, imageData, faceIndex, lod);
+
+            this._bindTextureDirectly(bindTarget, null, true);
+        }
+
+        /** @hidden */
+        public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {
             var gl = this._gl;
 
             var textureType = this._getWebGLTextureType(texture.type);
@@ -5386,7 +5463,7 @@
 
             var target = gl.TEXTURE_2D;
             if (texture.isCube) {
-                var target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+                target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
             }
 
             gl.texImage2D(target, lod, internalFormat, format, textureType, image);
@@ -5401,34 +5478,34 @@
          */
         public createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
             let fullOptions = {
-              generateMipMaps: true,
-              generateDepthBuffer: true,
-              generateStencilBuffer: false,
-              type: Engine.TEXTURETYPE_UNSIGNED_INT,
-              samplingMode: Texture.TRILINEAR_SAMPLINGMODE,
-              format: Engine.TEXTUREFORMAT_RGBA,
-              ...options
+                generateMipMaps: true,
+                generateDepthBuffer: true,
+                generateStencilBuffer: false,
+                type: Engine.TEXTURETYPE_UNSIGNED_INT,
+                samplingMode: Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
+                format: Engine.TEXTUREFORMAT_RGBA,
+                ...options
             };
             fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-              // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-              fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+                fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             }
             else if (fullOptions.type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
-              // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-              fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+                fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             }
-            var gl = this._gl
+            var gl = this._gl;
 
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
 
-            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps, gl);
+            var filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps);
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-              fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
-              Tools.Warn("Float textures are not supported. Cube render target forced to TEXTURETYPE_UNESIGNED_BYTE type");
+                fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                Tools.Warn("Float textures are not supported. Cube render target forced to TEXTURETYPE_UNESIGNED_BYTE type");
             }
 
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
@@ -5448,7 +5525,7 @@
 
             // MipMaps
             if (fullOptions.generateMipMaps) {
-              gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
             }
 
             // Unbind
@@ -5465,6 +5542,7 @@
             texture.generateMipMaps = fullOptions.generateMipMaps;
             texture.samplingMode = fullOptions.samplingMode;
             texture.type = fullOptions.type;
+            texture.format = fullOptions.format;
             texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
             texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
 
@@ -5502,7 +5580,7 @@
                 if (!createPolynomials) {
                     texture._sphericalPolynomial = new BABYLON.SphericalPolynomial();
                 }
-                else if(loadData.info.sphericalPolynomial){
+                else if (loadData.info.sphericalPolynomial) {
                     texture._sphericalPolynomial = loadData.info.sphericalPolynomial;
                 }
                 texture._dataSource = InternalTexture.DATASOURCE_CUBEPREFILTERED;
@@ -5536,6 +5614,10 @@
                     let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
 
                     var glTextureFromLod = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
+                    glTextureFromLod.type = texture.type;
+                    glTextureFromLod.format = texture.format;
+                    glTextureFromLod.width = Math.pow(2, Math.max(Scalar.Log2(width) - mipmapIndex, 0));
+                    glTextureFromLod.height = glTextureFromLod.width;
                     glTextureFromLod.isCube = true;
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, glTextureFromLod, true);
 
@@ -5549,10 +5631,10 @@
                         var data: any = loadData.data;
                         this._unpackFlipY(info.isCompressed);
 
-                        DDSTools.UploadDDSLevels(this, this._gl, data, info, true, 6, mipmapIndex);
+                        DDSTools.UploadDDSLevels(this, glTextureFromLod, data, info, true, 6, mipmapIndex);
                     }
                     else {
-                        Tools.Warn("DDS is the only prefiltered cube map supported so far.")
+                        Tools.Warn("DDS is the only prefiltered cube map supported so far.");
                     }
 
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
@@ -5609,149 +5691,55 @@
                 texture._files = files;
             }
 
-            var isKTX = false;
-            var isDDS = false;
-            var isEnv = false;
             var lastDot = rootUrl.lastIndexOf('.');
             var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
-            if (this._textureFormatInUse && !fallback) {
-                rootUrl = (lastDot > -1 ? rootUrl.substring(0, lastDot) : rootUrl) + this._textureFormatInUse;
-                isKTX = true;
-            } else {
-                isDDS = (extension === ".dds");
-                isEnv = (extension === ".env");
+
+            let loader: Nullable<IInternalTextureLoader> = null;
+            for (let availableLoader of Engine._TextureLoaders) {
+                if (availableLoader.canLoad(extension, this._textureFormatInUse, fallback, false, false)) {
+                    loader = availableLoader;
+                    break;
+                }
             }
 
-            let onerror = (request?: XMLHttpRequest, exception?: any) => {
-                if(isKTX){
-                    //remove the format appended to the rootUrl in the original createCubeTexture call.
-                    var exp = new RegExp("" + this._textureFormatInUse + "$");
-                    this.createCubeTexture(rootUrl.replace(exp, ""), scene, files, noMipmap, onLoad, onError, format, extension, createPolynomials, lodScale, lodOffset, texture);
+            let onInternalError = (request?: XMLHttpRequest, exception?: any) => {
+                if (loader) {
+                    const fallbackUrl = loader.getFallbackTextureUrl(rootUrl, this._textureFormatInUse);
+                    if (fallbackUrl) {
+                        this.createCubeTexture(fallbackUrl, scene, files, noMipmap, onLoad, onError, format, extension, createPolynomials, lodScale, lodOffset, texture);
+                    }
                 }
+
                 if (onError && request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
-            }
+            };
 
-            if (isKTX) {
-                this._loadFile(rootUrl, data => {
-                    var ktx = new KhronosTextureContainer(data, 6);
+            if (loader) {
+                rootUrl = loader.transformUrl(rootUrl, this._textureFormatInUse);
 
-                    var loadMipmap = ktx.numberOfMipmapLevels > 1 && !noMipmap;
-
+                const onloaddata = (data: any) => {
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-                    this._unpackFlipY(true);
-
-                    ktx.uploadLevels(this._gl, !noMipmap);
-
-                    this.setCubeMapTextureParams(gl, loadMipmap);
-
-                    texture.width = ktx.pixelWidth;
-                    texture.height = ktx.pixelHeight;
-                    texture.isReady = true;
-                }, undefined, undefined, true, onerror);
-            }
-            else if (isEnv) {
-                this._loadFile(rootUrl, (data) => {
-                    data = data as ArrayBuffer;
-                    var info = EnvironmentTextureTools.GetEnvInfo(data);
-                    if (info) {
-                        texture.width = info.width;
-                        texture.height = info.width;
-
-                        EnvironmentTextureTools.UploadEnvSpherical(texture, info);
-                        EnvironmentTextureTools.UploadEnvLevelsAsync(texture, data, info).then(() => {
-                            texture.isReady = true;
-                            if (onLoad) {
-                                onLoad();
-                            }
-                        });
+                    loader!.loadCubeData(data, texture, createPolynomials, onLoad, onError);
+                };
+                if (files && files.length === 6) {
+                    if (loader.supportCascades) {
+                        this._cascadeLoadFiles(scene, onloaddata, files, onError);
                     }
                     else if (onError) {
-                        onError("Can not parse the environment file", null);
+                        onError("Textures type does not support cascades.");
                     }
-                }, undefined, undefined, true, onerror);
-            }
-            else if (isDDS) {
-                if (files && files.length === 6) {
-                    this._cascadeLoadFiles(
-                        scene,
-                        imgs => {
-                            var info: DDSInfo | undefined;
-                            var loadMipmap: boolean = false;
-                            var width: number = 0;
-                            for (let index = 0; index < imgs.length; index++) {
-                                let data = imgs[index];
-                                info = DDSTools.GetDDSInfo(data);
-
-                                loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
-
-                                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-                                this._unpackFlipY(info.isCompressed);
-
-                                DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6, -1, index);
-
-                                if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
-                                    gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                                }
-
-                                texture.width = info.width;
-                                texture.height = info.height;
-                                texture.type = info.textureType;
-                                width = info.width;
-                            }
-
-                            this.setCubeMapTextureParams(gl, loadMipmap);
-                            texture.isReady = true;
-
-                            if (onLoad) {
-                                onLoad({ isDDS: true, width: width, info, imgs, texture });
-                            }
-                        },
-                        files,
-                        onError);
-
-                } else {
-                    this._loadFile(rootUrl,
-                        data => {
-                            var info = DDSTools.GetDDSInfo(data);
-                            if(createPolynomials){
-                                info.sphericalPolynomial = new SphericalPolynomial();
-                            }
-                            
-                            var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
-
-                            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-                            this._unpackFlipY(info.isCompressed);
-
-                            DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6);
-
-                            if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
-                                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                            }
-
-                            this.setCubeMapTextureParams(gl, loadMipmap);
-
-                            texture.width = info.width;
-                            texture.height = info.height;
-                            texture.isReady = true;
-                            texture.type = info.textureType;
-                            
-                            if (onLoad) {
-                                onLoad({ isDDS: true, width: info.width, info, data, texture });
-                            }
-                        },
-                        undefined,
-                        undefined,
-                        true,
-                        onerror);
                 }
-            } else {
+                else {
+                    this._loadFile(rootUrl, onloaddata, undefined, undefined, true, onInternalError);
+                }
+            }
+            else {
                 if (!files) {
                     throw new Error("Cannot load cubemap because files were not defined");
                 }
 
-                cascadeLoadImgs(rootUrl, scene, imgs => {
+                this._cascadeLoadImgs(rootUrl, scene, (imgs) => {
                     var width = this.needPOTTextures ? Tools.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
                     var height = width;
 
@@ -5781,7 +5769,7 @@
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                     }
 
-                    this.setCubeMapTextureParams(gl, !noMipmap);
+                    this._setCubeMapTextureParams(!noMipmap);
 
                     texture.width = width;
                     texture.height = height;
@@ -5804,7 +5792,11 @@
             return texture;
         }
 
-        private setCubeMapTextureParams(gl: WebGLRenderingContext, loadMipmap: boolean) {
+        /**
+         * @hidden
+         */
+        public _setCubeMapTextureParams(loadMipmap: boolean): void {
+            var gl = this._gl;
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -5887,12 +5879,11 @@
          * @returns the cube texture as an InternalTexture
          */
         public createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number,
-                                    generateMipMaps: boolean, invertY: boolean, samplingMode: number,
-                                    compression: Nullable<string> = null): InternalTexture {
+            generateMipMaps: boolean, invertY: boolean, samplingMode: number,
+            compression: Nullable<string> = null): InternalTexture {
             var gl = this._gl;
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBERAW);
             texture.isCube = true;
-            texture.generateMipMaps = generateMipMaps;
             texture.format = format;
             texture.type = type;
             if (!this._doNotHandleContextLost) {
@@ -5904,6 +5895,26 @@
 
             if (internalFormat === gl.RGB) {
                 internalFormat = gl.RGBA;
+            }
+
+            // Mipmap generation needs a sized internal format that is both color-renderable and texture-filterable
+            if (textureType === gl.FLOAT && !this._caps.textureFloatLinearFiltering) {
+                generateMipMaps = false;
+                samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+                BABYLON.Tools.Warn("Float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
+            }
+            else if (textureType === this._gl.HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
+                generateMipMaps = false;
+                samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+                BABYLON.Tools.Warn("Half float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
+            }
+            else if (textureType === gl.FLOAT && !this._caps.textureFloatRender) {
+                generateMipMaps = false;
+                BABYLON.Tools.Warn("Render to float textures is not supported. Mipmap generation forced to false.");
+            }
+            else if (textureType === gl.HALF_FLOAT && !this._caps.colorBufferFloat) {
+                generateMipMaps = false;
+                BABYLON.Tools.Warn("Render to half float textures is not supported. Mipmap generation forced to false.");
             }
 
             var width = size;
@@ -5930,23 +5941,15 @@
                 this._gl.generateMipmap(this._gl.TEXTURE_CUBE_MAP);
             }
 
-            if (textureType === gl.FLOAT && !this._caps.textureFloatLinearFiltering) {
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            }
-            else if (textureType === this._gl.HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            }
-            else {
-                var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, filters.min);
-            }
+            var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, filters.min);
 
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+
+            texture.generateMipMaps = generateMipMaps;
 
             return texture;
         }
@@ -5966,13 +5969,13 @@
          * @param samplingMode defines the required sampling mode (like BABYLON.Texture.NEAREST_SAMPLINGMODE)
          * @param invertY defines if data must be stored with Y axis inverted
          * @returns the cube texture as an InternalTexture
-         */        
+         */
         public createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
             callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
             mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>,
             onLoad: Nullable<() => void> = null,
             onError: Nullable<(message?: string, exception?: any) => void> = null,
-            samplingMode = Texture.TRILINEAR_SAMPLINGMODE,
+            samplingMode = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
             invertY = false): InternalTexture {
 
             var gl = this._gl;
@@ -6026,7 +6029,6 @@
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
                 }
                 else {
-                    texture.generateMipMaps = !noMipmap;
                     this.updateRawCubeTexture(texture, faceDataArrays, format, type, invertY);
                 }
 
@@ -6039,12 +6041,12 @@
                 }
             };
 
-            this._loadFile(url, data => {
+            this._loadFile(url, (data) => {
                 internalCallback(data);
-            }, undefined, scene.database, true, onerror);
+            }, undefined, scene.offlineProvider, true, onerror);
 
             return texture;
-        };
+        }
 
         /**
          * Update a raw 3D texture
@@ -6124,7 +6126,7 @@
             this._bindTextureDirectly(this._gl.TEXTURE_3D, texture, true);
 
             // Filters
-            var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
+            var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
 
             this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
             this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MIN_FILTER, filters.min);
@@ -6146,7 +6148,7 @@
                 return;
             }
 
-            var filters = getSamplingParameters(samplingMode, !noMipmap, gl);
+            var filters = this._getSamplingParameters(samplingMode, !noMipmap);
 
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
@@ -6167,8 +6169,8 @@
         }
 
         private _prepareWebGLTexture(texture: InternalTexture, scene: Nullable<Scene>, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
-            processFunction: (width: number, height: number, continuationCallback: () => void) => boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): void {
-            var maxTextureSize = this.getCaps().maxTextureSize;    
+            processFunction: (width: number, height: number, continuationCallback: () => void) => boolean, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE): void {
+            var maxTextureSize = this.getCaps().maxTextureSize;
             var potWidth = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(width, maxTextureSize) : width);
             var potHeight = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(height, maxTextureSize) : height);
 
@@ -6287,22 +6289,22 @@
             }
 
             // Set output texture of post process to null if the texture has been released/disposed
-            this.scenes.forEach((scene)=>{
-                scene.postProcesses.forEach((postProcess)=>{
-                    if(postProcess._outputTexture == texture){
+            this.scenes.forEach((scene) => {
+                scene.postProcesses.forEach((postProcess) => {
+                    if (postProcess._outputTexture == texture) {
                         postProcess._outputTexture = null;
                     }
                 });
-                scene.cameras.forEach((camera)=>{
-                    camera._postProcesses.forEach((postProcess)=>{
-                        if(postProcess){
-                            if(postProcess._outputTexture == texture){
+                scene.cameras.forEach((camera) => {
+                    camera._postProcesses.forEach((postProcess) => {
+                        if (postProcess) {
+                            if (postProcess._outputTexture == texture) {
                                 postProcess._outputTexture = null;
                             }
                         }
                     });
                 });
-            })
+            });
         }
 
         private setProgram(program: WebGLProgram): void {
@@ -6554,12 +6556,12 @@
         }
 
         private _getTextureWrapMode(mode: number): number {
-            switch(mode) {
-                case Texture.WRAP_ADDRESSMODE:
+            switch (mode) {
+                case Engine.TEXTURE_WRAP_ADDRESSMODE:
                     return this._gl.REPEAT;
-                case Texture.CLAMP_ADDRESSMODE:
+                case Engine.TEXTURE_CLAMP_ADDRESSMODE:
                     return this._gl.CLAMP_TO_EDGE;
-                case Texture.MIRROR_ADDRESSMODE:
+                case Engine.TEXTURE_MIRROR_ADDRESSMODE:
                     return this._gl.MIRRORED_REPEAT;
             }
             return this._gl.REPEAT;
@@ -6615,7 +6617,7 @@
                 if (!isPartOfTextureArray) {
                     this._bindSamplerUniformToChannel(internalTexture._initialSlot, channel);
                 }
-                
+
                 needToBind = false;
             }
 
@@ -6646,19 +6648,19 @@
             else if (internalTexture && internalTexture.isCube) {
                 if (needToBind) {
                     this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture, isPartOfTextureArray);
-                }                
+                }
 
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
                     internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
                     // CUBIC_MODE and SKYBOX_MODE both require CLAMP_TO_EDGE.  All other modes use REPEAT.
-                    var textureWrapMode = (texture.coordinatesMode !== Texture.CUBIC_MODE && texture.coordinatesMode !== Texture.SKYBOX_MODE) ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE;
+                    var textureWrapMode = (texture.coordinatesMode !== Engine.TEXTURE_CUBIC_MODE && texture.coordinatesMode !== Engine.TEXTURE_SKYBOX_MODE) ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE;
                     this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_S, textureWrapMode, internalTexture);
                     this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_T, textureWrapMode);
                 }
 
                 this._setAnisotropicLevel(this._gl.TEXTURE_CUBE_MAP, texture);
             } else {
-                if (needToBind) {               
+                if (needToBind) {
                     this._bindTextureDirectly(this._gl.TEXTURE_2D, internalTexture, isPartOfTextureArray);
                 }
 
@@ -6713,9 +6715,9 @@
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
 
-            if (internalTexture.samplingMode !== Texture.LINEAR_LINEAR_MIPNEAREST
-                && internalTexture.samplingMode !== Texture.LINEAR_LINEAR_MIPLINEAR
-                && internalTexture.samplingMode !== Texture.LINEAR_LINEAR) {
+            if (internalTexture.samplingMode !== Engine.TEXTURE_LINEAR_LINEAR_MIPNEAREST
+                && internalTexture.samplingMode !== Engine.TEXTURE_LINEAR_LINEAR_MIPLINEAR
+                && internalTexture.samplingMode !== Engine.TEXTURE_LINEAR_LINEAR) {
                 value = 1; // Forcing the anisotropic to 1 because else webgl will force filters to linear
             }
 
@@ -6835,7 +6837,7 @@
          */
         public releaseEffects() {
             for (var name in this._compiledEffects) {
-                this._deleteProgram(this._compiledEffects[name]._program)
+                this._deleteProgram(this._compiledEffects[name]._program);
             }
 
             this._compiledEffects = {};
@@ -6875,7 +6877,7 @@
             }
 
             // Release audio engine
-            if (Engine.audioEngine) {
+            if (Engine.Instances.length === 1 && Engine.audioEngine) {
                 Engine.audioEngine.dispose();
             }
 
@@ -6980,7 +6982,7 @@
         /**
          * Hide the loading screen
          * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-         */        
+         */
         public hideLoadingUI(): void {
             if (!Tools.IsWindowObjectExist()) {
                 return;
@@ -6996,8 +6998,9 @@
          * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
          */
         public get loadingScreen(): ILoadingScreen {
-            if (!this._loadingScreen && DefaultLoadingScreen && this._renderingCanvas)
-                this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
+            if (!this._loadingScreen && DefaultLoadingScreen && this._renderingCanvas) {
+                this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas);
+            }
             return this._loadingScreen;
         }
 
@@ -7012,7 +7015,7 @@
         /**
          * Sets the current loading screen text
          * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-         */        
+         */
         public set loadingUIText(text: string) {
             this.loadingScreen.loadingUIText = text;
         }
@@ -7020,7 +7023,7 @@
         /**
          * Sets the current loading screen background color
          * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-         */         
+         */
         public set loadingUIBackgroundColor(color: string) {
             this.loadingScreen.loadingUIBackgroundColor = color;
         }
@@ -7064,7 +7067,7 @@
          * Gets the source code of the fragment shader associated with a specific webGL program
          * @param program defines the program to use
          * @returns a string containing the source code of the fragment shader associated with the program
-         */        
+         */
         public getFragmentShaderSource(program: WebGLProgram): Nullable<string> {
             var shaders = this._gl.getAttachedShaders(program);
 
@@ -7109,7 +7112,7 @@
         }
 
         /** @hidden */
-        public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0): ArrayBufferView {
+        public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null): ArrayBufferView {
             let gl = this._gl;
             if (!this._dummyFramebuffer) {
                 let dummy = gl.createFramebuffer();
@@ -7129,15 +7132,18 @@
             }
 
             let readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
-            let buffer: ArrayBufferView;
 
             switch (readType) {
                 case gl.UNSIGNED_BYTE:
-                    buffer = new Uint8Array(4 * width * height);
+                    if (!buffer) {
+                        buffer = new Uint8Array(4 * width * height);
+                    }
                     readType = gl.UNSIGNED_BYTE;
                     break;
                 default:
-                    buffer = new Float32Array(4 * width * height);
+                    if (!buffer) {
+                        buffer = new Float32Array(4 * width * height);
+                    }
                     readType = gl.FLOAT;
                     break;
             }
@@ -7215,19 +7221,59 @@
 
         /** @hidden */
         public _getWebGLTextureType(type: number): number {
-            if (type === Engine.TEXTURETYPE_FLOAT) {
-                return this._gl.FLOAT;
+            if (this._webGLVersion === 1) {
+                switch (type) {
+                    case Engine.TEXTURETYPE_FLOAT:
+                        return this._gl.FLOAT;
+                    case Engine.TEXTURETYPE_HALF_FLOAT:
+                        return this._gl.HALF_FLOAT_OES;
+                    case Engine.TEXTURETYPE_UNSIGNED_BYTE:
+                        return this._gl.UNSIGNED_BYTE;
+                }
+                return this._gl.UNSIGNED_BYTE;
             }
-            else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
-                // Add Half Float Constant.
-                return this._gl.HALF_FLOAT_OES;
+
+            switch (type) {
+                case Engine.TEXTURETYPE_BYTE:
+                    return this._gl.BYTE;
+                case Engine.TEXTURETYPE_UNSIGNED_BYTE:
+                    return this._gl.UNSIGNED_BYTE;
+                case Engine.TEXTURETYPE_SHORT:
+                    return this._gl.SHORT;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT:
+                    return this._gl.UNSIGNED_SHORT;
+                case Engine.TEXTURETYPE_INT:
+                    return this._gl.INT;
+                case Engine.TEXTURETYPE_UNSIGNED_INTEGER: // Refers to UNSIGNED_INT
+                    return this._gl.UNSIGNED_INT;
+                case Engine.TEXTURETYPE_FLOAT:
+                    return this._gl.FLOAT;
+                case Engine.TEXTURETYPE_HALF_FLOAT:
+                    return this._gl.HALF_FLOAT;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+                    return this._gl.UNSIGNED_SHORT_4_4_4_4;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+                    return this._gl.UNSIGNED_SHORT_5_5_5_1;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+                    return this._gl.UNSIGNED_SHORT_5_6_5;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
+                    return this._gl.UNSIGNED_INT_2_10_10_10_REV;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_24_8:
+                    return this._gl.UNSIGNED_INT_24_8;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
+                    return this._gl.UNSIGNED_INT_10F_11F_11F_REV;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
+                    return this._gl.UNSIGNED_INT_5_9_9_9_REV;
+                case Engine.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV:
+                    return this._gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
             }
 
             return this._gl.UNSIGNED_BYTE;
-        };
+        }
 
         private _getInternalFormat(format: number): number {
             var internalFormat = this._gl.RGBA;
+
             switch (format) {
                 case Engine.TEXTUREFORMAT_ALPHA:
                     internalFormat = this._gl.ALPHA;
@@ -7238,81 +7284,198 @@
                 case Engine.TEXTUREFORMAT_LUMINANCE_ALPHA:
                     internalFormat = this._gl.LUMINANCE_ALPHA;
                     break;
+                case Engine.TEXTUREFORMAT_RED:
+                    internalFormat = this._gl.RED;
+                    break;
+                case Engine.TEXTUREFORMAT_RG:
+                    internalFormat = this._gl.RG;
+                    break;
                 case Engine.TEXTUREFORMAT_RGB:
                     internalFormat = this._gl.RGB;
                     break;
                 case Engine.TEXTUREFORMAT_RGBA:
                     internalFormat = this._gl.RGBA;
                     break;
-                case Engine.TEXTUREFORMAT_R:
-                    internalFormat = this._gl.RED;
-                    break;       
-                case Engine.TEXTUREFORMAT_RG:
-                    internalFormat = this._gl.RG;
-                    break;                                    
+            }
+
+            if (this._webGLVersion > 1) {
+                switch (format) {
+                    case Engine.TEXTUREFORMAT_RED_INTEGER:
+                        internalFormat = this._gl.RED_INTEGER;
+                        break;
+                    case Engine.TEXTUREFORMAT_RG_INTEGER:
+                        internalFormat = this._gl.RG_INTEGER;
+                        break;
+                    case Engine.TEXTUREFORMAT_RGB_INTEGER:
+                        internalFormat = this._gl.RGB_INTEGER;
+                        break;
+                    case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                        internalFormat = this._gl.RGBA_INTEGER;
+                        break;
+                }
             }
 
             return internalFormat;
-        }        
+        }
 
         /** @hidden */
         public _getRGBABufferInternalSizedFormat(type: number, format?: number): number {
             if (this._webGLVersion === 1) {
                 if (format !== undefined) {
-                    switch(format) {
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_ALPHA:
+                            return this._gl.ALPHA;
                         case Engine.TEXTUREFORMAT_LUMINANCE:
                             return this._gl.LUMINANCE;
-                        case Engine.TEXTUREFORMAT_ALPHA:
-                            return this._gl.ALPHA;     
-                    }                    
+                        case Engine.TEXTUREFORMAT_LUMINANCE_ALPHA:
+                            return this._gl.LUMINANCE_ALPHA;
+                    }
                 }
                 return this._gl.RGBA;
             }
 
-            if (type === Engine.TEXTURETYPE_FLOAT) {
-                if (format !== undefined) {
-                    switch(format) {
-                        case Engine.TEXTUREFORMAT_R:
-                            return this._gl.R32F;
+            switch (type) {
+                case Engine.TEXTURETYPE_BYTE:
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RED:
+                            return this._gl.R8_SNORM;
                         case Engine.TEXTUREFORMAT_RG:
-                            return this._gl.RG32F;
-                            case Engine.TEXTUREFORMAT_RGB:
-                            return this._gl.RGB32F;
-                    }                    
-                }
-                return this._gl.RGBA32F;
-            }
-
-            if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
-                if (format) {
-                    switch(format) {
-                        case Engine.TEXTUREFORMAT_R:
+                            return this._gl.RG8_SNORM;
+                        case Engine.TEXTUREFORMAT_RGB:
+                            return this._gl.RGB8_SNORM;
+                        case Engine.TEXTUREFORMAT_RED_INTEGER:
+                            return this._gl.R8I;
+                        case Engine.TEXTUREFORMAT_RG_INTEGER:
+                            return this._gl.RG8I;
+                        case Engine.TEXTUREFORMAT_RGB_INTEGER:
+                            return this._gl.RGB8I;
+                        case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                            return this._gl.RGBA8I;
+                        default:
+                            return this._gl.RGBA8_SNORM;
+                    }
+                case Engine.TEXTURETYPE_UNSIGNED_BYTE:
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RED:
+                            return this._gl.R8;
+                        case Engine.TEXTUREFORMAT_RG:
+                            return this._gl.RG8;
+                        case Engine.TEXTUREFORMAT_RGB:
+                            return this._gl.RGB8; // By default. Other possibilities are RGB565, SRGB8.
+                        case Engine.TEXTUREFORMAT_RGBA:
+                            return this._gl.RGBA8; // By default. Other possibilities are RGB5_A1, RGBA4, SRGB8_ALPHA8.
+                        case Engine.TEXTUREFORMAT_RED_INTEGER:
+                            return this._gl.R8UI;
+                        case Engine.TEXTUREFORMAT_RG_INTEGER:
+                            return this._gl.RG8UI;
+                        case Engine.TEXTUREFORMAT_RGB_INTEGER:
+                            return this._gl.RGB8UI;
+                        case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                            return this._gl.RGBA8UI;
+                        default:
+                            return this._gl.RGBA8;
+                    }
+                case Engine.TEXTURETYPE_SHORT:
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RED_INTEGER:
+                            return this._gl.R16I;
+                        case Engine.TEXTUREFORMAT_RG_INTEGER:
+                            return this._gl.RG16I;
+                        case Engine.TEXTUREFORMAT_RGB_INTEGER:
+                            return this._gl.RGB16I;
+                        case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                            return this._gl.RGBA16I;
+                        default:
+                            return this._gl.RGBA16I;
+                    }
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT:
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RED_INTEGER:
+                            return this._gl.R16UI;
+                        case Engine.TEXTUREFORMAT_RG_INTEGER:
+                            return this._gl.RG16UI;
+                        case Engine.TEXTUREFORMAT_RGB_INTEGER:
+                            return this._gl.RGB16UI;
+                        case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                            return this._gl.RGBA16UI;
+                        default:
+                            return this._gl.RGBA16UI;
+                    }
+                case Engine.TEXTURETYPE_INT:
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RED_INTEGER:
+                            return this._gl.R32I;
+                        case Engine.TEXTUREFORMAT_RG_INTEGER:
+                            return this._gl.RG32I;
+                        case Engine.TEXTUREFORMAT_RGB_INTEGER:
+                            return this._gl.RGB32I;
+                        case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                            return this._gl.RGBA32I;
+                        default:
+                            return this._gl.RGBA32I;
+                    }
+                case Engine.TEXTURETYPE_UNSIGNED_INTEGER: // Refers to UNSIGNED_INT
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RED_INTEGER:
+                            return this._gl.R32UI;
+                        case Engine.TEXTUREFORMAT_RG_INTEGER:
+                            return this._gl.RG32UI;
+                        case Engine.TEXTUREFORMAT_RGB_INTEGER:
+                            return this._gl.RGB32UI;
+                        case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                            return this._gl.RGBA32UI;
+                        default:
+                            return this._gl.RGBA32UI;
+                    }
+                case Engine.TEXTURETYPE_FLOAT:
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RED:
+                            return this._gl.R32F; // By default. Other possibility is R16F.
+                        case Engine.TEXTUREFORMAT_RG:
+                            return this._gl.RG32F; // By default. Other possibility is RG16F.
+                        case Engine.TEXTUREFORMAT_RGB:
+                            return this._gl.RGB32F; // By default. Other possibilities are RGB16F, R11F_G11F_B10F, RGB9_E5.
+                        case Engine.TEXTUREFORMAT_RGBA:
+                            return this._gl.RGBA32F; // By default. Other possibility is RGBA16F.
+                        default:
+                            return this._gl.RGBA32F;
+                    }
+                case Engine.TEXTURETYPE_HALF_FLOAT:
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RED:
                             return this._gl.R16F;
                         case Engine.TEXTUREFORMAT_RG:
                             return this._gl.RG16F;
-                            case Engine.TEXTUREFORMAT_RGB:
-                            return this._gl.RGB16F;
-                    }                    
-                }
-                return this._gl.RGBA16F;
+                        case Engine.TEXTUREFORMAT_RGB:
+                            return this._gl.RGB16F; // By default. Other possibilities are R11F_G11F_B10F, RGB9_E5.
+                        case Engine.TEXTUREFORMAT_RGBA:
+                            return this._gl.RGBA16F;
+                        default:
+                            return this._gl.RGBA16F;
+                    }
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+                    return this._gl.RGB565;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
+                    return this._gl.R11F_G11F_B10F;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
+                    return this._gl.RGB9_E5;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+                    return this._gl.RGBA4;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+                    return this._gl.RGB5_A1;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RGBA:
+                            return this._gl.RGB10_A2; // By default. Other possibility is RGB5_A1.
+                        case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                            return this._gl.RGB10_A2UI;
+                        default:
+                            return this._gl.RGB10_A2;
+                    }
             }
 
-            if (format !== undefined) {
-                switch(format) {
-                    case Engine.TEXTUREFORMAT_LUMINANCE:
-                        return this._gl.LUMINANCE;
-                    case Engine.TEXTUREFORMAT_RGB:
-                        return this._gl.RGB;
-                    case Engine.TEXTUREFORMAT_R:
-                        return this._gl.R8;
-                    case Engine.TEXTUREFORMAT_RG:
-                        return this._gl.RG8;
-                    case Engine.TEXTUREFORMAT_ALPHA:
-                        return this._gl.ALPHA;
-                }
-            }
-            return this._gl.RGBA;
-        };
+            return this._gl.RGBA8;
+        }
 
         /** @hidden */
         public _getRGBAMultiSampleBufferFormat(type: number): number {
@@ -7324,300 +7487,26 @@
             }
 
             return this._gl.RGBA8;
-        };
-
-        /**
-         * Create a new webGL query (you must be sure that queries are supported by checking getCaps() function)
-         * @return the new query
-         */
-        public createQuery(): WebGLQuery {
-            return this._gl.createQuery();
-        }
-
-        /**
-         * Delete and release a webGL query
-         * @param query defines the query to delete
-         * @return the current engine
-         */
-        public deleteQuery(query: WebGLQuery): Engine {
-            this._gl.deleteQuery(query);
-
-            return this;
-        }
-
-        /**
-         * Check if a given query has resolved and got its value
-         * @param query defines the query to check
-         * @returns true if the query got its value
-         */
-        public isQueryResultAvailable(query: WebGLQuery): boolean {
-            return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT_AVAILABLE) as boolean;
-        }
-
-        /**
-         * Gets the value of a given query
-         * @param query defines the query to check
-         * @returns the value of the query
-         */
-        public getQueryResult(query: WebGLQuery): number {
-            return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT) as number;
-        }
-
-        /**
-         * Initiates an occlusion query
-         * @param algorithmType defines the algorithm to use
-         * @param query defines the query to use
-         * @returns the current engine
-         * @see http://doc.babylonjs.com/features/occlusionquery
-         */
-        public beginOcclusionQuery(algorithmType: number, query: WebGLQuery): Engine {
-            var glAlgorithm = this.getGlAlgorithmType(algorithmType);
-            this._gl.beginQuery(glAlgorithm, query);
-
-            return this;
-        }
-
-        /**
-         * Ends an occlusion query
-         * @see http://doc.babylonjs.com/features/occlusionquery
-         * @param algorithmType defines the algorithm to use
-         * @returns the current engine
-         */
-        public endOcclusionQuery(algorithmType: number): Engine {
-            var glAlgorithm = this.getGlAlgorithmType(algorithmType);
-            this._gl.endQuery(glAlgorithm);
-
-            return this;
-        }
-
-        /* Time queries */
-
-        private _createTimeQuery(): WebGLQuery {
-            let timerQuery = <EXT_disjoint_timer_query>this._caps.timerQuery;
-
-            if (timerQuery.createQueryEXT) {
-                return timerQuery.createQueryEXT();
-            }
-
-            return this.createQuery();
-        }
-
-        private _deleteTimeQuery(query: WebGLQuery): void {
-            let timerQuery = <EXT_disjoint_timer_query>this._caps.timerQuery;
-
-            if (timerQuery.deleteQueryEXT) {
-                timerQuery.deleteQueryEXT(query);
-                return;
-            }
-
-            this.deleteQuery(query);
-        }
-
-        private _getTimeQueryResult(query: WebGLQuery): any {
-            let timerQuery = <EXT_disjoint_timer_query>this._caps.timerQuery;
-
-            if (timerQuery.getQueryObjectEXT) {
-                return timerQuery.getQueryObjectEXT(query, timerQuery.QUERY_RESULT_EXT);
-            }
-            return this.getQueryResult(query);
-        }
-
-        private _getTimeQueryAvailability(query: WebGLQuery): any {
-            let timerQuery = <EXT_disjoint_timer_query>this._caps.timerQuery;
-
-            if (timerQuery.getQueryObjectEXT) {
-                return timerQuery.getQueryObjectEXT(query, timerQuery.QUERY_RESULT_AVAILABLE_EXT);
-            }
-            return this.isQueryResultAvailable(query);
-        }
-
-        private _currentNonTimestampToken: Nullable<_TimeToken>;
-
-        /**
-         * Starts a time query (used to measure time spent by the GPU on a specific frame)
-         * Please note that only one query can be issued at a time
-         * @returns a time token used to track the time span
-         */
-        public startTimeQuery(): Nullable<_TimeToken> {
-            let timerQuery = this._caps.timerQuery;
-            if (!timerQuery) {
-                return null;
-            }
-
-            let token = new _TimeToken();
-            this._gl.getParameter(timerQuery.GPU_DISJOINT_EXT);
-            if (this._caps.canUseTimestampForTimerQuery) {
-                token._startTimeQuery = this._createTimeQuery();
-
-                timerQuery.queryCounterEXT(token._startTimeQuery, timerQuery.TIMESTAMP_EXT);
-            } else {
-                if (this._currentNonTimestampToken) {
-                    return this._currentNonTimestampToken;
-                }
-
-                token._timeElapsedQuery = this._createTimeQuery();
-                if (timerQuery.beginQueryEXT) {
-                    timerQuery.beginQueryEXT(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
-                } else {
-                    this._gl.beginQuery(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
-                }
-
-                this._currentNonTimestampToken = token;
-            }
-            return token;
-        }
-
-        /**
-         * Ends a time query
-         * @param token defines the token used to measure the time span
-         * @returns the time spent (in ns)
-         */
-        public endTimeQuery(token: _TimeToken): int {
-            let timerQuery = this._caps.timerQuery;
-            if (!timerQuery || !token) {
-                return -1;
-            }
-
-            if (this._caps.canUseTimestampForTimerQuery) {
-                if (!token._startTimeQuery) {
-                    return -1;
-                }
-                if (!token._endTimeQuery) {
-                    token._endTimeQuery = this._createTimeQuery();
-                    timerQuery.queryCounterEXT(token._endTimeQuery, timerQuery.TIMESTAMP_EXT);
-                }
-            } else if (!token._timeElapsedQueryEnded) {
-                if (!token._timeElapsedQuery) {
-                    return -1;
-                }
-                if (timerQuery.endQueryEXT) {
-                    timerQuery.endQueryEXT(timerQuery.TIME_ELAPSED_EXT);
-                } else {
-                    this._gl.endQuery(timerQuery.TIME_ELAPSED_EXT);
-                }
-                token._timeElapsedQueryEnded = true;
-            }
-
-            let disjoint = this._gl.getParameter(timerQuery.GPU_DISJOINT_EXT);
-            let available: boolean = false;
-            if (token._endTimeQuery) {
-                available = this._getTimeQueryAvailability(token._endTimeQuery);
-            } else if (token._timeElapsedQuery) {
-                available = this._getTimeQueryAvailability(token._timeElapsedQuery);
-            }
-
-            if (available && !disjoint) {
-                let result = 0;
-                if (this._caps.canUseTimestampForTimerQuery) {
-                    if (!token._startTimeQuery || !token._endTimeQuery) {
-                        return -1;
-                    }
-                    let timeStart = this._getTimeQueryResult(token._startTimeQuery);
-                    let timeEnd = this._getTimeQueryResult(token._endTimeQuery);
-
-                    result = timeEnd - timeStart;
-                    this._deleteTimeQuery(token._startTimeQuery);
-                    this._deleteTimeQuery(token._endTimeQuery);
-                    token._startTimeQuery = null;
-                    token._endTimeQuery = null;
-                } else {
-                    if (!token._timeElapsedQuery) {
-                        return -1;
-                    }
-
-                    result = this._getTimeQueryResult(token._timeElapsedQuery);
-                    this._deleteTimeQuery(token._timeElapsedQuery);
-                    token._timeElapsedQuery = null;
-                    token._timeElapsedQueryEnded = false;
-                    this._currentNonTimestampToken = null;
-                }
-                return result;
-            }
-
-            return -1;
-        }
-
-        private getGlAlgorithmType(algorithmType: number): number {
-            return algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
-        }
-
-        // Transform feedback
-
-        /**
-         * Creates a webGL transform feedback object
-         * Please makes sure to check webGLVersion property to check if you are running webGL 2+
-         * @returns the webGL transform feedback object
-         */
-        public createTransformFeedback(): WebGLTransformFeedback {
-            return this._gl.createTransformFeedback();
-        }
-
-        /**
-         * Delete a webGL transform feedback object 
-         * @param value defines the webGL transform feedback object to delete
-         */
-        public deleteTransformFeedback(value: WebGLTransformFeedback): void {
-            this._gl.deleteTransformFeedback(value);
-        }
-
-        /**
-         * Bind a webGL transform feedback object to the webgl context
-         * @param value defines the webGL transform feedback object to bind
-         */        
-        public bindTransformFeedback(value: Nullable<WebGLTransformFeedback>): void {
-            this._gl.bindTransformFeedback(this._gl.TRANSFORM_FEEDBACK, value);
-        }
-
-        /**
-         * Begins a transform feedback operation
-         * @param usePoints defines if points or triangles must be used
-         */              
-        public beginTransformFeedback(usePoints: boolean = true): void {
-            this._gl.beginTransformFeedback(usePoints ? this._gl.POINTS : this._gl.TRIANGLES);
-        }
-
-        /**
-         * Ends a transform feedback operation
-         */           
-        public endTransformFeedback(): void {
-            this._gl.endTransformFeedback();
-        }
-
-        /**
-         * Specify the varyings to use with transform feedback
-         * @param program defines the associated webGL program
-         * @param value defines the list of strings representing the varying names
-         */
-        public setTranformFeedbackVaryings(program: WebGLProgram, value: string[]): void {
-            this._gl.transformFeedbackVaryings(program, value, this._gl.INTERLEAVED_ATTRIBS);
-        }
-
-        /**
-         * Bind a webGL buffer for a transform feedback operation
-         * @param value defines the webGL buffer to bind
-         */          
-        public bindTransformFeedbackBuffer(value: Nullable<WebGLBuffer>): void {
-            this._gl.bindBufferBase(this._gl.TRANSFORM_FEEDBACK_BUFFER, 0, value);
         }
 
         /** @hidden */
-        public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
-            let request = Tools.LoadFile(url, onSuccess, onProgress, database, useArrayBuffer, onError);
+        public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
+            let request = Tools.LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
             this._activeRequests.push(request);
-            request.onCompleteObservable.add(request => {
+            request.onCompleteObservable.add((request) => {
                 this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
             });
             return request;
         }
 
         /** @hidden */
-        public _loadFileAsync(url: string, database?: Database, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+        public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
             return new Promise((resolve, reject) => {
                 this._loadFile(url, (data) => {
                     resolve(data);
-                }, undefined, database, useArrayBuffer, (request, exception) => {
+                }, undefined, offlineProvider, useArrayBuffer, (request, exception) => {
                     reject(exception);
-                })
+                });
             });
         }
 

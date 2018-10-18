@@ -1,7 +1,11 @@
-﻿module BABYLON {
+module BABYLON {
     // Adds the parser to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
         if (parsedData.effectLayers) {
+            if (!container.effectLayers) {
+                container.effectLayers = new Array<EffectLayer>();
+            }
+
             for (let index = 0; index < parsedData.effectLayers.length; index++) {
                 var effectLayer = EffectLayer.Parse(parsedData.effectLayers[index], scene, rootUrl);
                 container.effectLayers.push(effectLayer);
@@ -27,7 +31,7 @@
         /**
          * Adds the given effect layer to this scene
          * @param newEffectLayer defines the effect layer to add
-         */     
+         */
         addEffectLayer(newEffectLayer: EffectLayer): void;
     }
 
@@ -38,11 +42,11 @@
         }
 
         return index;
-    }
+    };
 
     AbstractScene.prototype.addEffectLayer = function(newEffectLayer: EffectLayer): void {
         this.effectLayers.push(newEffectLayer);
-    }
+    };
 
     /**
      * Defines the layer scene component responsible to manage any effect layers
@@ -57,11 +61,9 @@
         /**
          * The scene the component belongs to.
          */
-        public scene: Scene
+        public scene: Scene;
 
         private _engine: Engine;
-        private _effectLayers: Array<EffectLayer>;
-
         private _renderEffects = false;
         private _needStencil = false;
         private _previousStencilState = false;
@@ -73,7 +75,7 @@
         constructor(scene: Scene) {
             this.scene = scene;
             this._engine = scene.getEngine();
-            this._effectLayers = scene.effectLayers = new Array<EffectLayer>();
+            scene.effectLayers = new Array<EffectLayer>();
         }
 
         /**
@@ -97,7 +99,8 @@
          * context lost for instance.
          */
         public rebuild(): void {
-            for (let effectLayer of this._effectLayers) {
+            let layers = this.scene.effectLayers;
+            for (let effectLayer of layers) {
                 effectLayer._rebuild();
             }
         }
@@ -110,7 +113,8 @@
             // Effect layers
             serializationObject.effectLayers = [];
 
-            for (let effectLayer of this._effectLayers) {
+            let layers = this.scene.effectLayers;
+            for (let effectLayer of layers) {
                 if (effectLayer.serialize) {
                     serializationObject.effectLayers.push(effectLayer.serialize());
                 }
@@ -132,7 +136,7 @@
 
         /**
          * Removes all the elements in the container from the scene
-         * @param container contains the elements to remove 
+         * @param container contains the elements to remove
          */
         public removeFromContainer(container: AbstractScene): void {
             if (!container.effectLayers) {
@@ -147,13 +151,15 @@
          * Disposes the component and the associated ressources.
          */
         public dispose(): void {
-            while (this._effectLayers.length) {
-                this._effectLayers[0].dispose();
+            let layers = this.scene.effectLayers;
+            while (layers.length) {
+                layers[0].dispose();
             }
         }
 
         private _isReadyForMesh(mesh: AbstractMesh, hardwareInstancedRendering: boolean): boolean {
-            for (let layer of this._effectLayers) {
+            let layers = this.scene.effectLayers;
+            for (let layer of layers) {
                 if (!layer.hasMesh(mesh)) {
                     continue;
                 }
@@ -171,9 +177,10 @@
             this._renderEffects = false;
             this._needStencil = false;
 
-            if (this._effectLayers && this._effectLayers.length > 0) {
+            let layers = this.scene.effectLayers;
+            if (layers && layers.length > 0) {
                 this._previousStencilState = this._engine.getStencilBuffer();
-                for (let effectLayer of this._effectLayers) {
+                for (let effectLayer of layers) {
                     if (effectLayer.shouldRender() &&
                         (!effectLayer.camera ||
                             (effectLayer.camera.cameraRigMode === Camera.RIG_MODE_NONE && camera === effectLayer.camera) ||
@@ -211,8 +218,10 @@
         private _draw(renderingGroupId: number): void {
             if (this._renderEffects) {
                 this._engine.setDepthBuffer(false);
-                for (let i = 0; i < this._effectLayers.length; i++) {
-                    const effectLayer = this._effectLayers[i];
+
+                let layers = this.scene.effectLayers;
+                for (let i = 0; i < layers.length; i++) {
+                    const effectLayer = layers[i];
                     if (effectLayer.renderingGroupId === renderingGroupId) {
                         if (effectLayer.shouldRender()) {
                             effectLayer.render();
@@ -234,4 +243,4 @@
             }
         }
     }
-} 
+}

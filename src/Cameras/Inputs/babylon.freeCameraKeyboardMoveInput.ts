@@ -1,25 +1,50 @@
 module BABYLON {
+    /**
+     * Manage the keyboard inputs to control the movement of a free camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
     export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
+        /**
+         * Defines the camera the input is attached to.
+         */
+        public camera: FreeCamera;
+
+        /**
+         * Gets or Set the list of keyboard keys used to control the forward move of the camera.
+         */
+        @serialize()
+        public keysUp = [38];
+
+        /**
+         * Gets or Set the list of keyboard keys used to control the backward move of the camera.
+         */
+        @serialize()
+        public keysDown = [40];
+
+        /**
+         * Gets or Set the list of keyboard keys used to control the left strafe move of the camera.
+         */
+        @serialize()
+        public keysLeft = [37];
+
+        /**
+         * Gets or Set the list of keyboard keys used to control the right strafe move of the camera.
+         */
+        @serialize()
+        public keysRight = [39];
+
         private _keys = new Array<number>();
         private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
         private _onKeyboardObserver: Nullable<Observer<KeyboardInfo>>;
         private _engine: Engine;
-        private _scene: Scene;        
+        private _scene: Scene;
 
-        @serialize()
-        public keysUp = [38];
-
-        @serialize()
-        public keysDown = [40];
-
-        @serialize()
-        public keysLeft = [37];
-
-        @serialize()
-        public keysRight = [39];
-
-        attachControl(element : HTMLElement, noPreventDefault?: boolean) {
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
             if (this._onCanvasBlurObserver) {
                 return;
             }
@@ -27,11 +52,11 @@ module BABYLON {
             this._scene = this.camera.getScene();
             this._engine = this._scene.getEngine();
 
-            this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(()=>{
+            this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(() => {
                 this._keys = [];
             });
 
-            this._onKeyboardObserver = this._scene.onKeyboardObservable.add(info => {
+            this._onKeyboardObserver = this._scene.onKeyboardObservable.add((info) => {
                 let evt = info.event;
 
                 if (info.type === KeyboardEventTypes.KEYDOWN) {
@@ -63,10 +88,14 @@ module BABYLON {
                         }
                     }
                 }
-            });     
+            });
         }
 
-        detachControl(element: Nullable<HTMLElement>) {
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        public detachControl(element: Nullable<HTMLElement>): void {
             if (this._scene) {
                 if (this._onKeyboardObserver) {
                     this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);
@@ -80,9 +109,13 @@ module BABYLON {
             }
             this._keys = [];
         }
-        
-        public checkInputs() {
-            if (this._onKeyboardObserver){
+
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        public checkInputs(): void {
+            if (this._onKeyboardObserver) {
                 var camera = this.camera;
                 // Keyboard
                 for (var index = 0; index < this._keys.length; index++) {
@@ -110,18 +143,27 @@ module BABYLON {
             }
         }
 
-        getClassName(): string {
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        public getClassName(): string {
             return "FreeCameraKeyboardMoveInput";
         }
 
+        /** @hidden */
         public _onLostFocus(e: FocusEvent): void {
             this._keys = [];
         }
-        
-        getSimpleName(){
+
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        public getSimpleName(): string {
             return "keyboard";
         }
     }
-    
+
     (<any>CameraInputTypes)["FreeCameraKeyboardMoveInput"] = FreeCameraKeyboardMoveInput;
 }

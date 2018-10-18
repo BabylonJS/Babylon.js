@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Represents the range of an animation
      */
@@ -11,9 +11,9 @@
          */
         constructor(
             /**The name of the animation range**/
-            public name: string, 
+            public name: string,
             /**The starting frame of the animation */
-            public from: number, 
+            public from: number,
             /**The ending frame of the animation*/
             public to: number) {
         }
@@ -46,9 +46,9 @@
             /** The frame for which the event is triggered **/
             public frame: number,
             /** The event to perform when triggered **/
-            public action: () => void , 
+            public action: (currentFrame: number) => void,
             /** Specifies if the event should be triggered only once**/
-            public onlyOnce?: boolean ) {
+            public onlyOnce?: boolean) {
         }
 
         /** @hidden */
@@ -153,7 +153,7 @@
          * @returns This path cursor
          */
         private raiseOnChange(): PathCursor {
-            this._onchange.forEach(f => f(this));
+            this._onchange.forEach((f) => f(this));
 
             return this;
         }
@@ -472,15 +472,15 @@
          */
         constructor(
             /**Name of the animation */
-            public name: string, 
+            public name: string,
             /**Property to animate */
-            public targetProperty: string, 
+            public targetProperty: string,
             /**The frames per second of the animation */
-            public framePerSecond: number, 
+            public framePerSecond: number,
             /**The data type of the animation */
             public dataType: number,
-            /**The loop mode of the animation */ 
-            public loopMode?: number, 
+            /**The loop mode of the animation */
+            public loopMode?: number,
             /**Specifies if blending should be enabled */
             public enableBlending?: boolean) {
             this.targetPropertyPath = targetProperty.split(".");
@@ -578,7 +578,7 @@
                     }
                 }
             }
-            this._ranges[name] = null; // said much faster than 'delete this._range[name]' 
+            this._ranges[name] = null; // said much faster than 'delete this._range[name]'
 
         }
 
@@ -757,7 +757,7 @@
             }
 
             return value;
-        } 
+        }
 
         /**
          * @hidden Internal use only
@@ -889,14 +889,14 @@
          * Defines the function to use to interpolate matrices
          * @param startValue defines the start matrix
          * @param endValue defines the end matrix
-         * @param gradient defines the gradient between both matrices 
+         * @param gradient defines the gradient between both matrices
          * @param result defines an optional target matrix where to store the interpolation
          * @returns the interpolated matrix
          */
         public matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number, result?: Matrix): Matrix {
             if (Animation.AllowMatrixDecomposeForInterpolation) {
                 if (result) {
-                    Matrix.DecomposeLerpToRef(startValue, endValue, gradient, result);    
+                    Matrix.DecomposeLerpToRef(startValue, endValue, gradient, result);
                     return result;
                 }
                 return Matrix.DecomposeLerp(startValue, endValue, gradient);
@@ -1058,7 +1058,7 @@
         }
 
         /**
-         * Get the Vectpr2 animation type
+         * Get the Vector2 animation type
          */
         public static get ANIMATIONTYPE_VECTOR2(): number {
             return Animation._ANIMATIONTYPE_VECTOR2;
@@ -1121,7 +1121,7 @@
             } else if (constructor.Slerp) { // Slerp supported
                 return constructor.Slerp(left, right, amount);
             } else if (left.toFixed) { // Number
-                return left * (1.0 - amount) + amount* right;
+                return left * (1.0 - amount) + amount * right;
             } else { // Blending not supported
                 return right;
             }
@@ -1200,7 +1200,7 @@
                 if (outTangent != undefined) {
                     keyData.outTangent = outTangent;
                 }
-                keys.push(keyData)
+                keys.push(keyData);
             }
 
             animation.setKeys(keys);
@@ -1232,5 +1232,3 @@
         }
     }
 }
-
-

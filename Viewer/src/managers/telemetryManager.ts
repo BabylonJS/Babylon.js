@@ -43,23 +43,18 @@ export class TelemetryManager {
         let logErrors = true;
 
         while (logErrors) {
-            let gl = (<any>engine)._gl;
-            if (gl && gl.getError) {
-                let error = gl.getError();
-                if (error === gl.NO_ERROR) {
-                    logErrors = false;
-                } else {
-                    this.broadcast("WebGL Error", viewerId, { error: error });
-                }
-            } else {
+            let error = engine.getError();
+            if (error === 0) {
                 logErrors = false;
+            } else {
+                this.broadcast("WebGL Error", viewerId, { error: error });
             }
         }
     }
 
     /**
      * Enable or disable telemetry events
-     * @param enabled Boolan, true if events are enabled 
+     * @param enabled Boolan, true if events are enabled
      */
     public set enable(enabled: boolean) {
         if (enabled) {
@@ -126,4 +121,3 @@ export class TelemetryManager {
 }
 
 export const telemetryManager = new TelemetryManager();
-

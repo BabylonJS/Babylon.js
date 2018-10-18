@@ -1,5 +1,92 @@
-﻿module BABYLON {
+module BABYLON {
+    export interface AbstractMesh {
+        /**
+         * Disables the mesh edge rendering mode
+         * @returns the currentAbstractMesh
+         */
+        disableEdgesRendering(): AbstractMesh;
 
+        /**
+         * Enables the edge rendering mode on the mesh.
+         * This mode makes the mesh edges visible
+         * @param epsilon defines the maximal distance between two angles to detect a face
+         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
+         * @returns the currentAbstractMesh
+         * @see https://www.babylonjs-playground.com/#19O9TU#0
+         */
+        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
+
+        /**
+         * Gets the edgesRenderer associated with the mesh
+         */
+        edgesRenderer: Nullable<EdgesRenderer>;
+    }
+
+    AbstractMesh.prototype.disableEdgesRendering = function(): AbstractMesh {
+        if (this._edgesRenderer) {
+            this._edgesRenderer.dispose();
+            this._edgesRenderer = null;
+        }
+        return this;
+    };
+
+    AbstractMesh.prototype.enableEdgesRendering = function(epsilon = 0.95, checkVerticesInsteadOfIndices = false): AbstractMesh {
+        this.disableEdgesRendering();
+        this._edgesRenderer = new EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
+        return this;
+    };
+
+    Object.defineProperty(AbstractMesh.prototype, "edgesRenderer", {
+        get: function(this: AbstractMesh) {
+            return this._edgesRenderer;
+        },
+        enumerable: true,
+        configurable: true
+    });
+
+    export interface LinesMesh {
+        /**
+         * Enables the edge rendering mode on the mesh.
+         * This mode makes the mesh edges visible
+         * @param epsilon defines the maximal distance between two angles to detect a face
+         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
+         * @returns the currentAbstractMesh
+         * @see https://www.babylonjs-playground.com/#19O9TU#0
+         */
+        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
+    }
+
+    LinesMesh.prototype.enableEdgesRendering = function(epsilon = 0.95, checkVerticesInsteadOfIndices = false): AbstractMesh {
+        this.disableEdgesRendering();
+        this._edgesRenderer = new LineEdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
+        return this;
+    };
+
+    export interface InstancedMesh {
+        /**
+         * Enables the edge rendering mode on the mesh.
+         * This mode makes the mesh edges visible
+         * @param epsilon defines the maximal distance between two angles to detect a face
+         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
+         * @returns the currentInstancedMesh
+         * @see https://www.babylonjs-playground.com/#19O9TU#0
+         */
+        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): InstancedMesh;
+    }
+
+    InstancedMesh.prototype.enableEdgesRendering = function(epsilon = 0.95, checkVerticesInsteadOfIndices = false): InstancedMesh {
+        if (this.sourceMesh.getClassName() === 'LinesMesh') {
+            LinesMesh.prototype.enableEdgesRendering.apply(this, arguments);
+        }
+        else {
+            AbstractMesh.prototype.enableEdgesRendering.apply(this, arguments);
+        }
+        return this;
+    };
+
+    /**
+     * FaceAdjacencies Helper class to generate edges
+     */
     class FaceAdjacencies {
         public edges = new Array<number>();
         public p0: Vector3;
@@ -8,36 +95,89 @@
         public edgesConnectedCount = 0;
     }
 
-    export class EdgesRenderer {
-        public edgesWidthScalerForOrthographic = 1000.0;
-        public edgesWidthScalerForPerspective = 50.0;
-        private _source: AbstractMesh;
-        private _linesPositions = new Array<number>();
-        private _linesNormals = new Array<number>();
-        private _linesIndices = new Array<number>();
-        private _epsilon: number;
-        private _indicesCount: number;
+    /**
+     * Defines the minimum contract an Edges renderer should follow.
+     */
+    export interface IEdgesRenderer extends IDisposable {
+        /**
+         * Gets or sets a boolean indicating if the edgesRenderer is active
+         */
+        isEnabled: boolean;
 
-        private _lineShader: ShaderMaterial;
-        private _ib: WebGLBuffer;
-        private _buffers: { [key: string]: Nullable<VertexBuffer> } = {};
-        private _checkVerticesInsteadOfIndices = false;
+        /**
+         * Renders the edges of the attached mesh,
+         */
+        render(): void;
+
+        /**
+         * Checks wether or not the edges renderer is ready to render.
+         * @return true if ready, otherwise false.
+         */
+        isReady(): boolean;
+    }
+
+    /**
+     * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
+     */
+    export class EdgesRenderer implements IEdgesRenderer {
+
+        /**
+         * Define the size of the edges with an orthographic camera
+         */
+        public edgesWidthScalerForOrthographic = 1000.0;
+
+        /**
+         * Define the size of the edges with a perspective camera
+         */
+        public edgesWidthScalerForPerspective = 50.0;
+
+        protected _source: AbstractMesh;
+        protected _linesPositions = new Array<number>();
+        protected _linesNormals = new Array<number>();
+        protected _linesIndices = new Array<number>();
+        protected _epsilon: number;
+        protected _indicesCount: number;
+
+        protected _lineShader: ShaderMaterial;
+        protected _ib: WebGLBuffer;
+        protected _buffers: { [key: string]: Nullable<VertexBuffer> } = {};
+        protected _checkVerticesInsteadOfIndices = false;
+
+        private _meshRebuildObserver: Nullable<Observer<AbstractMesh>>;
+        private _meshDisposeObserver: Nullable<Observer<Node>>;
 
         /** Gets or sets a boolean indicating if the edgesRenderer is active */
         public isEnabled = true;
 
-        // Beware when you use this class with complex objects as the adjacencies computation can be really long
-        constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false) {
+        /**
+         * Creates an instance of the EdgesRenderer. It is primarily use to display edges of a mesh.
+         * Beware when you use this class with complex objects as the adjacencies computation can be really long
+         * @param  source Mesh used to create edges
+         * @param  epsilon sum of angles in adjacency to check for edge
+         * @param  checkVerticesInsteadOfIndices
+         * @param  generateEdgesLines - should generate Lines or only prepare resources.
+         */
+        constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false, generateEdgesLines = true) {
             this._source = source;
             this._checkVerticesInsteadOfIndices = checkVerticesInsteadOfIndices;
 
             this._epsilon = epsilon;
 
             this._prepareRessources();
-            this._generateEdgesLines();
+            if (generateEdgesLines) {
+                this._generateEdgesLines();
+            }
+
+            this._meshRebuildObserver = this._source.onRebuildObservable.add(() => {
+                this._rebuild();
+            });
+
+            this._meshDisposeObserver = this._source.onDisposeObservable.add(() => {
+                this.dispose();
+            });
         }
 
-        private _prepareRessources(): void {
+        protected _prepareRessources(): void {
             if (this._lineShader) {
                 return;
             }
@@ -52,6 +192,7 @@
             this._lineShader.backFaceCulling = false;
         }
 
+        /** @hidden */
         public _rebuild(): void {
             var buffer = this._buffers[VertexBuffer.PositionKind];
             if (buffer) {
@@ -68,7 +209,12 @@
             this._ib = engine.createIndexBuffer(this._linesIndices);
         }
 
+        /**
+         * Releases the required resources for the edges renderer
+         */
         public dispose(): void {
+            this._source.onRebuildObservable.remove(this._meshRebuildObserver);
+            this._source.onDisposeObservable.remove(this._meshDisposeObserver);
 
             var buffer = this._buffers[VertexBuffer.PositionKind];
             if (buffer) {
@@ -85,7 +231,7 @@
             this._lineShader.dispose();
         }
 
-        private _processEdgeForAdjacencies(pa: number, pb: number, p0: number, p1: number, p2: number): number {
+        protected _processEdgeForAdjacencies(pa: number, pb: number, p0: number, p1: number, p2: number): number {
             if (pa === p0 && pb === p1 || pa === p1 && pb === p0) {
                 return 0;
             }
@@ -101,7 +247,7 @@
             return -1;
         }
 
-        private _processEdgeForAdjacenciesWithVertices(pa: Vector3, pb: Vector3, p0: Vector3, p1: Vector3, p2: Vector3): number {
+        protected _processEdgeForAdjacenciesWithVertices(pa: Vector3, pb: Vector3, p0: Vector3, p1: Vector3, p2: Vector3): number {
             if (pa.equalsWithEpsilon(p0) && pb.equalsWithEpsilon(p1) || pa.equalsWithEpsilon(p1) && pb.equalsWithEpsilon(p0)) {
                 return 0;
             }
@@ -117,7 +263,16 @@
             return -1;
         }
 
-        private _checkEdge(faceIndex: number, edge: number, faceNormals: Array<Vector3>, p0: Vector3, p1: Vector3): void {
+        /**
+         * Checks if the pair of p0 and p1 is en edge
+         * @param faceIndex
+         * @param edge
+         * @param faceNormals
+         * @param  p0
+         * @param  p1
+         * @private
+         */
+        protected _checkEdge(faceIndex: number, edge: number, faceNormals: Array<Vector3>, p0: Vector3, p1: Vector3): void {
             var needToCreateLine;
 
             if (edge === undefined) {
@@ -129,58 +284,42 @@
             }
 
             if (needToCreateLine) {
-                var offset = this._linesPositions.length / 3;
-                var normal = p0.subtract(p1);
-                normal.normalize();
-
-                // Positions
-                this._linesPositions.push(p0.x);
-                this._linesPositions.push(p0.y);
-                this._linesPositions.push(p0.z);
-
-                this._linesPositions.push(p0.x);
-                this._linesPositions.push(p0.y);
-                this._linesPositions.push(p0.z);
-
-                this._linesPositions.push(p1.x);
-                this._linesPositions.push(p1.y);
-                this._linesPositions.push(p1.z);
-
-                this._linesPositions.push(p1.x);
-                this._linesPositions.push(p1.y);
-                this._linesPositions.push(p1.z);
-
-                // Normals
-                this._linesNormals.push(p1.x);
-                this._linesNormals.push(p1.y);
-                this._linesNormals.push(p1.z);
-                this._linesNormals.push(-1);
-
-                this._linesNormals.push(p1.x);
-                this._linesNormals.push(p1.y);
-                this._linesNormals.push(p1.z);
-                this._linesNormals.push(1);
-
-                this._linesNormals.push(p0.x);
-                this._linesNormals.push(p0.y);
-                this._linesNormals.push(p0.z);
-                this._linesNormals.push(-1);
-
-                this._linesNormals.push(p0.x);
-                this._linesNormals.push(p0.y);
-                this._linesNormals.push(p0.z);
-                this._linesNormals.push(1);
-
-                // Indices
-                this._linesIndices.push(offset);
-                this._linesIndices.push(offset + 1);
-                this._linesIndices.push(offset + 2);
-                this._linesIndices.push(offset);
-                this._linesIndices.push(offset + 2);
-                this._linesIndices.push(offset + 3);
+                this.createLine(p0, p1, this._linesPositions.length / 3);
             }
         }
 
+        /**
+         * push line into the position, normal and index buffer
+         * @protected
+         */
+        protected createLine(p0: Vector3, p1: Vector3, offset: number) {
+            // Positions
+            this._linesPositions.push(
+                p0.x, p0.y, p0.z,
+                p0.x, p0.y, p0.z,
+                p1.x, p1.y, p1.z,
+                p1.x, p1.y, p1.z
+            );
+
+            // Normals
+            this._linesNormals.push(
+                p1.x, p1.y, p1.z, -1,
+                p1.x, p1.y, p1.z, 1,
+                p0.x, p0.y, p0.z, -1,
+                p0.x, p0.y, p0.z, 1
+            );
+
+            // Indices
+            this._linesIndices.push(
+                offset, offset + 1, offset + 2,
+                offset, offset + 2, offset + 3
+            );
+        }
+
+        /**
+         * Generates lines edges from adjacencjes
+         * @private
+         */
         _generateEdgesLines(): void {
             var positions = this._source.getVerticesData(VertexBuffer.PositionKind);
             var indices = this._source.getIndices();
@@ -279,7 +418,7 @@
                     }
                 }
             }
-            
+
             // Create lines
             for (index = 0; index < adjacencies.length; index++) {
                 // We need a line when a face has no adjacency on a specific edge or if all the adjacencies has an angle greater than epsilon
@@ -301,15 +440,32 @@
             this._indicesCount = this._linesIndices.length;
         }
 
+        /**
+         * Checks wether or not the edges renderer is ready to render.
+         * @return true if ready, otherwise false.
+         */
+        public isReady(): boolean {
+            return this._lineShader.isReady();
+        }
+
+        /**
+         * Renders the edges of the attached mesh,
+         */
         public render(): void {
             var scene = this._source.getScene();
 
-            if (!this._lineShader.isReady() || !scene.activeCamera) {
+            if (!this.isReady() || !scene.activeCamera) {
                 return;
             }
 
             var engine = scene.getEngine();
             this._lineShader._preBind();
+
+            if (this._source.edgesColor.a !== 1) {
+                engine.setAlphaMode(Engine.ALPHA_COMBINE);
+            } else {
+                engine.setAlphaMode(Engine.ALPHA_DISABLE);
+            }
 
             // VBOs
             engine.bindBuffers(this._buffers, this._ib, <Effect>this._lineShader.getEffect());
@@ -329,7 +485,6 @@
             // Draw order
             engine.drawElementsType(Material.TriangleFillMode, 0, this._indicesCount);
             this._lineShader.unbind();
-            engine.setDepthWrite(true);
         }
     }
-} 
+}

@@ -1,12 +1,12 @@
 module BABYLON {
     declare var OIMO: any;
 
+    /** @hidden */
     export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
         public world: any;
         public name: string = "OimoJSPlugin";
         public BJSOIMO: any;
-
 
         constructor(iterations?: number) {
             this.BJSOIMO = OIMO;
@@ -32,7 +32,7 @@ module BABYLON {
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>) {
 
-            impostors.forEach(function (impostor) {
+            impostors.forEach(function(impostor) {
                 impostor.beforeStep();
             });
 
@@ -108,19 +108,21 @@ module BABYLON {
 
                 var impostors = [impostor];
                 let addToArray = (parent: IPhysicsEnabledObject) => {
-                    if (!parent.getChildMeshes) return;
-                    parent.getChildMeshes().forEach(function (m) {
+                    if (!parent.getChildMeshes) { return; }
+                    parent.getChildMeshes().forEach(function(m) {
                         if (m.physicsImpostor) {
                             impostors.push(m.physicsImpostor);
                             //m.physicsImpostor._init();
                         }
                     });
-                }
-                addToArray(impostor.object)
+                };
+                addToArray(impostor.object);
 
                 let checkWithEpsilon = (value: number): number => {
                     return Math.max(value, PhysicsEngine.Epsilon);
-                }
+                };
+
+                let globalQuaternion: Quaternion = new Quaternion();
 
                 impostors.forEach((i) => {
                     if (!i.object.rotationQuaternion) {
@@ -128,6 +130,7 @@ module BABYLON {
                     }
                     //get the correct bounding box
                     var oldQuaternion = i.object.rotationQuaternion;
+                    globalQuaternion = oldQuaternion.clone();
 
                     var rot = oldQuaternion.toEulerAngles();
                     var extendSize = i.getObjectExtendSize();
@@ -147,9 +150,9 @@ module BABYLON {
                         bodyConfig.posShape.push(0, 0, 0);
 
                         //tmp solution
-                        bodyConfig.rot.push(rot.x * radToDeg);
-                        bodyConfig.rot.push(rot.y * radToDeg);
-                        bodyConfig.rot.push(rot.z * radToDeg);
+                        bodyConfig.rot.push(0);
+                        bodyConfig.rot.push(0);
+                        bodyConfig.rot.push(0);
                         bodyConfig.rotShape.push(0, 0, 0);
                     } else {
                         let localPosition = i.object.getAbsolutePosition().subtract(impostor.object.getAbsolutePosition());
@@ -205,7 +208,6 @@ module BABYLON {
                             var sizeY = checkWithEpsilon(extendSize.y);
                             var sizeZ = checkWithEpsilon(extendSize.z);
 
-
                             bodyConfig.type.push('box');
                             //if (i === impostor) {
                             bodyConfig.size.push(sizeX);
@@ -222,6 +224,10 @@ module BABYLON {
                 });
 
                 impostor.physicsBody = this.world.add(bodyConfig);
+                // set the quaternion, ignoring the previously defined (euler) rotation
+                impostor.physicsBody.resetQuaternion(globalQuaternion);
+                // update with delta 0, so the body will reveive the new rotation.
+                impostor.physicsBody.updatePosition(0);
 
             } else {
                 this._tmpPositionVector.copyFromFloats(0, 0, 0);
@@ -268,7 +274,7 @@ module BABYLON {
                 //supporting older version of Oimo
                 world: this.world
 
-            }
+            };
             switch (impostorJoint.joint.type) {
                 case PhysicsJoint.BallAndSocketJoint:
                     type = "jointBall";
@@ -281,7 +287,7 @@ module BABYLON {
                     nativeJointData.max = Math.max(nativeJointData.min, nativeJointData.max);
                 case PhysicsJoint.DistanceJoint:
                     type = "jointDistance";
-                    nativeJointData.max = (<DistanceJointData>jointData).maxDistance
+                    nativeJointData.max = (<DistanceJointData>jointData).maxDistance;
                     break;
                 case PhysicsJoint.PrismaticJoint:
                     type = "jointPrisme";
@@ -363,14 +369,14 @@ module BABYLON {
             if (!v) {
                 return null;
             }
-            return new Vector3(v.x, v.y, v.z)
+            return new Vector3(v.x, v.y, v.z);
         }
         public getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
             var v = impostor.physicsBody.angularVelocity;
             if (!v) {
                 return null;
             }
-            return new Vector3(v.x, v.y, v.z)
+            return new Vector3(v.x, v.y, v.z);
         }
 
         public setBodyMass(impostor: PhysicsImpostor, mass: number) {

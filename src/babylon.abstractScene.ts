@@ -1,13 +1,20 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Defines how the parser contract is defined.
+     * These parsers are used to parse a list of specific assets (like particle systems, etc..)
      */
     export type BabylonFileParser = (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => void;
 
     /**
+     * Defines how the individual parser contract is defined.
+     * These parser can parse an individual asset
+     */
+    export type IndividualBabylonFileParser = (parsedData: any, scene: Scene, rootUrl: string) => any;
+
+    /**
      * Base class of the scene acting as a container for the different elements composing a scene.
-     * This class is dynamically extended by the different components of the scene increasing 
-     * flexibility and reducing coupling.
+     * This class is dynamically extended by the different components of the scene increasing
+     * flexibility and reducing coupling
      */
     export abstract class AbstractScene {
         /**
@@ -16,12 +23,52 @@
         private static _BabylonFileParsers: { [key: string]: BabylonFileParser } = { };
 
         /**
-         * Adds a parser in the list of availables ones.
+         * Stores the list of available individual parsers in the application.
+         */
+        private static _IndividualBabylonFileParsers: { [key: string]: IndividualBabylonFileParser } = { };
+
+        /**
+         * Adds a parser in the list of available ones
          * @param name Defines the name of the parser
          * @param parser Defines the parser to add
          */
         public static AddParser(name: string, parser: BabylonFileParser): void {
             this._BabylonFileParsers[name] = parser;
+        }
+
+        /**
+         * Gets a general parser from the list of avaialble ones
+         * @param name Defines the name of the parser
+         * @returns the requested parser or null
+         */
+        public static GetParser(name: string): Nullable<BabylonFileParser> {
+            if (this._BabylonFileParsers[name]) {
+                return this._BabylonFileParsers[name];
+            }
+
+            return null;
+        }
+
+        /**
+         * Adds n individual parser in the list of available ones
+         * @param name Defines the name of the parser
+         * @param parser Defines the parser to add
+         */
+        public static AddIndividualParser(name: string, parser: IndividualBabylonFileParser): void {
+            this._IndividualBabylonFileParsers[name] = parser;
+        }
+
+        /**
+         * Gets an individual parser from the list of avaialble ones
+         * @param name Defines the name of the parser
+         * @returns the requested parser or null
+         */
+        public static GetIndividualParser(name: string): Nullable<IndividualBabylonFileParser> {
+            if (this._IndividualBabylonFileParsers[name]) {
+                return this._IndividualBabylonFileParsers[name];
+            }
+
+            return null;
         }
 
         /**
@@ -38,6 +85,11 @@
                 }
             }
         }
+
+       /**
+        * Gets the list of root nodes (ie. nodes with no parent)
+        */
+       public rootNodes = new Array<Node>();
 
         /** All of the cameras added to this scene
          * @see http://doc.babylonjs.com/babylon101/cameras
@@ -69,7 +121,7 @@
 
         /**
          * Gets a list of Animations associated with the scene
-         */        
+         */
         public animations: Animation[] = [];
 
         /**
@@ -86,6 +138,9 @@
 
         /**
         * All of the materials added to this scene
+        * In the context of a Scene, it is not supposed to be modified manually.
+        * Any addition or removal should be done using the addMaterial and removeMAterial Scene methods.
+        * Note also that the order of the Material wihin the array is not significant and might change.
         * @see http://doc.babylonjs.com/babylon101/materials
         */
         public materials = new Array<Material>();
@@ -95,7 +150,7 @@
          * @see http://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh
          */
         public morphTargetManagers = new Array<MorphTargetManager>();
-        
+
         /**
          * The list of geometries used in the scene.
          */
@@ -103,6 +158,9 @@
 
         /**
         * All of the tranform nodes added to this scene
+        * In the context of a Scene, it is not supposed to be modified manually.
+        * Any addition or removal should be done using the addTransformNode and removeTransformNode Scene methods.
+        * Note also that the order of the TransformNode wihin the array is not significant and might change.
         * @see http://doc.babylonjs.com/how_to/transformnode
         */
         public transformNodes = new Array<TransformNode>();
@@ -111,11 +169,6 @@
          * ActionManagers available on the scene.
          */
         public actionManagers = new Array<ActionManager>();
-
-        /**
-         * Sounds to keep.
-         */
-        public sounds = new Array<Sound>();
 
         /**
          * Textures to keep.

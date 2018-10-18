@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Defines the root class used to create scene optimization to use with SceneOptimizer
      * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
@@ -20,7 +20,7 @@
          */
         public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
             return true;
-        };
+        }
 
         /**
          * Creates the SceneOptimization object
@@ -156,7 +156,7 @@
             scene.getEngine().setHardwareScalingLevel(this._currentScale);
 
             return this._directionOffset === 1 ? this._currentScale >= this.maximumScale : this._currentScale <= this.maximumScale;
-        };
+        }
     }
 
     /**
@@ -181,7 +181,7 @@
         public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
             scene.shadowsEnabled = optimizer.isInImprovementMode;
             return true;
-        };
+        }
     }
 
     /**
@@ -206,7 +206,7 @@
         public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
             scene.postProcessesEnabled = optimizer.isInImprovementMode;
             return true;
-        };
+        }
     }
 
     /**
@@ -231,7 +231,7 @@
         public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
             scene.lensFlaresEnabled = optimizer.isInImprovementMode;
             return true;
-        };
+        }
     }
 
     /**
@@ -272,7 +272,7 @@
                 return this.onApply(scene, optimizer);
             }
             return true;
-        };
+        }
     }
 
     /**
@@ -297,7 +297,7 @@
         public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
             scene.particlesEnabled = optimizer.isInImprovementMode;
             return true;
-        };
+        }
     }
 
     /**
@@ -322,9 +322,8 @@
         public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
             scene.renderTargetsEnabled = optimizer.isInImprovementMode;
             return true;
-        };
+        }
     }
-
 
     /**
      * Defines an optimization used to merge meshes with compatible materials
@@ -362,6 +361,10 @@
 
             var mesh = <Mesh>abstractMesh;
 
+            if (mesh.isDisposed()) {
+                return false;
+            }
+
             if (!mesh.isVisible || !mesh.isEnabled()) {
                 return false;
             }
@@ -371,10 +374,6 @@
             }
 
             if (mesh.skeleton || mesh.hasLODLevels) {
-                return false;
-            }
-
-            if (mesh.parent) {
                 return false;
             }
 
@@ -436,17 +435,21 @@
                 Mesh.MergeMeshes(currentPool, undefined, true);
             }
 
-            if (updateSelectionTree != undefined) {
-                if (updateSelectionTree) {
-                    scene.createOrUpdateSelectionOctree();
+            // Call the octree system optimization if it is defined.
+            const sceneAsAny = scene as any;
+            if (sceneAsAny.createOrUpdateSelectionOctree) {
+                if (updateSelectionTree != undefined) {
+                    if (updateSelectionTree) {
+                        sceneAsAny.createOrUpdateSelectionOctree();
+                    }
                 }
-            }
-            else if (MergeMeshesOptimization.UpdateSelectionTree) {
-                scene.createOrUpdateSelectionOctree();
+                else if (MergeMeshesOptimization.UpdateSelectionTree) {
+                    sceneAsAny.createOrUpdateSelectionOctree();
+                }
             }
 
             return true;
-        };
+        }
     }
 
     /**
@@ -492,7 +495,7 @@
          * @param priority defines the priority of this optimization (0 by default which means first in the list)
          * @returns the current SceneOptimizerOptions
          */
-        public addCustomOptimization(onApply: (scene: Scene, ) => boolean, onGetDescription: () => string, priority: number = 0): SceneOptimizerOptions {
+        public addCustomOptimization(onApply: (scene: Scene) => boolean, onGetDescription: () => string, priority: number = 0): SceneOptimizerOptions {
             let optimization = new CustomOptimization(priority);
             optimization.onApply = onApply;
             optimization.onGetDescription = onGetDescription;
@@ -711,7 +714,7 @@
             this._sceneDisposeObserver = this._scene.onDisposeObservable.add(() => {
                 this._sceneDisposeObserver = null;
                 this.dispose();
-            })
+            });
         }
 
         /**
@@ -729,7 +732,7 @@
         }
 
         /**
-         * Start the optimizer. By default it will try to reach a specific framerate 
+         * Start the optimizer. By default it will try to reach a specific framerate
          * but if the optimizer is set with improvementMode === true then it will run all optimiatiation while frame rate is above the target frame rate
          */
         public start() {
@@ -839,4 +842,4 @@
             return optimizer;
         }
     }
-} 
+}

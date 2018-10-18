@@ -1,4 +1,8 @@
-﻿module BABYLON {
+module BABYLON {
+    Node.AddNodeConstructor("Light_Type_3", (name, scene) => {
+        return () => new HemisphericLight(name, Vector3.Zero(), scene);
+    });
+
     /**
      * The HemisphericLight simulates the ambient environment light,
      * so the passed direction is the light reflection direction, not the incoming direction.
@@ -15,14 +19,12 @@
          * The light reflection direction, not the incoming direction.
          */
         @serializeAsVector3()
-        public direction: Vector3
-
-        private _worldMatrix: Matrix;
+        public direction: Vector3;
 
         /**
-         * Creates a HemisphericLight object in the scene according to the passed direction (Vector3).  
-         * The HemisphericLight simulates the ambient environment light, so the passed direction is the light reflection direction, not the incoming direction.  
-         * The HemisphericLight can't cast shadows.  
+         * Creates a HemisphericLight object in the scene according to the passed direction (Vector3).
+         * The HemisphericLight simulates the ambient environment light, so the passed direction is the light reflection direction, not the incoming direction.
+         * The HemisphericLight can't cast shadows.
          * Documentation : http://doc.babylonjs.com/tutorials/lights
          * @param name The friendly name of the light
          * @param direction The direction of the light reflection
@@ -52,7 +54,7 @@
         }
 
         /**
-         * Sets the HemisphericLight direction towards the passed target (Vector3).  
+         * Sets the HemisphericLight direction towards the passed target (Vector3).
          * Returns the updated direction.
          * @param target The target the direction should point to
          * @return The computed direction
@@ -66,12 +68,12 @@
          * Returns the shadow generator associated to the light.
          * @returns Always null for hemispheric lights because it does not support shadows.
          */
-        public getShadowGenerator(): Nullable<ShadowGenerator> {
+        public getShadowGenerator(): Nullable<IShadowGenerator> {
             return null;
         }
 
         /**
-         * Sets the passed Effect object with the HemisphericLight normalized direction and color and the passed name (string).  
+         * Sets the passed Effect object with the HemisphericLight normalized direction and color and the passed name (string).
          * @param effect The effect to update
          * @param lightIndex The index of the light in the effect to update
          * @returns The hemispheric light
@@ -89,9 +91,12 @@
         }
 
         /**
-         * @hidden internal use only.
+         * Computes the world matrix of the node
+         * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
+         * @param useWasUpdatedFlag defines a reserved property
+         * @returns the world matrix
          */
-        public _getWorldMatrix(): Matrix {
+        public computeWorldMatrix(force?: boolean, useWasUpdatedFlag?: boolean): Matrix {
             if (!this._worldMatrix) {
                 this._worldMatrix = Matrix.Identity();
             }
@@ -105,5 +110,14 @@
         public getTypeID(): number {
             return Light.LIGHTTYPEID_HEMISPHERICLIGHT;
         }
+
+        /**
+         * Prepares the list of defines specific to the light type.
+         * @param defines the list of defines
+         * @param lightIndex defines the index of the light for the effect
+         */
+        public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
+            defines["HEMILIGHT" + lightIndex] = true;
+        }
     }
-} 
+}

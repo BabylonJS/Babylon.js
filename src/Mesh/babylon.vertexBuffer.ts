@@ -1,4 +1,7 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * Specialized buffer used to store vertex data
+     */
     export class VertexBuffer {
         /** @hidden */
         public _buffer: Buffer;
@@ -108,12 +111,12 @@
             if (type == undefined) {
                 const data = this.getData();
                 this.type = VertexBuffer.FLOAT;
-                if (data instanceof Int8Array) this.type = VertexBuffer.BYTE;
-                else if (data instanceof Uint8Array) this.type = VertexBuffer.UNSIGNED_BYTE;
-                else if (data instanceof Int16Array) this.type = VertexBuffer.SHORT;
-                else if (data instanceof Uint16Array) this.type = VertexBuffer.UNSIGNED_SHORT;
-                else if (data instanceof Int32Array) this.type = VertexBuffer.INT;
-                else if (data instanceof Uint32Array) this.type = VertexBuffer.UNSIGNED_INT;
+                if (data instanceof Int8Array) { this.type = VertexBuffer.BYTE; }
+                else if (data instanceof Uint8Array) { this.type = VertexBuffer.UNSIGNED_BYTE; }
+                else if (data instanceof Int16Array) { this.type = VertexBuffer.SHORT; }
+                else if (data instanceof Uint16Array) { this.type = VertexBuffer.UNSIGNED_SHORT; }
+                else if (data instanceof Int32Array) { this.type = VertexBuffer.INT; }
+                else if (data instanceof Uint32Array) { this.type = VertexBuffer.UNSIGNED_INT; }
             }
             else {
                 this.type = type;
@@ -138,6 +141,7 @@
             this._instanceDivisor = instanced ? 1 : 0;
         }
 
+        /** @hidden */
         public _rebuild(): void {
             if (!this._buffer) {
                 return;
@@ -147,37 +151,44 @@
         }
 
         /**
-         * Returns the kind of the VertexBuffer (string).  
+         * Returns the kind of the VertexBuffer (string)
+         * @returns a string
          */
         public getKind(): string {
             return this._kind;
         }
 
         // Properties
+
         /**
-         * Boolean : is the VertexBuffer updatable ?
+         * Gets a boolean indicating if the VertexBuffer is updatable?
+         * @returns true if the buffer is updatable
          */
         public isUpdatable(): boolean {
             return this._buffer.isUpdatable();
         }
 
         /**
-         * Returns an array of numbers or a typed array containing the VertexBuffer data.  
+         * Gets current buffer's data
+         * @returns a DataArray or null
          */
         public getData(): Nullable<DataArray> {
             return this._buffer.getData();
         }
 
         /**
-         * Returns the WebGLBuffer associated to the VertexBuffer.  
+         * Gets underlying native buffer
+         * @returns underlying native buffer
          */
         public getBuffer(): Nullable<WebGLBuffer> {
             return this._buffer.getBuffer();
         }
 
         /**
-         * Returns the stride as a multiple of the type byte length.
+         * Gets the stride in float32 units (i.e. byte stride / 4).
+         * May not be an integer if the byte stride is not divisible by 4.
          * DEPRECATED. Use byteStride instead.
+         * @returns the stride in float32 units
          */
         public getStrideSize(): number {
             return this.byteStride / VertexBuffer.GetTypeByteLength(this.type);
@@ -186,27 +197,31 @@
         /**
          * Returns the offset as a multiple of the type byte length.
          * DEPRECATED. Use byteOffset instead.
+         * @returns the offset in bytes
          */
         public getOffset(): number {
             return this.byteOffset / VertexBuffer.GetTypeByteLength(this.type);
         }
 
         /**
-         * Returns the number of components per vertex attribute (integer).  
+         * Returns the number of components per vertex attribute (integer)
+         * @returns the size in float
          */
         public getSize(): number {
             return this._size;
         }
 
         /**
-         * Boolean : is the WebGLBuffer of the VertexBuffer instanced now ?
+         * Gets a boolean indicating is the internal buffer of the VertexBuffer is instanced
+         * @returns true if this buffer is instanced
          */
         public getIsInstanced(): boolean {
             return this._instanced;
         }
 
         /**
-         * Returns the instancing divisor, zero for non-instanced (integer).  
+         * Returns the instancing divisor, zero for non-instanced (integer).
+         * @returns a number
          */
         public getInstanceDivisor(): number {
             return this._instanceDivisor;
@@ -215,24 +230,24 @@
         // Methods
 
         /**
-         * Creates the underlying WebGLBuffer from the passed numeric array or Float32Array.  
-         * Returns the created WebGLBuffer.   
+         * Store data into the buffer. If the buffer was already used it will be either recreated or updated depending on isUpdatable property
+         * @param data defines the data to store
          */
         public create(data?: DataArray): void {
-            return this._buffer.create(data);
+            this._buffer.create(data);
         }
 
         /**
-         * Updates the underlying WebGLBuffer according to the passed numeric array or Float32Array.  
+         * Updates the underlying buffer according to the passed numeric array or Float32Array.
          * This function will create a new buffer if the current one is not updatable
-         * Returns the updated WebGLBuffer.  
+         * @param data defines the data to store
          */
         public update(data: DataArray): void {
-            return this._buffer.update(data);
+            this._buffer.update(data);
         }
 
         /**
-         * Updates directly the underlying WebGLBuffer according to the passed numeric array or Float32Array.  
+         * Updates directly the underlying WebGLBuffer according to the passed numeric array or Float32Array.
          * Returns the directly updated WebGLBuffer.
          * @param data the new data
          * @param offset the new offset
@@ -242,8 +257,8 @@
             this._buffer.updateDirectly(data, offset, undefined, useBytes);
         }
 
-        /** 
-         * Disposes the VertexBuffer and the underlying WebGLBuffer.  
+        /**
+         * Disposes the VertexBuffer and the underlying WebGLBuffer.
          */
         public dispose(): void {
             if (this._ownsBuffer) {
@@ -261,76 +276,62 @@
         }
 
         // Enums
-        private static _PositionKind = "position";
-        private static _NormalKind = "normal";
-        private static _TangentKind = "tangent";
-        private static _UVKind = "uv";
-        private static _UV2Kind = "uv2";
-        private static _UV3Kind = "uv3";
-        private static _UV4Kind = "uv4";
-        private static _UV5Kind = "uv5";
-        private static _UV6Kind = "uv6";
-        private static _ColorKind = "color";
-        private static _MatricesIndicesKind = "matricesIndices";
-        private static _MatricesWeightsKind = "matricesWeights";
-        private static _MatricesIndicesExtraKind = "matricesIndicesExtra";
-        private static _MatricesWeightsExtraKind = "matricesWeightsExtra";
-
-        public static get PositionKind(): string {
-            return VertexBuffer._PositionKind;
-        }
-
-        public static get NormalKind(): string {
-            return VertexBuffer._NormalKind;
-        }
-
-        public static get TangentKind(): string {
-            return VertexBuffer._TangentKind;
-        }
-
-        public static get UVKind(): string {
-            return VertexBuffer._UVKind;
-        }
-
-        public static get UV2Kind(): string {
-            return VertexBuffer._UV2Kind;
-        }
-
-        public static get UV3Kind(): string {
-            return VertexBuffer._UV3Kind;
-        }
-
-        public static get UV4Kind(): string {
-            return VertexBuffer._UV4Kind;
-        }
-
-        public static get UV5Kind(): string {
-            return VertexBuffer._UV5Kind;
-        }
-
-        public static get UV6Kind(): string {
-            return VertexBuffer._UV6Kind;
-        }
-
-        public static get ColorKind(): string {
-            return VertexBuffer._ColorKind;
-        }
-
-        public static get MatricesIndicesKind(): string {
-            return VertexBuffer._MatricesIndicesKind;
-        }
-
-        public static get MatricesWeightsKind(): string {
-            return VertexBuffer._MatricesWeightsKind;
-        }
-
-        public static get MatricesIndicesExtraKind(): string {
-            return VertexBuffer._MatricesIndicesExtraKind;
-        }
-
-        public static get MatricesWeightsExtraKind(): string {
-            return VertexBuffer._MatricesWeightsExtraKind;
-        }
+        /**
+         * Positions
+         */
+        public static readonly PositionKind = "position";
+        /**
+         * Normals
+         */
+        public static readonly NormalKind = "normal";
+        /**
+         * Tangents
+         */
+        public static readonly TangentKind = "tangent";
+        /**
+         * Texture coordinates
+         */
+        public static readonly UVKind = "uv";
+        /**
+         * Texture coordinates 2
+         */
+        public static readonly UV2Kind = "uv2";
+        /**
+         * Texture coordinates 3
+         */
+        public static readonly UV3Kind = "uv3";
+        /**
+         * Texture coordinates 4
+         */
+        public static readonly UV4Kind = "uv4";
+        /**
+         * Texture coordinates 5
+         */
+        public static readonly UV5Kind = "uv5";
+        /**
+         * Texture coordinates 6
+         */
+        public static readonly UV6Kind = "uv6";
+        /**
+         * Colors
+         */
+        public static readonly ColorKind = "color";
+        /**
+         * Matrix indices (for bones)
+         */
+        public static readonly MatricesIndicesKind = "matricesIndices";
+        /**
+         * Matrix weights (for bones)
+         */
+        public static readonly MatricesWeightsKind = "matricesWeights";
+        /**
+         * Additional matrix indices (for bones)
+         */
+        public static readonly MatricesIndicesExtraKind = "matricesIndicesExtra";
+        /**
+         * Additional matrix weights (for bones)
+         */
+        public static readonly MatricesWeightsExtraKind = "matricesWeightsExtra";
 
         /**
          * Deduces the stride given a kind.

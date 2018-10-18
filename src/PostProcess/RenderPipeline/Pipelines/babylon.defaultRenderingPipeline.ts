@@ -1,20 +1,22 @@
-﻿module BABYLON {
+module BABYLON {
     /**
 	 * The default rendering pipeline can be added to a scene to apply common post processing effects such as anti-aliasing or depth of field.
      * See https://doc.babylonjs.com/how_to/using_default_rendering_pipeline
      */
     export class DefaultRenderingPipeline extends PostProcessRenderPipeline implements IDisposable, IAnimatable {
         private _scene: Scene;
-        private _camerasToBeAttached:Array<Camera> = [];
+        private _camerasToBeAttached: Array<Camera> = [];
         /**
 		 * ID of the sharpen post process,
 		 */
         private readonly SharpenPostProcessId: string = "SharpenPostProcessEffect";
         /**
+         * @ignore
 		 * ID of the image processing post process;
 		 */
         readonly ImageProcessingPostProcessId: string = "ImageProcessingPostProcessEffect";
         /**
+         * @ignore
 		 * ID of the Fast Approximate Anti-Aliasing post process;
 		 */
         readonly FxaaPostProcessId: string = "FxaaPostProcessEffect";
@@ -66,9 +68,9 @@
          */
         public animations: Animation[] = [];
 
-        private _imageProcessingConfigurationObserver:Nullable<Observer<ImageProcessingConfiguration>> = null;
-        // Values   
-        private _sharpenEnabled:boolean = false;    
+        private _imageProcessingConfigurationObserver: Nullable<Observer<ImageProcessingConfiguration>> = null;
+        // Values
+        private _sharpenEnabled: boolean = false;
         private _bloomEnabled: boolean = false;
         private _depthOfFieldEnabled: boolean = false;
         private _depthOfFieldBlurLevel = DepthOfFieldEffectBlurLevel.Low;
@@ -76,8 +78,8 @@
         private _imageProcessingEnabled: boolean = true;
         private _defaultPipelineTextureType: number;
         private _bloomScale: number = 0.5;
-        private _chromaticAberrationEnabled:boolean = false;  
-        private _grainEnabled:boolean = false;  
+        private _chromaticAberrationEnabled: boolean = false;
+        private _grainEnabled: boolean = false;
 
         private _buildAllowed = true;
 
@@ -98,19 +100,19 @@
             return this._sharpenEnabled;
         }
 
-        private _resizeObserver:Nullable<Observer<Engine>> = null;
+        private _resizeObserver: Nullable<Observer<Engine>> = null;
         private _hardwareScaleLevel = 1.0;
         private _bloomKernel: number = 64;
         /**
 		 * Specifies the size of the bloom blur kernel, relative to the final output size
 		 */
         @serialize()
-        public get bloomKernel(): number{
+        public get bloomKernel(): number {
             return this._bloomKernel;
         }
-        public set bloomKernel(value: number){
+        public set bloomKernel(value: number) {
             this._bloomKernel = value;
-            this.bloom.kernel = value/this._hardwareScaleLevel;
+            this.bloom.kernel = value / this._hardwareScaleLevel;
         }
 
         /**
@@ -135,7 +137,7 @@
                 return;
             }
             this.bloom.weight = value;
-            
+
             this._bloomWeight = value;
         }
 
@@ -197,7 +199,7 @@
             return this._bloomEnabled;
         }
 
-        private _rebuildBloom(){
+        private _rebuildBloom() {
             // recreate bloom and dispose old as this setting is not dynamic
             var oldBloom = this.bloom;
             this.bloom = new BloomEffect(this._scene, this.bloomScale, this._bloomWeight, this.bloomKernel, this._defaultPipelineTextureType, false);
@@ -213,14 +215,14 @@
         @serialize()
         public get depthOfFieldEnabled(): boolean {
             return this._depthOfFieldEnabled;
-        }   
-        
+        }
+
         public set depthOfFieldEnabled(enabled: boolean) {
             if (this._depthOfFieldEnabled === enabled) {
                 return;
             }
             this._depthOfFieldEnabled = enabled;
-            
+
             this._buildPipeline();
         }
 
@@ -230,23 +232,23 @@
         @serialize()
         public get depthOfFieldBlurLevel(): DepthOfFieldEffectBlurLevel {
             return this._depthOfFieldBlurLevel;
-        }   
-        
+        }
+
         public set depthOfFieldBlurLevel(value: DepthOfFieldEffectBlurLevel) {
             if (this._depthOfFieldBlurLevel === value) {
                 return;
             }
             this._depthOfFieldBlurLevel = value;
-            
+
             // recreate dof and dispose old as this setting is not dynamic
             var oldDof = this.depthOfField;
-            
+
             this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType, false);
             this.depthOfField.focalLength = oldDof.focalLength;
             this.depthOfField.focusDistance = oldDof.focusDistance;
             this.depthOfField.fStop = oldDof.fStop;
             this.depthOfField.lensSize = oldDof.lensSize;
-            
+
             for (var i = 0; i < this._cameras.length; i++) {
                 oldDof.disposeEffects(this._cameras[i]);
             }
@@ -310,9 +312,9 @@
          * If glow layer is enabled. (Adds a glow effect to emmissive materials)
          */
         public set glowLayerEnabled(enabled: boolean) {
-            if(enabled && !this._glowLayer){
+            if (enabled && !this._glowLayer) {
                 this._glowLayer = new BABYLON.GlowLayer("", this._scene);
-            }else if(!enabled && this._glowLayer){
+            }else if (!enabled && this._glowLayer) {
                 this._glowLayer.dispose();
                 this._glowLayer = null;
             }
@@ -358,15 +360,16 @@
 
         /**
          * @constructor
-         * @param {string} name - The rendering pipeline name (default: "")
-         * @param {boolean} hdr - If high dynamic range textures should be used (default: true)
-         * @param {BABYLON.Scene} scene - The scene linked to this pipeline (default: the last created scene)
-         * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to (default: scene.cameras)
-         * @param {boolean} automaticBuild - if false, you will have to manually call prepare() to update the pipeline (default: true)
+         * @param name - The rendering pipeline name (default: "")
+         * @param hdr - If high dynamic range textures should be used (default: true)
+         * @param scene - The scene linked to this pipeline (default: the last created scene)
+         * @param cameras - The array of cameras that the rendering pipeline will be attached to (default: scene.cameras)
+         * @param automaticBuild - if false, you will have to manually call prepare() to update the pipeline (default: true)
          */
         constructor(name: string = "", hdr: boolean = true, scene: Scene = BABYLON.Engine.LastCreatedScene!, cameras?: Camera[], automaticBuild = true) {
             super(scene.getEngine(), name);
-            this._cameras = cameras ||  scene.cameras;
+            this._cameras = cameras ||  scene.cameras;
+            this._cameras = this._cameras.slice();
             this._camerasToBeAttached = this._cameras.slice();
 
             this._buildAllowed = automaticBuild;
@@ -398,7 +401,7 @@
             this._sharpenEffect = new PostProcessRenderEffect(engine, this.SharpenPostProcessId, () => { return this.sharpen; }, true);
 
             this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType, true);
-            
+
             this.bloom = new BloomEffect(this._scene, this._bloomScale, this._bloomWeight, this.bloomKernel, this._defaultPipelineTextureType, true);
 
             this.chromaticAberration = new ChromaticAberrationPostProcess("ChromaticAberration", engine.getRenderWidth(), engine.getRenderHeight(), 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, true);
@@ -407,14 +410,14 @@
             this.grain = new GrainPostProcess("Grain", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, true);
             this._grainEffect = new PostProcessRenderEffect(engine, this.GrainPostProcessId, () => { return this.grain; }, true);
 
-            this._resizeObserver = engine.onResizeObservable.add(()=>{
+            this._resizeObserver = engine.onResizeObservable.add(() => {
                 this._hardwareScaleLevel = engine.getHardwareScalingLevel();
-                this.bloomKernel = this.bloomKernel
-            })
+                this.bloomKernel = this.bloomKernel;
+            });
 
-            this._imageProcessingConfigurationObserver = this._scene.imageProcessingConfiguration.onUpdateParameters.add(()=>{
+            this._imageProcessingConfigurationObserver = this._scene.imageProcessingConfiguration.onUpdateParameters.add(() => {
                 this.bloom._downscale._exposure = this._scene.imageProcessingConfiguration.exposure;
-            })
+            });
 
             this._buildPipeline();
         }
@@ -430,38 +433,40 @@
         }
 
         private _hasCleared = false;
-        private _prevPostProcess:Nullable<PostProcess> = null;
-        private _prevPrevPostProcess:Nullable<PostProcess> = null;
+        private _prevPostProcess: Nullable<PostProcess> = null;
+        private _prevPrevPostProcess: Nullable<PostProcess> = null;
 
-        private _setAutoClearAndTextureSharing(postProcess:PostProcess, skipTextureSharing = false){
-            if(this._hasCleared){
+        private _setAutoClearAndTextureSharing(postProcess: PostProcess, skipTextureSharing = false) {
+            if (this._hasCleared) {
                 postProcess.autoClear = false;
-            }else{
+            }else {
                 postProcess.autoClear = true;
                 this._scene.autoClear = false;
                 this._hasCleared = true;
             }
 
-            if(!skipTextureSharing){
-                if(this._prevPrevPostProcess){
+            if (!skipTextureSharing) {
+                if (this._prevPrevPostProcess) {
                     postProcess.shareOutputWith(this._prevPrevPostProcess);
-                }else{
+                }else {
                     postProcess.useOwnOutput();
                 }
 
-                if(this._prevPostProcess){
+                if (this._prevPostProcess) {
                     this._prevPrevPostProcess = this._prevPostProcess;
                 }
                 this._prevPostProcess = postProcess;
             }
         }
 
+        private _depthOfFieldSceneObserver: Nullable<Observer<Scene>> = null;
+
         private _buildPipeline() {
             if (!this._buildAllowed) {
                 return;
             }
             this._scene.autoClear = true;
-            
+
             var engine = this._scene.getEngine();
 
             this._disposePostProcesses();
@@ -473,38 +478,58 @@
             this._reset();
             this._prevPostProcess = null;
             this._prevPrevPostProcess = null;
-            this._hasCleared = false;            
+            this._hasCleared = false;
 
             if (this.depthOfFieldEnabled) {
-                var depthTexture = this._scene.enableDepthRenderer(this._cameras[0]).getDepthMap();
-                this.depthOfField.depthTexture = depthTexture;
-                if(!this.depthOfField._isReady()){
+                // Multi camera suport
+                if (this._cameras.length > 1) {
+                    for (let camera of this._cameras) {
+                        const depthRenderer = this._scene.enableDepthRenderer(camera);
+                        depthRenderer.useOnlyInActiveCamera = true;
+                    }
+
+                    this._depthOfFieldSceneObserver = this._scene.onAfterRenderTargetsRenderObservable.add((scene) => {
+                        if (this._cameras.indexOf(scene.activeCamera!) > -1) {
+                            this.depthOfField.depthTexture = scene.enableDepthRenderer(scene.activeCamera).getDepthMap();
+                        }
+                    });
+                }
+                else {
+                    this._scene.onAfterRenderTargetsRenderObservable.remove(this._depthOfFieldSceneObserver);
+                    const depthRenderer = this._scene.enableDepthRenderer(this._cameras[0]);
+                    this.depthOfField.depthTexture = depthRenderer.getDepthMap();
+                }
+
+                if (!this.depthOfField._isReady()) {
                     this.depthOfField._updateEffects();
                 }
                 this.addEffect(this.depthOfField);
                 this._setAutoClearAndTextureSharing(this.depthOfField._effects[0], true);
             }
+            else {
+                this._scene.onAfterRenderTargetsRenderObservable.remove(this._depthOfFieldSceneObserver);
+            }
 
             if (this.bloomEnabled) {
-                if(!this.bloom._isReady()){
+                if (!this.bloom._isReady()) {
                     this.bloom._updateEffects();
                 }
                 this.addEffect(this.bloom);
                 this._setAutoClearAndTextureSharing(this.bloom._effects[0], true);
             }
 
-            if (this._imageProcessingEnabled) {	
-                this.imageProcessing = new ImageProcessingPostProcess("imageProcessing", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);	
-                if (this._hdr) {	
-                    this.addEffect(new PostProcessRenderEffect(engine, this.ImageProcessingPostProcessId, () => { return this.imageProcessing; }, true));	
-                    this._setAutoClearAndTextureSharing(this.imageProcessing);	
-                } else {		
-                    this._scene.imageProcessingConfiguration.applyByPostProcess = false;		
-                }		
+            if (this._imageProcessingEnabled) {
+                this.imageProcessing = new ImageProcessingPostProcess("imageProcessing", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                if (this._hdr) {
+                    this.addEffect(new PostProcessRenderEffect(engine, this.ImageProcessingPostProcessId, () => { return this.imageProcessing; }, true));
+                    this._setAutoClearAndTextureSharing(this.imageProcessing);
+                } else {
+                    this._scene.imageProcessingConfiguration.applyByPostProcess = false;
+                }
             }
 
             if (this.sharpenEnabled) {
-                if(!this.sharpen.isReady()){
+                if (!this.sharpen.isReady()) {
                     this.sharpen.updateEffect();
                 }
                 this.addEffect(this._sharpenEffect);
@@ -512,7 +537,7 @@
             }
 
             if (this.grainEnabled) {
-                if(!this.grain.isReady()){
+                if (!this.grain.isReady()) {
                     this.grain.updateEffect();
                 }
                 this.addEffect(this._grainEffect);
@@ -520,7 +545,7 @@
             }
 
             if (this.chromaticAberrationEnabled) {
-                if(!this.chromaticAberration.isReady()){
+                if (!this.chromaticAberration.isReady()) {
                     this.chromaticAberration.updateEffect();
                 }
                 this.addEffect(this._chromaticAberrationEffect);
@@ -537,8 +562,7 @@
                 this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
             }
 
-            
-            if(!this._enableMSAAOnFirstPostProcess(this.samples) && this.samples > 1){
+            if (!this._enableMSAAOnFirstPostProcess(this.samples) && this.samples > 1) {
                 BABYLON.Tools.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
             }
         }
@@ -556,36 +580,37 @@
                 }
 
                 // These are created in the constructor and should not be disposed on every pipeline change
-                if(disposeNonRecreated){
+                if (disposeNonRecreated) {
                     if (this.sharpen) {
                         this.sharpen.dispose(camera);
                     }
-    
-                    if(this.depthOfField){
+
+                    if (this.depthOfField) {
+                        this._scene.onAfterRenderTargetsRenderObservable.remove(this._depthOfFieldSceneObserver);
                         this.depthOfField.disposeEffects(camera);
                     }
 
-                    if(this.bloom){
+                    if (this.bloom) {
                         this.bloom.disposeEffects(camera);
                     }
-    
-                    if(this.chromaticAberration){
+
+                    if (this.chromaticAberration) {
                         this.chromaticAberration.dispose(camera);
                     }
 
-                    if(this.grain){
+                    if (this.grain) {
                         this.grain.dispose(camera);
                     }
-                    if(this._glowLayer){
+                    if (this._glowLayer) {
                         this._glowLayer.dispose();
                     }
                 }
             }
-            
+
             (<any>this.imageProcessing) = null;
             (<any>this.fxaa) = null;
 
-            if(disposeNonRecreated){
+            if (disposeNonRecreated) {
                 (<any>this.sharpen) = null;
                 (<any>this._sharpenEffect) = null;
                 (<any>this.depthOfField) = null;
@@ -595,14 +620,14 @@
                 (<any>this.grain) = null;
                 (<any>this._grainEffect) = null;
                 this._glowLayer = null;
-            } 
+            }
         }
 
         /**
          * Adds a camera to the pipeline
          * @param camera the camera to be added
          */
-        public addCamera(camera:Camera):void{
+        public addCamera(camera: Camera): void {
             this._camerasToBeAttached.push(camera);
             this._buildPipeline();
         }
@@ -611,7 +636,7 @@
          * Removes a camera from the pipeline
          * @param camera the camera to remove
          */
-        public removeCamera(camera:Camera):void{
+        public removeCamera(camera: Camera): void {
             var index = this._camerasToBeAttached.indexOf(camera);
             this._camerasToBeAttached.splice(index, 1);
             this._buildPipeline();
@@ -624,11 +649,11 @@
             this._disposePostProcesses(true);
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
             this._scene.autoClear = true;
-            if(this._resizeObserver){
+            if (this._resizeObserver) {
                 this._scene.getEngine().onResizeObservable.remove(this._resizeObserver);
                 this._resizeObserver = null;
             }
-            this._scene.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigurationObserver)
+            this._scene.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigurationObserver);
             super.dispose();
         }
 

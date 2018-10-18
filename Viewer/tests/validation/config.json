@@ -2,10 +2,46 @@
     "root": "",
     "tests": [
         {
+            "title": "Diffuse",
+            "createMesh": true,
+            "createMaterial": true,
+            "configuration": {
+                "extends": "extended",
+                "castShadow": true,
+                "model": {
+                    "material": {
+                        "albedoColor": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 1
+                        },
+                        "reflectivityColor": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 0
+                        },
+                        "microSurface": 0
+                    }
+                }
+            },
+            "referenceImage": "Diffuse.png"
+        },
+        {
+            "title": "BrainStem Environment",
+            "configuration": {
+                "extends": "extended"
+            },
+            "model": "/dist/assets/BrainStem/BrainStem.gltf",
+            "referenceImage": "BrainStemEnv.png",
+            "enableEnvironment": true
+        }
+    ],
+    "allTests": [
+        {
             "title": "Control Default",
             "createMesh": true,
             "configuration": {
-                "extends": "default"
+                "extends": "minimal"
             },
             "referenceImage": "ControlDefault.png"
         },
@@ -254,11 +290,11 @@
             "enableEnvironment": true
         },
         {
-            "title": "Specular {{glos * 25}} - {{spec * 25}}",
+            "title": "Specular {{glos * 50}} - {{spec * 50}}",
             "createMesh": true,
             "createMaterial": true,
             "repeatVariables": "glos,spec",
-            "repeatTimes": "5,5",
+            "repeatTimes": "3,3",
             "configuration": {
                 "extends": "extended",
                 "castShadow": true,
@@ -270,15 +306,15 @@
                             "b": 1
                         },
                         "reflectivityColor": {
-                            "r": "{{spec / 4}}",
-                            "g": "{{spec / 4}}",
-                            "b": "{{spec / 4}}"
+                            "r": "{{spec / 2}}",
+                            "g": "{{spec / 2}}",
+                            "b": "{{spec / 2}}"
                         },
-                        "microSurface": "{{glos / 4}}"
+                        "microSurface": "{{glos / 2}}"
                     }
                 }
             },
-            "referenceImage": "Specular{{glos * 25}}-{{spec * 25}}.png"
+            "referenceImage": "Specular{{glos * 50}}-{{spec * 50}}.png"
         },
         {
             "title": "BrainStem",

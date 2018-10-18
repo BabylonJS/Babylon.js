@@ -8,7 +8,7 @@ uniform vec2 vAlbedoInfos;
 
 #ifdef AMBIENT
 uniform mat4 ambientMatrix;
-uniform vec3 vAmbientInfos;
+uniform vec4 vAmbientInfos;
 #endif
 
 #ifdef OPACITY

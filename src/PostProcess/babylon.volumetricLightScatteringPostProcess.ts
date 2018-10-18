@@ -1,5 +1,7 @@
-﻿module BABYLON {
-    // Inspired by http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html
+module BABYLON {
+    /**
+     *  Inspired by http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html
+     */
     export class VolumetricLightScatteringPostProcess extends PostProcess {
         // Members
         private _volumetricLightScatteringPass: Effect;
@@ -37,7 +39,10 @@
         @serializeAsMeshReference()
         public mesh: Mesh;
 
-
+        /**
+         * @hidden
+         * VolumetricLightScatteringPostProcess.useDiffuseColor is no longer used, use the mesh material directly instead
+         */
         public get useDiffuseColor(): boolean {
             Tools.Warn("VolumetricLightScatteringPostProcess.useDiffuseColor is no longer used, use the mesh material directly instead");
             return false;
@@ -79,19 +84,19 @@
 
         /**
          * @constructor
-         * @param {string} name - The post-process name
-         * @param {any} ratio - The size of the post-process and/or internal pass (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
-         * @param {BABYLON.Camera} camera - The camera that the post-process will be attached to
-         * @param {BABYLON.Mesh} mesh - The mesh used to create the light scattering
-         * @param {number} samples - The post-process quality, default 100
-         * @param {number} samplingMode - The post-process filtering mode
-         * @param {BABYLON.Engine} engine - The babylon engine
-         * @param {boolean} reusable - If the post-process is reusable
-         * @param {BABYLON.Scene} scene - The constructor needs a scene reference to initialize internal components. If "camera" is null (RenderPipelineà, "scene" must be provided
+         * @param name The post-process name
+         * @param ratio The size of the post-process and/or internal pass (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param camera The camera that the post-process will be attached to
+         * @param mesh The mesh used to create the light scattering
+         * @param samples The post-process quality, default 100
+         * @param samplingModeThe post-process filtering mode
+         * @param engine The babylon engine
+         * @param reusable If the post-process is reusable
+         * @param scene The constructor needs a scene reference to initialize internal components. If "camera" is null a "scene" must be provided
          */
         constructor(name: string, ratio: any, camera: Camera, mesh?: Mesh, samples: number = 100, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, scene?: Scene) {
             super(name, "volumetricLightScattering", ["decay", "exposure", "weight", "meshPositionOnScreen", "density"], ["lightScatteringSampler"], ratio.postProcessRatio || ratio, camera, samplingMode, engine, reusable, "#define NUM_SAMPLES " + samples);
-            scene = <Scene>((camera === null) ? scene : camera.getScene()) // parameter "scene" can be null.
+            scene = <Scene>((camera === null) ? scene : camera.getScene()); // parameter "scene" can be null.
 
             engine = scene.getEngine();
             this._viewPort = new Viewport(0, 0, 1, 1).toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
@@ -122,6 +127,10 @@
             });
         }
 
+        /**
+         * Returns the string "VolumetricLightScatteringPostProcess"
+         * @returns "VolumetricLightScatteringPostProcess"
+         */
         public getClassName(): string {
             return "VolumetricLightScatteringPostProcess";
         }
@@ -164,7 +173,6 @@
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
             }
 
-
             // Instances
             if (useInstances) {
                 defines.push("#define INSTANCES");
@@ -174,7 +182,7 @@
                 attribs.push("world3");
             }
 
-            // Get correct effect      
+            // Get correct effect
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
@@ -190,7 +198,7 @@
 
         /**
          * Sets the new light position for light scattering effect
-         * @param {BABYLON.Vector3} The new custom light position
+         * @param position The new custom light position
          */
         public setCustomMeshPosition(position: Vector3): void {
             this.customMeshPosition = position;
@@ -198,7 +206,7 @@
 
         /**
          * Returns the light position for light scattering effect
-         * @return {BABYLON.Vector3} The custom light position
+         * @return Vector3 The custom light position
          */
         public getCustomMeshPosition(): Vector3 {
             return this.customMeshPosition;
@@ -219,7 +227,7 @@
 
         /**
          * Returns the render target texture used by the post-process
-         * @return {BABYLON.RenderTargetTexture} The render target texture used by the post-process
+         * @return the render target texture used by the post-process
          */
         public getPass(): RenderTargetTexture {
             return this._volumetricLightScatteringRTT;
@@ -416,16 +424,17 @@
             this._screenCoordinates.x = pos.x / this._viewPort.width;
             this._screenCoordinates.y = pos.y / this._viewPort.height;
 
-            if (this.invert)
+            if (this.invert) {
                 this._screenCoordinates.y = 1.0 - this._screenCoordinates.y;
+            }
         }
 
         // Static methods
         /**
         * Creates a default mesh for the Volumeric Light Scattering post-process
-        * @param {string} The mesh name
-        * @param {BABYLON.Scene} The scene where to create the mesh
-        * @return {BABYLON.Mesh} the default mesh
+        * @param name The mesh name
+        * @param scene The scene where to create the mesh
+        * @return the default mesh
         */
         public static CreateDefaultMesh(name: string, scene: Scene): Mesh {
             var mesh = Mesh.CreatePlane(name, 1, scene);
@@ -439,4 +448,4 @@
             return mesh;
         }
     }
-}  
+}

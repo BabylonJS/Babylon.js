@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Class used to handle skinning animations
      * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
@@ -25,6 +25,7 @@
         private _scene: Scene;
         private _isDirty = true;
         private _transformMatrices: Float32Array;
+        private _transformMatrixTexture: Nullable<RawTexture>;
         private _meshesWithPoseMatrix = new Array<AbstractMesh>();
         private _animatables: IAnimatable[];
         private _identity = Matrix.Identity();
@@ -34,10 +35,18 @@
 
         private _lastAbsoluteTransformsUpdateId = -1;
 
+        private _canUseTextureForBones = false;
+
         /**
          * Specifies if the skeleton should be serialized
          */
-        public doNotSerialize = false;        
+        public doNotSerialize = false;
+
+        /**
+         * Gets or sets a boolean indicating that bone matrices should be stored as a texture instead of using shader uniforms (default is true).
+         * Please note that this option is not available when needInitialSkinMatrix === true or if the hardware does not support it
+         */
+        public useTextureToStoreBoneMatrices = true;
 
         private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
@@ -53,7 +62,7 @@
 
         public set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>) {
             this._animationPropertiesOverride = value;
-        }    
+        }
 
         // Events
 
@@ -63,6 +72,13 @@
         public onBeforeComputeObservable = new Observable<Skeleton>();
 
         /**
+         * Gets a boolean indicating that the skeleton effectively stores matrices into a texture
+         */
+        public get isUsingTextureForMatrices() {
+            return this.useTextureToStoreBoneMatrices && this._canUseTextureForBones && !this.needInitialSkinMatrix;
+        }
+
+        /**
          * Creates a new skeleton
          * @param name defines the skeleton name
          * @param id defines the skeleton Id
@@ -70,17 +86,20 @@
          */
         constructor(
             /** defines the skeleton name */
-            public name: string, 
+            public name: string,
             /** defines the skeleton Id */
             public id: string, scene: Scene) {
             this.bones = [];
 
             this._scene = scene || Engine.LastCreatedScene;
 
-            scene.skeletons.push(this);
+            this._scene.skeletons.push(this);
 
             //make sure it will recalculate the matrix next time prepare is called.
             this._isDirty = true;
+
+            const engineCaps = this._scene.getEngine().getCaps();
+            this._canUseTextureForBones = engineCaps.textureFloat && engineCaps.maxVertexTextureImageUnits > 0;
         }
 
         // Members
@@ -99,6 +118,14 @@
             }
 
             return this._transformMatrices;
+        }
+
+        /**
+         * Gets the list of transform matrices to send to shaders inside a texture (one matrix per bone)
+         * @returns a raw texture containing the data
+         */
+        public getTransformMatrixTexture(): Nullable<RawTexture> {
+            return this._transformMatrixTexture;
         }
 
         /**
@@ -177,7 +204,7 @@
                     this.bones[i].animations[0].deleteRange(name, deleteFrames);
                 }
             }
-            this._ranges[name] = null; // said much faster than 'delete this._range[name]' 
+            this._ranges[name] = null; // said much faster than 'delete this._range[name]'
         }
 
         /**
@@ -204,8 +231,8 @@
             return animationRanges;
         }
 
-        /** 
-         * Copy animation range from a source skeleton. 
+        /**
+         * Copy animation range from a source skeleton.
          * This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
          * @param source defines the source skeleton
          * @param name defines the name of the range to copy
@@ -220,7 +247,7 @@
             var frameOffset = this._getHighestAnimationFrame() + 1;
 
             // make a dictionary of source skeleton's bones, so exact same order or doublely nested loop is not required
-            var boneDict: {[key: string]: Bone} = {};
+            var boneDict: { [key: string]: Bone } = {};
             var sourceBones = source.bones;
             var nBones: number;
             var i: number;
@@ -232,7 +259,7 @@
                 Tools.Warn(`copyAnimationRange: this rig has ${this.bones.length} bones, while source as ${sourceBones.length}`);
                 ret = false;
             }
-            
+
             var skelDimensionsRatio = (rescaleAsRequired && this.dimensionsAtRest && source.dimensionsAtRest) ? this.dimensionsAtRest.divide(source.dimensionsAtRest) : null;
 
             for (i = 0, nBones = this.bones.length; i < nBones; i++) {
@@ -312,8 +339,7 @@
             }
         }
 
-        /** @hidden */
-        public _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Nullable<Matrix>): void {
+        private _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Nullable<Matrix>): void {
 
             this.onBeforeComputeObservable.notifyObservers(this);
 
@@ -378,9 +404,21 @@
             } else {
                 if (!this._transformMatrices || this._transformMatrices.length !== 16 * (this.bones.length + 1)) {
                     this._transformMatrices = new Float32Array(16 * (this.bones.length + 1));
+
+                    if (this.isUsingTextureForMatrices) {
+                        if (this._transformMatrixTexture) {
+                            this._transformMatrixTexture.dispose();
+                        }
+
+                        this._transformMatrixTexture = RawTexture.CreateRGBATexture(this._transformMatrices, (this.bones.length + 1) * 4, 1, this._scene, false, false, Engine.TEXTURE_NEAREST_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT);
+                    }
                 }
 
                 this._computeTransformMatrices(this._transformMatrices, null);
+
+                if (this.isUsingTextureForMatrices && this._transformMatrixTexture) {
+                    this._transformMatrixTexture.update(this._transformMatrices);
+                }
             }
 
             this._isDirty = false;
@@ -470,6 +508,11 @@
 
             // Remove from scene
             this.getScene().removeSkeleton(this);
+
+            if (this._transformMatrixTexture) {
+                this._transformMatrixTexture.dispose();
+                this._transformMatrixTexture = null;
+            }
         }
 
         /**
@@ -502,7 +545,7 @@
                 };
 
                 serializationObject.bones.push(serializedBone);
-                
+
                 if (bone.length) {
                     serializedBone.length = bone.length;
                 }
@@ -510,7 +553,7 @@
                 if (bone.metadata) {
                     serializedBone.metadata = bone.metadata;
                 }
-                
+
                 if (bone.animations && bone.animations.length > 0) {
                     serializedBone.animation = bone.animations[0].serialize();
                 }
@@ -557,7 +600,11 @@
                 }
                 var rest: Nullable<Matrix> = parsedBone.rest ? Matrix.FromArray(parsedBone.rest) : null;
                 var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix), rest);
-                
+
+                if (parsedBone.id !== undefined && parsedBone.id !== null) {
+                    bone.id = parsedBone.id;
+                }
+
                 if (parsedBone.length) {
                     bone.length = parsedBone.length;
                 }
@@ -585,25 +632,25 @@
          * Compute all node absolute transforms
          * @param forceUpdate defines if computation must be done even if cache is up to date
          */
-        public computeAbsoluteTransforms (forceUpdate = false): void {
+        public computeAbsoluteTransforms(forceUpdate = false): void {
 
             var renderId = this._scene.getRenderId();
-            
-            if (this._lastAbsoluteTransformsUpdateId != renderId || forceUpdate ) {
+
+            if (this._lastAbsoluteTransformsUpdateId != renderId || forceUpdate) {
                 this.bones[0].computeAbsoluteTransforms();
                 this._lastAbsoluteTransformsUpdateId = renderId;
             }
-            
+
         }
 
         /**
          * Gets the root pose matrix
          * @returns a matrix
          */
-        public getPoseMatrix(): Nullable<Matrix> {        
+        public getPoseMatrix(): Nullable<Matrix> {
             var poseMatrix: Nullable<Matrix> = null;
-            
-            if(this._meshesWithPoseMatrix.length > 0){
+
+            if (this._meshesWithPoseMatrix.length > 0) {
                 poseMatrix = this._meshesWithPoseMatrix[0].getPoseMatrix();
             }
 

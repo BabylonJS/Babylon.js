@@ -1,4 +1,10 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * This represents the object necessary to create a rendering group.
+     * This is exclusively used and created by the rendering manager.
+     * To modify the behavior, you use the available helpers in your scene or meshes.
+     * @hidden
+     */
     export class RenderingGroup {
         private _scene: Scene;
         private _opaqueSubMeshes = new SmartArray<SubMesh>(256);
@@ -6,7 +12,7 @@
         private _alphaTestSubMeshes = new SmartArray<SubMesh>(256);
         private _depthOnlySubMeshes = new SmartArray<SubMesh>(256);
         private _particleSystems = new SmartArray<IParticleSystem>(256);
-        private _spriteManagers = new SmartArray<SpriteManager>(256);
+        private _spriteManagers = new SmartArray<ISpriteManager>(256);
 
         private _opaqueSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
         private _alphaTestSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
@@ -16,13 +22,13 @@
         private _renderAlphaTest: (subMeshes: SmartArray<SubMesh>) => void;
         private _renderTransparent: (subMeshes: SmartArray<SubMesh>) => void;
 
-        private _edgesRenderers = new SmartArray<EdgesRenderer>(16);
+        private _edgesRenderers = new SmartArray<IEdgesRenderer>(16);
 
         public onBeforeTransparentRendering: () => void;
 
         /**
          * Set the opaque sort comparison function.
-         * If null the sub meshes will be render in the order they were created 
+         * If null the sub meshes will be render in the order they were created
          */
         public set opaqueSortCompareFn(value: Nullable<(a: SubMesh, b: SubMesh) => number>) {
             this._opaqueSortCompareFn = value;
@@ -36,7 +42,7 @@
 
         /**
          * Set the alpha test sort comparison function.
-         * If null the sub meshes will be render in the order they were created 
+         * If null the sub meshes will be render in the order they were created
          */
         public set alphaTestSortCompareFn(value: Nullable<(a: SubMesh, b: SubMesh) => number>) {
             this._alphaTestSortCompareFn = value;
@@ -50,7 +56,7 @@
 
         /**
          * Set the transparent sort comparison function.
-         * If null the sub meshes will be render in the order they were created 
+         * If null the sub meshes will be render in the order they were created
          */
         public set transparentSortCompareFn(value: Nullable<(a: SubMesh, b: SubMesh) => number>) {
             if (value) {
@@ -137,8 +143,12 @@
             engine.setStencilBuffer(false);
 
             // Edges
-            for (var edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
-                this._edgesRenderers.data[edgesRendererIndex].render();
+            if (this._edgesRenderers.length) {
+                for (var edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
+                    this._edgesRenderers.data[edgesRendererIndex].render();
+                }
+
+                engine.setAlphaMode(Engine.ALPHA_DISABLE);
             }
 
             // Restore Stencil state.
@@ -225,7 +235,7 @@
         /**
          * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
          * are rendered back to front if in the same alpha index.
-         * 
+         *
          * @param a The first submesh
          * @param b The second submesh
          * @returns The result of the comparison
@@ -246,7 +256,7 @@
         /**
          * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
          * are rendered back to front.
-         * 
+         *
          * @param a The first submesh
          * @param b The second submesh
          * @returns The result of the comparison
@@ -266,7 +276,7 @@
         /**
          * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
          * are rendered front to back (prevent overdraw).
-         * 
+         *
          * @param a The first submesh
          * @param b The second submesh
          * @returns The result of the comparison
@@ -341,12 +351,12 @@
                 this._opaqueSubMeshes.push(subMesh); // Opaque
             }
 
-            if (mesh._edgesRenderer !== null && mesh._edgesRenderer !== undefined && mesh._edgesRenderer.isEnabled) {
+            if (mesh._edgesRenderer && mesh._edgesRenderer.isEnabled) {
                 this._edgesRenderers.push(mesh._edgesRenderer);
             }
         }
 
-        public dispatchSprites(spriteManager: SpriteManager) {
+        public dispatchSprites(spriteManager: ISpriteManager) {
             this._spriteManagers.push(spriteManager);
         }
 
@@ -383,7 +393,7 @@
                 return;
             }
 
-            // Sprites       
+            // Sprites
             var activeCamera = this._scene.activeCamera;
             this._scene.onBeforeSpritesRenderingObservable.notifyObservers(this._scene);
             for (var id = 0; id < this._spriteManagers.length; id++) {
@@ -396,4 +406,4 @@
             this._scene.onAfterSpritesRenderingObservable.notifyObservers(this._scene);
         }
     }
-} 
+}

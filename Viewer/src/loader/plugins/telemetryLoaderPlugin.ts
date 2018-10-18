@@ -3,7 +3,6 @@ import { telemetryManager } from "../../managers/telemetryManager";
 import { ViewerModel } from "../../model/viewerModel";
 import { Tools, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs";
 
-
 export class TelemetryLoaderPlugin implements ILoaderPlugin {
 
     private _model: ViewerModel;

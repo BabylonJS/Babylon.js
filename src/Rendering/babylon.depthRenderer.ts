@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * This represents a depth renderer in Babylon.
      * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
@@ -9,7 +9,14 @@
         private _effect: Effect;
 
         private _cachedDefines: string;
-        private _camera:Nullable<Camera>;
+        private _camera: Nullable<Camera>;
+
+        /**
+         * Specifiess that the depth renderer will only be used within
+         * the camera it is created for.
+         * This can help forcing its rendering during the camera processing.
+         */
+        public useOnlyInActiveCamera: boolean = false;
 
         /**
          * Instantiates a depth renderer
@@ -17,8 +24,15 @@
          * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
          * @param camera The camera to be used to render the depth map (default: scene's active camera)
          */
-        constructor(scene: Scene, type: number = Engine.TEXTURETYPE_FLOAT, camera:Nullable<Camera> = null) {
+        constructor(scene: Scene, type: number = Engine.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null) {
             this._scene = scene;
+            // Register the G Buffer component to the scene.
+            let component = scene._getComponent(SceneComponentConstants.NAME_DEPTHRENDERER) as DepthRendererSceneComponent;
+            if (!component) {
+                component = new DepthRendererSceneComponent(scene);
+                scene._addComponent(component);
+            }
+
             this._camera = camera;
             var engine = scene.getEngine();
 
@@ -34,7 +48,7 @@
             this._depthMap.activeCamera = this._camera;
             this._depthMap.ignoreCameraViewport = true;
             this._depthMap.useCameraPostProcesses = false;
-            
+
             // set default depth value to 1.0 (far away)
             this._depthMap.onClearObservable.add((engine: Engine) => {
                 engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
@@ -62,7 +76,7 @@
                 }
 
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
-                
+
                 var camera = this._camera || scene.activeCamera;
                 if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
                     engine.enableEffect(this._effect);
@@ -97,12 +111,12 @@
                 var index;
 
                 if (depthOnlySubMeshes.length) {
-                    engine.setColorWrite(false);            
+                    engine.setColorWrite(false);
                     for (index = 0; index < depthOnlySubMeshes.length; index++) {
                         renderSubMesh(depthOnlySubMeshes.data[index]);
                     }
                     engine.setColorWrite(true);
-                }     
+                }
 
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
@@ -168,7 +182,7 @@
                 attribs.push("world3");
             }
 
-            // Get correct effect      
+            // Get correct effect
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
@@ -196,4 +210,4 @@
             this._depthMap.dispose();
         }
     }
-} 
+}

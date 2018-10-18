@@ -1,15 +1,21 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * @hidden
+     */
     export class IntersectionInfo {
         public faceId = 0;
         public subMeshId = 0;
 
-        constructor(public bu: Nullable<number>, public bv: Nullable<number>, public distance: number) {
+        constructor(
+            public bu: Nullable<number>,
+            public bv: Nullable<number>,
+            public distance: number) {
         }
     }
 
     /**
      * Information about the result of picking within a scene
-     * See https://doc.babylonjs.com/babylon101/picking_collisions
+     * @see https://doc.babylonjs.com/babylon101/picking_collisions
      */
     export class PickingInfo {
         /**
@@ -25,7 +31,7 @@
          */
         public pickedPoint: Nullable<Vector3> = null;
         /**
-         * The mesh corrisponding the the pick collision
+         * The mesh corresponding the the pick collision
          */
         public pickedMesh: Nullable<AbstractMesh> = null;
         /** (See getTextureCoordinates) The barycentric U coordinate that is used when calulating the texture coordinates of the collision.*/
@@ -48,10 +54,10 @@
         public ray: Nullable<Ray> = null;
 
         /**
-         * Gets the normal corrispodning to the face the pick collided with
+         * Gets the normal correspodning to the face the pick collided with
          * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
          * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
-         * @returns The normal corrispodning to the face the pick collided with
+         * @returns The normal correspodning to the face the pick collided with
          */
         public getNormal(useWorldCoordinates = false, useVerticesNormals = true): Nullable<Vector3> {
             if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
@@ -143,4 +149,3 @@
         }
     }
 }
-

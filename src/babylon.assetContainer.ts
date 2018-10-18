@@ -20,6 +20,11 @@ module BABYLON {
         constructor(scene: Scene) {
             super();
             this.scene = scene;
+            this["sounds"] = [];
+            this["effectLayers"] = [];
+            this["layers"] = [];
+            this["lensFlareSystems"] = [];
+            this["proceduralTextures"] = [];
         }
 
         /**
@@ -37,9 +42,6 @@ module BABYLON {
             });
             this.skeletons.forEach((o) => {
                 this.scene.addSkeleton(o);
-            });
-            this.particleSystems.forEach((o) => {
-                this.scene.addParticleSystem(o);
             });
             this.animations.forEach((o) => {
                 this.scene.addAnimation(o);
@@ -65,17 +67,12 @@ module BABYLON {
             this.actionManagers.forEach((o) => {
                 this.scene.addActionManager(o);
             });
-            this.sounds.forEach((o) => {
-                o.play();
-                o.autoplay = true;
-                this.scene.mainSoundTrack.AddSound(o);
-            });
             this.textures.forEach((o) => {
                 this.scene.addTexture(o);
             });
 
             for (let component of this.scene._serializableComponents) {
-                component.addFromContainer(this.scene);
+                component.addFromContainer(this);
             }
         }
 
@@ -94,9 +91,6 @@ module BABYLON {
             });
             this.skeletons.forEach((o) => {
                 this.scene.removeSkeleton(o);
-            });
-            this.particleSystems.forEach((o) => {
-                this.scene.removeParticleSystem(o);
             });
             this.animations.forEach((o) => {
                 this.scene.removeAnimation(o);
@@ -122,17 +116,12 @@ module BABYLON {
             this.actionManagers.forEach((o) => {
                 this.scene.removeActionManager(o);
             });
-            this.sounds.forEach((o) => {
-                o.stop();
-                o.autoplay = false;
-                this.scene.mainSoundTrack.RemoveSound(o);
-            });
             this.textures.forEach((o) => {
                 this.scene.removeTexture(o);
             });
 
             for (let component of this.scene._serializableComponents) {
-                component.removeFromContainer(this.scene);
+                component.removeFromContainer(this);
             }
         }
 
@@ -182,13 +171,13 @@ module BABYLON {
          * Adds all meshes in the asset container to a root mesh that can be used to position all the contained meshes. The root mesh is then added to the front of the meshes in the assetContainer.
          * @returns the root mesh
          */
-        public createRootMesh(){
+        public createRootMesh() {
             var rootMesh = new BABYLON.Mesh("assetContainerRootMesh", this.scene);
-            this.meshes.forEach((m)=>{
-                if(!m.parent){
+            this.meshes.forEach((m) => {
+                if (!m.parent) {
                     rootMesh.addChild(m);
                 }
-            })
+            });
             this.meshes.unshift(rootMesh);
             return rootMesh;
         }

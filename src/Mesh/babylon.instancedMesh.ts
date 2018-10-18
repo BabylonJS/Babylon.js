@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
 
     /**
      * Creates an instance based on a source mesh.
@@ -7,10 +7,13 @@
         private _sourceMesh: Mesh;
         private _currentLOD: Mesh;
 
+        /** @hidden */
+        public _indexInSourceMeshInstanceArray = -1;
+
         constructor(name: string, source: Mesh) {
             super(name, source.getScene());
 
-            source.instances.push(this);
+            source.addInstance(this);
 
             this._sourceMesh = source;
 
@@ -31,29 +34,44 @@
         }
 
         /**
-         * Returns the string "InstancedMesh".  
+         * Returns the string "InstancedMesh".
          */
         public getClassName(): string {
             return "InstancedMesh";
         }
 
-        // Methods      
+        // Methods
+        /**
+         * If the source mesh receives shadows
+         */
         public get receiveShadows(): boolean {
             return this._sourceMesh.receiveShadows;
         }
 
+        /**
+         * The material of the source mesh
+         */
         public get material(): Nullable<Material> {
             return this._sourceMesh.material;
         }
 
+        /**
+         * Visibility of the source mesh
+         */
         public get visibility(): number {
             return this._sourceMesh.visibility;
         }
 
+        /**
+         * Skeleton of the source mesh
+         */
         public get skeleton(): Nullable<Skeleton> {
             return this._sourceMesh.skeleton;
         }
 
+        /**
+         * Rendering ground id of the source mesh
+         */
         public get renderingGroupId(): number {
             return this._sourceMesh.renderingGroupId;
         }
@@ -68,12 +86,15 @@
         }
 
         /**
-         * Returns the total number of vertices (integer).  
+         * Returns the total number of vertices (integer).
          */
         public getTotalVertices(): number {
             return this._sourceMesh.getTotalVertices();
         }
 
+        /**
+         * The source mesh of the instance
+         */
         public get sourceMesh(): Mesh {
             return this._sourceMesh;
         }
@@ -88,7 +109,10 @@
         }
 
         /**
-         * Returns a float array or a Float32Array of the requested kind of data : positons, normals, uvs, etc.  
+         * Returns an array of integers or a typed array (Int32Array, Uint32Array, Uint16Array) populated with the mesh indices.
+         * @param kind kind of verticies to retreive (eg. positons, normals, uvs, etc.)
+         * @param copyWhenShared If true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
+         * @returns a float array or a Float32Array of the requested kind of data : positons, normals, uvs, etc.
          */
         public getVerticesData(kind: string, copyWhenShared?: boolean): Nullable<FloatArray> {
             return this._sourceMesh.getVerticesData(kind, copyWhenShared);
@@ -96,12 +120,12 @@
 
         /**
          * Sets the vertex data of the mesh geometry for the requested `kind`.
-         * If the mesh has no geometry, a new Geometry object is set to the mesh and then passed this vertex data.  
-         * The `data` are either a numeric array either a Float32Array. 
-         * The parameter `updatable` is passed as is to the underlying Geometry object constructor (if initianilly none) or updater. 
-         * The parameter `stride` is an optional positive integer, it is usually automatically deducted from the `kind` (3 for positions or normals, 2 for UV, etc).  
-         * Note that a new underlying VertexBuffer object is created each call. 
-         * If the `kind` is the `PositionKind`, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed. 
+         * If the mesh has no geometry, a new Geometry object is set to the mesh and then passed this vertex data.
+         * The `data` are either a numeric array either a Float32Array.
+         * The parameter `updatable` is passed as is to the underlying Geometry object constructor (if initianilly none) or updater.
+         * The parameter `stride` is an optional positive integer, it is usually automatically deducted from the `kind` (3 for positions or normals, 2 for UV, etc).
+         * Note that a new underlying VertexBuffer object is created each call.
+         * If the `kind` is the `PositionKind`, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.
          *
          * Possible `kind` values :
          * - BABYLON.VertexBuffer.PositionKind
@@ -115,9 +139,9 @@
          * - BABYLON.VertexBuffer.MatricesIndicesKind
          * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
          * - BABYLON.VertexBuffer.MatricesWeightsKind
-         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind  
-         * 
-         * Returns the Mesh.  
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
+         *
+         * Returns the Mesh.
          */
         public setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): Mesh {
             if (this.sourceMesh) {
@@ -128,10 +152,10 @@
 
         /**
          * Updates the existing vertex data of the mesh geometry for the requested `kind`.
-         * If the mesh has no geometry, it is simply returned as it is.  
-         * The `data` are either a numeric array either a Float32Array. 
-         * No new underlying VertexBuffer object is created. 
-         * If the `kind` is the `PositionKind` and if `updateExtends` is true, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.  
+         * If the mesh has no geometry, it is simply returned as it is.
+         * The `data` are either a numeric array either a Float32Array.
+         * No new underlying VertexBuffer object is created.
+         * If the `kind` is the `PositionKind` and if `updateExtends` is true, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.
          * If the parameter `makeItUnique` is true, a new global geometry is created from this positions and is set to the mesh.
          *
          * Possible `kind` values :
@@ -147,8 +171,8 @@
          * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
          * - BABYLON.VertexBuffer.MatricesWeightsKind
          * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
-         * 
-         * Returns the Mesh.  
+         *
+         * Returns the Mesh.
          */
         public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
             if (this.sourceMesh) {
@@ -158,11 +182,11 @@
         }
 
         /**
-         * Sets the mesh indices.  
+         * Sets the mesh indices.
          * Expects an array populated with integers or a typed array (Int32Array, Uint32Array, Uint16Array).
-         * If the mesh has no geometry, a new Geometry object is created and set to the mesh. 
-         * This method creates a new index buffer each call.  
-         * Returns the Mesh.  
+         * If the mesh has no geometry, a new Geometry object is created and set to the mesh.
+         * This method creates a new index buffer each call.
+         * Returns the Mesh.
          */
         public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null): Mesh {
             if (this.sourceMesh) {
@@ -179,7 +203,7 @@
         }
 
         /**
-         * Returns an array of indices (IndicesArray).  
+         * Returns an array of indices (IndicesArray).
          */
         public getIndices(): Nullable<IndicesArray> {
             return this._sourceMesh.getIndices();
@@ -190,18 +214,24 @@
         }
 
         /**
-         * Sets a new updated BoundingInfo to the mesh.  
-         * Returns the mesh.  
+         * reconstructs and updates the BoundingInfo of the mesh.
+         * @returns the mesh.
          */
         public refreshBoundingInfo(): InstancedMesh {
             var meshBB = this._sourceMesh.getBoundingInfo();
 
-            this._boundingInfo = new BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
+            if (this._boundingInfo) {
+                this._boundingInfo.reConstruct(meshBB.minimum, meshBB.maximum);
+            }
+            else {
+                this._boundingInfo = new BoundingInfo(meshBB.minimum, meshBB.maximum);
+            }
 
             this._updateBoundingInfo();
             return this;
         }
 
+        /** @hidden */
         public _preActivate(): InstancedMesh {
             if (this._currentLOD) {
                 this._currentLOD._preActivate();
@@ -209,6 +239,7 @@
             return this;
         }
 
+        /** @hidden */
         public _activate(renderId: number): InstancedMesh {
             if (this._currentLOD) {
                 this._currentLOD._registerInstanceForRenderId(this, renderId);
@@ -217,7 +248,7 @@
         }
 
         /**
-         * Returns the current associated LOD AbstractMesh.  
+         * Returns the current associated LOD AbstractMesh.
          */
         public getLOD(camera: Camera): AbstractMesh {
             if (!camera) {
@@ -235,6 +266,7 @@
             return this._currentLOD;
         }
 
+        /** @hidden */
         public _syncSubMeshes(): InstancedMesh {
             this.releaseSubMeshes();
             if (this._sourceMesh.subMeshes) {
@@ -245,17 +277,18 @@
             return this;
         }
 
+        /** @hidden */
         public _generatePointsArray(): boolean {
             return this._sourceMesh._generatePointsArray();
         }
 
         /**
-         * Creates a new InstancedMesh from the current mesh.  
+         * Creates a new InstancedMesh from the current mesh.
          * - name (string) : the cloned mesh name
-         * - newParent (optional Node) : the optional Node to parent the clone to.  
-         * - doNotCloneChildren (optional boolean, default `false`) : if `true` the model children aren't cloned.  
-         * 
-         * Returns the clone.  
+         * - newParent (optional Node) : the optional Node to parent the clone to.
+         * - doNotCloneChildren (optional boolean, default `false`) : if `true` the model children aren't cloned.
+         *
+         * Returns the clone.
          */
         public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): InstancedMesh {
             var result = this._sourceMesh.createInstance(name);
@@ -288,16 +321,13 @@
         }
 
         /**
-         * Disposes the InstancedMesh.  
-         * Returns nothing.  
+         * Disposes the InstancedMesh.
+         * Returns nothing.
          */
         public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
-
             // Remove from mesh
-            var index = this._sourceMesh.instances.indexOf(this);
-            this._sourceMesh.instances.splice(index, 1);
-
+            this._sourceMesh.removeInstance(this);
             super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
     }
-} 
+}

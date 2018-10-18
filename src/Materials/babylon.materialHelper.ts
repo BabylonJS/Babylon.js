@@ -1,10 +1,10 @@
 module BABYLON {
     /**
-     * "Static Class" containing the most commonly used helper while dealing with material for 
+     * "Static Class" containing the most commonly used helper while dealing with material for
      * rendering purpose.
-     * 
+     *
      * It contains the basic tools to help defining defines, binding uniform for the common part of the materials.
-     * 
+     *
      * This works by convention in BabylonJS but is meant to be use only with shader following the in place naming rules and conventions.
      */
     export class MaterialHelper {
@@ -24,15 +24,15 @@ module BABYLON {
 
         /**
          * Helps preparing the defines values about the UVs in used in the effect.
-         * UVs are shared as much as we can accross chanels in the shaders.
+         * UVs are shared as much as we can accross channels in the shaders.
          * @param texture The texture we are preparing the UVs for
          * @param defines The defines to update
-         * @param key The chanel key "diffuse", "specular"... used in the shader
+         * @param key The channel key "diffuse", "specular"... used in the shader
          */
         public static PrepareDefinesForMergedUV(texture: BaseTexture, defines: any, key: string): void {
             defines._needUVs = true;
             defines[key] = true;
-            if (texture.getTextureMatrix().isIdentity(true)) {
+            if (texture.getTextureMatrix().isIdentityAs3x2()) {
                 defines[key + "DIRECTUV"] = texture.coordinatesIndex + 1;
                 if (texture.coordinatesIndex === 0) {
                     defines["MAINUV1"] = true;
@@ -46,14 +46,14 @@ module BABYLON {
 
         /**
          * Binds a texture matrix value to its corrsponding uniform
-         * @param texture The texture to bind the matrix for 
+         * @param texture The texture to bind the matrix for
          * @param uniformBuffer The uniform buffer receivin the data
-         * @param key The chanel key "diffuse", "specular"... used in the shader
+         * @param key The channel key "diffuse", "specular"... used in the shader
          */
         public static BindTextureMatrix(texture: BaseTexture, uniformBuffer: UniformBuffer, key: string): void {
             var matrix = texture.getTextureMatrix();
 
-            if (!matrix.isIdentity(true)) {
+            if (!matrix.isIdentityAs3x2()) {
                 uniformBuffer.updateMatrix(key + "Matrix", matrix);
             }
         }
@@ -88,13 +88,33 @@ module BABYLON {
          */
         public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, useClipPlane: Nullable<boolean> = null): void {
             var changed = false;
+            let useClipPlane1 = false;
+            let useClipPlane2 = false;
+            let useClipPlane3 = false;
+            let useClipPlane4 = false;
 
-            if (useClipPlane == null) {
-                useClipPlane = (scene.clipPlane !== undefined && scene.clipPlane !== null);
+            useClipPlane1 = useClipPlane == null ? (scene.clipPlane !== undefined && scene.clipPlane !== null) : useClipPlane;
+            useClipPlane2 = useClipPlane == null ? (scene.clipPlane2 !== undefined && scene.clipPlane2 !== null) : useClipPlane;
+            useClipPlane3 = useClipPlane == null ? (scene.clipPlane3 !== undefined && scene.clipPlane3 !== null) : useClipPlane;
+            useClipPlane4 = useClipPlane == null ? (scene.clipPlane4 !== undefined && scene.clipPlane4 !== null) : useClipPlane;
+
+            if (defines["CLIPPLANE"] !== useClipPlane1) {
+                defines["CLIPPLANE"] = useClipPlane1;
+                changed = true;
             }
 
-            if (defines["CLIPPLANE"] !== useClipPlane) {
-                defines["CLIPPLANE"] = useClipPlane;
+            if (defines["CLIPPLANE2"] !== useClipPlane2) {
+                defines["CLIPPLANE2"] = useClipPlane2;
+                changed = true;
+            }
+
+            if (defines["CLIPPLANE3"] !== useClipPlane3) {
+                defines["CLIPPLANE3"] = useClipPlane3;
+                changed = true;
+            }
+
+            if (defines["CLIPPLANE4"] !== useClipPlane4) {
+                defines["CLIPPLANE4"] = useClipPlane4;
                 changed = true;
             }
 
@@ -154,7 +174,15 @@ module BABYLON {
             if (useBones) {
                 if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                     defines["NUM_BONE_INFLUENCERS"] = mesh.numBoneInfluencers;
-                    defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
+
+                    const materialSupportsBoneTexture = defines["BONETEXTURE"] !== undefined;
+
+                    if (mesh.skeleton.isUsingTextureForMatrices && materialSupportsBoneTexture) {
+                        defines["BONETEXTURE"] = true;
+                    } else {
+                        defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
+                        defines["BONETEXTURE"] = materialSupportsBoneTexture ? false : undefined;
+                    }
                 } else {
                     defines["NUM_BONE_INFLUENCERS"] = 0;
                     defines["BonesPerMesh"] = 0;
@@ -216,20 +244,24 @@ module BABYLON {
                     defines["POINTLIGHT" + lightIndex] = false;
                     defines["DIRLIGHT" + lightIndex] = false;
 
-                    var type;
-                    if (light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
-                        type = "SPOTLIGHT" + lightIndex;
-                        let spotLight = light as SpotLight;
-                        defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = spotLight.projectionTexture ? true : false;
-                    } else if (light.getTypeID() === Light.LIGHTTYPEID_HEMISPHERICLIGHT) {
-                        type = "HEMILIGHT" + lightIndex;
-                    } else if (light.getTypeID() === Light.LIGHTTYPEID_POINTLIGHT) {
-                        type = "POINTLIGHT" + lightIndex;
-                    } else {
-                        type = "DIRLIGHT" + lightIndex;
-                    }
+                    light.prepareLightSpecificDefines(defines, lightIndex);
 
-                    defines[type] = true;
+                    // FallOff.
+                    defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = false;
+                    defines["LIGHT_FALLOFF_GLTF" + lightIndex] = false;
+                    defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = false;
+
+                    switch (light.falloffType) {
+                        case Light.FALLOFF_GLTF:
+                            defines["LIGHT_FALLOFF_GLTF" + lightIndex] = true;
+                            break;
+                        case Light.FALLOFF_PHYSICAL:
+                            defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = true;
+                            break;
+                        case Light.FALLOFF_STANDARD:
+                            defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = true;
+                            break;
+                    }
 
                     // Specular
                     if (specularSupported && !light.specular.equalsFloats(0, 0, 0)) {
@@ -249,8 +281,13 @@ module BABYLON {
                     if (mesh && mesh.receiveShadows && scene.shadowsEnabled && light.shadowEnabled) {
                         var shadowGenerator = light.getShadowGenerator();
                         if (shadowGenerator) {
-                            shadowEnabled = true;
-                            shadowGenerator.prepareDefines(defines, lightIndex);
+                            const shadowMap = shadowGenerator.getShadowMap();
+                            if (shadowMap) {
+                                if (shadowMap.renderList && shadowMap.renderList.length > 0) {
+                                    shadowEnabled = true;
+                                    shadowGenerator.prepareDefines(defines, lightIndex);
+                                }
+                            }
                         }
                     }
 
@@ -264,8 +301,9 @@ module BABYLON {
                     }
 
                     lightIndex++;
-                    if (lightIndex === maxSimultaneousLights)
+                    if (lightIndex === maxSimultaneousLights) {
                         break;
+                    }
                 }
             }
 
@@ -303,7 +341,7 @@ module BABYLON {
         }
 
         /**
-         * Prepares the uniforms and samplers list to be used in the effect. This can automatically remove from the list uniforms 
+         * Prepares the uniforms and samplers list to be used in the effect. This can automatically remove from the list uniforms
          * that won t be acctive due to defines being turned off.
          * @param uniformsListOrOptions The uniform names to prepare or an EffectCreationOptions containing the liist and extra information
          * @param samplersList The samplers list
@@ -338,6 +376,7 @@ module BABYLON {
                     "vLightDiffuse" + lightIndex,
                     "vLightSpecular" + lightIndex,
                     "vLightDirection" + lightIndex,
+                    "vLightFalloff" + lightIndex,
                     "vLightGround" + lightIndex,
                     "lightMatrix" + lightIndex,
                     "shadowsInfo" + lightIndex,
@@ -351,8 +390,8 @@ module BABYLON {
                 samplersList.push("shadowSampler" + lightIndex);
                 samplersList.push("depthSampler" + lightIndex);
 
-                if (defines["PROJECTEDLIGHTTEXTURE" + lightIndex]){
-                    samplersList.push("projectionLightSampler" + lightIndex,);
+                if (defines["PROJECTEDLIGHTTEXTURE" + lightIndex]) {
+                    samplersList.push("projectionLightSampler" + lightIndex);
                     uniformsList.push(
                         "textureProjectionMatrix" + lightIndex,
                     );
@@ -479,7 +518,7 @@ module BABYLON {
          * Binds the light shadow information to the effect for the given mesh.
          * @param light The light containing the generator
          * @param scene The scene the lights belongs to
-         * @param mesh The mesh we are binding the information to render 
+         * @param mesh The mesh we are binding the information to render
          * @param lightIndex The light index in the effect used to render the mesh
          * @param effect The effect we are binding the data to
          */
@@ -505,7 +544,7 @@ module BABYLON {
         /**
          * Binds the lights information from the scene to the effect for the given mesh.
          * @param scene The scene the lights belongs to
-         * @param mesh The mesh we are binding the information to render 
+         * @param mesh The mesh we are binding the information to render
          * @param effect The effect we are binding the data to
          * @param defines The generated defines for the effect
          * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
@@ -539,22 +578,31 @@ module BABYLON {
             }
         }
 
+        private static _tempFogColor = BABYLON.Color3.Black();
         /**
          * Binds the fog information from the scene to the effect for the given mesh.
          * @param scene The scene the lights belongs to
-         * @param mesh The mesh we are binding the information to render 
+         * @param mesh The mesh we are binding the information to render
          * @param effect The effect we are binding the data to
+         * @param linearSpace Defines if the fog effect is applied in linear space
          */
-        public static BindFogParameters(scene: Scene, mesh: AbstractMesh, effect: Effect): void {
+        public static BindFogParameters(scene: Scene, mesh: AbstractMesh, effect: Effect, linearSpace = false): void {
             if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
                 effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-                effect.setColor3("vFogColor", scene.fogColor);
+                // Convert fog color to linear space if used in a linear space computed shader.
+                if (linearSpace) {
+                    scene.fogColor.toLinearSpaceToRef(this._tempFogColor);
+                    effect.setColor3("vFogColor", this._tempFogColor);
+                }
+                else {
+                    effect.setColor3("vFogColor", scene.fogColor);
+                }
             }
         }
 
         /**
          * Binds the bones information from the mesh to the effect.
-         * @param mesh The mesh we are binding the information to render 
+         * @param mesh The mesh we are binding the information to render
          * @param effect The effect we are binding the data to
          */
         public static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect): void {
@@ -566,17 +614,25 @@ module BABYLON {
             }
 
             if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-                var matrices = mesh.skeleton.getTransformMatrices(mesh);
+                const skeleton = mesh.skeleton;
 
-                if (matrices) {
-                    effect.setMatrices("mBones", matrices);
+                if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureWidth") > -1) {
+                    const boneTexture = skeleton.getTransformMatrixTexture();
+                    effect.setTexture("boneSampler", boneTexture);
+                    effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+                } else {
+                    const matrices = skeleton.getTransformMatrices(mesh);
+
+                    if (matrices) {
+                        effect.setMatrices("mBones", matrices);
+                    }
                 }
             }
         }
 
         /**
          * Binds the morph targets information from the mesh to the effect.
-         * @param abstractMesh The mesh we are binding the information to render 
+         * @param abstractMesh The mesh we are binding the information to render
          * @param effect The effect we are binding the data to
          */
         public static BindMorphTargetParameters(abstractMesh: AbstractMesh, effect: Effect): void {
@@ -607,8 +663,20 @@ module BABYLON {
          */
         public static BindClipPlane(effect: Effect, scene: Scene): void {
             if (scene.clipPlane) {
-                var clipPlane = scene.clipPlane;
+                let clipPlane = scene.clipPlane;
                 effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+            }
+            if (scene.clipPlane2) {
+                let clipPlane = scene.clipPlane2;
+                effect.setFloat4("vClipPlane2", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+            }
+            if (scene.clipPlane3) {
+                let clipPlane = scene.clipPlane3;
+                effect.setFloat4("vClipPlane3", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+            }
+            if (scene.clipPlane4) {
+                let clipPlane = scene.clipPlane4;
+                effect.setFloat4("vClipPlane4", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
             }
         }
     }

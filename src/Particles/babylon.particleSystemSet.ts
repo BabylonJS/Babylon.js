@@ -41,15 +41,15 @@ module BABYLON {
                 kind: "Sphere",
                 options: options,
                 renderingGroupId: renderingGroupId
-            }
+            };
 
             let emitterMesh = MeshBuilder.CreateSphere("emitterSphere", {diameter: options.diameter, segments: options.segments}, scene);
             emitterMesh.renderingGroupId = renderingGroupId;
 
-            var material = new BABYLON.StandardMaterial("emitterSphereMaterial", scene)
-            material.emissiveColor = options.color;    
-            emitterMesh.material = material;     
-            
+            var material = new BABYLON.StandardMaterial("emitterSphereMaterial", scene);
+            material.emissiveColor = options.color;
+            emitterMesh.material = material;
+
             for (var system of this.systems) {
                 system.emitter = emitterMesh;
             }
@@ -91,7 +91,7 @@ module BABYLON {
          * @returns a JSON compatible representation of the set
          */
         public serialize(): any {
-            var result:any = {};
+            var result: any = {};
 
             result.systems = [];
             for (var system of this.systems) {
@@ -105,7 +105,7 @@ module BABYLON {
             return result;
         }
 
-        /** 
+        /**
          * Parse a new ParticleSystemSet from a serialized source
          * @param data defines a JSON compatible representation of the set
          * @param scene defines the hosting scene
@@ -119,15 +119,15 @@ module BABYLON {
             scene = scene || Engine.LastCreatedScene;
 
             for (var system of data.systems) {
-                result.systems.push(gpu ? GPUParticleSystem.Parse(system, scene, rootUrl) : ParticleSystem.Parse(system, scene, rootUrl));
+                result.systems.push(gpu ? GPUParticleSystem.Parse(system, scene, rootUrl, true) : ParticleSystem.Parse(system, scene, rootUrl, true));
             }
 
             if (data.emitter) {
                 let options = data.emitter.options;
-                switch (data.emitter.kind) {                    
+                switch (data.emitter.kind) {
                     case "Sphere":
                         result.setEmitterAsSphere({
-                            diameter: options.diameter, 
+                            diameter: options.diameter,
                             segments: options.segments,
                             color: Color3.FromArray(options.color)
                         }, data.emitter.renderingGroupId, scene);

@@ -1,9 +1,12 @@
-﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
     class MixMaterialDefines extends MaterialDefines {
         public DIFFUSE = false;
         public CLIPPLANE = false;
+        public CLIPPLANE2 = false;
+        public CLIPPLANE3 = false;
+        public CLIPPLANE4 = false;
         public ALPHATEST = false;
         public DEPTHPREPASS = false;
         public POINTSIZE = false;
@@ -125,7 +128,7 @@ module BABYLON {
             return null;
         }
 
-        // Methods   
+        // Methods
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
@@ -181,7 +184,7 @@ module BABYLON {
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
                 scene.resetCachedMaterial();
@@ -228,7 +231,7 @@ module BABYLON {
                     "vFogInfos", "vFogColor", "pointSize",
                     "vTextureInfos",
                     "mBones",
-                    "vClipPlane", "textureMatrix",
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "textureMatrix",
                     "diffuse1Infos", "diffuse2Infos", "diffuse3Infos", "diffuse4Infos",
                     "diffuse5Infos", "diffuse6Infos", "diffuse7Infos", "diffuse8Infos"
                 ];
@@ -238,7 +241,7 @@ module BABYLON {
                     "diffuse5Sampler", "diffuse6Sampler", "diffuse7Sampler", "diffuse8Sampler"
                 ];
 
-                var uniformBuffers = new Array<string>()
+                var uniformBuffers = new Array<string>();
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms,
@@ -285,7 +288,7 @@ module BABYLON {
             }
             this._activeEffect = effect;
 
-            // Matrices        
+            // Matrices
             this.bindOnlyWorldMatrix(world);
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
@@ -293,7 +296,7 @@ module BABYLON {
             MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
 
             if (this._mustRebind(scene, effect)) {
-                // Textures        
+                // Textures
                 if (this._mixTexture1) {
                     this._activeEffect.setTexture("mixMap1Sampler", this._mixTexture1);
                     this._activeEffect.setFloat2("vTextureInfos", this._mixTexture1.coordinatesIndex, this._mixTexture1.level);
@@ -514,4 +517,3 @@ module BABYLON {
         }
     }
 }
-

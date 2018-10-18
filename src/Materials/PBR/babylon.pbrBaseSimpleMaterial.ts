@@ -1,7 +1,7 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * The Physically based simple base material of BJS.
-     * 
+     *
      * This enables better naming and convention enforcements on top of the pbrMaterial.
      * It is used as the base class for both the specGloss and metalRough conventions.
      */
@@ -103,10 +103,16 @@
             this._markAllSubMeshesAsTexturesDirty();
         }
 
+        /**
+         * Stores the pre-calculated light information of a mesh in a texture.
+         */
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty", null)
         public lightmapTexture: BaseTexture;
 
+        /**
+         * If true, the light map contains occlusion information instead of lighting info.
+         */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useLightmapAsShadowmap = false;
@@ -154,7 +160,7 @@
 
         /**
          * Instantiates a new PBRMaterial instance.
-         * 
+         *
          * @param name The material name
          * @param scene The scene the material will be use in.
          */

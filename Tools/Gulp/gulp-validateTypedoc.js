@@ -11,19 +11,19 @@ var supportsColor = require('color-support');
 
 var hasColors = supportsColor();
 
-var red =       hasColors ? '\x1b[31m' : '';
-var yellow =    hasColors ? '\x1b[33m' : '';
-var green =     hasColors ? '\x1b[32m' : '';
-var gray =      hasColors ? '\x1b[90m' : '';
-var white =     hasColors ? '\x1b[97m' : '';
-var clear =     hasColors ? '\x1b[0m' : '';
+var red = hasColors ? '\x1b[31m' : '';
+var yellow = hasColors ? '\x1b[33m' : '';
+var green = hasColors ? '\x1b[32m' : '';
+var gray = hasColors ? '\x1b[90m' : '';
+var white = hasColors ? '\x1b[97m' : '';
+var clear = hasColors ? '\x1b[0m' : '';
 
 var currentColor = undefined;
 
 function getTimestamp() {
     var time = new Date();
-    var timeInString = ("0" + time.getHours()).slice(-2) + ":" + 
-        ("0" + time.getMinutes()).slice(-2) + ":" + 
+    var timeInString = ("0" + time.getHours()).slice(-2) + ":" +
+        ("0" + time.getMinutes()).slice(-2) + ":" +
         ("0" + time.getSeconds()).slice(-2);
 
     if (currentColor) {
@@ -59,7 +59,7 @@ function err() {
     var time = getTimestamp();
     process.stderr.write(time + ' ');
     currentColor = undefined;
-    
+
     console.error.apply(console, arguments);
     return this;
 }
@@ -86,13 +86,13 @@ function Validate(validationBaselineFileName, namespaceName, validateNamingConve
     this.validateNamingConvention = validateNamingConvention;
     this.generateBaseLine = generateBaseLine;
 
-    this.previousResults = { };
+    this.previousResults = {};
     this.results = {
         errors: 0
     };
 }
 
-Validate.hasTag = function(node, tagName) {
+Validate.hasTag = function (node, tagName) {
     tagName = tagName.trim().toLowerCase();
 
     if (node.comment && node.comment.tags) {
@@ -106,7 +106,7 @@ Validate.hasTag = function(node, tagName) {
     return false;
 }
 
-Validate.position = function(node) {
+Validate.position = function (node) {
     if (!node.sources) {
         log(node);
     }
@@ -126,12 +126,12 @@ Validate.prototype.errorCallback = function (parent, node, nodeKind, category, t
     if (node === "toString") {
         node = "ToString";
     }
-    
+
     // Checks against previous results.
     var previousResults = this.previousResults[this.filePath];
     if (previousResults) {
         var previousRootName = parent ? parent : node;
-        var needCheck = true; 
+        var needCheck = true;
 
         if (Array.isArray(previousRootName)) {
             while (previousRootName.length > 1) {
@@ -165,7 +165,7 @@ Validate.prototype.errorCallback = function (parent, node, nodeKind, category, t
                             if (previousType) {
                                 // Early exit as it was already in the previous build.
                                 return;
-                            }    
+                            }
                         }
                     }
                 }
@@ -179,19 +179,19 @@ Validate.prototype.errorCallback = function (parent, node, nodeKind, category, t
     if (Array.isArray(rootName)) {
         while (rootName.length > 1) {
             var first = rootName.shift();
-            current = current[first] = current[first] || { };
+            current = current[first] = current[first] || {};
         }
         rootName = rootName.shift();
     }
 
-    current = current[rootName] = current[rootName] || { };
-    current = current[nodeKind] = current[nodeKind] || { };    
+    current = current[rootName] = current[rootName] || {};
+    current = current[nodeKind] = current[nodeKind] || {};
     if (parent) {
-        current = current[node] = current[node] || { };
+        current = current[node] = current[node] || {};
     }
-    current = current[category] = current[category] || { };
+    current = current[category] = current[category] || {};
     current = current[type] = true;
-    
+
     results.errors++;
 
     if (!this.generateBaseLine) {
@@ -216,7 +216,7 @@ Validate.prototype.add = function (filePath, content) {
     this.filePath = filePath && unixStylePath(filePath);
 
     if (!Buffer.isBuffer(content)) {
-        content = new Buffer(content);
+        content = Buffer.from(content);
     }
 
     var contentString = content.toString();
@@ -271,7 +271,7 @@ Validate.prototype.validateTypedocNamespaces = function (namespaces) {
 /**
  * Validate classes and modules attach to a declaration file from a TypeDoc JSON file
  */
-Validate.prototype.validateTypedocNamespace = function(namespace) {
+Validate.prototype.validateTypedocNamespace = function (namespace) {
     var containerNode;
     var childNode;
     var children;
@@ -294,7 +294,7 @@ Validate.prototype.validateTypedocNamespace = function(namespace) {
         if (!containerNode.flags.isPublic &&
             !containerNode.flags.isPrivate &&
             !containerNode.flags.isProtected) {
-                containerNode.flags.isPublic = true;
+            containerNode.flags.isPublic = true;
         }
         isPublic = containerNode.flags.isPublic;
 
@@ -408,7 +408,7 @@ Validate.prototype.validateTypedocNamespace = function(namespace) {
 /**
  * Validate that tags are recognized
  */
-Validate.prototype.validateTags = function(node) {
+Validate.prototype.validateTags = function (node) {
     var tags;
     var errorTags = [];
 
@@ -433,7 +433,7 @@ Validate.prototype.validateTags = function(node) {
 /**
  * Validate that a JSON node has the correct TypeDoc comments
  */
-Validate.prototype.validateComment = function(node) {
+Validate.prototype.validateComment = function (node) {
 
     // Return-only methods are allowed to just have a @return tag
     if ((node.kindString === "Call signature" || node.kindString === "Accessor") && !node.parameters && node.comment && node.comment.returns) {
@@ -453,7 +453,7 @@ Validate.prototype.validateComment = function(node) {
     // Return true for overwrited properties
     if (node.overwrites) {
         return true;
-    } 
+    }
 
     // Check comments.
     if (node.comment) {
@@ -475,7 +475,7 @@ Validate.prototype.validateComment = function(node) {
 /**
  * Validate comments for paramters on a node
  */
-Validate.prototype.validateParameters = function(containerNode, method, signature, parameters, isPublic) {
+Validate.prototype.validateParameters = function (containerNode, method, signature, parameters, isPublic) {
     var parametersNode;
     for (var parameter in parameters) {
         parametersNode = parameters[parameter];
@@ -504,7 +504,7 @@ Validate.prototype.validateParameters = function(containerNode, method, signatur
 /**
  * Validate naming conventions of a node
  */
-Validate.prototype.validateNaming = function(parent, node) {
+Validate.prototype.validateNaming = function (parent, node) {
     if (!this.validateNamingConvention) {
         return;
     }
@@ -712,7 +712,7 @@ function gulpValidateTypedoc(validationBaselineFileName, namespaceName, validate
 
         var action = generateBaseLine ? "baseline generation" : "validation";
         var self = this;
-        var error = function(message) {
+        var error = function (message) {
             generateBaseLine ? warn : err;
             if (generateBaseLine) {
                 warn(message);

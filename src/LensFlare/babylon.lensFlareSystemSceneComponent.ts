@@ -1,8 +1,12 @@
-﻿module BABYLON {
+module BABYLON {
     // Adds the parser to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_LENSFLARESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
         // Lens flares
         if (parsedData.lensFlareSystems !== undefined && parsedData.lensFlareSystems !== null) {
+            if (!container.lensFlareSystems) {
+                container.lensFlareSystems = new Array<LensFlareSystem>();
+            }
+
             for (let index = 0, cache = parsedData.lensFlareSystems.length; index < cache; index++) {
                 var parsedLensFlareSystem = parsedData.lensFlareSystems[index];
                 var lf = LensFlareSystem.Parse(parsedLensFlareSystem, scene, rootUrl);
@@ -15,19 +19,20 @@
         /**
          * The list of lens flare system added to the scene
          * @see http://doc.babylonjs.com/how_to/how_to_use_lens_flares
-         */         
+         */
         lensFlareSystems: Array<LensFlareSystem>;
+
         /**
          * Removes the given lens flare system from this scene.
          * @param toRemove The lens flare system to remove
          * @returns The index of the removed lens flare system
-         */          
+         */
         removeLensFlareSystem(toRemove: LensFlareSystem): number;
 
         /**
          * Adds the given lens flare system to this scene
          * @param newLensFlareSystem The lens flare system to add
-         */          
+         */
         addLensFlareSystem(newLensFlareSystem: LensFlareSystem): void;
 
         /**
@@ -53,7 +58,7 @@
         }
 
         return null;
-    }
+    };
 
     AbstractScene.prototype.getLensFlareSystemByID = function(id: string): Nullable<LensFlareSystem> {
         for (var index = 0; index < this.lensFlareSystems.length; index++) {
@@ -63,7 +68,7 @@
         }
 
         return null;
-    }
+    };
 
     AbstractScene.prototype.removeLensFlareSystem = function(toRemove: LensFlareSystem): number {
         var index = this.lensFlareSystems.indexOf(toRemove);
@@ -71,14 +76,14 @@
             this.lensFlareSystems.splice(index, 1);
         }
         return index;
-    }
+    };
 
     AbstractScene.prototype.addLensFlareSystem = function(newLensFlareSystem: LensFlareSystem): void {
         this.lensFlareSystems.push(newLensFlareSystem);
-    }
+    };
 
     /**
-     * Defines the layer scene component responsible to manage any layers
+     * Defines the lens flare scene component responsible to manage any lens flares
      * in a given scene.
      */
     export class LensFlareSystemSceneComponent implements ISceneSerializableComponent {
@@ -92,8 +97,6 @@
          */
         public scene: Scene;
 
-        private _lensFlareSystems: Array<LensFlareSystem>;
-
         /**
          * Creates a new instance of the component for the given scene
          * @param scene Defines the scene to register the component in
@@ -101,7 +104,7 @@
         constructor(scene: Scene) {
             this.scene = scene;
 
-            this._lensFlareSystems = scene.lensFlareSystems = new Array<LensFlareSystem>();
+            scene.lensFlareSystems = new Array<LensFlareSystem>();
         }
 
         /**
@@ -134,7 +137,7 @@
 
         /**
          * Removes all the elements in the container from the scene
-         * @param container contains the elements to remove 
+         * @param container contains the elements to remove
          */
         public removeFromContainer(container: AbstractScene): void {
             if (!container.lensFlareSystems) {
@@ -152,7 +155,8 @@
         public serialize(serializationObject: any): void {
             // Lens flares
             serializationObject.lensFlareSystems = [];
-            for (let lensFlareSystem of this._lensFlareSystems) {
+            let lensFlareSystems = this.scene.lensFlareSystems;
+            for (let lensFlareSystem of lensFlareSystems) {
                 serializationObject.lensFlareSystems.push(lensFlareSystem.serialize());
             }
         }
@@ -161,22 +165,24 @@
          * Disposes the component and the associated ressources.
          */
         public dispose(): void {
-            while (this._lensFlareSystems.length) {
-                this._lensFlareSystems[0].dispose();
+            let lensFlareSystems = this.scene.lensFlareSystems;
+            while (lensFlareSystems.length) {
+                lensFlareSystems[0].dispose();
             }
         }
 
         private _draw(camera: Camera): void {
             // Lens flares
             if (this.scene.lensFlaresEnabled) {
-                Tools.StartPerformanceCounter("Lens flares", this._lensFlareSystems.length > 0);
-                for (let lensFlareSystem of this._lensFlareSystems) {
+                let lensFlareSystems = this.scene.lensFlareSystems;
+                Tools.StartPerformanceCounter("Lens flares", lensFlareSystems.length > 0);
+                for (let lensFlareSystem of lensFlareSystems) {
                     if ((camera.layerMask & lensFlareSystem.layerMask) !== 0) {
                         lensFlareSystem.render();
                     }
                 }
-                Tools.EndPerformanceCounter("Lens flares", this._lensFlareSystems.length > 0);
+                Tools.EndPerformanceCounter("Lens flares", lensFlareSystems.length > 0);
             }
         }
     }
-} 
+}

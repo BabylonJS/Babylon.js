@@ -1,5 +1,12 @@
 module BABYLON {
+    /**
+     * The framing behavior (BABYLON.FramingBehavior) is designed to automatically position an ArcRotateCamera when its target is set to a mesh. It is also useful if you want to prevent the camera to go under a virtual horizontal plane.
+     * @see http://doc.babylonjs.com/how_to/camera_behaviors#framing-behavior
+     */
     export class FramingBehavior implements Behavior<ArcRotateCamera> {
+        /**
+         * Gets the name of the behavior.
+         */
         public get name(): string {
             return "Framing";
         }
@@ -13,12 +20,12 @@ module BABYLON {
         private _zoomStopsAnimation = false;
         private _framingTime = 1500;
 
-		/**
+        /**
 		 * The easing function used by animations
 		 */
         public static EasingFunction = new ExponentialEase();
 
-		/**
+        /**
 		 * The easing mode used by animations
 		 */
         public static EasingMode = EasingFunction.EASINGMODE_EASEINOUT;
@@ -30,42 +37,42 @@ module BABYLON {
             this._mode = mode;
         }
 
-		/**
+        /**
 		 * Gets current mode used by the behavior.
 		 */
         public get mode(): number {
             return this._mode;
         }
 
-	    /**
+        /**
 		 * Sets the scale applied to the radius (1 by default)
 		 */
         public set radiusScale(radius: number) {
             this._radiusScale = radius;
         }
 
-		/**
+        /**
 		 * Gets the scale applied to the radius
 		 */
         public get radiusScale(): number {
             return this._radiusScale;
         }
 
-		/**
+        /**
 		 * Sets the scale to apply on Y axis to position camera focus. 0.5 by default which means the center of the bounding box.
 		 */
         public set positionScale(scale: number) {
             this._positionScale = scale;
         }
 
-		/**
+        /**
 		 * Gets the scale to apply on Y axis to position camera focus. 0.5 by default which means the center of the bounding box.
 		 */
         public get positionScale(): number {
             return this._positionScale;
         }
 
-		/**
+        /**
 		* Sets the angle above/below the horizontal plane to return to when the return to default elevation idle
 		* behaviour is triggered, in radians.
 		*/
@@ -73,7 +80,7 @@ module BABYLON {
             this._defaultElevation = elevation;
         }
 
-		/**
+        /**
 		* Gets the angle above/below the horizontal plane to return to when the return to default elevation idle
 		* behaviour is triggered, in radians.
 		*/
@@ -81,7 +88,7 @@ module BABYLON {
             return this._defaultElevation;
         }
 
-		/**
+        /**
 		 * Sets the time (in milliseconds) taken to return to the default beta position.
 		 * Negative value indicates camera should not return to default.
 		 */
@@ -89,7 +96,7 @@ module BABYLON {
             this._elevationReturnTime = speed;
         }
 
-		/**
+        /**
 		 * Gets the time (in milliseconds) taken to return to the default beta position.
 		 * Negative value indicates camera should not return to default.
 		 */
@@ -97,35 +104,35 @@ module BABYLON {
             return this._elevationReturnTime;
         }
 
-		/**
+        /**
 		 * Sets the delay (in milliseconds) taken before the camera returns to the default beta position.
 		 */
         public set elevationReturnWaitTime(time: number) {
             this._elevationReturnWaitTime = time;
         }
 
-		/**
+        /**
 		 * Gets the delay (in milliseconds) taken before the camera returns to the default beta position.
 		 */
         public get elevationReturnWaitTime(): number {
             return this._elevationReturnWaitTime;
         }
 
-		/**
+        /**
 		* Sets the flag that indicates if user zooming should stop animation.
 		*/
         public set zoomStopsAnimation(flag: boolean) {
             this._zoomStopsAnimation = flag;
         }
 
-		/**
+        /**
 		* Gets the flag that indicates if user zooming should stop animation.
 		*/
         public get zoomStopsAnimation(): boolean {
             return this._zoomStopsAnimation;
         }
 
-		/**
+        /**
 		 * Sets the transition time when framing the mesh, in milliseconds
 		*/
         public set framingTime(time: number) {
@@ -139,6 +146,12 @@ module BABYLON {
             return this._framingTime;
         }
 
+        /**
+         * Define if the behavior should automatically change the configured
+         * camera limits and sensibilities.
+         */
+        public autoCorrectCameraLimitsAndSensibility = true;
+
         // Default behavior functions
         private _onPrePointerObservableObserver: Nullable<Observer<PointerInfoPre>>;
         private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;
@@ -147,10 +160,17 @@ module BABYLON {
         private _isPointerDown = false;
         private _lastInteractionTime = -Infinity;
 
+        /**
+         * Initializes the behavior.
+         */
         public init(): void {
             // Do notihng
         }
 
+        /**
+         * Attaches the behavior to its arc rotate camera.
+         * @param camera Defines the camera to attach the behavior to
+         */
         public attach(camera: ArcRotateCamera): void {
             this._attachedCamera = camera;
             let scene = this._attachedCamera.getScene();
@@ -160,7 +180,7 @@ module BABYLON {
             this._onPrePointerObservableObserver = scene.onPrePointerObservable.add((pointerInfoPre) => {
                 if (pointerInfoPre.type === PointerEventTypes.POINTERDOWN) {
                     this._isPointerDown = true;
-                    return
+                    return;
                 }
 
                 if (pointerInfoPre.type === PointerEventTypes.POINTERUP) {
@@ -184,6 +204,9 @@ module BABYLON {
             });
         }
 
+        /**
+         * Detaches the behavior from its current arc rotate camera.
+         */
         public detach(): void {
             if (!this._attachedCamera) {
                 return;
@@ -213,7 +236,7 @@ module BABYLON {
         private _radiusTransition: Animation;
         private _vectorTransition: Animation;
 
-		/**
+        /**
 		 * Targets the given mesh and updates zoom level accordingly.
 		 * @param mesh  The mesh to target.
 		 * @param radius Optional. If a cached radius position already exists, overrides default.
@@ -228,7 +251,7 @@ module BABYLON {
             this.zoomOnBoundingInfo(boundingBox.minimumWorld, boundingBox.maximumWorld, focusOnOriginXZ, onAnimationEnd);
         }
 
-		/**
+        /**
 		 * Targets the given mesh with its children and updates zoom level accordingly.
 		 * @param mesh  The mesh to target.
 		 * @param radius Optional. If a cached radius position already exists, overrides default.
@@ -243,7 +266,7 @@ module BABYLON {
             this.zoomOnBoundingInfo(boundingBox.min, boundingBox.max, focusOnOriginXZ, onAnimationEnd);
         }
 
-		/**
+        /**
 		 * Targets the given meshes with their children and updates zoom level accordingly.
 		 * @param meshes  The mesh to target.
 		 * @param radius Optional. If a cached radius position already exists, overrides default.
@@ -264,11 +287,10 @@ module BABYLON {
             this.zoomOnBoundingInfo(min, max, focusOnOriginXZ, onAnimationEnd);
         }
 
-		/**
-		 * Targets the given mesh and updates zoom level accordingly.
-		 * @param mesh  The mesh to target.
-		 * @param radius Optional. If a cached radius position already exists, overrides default.
-		 * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+        /**
+		 * Targets the bounding box info defined by its extends and updates zoom level accordingly.
+		 * @param minimumWorld Determines the smaller position of the bounding box extend
+         * @param maximumWorld Determines the bigger position of the bounding box extend
 		 * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
 		 * @param onAnimationEnd Callback triggered at the end of the framing animation
 		 */
@@ -307,19 +329,23 @@ module BABYLON {
             let radius = 0;
             if (this._mode === FramingBehavior.FitFrustumSidesMode) {
                 let position = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
-                this._attachedCamera.lowerRadiusLimit = radiusWorld.length() + this._attachedCamera.minZ;
+                if (this.autoCorrectCameraLimitsAndSensibility) {
+                    this._attachedCamera.lowerRadiusLimit = radiusWorld.length() + this._attachedCamera.minZ;
+                }
                 radius = position;
             } else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
                 radius = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
-                if (this._attachedCamera.lowerRadiusLimit === null) {
+                if (this.autoCorrectCameraLimitsAndSensibility && this._attachedCamera.lowerRadiusLimit === null) {
                     this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
                 }
             }
 
             // Set sensibilities
-            let extend = maximumWorld.subtract(minimumWorld).length();
-            this._attachedCamera.panningSensibility = 5000 / extend;
-            this._attachedCamera.wheelPrecision = 100 / radius;
+            if (this.autoCorrectCameraLimitsAndSensibility) {
+                const extend = maximumWorld.subtract(minimumWorld).length();
+                this._attachedCamera.panningSensibility = 5000 / extend;
+                this._attachedCamera.wheelPrecision = 100 / radius;
+            }
 
             // transition to new radius
             if (!this._radiusTransition) {
@@ -333,7 +359,7 @@ module BABYLON {
                         onAnimationEnd();
                     }
 
-                    if (this._attachedCamera) {
+                    if (this._attachedCamera && this._attachedCamera.useInputToRestoreState) {
                         this._attachedCamera.storeState();
                     }
                 });
@@ -343,7 +369,7 @@ module BABYLON {
             }
         }
 
-		/**
+        /**
 		 * Calculates the lowest radius for the camera based on the bounding box of the mesh.
 		 * @param mesh The mesh on which to base the calculation. mesh boundingInfo used to estimate necessary
 		 *			  frustum width.
@@ -383,9 +409,9 @@ module BABYLON {
             return distance;
         }
 
-		/**
+        /**
 		 * Keeps the camera above the ground plane. If the user pulls the camera below the ground plane, the camera
-		 * is automatically returned to its default position (expected to be above ground plane). 
+		 * is automatically returned to its default position (expected to be above ground plane).
 		 */
         private _maintainCameraAboveGround(): void {
             if (this._elevationReturnTime < 0) {
@@ -420,7 +446,7 @@ module BABYLON {
             }
         }
 
-		/**
+        /**
 		 * Returns the frustum slope based on the canvas ratio and camera FOV
 		 * @returns The frustum slope represented as a Vector2 with X and Y slopes
 		 */
@@ -448,14 +474,14 @@ module BABYLON {
             return new Vector2(frustumSlopeX, frustumSlopeY);
         }
 
-		/**
+        /**
 		 * Removes all animation locks. Allows new animations to be added to any of the arcCamera properties.
 		 */
         private _clearAnimationLocks(): void {
             this._betaIsAnimating = false;
         }
 
-		/**
+        /**
 		 *  Applies any current user interaction to the camera. Takes into account maximum alpha rotation.
 		 */
         private _applyUserInteraction(): void {
@@ -466,7 +492,7 @@ module BABYLON {
             }
         }
 
-		/**
+        /**
 		 * Stops and removes all animations that have been applied to the camera
 		 */
         public stopAllAnimations(): void {

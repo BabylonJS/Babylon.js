@@ -1,18 +1,22 @@
 module BABYLON {
     /**
      * Add a bouncing effect to an ArcRotateCamera when reaching a specified minimum and maximum radius
+     * @see http://doc.babylonjs.com/how_to/camera_behaviors#bouncing-behavior
      */
     export class BouncingBehavior implements Behavior<ArcRotateCamera> {
+        /**
+         * Gets the name of the behavior.
+         */
         public get name(): string {
             return "Bouncing";
         }
 
-		/**
+        /**
 		 * The easing function used by animations
 		 */
         public static EasingFunction = new BackEase(0.3);
 
-		/**
+        /**
 		 * The easing mode used by animations
 		 */
         public static EasingMode = EasingFunction.EASINGMODE_EASEOUT;
@@ -34,14 +38,14 @@ module BABYLON {
 
         private _autoTransitionRange = false;
 
-		/**
+        /**
 		 * Gets a value indicating if the lowerRadiusTransitionRange and upperRadiusTransitionRange are defined automatically
 		 */
         public get autoTransitionRange(): boolean {
             return this._autoTransitionRange;
         }
 
-		/**
+        /**
 		 * Sets a value indicating if the lowerRadiusTransitionRange and upperRadiusTransitionRange are defined automatically
 		 * Transition ranges will be set to 5% of the bounding box diagonal in world space
 		 */
@@ -79,10 +83,17 @@ module BABYLON {
         private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;
         private _onMeshTargetChangedObserver: Nullable<Observer<Nullable<AbstractMesh>>>;
 
+        /**
+         * Initializes the behavior.
+         */
         public init(): void {
             // Do notihng
         }
 
+        /**
+         * Attaches the behavior to its arc rotate camera.
+         * @param camera Defines the camera to attach the behavior to
+         */
         public attach(camera: ArcRotateCamera): void {
             this._attachedCamera = camera;
             this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(() => {
@@ -102,6 +113,9 @@ module BABYLON {
             });
         }
 
+        /**
+         * Detaches the behavior from its current arc rotate camera.
+         */
         public detach(): void {
             if (!this._attachedCamera) {
                 return;
@@ -177,7 +191,7 @@ module BABYLON {
             }
         }
 
-		/**
+        /**
 		 * Stops and removes all animations that have been applied to the camera
 		 */
         public stopAllAnimations(): void {

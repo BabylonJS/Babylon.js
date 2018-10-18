@@ -1,4 +1,5 @@
-﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"/>
 
 module BABYLON {
     /**
@@ -41,12 +42,12 @@ module BABYLON {
      */
     export interface IGLTFLoaderData {
         /**
-         * JSON that represents the glTF.
+         * Object that represents the glTF JSON.
          */
         json: Object;
 
         /**
-         * The BIN chunk of a binary glTF
+         * The BIN chunk of a binary glTF.
          */
         bin: Nullable<ArrayBufferView>;
     }
@@ -89,8 +90,8 @@ module BABYLON {
     /** @hidden */
     export interface IGLTFLoader extends IDisposable {
         readonly state: Nullable<GLTFLoaderState>;
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }>;
-        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<void>;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }>;
+        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
     }
 
     /**
@@ -103,7 +104,9 @@ module BABYLON {
         /** @hidden */
         public static _CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
 
-        // #region Common options
+        // --------------
+        // Common options
+        // --------------
 
         /**
          * Raised when the asset has been parsed
@@ -122,9 +125,9 @@ module BABYLON {
             this._onParsedObserver = this.onParsedObservable.add(callback);
         }
 
-        // #endregion
-
-        // #region V1 options
+        // ----------
+        // V1 options
+        // ----------
 
         /**
          * Set this property to false to disable incremental loading which delays the loader from calling the success callback until after loading the meshes and shaders.
@@ -141,9 +144,9 @@ module BABYLON {
          */
         public static HomogeneousCoordinates = false;
 
-        // #endregion
-
-        // #region V2 options
+        // ----------
+        // V2 options
+        // ----------
 
         /**
          * The coordinate system mode. Defaults to AUTO.
@@ -171,14 +174,11 @@ module BABYLON {
         public compileShadowGenerators = false;
 
         /**
-         * Defines if the Alpha blended materials are only applied as coverage. 
+         * Defines if the Alpha blended materials are only applied as coverage.
          * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
          * If true, no extra effects are applied to transparent pixels.
          */
         public transparencyAsCoverage = false;
-
-        /** @hidden */
-        public _normalizeAnimationGroupsToBeginAtZero = true;
 
         /**
          * Function called before loading a url referenced by the asset.
@@ -264,12 +264,31 @@ module BABYLON {
 
         /**
          * Callback raised when the asset is completely loaded, immediately before the loader is disposed.
+         * For assets with LODs, raised when all of the LODs are complete.
+         * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
          */
         public set onComplete(callback: () => void) {
             if (this._onCompleteObserver) {
                 this.onCompleteObservable.remove(this._onCompleteObserver);
             }
             this._onCompleteObserver = this.onCompleteObservable.add(callback);
+        }
+
+        /**
+         * Observable raised when an error occurs.
+         */
+        public readonly onErrorObservable = new Observable<any>();
+
+        private _onErrorObserver: Nullable<Observer<any>>;
+
+        /**
+         * Callback raised when an error occurs.
+         */
+        public set onError(callback: (reason: any) => void) {
+            if (this._onErrorObserver) {
+                this.onErrorObservable.remove(this._onErrorObserver);
+            }
+            this._onErrorObserver = this.onErrorObservable.add(callback);
         }
 
         /**
@@ -305,25 +324,6 @@ module BABYLON {
                 this.onExtensionLoadedObservable.remove(this._onExtensionLoadedObserver);
             }
             this._onExtensionLoadedObserver = this.onExtensionLoadedObservable.add(callback);
-        }
-
-        /**
-         * Returns a promise that resolves when the asset is completely loaded.
-         * @returns a promise that resolves when the asset is completely loaded.
-         */
-        public whenCompleteAsync(): Promise<void> {
-            return new Promise(resolve => {
-                this.onCompleteObservable.addOnce(() => {
-                    resolve();
-                });
-            });
-        }
-
-        /**
-         * The loader state or null if the loader is not active.
-         */
-        public get loaderState(): Nullable<GLTFLoaderState> {
-            return this._loader ? this._loader.state : null;
         }
 
         /**
@@ -372,7 +372,27 @@ module BABYLON {
             }
         }
 
-        // #endregion
+        /**
+         * Defines if the loader should validate the asset.
+         */
+        public validate = false;
+
+        /**
+         * Observable raised after validation when validate is set to true. The event data is the result of the validation.
+         */
+        public readonly onValidatedObservable = new Observable<IGLTFValidationResults>();
+
+        private _onValidatedObserver: Nullable<Observer<IGLTFValidationResults>>;
+
+        /**
+         * Callback raised after a loader extension is created.
+         */
+        public set onValidated(callback: (results: IGLTFValidationResults) => void) {
+            if (this._onValidatedObserver) {
+                this.onValidatedObservable.remove(this._onValidatedObserver);
+            }
+            this._onValidatedObserver = this.onValidatedObservable.add(callback);
+        }
 
         private _loader: Nullable<IGLTFLoader> = null;
 
@@ -406,7 +426,7 @@ module BABYLON {
 
         /** @hidden */
         public _clear(): void {
-            this.preprocessUrlAsync = url => Promise.resolve(url);
+            this.preprocessUrlAsync = (url) => Promise.resolve(url);
 
             this.onMeshLoadedObservable.clear();
             this.onTextureLoadedObservable.clear();
@@ -423,13 +443,14 @@ module BABYLON {
          * @param data the glTF data to load
          * @param rootUrl root url to load from
          * @param onProgress event that fires when loading progress has occured
+         * @param fileName Defines the name of the file to load
          * @returns a promise containg the loaded meshes, particles, skeletons and animations
          */
-        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
-            return Promise.resolve().then(() => {
-                const loaderData = this._parse(data);
+        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
+            return this._parseAsync(scene, data, rootUrl, fileName).then((loaderData) => {
+                this._log(`Loading ${fileName || ""}`);
                 this._loader = this._getLoader(loaderData);
-                return this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onProgress);
+                return this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onProgress, fileName);
             });
         }
 
@@ -439,13 +460,14 @@ module BABYLON {
          * @param data the glTF data to load
          * @param rootUrl root url to load from
          * @param onProgress event that fires when loading progress has occured
+         * @param fileName Defines the name of the file to load
          * @returns a promise which completes when objects have been loaded to the scene
          */
-        public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void> {
-            return Promise.resolve().then(() => {
-                const loaderData = this._parse(data);
+        public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
+            return this._parseAsync(scene, data, rootUrl, fileName).then((loaderData) => {
+                this._log(`Loading ${fileName || ""}`);
                 this._loader = this._getLoader(loaderData);
-                return this._loader.loadAsync(scene, loaderData, rootUrl, onProgress);
+                return this._loader.loadAsync(scene, loaderData, rootUrl, onProgress, fileName);
             });
         }
 
@@ -455,13 +477,14 @@ module BABYLON {
          * @param data The data to import
          * @param rootUrl The root url for scene and resources
          * @param onProgress The callback when the load progresses
+         * @param fileName Defines the name of the file to load
          * @returns The loaded asset container
          */
-        public loadAssetContainerAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer> {
-            return Promise.resolve().then(() => {
-                const loaderData = this._parse(data);
+        public loadAssetContainerAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer> {
+            return this._parseAsync(scene, data, rootUrl, fileName).then((loaderData) => {
+                this._log(`Loading ${fileName || ""}`);
                 this._loader = this._getLoader(loaderData);
-                return this._loader.importMeshAsync(null, scene, loaderData, rootUrl, onProgress).then(result => {
+                return this._loader.importMeshAsync(null, scene, loaderData, rootUrl, onProgress, fileName).then((result) => {
                     const container = new AssetContainer(scene);
                     Array.prototype.push.apply(container.meshes, result.meshes);
                     Array.prototype.push.apply(container.particleSystems, result.particleSystems);
@@ -495,29 +518,81 @@ module BABYLON {
             return new GLTFFileLoader();
         }
 
-        private _parse(data: string | ArrayBuffer): IGLTFLoaderData {
-            this._startPerformanceCounter("Parse");
+        /**
+         * The loader state or null if the loader is not active.
+         */
+        public get loaderState(): Nullable<GLTFLoaderState> {
+            return this._loader ? this._loader.state : null;
+        }
 
-            let parsedData: IGLTFLoaderData;
-            if (data instanceof ArrayBuffer) {
-                this._log(`Parsing binary`);
-                parsedData = this._parseBinary(data);
+        /**
+         * Returns a promise that resolves when the asset is completely loaded.
+         * @returns a promise that resolves when the asset is completely loaded.
+         */
+        public whenCompleteAsync(): Promise<void> {
+            return new Promise((resolve, reject) => {
+                this.onCompleteObservable.addOnce(() => {
+                    resolve();
+                });
+                this.onErrorObservable.addOnce((reason) => {
+                    reject(reason);
+                });
+            });
+        }
+
+        private _parseAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, fileName?: string): Promise<IGLTFLoaderData> {
+            return Promise.resolve().then(() => {
+                const unpacked = (data instanceof ArrayBuffer) ? this._unpackBinary(data) : { json: data, bin: null };
+
+                return this._validateAsync(scene, unpacked.json, rootUrl, fileName).then(() => {
+                    this._startPerformanceCounter("Parse JSON");
+                    this._log(`JSON length: ${unpacked.json.length}`);
+
+                    const loaderData: IGLTFLoaderData = {
+                        json: JSON.parse(unpacked.json),
+                        bin: unpacked.bin
+                    };
+
+                    this._endPerformanceCounter("Parse JSON");
+
+                    this.onParsedObservable.notifyObservers(loaderData);
+                    this.onParsedObservable.clear();
+
+                    return loaderData;
+                });
+            });
+        }
+
+        private _validateAsync(scene: Scene, json: string, rootUrl: string, fileName?: string): Promise<void> {
+            if (!this.validate || typeof GLTFValidator === "undefined") {
+                return Promise.resolve();
             }
-            else {
-                this._log(`Parsing JSON`);
-                this._log(`JSON length: ${data.length}`);
 
-                parsedData = {
-                    json: JSON.parse(data),
-                    bin: null
-                };
+            this._startPerformanceCounter("Validate JSON");
+
+            const options: IGLTFValidationOptions = {
+                externalResourceFunction: (uri) => {
+                    return this.preprocessUrlAsync(rootUrl + uri)
+                        .then((url) => scene._loadFileAsync(url, true, true))
+                        .then((data) => new Uint8Array(data as ArrayBuffer));
+                }
+            };
+
+            if (fileName && fileName.substr(0, 5) !== "data:") {
+                options.uri = (rootUrl === "file:" ? fileName : `${rootUrl}${fileName}`);
             }
 
-            this.onParsedObservable.notifyObservers(parsedData);
-            this.onParsedObservable.clear();
+            return GLTFValidator.validateString(json, options).then((result) => {
+                this._endPerformanceCounter("Validate JSON");
 
-            this._endPerformanceCounter("Parse");
-            return parsedData;
+                this.onValidatedObservable.notifyObservers(result);
+                this.onValidatedObservable.clear();
+            }, (reason) => {
+                this._endPerformanceCounter("Validate JSON");
+
+                Tools.Warn(`Failed to validate: ${reason}`);
+                this.onValidatedObservable.clear();
+            });
         }
 
         private _getLoader(loaderData: IGLTFLoaderData): IGLTFLoader {
@@ -556,12 +631,13 @@ module BABYLON {
             return createLoader(this);
         }
 
-        private _parseBinary(data: ArrayBuffer): IGLTFLoaderData {
+        private _unpackBinary(data: ArrayBuffer): { json: string, bin: Nullable<ArrayBufferView> } {
+            this._startPerformanceCounter("Unpack binary");
+            this._log(`Binary length: ${data.byteLength}`);
+
             const Binary = {
                 Magic: 0x46546C67
             };
-
-            this._log(`Binary length: ${data.byteLength}`);
 
             const binaryReader = new BinaryReader(data);
 
@@ -576,15 +652,26 @@ module BABYLON {
                 this._log(`Binary version: ${version}`);
             }
 
+            let unpacked: { json: string, bin: Nullable<ArrayBufferView> };
             switch (version) {
-                case 1: return this._parseV1(binaryReader);
-                case 2: return this._parseV2(binaryReader);
+                case 1: {
+                    unpacked = this._unpackBinaryV1(binaryReader);
+                    break;
+                }
+                case 2: {
+                    unpacked = this._unpackBinaryV2(binaryReader);
+                    break;
+                }
+                default: {
+                    throw new Error("Unsupported version: " + version);
+                }
             }
 
-            throw new Error("Unsupported version: " + version);
+            this._endPerformanceCounter("Unpack binary");
+            return unpacked;
         }
 
-        private _parseV1(binaryReader: BinaryReader): IGLTFLoaderData {
+        private _unpackBinaryV1(binaryReader: BinaryReader): { json: string, bin: Nullable<ArrayBufferView> } {
             const ContentFormat = {
                 JSON: 0
             };
@@ -597,10 +684,10 @@ module BABYLON {
             const contentLength = binaryReader.readUint32();
             const contentFormat = binaryReader.readUint32();
 
-            let content: Object;
+            let content: string;
             switch (contentFormat) {
                 case ContentFormat.JSON: {
-                    content = JSON.parse(GLTFFileLoader._decodeBufferToText(binaryReader.readUint8Array(contentLength)));
+                    content = GLTFFileLoader._decodeBufferToText(binaryReader.readUint8Array(contentLength));
                     break;
                 }
                 default: {
@@ -617,7 +704,7 @@ module BABYLON {
             };
         }
 
-        private _parseV2(binaryReader: BinaryReader): IGLTFLoaderData {
+        private _unpackBinaryV2(binaryReader: BinaryReader): { json: string, bin: Nullable<ArrayBufferView> } {
             const ChunkFormat = {
                 JSON: 0x4E4F534A,
                 BIN: 0x004E4942
@@ -634,7 +721,7 @@ module BABYLON {
             if (chunkFormat !== ChunkFormat.JSON) {
                 throw new Error("First chunk format is not JSON");
             }
-            const json = JSON.parse(GLTFFileLoader._decodeBufferToText(binaryReader.readUint8Array(chunkLength)));
+            const json = GLTFFileLoader._decodeBufferToText(binaryReader.readUint8Array(chunkLength));
 
             // Look for BIN chunk
             let bin: Nullable<Uint8Array> = null;
@@ -682,11 +769,11 @@ module BABYLON {
             };
         }
 
-        private static _compareVersion(a: { major: number, minor: number }, b: { major: number, minor: number }) {
-            if (a.major > b.major) return 1;
-            if (a.major < b.major) return -1;
-            if (a.minor > b.minor) return 1;
-            if (a.minor < b.minor) return -1;
+        private static _compareVersion(a: { major: number, minor: number }, b: { major: number, minor: number }): number {
+            if (a.major > b.major) { return 1; }
+            if (a.major < b.major) { return -1; }
+            if (a.minor > b.minor) { return 1; }
+            if (a.minor < b.minor) { return -1; }
             return 0;
         }
 

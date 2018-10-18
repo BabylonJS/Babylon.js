@@ -28,7 +28,7 @@ module BABYLON {
          * Gets or sets the debug canvas size
          * @ignorenaming
          */
-        public DEBUGCANVASSIZE = { width: 320, height: 200 }
+        public DEBUGCANVASSIZE = { width: 320, height: 200 };
 
         private _byteFreqs: Uint8Array;
         private _byteTime: Uint8Array;
@@ -38,7 +38,7 @@ module BABYLON {
         private _debugCanvasContext: Nullable<CanvasRenderingContext2D>;
         private _scene: Scene;
         private _registerFunc: Nullable<() => void>;
-        private _audioEngine: AudioEngine;
+        private _audioEngine: IAudioEngine;
 
         /**
          * Creates a new analyser
@@ -103,7 +103,7 @@ module BABYLON {
          * Gets the current frequency data as a float array
          * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
          * @returns a Float32Array
-         */        
+         */
         public getFloatFrequencyData(): Float32Array {
             if (this._audioEngine.canUseWebAudio) {
                 this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;

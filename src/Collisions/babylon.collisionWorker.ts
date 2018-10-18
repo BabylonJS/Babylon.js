@@ -6,8 +6,10 @@ const safePostMessage: any = self.postMessage;
 module BABYLON {
 
     //If this file is included in the main thread, this will be initialized.
+    /** @hidden */
     export var WorkerIncluded: boolean = true;
 
+    /** @hidden */
     export class CollisionCache {
         private _meshes: { [n: string]: SerializedMesh; } = {};
         private _geometries: { [s: string]: SerializedGeometry; } = {};
@@ -45,6 +47,7 @@ module BABYLON {
         }
     }
 
+    /** @hidden */
     export class CollideWorker {
 
         private collisionsScalingMatrix = Matrix.Zero();
@@ -75,8 +78,9 @@ module BABYLON {
                 uniqueId = keys[i];
                 if (parseInt(uniqueId) != excludedMeshUniqueId) {
                     var mesh: SerializedMesh = (<any>meshes)[uniqueId];
-                    if (mesh.checkCollisions)
+                    if (mesh.checkCollisions) {
                         this.checkCollision(mesh);
+                    }
                 }
             }
 
@@ -102,7 +106,7 @@ module BABYLON {
 
             if (!this.collider._canDoCollision(Vector3.FromArray(mesh.sphereCenter), mesh.sphereRadius, Vector3.FromArray(mesh.boxMinimum), Vector3.FromArray(mesh.boxMaximum))) {
                 return;
-            };
+            }
 
             // Transformation matrix
             Matrix.ScalingToRef(1.0 / this.collider._radius.x, 1.0 / this.collider._radius.y, 1.0 / this.collider._radius.z, this.collisionsScalingMatrix);
@@ -113,7 +117,8 @@ module BABYLON {
             //return colTransMat;
         }
 
-        private processCollisionsForSubMeshes(transformMatrix: Matrix, mesh: SerializedMesh): void { // No Octrees for now
+        private processCollisionsForSubMeshes(transformMatrix: Matrix, mesh: SerializedMesh): void {
+            // No Octrees for now
             //if (this._submeshesOctree && this.useOctreeForCollisions) {
             //    var radius = collider.velocityWorldLength + Math.max(collider.radius.x, collider.radius.y, collider.radius.z);
             //    var intersections = this._submeshesOctree.intersects(collider.basePointWorld, radius);
@@ -140,8 +145,9 @@ module BABYLON {
                 var subMesh = subMeshes[index];
 
                 // Bounding test
-                if (len > 1 && !this.checkSubmeshCollision(subMesh))
+                if (len > 1 && !this.checkSubmeshCollision(subMesh)) {
                     continue;
+                }
 
                 this.collideForSubMesh(subMesh, transformMatrix, meshGeometry);
                 if (this.collider.collisionFound) {
@@ -180,12 +186,14 @@ module BABYLON {
         }
     }
 
+    /** @hidden */
     export interface ICollisionDetector {
         onInit(payload: InitPayload): void;
         onUpdate(payload: UpdatePayload): void;
         onCollision(payload: CollidePayload): void;
     }
 
+    /** @hidden */
     export class CollisionDetectorTransferable implements ICollisionDetector {
         private _collisionCache: CollisionCache;
 
@@ -194,7 +202,7 @@ module BABYLON {
             var reply: WorkerReply = {
                 error: WorkerReplyType.SUCCESS,
                 taskType: WorkerTaskType.INIT
-            }
+            };
             safePostMessage(reply);
         }
 
@@ -202,7 +210,7 @@ module BABYLON {
             var replay: WorkerReply = {
                 error: WorkerReplyType.SUCCESS,
                 taskType: WorkerTaskType.UPDATE
-            }
+            };
 
             try {
                 for (var id in payload.updatedGeometries) {
@@ -228,7 +236,6 @@ module BABYLON {
                 replay.error = WorkerReplyType.UNKNOWN_ERROR;
             }
 
-
             safePostMessage(replay);
         }
 
@@ -244,12 +251,12 @@ module BABYLON {
                 collidedMeshUniqueId: <any>collider.collidedMesh,
                 collisionId: payload.collisionId,
                 newPosition: finalPosition.asArray()
-            }
+            };
             var reply: WorkerReply = {
                 error: WorkerReplyType.SUCCESS,
                 taskType: WorkerTaskType.COLLIDE,
                 payload: replyPayload
-            }
+            };
             safePostMessage(reply);
         }
     }
@@ -286,7 +293,7 @@ module BABYLON {
                         collisionDetector.onUpdate(<UpdatePayload>message.payload);
                         break;
                 }
-            }
+            };
 
             self.onmessage = onNewMessage;
         }

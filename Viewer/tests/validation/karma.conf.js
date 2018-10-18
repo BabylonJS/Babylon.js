@@ -22,7 +22,7 @@ module.exports = function (config) {
         ],
         proxies: {
             '/tests/': '/base/tests/',
-            '/dist/assets/': '/base//dist/assets/'
+            '/dist/assets/': '/base/dist/assets/'
         },
 
         port: 3000,

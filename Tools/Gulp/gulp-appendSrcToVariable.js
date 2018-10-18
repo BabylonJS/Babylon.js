@@ -85,7 +85,7 @@ module.exports["${name}"] = data;
             cwd: firstFile.cwd,
             base: firstFile.base,
             path: joinedPath,
-            contents: new Buffer(content)
+            contents: Buffer.from(content)
         });
 
         this.push(joinedFile);

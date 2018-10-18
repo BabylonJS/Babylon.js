@@ -1,11 +1,64 @@
-﻿module BABYLON {
-    export class SpriteManager {
+module BABYLON {
+    /**
+     * Defines the minimum interface to fullfil in order to be a sprite manager.
+     */
+    export interface ISpriteManager extends IDisposable {
+        /**
+         * Restricts the camera to viewing objects with the same layerMask.
+         * A camera with a layerMask of 1 will render spriteManager.layerMask & camera.layerMask!== 0
+         */
+        layerMask: number;
+
+        /**
+         * Gets or sets a boolean indicating if the mesh can be picked (by scene.pick for instance or through actions). Default is true
+         */
+        isPickable: boolean;
+
+        /**
+         * Specifies the rendering group id for this mesh (0 by default)
+         * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
+         */
+        renderingGroupId: number;
+
+        /**
+         * Defines the list of sprites managed by the manager.
+         */
+        sprites: Array<Sprite>;
+
+        /**
+         * Tests the intersection of a sprite with a specific ray.
+         * @param ray The ray we are sending to test the collision
+         * @param camera The camera space we are sending rays in
+         * @param predicate A predicate allowing excluding sprites from the list of object to test
+         * @param fastCheck Is the hit test done in a OOBB or AOBB fashion the faster, the less precise
+         * @returns picking info or null.
+         */
+        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
+
+        /**
+         * Renders the list of sprites on screen.
+         */
+        render(): void;
+    }
+
+    /**
+     * Class used to manage multiple sprites on the same spritesheet
+     * @see http://doc.babylonjs.com/babylon101/sprites
+     */
+    export class SpriteManager implements ISpriteManager {
+        /** Gets the list of sprites */
         public sprites = new Array<Sprite>();
+        /** Gets or sets the rendering group id (0 by default) */
         public renderingGroupId = 0;
+        /** Gets or sets camera layer mask */
         public layerMask: number = 0x0FFFFFFF;
+        /** Gets or sets a boolean indicating if the manager must consider scene fog when rendering */
         public fogEnabled = true;
+        /** Gets or sets a boolean indicating if the sprites are pickable */
         public isPickable = false;
+        /** Defines the default width of a cell in the spritesheet */
         public cellWidth: number;
+        /** Defines the default height of a cell in the spritesheet */
         public cellHeight: number;
 
         /**
@@ -14,6 +67,10 @@
         public onDisposeObservable = new Observable<SpriteManager>();
 
         private _onDisposeObserver: Nullable<Observer<SpriteManager>>;
+
+        /**
+         * Callback called when the manager is disposed
+         */
         public set onDispose(callback: () => void) {
             if (this._onDisposeObserver) {
                 this.onDisposeObservable.remove(this._onDisposeObserver);
@@ -34,6 +91,9 @@
         private _effectBase: Effect;
         private _effectFog: Effect;
 
+        /**
+         * Gets or sets the spritesheet texture
+         */
         public get texture(): Texture {
             return this._spriteTexture;
         }
@@ -42,7 +102,23 @@
             this._spriteTexture = value;
         }
 
-        constructor(public name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+        /**
+         * Creates a new sprite manager
+         * @param name defines the manager's name
+         * @param imgUrl defines the sprite sheet url
+         * @param capacity defines the maximum allowed number of sprites
+         * @param cellSize defines the size of a sprite cell
+         * @param scene defines the hosting scene
+         * @param epsilon defines the epsilon value to align texture (0.01 by default)
+         * @param samplingMode defines the smapling mode to use with spritesheet
+         */
+        constructor(
+                /** defines the manager's name */
+                public name: string,
+                imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+            if (!scene._getComponent(SceneComponentConstants.NAME_SPRITE)) {
+                scene._addComponent(new SpriteSceneComponent(scene));
+            }
             this._capacity = capacity;
             this._spriteTexture = new Texture(imgUrl, scene, true, false, samplingMode);
             this._spriteTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
@@ -51,11 +127,11 @@
             if (cellSize.width && cellSize.height) {
                 this.cellWidth = cellSize.width;
                 this.cellHeight = cellSize.height;
-            } else if(cellSize !== undefined) {
+            } else if (cellSize !== undefined) {
                 this.cellWidth = cellSize;
                 this.cellHeight = cellSize;
             } else {
-               return;   
+               return;
             }
 
             this._epsilon = epsilon;
@@ -106,15 +182,19 @@
         private _appendSpriteVertex(index: number, sprite: Sprite, offsetX: number, offsetY: number, rowSize: number): void {
             var arrayOffset = index * 16;
 
-            if (offsetX === 0)
+            if (offsetX === 0) {
                 offsetX = this._epsilon;
-            else if (offsetX === 1)
+            }
+            else if (offsetX === 1) {
                 offsetX = 1 - this._epsilon;
+                 }
 
-            if (offsetY === 0)
+            if (offsetY === 0) {
                 offsetY = this._epsilon;
-            else if (offsetY === 1)
+            }
+            else if (offsetY === 1) {
                 offsetY = 1 - this._epsilon;
+                 }
 
             this._vertexData[arrayOffset] = sprite.position.x;
             this._vertexData[arrayOffset + 1] = sprite.position.y;
@@ -136,7 +216,15 @@
             this._vertexData[arrayOffset + 15] = sprite.color.a;
         }
 
-        public intersects(ray: Ray, camera:Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
+        /**
+         * Intersects the sprites with a ray
+         * @param ray defines the ray to intersect with
+         * @param camera defines the current active camera
+         * @param predicate defines a predicate used to select candidate sprites
+         * @param fastCheck defines if a fast check only must be done (the first potential sprite is will be used and not the closer)
+         * @returns null if no hit or a PickingInfo
+         */
+        public intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
             var count = Math.min(this._capacity, this.sprites.length);
             var min = Vector3.Zero();
             var max = Vector3.Zero();
@@ -189,12 +277,16 @@
             }
 
             return null;
-        } 
+        }
 
+        /**
+         * Render all child sprites
+         */
         public render(): void {
             // Check
-            if (!this._effectBase.isReady() || !this._effectFog.isReady() || !this._spriteTexture || !this._spriteTexture.isReady())
+            if (!this._effectBase.isReady() || !this._effectFog.isReady() || !this._spriteTexture || !this._spriteTexture.isReady()) {
                 return;
+            }
 
             var engine = this._scene.getEngine();
             var baseSize = this._spriteTexture.getBaseSize();
@@ -249,15 +341,18 @@
             engine.setDepthFunctionToLessOrEqual();
             effect.setBool("alphaTest", true);
             engine.setColorWrite(false);
-            engine.drawElementsType(Material.TriangleFillMode, 0, (offset/4) * 6);
+            engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
             engine.setColorWrite(true);
             effect.setBool("alphaTest", false);
 
             engine.setAlphaMode(Engine.ALPHA_COMBINE);
-            engine.drawElementsType(Material.TriangleFillMode, 0, (offset/4) * 6);
+            engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
             engine.setAlphaMode(Engine.ALPHA_DISABLE);
         }
 
+        /**
+         * Release associated resources
+         */
         public dispose(): void {
             if (this._buffer) {
                 this._buffer.dispose();
@@ -283,4 +378,4 @@
             this.onDisposeObservable.clear();
         }
     }
-} 
+}

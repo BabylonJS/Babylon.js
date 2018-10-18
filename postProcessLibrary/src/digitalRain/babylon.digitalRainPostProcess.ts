@@ -1,15 +1,15 @@
-﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
 
     /**
      * DigitalRainFontTexture is the helper class used to easily create your digital rain font texture.
-     * 
+     *
      * It basically takes care rendering the font front the given font size to a texture.
      * This is used later on in the postprocess.
      */
     export class DigitalRainFontTexture extends BaseTexture {
-        
+
         @serialize("font")
         private _font: string;
 
@@ -19,7 +19,7 @@ module BABYLON {
         private _charSize: number;
 
         /**
-         * Gets the size of one char in the texture (each char fits in size * size space in the texture). 
+         * Gets the size of one char in the texture (each char fits in size * size space in the texture).
          */
         public get charSize(): number {
             return this._charSize;
@@ -36,10 +36,10 @@ module BABYLON {
             super(scene);
 
             scene = this.getScene();
-            
+
             if (!scene) {
                 return;
-            }                        
+            }
 
             this.name = name;
             this._text == text;
@@ -51,7 +51,7 @@ module BABYLON {
 
             // Get the font specific info.
             var maxCharHeight = this.getFontHeight(font);
-            var maxCharWidth = this.getFontWidth(font); 
+            var maxCharWidth = this.getFontWidth(font);
 
             this._charSize = Math.max(maxCharHeight.height, maxCharWidth);
 
@@ -77,7 +77,7 @@ module BABYLON {
             // Sets the text in the texture.
             for (var i = 0; i < text.length; i++) {
                 context.fillText(text[i], 0, i * this._charSize - maxCharHeight.offset);
-            }        
+            }
 
             // Flush the text in the dynamic texture.
             scene.getEngine().updateDynamicTexture(this._texture, canvas, false, true);
@@ -133,7 +133,7 @@ module BABYLON {
                     }
                 }
             }
-            return { height: (end - start)+1, offset: start-1}
+            return { height: (end - start) + 1, offset: start - 1};
         }
 
         /**
@@ -151,7 +151,7 @@ module BABYLON {
          * @return the parsed texture
          */
         public static Parse(source: any, scene: Scene): DigitalRainFontTexture {
-            var texture = SerializationHelper.Parse(() => new DigitalRainFontTexture(source.name, source.font, source.text, scene), 
+            var texture = SerializationHelper.Parse(() => new DigitalRainFontTexture(source.name, source.font, source.text, scene),
                 source, scene, null);
 
             return texture;
@@ -172,18 +172,18 @@ module BABYLON {
          * This defines the amount you want to mix the "tile" or caracter space colored in the digital rain.
          * This number is defined between 0 and 1;
          */
-        mixToTile?:number;
+        mixToTile?: number;
 
         /**
          * This defines the amount you want to mix the normal rendering pass in the digital rain.
          * This number is defined between 0 and 1;
          */
-        mixToNormal?:number;
+        mixToNormal?: number;
     }
 
     /**
      * DigitalRainPostProcess helps rendering everithing in digital rain.
-     * 
+     *
      * Simmply add it to your scene and let the nerd that lives in you have fun.
      * Example usage: var pp = new DigitalRainPostProcess("digitalRain", "20px Monospace", camera);
      */
@@ -198,13 +198,13 @@ module BABYLON {
          * This defines the amount you want to mix the "tile" or caracter space colored in the digital rain.
          * This number is defined between 0 and 1;
          */
-        public mixToTile:number = 0;
+        public mixToTile: number = 0;
 
         /**
          * This defines the amount you want to mix the normal rendering pass in the digital rain.
          * This number is defined between 0 and 1;
          */
-        public mixToNormal:number = 0;
+        public mixToNormal: number = 0;
 
         /**
          * Instantiates a new Digital Rain Post Process.
@@ -213,17 +213,17 @@ module BABYLON {
          * @param options can either be the font name or an option object following the IDigitalRainPostProcessOptions format
          */
         constructor(name: string, camera: Camera, options?: string | IDigitalRainPostProcessOptions) {
-            super(name, 
-                'digitalrain', 
-                ['digitalRainFontInfos', 'digitalRainOptions', 'cosTimeZeroOne', 'matrixSpeed'], 
+            super(name,
+                'digitalrain',
+                ['digitalRainFontInfos', 'digitalRainOptions', 'cosTimeZeroOne', 'matrixSpeed'],
                 ['digitalRainFont'],
-                { 
-                    width: camera.getEngine().getRenderWidth(), 
+                {
+                    width: camera.getEngine().getRenderWidth(),
                     height: camera.getEngine().getRenderHeight()
-                }, 
-                camera, 
-                Texture.TRILINEAR_SAMPLINGMODE, 
-                camera.getEngine(), 
+                },
+                camera,
+                Texture.TRILINEAR_SAMPLINGMODE,
+                camera.getEngine(),
                 true);
 
             // Default values.
@@ -234,12 +234,12 @@ module BABYLON {
             if (options) {
                 if (typeof(options) === "string") {
                     font = <string>options;
-                }   
+                }
                 else {
                     font = (<IDigitalRainPostProcessOptions>options).font || font;
                     this.mixToTile = (<IDigitalRainPostProcessOptions>options).mixToTile || this.mixToTile;
                     this.mixToNormal = (<IDigitalRainPostProcessOptions>options).mixToNormal || this.mixToNormal;
-                } 
+                }
             }
 
             this._digitalRainFontTexture = new DigitalRainFontTexture(name, font, characterSet, camera.getScene());
@@ -247,26 +247,28 @@ module BABYLON {
 
             var alpha = 0.0;
             var cosTimeZeroOne = 0.0;
-            var matrix = new Matrix();
-            for (let i = 0; i < 16; i++) {    
-                matrix.m[i] = Math.random();
-            }
+            var matrix = Matrix.FromValues(
+                Math.random(), Math.random(), Math.random(), Math.random(),
+                Math.random(), Math.random(), Math.random(), Math.random(),
+                Math.random(), Math.random(), Math.random(), Math.random(),
+                Math.random(), Math.random(), Math.random(), Math.random()
+            );
 
             this.onApply = (effect: Effect) => {
                 effect.setTexture("digitalRainFont", this._digitalRainFontTexture);
-				
-                effect.setFloat4("digitalRainFontInfos", 
-                    this._digitalRainFontTexture.charSize, 
-                    characterSet.length, 
-                    textureSize.width, 
+
+                effect.setFloat4("digitalRainFontInfos",
+                    this._digitalRainFontTexture.charSize,
+                    characterSet.length,
+                    textureSize.width,
                     textureSize.height);
 
                 effect.setFloat4("digitalRainOptions",
-                    this.width, 
+                    this.width,
                     this.height,
-                    this.mixToNormal, 
+                    this.mixToNormal,
                     this.mixToTile);
-                
+
                 effect.setMatrix("matrixSpeed",
                     matrix);
 
@@ -276,4 +278,4 @@ module BABYLON {
             };
         }
     }
-} 
+}

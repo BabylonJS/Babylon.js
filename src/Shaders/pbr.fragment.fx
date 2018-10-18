@@ -639,6 +639,11 @@ void main(void) {
     #endif
 
         lightingInfo info;
+
+        pointLightingInfo pointInfo;
+
+        spotLightingInfo spotInfo;
+
         float shadow = 1.; // 1 - shadowLevel
         float NdotL = -1.;
 
@@ -783,11 +788,18 @@ void main(void) {
     finalEmissive *=  vEmissiveInfos.y;
 #endif
 
+// ______________________________ Ambient ________________________________________
+#ifdef AMBIENT
+    vec3 ambientOcclusionForDirectDiffuse = mix(vec3(1.), ambientOcclusionColor, vAmbientInfos.w);
+#else
+    vec3 ambientOcclusionForDirectDiffuse = ambientOcclusionColor;
+#endif
+
 // _______________________________________________________________________________
 // _____________________________ Composition _____________________________________
     // Reflection already includes the environment intensity.
     vec4 finalColor = vec4(
-        finalDiffuse			* ambientOcclusionColor * vLightingIntensity.x +
+        finalDiffuse			* ambientOcclusionForDirectDiffuse * vLightingIntensity.x +
 #ifndef UNLIT
     #ifdef REFLECTION
         finalIrradiance			* ambientOcclusionColor * vLightingIntensity.z +
@@ -831,7 +843,7 @@ void main(void) {
     // this also limits the brightness which helpfully reduces over-sparkling in bloom (native handles this in the bloom blur shader)
     finalColor.rgb = clamp(finalColor.rgb, 0., 30.0);
 #else
-    // Alway run even to ensure going back to gamma space.
+    // Alway run to ensure we are going back to gamma space.
     finalColor = applyImageProcessing(finalColor);
 #endif
 

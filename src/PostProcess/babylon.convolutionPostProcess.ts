@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * The ConvolutionPostProcess applies a 3x3 kernel to every pixel of the
      * input texture to perform effects such as edge detection or sharpening
@@ -16,7 +16,10 @@
          * @param reusable If the post process can be reused on the same frame. (default: false)
          * @param textureType Type of textures used when performing the post process. (default: 0)
          */
-        constructor(name: string, /** Array of 9 values corrisponding to the 3x3 kernel to be applied */ public kernel: number[], options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+        constructor(name: string,
+            /** Array of 9 values corrisponding to the 3x3 kernel to be applied */
+            public kernel: number[],
+            options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             super(name, "convolution", ["kernel", "screenSize"], null, options, camera, samplingMode, engine, reusable, null, textureType);
 
             this.onApply = (effect: Effect) => {

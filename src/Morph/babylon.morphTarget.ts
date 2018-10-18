@@ -20,6 +20,9 @@ module BABYLON {
          */
         public onInfluenceChanged = new Observable<boolean>();
 
+        /** @hidden */
+        public _onDataLayoutChanged = new Observable<void>();
+
         /**
          * Gets or sets the influence of this target (ie. its weight in the overall morphing)
          */
@@ -40,7 +43,6 @@ module BABYLON {
             }
         }
 
-        
         private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
         /**
@@ -55,7 +57,7 @@ module BABYLON {
 
         public set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>) {
             this._animationPropertiesOverride = value;
-        }        
+        }
 
         /**
          * Creates a new MorphTarget
@@ -85,7 +87,7 @@ module BABYLON {
 
         /**
          * Gets a boolean defining if the target contains tangent data
-         */        
+         */
         public get hasTangents(): boolean {
             return !!this._tangents;
         }
@@ -95,7 +97,13 @@ module BABYLON {
          * @param data defines the position data to use
          */
         public setPositions(data: Nullable<FloatArray>) {
+            const hadPositions = this.hasPositions;
+
             this._positions = data;
+
+            if (hadPositions !== this.hasPositions) {
+                this._onDataLayoutChanged.notifyObservers(undefined);
+            }
         }
 
         /**
@@ -109,15 +117,21 @@ module BABYLON {
         /**
          * Affects normal data to this target
          * @param data defines the normal data to use
-         */        
+         */
         public setNormals(data: Nullable<FloatArray>) {
+            const hadNormals = this.hasNormals;
+
             this._normals = data;
+
+            if (hadNormals !== this.hasNormals) {
+                this._onDataLayoutChanged.notifyObservers(undefined);
+            }
         }
 
         /**
          * Gets the normal data stored in this target
          * @returns a FloatArray containing the normal data (or null if not present)
-         */        
+         */
         public getNormals(): Nullable<FloatArray> {
             return this._normals;
         }
@@ -125,15 +139,21 @@ module BABYLON {
         /**
          * Affects tangent data to this target
          * @param data defines the tangent data to use
-         */        
+         */
         public setTangents(data: Nullable<FloatArray>) {
+            const hadTangents = this.hasTangents;
+
             this._tangents = data;
+
+            if (hadTangents !== this.hasTangents) {
+                this._onDataLayoutChanged.notifyObservers(undefined);
+            }
         }
 
         /**
          * Gets the tangent data stored in this target
          * @returns a FloatArray containing the tangent data (or null if not present)
-         */   
+         */
         public getTangents(): Nullable<FloatArray> {
             return this._tangents;
         }
@@ -143,7 +163,7 @@ module BABYLON {
          * @returns the serialized object
          */
         public serialize(): any {
-            var serializationObject:any = {};
+            var serializationObject: any = {};
 
             serializationObject.name = this.name;
             serializationObject.influence = this.influence;

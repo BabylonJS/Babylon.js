@@ -1,20 +1,23 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * This Helps creating a texture that will be created from a camera in your scene.
+     * It is basically a dynamic texture that could be used to create special effects for instance.
+     * Actually, It is the base of lot of effects in the framework like post process, shadows, effect layers and rendering pipelines...
+     */
     export class RenderTargetTexture extends Texture {
-        public static _REFRESHRATE_RENDER_ONCE: number = 0;
-        public static _REFRESHRATE_RENDER_ONEVERYFRAME: number = 1;
-        public static _REFRESHRATE_RENDER_ONEVERYTWOFRAMES: number = 2;
-
-        public static get REFRESHRATE_RENDER_ONCE(): number {
-            return RenderTargetTexture._REFRESHRATE_RENDER_ONCE;
-        }
-
-        public static get REFRESHRATE_RENDER_ONEVERYFRAME(): number {
-            return RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYFRAME;
-        }
-
-        public static get REFRESHRATE_RENDER_ONEVERYTWOFRAMES(): number {
-            return RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYTWOFRAMES;
-        }
+        /**
+         * The texture will only be rendered once which can be useful to improve performance if everything in your render is static for instance.
+         */
+        public static readonly REFRESHRATE_RENDER_ONCE: number = 0;
+        /**
+         * The texture will only be rendered rendered every frame and is recomended for dynamic contents.
+         */
+        public static readonly REFRESHRATE_RENDER_ONEVERYFRAME: number = 1;
+        /**
+         * The texture will be rendered every 2 frames which could be enough if your dynamic objects are not
+         * the central point of your effect and can save a lot of performances.
+         */
+        public static readonly REFRESHRATE_RENDER_ONEVERYTWOFRAMES: number = 2;
 
         /**
         * Use this predicate to dynamically define the list of mesh you want to render.
@@ -22,24 +25,84 @@
         */
         public renderListPredicate: (AbstractMesh: AbstractMesh) => boolean;
 
+        private _renderList: Nullable<Array<AbstractMesh>>;
         /**
         * Use this list to define the list of mesh you want to render.
         */
-        public renderList: Nullable<Array<AbstractMesh>> = new Array<AbstractMesh>();
+        public get renderList(): Nullable<Array<AbstractMesh>> {
+            return this._renderList;
+        }
+
+        public set renderList(value: Nullable<Array<AbstractMesh>>) {
+            this._renderList = value;
+
+            if (this._renderList) {
+                this._hookArray(this._renderList);
+            }
+        }
+
+        private _hookArray(array: AbstractMesh[]): void {
+            var oldPush = array.push;
+            array.push = (...items: AbstractMesh[]) => {
+                let wasEmpty = array.length === 0;
+
+                var result = oldPush.apply(array, items);
+
+                if (wasEmpty) {
+                    this.getScene()!.meshes.forEach((mesh) => {
+                        mesh._markSubMeshesAsLightDirty();
+                    });
+                }
+
+                return result;
+            };
+
+            var oldSplice = array.splice;
+            array.splice = (index: number, deleteCount?: number) => {
+                var deleted = oldSplice.apply(array, [index, deleteCount]);
+
+                if (array.length === 0) {
+                    this.getScene()!.meshes.forEach((mesh) => {
+                        mesh._markSubMeshesAsLightDirty();
+                    });
+                }
+
+                return deleted;
+            };
+        }
+
+        /**
+         * Define if particles should be rendered in your texture.
+         */
         public renderParticles = true;
+        /**
+         * Define if sprites should be rendered in your texture.
+         */
         public renderSprites = false;
+        /**
+         * Override the default coordinates mode to projection for RTT as it is the most common case for rendered textures.
+         */
         public coordinatesMode = Texture.PROJECTION_MODE;
+        /**
+         * Define the camera used to render the texture.
+         */
         public activeCamera: Nullable<Camera>;
+        /**
+         * Override the render function of the texture with your own one.
+         */
         public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
+        /**
+         * Define if camera post processes should be use while rendering the texture.
+         */
         public useCameraPostProcesses: boolean;
+        /**
+         * Define if the camera viewport should be respected while rendering the texture or if the render should be done to the entire texture.
+         */
         public ignoreCameraViewport: boolean = false;
 
         private _postProcessManager: Nullable<PostProcessManager>;
-        private _postProcesses: PostProcess[];        
-
+        private _postProcesses: PostProcess[];
         private _resizeObserver: Nullable<Observer<Engine>>;
-
-        // Events
 
         /**
         * An event triggered when the texture is unbind.
@@ -52,6 +115,10 @@
         public onAfterUnbindObservable = new Observable<RenderTargetTexture>();
 
         private _onAfterUnbindObserver: Nullable<Observer<RenderTargetTexture>>;
+        /**
+         * Set a after unbind callback in the texture.
+         * This has been kept for backward compatibility and use of onAfterUnbindObservable is recommended.
+         */
         public set onAfterUnbind(callback: () => void) {
             if (this._onAfterUnbindObserver) {
                 this.onAfterUnbindObservable.remove(this._onAfterUnbindObserver);
@@ -65,6 +132,10 @@
         public onBeforeRenderObservable = new Observable<number>();
 
         private _onBeforeRenderObserver: Nullable<Observer<number>>;
+        /**
+         * Set a before render callback in the texture.
+         * This has been kept for backward compatibility and use of onBeforeRenderObservable is recommended.
+         */
         public set onBeforeRender(callback: (faceIndex: number) => void) {
             if (this._onBeforeRenderObserver) {
                 this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
@@ -78,6 +149,10 @@
         public onAfterRenderObservable = new Observable<number>();
 
         private _onAfterRenderObserver: Nullable<Observer<number>>;
+        /**
+         * Set a after render callback in the texture.
+         * This has been kept for backward compatibility and use of onAfterRenderObservable is recommended.
+         */
         public set onAfterRender(callback: (faceIndex: number) => void) {
             if (this._onAfterRenderObserver) {
                 this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
@@ -91,6 +166,10 @@
         public onClearObservable = new Observable<Engine>();
 
         private _onClearObserver: Nullable<Observer<Engine>>;
+        /**
+         * Set a clear callback in the texture.
+         * This has been kept for backward compatibility and use of onClearObservable is recommended.
+         */
         public set onClear(callback: (Engine: Engine) => void) {
             if (this._onClearObserver) {
                 this.onClearObservable.remove(this._onClearObserver);
@@ -98,12 +177,17 @@
             this._onClearObserver = this.onClearObservable.add(callback);
         }
 
+        /**
+         * Define the clear color of the Render Target if it should be different from the scene.
+         */
         public clearColor: Color4;
-        protected _size: number | {width: number, height: number};
-        protected _initialSizeParameter: number | {width: number, height: number} | {ratio: number}
+        protected _size: number | { width: number, height: number };
+        protected _initialSizeParameter: number | { width: number, height: number } | { ratio: number };
         protected _sizeRatio: Nullable<number>;
+        /** @hidden */
         public _generateMipMaps: boolean;
         protected _renderingManager: RenderingManager;
+        /** @hidden */
         public _waitingRenderList: string[];
         protected _doNotChangeAspectRatio: boolean;
         protected _currentRefreshId = -1;
@@ -111,6 +195,9 @@
         protected _textureMatrix: Matrix;
         protected _samples = 1;
         protected _renderTargetOptions: RenderTargetCreationOptions;
+        /**
+         * Gets render target creation options that were used.
+         */
         public get renderTargetOptions(): RenderTargetCreationOptions {
             return this._renderTargetOptions;
         }
@@ -136,7 +223,7 @@
          * When defined, the cubemap will switch to local mode
          * @see https://community.arm.com/graphics/b/blog/posts/reflections-based-on-local-cubemaps-in-unity
          * @example https://www.babylonjs-playground.com/#RNASML
-         */        
+         */
         public set boundingBoxSize(value: Vector3) {
             if (this._boundingBoxSize && this._boundingBoxSize.equals(value)) {
                 return;
@@ -152,17 +239,17 @@
         }
 
         /**
-         * In case the RTT has been created with a depth texture, get the associated 
+         * In case the RTT has been created with a depth texture, get the associated
          * depth texture.
          * Otherwise, return null.
          */
         public depthStencilTexture: Nullable<InternalTexture>;
 
         /**
-         * Instantiate a render target texture. This is mainly to render of screen the scene to for instance apply post processse
+         * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post processse
          * or used a shadow, depth texture...
          * @param name The friendly name of the texture
-         * @param size The size of the RTT (number if square, or {with: number, height:number} or {ratio:} to define a ratio from the main scene)
+         * @param size The size of the RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
          * @param scene The scene the RTT belongs to. The latest created scene will be used if not precised.
          * @param generateMipMaps True if mip maps need to be generated after render.
          * @param doNotChangeAspectRatio True to not change the aspect ratio of the scene in the RTT
@@ -173,8 +260,9 @@
          * @param generateStencilBuffer True to generate a stencil buffer
          * @param isMulti True if multiple textures need to be created (Draw Buffers)
          * @param format The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...)
+         * @param delayAllocation if the texture allocation should be delayed (default: false)
          */
-        constructor(name: string, size: number | {width: number, height: number} | {ratio: number}, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Engine.TEXTUREFORMAT_RGBA) {
+        constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Engine.TEXTUREFORMAT_RGBA, delayAllocation = false) {
             super(null, scene, !generateMipMaps);
             scene = this.getScene();
 
@@ -182,6 +270,7 @@
                 return;
             }
 
+            this.renderList = new Array<AbstractMesh>();
             this._engine = scene.getEngine();
             this.name = name;
             this.isRenderTarget = true;
@@ -190,13 +279,14 @@
             this._processSizeParameter(size);
 
             this._resizeObserver = this.getScene()!.getEngine().onResizeObservable.add(() => {
-            });            
+            });
 
             this._generateMipMaps = generateMipMaps ? true : false;
             this._doNotChangeAspectRatio = doNotChangeAspectRatio;
 
             // Rendering groups
             this._renderingManager = new RenderingManager(scene);
+            this._renderingManager._useSceneAutoClearSetup = true;
 
             if (isMulti) {
                 return;
@@ -216,14 +306,15 @@
                 this.wrapV = Texture.CLAMP_ADDRESSMODE;
             }
 
-            if (isCube) {
-                this._texture = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
-                this.coordinatesMode = Texture.INVCUBIC_MODE;
-                this._textureMatrix = Matrix.Identity();
-            } else {
-                this._texture = scene.getEngine().createRenderTargetTexture(this._size, this._renderTargetOptions);
+            if (!delayAllocation) {
+                if (isCube) {
+                    this._texture = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
+                    this.coordinatesMode = Texture.INVCUBIC_MODE;
+                    this._textureMatrix = Matrix.Identity();
+                } else {
+                    this._texture = scene.getEngine().createRenderTargetTexture(this._size, this._renderTargetOptions);
+                }
             }
-
         }
 
         /**
@@ -233,7 +324,7 @@
          * @param bilinearFiltering Specifies whether or not bilinear filtering is enable on the texture
          * @param generateStencil Specifies whether or not a stencil should be allocated in the texture
          */
-        public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false) : void {
+        public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false): void {
             if (!this.getScene()) {
                 return;
             }
@@ -248,18 +339,22 @@
             engine.setFrameBufferDepthStencilTexture(this);
         }
 
-        private _processSizeParameter(size: number | {width: number, height: number} | {ratio: number}): void {
-            if ((<{ratio: number}>size).ratio) {
-                this._sizeRatio = (<{ratio: number}>size).ratio;
+        private _processSizeParameter(size: number | { width: number, height: number } | { ratio: number }): void {
+            if ((<{ ratio: number }>size).ratio) {
+                this._sizeRatio = (<{ ratio: number }>size).ratio;
                 this._size = {
                     width: this._bestReflectionRenderTargetDimension(this._engine.getRenderWidth(), this._sizeRatio),
                     height: this._bestReflectionRenderTargetDimension(this._engine.getRenderHeight(), this._sizeRatio)
-                }
-            } else {            
-                this._size = <number | {width: number, height: number}>size;
+                };
+            } else {
+                this._size = <number | { width: number, height: number }>size;
             }
         }
 
+        /**
+         * Define the number of samples to use in case of MSAA.
+         * It defaults to one meaning no MSAA has been enabled.
+         */
         public get samples(): number {
             return this._samples;
         }
@@ -278,27 +373,37 @@
             this._samples = scene.getEngine().updateRenderTargetTextureSampleCount(this._texture, value);
         }
 
+        /**
+         * Resets the refresh counter of the texture and start bak from scratch.
+         * Could be usefull to regenerate the texture if it is setup to render only once.
+         */
         public resetRefreshCounter(): void {
             this._currentRefreshId = -1;
         }
 
+        /**
+         * Define the refresh rate of the texture or the rendering frequency.
+         * Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
+         */
         public get refreshRate(): number {
             return this._refreshRate;
         }
-
-        // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
         public set refreshRate(value: number) {
             this._refreshRate = value;
             this.resetRefreshCounter();
         }
 
+        /**
+         * Adds a post process to the render target rendering passes.
+         * @param postProcess define the post process to add
+         */
         public addPostProcess(postProcess: PostProcess): void {
             if (!this._postProcessManager) {
                 let scene = this.getScene();
-                
+
                 if (!scene) {
                     return;
-                }                
+                }
                 this._postProcessManager = new PostProcessManager(scene);
                 this._postProcesses = new Array<PostProcess>();
             }
@@ -307,7 +412,11 @@
             this._postProcesses[0].autoClear = false;
         }
 
-        public clearPostProcesses(dispose?: boolean): void {
+        /**
+         * Clear all the post processes attached to the render target
+         * @param dispose define if the cleared post processesshould also be disposed (false by default)
+         */
+        public clearPostProcesses(dispose: boolean = false): void {
             if (!this._postProcesses) {
                 return;
             }
@@ -321,6 +430,10 @@
             this._postProcesses = [];
         }
 
+        /**
+         * Remove one of the post process from the list of attached post processes to the texture
+         * @param postProcess define the post process to remove from the list
+         */
         public removePostProcess(postProcess: PostProcess): void {
             if (!this._postProcesses) {
                 return;
@@ -339,6 +452,7 @@
             }
         }
 
+        /** @hidden */
         public _shouldRender(): boolean {
             if (this._currentRefreshId === -1) { // At least render once
                 this._currentRefreshId = 1;
@@ -354,40 +468,59 @@
             return false;
         }
 
+        /**
+         * Gets the actual render size of the texture.
+         * @returns the width of the render size
+         */
         public getRenderSize(): number {
-            if ((<{width: number, height: number}>this._size).width) {
-                return (<{width: number, height: number}>this._size).width;
-            }
-
-            return <number>this._size;
+            return this.getRenderWidth();
         }
 
+        /**
+         * Gets the actual render width of the texture.
+         * @returns the width of the render size
+         */
         public getRenderWidth(): number {
-            if ((<{width: number, height: number}>this._size).width) {
-                return (<{width: number, height: number}>this._size).width;
+            if ((<{ width: number, height: number }>this._size).width) {
+                return (<{ width: number, height: number }>this._size).width;
             }
 
             return <number>this._size;
         }
 
+        /**
+         * Gets the actual render height of the texture.
+         * @returns the height of the render size
+         */
         public getRenderHeight(): number {
-            if ((<{width: number, height: number}>this._size).width) {
-                return (<{width: number, height: number}>this._size).height;
+            if ((<{ width: number, height: number }>this._size).width) {
+                return (<{ width: number, height: number }>this._size).height;
             }
 
             return <number>this._size;
         }
 
+        /**
+         * Get if the texture can be rescaled or not.
+         */
         public get canRescale(): boolean {
             return true;
         }
 
+        /**
+         * Resize the texture using a ratio.
+         * @param ratio the ratio to apply to the texture size in order to compute the new target size
+         */
         public scale(ratio: number): void {
             var newSize = this.getRenderSize() * ratio;
 
             this.resize(newSize);
         }
 
+        /**
+         * Get the texture reflection matrix used to rotate/transform the reflection.
+         * @returns the reflection matrix
+         */
         public getReflectionTextureMatrix(): Matrix {
             if (this.isCube) {
                 return this._textureMatrix;
@@ -396,16 +529,24 @@
             return super.getReflectionTextureMatrix();
         }
 
-        public resize(size: number | {width: number, height: number} | {ratio: number}) {
+        /**
+         * Resize the texture to a new desired size.
+         * Be carrefull as it will recreate all the data in the new texture.
+         * @param size Define the new size. It can be:
+         *   - a number for squared texture,
+         *   - an object containing { width: number, height: number }
+         *   - or an object containing a ratio { ratio: number }
+         */
+        public resize(size: number | { width: number, height: number } | { ratio: number }): void {
             this.releaseInternalTexture();
             let scene = this.getScene();
-            
+
             if (!scene) {
                 return;
             }
-            
+
             this._processSizeParameter(size);
-            
+
             if (this.isCube) {
                 this._texture = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
             } else {
@@ -413,7 +554,12 @@
             }
         }
 
-        public render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false) {
+        /**
+         * Renders all the objects from the render list into the texture.
+         * @param useCameraPostProcess Define if camera post processes should be used during the rendering
+         * @param dumpForDebug Define if the rendering result should be dumped (copied) for debugging purpose
+         */
+        public render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false): void {
             var scene = this.getScene();
 
             if (!scene) {
@@ -442,13 +588,13 @@
             // Is predicate defined?
             if (this.renderListPredicate) {
                 if (this.renderList) {
-                    this.renderList.splice(0); // Clear previous renderList
+                    this.renderList.length = 0; // Clear previous renderList
                 } else {
                     this.renderList = [];
                 }
 
                 var scene = this.getScene();
-                
+
                 if (!scene) {
                     return;
                 }
@@ -558,7 +704,7 @@
             let minimum = 128;
             let x = renderDimension * scale;
             let curved = Tools.NearestPOT(x + (minimum * minimum / (minimum + x)));
-            
+
             // Ensure we don't exceed the render dimension (while staying POT)
             return Math.min(Tools.FloorPOT(renderDimension), curved);
         }
@@ -574,7 +720,7 @@
 
         private renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], currentRenderListLength: number, useCameraPostProcess: boolean, dumpForDebug: boolean): void {
             var scene = this.getScene();
-            
+
             if (!scene) {
                 return;
             }
@@ -636,7 +782,7 @@
                     }
                 }
 
-            this.unbindFrameBuffer(engine, faceIndex);
+                this.unbindFrameBuffer(engine, faceIndex);
 
             } else {
                 this.onAfterRenderObservable.notifyObservers(faceIndex);
@@ -646,7 +792,7 @@
         /**
          * Overrides the default sort function applied in the renderging group to prepare the meshes.
          * This allowed control for front to back rendering or reversly depending of the special needs.
-         * 
+         *
          * @param renderingGroupId The rendering group id corresponding to its index
          * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
          * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
@@ -665,14 +811,19 @@
 
         /**
          * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         * 
+         *
          * @param renderingGroupId The rendering group id corresponding to its index
          * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
          */
         public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void {
             this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil);
+            this._renderingManager._useSceneAutoClearSetup = false;
         }
 
+        /**
+         * Clones the texture.
+         * @returns the cloned texture
+         */
         public clone(): RenderTargetTexture {
             var textureSize = this.getSize();
             var newTexture = new RenderTargetTexture(
@@ -701,6 +852,10 @@
             return newTexture;
         }
 
+        /**
+         * Serialize the texture to a JSON representation we can easily use in the resepective Parse function.
+         * @returns The JSON representation of the texture
+         */
         public serialize(): any {
             if (!this.name) {
                 return null;
@@ -720,7 +875,9 @@
             return serializationObject;
         }
 
-        // This will remove the attached framebuffer objects. The texture will not be able to be used as render target anymore
+        /**
+         *  This will remove the attached framebuffer objects. The texture will not be able to be used as render target anymore
+         */
         public disposeFramebufferObjects(): void {
             let objBuffer = this.getInternalTexture();
             let scene = this.getScene();
@@ -729,6 +886,9 @@
             }
         }
 
+        /**
+         * Dispose the texture and release its associated resources.
+         */
         public dispose(): void {
             if (this._postProcessManager) {
                 this._postProcessManager.dispose();
@@ -768,6 +928,7 @@
             super.dispose();
         }
 
+        /** @hidden */
         public _rebuild(): void {
             if (this.refreshRate === RenderTargetTexture.REFRESHRATE_RENDER_ONCE) {
                 this.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;

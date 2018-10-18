@@ -1,7 +1,54 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * Defines the options associated with the creation of a shader material.
+     */
+    export interface IShaderMaterialOptions {
+        /**
+         * Does the material work in alpha blend mode
+         */
+        needAlphaBlending: boolean;
+
+        /**
+         * Does the material work in alpha test mode
+         */
+        needAlphaTesting: boolean;
+
+        /**
+         * The list of attribute names used in the shader
+         */
+        attributes: string[];
+
+        /**
+         * The list of unifrom names used in the shader
+         */
+        uniforms: string[];
+
+        /**
+         * The list of UBO names used in the shader
+         */
+        uniformBuffers: string[];
+
+        /**
+         * The list of sampler names used in the shader
+         */
+        samplers: string[];
+
+        /**
+         * The list of defines used in the shader
+         */
+        defines: string[];
+    }
+
+    /**
+     * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
+     *
+     * This returned material effects how the mesh will look based on the code in the shaders.
+     *
+     * @see http://doc.babylonjs.com/how_to/shader_material
+     */
     export class ShaderMaterial extends Material {
         private _shaderPath: any;
-        private _options: any;
+        private _options: IShaderMaterialOptions;
         private _textures: { [name: string]: Texture } = {};
         private _textureArrays: { [name: string]: Texture[] } = {};
         private _floats: { [name: string]: number } = {};
@@ -21,29 +68,56 @@
         private _cachedWorldViewMatrix = new Matrix();
         private _renderId: number;
 
-        constructor(name: string, scene: Scene, shaderPath: any, options: any) {
+        /**
+         * Instantiate a new shader material.
+         * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
+         * This returned material effects how the mesh will look based on the code in the shaders.
+         * @see http://doc.babylonjs.com/how_to/shader_material
+         * @param name Define the name of the material in the scene
+         * @param scene Define the scene the material belongs to
+         * @param shaderPath Defines  the route to the shader code in one of three ways:
+         *     - object - { vertex: "custom", fragment: "custom" }, used with BABYLON.Effect.ShadersStore["customVertexShader"] and BABYLON.Effect.ShadersStore["customFragmentShader"]
+         *     - object - { vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }, used with shader code in <script> tags
+         *     - string - "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
+         * @param options Define the options used to create the shader
+         */
+        constructor(name: string, scene: Scene, shaderPath: any, options: Partial<IShaderMaterialOptions> = {}) {
             super(name, scene);
             this._shaderPath = shaderPath;
 
-            options.needAlphaBlending = options.needAlphaBlending || false;
-            options.needAlphaTesting = options.needAlphaTesting || false;
-            options.attributes = options.attributes || ["position", "normal", "uv"];
-            options.uniforms = options.uniforms || ["worldViewProjection"];
-            options.uniformBuffers = options.uniformBuffers || [];
-            options.samplers = options.samplers || [];
-            options.defines = options.defines || [];
-
-            this._options = options;
+            this._options = {
+                needAlphaBlending: false,
+                needAlphaTesting: false,
+                attributes: ["position", "normal", "uv"],
+                uniforms: ["worldViewProjection"],
+                uniformBuffers: [],
+                samplers: [],
+                defines: [],
+                ...options
+            };
         }
 
+        /**
+         * Gets the current class name of the material e.g. "ShaderMaterial"
+         * Mainly use in serialization.
+         * @returns the class name
+         */
         public getClassName(): string {
             return "ShaderMaterial";
         }
 
+        /**
+         * Specifies if the material will require alpha blending
+         * @returns a boolean specifying if alpha blending is needed
+         */
         public needAlphaBlending(): boolean {
-            return this._options.needAlphaBlending;
+            return (this.alpha < 1.0) || this._options.needAlphaBlending;
         }
 
+        /**
+         * Specifies if this material should be rendered in alpha test mode
+         * @returns a boolean specifying if an alpha test is needed.
+         */
         public needAlphaTesting(): boolean {
             return this._options.needAlphaTesting;
         }
@@ -54,6 +128,12 @@
             }
         }
 
+        /**
+         * Set a texture in the shader.
+         * @param name Define the name of the uniform samplers as defined in the shader
+         * @param texture Define the texture to bind to this sampler
+         * @return the material itself allowing "fluent" like uniform updates
+         */
         public setTexture(name: string, texture: Texture): ShaderMaterial {
             if (this._options.samplers.indexOf(name) === -1) {
                 this._options.samplers.push(name);
@@ -63,6 +143,12 @@
             return this;
         }
 
+        /**
+         * Set a texture array in the shader.
+         * @param name Define the name of the uniform sampler array as defined in the shader
+         * @param textures Define the list of textures to bind to this sampler
+         * @return the material itself allowing "fluent" like uniform updates
+         */
         public setTextureArray(name: string, textures: Texture[]): ShaderMaterial {
             if (this._options.samplers.indexOf(name) === -1) {
                 this._options.samplers.push(name);
@@ -75,6 +161,12 @@
             return this;
         }
 
+        /**
+         * Set a float in the shader.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
         public setFloat(name: string, value: number): ShaderMaterial {
             this._checkUniform(name);
             this._floats[name] = value;
@@ -82,6 +174,12 @@
             return this;
         }
 
+        /**
+         * Set a int in the shader.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
         public setInt(name: string, value: number): ShaderMaterial {
             this._checkUniform(name);
             this._ints[name] = value;
@@ -89,6 +187,12 @@
             return this;
         }
 
+        /**
+         * Set an array of floats in the shader.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
         public setFloats(name: string, value: number[]): ShaderMaterial {
             this._checkUniform(name);
             this._floatsArrays[name] = value;
@@ -96,21 +200,40 @@
             return this;
         }
 
+        /**
+         * Set a vec3 in the shader from a Color3.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
         public setColor3(name: string, value: Color3): ShaderMaterial {
             this._checkUniform(name);
             this._colors3[name] = value;
 
             return this;
         }
+
+        /**
+         * Set a vec3 array in the shader from a Color3 array.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
         public setColor3Array(name: string, value: Color3[]): ShaderMaterial {
             this._checkUniform(name);
             this._colors3Arrays[name] = value.reduce((arr, color) => {
                 color.toArray(arr, arr.length);
                 return arr;
-            }, [])
+            }, []);
             return this;
         }
 
+        /**
+         * Set a vec4 in the shader from a Color4.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
         public setColor4(name: string, value: Color4): ShaderMaterial {
             this._checkUniform(name);
             this._colors4[name] = value;
@@ -118,6 +241,12 @@
             return this;
         }
 
+        /**
+         * Set a vec2 in the shader from a Vector2.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
         public setVector2(name: string, value: Vector2): ShaderMaterial {
             this._checkUniform(name);
             this._vectors2[name] = value;
@@ -125,6 +254,12 @@
             return this;
         }
 
+        /**
+         * Set a vec3 in the shader from a Vector3.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
         public setVector3(name: string, value: Vector3): ShaderMaterial {
             this._checkUniform(name);
             this._vectors3[name] = value;
@@ -132,6 +267,12 @@
             return this;
         }
 
+        /**
+         * Set a vec4 in the shader from a Vector4.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
         public setVector4(name: string, value: Vector4): ShaderMaterial {
             this._checkUniform(name);
             this._vectors4[name] = value;
@@ -139,6 +280,12 @@
             return this;
         }
 
+        /**
+         * Set a mat4 in the shader from a Matrix.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
         public setMatrix(name: string, value: Matrix): ShaderMaterial {
             this._checkUniform(name);
             this._matrices[name] = value;
@@ -146,6 +293,12 @@
             return this;
         }
 
+        /**
+         * Set a mat3 in the shader from a Float32Array.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
         public setMatrix3x3(name: string, value: Float32Array): ShaderMaterial {
             this._checkUniform(name);
             this._matrices3x3[name] = value;
@@ -153,6 +306,12 @@
             return this;
         }
 
+        /**
+         * Set a mat2 in the shader from a Float32Array.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
         public setMatrix2x2(name: string, value: Float32Array): ShaderMaterial {
             this._checkUniform(name);
             this._matrices2x2[name] = value;
@@ -160,6 +319,12 @@
             return this;
         }
 
+        /**
+         * Set a vec2 array in the shader from a number array.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
         public setArray2(name: string, value: number[]): ShaderMaterial {
             this._checkUniform(name);
             this._vectors2Arrays[name] = value;
@@ -167,6 +332,12 @@
             return this;
         }
 
+        /**
+         * Set a vec3 array in the shader from a number array.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
         public setArray3(name: string, value: number[]): ShaderMaterial {
             this._checkUniform(name);
             this._vectors3Arrays[name] = value;
@@ -186,6 +357,12 @@
             return false;
         }
 
+        /**
+         * Checks if the material is ready to render the requested mesh
+         * @param mesh Define the mesh to render
+         * @param useInstances Define whether or not the material is used with instances
+         * @returns true if ready, otherwise false
+         */
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             var scene = this.getScene();
             var engine = scene.getEngine();
@@ -202,9 +379,6 @@
             var defines = [];
             var attribs = [];
             var fallbacks = new EffectFallbacks();
-            if (useInstances) {
-                defines.push("#define INSTANCES");
-            }
 
             for (var index = 0; index < this._options.defines.length; index++) {
                 defines.push(this._options.defines[index]);
@@ -219,6 +393,11 @@
                 defines.push("#define VERTEXCOLOR");
             }
 
+            if (useInstances) {
+                defines.push("#define INSTANCES");
+                MaterialHelper.PrepareAttributesForInstances(attribs, defines);
+            }
+
             // Bones
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                 attribs.push(VertexBuffer.MatricesIndicesKind);
@@ -227,12 +406,28 @@
                     attribs.push(VertexBuffer.MatricesIndicesExtraKind);
                     attribs.push(VertexBuffer.MatricesWeightsExtraKind);
                 }
+
+                const skeleton = mesh.skeleton;
+
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
                 fallbacks.addCPUSkinningFallback(0, mesh);
 
-                if (this._options.uniforms.indexOf("mBones") === -1) {
-                    this._options.uniforms.push("mBones");
+                if (skeleton.isUsingTextureForMatrices) {
+                    defines.push("#define BONETEXTURE");
+
+                    if (this._options.uniforms.indexOf("boneTextureWidth") === -1) {
+                        this._options.uniforms.push("boneTextureWidth");
+                    }
+
+                    if (this._options.samplers.indexOf("boneSampler") === -1) {
+                        this._options.samplers.push("boneSampler");
+                    }
+                } else {
+                    defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
+
+                    if (this._options.uniforms.indexOf("mBones") === -1) {
+                        this._options.uniforms.push("mBones");
+                    }
                 }
 
             } else {
@@ -278,6 +473,10 @@
             return true;
         }
 
+        /**
+         * Binds the world matrix to the material
+         * @param world defines the world transformation matrix
+         */
         public bindOnlyWorldMatrix(world: Matrix): void {
             var scene = this.getScene();
 
@@ -299,6 +498,11 @@
             }
         }
 
+        /**
+         * Binds the material to the mesh
+         * @param world defines the world transformation matrix
+         * @param mesh defines the mesh to bind the material to
+         */
         public bind(world: Matrix, mesh?: Mesh): void {
             // Std values
             this.bindOnlyWorldMatrix(world);
@@ -330,22 +534,22 @@
                     this._effect.setTextureArray(name, this._textureArrays[name]);
                 }
 
-                // Int    
+                // Int
                 for (name in this._ints) {
                     this._effect.setInt(name, this._ints[name]);
                 }
 
-                // Float    
+                // Float
                 for (name in this._floats) {
                     this._effect.setFloat(name, this._floats[name]);
                 }
 
-                // Floats   
+                // Floats
                 for (name in this._floatsArrays) {
                     this._effect.setArray(name, this._floatsArrays[name]);
                 }
 
-                // Color3        
+                // Color3
                 for (name in this._colors3) {
                     this._effect.setColor3(name, this._colors3[name]);
                 }
@@ -354,28 +558,28 @@
                     this._effect.setArray3(name, this._colors3Arrays[name]);
                 }
 
-                // Color4      
+                // Color4
                 for (name in this._colors4) {
                     var color = this._colors4[name];
                     this._effect.setFloat4(name, color.r, color.g, color.b, color.a);
                 }
 
-                // Vector2        
+                // Vector2
                 for (name in this._vectors2) {
                     this._effect.setVector2(name, this._vectors2[name]);
                 }
 
-                // Vector3        
+                // Vector3
                 for (name in this._vectors3) {
                     this._effect.setVector3(name, this._vectors3[name]);
                 }
 
-                // Vector4        
+                // Vector4
                 for (name in this._vectors4) {
                     this._effect.setVector4(name, this._vectors4[name]);
                 }
 
-                // Matrix      
+                // Matrix
                 for (name in this._matrices) {
                     this._effect.setMatrix(name, this._matrices[name]);
                 }
@@ -390,12 +594,12 @@
                     this._effect.setMatrix2x2(name, this._matrices2x2[name]);
                 }
 
-                // Vector2Array   
+                // Vector2Array
                 for (name in this._vectors2Arrays) {
                     this._effect.setArray2(name, this._vectors2Arrays[name]);
                 }
 
-                // Vector3Array   
+                // Vector3Array
                 for (name in this._vectors3Arrays) {
                     this._effect.setArray3(name, this._vectors3Arrays[name]);
                 }
@@ -404,6 +608,10 @@
             this._afterBind(mesh);
         }
 
+        /**
+         * Gets the active textures from the material
+         * @returns an array of textures
+         */
         public getActiveTextures(): BaseTexture[] {
             var activeTextures = super.getActiveTextures();
 
@@ -421,6 +629,11 @@
             return activeTextures;
         }
 
+        /**
+         * Specifies if the material uses a texture
+         * @param texture defines the texture to check against the material
+         * @returns a boolean specifying if the material uses the texture
+         */
         public hasTexture(texture: BaseTexture): boolean {
             if (super.hasTexture(texture)) {
                 return true;
@@ -444,13 +657,24 @@
             return false;
         }
 
+        /**
+         * Makes a duplicate of the material, and gives it a new name
+         * @param name defines the new name for the duplicated material
+         * @returns the cloned material
+         */
         public clone(name: string): ShaderMaterial {
             var newShaderMaterial = new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options);
 
             return newShaderMaterial;
         }
 
-        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
+        /**
+         * Disposes the material
+         * @param forceDisposeEffect specifies if effects should be forcefully disposed
+         * @param forceDisposeTextures specifies if textures should be forcefully disposed
+         * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to any mesh
+         */
+        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
 
             if (forceDisposeTextures) {
                 var name: string;
@@ -468,9 +692,13 @@
 
             this._textures = {};
 
-            super.dispose(forceDisposeEffect, forceDisposeTextures);
+            super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
         }
 
+        /**
+         * Serializes this material in a JSON representation
+         * @returns the serialized material object
+         */
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.ShaderMaterial";
@@ -496,19 +724,19 @@
                 }
             }
 
-            // Float    
+            // Float
             serializationObject.floats = {};
             for (name in this._floats) {
                 serializationObject.floats[name] = this._floats[name];
             }
 
-            // Float s   
+            // Float s
             serializationObject.FloatArrays = {};
             for (name in this._floatsArrays) {
                 serializationObject.FloatArrays[name] = this._floatsArrays[name];
             }
 
-            // Color3    
+            // Color3
             serializationObject.colors3 = {};
             for (name in this._colors3) {
                 serializationObject.colors3[name] = this._colors3[name].asArray();
@@ -520,31 +748,31 @@
                 serializationObject.colors3Arrays[name] = this._colors3Arrays[name];
             }
 
-            // Color4  
+            // Color4
             serializationObject.colors4 = {};
             for (name in this._colors4) {
                 serializationObject.colors4[name] = this._colors4[name].asArray();
             }
 
-            // Vector2  
+            // Vector2
             serializationObject.vectors2 = {};
             for (name in this._vectors2) {
                 serializationObject.vectors2[name] = this._vectors2[name].asArray();
             }
 
-            // Vector3        
+            // Vector3
             serializationObject.vectors3 = {};
             for (name in this._vectors3) {
                 serializationObject.vectors3[name] = this._vectors3[name].asArray();
             }
 
-            // Vector4        
+            // Vector4
             serializationObject.vectors4 = {};
             for (name in this._vectors4) {
                 serializationObject.vectors4[name] = this._vectors4[name].asArray();
             }
 
-            // Matrix      
+            // Matrix
             serializationObject.matrices = {};
             for (name in this._matrices) {
                 serializationObject.matrices[name] = this._matrices[name].asArray();
@@ -577,6 +805,13 @@
             return serializationObject;
         }
 
+        /**
+         * Creates a shader material from parsed shader material data
+         * @param source defines the JSON represnetation of the material
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a new material
+         */
         public static Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial {
             var material = SerializationHelper.Parse(() => new ShaderMaterial(source.name, scene, source.shaderPath, source.options), source, scene, rootUrl);
 
@@ -598,17 +833,17 @@
                 material.setTextureArray(name, textureArray);
             }
 
-            // Float    
+            // Float
             for (name in source.floats) {
                 material.setFloat(name, source.floats[name]);
             }
 
-            // Float s   
+            // Float s
             for (name in source.floatsArrays) {
                 material.setFloats(name, source.floatsArrays[name]);
             }
 
-            // Color3        
+            // Color3
             for (name in source.colors3) {
                 material.setColor3(name, Color3.FromArray(source.colors3[name]));
             }
@@ -626,27 +861,27 @@
                 material.setColor3Array(name, colors);
             }
 
-            // Color4      
+            // Color4
             for (name in source.colors4) {
                 material.setColor4(name, Color4.FromArray(source.colors4[name]));
             }
 
-            // Vector2        
+            // Vector2
             for (name in source.vectors2) {
                 material.setVector2(name, Vector2.FromArray(source.vectors2[name]));
             }
 
-            // Vector3        
+            // Vector3
             for (name in source.vectors3) {
                 material.setVector3(name, Vector3.FromArray(source.vectors3[name]));
             }
 
-            // Vector4        
+            // Vector4
             for (name in source.vectors4) {
                 material.setVector4(name, Vector4.FromArray(source.vectors4[name]));
             }
 
-            // Matrix      
+            // Matrix
             for (name in source.matrices) {
                 material.setMatrix(name, Matrix.FromArray(source.matrices[name]));
             }

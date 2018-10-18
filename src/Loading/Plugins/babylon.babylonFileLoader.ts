@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
         for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
             var parsedMaterial = parsedData.materials[index];
@@ -25,7 +25,7 @@
 
     var logOperation = (operation: string, producer: { file: string, name: string, version: string, exporter_version: string }) => {
         return operation + " of " + (producer ? producer.file + " from " + producer.name + " version: " + producer.version + ", exporter version: " + producer.exporter_version : "unknown");
-    }
+    };
 
     var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
         var container = new AssetContainer(scene);
@@ -186,7 +186,7 @@
                     if (g) {
                         container.geometries.push(g);
                     }
-                })
+                });
             }
 
             // Transform nodes
@@ -220,6 +220,17 @@
                 }
             }
 
+            // Animation Groups
+            if (parsedData.animationGroups !== undefined && parsedData.animationGroups !== null) {
+                for (index = 0, cache = parsedData.animationGroups.length; index < cache; index++) {
+                    var parsedAnimationGroup = parsedData.animationGroups[index];
+                    var animationGroup = AnimationGroup.Parse(parsedAnimationGroup, scene);
+                    container.animationGroups.push(animationGroup);
+                    log += (index === 0 ? "\n\tAnimationGroups:" : "");
+                    log += "\n\t\t" + animationGroup.toString(fullDetails);
+                }
+            }
+
             // Browsing all the graph to connect the dots
             for (index = 0, cache = scene.cameras.length; index < cache; index++) {
                 var camera = scene.cameras[index];
@@ -237,31 +248,6 @@
                 }
             }
 
-            // Sounds
-            // TODO: add sound
-            var loadedSounds: Sound[] = [];
-            var loadedSound: Sound;
-            if (AudioEngine && parsedData.sounds !== undefined && parsedData.sounds !== null) {
-                for (index = 0, cache = parsedData.sounds.length; index < cache; index++) {
-                    var parsedSound = parsedData.sounds[index];
-                    if (Engine.audioEngine.canUseWebAudio) {
-                        if (!parsedSound.url) parsedSound.url = parsedSound.name;
-                        if (!loadedSounds[parsedSound.url]) {
-                            loadedSound = Sound.Parse(parsedSound, scene, rootUrl);
-                            loadedSounds[parsedSound.url] = loadedSound;
-                            container.sounds.push(loadedSound);
-                        }
-                        else {
-                            container.sounds.push(Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]));
-                        }
-                    } else {
-                        container.sounds.push(new Sound(parsedSound.name, null, scene));
-                    }
-                }
-            }
-
-            loadedSounds = [];
-
             // Connect parents & children and parse actions
             for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
                 var transformNode = scene.transformNodes[index];
@@ -276,10 +262,6 @@
                     mesh.parent = scene.getLastEntryByID(mesh._waitingParentId);
                     mesh._waitingParentId = null;
                 }
-                if (mesh._waitingActions) {
-                    ActionManager.Parse(mesh._waitingActions, mesh, scene);
-                    mesh._waitingActions = null;
-                }
             }
 
             // freeze world matrix application
@@ -290,30 +272,6 @@
                     currentMesh._waitingFreezeWorldMatrix = null;
                 } else {
                     currentMesh.computeWorldMatrix(true);
-                }
-            }
-
-            // Particles Systems
-            if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
-                for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
-                    var parsedParticleSystem = parsedData.particleSystems[index];
-
-                    if (parsedParticleSystem.activeParticleCount) {
-                        let ps = GPUParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
-                        container.particleSystems.push(ps);
-                    } else {
-                        let ps = ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
-                        container.particleSystems.push(ps);
-                    }
-                }
-            }
-
-            // Shadows
-            if (parsedData.shadowGenerators !== undefined && parsedData.shadowGenerators !== null) {
-                for (index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
-                    var parsedShadowGenerator = parsedData.shadowGenerators[index];
-                    ShadowGenerator.Parse(parsedShadowGenerator, scene);
-                    // SG would be available on their associated lights
                 }
             }
 
@@ -349,7 +307,14 @@
 
             AbstractScene.Parse(parsedData, scene, container, rootUrl);
 
-            // Actions (scene)
+            // Actions (scene) Done last as it can access other objects.
+            for (index = 0, cache = scene.meshes.length; index < cache; index++) {
+                var mesh = scene.meshes[index];
+                if (mesh._waitingActions) {
+                    ActionManager.Parse(mesh._waitingActions, mesh, scene);
+                    mesh._waitingActions = null;
+                }
+            }
             if (parsedData.actions !== undefined && parsedData.actions !== null) {
                 ActionManager.Parse(parsedData.actions, null, scene);
             }
@@ -358,7 +323,7 @@
                 container.removeAllFromScene();
             }
         } catch (err) {
-            let msg = logOperation("loadAssts", parsedData ? parsedData.producer : "Unknown") + log;
+            let msg = logOperation("loadAssets", parsedData ? parsedData.producer : "Unknown") + log;
             if (onError) {
                 onError(msg, err);
             } else {
@@ -367,12 +332,12 @@
             }
         } finally {
             if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
-                Tools.Log(logOperation("loadAssts", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
+                Tools.Log(logOperation("loadAssets", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
             }
         }
 
         return container;
-    }
+    };
 
     SceneLoader.RegisterPlugin({
         name: "babylon.js",
@@ -384,7 +349,7 @@
 
             return false;
         },
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean => {
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean => {
             // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
             // when SceneLoader.debugLogging = true (default), or exception encountered.
             // Everything stored in var log instead of writing separate lines to support only writing in exception,
@@ -523,11 +488,11 @@
                                 for (var managerData of parsedData.morphTargetManagers) {
                                     MorphTargetManager.Parse(managerData, scene);
                                 }
-                            }                               
+                            }
 
                             var mesh = Mesh.Parse(parsedMesh, scene, rootUrl);
                             meshes.push(mesh);
-                            log += "\n\tMesh " + mesh.toString(fullDetails);                         
+                            log += "\n\tMesh " + mesh.toString(fullDetails);
                         }
                     }
 
@@ -555,10 +520,13 @@
 
                 // Particles
                 if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
-                    for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
-                        var parsedParticleSystem = parsedData.particleSystems[index];
-                        if (hierarchyIds.indexOf(parsedParticleSystem.emitterId) !== -1) {
-                            particleSystems.push(ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl));
+                    let parser = AbstractScene.GetIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM);
+                    if (parser) {
+                        for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
+                            var parsedParticleSystem = parsedData.particleSystems[index];
+                            if (hierarchyIds.indexOf(parsedParticleSystem.emitterId) !== -1) {
+                                particleSystems.push(parser(parsedParticleSystem, scene, rootUrl));
+                            }
                         }
                     }
                 }
@@ -662,10 +630,10 @@
                     scene.setActiveCameraByID(parsedData.activeCameraID);
                 }
 
-                // Environment texture		
+                // Environment texture
                 if (parsedData.environmentTexture !== undefined && parsedData.environmentTexture !== null) {
                     if (parsedData.environmentTextureType && parsedData.environmentTextureType === "BABYLON.HDRCubeTexture") {
-                        var hdrSize:number = (parsedData.environmentTextureSize) ? parsedData.environmentTextureSize : 128;
+                        var hdrSize: number = (parsedData.environmentTextureSize) ? parsedData.environmentTextureSize : 128;
                         var hdrTexture = new HDRCubeTexture(rootUrl + parsedData.environmentTexture, scene, hdrSize);
                         if (parsedData.environmentTextureRotationY) {
                             hdrTexture.rotationY = parsedData.environmentTextureRotationY;
@@ -676,7 +644,7 @@
                         if (parsedData.environmentTextureRotationY) {
                             cubeTexture.rotationY = parsedData.environmentTextureRotationY;
                         }
-                        scene.environmentTexture = cubeTexture;                        
+                        scene.environmentTexture = cubeTexture;
                     }
                     if (parsedData.createDefaultSkybox === true) {
                         var skyboxScale = (scene.activeCamera !== undefined && scene.activeCamera !== null) ? (scene.activeCamera.maxZ - scene.activeCamera.minZ) / 2 : 1000;

@@ -13,7 +13,7 @@ If you wish however to use a different version of the inspector or host it on yo
 
 The latest compiled js file is offered on our public CDN here:
 
-* https://preview.babylonjs.com/inspector/babylonjs.inspector.bundle.js
+* https://cdn.babylonjs.com/inspector/babylonjs.inspector.bundle.js
 
 ## NPM
 

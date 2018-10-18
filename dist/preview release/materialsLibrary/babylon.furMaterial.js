@@ -1,8 +1,11 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -24,6 +27,9 @@ var BABYLON;
             _this.DIFFUSE = false;
             _this.HEIGHTMAP = false;
             _this.CLIPPLANE = false;
+            _this.CLIPPLANE2 = false;
+            _this.CLIPPLANE3 = false;
+            _this.CLIPPLANE4 = false;
             _this.ALPHATEST = false;
             _this.DEPTHPREPASS = false;
             _this.POINTSIZE = false;
@@ -97,7 +103,7 @@ var BABYLON;
                 offsetFur.furDensity = this.furDensity;
             }
         };
-        // Methods   
+        // Methods
         FurMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
@@ -143,7 +149,7 @@ var BABYLON;
                 defines.HIGHLEVEL = true;
                 defines.markAsUnprocessed();
             }
-            // Misc.   
+            // Misc.
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
@@ -151,7 +157,7 @@ var BABYLON;
             BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
                 scene.resetCachedMaterial();
@@ -187,7 +193,7 @@ var BABYLON;
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos",
                     "mBones",
-                    "vClipPlane", "diffuseMatrix",
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix",
                     "furLength", "furAngle", "furColor", "furOffset", "furGravity", "furTime", "furSpacing", "furDensity", "furOcclusion"
                 ];
                 var samplers = ["diffuseSampler",
@@ -231,13 +237,13 @@ var BABYLON;
                 return;
             }
             this._activeEffect = effect;
-            // Matrices        
+            // Matrices
             this.bindOnlyWorldMatrix(world);
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
             BABYLON.MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
             if (scene.getCachedMaterial() !== this) {
-                // Textures        
+                // Textures
                 if (this._diffuseTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
                     this._activeEffect.setTexture("diffuseSampler", this._diffuseTexture);
                     this._activeEffect.setFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);

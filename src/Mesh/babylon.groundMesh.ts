@@ -1,49 +1,87 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * Mesh representing the gorund
+     */
     export class GroundMesh extends Mesh {
+        /** If octree should be generated */
         public generateOctree = false;
 
         private _heightQuads: { slope: Vector2; facet1: Vector4; facet2: Vector4 }[];
 
+        /** @hidden */
         public _subdivisionsX: number;
+        /** @hidden */
         public _subdivisionsY: number;
+        /** @hidden */
         public _width: number;
+        /** @hidden */
         public _height: number;
+        /** @hidden */
         public _minX: number;
+        /** @hidden */
         public _maxX: number;
+        /** @hidden */
         public _minZ: number;
+        /** @hidden */
         public _maxZ: number;
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
         }
 
+        /**
+         * "GroundMesh"
+         * @returns "GroundMesh"
+         */
         public getClassName(): string {
             return "GroundMesh";
         }
 
+        /**
+         * The minimum of x and y subdivisions
+         */
         public get subdivisions(): number {
             return Math.min(this._subdivisionsX, this._subdivisionsY);
         }
 
+        /**
+         * X subdivisions
+         */
         public get subdivisionsX(): number {
             return this._subdivisionsX;
         }
 
+        /**
+         * Y subdivisions
+         */
         public get subdivisionsY(): number {
             return this._subdivisionsY;
         }
 
+        /**
+         * This function will update an octree to help to select the right submeshes for rendering, picking and collision computations.
+         * Please note that you must have a decent number of submeshes to get performance improvements when using an octree
+         * @param chunksCount the number of subdivisions for x and y
+         * @param octreeBlocksSize (Default: 32)
+         */
         public optimize(chunksCount: number, octreeBlocksSize = 32): void {
             this._subdivisionsX = chunksCount;
             this._subdivisionsY = chunksCount;
             this.subdivide(chunksCount);
-            this.createOrUpdateSubmeshesOctree(octreeBlocksSize);
+
+            // Call the octree system optimization if it is defined.
+            const thisAsAny = this as any;
+            if (thisAsAny.createOrUpdateSubmeshesOctree) {
+                thisAsAny.createOrUpdateSubmeshesOctree(octreeBlocksSize);
+            }
         }
 
         /**
          * Returns a height (y) value in the Worl system :
          * the ground altitude at the coordinates (x, z) expressed in the World system.
-         * Returns the ground y position if (x, z) are outside the ground surface.
+         * @param x x coordinate
+         * @param z z coordinate
+         * @returns the ground y position if (x, z) are outside the ground surface.
          */
         public getHeightAtCoordinates(x: number, z: number): number {
             var world = this.getWorldMatrix();
@@ -70,7 +108,9 @@
         /**
          * Returns a normalized vector (Vector3) orthogonal to the ground
          * at the ground coordinates (x, z) expressed in the World system.
-         * Returns Vector3(0.0, 1.0, 0.0) if (x, z) are outside the ground surface.
+         * @param x x coordinate
+         * @param z z coordinate
+         * @returns Vector3(0.0, 1.0, 0.0) if (x, z) are outside the ground surface.
          */
         public getNormalAtCoordinates(x: number, z: number): Vector3 {
             var normal = new Vector3(0.0, 1.0, 0.0);
@@ -81,8 +121,11 @@
         /**
          * Updates the Vector3 passed a reference with a normalized vector orthogonal to the ground
          * at the ground coordinates (x, z) expressed in the World system.
-         * Doesn't uptade the reference Vector3 if (x, z) are outside the ground surface.  
-         * Returns the GroundMesh.  
+         * Doesn't uptade the reference Vector3 if (x, z) are outside the ground surface.
+         * @param x x coordinate
+         * @param z z coordinate
+         * @param ref vector to store the result
+         * @returns the GroundMesh.
          */
         public getNormalAtCoordinatesToRef(x: number, z: number, ref: Vector3): GroundMesh {
             var world = this.getWorldMatrix();
@@ -107,8 +150,8 @@
         /**
         * Force the heights to be recomputed for getHeightAtCoordinates() or getNormalAtCoordinates()
         * if the ground has been updated.
-        * This can be used in the render loop.  
-        * Returns the GroundMesh.  
+        * This can be used in the render loop.
+        * @returns the GroundMesh.
         */
         public updateCoordinateHeights(): GroundMesh {
             if (!this._heightQuads || this._heightQuads.length == 0) {
@@ -137,8 +180,8 @@
         // a quad is two triangular facets separated by a slope, so a "facet" element is 1 slope + 2 facets
         // slope : Vector2(c, h) = 2D diagonal line equation setting appart two triangular facets in a quad : z = cx + h
         // facet1 : Vector4(a, b, c, d) = first facet 3D plane equation : ax + by + cz + d = 0
-        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0  
-        // Returns the GroundMesh.  
+        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
+        // Returns the GroundMesh.
         private _initHeightQuads(): GroundMesh {
             var subdivisionsX = this._subdivisionsX;
             var subdivisionsY = this._subdivisionsY;
@@ -155,8 +198,8 @@
         // Compute each quad element values and update the the heightMap array :
         // slope : Vector2(c, h) = 2D diagonal line equation setting appart two triangular facets in a quad : z = cx + h
         // facet1 : Vector4(a, b, c, d) = first facet 3D plane equation : ax + by + cz + d = 0
-        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0  
-        // Returns the GroundMesh.  
+        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
+        // Returns the GroundMesh.
         private _computeHeightQuads(): GroundMesh {
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
 
@@ -230,6 +273,10 @@
             return this;
         }
 
+        /**
+         * Serializes this ground mesh
+         * @param serializationObject object to write serialization to
+         */
         public serialize(serializationObject: any): void {
             super.serialize(serializationObject);
             serializationObject.subdivisionsX = this._subdivisionsX;
@@ -245,6 +292,12 @@
             serializationObject.height = this._height;
         }
 
+        /**
+         * Parses a serialized ground mesh
+         * @param parsedMesh the serialized mesh
+         * @param scene the scene to create the ground mesh in
+         * @returns the created ground mesh
+         */
         public static Parse(parsedMesh: any, scene: Scene): GroundMesh {
             var result = new GroundMesh(parsedMesh.name, scene);
 

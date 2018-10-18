@@ -1,6 +1,6 @@
 /// <reference path="../../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"/>
 
-module BABYLON.GLTF2 {
+module BABYLON.GLTF2.Exporter {
     /**
      * @hidden
      */
@@ -39,7 +39,7 @@ module BABYLON.GLTF2 {
          * @param byteOffset The offset relative to the start of the bufferView in bytes
          * @param min Minimum value of each component in this attribute
          * @param max Maximum value of each component in this attribute
-         * @returns accessor for glTF 
+         * @returns accessor for glTF
          */
         public static _CreateAccessor(bufferviewIndex: number, name: string, type: AccessorType, componentType: AccessorComponentType, count: number, byteOffset: Nullable<number>, min: Nullable<number[]>, max: Nullable<number[]>): IAccessor {
             let accessor: IAccessor = { name: name, bufferView: bufferviewIndex, componentType: componentType, count: count, type: type };
@@ -170,8 +170,8 @@ module BABYLON.GLTF2 {
          * @param quaternion Source quaternion to convert to right-handed
          */
         public static _GetRightHandedQuaternionFromRef(quaternion: Quaternion) {
-             quaternion.x *= -1;
-             quaternion.y *= -1;
+            quaternion.x *= -1;
+            quaternion.y *= -1;
         }
 
         /**
@@ -179,15 +179,17 @@ module BABYLON.GLTF2 {
          * @param quaternion Source quaternion to convert to right-handed
          */
         public static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]) {
-             quaternion[0] *= -1;
-             quaternion[1] *= -1;
+            quaternion[0] *= -1;
+            quaternion[1] *= -1;
         }
 
         public static _NormalizeTangentFromRef(tangent: Vector4) {
-            const length = Math.sqrt(tangent.x * tangent.x + tangent.y * tangent.y + tangent.z + tangent.z);
-            tangent.x /= length;
-            tangent.y /= length;
-            tangent.z /= length;
+            const length = Math.sqrt(tangent.x * tangent.x + tangent.y * tangent.y + tangent.z * tangent.z);
+            if (length > 0) {
+                tangent.x /= length;
+                tangent.y /= length;
+                tangent.z /= length;
+            }
         }
     }
 }

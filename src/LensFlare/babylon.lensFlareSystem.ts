@@ -1,10 +1,39 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
+     * It is usually composed of several `BABYLON.lensFlare`.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_lens_flares
+     */
     export class LensFlareSystem {
+        /**
+         * List of lens flares used in this system.
+         */
         public lensFlares = new Array<LensFlare>();
+
+        /**
+         * Define a limit from the border the lens flare can be visible.
+         */
         public borderLimit = 300;
+
+        /**
+         * Define a viewport border we do not want to see the lens flare in.
+         */
         public viewportBorder = 0;
+
+        /**
+         * Define a predicate which could limit the list of meshes able to occlude the effect.
+         */
         public meshesSelectionPredicate: (mesh: AbstractMesh) => boolean;
+
+        /**
+         * Restricts the rendering of the effect to only the camera rendering this layer mask.
+         */
         public layerMask: number = 0x0FFFFFFF;
+
+        /**
+         * Define the id of the lens flare system in the scene.
+         * (equal to name by default)
+         */
         public id: string;
 
         private _scene: Scene;
@@ -16,7 +45,22 @@
         private _positionY: number;
         private _isEnabled = true;
 
-        constructor(public name: string, emitter: any, scene: Scene) {
+        /**
+         * Instantiates a lens flare system.
+         * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
+         * It is usually composed of several `BABYLON.lensFlare`.
+         * @see http://doc.babylonjs.com/how_to/how_to_use_lens_flares
+         * @param name Define the name of the lens flare system in the scene
+         * @param emitter Define the source (the emitter) of the lens flares (it can be a camera, a light or a mesh).
+         * @param scene Define the scene the lens flare system belongs to
+         */
+        constructor(
+            /**
+             * Define the name of the lens flare system
+             */
+            public name: string,
+            emitter: any,
+            scene: Scene) {
 
             this._scene = scene || Engine.LastCreatedScene;
             let component = this._scene._getComponent(SceneComponentConstants.NAME_LENSFLARESYSTEM) as LensFlareSystemSceneComponent;
@@ -29,7 +73,7 @@
             this.id = name;
             scene.lensFlareSystems.push(this);
 
-            this.meshesSelectionPredicate = m => <boolean>(scene.activeCamera && m.material && m.isVisible && m.isEnabled() && m.isBlocker && ((m.layerMask & scene.activeCamera.layerMask) != 0));
+            this.meshesSelectionPredicate = (m) => <boolean>(scene.activeCamera && m.material && m.isVisible && m.isEnabled() && m.isBlocker && ((m.layerMask & scene.activeCamera.layerMask) != 0));
 
             var engine = scene.getEngine();
 
@@ -61,6 +105,9 @@
                 ["textureSampler"], "");
         }
 
+        /**
+         * Define if the lens flare system is enabled.
+         */
         public get isEnabled(): boolean {
             return this._isEnabled;
         }
@@ -69,22 +116,44 @@
             this._isEnabled = value;
         }
 
+        /**
+         * Get the scene the effects belongs to.
+         * @returns the scene holding the lens flare system
+         */
         public getScene(): Scene {
             return this._scene;
         }
 
+        /**
+         * Get the emitter of the lens flare system.
+         * It defines the source of the lens flares (it can be a camera, a light or a mesh).
+         * @returns the emitter of the lens flare system
+         */
         public getEmitter(): any {
             return this._emitter;
         }
 
+        /**
+         * Set the emitter of the lens flare system.
+         * It defines the source of the lens flares (it can be a camera, a light or a mesh).
+         * @param newEmitter Define the new emitter of the system
+         */
         public setEmitter(newEmitter: any): void {
             this._emitter = newEmitter;
         }
 
+        /**
+         * Get the lens flare system emitter position.
+         * The emitter defines the source of the lens flares (it can be a camera, a light or a mesh).
+         * @returns the position
+         */
         public getEmitterPosition(): Vector3 {
             return this._emitter.getAbsolutePosition ? this._emitter.getAbsolutePosition() : this._emitter.position;
         }
 
+        /**
+         * @hidden
+         */
         public computeEffectivePosition(globalViewport: Viewport): boolean {
             var position = this.getEmitterPosition();
 
@@ -95,7 +164,7 @@
 
             position = Vector3.TransformCoordinates(this.getEmitterPosition(), this._scene.getViewMatrix());
 
-            if (this.viewportBorder>0) {
+            if (this.viewportBorder > 0) {
                 globalViewport.x -= this.viewportBorder;
                 globalViewport.y -= this.viewportBorder;
                 globalViewport.width += this.viewportBorder * 2;
@@ -108,8 +177,9 @@
 
             if (position.z > 0) {
                 if ((this._positionX > globalViewport.x) && (this._positionX < globalViewport.x + globalViewport.width)) {
-                    if ((this._positionY > globalViewport.y) && (this._positionY < globalViewport.y + globalViewport.height))
+                    if ((this._positionY > globalViewport.y) && (this._positionY < globalViewport.y + globalViewport.height)) {
                         return true;
+                    }
                 }
                 return true;
             }
@@ -117,6 +187,7 @@
             return false;
         }
 
+        /** @hidden */
         public _isVisible(): boolean {
             if (!this._isEnabled || !this._scene.activeCamera) {
                 return false;
@@ -133,9 +204,13 @@
             return !pickInfo || !pickInfo.hit || pickInfo.distance > distance;
         }
 
+        /**
+         * @hidden
+         */
         public render(): boolean {
-            if (!this._effect.isReady() || !this._scene.activeCamera)
+            if (!this._effect.isReady() || !this._scene.activeCamera) {
                 return false;
+            }
 
             var engine = this._scene.getEngine();
             var viewport = this._scene.activeCamera.viewport;
@@ -179,7 +254,7 @@
                 away = this.borderLimit;
             }
 
-            var intensity = 1.0 - (away / this.borderLimit);
+            var intensity = 1.0 - Scalar.Clamp(away / this.borderLimit, 0, 1);
             if (intensity < 0) {
                 return false;
             }
@@ -188,7 +263,7 @@
                 intensity = 1.0;
             }
 
-            if (this.viewportBorder>0) {
+            if (this.viewportBorder > 0) {
                 globalViewport.x += this.viewportBorder;
                 globalViewport.y += this.viewportBorder;
                 globalViewport.width -= this.viewportBorder * 2;
@@ -248,6 +323,9 @@
             return true;
         }
 
+        /**
+         * Dispose and release the lens flare with its associated resources.
+         */
         public dispose(): void {
             var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
             if (vertexBuffer) {
@@ -269,6 +347,13 @@
             this._scene.lensFlareSystems.splice(index, 1);
         }
 
+        /**
+         * Parse a lens flare system from a JSON repressentation
+         * @param parsedLensFlareSystem Define the JSON to parse
+         * @param scene Define the scene the parsed system should be instantiated in
+         * @param rootUrl Define the rootUrl of the load sequence to easily find a load relative dependencies such as textures
+         * @returns the parsed system
+         */
         public static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem {
             var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
 
@@ -287,6 +372,10 @@
             return lensFlareSystem;
         }
 
+        /**
+         * Serialize the current Lens Flare System into a JSON representation.
+         * @returns the serialized JSON
+         */
         public serialize(): any {
             var serializationObject: any = {};
 

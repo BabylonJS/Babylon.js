@@ -1,6 +1,7 @@
 module BABYLON {
     /**
      * This class can be used to get instrumentation data from a Babylon engine
+     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
      */
     export class EngineInstrumentation implements IDisposable {
         private _captureGPUFrameTime = false;
@@ -8,7 +9,7 @@ module BABYLON {
         private _gpuFrameTime = new PerfCounter();
 
         private _captureShaderCompilationTime = false;
-        private _shaderCompilationTime = new PerfCounter();        
+        private _shaderCompilationTime = new PerfCounter();
 
         // Observers
         private _onBeginFrameObserver: Nullable<Observer<Engine>> = null;
@@ -33,22 +34,22 @@ module BABYLON {
 
         /**
          * Enable or disable the GPU frame time capture
-         */        
+         */
         public set captureGPUFrameTime(value: boolean) {
             if (value === this._captureGPUFrameTime) {
                 return;
             }
 
-            this._captureGPUFrameTime = value;                 
+            this._captureGPUFrameTime = value;
 
             if (value) {
-                this._onBeginFrameObserver = this.engine.onBeginFrameObservable.add(()=>{
+                this._onBeginFrameObserver = this.engine.onBeginFrameObservable.add(() => {
                     if (!this._gpuFrameTimeToken) {
                         this._gpuFrameTimeToken = this.engine.startTimeQuery();
                     }
                 });
 
-                this._onEndFrameObserver = this.engine.onEndFrameObservable.add(()=>{
+                this._onEndFrameObserver = this.engine.onEndFrameObservable.add(() => {
                     if (!this._gpuFrameTimeToken) {
                         return;
                     }
@@ -84,22 +85,22 @@ module BABYLON {
 
         /**
          * Enable or disable the shader compilation time capture
-         */        
+         */
         public set captureShaderCompilationTime(value: boolean) {
             if (value === this._captureShaderCompilationTime) {
                 return;
             }
 
-            this._captureShaderCompilationTime = value;                
+            this._captureShaderCompilationTime = value;
 
             if (value) {
-                this._onBeforeShaderCompilationObserver = this.engine.onBeforeShaderCompilationObservable.add(()=>{
+                this._onBeforeShaderCompilationObserver = this.engine.onBeforeShaderCompilationObservable.add(() => {
                     this._shaderCompilationTime.fetchNewFrame();
-                    this._shaderCompilationTime.beginMonitoring();                    
+                    this._shaderCompilationTime.beginMonitoring();
                 });
 
-                this._onAfterShaderCompilationObserver = this.engine.onAfterShaderCompilationObservable.add(()=>{
-                    this._shaderCompilationTime.endMonitoring();       
+                this._onAfterShaderCompilationObserver = this.engine.onAfterShaderCompilationObservable.add(() => {
+                    this._shaderCompilationTime.endMonitoring();
                 });
             } else {
                 this.engine.onBeforeShaderCompilationObservable.remove(this._onBeforeShaderCompilationObserver);
@@ -109,9 +110,22 @@ module BABYLON {
             }
         }
 
-        public constructor(public engine: Engine) {
+        /**
+         * Instantiates a new engine instrumentation.
+         * This class can be used to get instrumentation data from a Babylon engine
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
+         * @param engine Defines the engine to instrument
+         */
+        public constructor(
+            /**
+             * Define the instrumented engine.
+             */
+            public engine: Engine) {
         }
 
+        /**
+         * Dispose and release associated resources.
+         */
         public dispose() {
             this.engine.onBeginFrameObservable.remove(this._onBeginFrameObserver);
             this._onBeginFrameObserver = null;
@@ -123,7 +137,7 @@ module BABYLON {
             this._onBeforeShaderCompilationObserver = null;
 
             this.engine.onAfterShaderCompilationObservable.remove(this._onAfterShaderCompilationObserver);
-            this._onAfterShaderCompilationObserver = null;     
+            this._onAfterShaderCompilationObserver = null;
 
             (<any>this.engine) = null;
         }

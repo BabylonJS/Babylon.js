@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Manages the defines for the Material
      */
@@ -331,62 +331,32 @@
         /**
          * The dirty texture flag value
          */
-        private static _TextureDirtyFlag = 1;
+        public static readonly TextureDirtyFlag = 1;
 
         /**
          * The dirty light flag value
          */
-        private static _LightDirtyFlag = 2;
+        public static readonly LightDirtyFlag = 2;
 
         /**
          * The dirty fresnel flag value
          */
-        private static _FresnelDirtyFlag = 4;
+        public static readonly FresnelDirtyFlag = 4;
 
         /**
          * The dirty attribute flag value
          */
-        private static _AttributesDirtyFlag = 8;
+        public static readonly AttributesDirtyFlag = 8;
 
         /**
          * The dirty misc flag value
          */
-        private static _MiscDirtyFlag = 16;
+        public static readonly MiscDirtyFlag = 16;
 
         /**
-         * Returns the dirty texture flag value
+         * The all dirty flag value
          */
-        public static get TextureDirtyFlag(): number {
-            return Material._TextureDirtyFlag;
-        }
-
-        /**
-         * Returns the dirty light flag value
-         */
-        public static get LightDirtyFlag(): number {
-            return Material._LightDirtyFlag;
-        }
-
-        /**
-         * Returns the dirty fresnel flag value
-         */
-        public static get FresnelDirtyFlag(): number {
-            return Material._FresnelDirtyFlag;
-        }
-
-        /**
-         * Returns the dirty attributes flag value
-         */
-        public static get AttributesDirtyFlag(): number {
-            return Material._AttributesDirtyFlag;
-        }
-
-        /**
-         * Returns the dirty misc flag value
-         */
-        public static get MiscDirtyFlag(): number {
-            return Material._MiscDirtyFlag;
-        }
+        public static readonly AllDirtyFlag = 31;
 
         /**
          * The ID of the material
@@ -446,7 +416,7 @@
          */
         public get alpha(): number {
             return this._alpha;
-        }        
+        }
 
         /**
          * Specifies if back face culling is enabled
@@ -494,14 +464,21 @@
         public getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
 
         /**
+         * Gets a boolean indicating that current material needs to register RTT
+         */
+        public get hasRenderTargetTextures(): boolean {
+            return false;
+        }
+
+        /**
          * Specifies if the material should be serialized
          */
         public doNotSerialize = false;
 
         /**
-         * Specifies if the effect should be stored on sub meshes
+         * @hidden
          */
-        public storeEffectOnSubMeshes = false;
+        public _storeEffectOnSubMeshes = false;
 
         /**
          * Stores the animations for the material
@@ -517,6 +494,7 @@
          * An observer which watches for dispose events
          */
         private _onDisposeObserver: Nullable<Observer<Material>>;
+        private _onUnBindObservable: Nullable<Observable<Material>>;
 
         /**
          * Called during a dispose event
@@ -528,10 +506,18 @@
             this._onDisposeObserver = this.onDisposeObservable.add(callback);
         }
 
+        private _onBindObservable: Nullable<Observable<AbstractMesh>>;
+
         /**
         * An event triggered when the material is bound
         */
-        public onBindObservable = new Observable<AbstractMesh>();
+        public get onBindObservable(): Observable<AbstractMesh> {
+            if (!this._onBindObservable) {
+                this._onBindObservable = new Observable<AbstractMesh>();
+            }
+
+            return this._onBindObservable;
+        }
 
         /**
          * An observer which watches for bind events
@@ -551,7 +537,13 @@
         /**
         * An event triggered when the material is unbound
         */
-        public onUnBindObservable = new Observable<Material>();
+        public get onUnBindObservable(): Observable<Material> {
+            if (!this._onUnBindObservable) {
+                this._onUnBindObservable = new Observable<Material>();
+            }
+
+            return this._onUnBindObservable;
+        }
 
         /**
          * Stores the value of the alpha mode
@@ -737,11 +729,13 @@
         }
 
         /**
+         * @hidden
          * Stores the effects for the material
          */
         public _effect: Nullable<Effect>;
 
         /**
+         * @hidden
          * Specifies if the material was previously ready
          */
         public _wasPreviouslyReady = false;
@@ -771,6 +765,12 @@
          */
         protected _uniformBuffer: UniformBuffer;
 
+        /** @hidden */
+        public _indexInSceneMaterialArray = -1;
+
+        /** @hidden */
+        public meshMap: Nullable<{[id: string]: AbstractMesh | undefined}>;
+
         /**
          * Creates a material instance
          * @param name defines the name of the material
@@ -794,7 +794,11 @@
             this._useUBO = this.getScene().getEngine().supportsUniformBuffers;
 
             if (!doNotAdd) {
-                this._scene.materials.push(this);
+                this._scene.addMaterial(this);
+            }
+
+            if (this._scene.useMaterialMeshMap) {
+                this.meshMap = {};
             }
         }
 
@@ -810,10 +814,10 @@
             return ret;
         }
 
-         /**
-          * Gets the class name of the material
-          * @returns a string with the class name of the material
-          */
+        /**
+         * Gets the class name of the material
+         * @returns a string with the class name of the material
+         */
         public getClassName(): string {
             return "Material";
         }
@@ -1006,8 +1010,8 @@
                 this._scene._cachedVisibility = 1;
             }
 
-            if (mesh) {
-                this.onBindObservable.notifyObservers(mesh);
+            if (this._onBindObservable && mesh) {
+                this._onBindObservable.notifyObservers(mesh);
             }
 
             if (this.disableDepthWrite) {
@@ -1021,8 +1025,9 @@
          * Unbinds the material from the mesh
          */
         public unbind(): void {
-
-            this.onUnBindObservable.notifyObservers(this);
+            if (this._onUnBindObservable) {
+                this._onUnBindObservable.notifyObservers(this);
+            }
 
             if (this.disableDepthWrite) {
                 var engine = this._scene.getEngine();
@@ -1061,17 +1066,20 @@
          * @returns an array of meshes bound to the material
          */
         public getBindedMeshes(): AbstractMesh[] {
-            var result = new Array<AbstractMesh>();
-
-            for (var index = 0; index < this._scene.meshes.length; index++) {
-                var mesh = this._scene.meshes[index];
-
-                if (mesh.material === this) {
-                    result.push(mesh);
+            if (this.meshMap) {
+                var result = new Array<AbstractMesh>();
+                for (let meshId in this.meshMap) {
+                    const mesh = this.meshMap[meshId];
+                    if (mesh) {
+                        result.push(mesh);
+                    }
                 }
+                return result;
             }
-
-            return result;
+            else {
+                const meshes = this._scene.meshes;
+                return meshes.filter((mesh) => mesh.material === this);
+            }
         }
 
         /**
@@ -1104,7 +1112,7 @@
                     scene.clipPlane = new Plane(0, 0, 0, 1);
                 }
 
-                if (this.storeEffectOnSubMeshes) {
+                if (this._storeEffectOnSubMeshes) {
                     if (this.isReadyForSubMesh(mesh, subMesh)) {
                         if (onCompiled) {
                             onCompiled(this);
@@ -1139,7 +1147,7 @@
          * @returns a promise that resolves when the compilation completes
          */
         public forceCompilationAsync(mesh: AbstractMesh, options?: Partial<{ clipPlane: boolean }>): Promise<void> {
-            return new Promise(resolve => {
+            return new Promise((resolve) => {
                 this.forceCompilation(mesh, () => {
                     resolve();
                 }, options);
@@ -1201,59 +1209,59 @@
          * Indicates that image processing needs to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsImageProcessingDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines.markAsImageProcessingDirty());
+            this._markAllSubMeshesAsDirty((defines) => defines.markAsImageProcessingDirty());
         }
 
         /**
          * Indicates that textures need to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsTexturesDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines.markAsTexturesDirty());
+            this._markAllSubMeshesAsDirty((defines) => defines.markAsTexturesDirty());
         }
 
         /**
          * Indicates that fresnel needs to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsFresnelDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines.markAsFresnelDirty());
+            this._markAllSubMeshesAsDirty((defines) => defines.markAsFresnelDirty());
         }
 
         /**
          * Indicates that fresnel and misc need to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsFresnelAndMiscDirty() {
-            this._markAllSubMeshesAsDirty(defines => {
+            this._markAllSubMeshesAsDirty((defines) => {
                 defines.markAsFresnelDirty();
                 defines.markAsMiscDirty();
             });
-        }        
+        }
 
         /**
          * Indicates that lights need to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsLightsDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines.markAsLightDirty());
+            this._markAllSubMeshesAsDirty((defines) => defines.markAsLightDirty());
         }
 
         /**
          * Indicates that attributes need to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsAttributesDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines.markAsAttributesDirty());
+            this._markAllSubMeshesAsDirty((defines) => defines.markAsAttributesDirty());
         }
 
         /**
          * Indicates that misc needs to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsMiscDirty() {
-            this._markAllSubMeshesAsDirty(defines => defines.markAsMiscDirty());
+            this._markAllSubMeshesAsDirty((defines) => defines.markAsMiscDirty());
         }
 
         /**
          * Indicates that textures and misc need to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsTexturesAndMiscDirty() {
-            this._markAllSubMeshesAsDirty(defines => {
+            this._markAllSubMeshesAsDirty((defines) => {
                 defines.markAsTexturesDirty();
                 defines.markAsMiscDirty();
             });
@@ -1263,37 +1271,34 @@
          * Disposes the material
          * @param forceDisposeEffect specifies if effects should be forcefully disposed
          * @param forceDisposeTextures specifies if textures should be forcefully disposed
+         * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to any mesh
          */
-        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
+        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
+            const scene = this.getScene();
             // Animations
-            this.getScene().stopAnimation(this);
-            this.getScene().freeProcessedMaterials();
+            scene.stopAnimation(this);
+            scene.freeProcessedMaterials();
 
             // Remove from scene
-            var index = this._scene.materials.indexOf(this);
-            if (index >= 0) {
-                this._scene.materials.splice(index, 1);
-            }
+            scene.removeMaterial(this);
 
-            // Remove from meshes
-            for (index = 0; index < this._scene.meshes.length; index++) {
-                var mesh = this._scene.meshes[index];
-
-                if (mesh.material === this) {
-                    mesh.material = null;
-
-                    if ((<Mesh>mesh).geometry) {
-                        var geometry = <Geometry>((<Mesh>mesh).geometry);
-
-                        if (this.storeEffectOnSubMeshes) {
-                            for (var subMesh of mesh.subMeshes) {
-                                geometry._releaseVertexArrayObject(subMesh._materialEffect);
-                                if (forceDisposeEffect && subMesh._materialEffect) {
-                                    this._scene.getEngine()._releaseEffect(subMesh._materialEffect);
-                                }
-                            }
-                        } else {
-                            geometry._releaseVertexArrayObject(this._effect)
+            if (notBoundToMesh !== true) {
+                // Remove from meshes
+                if (this.meshMap) {
+                    for (let meshId in this.meshMap) {
+                        const mesh = this.meshMap[meshId];
+                        if (mesh) {
+                            mesh.material = null; // will set the entry in the map to undefined
+                            this.releaseVertexArrayObject(mesh, forceDisposeEffect);
+                        }
+                    }
+                }
+                else {
+                    const meshes = scene.meshes;
+                    for (let mesh of meshes) {
+                        if (mesh.material === this) {
+                            mesh.material = null;
+                            this.releaseVertexArrayObject(mesh, forceDisposeEffect);
                         }
                     }
                 }
@@ -1303,8 +1308,8 @@
 
             // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
             if (forceDisposeEffect && this._effect) {
-                if (!this.storeEffectOnSubMeshes) {
-                    this._scene.getEngine()._releaseEffect(this._effect);
+                if (!this._storeEffectOnSubMeshes) {
+                    scene.getEngine()._releaseEffect(this._effect);
                 }
 
                 this._effect = null;
@@ -1314,8 +1319,31 @@
             this.onDisposeObservable.notifyObservers(this);
 
             this.onDisposeObservable.clear();
-            this.onBindObservable.clear();
-            this.onUnBindObservable.clear();
+            if (this._onBindObservable) {
+                this._onBindObservable.clear();
+            }
+
+            if (this._onUnBindObservable) {
+                this._onUnBindObservable.clear();
+            }
+        }
+
+        /** @hidden */
+        private  releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {
+            if ((<Mesh>mesh).geometry) {
+                var geometry = <Geometry>((<Mesh>mesh).geometry);
+                const scene = this.getScene();
+                if (this._storeEffectOnSubMeshes) {
+                    for (var subMesh of mesh.subMeshes) {
+                        geometry._releaseVertexArrayObject(subMesh._materialEffect);
+                        if (forceDisposeEffect && subMesh._materialEffect) {
+                            scene.getEngine()._releaseEffect(subMesh._materialEffect);
+                        }
+                    }
+                } else {
+                    geometry._releaseVertexArrayObject(this._effect);
+                }
+            }
         }
 
         /**
@@ -1362,7 +1390,7 @@
          * @returns a new material
          */
         public static Parse(parsedMaterial: any, scene: Scene, rootUrl: string): any {
-            if (!parsedMaterial.customType || parsedMaterial.customType === "BABYLON.StandardMaterial" ) {
+            if (!parsedMaterial.customType || parsedMaterial.customType === "BABYLON.StandardMaterial") {
                 return StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
             }
 
@@ -1378,4 +1406,4 @@
             return materialType.Parse(parsedMaterial, scene, rootUrl);
         }
     }
-} 
+}

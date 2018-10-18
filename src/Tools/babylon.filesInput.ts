@@ -1,7 +1,16 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * Class used to help managing file picking and drag'n'drop
+     */
     export class FilesInput {
+        /**
+         * List of files ready to be loaded
+         */
         public static FilesToLoad: { [key: string]: File } = {};
 
+        /**
+         * Callback called when a file is processed
+         */
         public onProcessFileCallback: (file: File, name: string, extension: string) => true = () => { return true; };
 
         private _engine: Engine;
@@ -10,7 +19,7 @@
         private _progressCallback: (progress: SceneLoaderProgressEvent) => void;
         private _additionalRenderLoopLogicCallback: () => void;
         private _textureLoadingCallback: (remaining: number) => void;
-        private _startingProcessingFilesCallback: () => void;
+        private _startingProcessingFilesCallback: (files?: File[]) => void;
         private _onReloadCallback: (sceneFile: File) => void;
         private _errorCallback: (sceneFile: File, scene: Scene, message: string) => void;
         private _elementToMonitor: HTMLElement;
@@ -18,8 +27,20 @@
         private _sceneFileToLoad: File;
         private _filesToLoad: File[];
 
-        constructor(engine: Engine, scene: Scene, sceneLoadedCallback: (sceneFile: File, scene: Scene) => void, progressCallback: (progress: SceneLoaderProgressEvent) => void, additionalRenderLoopLogicCallback: () => void, 
-            textureLoadingCallback: (remaining: number) => void, startingProcessingFilesCallback: () => void, onReloadCallback: (sceneFile: File) => void, errorCallback: (sceneFile: File, scene: Scene, message: string) => void) {
+        /**
+         * Creates a new FilesInput
+         * @param engine defines the rendering engine
+         * @param scene defines the hosting scene
+         * @param sceneLoadedCallback callback called when scene is loaded
+         * @param progressCallback callback called to track progress
+         * @param additionalRenderLoopLogicCallback callback called to add user logic to the rendering loop
+         * @param textureLoadingCallback callback called when a texture is loading
+         * @param startingProcessingFilesCallback callback called when the system is about to process all files
+         * @param onReloadCallback callback called when a reload is requested
+         * @param errorCallback callback call if an error occurs
+         */
+        constructor(engine: Engine, scene: Scene, sceneLoadedCallback: (sceneFile: File, scene: Scene) => void, progressCallback: (progress: SceneLoaderProgressEvent) => void, additionalRenderLoopLogicCallback: () => void,
+            textureLoadingCallback: (remaining: number) => void, startingProcessingFilesCallback: (files?: File[]) => void, onReloadCallback: (sceneFile: File) => void, errorCallback: (sceneFile: File, scene: Scene, message: string) => void) {
             this._engine = engine;
             this._currentScene = scene;
 
@@ -36,6 +57,10 @@
         private _dragOverHandler: (e: any) => void;
         private _dropHandler: (e: any) => void;
 
+        /**
+         * Calls this function to listen to drag'n'drop events on a specific DOM element
+         * @param elementToMonitor defines the DOM element to track
+         */
         public monitorElementForDragNDrop(elementToMonitor: HTMLElement): void {
             if (elementToMonitor) {
                 this._elementToMonitor = elementToMonitor;
@@ -50,6 +75,9 @@
             }
         }
 
+        /**
+         * Release all associated resources
+         */
         public dispose() {
             if (!this._elementToMonitor) {
                 return;
@@ -129,15 +157,16 @@
                     && name.indexOf(".binary.babylon") === -1 && name.indexOf(".incremental.babylon") === -1) {
                     this._sceneFileToLoad = files[i];
                 }
-                else {
-                    FilesInput.FilesToLoad[name] = files[i];
-                }
+
+                FilesInput.FilesToLoad[name] = files[i];
             }
         }
 
+        /**
+         * Load files from a drop event
+         * @param event defines the drop event to use as source
+         */
         public loadFiles(event: any): void {
-            if (this._startingProcessingFilesCallback) this._startingProcessingFilesCallback();
-
             // Handling data transfer via drag'n'drop
             if (event && event.dataTransfer && event.dataTransfer.files) {
                 this._filesToLoad = event.dataTransfer.files;
@@ -146,6 +175,14 @@
             // Handling files from input files
             if (event && event.target && event.target.files) {
                 this._filesToLoad = event.target.files;
+            }
+
+            if (!this._filesToLoad || this._filesToLoad.length === 0) {
+                return;
+            }
+
+            if (this._startingProcessingFilesCallback) {
+                this._startingProcessingFilesCallback(this._filesToLoad);
             }
 
             if (this._filesToLoad && this._filesToLoad.length > 0) {
@@ -196,7 +233,6 @@
                     }
                 }
 
-
             }
         }
 
@@ -209,6 +245,9 @@
             }
         }
 
+        /**
+         * Reload the current scene from the loaded files
+         */
         public reload() {
             // If a scene file has been provided
             if (this._sceneFileToLoad) {
@@ -219,11 +258,11 @@
                     this._engine.stopRenderLoop();
                 }
 
-                SceneLoader.LoadAsync("file:", this._sceneFileToLoad, this._engine, progress => {
+                SceneLoader.LoadAsync("file:", this._sceneFileToLoad.name, this._engine, (progress) => {
                     if (this._progressCallback) {
                         this._progressCallback(progress);
                     }
-                }).then(scene => {
+                }).then((scene) => {
                     if (this._currentScene) {
                         this._currentScene.dispose();
                     }
@@ -240,7 +279,7 @@
                             this.renderFunction();
                         });
                     });
-                }).catch(error => {
+                }).catch((error) => {
                     if (this._errorCallback) {
                         this._errorCallback(this._sceneFileToLoad, this._currentScene, error.message);
                     }

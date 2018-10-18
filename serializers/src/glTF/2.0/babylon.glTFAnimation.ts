@@ -1,6 +1,6 @@
 /// <reference path="../../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"/>
 
-module BABYLON.GLTF2 {
+module BABYLON.GLTF2.Exporter {
     /**
      * @hidden
      * Interface to store animation data.
@@ -9,23 +9,23 @@ module BABYLON.GLTF2 {
         /**
          * Keyframe data.
          */
-        inputs: number[],
+        inputs: number[];
         /**
          * Value data.
          */
-        outputs: number[][],
+        outputs: number[][];
         /**
          * Animation interpolation data.
          */
-        samplerInterpolation: AnimationSamplerInterpolation,
+        samplerInterpolation: AnimationSamplerInterpolation;
         /**
          * Minimum keyframe value.
          */
-        inputsMin: number,
+        inputsMin: number;
         /**
          * Maximum keyframe value.
          */
-        inputsMax: number,
+        inputsMax: number;
     }
 
     /**
@@ -35,15 +35,15 @@ module BABYLON.GLTF2 {
         /**
          * The target channel for the animation
          */
-        animationChannelTargetPath: AnimationChannelTargetPath,
+        animationChannelTargetPath: AnimationChannelTargetPath;
         /**
          * The glTF accessor type for the data.
          */
-        dataAccessorType: AccessorType.VEC3 | AccessorType.VEC4,
+        dataAccessorType: AccessorType.VEC3 | AccessorType.VEC4;
         /**
          * Specifies if quaternions should be used.
          */
-        useQuaternion: boolean
+        useQuaternion: boolean;
     }
 
     /**
@@ -67,11 +67,11 @@ module BABYLON.GLTF2 {
     export class _GLTFAnimation {
         /**
          * @ignore
-         * 
+         *
          * Creates glTF channel animation from BabylonJS animation.
          * @param babylonTransformNode - BabylonJS mesh.
          * @param animation - animation.
-         * @param animationChannelTargetPath - The target animation channel. 
+         * @param animationChannelTargetPath - The target animation channel.
          * @param convertToRightHandedSystem - Specifies if the values should be converted to right-handed.
          * @param useQuaternion - Specifies if quaternions are used.
          * @returns nullable IAnimationData
@@ -110,7 +110,7 @@ module BABYLON.GLTF2 {
                     samplerInterpolation: interpolation,
                     inputsMin: shouldBakeAnimation ? minMaxKeyFrames.min : Tools.FloatRound(minMaxKeyFrames.min / animation.framePerSecond),
                     inputsMax: shouldBakeAnimation ? minMaxKeyFrames.max : Tools.FloatRound(minMaxKeyFrames.max / animation.framePerSecond)
-                }
+                };
 
                 return result;
             }
@@ -159,15 +159,15 @@ module BABYLON.GLTF2 {
         /**
          * @ignore
          * Create node animations from the transform node animations
-         * @param babylonTransformNode 
-         * @param runtimeGLTFAnimation 
-         * @param idleGLTFAnimations 
-         * @param nodeMap 
-         * @param nodes 
-         * @param binaryWriter 
-         * @param bufferViews 
-         * @param accessors 
-         * @param convertToRightHandedSystem 
+         * @param babylonTransformNode
+         * @param runtimeGLTFAnimation
+         * @param idleGLTFAnimations
+         * @param nodeMap
+         * @param nodes
+         * @param binaryWriter
+         * @param bufferViews
+         * @param accessors
+         * @param convertToRightHandedSystem
          */
         public static _CreateNodeAnimationFromTransformNodeAnimations(babylonTransformNode: TransformNode, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: { [key: number]: number }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number) {
             let glTFAnimation: IAnimation;
@@ -179,7 +179,7 @@ module BABYLON.GLTF2 {
                             name: animation.name,
                             samplers: [],
                             channels: []
-                        }
+                        };
                         _GLTFAnimation.AddAnimation(`${animation.name}`,
                             animation.hasRunningRuntimeAnimations ? runtimeGLTFAnimation : glTFAnimation,
                             babylonTransformNode,
@@ -198,21 +198,21 @@ module BABYLON.GLTF2 {
                             idleGLTFAnimations.push(glTFAnimation);
                         }
                     }
-                };
+                }
             }
         }
 
         /**
          * @ignore
          * Create node animations from the animation groups
-         * @param babylonScene 
-         * @param glTFAnimations 
-         * @param nodeMap 
-         * @param nodes 
-         * @param binaryWriter 
-         * @param bufferViews 
-         * @param accessors 
-         * @param convertToRightHandedSystem 
+         * @param babylonScene
+         * @param glTFAnimations
+         * @param nodeMap
+         * @param nodes
+         * @param binaryWriter
+         * @param bufferViews
+         * @param accessors
+         * @param convertToRightHandedSystem
          */
         public static _CreateNodeAnimationFromAnimationGroups(babylonScene: Scene, glTFAnimations: IAnimation[], nodeMap: { [key: number]: number }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number) {
             let glTFAnimation: IAnimation;
@@ -224,7 +224,7 @@ module BABYLON.GLTF2 {
                         name: animationGroup.name,
                         channels: [],
                         samplers: []
-                    }
+                    };
                     for (let targetAnimation of animationGroup.targetedAnimations) {
                         let target = targetAnimation.target;
                         let animation = targetAnimation.animation;
@@ -248,11 +248,11 @@ module BABYLON.GLTF2 {
                                 );
                             }
                         }
-                    };
+                    }
                     if (glTFAnimation.channels.length && glTFAnimation.samplers.length) {
                         glTFAnimations.push(glTFAnimation);
                     }
-                };
+                }
             }
         }
 
@@ -274,7 +274,7 @@ module BABYLON.GLTF2 {
                 bufferView = _GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, `${name}  keyframe data view`);
                 bufferViews.push(bufferView);
 
-                animationData.inputs.forEach(function (input) {
+                animationData.inputs.forEach(function(input) {
                     binaryWriter.setFloat32(input);
                 });
 
@@ -290,8 +290,8 @@ module BABYLON.GLTF2 {
                 bufferView = _GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, `${name}  data view`);
                 bufferViews.push(bufferView);
 
-                animationData.outputs.forEach(function (output) {
-                    output.forEach(function (entry) {
+                animationData.outputs.forEach(function(output) {
+                    output.forEach(function(entry) {
                         binaryWriter.setFloat32(entry);
                     });
                 });
@@ -305,7 +305,7 @@ module BABYLON.GLTF2 {
                     interpolation: animationData.samplerInterpolation,
                     input: keyframeAccessorIndex,
                     output: dataAccessorIndex
-                }
+                };
                 glTFAnimation.samplers.push(animationSampler);
 
                 // create channel
@@ -315,7 +315,7 @@ module BABYLON.GLTF2 {
                         node: nodeIndex,
                         path: animationChannelTargetPath
                     }
-                }
+                };
                 glTFAnimation.channels.push(animationChannel);
             }
         }
@@ -485,7 +485,7 @@ module BABYLON.GLTF2 {
             for (let keyFrame of animation.getKeys()) {
                 inputs.push(keyFrame.frame / animation.framePerSecond); // keyframes in seconds.
                 _GLTFAnimation._AddKeyframeValue(keyFrame, animation, outputs, animationChannelTargetPath, babylonTransformNode, convertToRightHandedSystem, useQuaternion);
-            };
+            }
         }
 
         /**
@@ -500,7 +500,7 @@ module BABYLON.GLTF2 {
          * @param useQuaternion Specifies if quaternions are used in the animation
          */
         private static _CreateCubicSplineAnimation(babylonTransformNode: TransformNode, animation: Animation, animationChannelTargetPath: AnimationChannelTargetPath, frameDelta: number, inputs: number[], outputs: number[][], convertToRightHandedSystem: boolean, useQuaternion: boolean) {
-            animation.getKeys().forEach(function (keyFrame) {
+            animation.getKeys().forEach(function(keyFrame) {
                 inputs.push(keyFrame.frame / animation.framePerSecond); // keyframes in seconds.
                 _GLTFAnimation.AddSplineTangent(
                     babylonTransformNode,
@@ -565,13 +565,13 @@ module BABYLON.GLTF2 {
 
         /**
          * Adds a key frame value
-         * @param keyFrame 
-         * @param animation 
-         * @param outputs 
-         * @param animationChannelTargetPath 
-         * @param basePositionRotationOrScale 
-         * @param convertToRightHandedSystem 
-         * @param useQuaternion 
+         * @param keyFrame
+         * @param animation
+         * @param outputs
+         * @param animationChannelTargetPath
+         * @param basePositionRotationOrScale
+         * @param convertToRightHandedSystem
+         * @param useQuaternion
          */
         private static _AddKeyframeValue(keyFrame: IAnimationKey, animation: Animation, outputs: number[][], animationChannelTargetPath: AnimationChannelTargetPath, babylonTransformNode: TransformNode, convertToRightHandedSystem: boolean, useQuaternion: boolean) {
             let value: number[];
@@ -650,9 +650,9 @@ module BABYLON.GLTF2 {
 
         /**
          * Determine the interpolation based on the key frames
-         * @param keyFrames 
-         * @param animationChannelTargetPath 
-         * @param useQuaternion 
+         * @param keyFrames
+         * @param animationChannelTargetPath
+         * @param useQuaternion
          */
         private static _DeduceInterpolation(keyFrames: IAnimationKey[], animationChannelTargetPath: AnimationChannelTargetPath, useQuaternion: boolean): { interpolationType: AnimationSamplerInterpolation, shouldBakeAnimation: boolean } {
             let interpolationType: AnimationSamplerInterpolation | undefined;
@@ -770,7 +770,7 @@ module BABYLON.GLTF2 {
         private static calculateMinMaxKeyFrames(keyFrames: IAnimationKey[]): { min: number, max: number } {
             let min: number = Infinity;
             let max: number = -Infinity;
-            keyFrames.forEach(function (keyFrame) {
+            keyFrames.forEach(function(keyFrame) {
                 min = Math.min(min, keyFrame.frame);
                 max = Math.max(max, keyFrame.frame);
             });

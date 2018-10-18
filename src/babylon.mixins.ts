@@ -1,4 +1,4 @@
-﻿// Mixins
+// Mixins
 interface Window {
     mozIndexedDB: IDBFactory;
     webkitIndexedDB: IDBFactory;
@@ -19,6 +19,15 @@ interface Window {
     msURL: typeof URL;
     VRFrameData: any; // WebVR, from specs 1.1
     DracoDecoderModule: any;
+    setImmediate(handler: (...args: any[]) => void): number;
+}
+
+interface WebGLProgram {
+    context?: WebGLRenderingContext;
+    vertexShader?: WebGLShader;
+    fragmentShader?: WebGLShader;
+    isParallelCompiled: boolean;
+    onCompiled?: () => void;
 }
 
 interface WebGLRenderingContext {
@@ -72,7 +81,6 @@ interface WebGLRenderingContext {
     drawBuffers(buffers: number[]): void;
     readBuffer(src: number): void;
 
-
     readonly COLOR_ATTACHMENT0: number;                             // 0x8CE1
     readonly COLOR_ATTACHMENT1: number;                             // 0x8CE2
     readonly COLOR_ATTACHMENT2: number;                             // 0x8CE3
@@ -88,15 +96,20 @@ interface WebGLRenderingContext {
 interface Document {
     mozCancelFullScreen(): void;
     msCancelFullScreen(): void;
+    webkitCancelFullScreen(): void;
+    requestPointerLock(): void;
+    exitPointerLock(): void;
     mozFullScreen: boolean;
     msIsFullScreen: boolean;
-    fullscreen: boolean;
+    readonly webkitIsFullScreen: boolean;
+    readonly pointerLockElement: Element;
     mozPointerLockElement: HTMLElement;
     msPointerLockElement: HTMLElement;
     webkitPointerLockElement: HTMLElement;
 }
 
 interface HTMLCanvasElement {
+    requestPointerLock(): void;
     msRequestPointerLock?(): void;
     mozRequestPointerLock?(): void;
     webkitRequestPointerLock?(): void;
@@ -141,11 +154,6 @@ interface HTMLVideoElement {
     mozSrcObject: any;
 }
 
-interface Screen {
-    orientation: string;
-    mozOrientation: string;
-}
-
 interface Math {
     fround(x: number): number;
     imul(a: number, b: number): number;
@@ -169,3 +177,46 @@ interface EXT_disjoint_timer_query {
 interface WebGLUniformLocation {
     _currentState: any;
 }
+
+// WebXR
+interface XRDevice {
+    requestSession(options: XRSessionCreationOptions): Promise<XRSession>;
+    supportsSession(options: XRSessionCreationOptions): Promise<void>;
+}
+interface XRSession {
+    getInputSources(): Array<any>;
+    baseLayer: XRWebGLLayer;
+    requestFrameOfReference(type: string): Promise<void>;
+    requestHitTest(origin: Float32Array, direction: Float32Array, frameOfReference: any): any;
+    end(): Promise<void>;
+    requestAnimationFrame: Function;
+    addEventListener: Function;
+}
+interface XRSessionCreationOptions {
+    outputContext?: WebGLRenderingContext | null;
+    immersive?: boolean;
+    environmentIntegration?: boolean;
+}
+interface XRLayer {
+    getViewport: Function;
+    framebufferWidth: number;
+    framebufferHeight: number;
+}
+interface XRView {
+    projectionMatrix: Float32Array;
+}
+interface XRFrame {
+    getDevicePose: Function;
+    getInputPose: Function;
+    views: Array<XRView>;
+    baseLayer: XRLayer;
+}
+interface XRFrameOfReference {
+}
+interface XRWebGLLayer extends XRLayer {
+    framebuffer: WebGLFramebuffer;
+}
+declare var XRWebGLLayer: {
+    prototype: XRWebGLLayer;
+    new(session: XRSession, context?: WebGLRenderingContext): XRWebGLLayer;
+};

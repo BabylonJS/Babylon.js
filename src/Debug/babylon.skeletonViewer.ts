@@ -18,17 +18,17 @@ module BABYLON.Debug {
          * @param skeleton defines the skeleton to render
          * @param mesh defines the mesh attached to the skeleton
          * @param scene defines the hosting scene
-         * @param autoUpdateBonesMatrices defines a boolean indicating if bones matrices must be forced to update before rendering (true by default) 
+         * @param autoUpdateBonesMatrices defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)
          * @param renderingGroupId defines the rendering group id to use with the viewer
          */
         constructor(
             /** defines the skeleton to render */
-            public skeleton: Skeleton, 
+            public skeleton: Skeleton,
             /** defines the mesh attached to the skeleton */
-            public mesh: AbstractMesh, 
-            scene: Scene, 
+            public mesh: AbstractMesh,
+            scene: Scene,
             /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
-            public autoUpdateBonesMatrices = true, 
+            public autoUpdateBonesMatrices = true,
             /** defines the rendering group id to use with the viewer */
             public renderingGroupId = 1) {
             this._scene = scene;
@@ -65,9 +65,7 @@ module BABYLON.Debug {
             if (x !== 0 || y !== 0 || z !== 0) {
                 var tmat2 = Tmp.Matrix[1];
                 BABYLON.Matrix.IdentityToRef(tmat2);
-                tmat2.m[12] = x;
-                tmat2.m[13] = y;
-                tmat2.m[14] = z;
+                tmat2.setTranslationFromFloats(x, y, z);
                 tmat2.multiplyToRef(tmat, tmat);
             }
 

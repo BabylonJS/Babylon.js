@@ -24,17 +24,17 @@ describe(name + " scene", () => {
             scene.debugLayer.show = () => {
                 showCalled++;
                 isVisible = true;
-            }
+            };
 
             scene.debugLayer.hide = () => {
                 hideCalled++;
                 isVisible = false;
-            }
+            };
 
             scene.debugLayer.isVisible = () => {
                 return isVisible;
-            }
-        })
+            };
+        });
         viewer.onInitDoneObservable.add(() => {
             // assert.isUndefined(viewer.configuration.scene);
             assert.equal(showCalled, 0);
@@ -107,7 +107,7 @@ describe(name + " scene", () => {
                 assert.fail(viewer.sceneManager.scene.imageProcessingConfiguration.colorCurves, {}, "color curves was not initialized");
             }
 
-            let randoms = [0, 1, 2, 3, 4].map(n => Math.random());
+            let randoms = [0, 1, 2, 3, 4].map((n) => Math.random());
 
             viewer.updateConfiguration({
                 scene: {
@@ -155,18 +155,14 @@ describe(name + " scene", () => {
             assert.equal(viewer.sceneManager.reflectionColor.b, 1);
 
             viewer.updateConfiguration({
-                scene: {
+                environmentMap: {
+                    tintLevel: 1,
+                    texture: "",
+                    rotationY: 0,
                     mainColor: {
                         r: 0.5,
                         g: 0.5,
                         b: 0.5
-                    }
-                },
-                lab: {
-                    environmentMap: {
-                        tintLevel: 1,
-                        texture: "",
-                        rotationY: 0
                     }
                 }
             });
@@ -271,20 +267,20 @@ describe(name + " scene optimizer", () => {
         let optimizerFunction = BABYLON.SceneOptimizer;
 
         //mock!
-        (<any>BABYLON.SceneOptimizer) = function () {
+        (<any>BABYLON.SceneOptimizer) = function() {
             constructed = true;
-        }
+        };
 
-        BABYLON.SceneOptimizer.prototype.start = function () {
+        BABYLON.SceneOptimizer.prototype.start = function() {
             started = true;
-        }
+        };
 
-        BABYLON.SceneOptimizer.prototype.stop = function () {
+        BABYLON.SceneOptimizer.prototype.stop = function() {
             started = false;
-        }
+        };
 
-        BABYLON.SceneOptimizer.prototype.dispose = function () {
-        }
+        BABYLON.SceneOptimizer.prototype.dispose = function() {
+        };
 
         viewer.onInitDoneObservable.add(() => {
 
@@ -341,5 +337,5 @@ describe(name + " camera", () => {
             viewer.dispose();
             done();
         });
-    })
-})
+    });
+});

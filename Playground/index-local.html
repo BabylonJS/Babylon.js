@@ -16,9 +16,10 @@
         <!-- Dependencies -->
         <script src="../dist/preview%20release/cannon.js"></script>
         <script src="../dist/preview%20release/Oimo.js"></script>
+        <script src="../dist/preview%20release/gltf_validator.js"></script>
         <script src="../dist/preview%20release/earcut.min.js"></script>
         <!-- Monaco -->
-        <script src="node_modules/monaco-editor/min/vs/loader.js"></script>
+
         <!-- Babylon.js -->
         <script src="../tools/DevLoader/BabylonLoader.js"></script>
 
@@ -81,7 +82,7 @@
                             </div>
                         </div>
                         <div class="option" id="safemodeToggle1600">Safe mode
-                            <i class="fa fa-square-o" aria-hidden="true"></i>
+                            <i class="far fa-square" aria-hidden="true"></i>
                         </div>
                         <div class="option checked" id="editorButton1600">Editor
                             <i class="fa fa-check-square" aria-hidden="true"></i>
@@ -90,14 +91,12 @@
                         <div class="option" id="editorFullscreenButton1600">Editor Fullscreen</div>
                         <div class="option" id="formatButton1600">Format code</div>
                         <div class="option" id="minimapToggle1600">Minimap
-                            <i class="fa fa-square-o" aria-hidden="true"></i>
+                            <i class="far fa-square" aria-hidden="true"></i>
                         </div>
                     </div>
                 </div>
 
-                <div class="button uncheck" id="debugButton1600">Inspector
-                    <i class="fa fa-square-o" aria-hidden="true"></i>
-                </div>
+                <div class="button uncheck" id="debugButton1600">Inspector</div>
                 <div class="button" id="metadataButton1600">Metadata</div>
             </div>
 
@@ -172,7 +171,7 @@
                             </div>
                         </div>
                         <div class="option" id='safemodeToggle1475'>Safe mode
-                            <i class="fa fa-square-o" aria-hidden="true"></i>
+                            <i class="far fa-square" aria-hidden="true"></i>
                         </div>
                         <div class="option checked" id="editorButton1475">Editor
                             <i class="fa fa-check-square" aria-hidden="true"></i>
@@ -181,11 +180,9 @@
                         <div class="option" id="editorFullscreenButton1475">Editor Fullscreen</div>
                         <div class="option" id="formatButton1475">Format code</div>
                         <div class="option" id="minimapToggle1475">Minimap
-                            <i class="fa fa-square-o" aria-hidden="true"></i>
+                            <i class="far fa-square" aria-hidden="true"></i>
                         </div>
-                        <div class="option" id="debugButton1475">Inspector
-                            <i class="fa fa-square-o" aria-hidden="true"></i>
-                        </div>
+                        <div class="option" id="debugButton1475">Inspector</div>
                         <div class="option" id="metadataButton1475">Metadata</div>
                         <div class="option subSelect">
                             <span id="currentVersion1475">Vers. : Latest</span>
@@ -255,7 +252,7 @@
                             </div>
                         </div>
                         <div class="option" id="safemodeToggle1030">Safe mode
-                            <i class="fa fa-square-o" aria-hidden="true"></i>
+                            <i class="far fa-square" aria-hidden="true"></i>
                         </div>
                         <div class="option checked" id="editorButton1030">Editor
                             <i class="fa fa-check-square" aria-hidden="true"></i>
@@ -264,11 +261,9 @@
                         <div class="option" id="editorFullscreenButton1030">Editor Fullscreen</div>
                         <div class="option" id="formatButton1030">Format code</div>
                         <div class="option" id="minimapToggle1030">Minimap
-                            <i class="fa fa-square-o" aria-hidden="true"></i>
+                            <i class="far fa-square" aria-hidden="true"></i>
                         </div>
-                        <div class="option" id="debugButton1030">Inspector
-                            <i class="fa fa-square-o" aria-hidden="true"></i>
-                        </div>
+                        <div class="option" id="debugButton1030">Inspector</div>
                         <div class="option" id="metadataButton1030">Metadata</div>
                         <div class="option subSelect">
                             <span id="currentVersion1030">Vers. : Latest</span>
@@ -335,7 +330,7 @@
                             </div>
                         </div>
                         <div class="option" id="safemodeToggle750">Safe mode
-                            <i class="fa fa-square-o" aria-hidden="true"></i>
+                            <i class="far fa-square" aria-hidden="true"></i>
                         </div>
                         <div style="display:none;" class="option checked" id="editorButton750">Editor
                             <i class="fa fa-check-square" aria-hidden="true"></i>
@@ -344,11 +339,9 @@
                         <div class="option" id="editorFullscreenButton750">Editor Fullscreen</div>
                         <div class="option" id="formatButton750">Format code</div>
                         <div class="option" id="minimapToggle750">Minimap
-                            <i class="fa fa-square-o" aria-hidden="true"></i>
+                            <i class="far fa-square" aria-hidden="true"></i>
                         </div>
-                        <div class="option" id="debugButton750">Inspector
-                            <i class="fa fa-square-o" aria-hidden="true"></i>
-                        </div>
+                        <div class="option" id="debugButton750">Inspector</div>
                         <div class="option" id="metadataButton750">Metadata</div>
                         <div class="option subSelect">
                             <span id="currentVersion750">Vers. : Latest</span>
@@ -447,6 +440,7 @@
         <script src="js/pbt.js"></script>
         <script>
             BABYLONDEVTOOLS.Loader
+                .require('node_modules/monaco-editor/min/vs/loader.js')
                 .require('js/index.js')
                 .load(function () {
                     BABYLON.DracoCompression.Configuration.decoder = {

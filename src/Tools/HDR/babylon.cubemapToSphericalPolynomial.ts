@@ -12,7 +12,7 @@ module BABYLON {
             this.worldAxisForFileX = worldAxisForFileX;
             this.worldAxisForFileY = worldAxisForFileY;
         }
-    };
+    }
 
     /**
      * Helper class dealing with the extraction of spherical polynomial dataArray
@@ -30,9 +30,9 @@ module BABYLON {
         ];
 
         /**
-         * Converts a texture to the according Spherical Polynomial data. 
+         * Converts a texture to the according Spherical Polynomial data.
          * This extracts the first 3 orders only as they are the only one used in the lighting.
-         * 
+         *
          * @param texture The texture to extract the information from.
          * @return The Spherical Polynomial data.
          */
@@ -85,9 +85,9 @@ module BABYLON {
         }
 
         /**
-         * Converts a cubemap to the according Spherical Polynomial data. 
+         * Converts a cubemap to the according Spherical Polynomial data.
          * This extracts the first 3 orders only as they are the only one used in the lighting.
-         * 
+         *
          * @param cubeInfo The Cube map to extract the information from.
          * @return The Spherical Polynomial data.
          */
@@ -162,8 +162,8 @@ module BABYLON {
             var facesProcessed = 6.0;
             var expectedSolidAngle = sphereSolidAngle * facesProcessed / 6.0;
 
-            // Adjust the harmonics so that the accumulated solid angle matches the expected solid angle. 
-            // This is needed because the numerical integration over the cube uses a 
+            // Adjust the harmonics so that the accumulated solid angle matches the expected solid angle.
+            // This is needed because the numerical integration over the cube uses a
             // small angle approximation of solid angle for each texel (see deltaSolidAngle),
             // and also to compensate for accumulative error due to float precision in the summation.
             var correctionFactor = expectedSolidAngle / totalSolidAngle;
@@ -175,4 +175,4 @@ module BABYLON {
             return SphericalPolynomial.FromHarmonics(sphericalHarmonics);
         }
     }
-} 
+}

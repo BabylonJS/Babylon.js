@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     var serializedGeometries: Geometry[] = [];
     var serializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
         if ((<any>serializedGeometries)[geometry.id]) {
@@ -43,7 +43,7 @@
     var serializeMesh = (mesh: Mesh, serializationScene: any): any => {
         var serializationObject: any = {};
 
-        // Geometry      
+        // Geometry
         var geometry = mesh._geometry;
         if (geometry) {
             if (!mesh.getScene().getGeometryByID(geometry.id)) {
@@ -67,10 +67,17 @@
             if (mesh.material) {
                 if (mesh.material instanceof MultiMaterial) {
                     serializationObject.multiMaterials = serializationObject.multiMaterials || [];
+                    serializationObject.materials = serializationObject.materials || [];
                     if (!serializationObject.multiMaterials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
                         serializationObject.multiMaterials.push(mesh.material.serialize());
+                        for (let submaterial of mesh.material.subMaterials) {
+                            if (submaterial) {
+                                if (!serializationObject.materials.some((mat: Material) => (mat.id === (<Material>submaterial).id))) {
+                                    serializationObject.materials.push(submaterial.serialize());
+                                }
+                            }
+                        }
                     }
-
                 } else {
                     serializationObject.materials = serializationObject.materials || [];
                     if (!serializationObject.materials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
@@ -106,13 +113,24 @@
             serializationObject.meshes = serializationObject.meshes || [];
             serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
         }
-    }
+    };
 
+    /**
+     * Class used to serialize a scene into a string
+     */
     export class SceneSerializer {
+        /**
+         * Clear cache used by a previous serialization
+         */
         public static ClearCache(): void {
             serializedGeometries = [];
         }
 
+        /**
+         * Serialize a scene into a JSON compatible object
+         * @param scene defines the scene to serialize
+         * @returns a JSON compatible object
+         */
         public static Serialize(scene: Scene): any {
             var serializationObject: any = {};
 
@@ -272,31 +290,9 @@
                 serializationObject.particleSystems.push(scene.particleSystems[index].serialize());
             }
 
-            // Shadows
-            serializationObject.shadowGenerators = [];
-            for (index = 0; index < scene.lights.length; index++) {
-                light = scene.lights[index];
-
-                let shadowGenerator = light.getShadowGenerator();
-                if (shadowGenerator) {
-                    serializationObject.shadowGenerators.push(shadowGenerator.serialize());
-                }
-            }
-
             // Action Manager
             if (scene.actionManager) {
                 serializationObject.actions = scene.actionManager.serialize("scene");
-            }
-
-            // Audio
-            serializationObject.sounds = [];
-
-            for (index = 0; index < scene.soundTracks.length; index++) {
-                var soundtrack = scene.soundTracks[index];
-
-                for (var soundId = 0; soundId < soundtrack.soundCollection.length; soundId++) {
-                    serializationObject.sounds.push(soundtrack.soundCollection[soundId].serialize());
-                }
             }
 
             // Components
@@ -307,6 +303,13 @@
             return serializationObject;
         }
 
+        /**
+         * Serialize a mesh into a JSON compatible object
+         * @param toSerialize defines the mesh to serialize
+         * @param withParents defines if parents must be serialized as well
+         * @param withChildren defines if children must be serialized as well
+         * @returns a JSON compatible object
+         */
         public static SerializeMesh(toSerialize: any /* Mesh || Mesh[] */, withParents: boolean = false, withChildren: boolean = false): any {
             var serializationObject: any = {};
 

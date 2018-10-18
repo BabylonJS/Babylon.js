@@ -1,18 +1,141 @@
-﻿module BABYLON {
-    export class OutlineRenderer {
-        private _scene: Scene;
-        private _effect: Effect;
-        private _cachedDefines: string;
+module BABYLON {
+    export interface Scene {
+        /** @hidden */
+        _outlineRenderer: OutlineRenderer;
 
+        /**
+         * Gets the outline renderer associated with the scene
+         * @returns a OutlineRenderer
+         */
+        getOutlineRenderer(): OutlineRenderer;
+    }
+
+    /**
+     * Gets the outline renderer associated with the scene
+     * @returns a OutlineRenderer
+     */
+    Scene.prototype.getOutlineRenderer = function(): OutlineRenderer {
+        if (!this._outlineRenderer) {
+            this._outlineRenderer = new OutlineRenderer(this);
+        }
+        return this._outlineRenderer;
+    };
+
+    export interface AbstractMesh {
+        /** @hidden (Backing field) */
+        _renderOutline: boolean;
+        /**
+         * Gets or sets a boolean indicating if the outline must be rendered as well
+         * @see https://www.babylonjs-playground.com/#10WJ5S#3
+         */
+        renderOutline: boolean;
+
+        /** @hidden (Backing field) */
+        _renderOverlay: boolean;
+        /**
+         * Gets or sets a boolean indicating if the overlay must be rendered as well
+         * @see https://www.babylonjs-playground.com/#10WJ5S#2
+         */
+        renderOverlay: boolean;
+    }
+
+    Object.defineProperty(AbstractMesh.prototype, "renderOutline", {
+        get: function(this: AbstractMesh) {
+            return this._renderOutline;
+        },
+        set: function(this: AbstractMesh, value: boolean) {
+            if (value) {
+                // Lazy Load the component.
+                this.getScene().getOutlineRenderer();
+            }
+            this._renderOutline = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+
+    Object.defineProperty(AbstractMesh.prototype, "renderOverlay", {
+        get: function(this: AbstractMesh) {
+            return this._renderOverlay;
+        },
+        set: function(this: AbstractMesh, value: boolean) {
+            if (value) {
+                // Lazy Load the component.
+                this.getScene().getOutlineRenderer();
+            }
+            this._renderOverlay = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+
+    /**
+     * This class is responsible to draw bothe outline/overlay of meshes.
+     * It should not be used directly but through the available method on mesh.
+     */
+    export class OutlineRenderer implements ISceneComponent {
+        /**
+         * The name of the component. Each component must have a unique name.
+         */
+        public name = SceneComponentConstants.NAME_OUTLINERENDERER;
+
+        /**
+         * The scene the component belongs to.
+         */
+        public scene: Scene;
+
+        /**
+         * Defines a zOffset to prevent zFighting between the overlay and the mesh.
+         */
         public zOffset = 1;
 
+        private _engine: Engine;
+        private _effect: Effect;
+        private _cachedDefines: string;
+        private _savedDepthWrite: boolean;
+
+        /**
+         * Instantiates a new outline renderer. (There could be only one per scene).
+         * @param scene Defines the scene it belongs to
+         */
         constructor(scene: Scene) {
-            this._scene = scene;
+            this.scene = scene;
+            this._engine = scene.getEngine();
+            this.scene._addComponent(this);
         }
 
+        /**
+         * Register the component to one instance of a scene.
+         */
+        public register(): void {
+            this.scene._beforeRenderingMeshStage.registerStep(SceneComponentConstants.STEP_BEFORERENDERINGMESH_OUTLINE, this, this._beforeRenderingMesh);
+            this.scene._afterRenderingMeshStage.registerStep(SceneComponentConstants.STEP_AFTERRENDERINGMESH_OUTLINE, this, this._afterRenderingMesh);
+        }
+
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        public rebuild(): void {
+            // Nothing to do here.
+        }
+
+        /**
+         * Disposes the component and the associated ressources.
+         */
+        public dispose(): void {
+            // Nothing to do here.
+        }
+
+        /**
+         * Renders the outline in the canvas.
+         * @param subMesh Defines the sumesh to render
+         * @param batch Defines the batch of meshes in case of instances
+         * @param useOverlay Defines if the rendering is for the overlay or the outline
+         */
         public render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay: boolean = false): void {
-            var scene = this._scene;
-            var engine = this._scene.getEngine();
+            var scene = this.scene;
+            var engine = scene.getEngine();
 
             var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
@@ -30,7 +153,7 @@
             engine.enableEffect(this._effect);
 
             // Logarithmic depth
-            if((<any> material).useLogarithmicDepth)
+            if ((<any> material).useLogarithmicDepth)
             {
                 this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
             }
@@ -58,11 +181,18 @@
             engine.setZOffset(-this.zOffset);
 
             mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
-                (isInstance, world) => { this._effect.setMatrix("world", world) });
+                (isInstance, world) => { this._effect.setMatrix("world", world); });
 
             engine.setZOffset(0);
         }
 
+        /**
+         * Returns whether or not the outline renderer is ready for a given submesh.
+         * All the dependencies e.g. submeshes, texture, effect... mus be ready
+         * @param subMesh Defines the submesh to check readyness for
+         * @param useInstances Defines wheter wee are trying to render instances or not
+         * @returns true if ready otherwise false
+         */
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var defines = [];
             var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
@@ -72,7 +202,7 @@
 
             if (material) {
                 // Alpha test
-                if(material.needAlphaTesting())
+                if (material.needAlphaTesting())
                 {
                     defines.push("#define ALPHATEST");
                     if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
@@ -85,7 +215,7 @@
                     }
                 }
                 //Logarithmic depth
-                if((<any> material).useLogarithmicDepth)
+                if ((<any> material).useLogarithmicDepth)
                 {
                     defines.push("#define LOGARITHMICDEPTH");
                 }
@@ -113,11 +243,11 @@
                 attribs.push("world3");
             }
 
-            // Get correct effect      
+            // Get correct effect
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
-                this._effect = this._scene.getEngine().createEffect("outline",
+                this._effect = this.scene.getEngine().createEffect("outline",
                     attribs,
                     ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color", "logarithmicDepthConstant"],
                     ["diffuseSampler"], join);
@@ -125,5 +255,33 @@
 
             return this._effect.isReady();
         }
+
+        private _beforeRenderingMesh(mesh: AbstractMesh, subMesh: SubMesh, batch: _InstancesBatch): void {
+            // Outline - step 1
+            this._savedDepthWrite = this._engine.getDepthWrite();
+            if (mesh.renderOutline) {
+                this._engine.setDepthWrite(false);
+                this.render(subMesh, batch);
+                this._engine.setDepthWrite(this._savedDepthWrite);
+            }
+        }
+
+        private _afterRenderingMesh(mesh: AbstractMesh, subMesh: SubMesh, batch: _InstancesBatch): void {
+            // Outline - step 2
+            if (mesh.renderOutline && this._savedDepthWrite) {
+                this._engine.setDepthWrite(true);
+                this._engine.setColorWrite(false);
+                this.render(subMesh, batch);
+                this._engine.setColorWrite(true);
+            }
+
+            // Overlay
+            if (mesh.renderOverlay) {
+                var currentMode = this._engine.getAlphaMode();
+                this._engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                this.render(subMesh, batch, true);
+                this._engine.setAlphaMode(currentMode);
+            }
+        }
     }
-} 
+}

@@ -1,6 +1,6 @@
-﻿module BABYLON {
+module BABYLON {
     /**
-     * A class extending {BABYLON.Texture} allowing drawing on a texture
+     * A class extending Texture allowing drawing on a texture
      * @see http://doc.babylonjs.com/how_to/dynamictexture
      */
     export class DynamicTexture extends Texture {
@@ -10,7 +10,7 @@
         private _engine: Engine;
 
         /**
-         * Creates a {BABYLON.DynamicTexture}
+         * Creates a DynamicTexture
          * @param name defines the name of the texture
          * @param options provides 3 alternatives for width and height of texture, a canvas, object with width and height properties, number for both width and height
          * @param scene defines the scene where you want the texture
@@ -122,11 +122,11 @@
          * @param text defines the text to be drawn
          * @param x defines the placement of the text from the left
          * @param y defines the placement of the text from the top when invertY is true and from the bottom when false
-         * @param font defines the font to be used with font-style, font-size, font-name 
+         * @param font defines the font to be used with font-style, font-size, font-name
          * @param color defines the color used for the text
-         * @param clearColor defines the color for the canvas, use null to not overwrite canvas 
+         * @param clearColor defines the color for the canvas, use null to not overwrite canvas
          * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
-         * @param update defines whether texture is immediately update (default is true)  
+         * @param update defines whether texture is immediately update (default is true)
          */
         public drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean, update = true) {
             var size = this.getSize();
@@ -178,9 +178,28 @@
             return newTexture;
         }
 
+        /**
+         * Serializes the dynamic texture.  The scene should be ready before the dynamic texture is serialized
+         * @returns a serialized dynamic texture object
+         */
+        public serialize(): any {
+            const scene = this.getScene();
+            if (scene && !scene.isReady()) {
+                Tools.Warn("The scene must be ready before serializing the dynamic texture");
+            }
+
+            const serializationObject = super.serialize();
+            serializationObject.base64String = this._canvas.toDataURL();
+
+            serializationObject.invertY = this._invertY;
+            serializationObject.samplingMode = this.samplingMode;
+
+            return serializationObject;
+        }
+
         /** @hidden */
         public _rebuild(): void {
             this.update();
         }
     }
-} 
+}

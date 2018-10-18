@@ -1,6 +1,6 @@
 module.exports = function (config) {
-  config.set({
-    basePath: '../../',
+    config.set({
+        basePath: '../../',
         captureTimeout: 3e5,
         browserNoActivityTimeout: 3e5,
         browserDisconnectTimeout: 3e5,
@@ -12,6 +12,7 @@ module.exports = function (config) {
         frameworks: ['mocha', 'chai', 'sinon'],
 
         files: [
+            '!./**/*.d.ts',
             './Tools/DevLoader/BabylonLoader.js',
             './tests/unit/babylon/babylon.example.tests.js',
             './tests/unit/babylon/serializers/babylon.glTFSerializer.tests.js',
@@ -23,13 +24,12 @@ module.exports = function (config) {
             './tests/unit/babylon/src/Mesh/babylon.geometry.tests.js',
             './tests/unit/babylon/src/Mesh/babylon.mesh.vertexData.tests.js',
             './tests/unit/babylon/src/Tools/babylon.promise.tests.js',
-            { pattern: 'dist/**/*', watched: false, included: false, served: true },
+            { pattern: 'dist/preview release/**/*.js', watched: false, included: false, served: true },
             { pattern: 'assets/**/*', watched: false, included: false, served: true },
-            { pattern: 'tests/**/*', watched: false, included: false, served: true },
+            //{ pattern: 'tests/**/*', watched: false, included: false, served: true },
             { pattern: 'Playground/scenes/**/*', watched: false, included: false, served: true },
             { pattern: 'Playground/textures/**/*', watched: false, included: false, served: true },
             { pattern: 'Playground/sounds/**/*', watched: false, included: false, served: true },
-            { pattern: 'Tools/DevLoader/**/*', watched: false, included: false, served: true },
             { pattern: 'Tools/Gulp/config.json', watched: false, included: false, served: true },
         ],
         proxies: {
@@ -46,5 +46,5 @@ module.exports = function (config) {
         logLevel: config.LOG_INFO,
 
         browsers: ['PhantomJS']
-  })
+    })
 }

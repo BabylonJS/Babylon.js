@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
 
     /**
      * ActionEvent is the event being sent when an action is triggered.
@@ -15,15 +15,15 @@
          */
         constructor(
             /** The mesh or sprite that triggered the action */
-            public source: any, 
+            public source: any,
             /** The X mouse cursor position at the time of the event */
-            public pointerX: number, 
+            public pointerX: number,
             /** The Y mouse cursor position at the time of the event */
-            public pointerY: number, 
+            public pointerY: number,
             /** The mesh that is currently pointed at (can be null) */
-            public meshUnderPointer: Nullable<AbstractMesh>, 
+            public meshUnderPointer: Nullable<AbstractMesh>,
             /** the original (browser) event that triggered the ActionEvent */
-            public sourceEvent?: any, 
+            public sourceEvent?: any,
             /** additional data for the event */
             public additionalData?: any) {
 
@@ -82,161 +82,106 @@
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions
      */
     export class ActionManager {
-        // Statics
-        private static _NothingTrigger = 0;
-        private static _OnPickTrigger = 1;
-        private static _OnLeftPickTrigger = 2;
-        private static _OnRightPickTrigger = 3;
-        private static _OnCenterPickTrigger = 4;
-        private static _OnPickDownTrigger = 5;
-        private static _OnDoublePickTrigger = 6;
-        private static _OnPickUpTrigger = 7;
-        private static _OnLongPressTrigger = 8;
-        private static _OnPointerOverTrigger = 9;
-        private static _OnPointerOutTrigger = 10;
-        private static _OnEveryFrameTrigger = 11;
-        private static _OnIntersectionEnterTrigger = 12;
-        private static _OnIntersectionExitTrigger = 13;
-        private static _OnKeyDownTrigger = 14;
-        private static _OnKeyUpTrigger = 15;
-        private static _OnPickOutTrigger = 16;
-
         /**
          * Nothing
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get NothingTrigger(): number {
-            return ActionManager._NothingTrigger;
-        }
+        public static readonly NothingTrigger = 0;
 
-        /** 
-         * On pick 
+        /**
+         * On pick
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnPickTrigger(): number {
-            return ActionManager._OnPickTrigger;
-        }
+        public static readonly OnPickTrigger = 1;
 
-        /** 
+        /**
          * On left pick
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnLeftPickTrigger(): number {
-            return ActionManager._OnLeftPickTrigger;
-        }
+        public static readonly OnLeftPickTrigger  = 2;
 
-        /** 
+        /**
          * On right pick
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnRightPickTrigger(): number {
-            return ActionManager._OnRightPickTrigger;
-        }
+        public static readonly OnRightPickTrigger = 3;
 
-        /** 
-         * On center pick 
+        /**
+         * On center pick
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnCenterPickTrigger(): number {
-            return ActionManager._OnCenterPickTrigger;
-        }
+        public static readonly OnCenterPickTrigger = 4;
 
-        /** 
+        /**
          * On pick down
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnPickDownTrigger(): number {
-            return ActionManager._OnPickDownTrigger;
-        }
+        public static readonly OnPickDownTrigger = 5;
 
-        /** 
+        /**
          * On double pick
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnDoublePickTrigger(): number {
-            return ActionManager._OnDoublePickTrigger;
-        }
+        public static readonly OnDoublePickTrigger = 6;
 
-        /** 
+        /**
          * On pick up
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnPickUpTrigger(): number {
-            return ActionManager._OnPickUpTrigger;
-        }
-
+        public static readonly OnPickUpTrigger = 7;
         /**
          * On pick out.
          * This trigger will only be raised if you also declared a OnPickDown
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnPickOutTrigger(): number {
-            return ActionManager._OnPickOutTrigger;
-        }
+        public static readonly OnPickOutTrigger = 16;
 
-        /** 
+        /**
          * On long press
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnLongPressTrigger(): number {
-            return ActionManager._OnLongPressTrigger;
-        }
+        public static readonly OnLongPressTrigger = 8;
 
-        /** 
+        /**
          * On pointer over
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnPointerOverTrigger(): number {
-            return ActionManager._OnPointerOverTrigger;
-        }
+        public static readonly OnPointerOverTrigger = 9;
 
-        /** 
+        /**
          * On pointer out
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnPointerOutTrigger(): number {
-            return ActionManager._OnPointerOutTrigger;
-        }
+        public static readonly OnPointerOutTrigger = 10;
 
-        /** 
+        /**
          * On every frame
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnEveryFrameTrigger(): number {
-            return ActionManager._OnEveryFrameTrigger;
-        }
-
-        /** 
+        public static readonly OnEveryFrameTrigger = 11;
+        /**
          * On intersection enter
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnIntersectionEnterTrigger(): number {
-            return ActionManager._OnIntersectionEnterTrigger;
-        }
+        public static readonly OnIntersectionEnterTrigger = 12;
 
-        /** 
+        /**
          * On intersection exit
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnIntersectionExitTrigger(): number {
-            return ActionManager._OnIntersectionExitTrigger;
-        }
+        public static readonly OnIntersectionExitTrigger = 13;
 
         /**
          * On key down
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnKeyDownTrigger(): number {
-            return ActionManager._OnKeyDownTrigger;
-        }
+        public static readonly OnKeyDownTrigger = 14;
 
         /**
          * On key up
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
          */
-        public static get OnKeyUpTrigger(): number {
-            return ActionManager._OnKeyUpTrigger;
-        }
+        public static readonly OnKeyUpTrigger = 15;
 
         /** Gets the list of active triggers */
         public static Triggers: { [key: string]: number } = {};
@@ -272,7 +217,7 @@
                 var action = this.actions[i];
                 ActionManager.Triggers[action.trigger]--;
                 if (ActionManager.Triggers[action.trigger] === 0) {
-                    delete ActionManager.Triggers[action.trigger]
+                    delete ActionManager.Triggers[action.trigger];
                 }
             }
 
@@ -281,8 +226,8 @@
             }
         }
 
-        /** 
-         * Gets hosting scene 
+        /**
+         * Gets hosting scene
          * @returns the hosting scene
          */
         public getScene(): Scene {
@@ -292,7 +237,7 @@
         /**
          * Does this action manager handles actions of any of the given triggers
          * @param triggers defines the triggers to be tested
-         * @return a boolean indicating whether one (or more) of the triggers is handled 
+         * @return a boolean indicating whether one (or more) of the triggers is handled
          */
         public hasSpecificTriggers(triggers: number[]): boolean {
             for (var index = 0; index < this.actions.length; index++) {
@@ -307,10 +252,29 @@
         }
 
         /**
+         * Does this action manager handles actions of any of the given triggers. This function takes two arguments for
+         * speed.
+         * @param triggerA defines the trigger to be tested
+         * @param triggerB defines the trigger to be tested
+         * @return a boolean indicating whether one (or more) of the triggers is handled
+         */
+        public hasSpecificTriggers2(triggerA: number, triggerB: number): boolean {
+            for (var index = 0; index < this.actions.length; index++) {
+                var action = this.actions[index];
+
+                if (triggerA == action.trigger || triggerB == action.trigger) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /**
          * Does this action manager handles actions of a given trigger
          * @param trigger defines the trigger to be tested
          * @param parameterPredicate defines an optional predicate to filter triggers by parameter
-         * @return whether the trigger is handled 
+         * @return whether the trigger is handled
          */
         public hasSpecificTrigger(trigger: number, parameterPredicate?: (parameter: any) => boolean): boolean {
             for (var index = 0; index < this.actions.length; index++) {
@@ -337,7 +301,7 @@
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
 
-                if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPointerOutTrigger) {
+                if (action.trigger >= ActionManager.OnPickTrigger && action.trigger <= ActionManager.OnPointerOutTrigger) {
                     return true;
                 }
             }
@@ -352,7 +316,7 @@
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
 
-                if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPickUpTrigger) {
+                if (action.trigger >= ActionManager.OnPickTrigger && action.trigger <= ActionManager.OnPickUpTrigger) {
                     return true;
                 }
             }
@@ -361,7 +325,7 @@
         }
 
         /**
-         * Does exist one action manager with at least one trigger 
+         * Does exist one action manager with at least one trigger
          **/
         public static get HasTriggers(): boolean {
             for (var t in ActionManager.Triggers) {
@@ -373,13 +337,13 @@
         }
 
         /**
-         * Does exist one action manager with at least one pick trigger 
+         * Does exist one action manager with at least one pick trigger
          **/
         public static get HasPickTriggers(): boolean {
             for (var t in ActionManager.Triggers) {
                 if (ActionManager.Triggers.hasOwnProperty(t)) {
                     let t_int = parseInt(t);
-                    if (t_int >= ActionManager._OnPickTrigger && t_int <= ActionManager._OnPickUpTrigger) {
+                    if (t_int >= ActionManager.OnPickTrigger && t_int <= ActionManager.OnPickUpTrigger) {
                         return true;
                     }
                 }
@@ -443,7 +407,7 @@
                 this.actions.splice(index, 1);
                 ActionManager.Triggers[action.trigger] -= 1;
                 if (ActionManager.Triggers[action.trigger] === 0) {
-                    delete ActionManager.Triggers[action.trigger]
+                    delete ActionManager.Triggers[action.trigger];
                 }
                 delete action._actionManager;
                 return true;
@@ -537,7 +501,7 @@
                         var parameter = <any>{};
                         Tools.DeepCopy(triggerOptions.parameter, parameter, ["mesh"]);
 
-                        if (triggerOptions.parameter.mesh) {
+                        if (triggerOptions.parameter && triggerOptions.parameter.mesh) {
                             parameter._meshId = triggerOptions.parameter.mesh.id;
                         }
 
@@ -563,10 +527,12 @@
          */
         public static Parse(parsedActions: any, object: Nullable<AbstractMesh>, scene: Scene): void {
             var actionManager = new ActionManager(scene);
-            if (object === null)
+            if (object === null) {
                 scene.actionManager = actionManager;
-            else
+            }
+            else {
                 object.actionManager = actionManager;
+            }
 
             // instanciate a new object
             var instanciate = (name: string, params: Array<any>): any => {
@@ -581,10 +547,12 @@
                     // String, boolean or float
                     var floatValue = parseFloat(value);
 
-                    if (value === "true" || value === "false")
+                    if (value === "true" || value === "false") {
                         return value === "true";
-                    else
+                    }
+                    else {
                         return isNaN(floatValue) ? value : floatValue;
+                    }
                 }
 
                 var effectiveTarget = propertyPath.split(".");
@@ -596,36 +564,44 @@
                 }
 
                 // Return appropriate value with its type
-                if (typeof (target) === "boolean")
+                if (typeof (target) === "boolean") {
                     return values[0] === "true";
+                }
 
-                if (typeof (target) === "string")
+                if (typeof (target) === "string") {
                     return values[0];
+                }
 
                 // Parameters with multiple values such as Vector3 etc.
                 var split = new Array<number>();
-                for (var i = 0; i < values.length; i++)
+                for (var i = 0; i < values.length; i++) {
                     split.push(parseFloat(values[i]));
+                }
 
-                if (target instanceof Vector3)
+                if (target instanceof Vector3) {
                     return Vector3.FromArray(split);
+                }
 
-                if (target instanceof Vector4)
+                if (target instanceof Vector4) {
                     return Vector4.FromArray(split);
+                }
 
-                if (target instanceof Color3)
+                if (target instanceof Color3) {
                     return Color3.FromArray(split);
+                }
 
-                if (target instanceof Color4)
+                if (target instanceof Color4) {
                     return Color4.FromArray(split);
+                }
 
                 return parseFloat(values[0]);
             };
 
             // traverse graph per trigger
             var traverse = (parsedAction: any, trigger: any, condition: Nullable<Condition>, action: Nullable<Action>, combineArray: Nullable<Array<Action>> = null) => {
-                if (parsedAction.detached)
+                if (parsedAction.detached) {
                     return;
+                }
 
                 var parameters = new Array<any>();
                 var target: any = null;
@@ -633,10 +609,12 @@
                 var combine = parsedAction.combine && parsedAction.combine.length > 0;
 
                 // Parameters
-                if (parsedAction.type === 2)
+                if (parsedAction.type === 2) {
                     parameters.push(actionManager);
-                else
+                }
+                else {
                     parameters.push(trigger);
+                }
 
                 if (combine) {
                     var actions = new Array<Action>();
@@ -651,20 +629,30 @@
                         var name = parsedAction.properties[i].name;
                         var targetType = parsedAction.properties[i].targetType;
 
-                        if (name === "target")
-                            if (targetType !== null && targetType === "SceneProperties")
+                        if (name === "target") {
+                            if (targetType !== null && targetType === "SceneProperties") {
                                 value = target = scene;
-                            else
+                            }
+                            else {
                                 value = target = scene.getNodeByName(value);
-                        else if (name === "parent")
+                        }
+                            }
+                        else if (name === "parent") {
                             value = scene.getNodeByName(value);
-                        else if (name === "sound")
-                            value = scene.getSoundByName(value);
+                             }
+                        else if (name === "sound") {
+                            // Can not externalize to component, so only checks for the presence off the API.
+                            if (scene.getSoundByName) {
+                                value = scene.getSoundByName(value);
+                            }
+                        }
                         else if (name !== "propertyPath") {
-                            if (parsedAction.type === 2 && name === "operator")
+                            if (parsedAction.type === 2 && name === "operator") {
                                 value = (<any>ValueCondition)[value];
-                            else
+                            }
+                            else {
                                 value = parseParameter(name, value, target, name === "value" ? propertyPath : null);
+                            }
                         } else {
                             propertyPath = value;
                         }
@@ -693,10 +681,12 @@
                 if (newAction instanceof Condition && condition !== null) {
                     var nothing = new DoNothingAction(trigger, condition);
 
-                    if (action)
+                    if (action) {
                         action.then(nothing);
-                    else
+                    }
+                    else {
                         actionManager.registerAction(nothing);
+                    }
 
                     action = nothing;
                 }
@@ -707,18 +697,21 @@
                         newAction = action;
                     } else {
                         condition = null;
-                        if (action)
+                        if (action) {
                             action.then(newAction);
-                        else
+                        }
+                        else {
                             actionManager.registerAction(newAction);
+                        }
                     }
                 }
                 else {
                     combineArray.push(newAction);
                 }
 
-                for (var i = 0; i < parsedAction.children.length; i++)
+                for (var i = 0; i < parsedAction.children.length; i++) {
                     traverse(parsedAction.children[i], trigger, condition, newAction, null);
+                }
             };
 
             // triggers
@@ -736,12 +729,14 @@
 
                     triggerParams = { trigger: (<any>ActionManager)[trigger.name], parameter: value };
                 }
-                else
+                else {
                     triggerParams = (<any>ActionManager)[trigger.name];
+                }
 
                 for (var j = 0; j < trigger.children.length; j++) {
-                    if (!trigger.detached)
+                    if (!trigger.detached) {
                         traverse(trigger.children[j], triggerParams, null, null);
+                    }
                 }
             }
         }
@@ -773,4 +768,4 @@
             }
         }
     }
-} 
+}

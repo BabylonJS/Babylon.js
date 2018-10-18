@@ -25,5 +25,18 @@ declare module BABYLON {
         darkmatter: number;
         distfading: number;
         saturation: number;
+        /**
+         * Serializes this starfield procedural texture
+         * @returns a serialized starfield procedural texture object
+         */
+        serialize(): any;
+        /**
+         * Creates a Starfield Procedural Texture from parsed startfield procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing startfield procedural texture information
+         * @returns a parsed Starfield Procedural Texture
+         */
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): StarfieldProceduralTexture;
     }
 }

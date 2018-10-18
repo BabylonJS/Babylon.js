@@ -13,7 +13,7 @@ uniform vec2 vAlbedoInfos;
 #endif
 
 #ifdef AMBIENT
-uniform vec3 vAmbientInfos;
+uniform vec4 vAmbientInfos;
 #endif
 
 #ifdef BUMP

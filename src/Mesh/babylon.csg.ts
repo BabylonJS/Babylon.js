@@ -1,34 +1,64 @@
-﻿module BABYLON {
-    // Unique ID when we import meshes from Babylon to CSG
+module BABYLON {
+    /**
+     * Unique ID when we import meshes from Babylon to CSG
+     */
     var currentCSGMeshId = 0;
 
-    // # class Vertex
-
-    // Represents a vertex of a polygon. Use your own vertex class instead of this
-    // one to provide additional features like texture coordinates and vertex
-    // colors. Custom vertex classes need to provide a `pos` property and `clone()`,
-    // `flip()`, and `interpolate()` methods that behave analogous to the ones
-    // defined by `BABYLON.CSG.Vertex`. This class provides `normal` so convenience
-    // functions like `BABYLON.CSG.sphere()` can return a smooth vertex normal, but `normal`
-    // is not used anywhere else. 
-    // Same goes for uv, it allows to keep the original vertex uv coordinates of the 2 meshes
+    /**
+     * Represents a vertex of a polygon. Use your own vertex class instead of this
+     * one to provide additional features like texture coordinates and vertex
+     * colors. Custom vertex classes need to provide a `pos` property and `clone()`,
+     * `flip()`, and `interpolate()` methods that behave analogous to the ones
+     * defined by `BABYLON.CSG.Vertex`. This class provides `normal` so convenience
+     * functions like `BABYLON.CSG.sphere()` can return a smooth vertex normal, but `normal`
+     * is not used anywhere else.
+     * Same goes for uv, it allows to keep the original vertex uv coordinates of the 2 meshes
+     */
     class Vertex {
-        constructor(public pos: Vector3, public normal: Vector3, public uv: Vector2) {
+        /**
+         * Initializes the vertex
+         * @param pos The position of the vertex
+         * @param normal The normal of the vertex
+         * @param uv The texture coordinate of the vertex
+         */
+        constructor(
+            /**
+             * The position of the vertex
+             */
+            public pos: Vector3,
+            /**
+             * The normal of the vertex
+             */
+            public normal: Vector3,
+            /**
+             * The texture coordinate of the vertex
+             */
+            public uv: Vector2) {
         }
 
+        /**
+         * Make a clone, or deep copy, of the vertex
+         * @returns A new Vertex
+         */
         public clone(): Vertex {
             return new Vertex(this.pos.clone(), this.normal.clone(), this.uv.clone());
         }
 
-        // Invert all orientation-specific data (e.g. vertex normal). Called when the
-        // orientation of a polygon is flipped.
+        /**
+         * Invert all orientation-specific data (e.g. vertex normal). Called when the
+         * orientation of a polygon is flipped.
+         */
         public flip(): void {
             this.normal = this.normal.scale(-1);
         }
 
-        // Create a new vertex between this vertex and `other` by linearly
-        // interpolating all properties using a parameter of `t`. Subclasses should
-        // override this to interpolate additional properties.
+        /**
+         * Create a new vertex between this vertex and `other` by linearly
+         * interpolating all properties using a parameter of `t`. Subclasses should
+         * override this to interpolate additional properties.
+         * @param other the vertex to interpolate against
+         * @param t The factor used to linearly interpolate between the vertices
+         */
         public interpolate(other: Vertex, t: number): Vertex {
             return new Vertex(Vector3.Lerp(this.pos, other.pos, t),
                 Vector3.Lerp(this.normal, other.normal, t),
@@ -37,17 +67,30 @@
         }
     }
 
-    // # class Plane
-
-    // Represents a plane in 3D space.
+    /**
+     * Represents a plane in 3D space.
+     */
     class Plane {
+        /**
+         * Initializes the plane
+         * @param normal The normal for the plane
+         * @param w
+         */
         constructor(public normal: Vector3, public w: number) {
         }
 
-        // `BABYLON.CSG.Plane.EPSILON` is the tolerance used by `splitPolygon()` to decide if a
-        // point is on the plane.
+        /**
+         * `BABYLON.CSG.Plane.EPSILON` is the tolerance used by `splitPolygon()` to decide if a
+         * point is on the plane
+         */
         static EPSILON = 1e-5;
 
+        /**
+         * Construct a plane from three points
+         * @param a Point a
+         * @param b Point b
+         * @param c Point c
+         */
         public static FromPoints(a: Vector3, b: Vector3, c: Vector3): Nullable<Plane> {
             var v0 = c.subtract(a);
             var v1 = b.subtract(a);
@@ -60,20 +103,34 @@
             return new Plane(n, Vector3.Dot(n, a));
         }
 
+        /**
+         * Clone, or make a deep copy of the plane
+         * @returns a new Plane
+         */
         public clone(): Plane {
             return new Plane(this.normal.clone(), this.w);
         }
 
+        /**
+         * Flip the face of the plane
+         */
         public flip() {
             this.normal.scaleInPlace(-1);
             this.w = -this.w;
         }
 
-        // Split `polygon` by this plane if needed, then put the polygon or polygon
-        // fragments in the appropriate lists. Coplanar polygons go into either
-        // `coplanarFront` or `coplanarBack` depending on their orientation with
-        // respect to this plane. Polygons in front or in back of this plane go into
-        // either `front` or `back`.
+        /**
+         * Split `polygon` by this plane if needed, then put the polygon or polygon
+         * fragments in the appropriate lists. Coplanar polygons go into either
+        `* coplanarFront` or `coplanarBack` depending on their orientation with
+         * respect to this plane. Polygons in front or in back of this plane go into
+         * either `front` or `back`
+         * @param polygon The polygon to be split
+         * @param coplanarFront Will contain polygons coplanar with the plane that are oriented to the front of the plane
+         * @param coplanarBack Will contain polygons coplanar with the plane that are oriented to the back of the plane
+         * @param front Will contain the polygons in front of the plane
+         * @param back Will contain the polygons begind the plane
+         */
         public splitPolygon(polygon: Polygon, coplanarFront: Polygon[], coplanarBack: Polygon[], front: Polygon[], back: Polygon[]): void {
             var COPLANAR = 0;
             var FRONT = 1;
@@ -93,7 +150,7 @@
                 types.push(type);
             }
 
-            // Put the polygon in the correct list, splitting it when necessary.
+            // Put the polygon in the correct list, splitting it when necessary
             switch (polygonType) {
                 case COPLANAR:
                     (Vector3.Dot(this.normal, polygon.plane.normal) > 0 ? coplanarFront : coplanarBack).push(polygon);
@@ -110,8 +167,8 @@
                         var j = (i + 1) % polygon.vertices.length;
                         var ti = types[i], tj = types[j];
                         var vi = polygon.vertices[i], vj = polygon.vertices[j];
-                        if (ti !== BACK) f.push(vi);
-                        if (ti !== FRONT) b.push(ti !== BACK ? vi.clone() : vi);
+                        if (ti !== BACK) { f.push(vi); }
+                        if (ti !== FRONT) { b.push(ti !== BACK ? vi.clone() : vi); }
                         if ((ti | tj) === SPANNING) {
                             t = (this.w - Vector3.Dot(this.normal, vi.pos)) / Vector3.Dot(this.normal, vj.pos.subtract(vi.pos));
                             var v = vi.interpolate(vj, t);
@@ -122,15 +179,17 @@
                     var poly: Polygon;
                     if (f.length >= 3) {
                         poly = new Polygon(f, polygon.shared);
-                        if (poly.plane)
+                        if (poly.plane) {
                             front.push(poly);
+                        }
                     }
 
                     if (b.length >= 3) {
                         poly = new Polygon(b, polygon.shared);
 
-                        if (poly.plane)
+                        if (poly.plane) {
                             back.push(poly);
+                        }
                     }
 
                     break;
@@ -138,19 +197,33 @@
         }
     }
 
-    // # class Polygon
-
-    // Represents a convex polygon. The vertices used to initialize a polygon must
-    // be coplanar and form a convex loop.
-    // 
-    // Each convex polygon has a `shared` property, which is shared between all
-    // polygons that are clones of each other or were split from the same polygon.
-    // This can be used to define per-polygon properties (such as surface color).
+    /**
+     * Represents a convex polygon. The vertices used to initialize a polygon must
+     * be coplanar and form a convex loop.
+     *
+     * Each convex polygon has a `shared` property, which is shared between all
+     * polygons that are clones of each other or were split from the same polygon.
+     * This can be used to define per-polygon properties (such as surface color)
+     */
     class Polygon {
+        /**
+         * Vertices of the polygon
+         */
         public vertices: Vertex[];
+        /**
+         * Properties that are shared across all polygons
+         */
         public shared: any;
+        /**
+         * A plane formed from the vertices of the polygon
+         */
         public plane: Plane;
 
+        /**
+         * Initializes the polygon
+         * @param vertices The vertices of the polygon
+         * @param shared The properties shared across all polygons
+         */
         constructor(vertices: Vertex[], shared: any) {
             this.vertices = vertices;
             this.shared = shared;
@@ -158,46 +231,62 @@
 
         }
 
+        /**
+         * Clones, or makes a deep copy, or the polygon
+         */
         public clone(): Polygon {
-            var vertices = this.vertices.map(v => v.clone());
+            var vertices = this.vertices.map((v) => v.clone());
             return new Polygon(vertices, this.shared);
         }
 
+        /**
+         * Flips the faces of the polygon
+         */
         public flip() {
-            this.vertices.reverse().map(v => { v.flip(); });
+            this.vertices.reverse().map((v) => { v.flip(); });
             this.plane.flip();
         }
     }
 
-    // # class Node
-
-    // Holds a node in a BSP tree. A BSP tree is built from a collection of polygons
-    // by picking a polygon to split along. That polygon (and all other coplanar
-    // polygons) are added directly to that node and the other polygons are added to
-    // the front and/or back subtrees. This is not a leafy BSP tree since there is
-    // no distinction between internal and leaf nodes.
+    /**
+     * Holds a node in a BSP tree. A BSP tree is built from a collection of polygons
+     * by picking a polygon to split along. That polygon (and all other coplanar
+     * polygons) are added directly to that node and the other polygons are added to
+     * the front and/or back subtrees. This is not a leafy BSP tree since there is
+     * no distinction between internal and leaf nodes
+     */
     class Node {
         private plane: Nullable<Plane> = null;
         private front: Nullable<Node> = null;
         private back: Nullable<Node> = null;
         private polygons = new Array<Polygon>();
 
+        /**
+         * Initializes the node
+         * @param polygons A collection of polygons held in the node
+         */
         constructor(polygons?: Array<Polygon>) {
             if (polygons) {
                 this.build(polygons);
             }
         }
 
+        /**
+         * Clones, or makes a deep copy, of the node
+         * @returns The cloned node
+         */
         public clone(): Node {
             var node = new Node();
             node.plane = this.plane && this.plane.clone();
             node.front = this.front && this.front.clone();
             node.back = this.back && this.back.clone();
-            node.polygons = this.polygons.map(p => p.clone());
+            node.polygons = this.polygons.map((p) => p.clone());
             return node;
         }
 
-        // Convert solid space to empty space and empty space to solid space.
+        /**
+         * Convert solid space to empty space and empty space to solid space
+         */
         public invert(): void {
             for (var i = 0; i < this.polygons.length; i++) {
                 this.polygons[i].flip();
@@ -216,10 +305,14 @@
             this.back = temp;
         }
 
-        // Recursively remove all polygons in `polygons` that are inside this BSP
-        // tree.
+        /**
+         * Recursively remove all polygons in `polygons` that are inside this BSP
+         * tree.
+         * @param polygons Polygons to remove from the BSP
+         * @returns Polygons clipped from the BSP
+         */
         clipPolygons(polygons: Polygon[]): Polygon[] {
-            if (!this.plane) return polygons.slice();
+            if (!this.plane) { return polygons.slice(); }
             var front = new Array<Polygon>(), back = new Array<Polygon>();
             for (var i = 0; i < polygons.length; i++) {
                 this.plane.splitPolygon(polygons[i], front, back, front, back);
@@ -235,53 +328,84 @@
             return front.concat(back);
         }
 
-        // Remove all polygons in this BSP tree that are inside the other BSP tree
-        // `bsp`.
+        /**
+         * Remove all polygons in this BSP tree that are inside the other BSP tree
+         * `bsp`.
+         * @param bsp BSP containing polygons to remove from this BSP
+         */
         clipTo(bsp: Node): void {
             this.polygons = bsp.clipPolygons(this.polygons);
-            if (this.front) this.front.clipTo(bsp);
-            if (this.back) this.back.clipTo(bsp);
+            if (this.front) { this.front.clipTo(bsp); }
+            if (this.back) { this.back.clipTo(bsp); }
         }
 
-        // Return a list of all polygons in this BSP tree.
+        /**
+         * Return a list of all polygons in this BSP tree
+         * @returns List of all polygons in this BSP tree
+         */
         allPolygons(): Polygon[] {
             var polygons = this.polygons.slice();
-            if (this.front) polygons = polygons.concat(this.front.allPolygons());
-            if (this.back) polygons = polygons.concat(this.back.allPolygons());
+            if (this.front) { polygons = polygons.concat(this.front.allPolygons()); }
+            if (this.back) { polygons = polygons.concat(this.back.allPolygons()); }
             return polygons;
         }
 
-        // Build a BSP tree out of `polygons`. When called on an existing tree, the
-        // new polygons are filtered down to the bottom of the tree and become new
-        // nodes there. Each set of polygons is partitioned using the first polygon
-        // (no heuristic is used to pick a good split).
+        /**
+         * Build a BSP tree out of `polygons`. When called on an existing tree, the
+         * new polygons are filtered down to the bottom of the tree and become new
+         * nodes there. Each set of polygons is partitioned using the first polygon
+         * (no heuristic is used to pick a good split)
+         * @param polygons Polygons used to construct the BSP tree
+         */
         build(polygons: Polygon[]): void {
-            if (!polygons.length) return;
-            if (!this.plane) this.plane = polygons[0].plane.clone();
+            if (!polygons.length) { return; }
+            if (!this.plane) { this.plane = polygons[0].plane.clone(); }
             var front = new Array<Polygon>(), back = new Array<Polygon>();
             for (var i = 0; i < polygons.length; i++) {
                 this.plane.splitPolygon(polygons[i], this.polygons, this.polygons, front, back);
             }
             if (front.length) {
-                if (!this.front) this.front = new Node();
+                if (!this.front) { this.front = new Node(); }
                 this.front.build(front);
             }
             if (back.length) {
-                if (!this.back) this.back = new Node();
+                if (!this.back) { this.back = new Node(); }
                 this.back.build(back);
             }
         }
     }
 
+    /**
+     * Class for building Constructive Solid Geometry
+     */
     export class CSG {
         private polygons = new Array<Polygon>();
+        /**
+         * The world matrix
+         */
         public matrix: Matrix;
+        /**
+         * Stores the position
+         */
         public position: Vector3;
+        /**
+         * Stores the rotation
+         */
         public rotation: Vector3;
+        /**
+         * Stores the rotation quaternion
+         */
         public rotationQuaternion: Nullable<Quaternion>;
+        /**
+         * Stores the scaling vector
+         */
         public scaling: Vector3;
 
-        // Convert BABYLON.Mesh to BABYLON.CSG
+        /**
+         * Convert the BABYLON.Mesh to BABYLON.CSG
+         * @param mesh The BABYLON.Mesh to convert to BABYLON.CSG
+         * @returns A new BABYLON.CSG from the BABYLON.Mesh
+         */
         public static FromMesh(mesh: Mesh): CSG {
             var vertex: Vertex, normal: Vector3, uv: Vector2, position: Vector3,
                 polygon: Polygon,
@@ -331,8 +455,9 @@
 
                     // To handle the case of degenerated triangle
                     // polygon.plane == null <=> the polygon does not represent 1 single plane <=> the triangle is degenerated
-                    if (polygon.plane)
+                    if (polygon.plane) {
                         polygons.push(polygon);
+                    }
                 }
             }
 
@@ -347,21 +472,32 @@
             return csg;
         }
 
-
-        // Construct a BABYLON.CSG solid from a list of `BABYLON.CSG.Polygon` instances.
+        /**
+         * Construct a BABYLON.CSG solid from a list of `BABYLON.CSG.Polygon` instances.
+         * @param polygons Polygons used to construct a BABYLON.CSG solid
+         */
         private static FromPolygons(polygons: Polygon[]): CSG {
             var csg = new CSG();
             csg.polygons = polygons;
             return csg;
         }
 
+        /**
+         * Clones, or makes a deep copy, of the BABYLON.CSG
+         * @returns A new BABYLON.CSG
+         */
         public clone(): CSG {
             var csg = new CSG();
-            csg.polygons = this.polygons.map(p => p.clone());
+            csg.polygons = this.polygons.map((p) => p.clone());
             csg.copyTransformAttributes(this);
             return csg;
         }
 
+        /**
+         * Unions this CSG with another CSG
+         * @param csg The CSG to union against this CSG
+         * @returns The unioned CSG
+         */
         public union(csg: CSG): CSG {
             var a = new Node(this.clone().polygons);
             var b = new Node(csg.clone().polygons);
@@ -374,6 +510,10 @@
             return CSG.FromPolygons(a.allPolygons()).copyTransformAttributes(this);
         }
 
+        /**
+         * Unions this CSG with another CSG in place
+         * @param csg The CSG to union against this CSG
+         */
         public unionInPlace(csg: CSG): void {
             var a = new Node(this.polygons);
             var b = new Node(csg.polygons);
@@ -388,6 +528,11 @@
             this.polygons = a.allPolygons();
         }
 
+        /**
+         * Subtracts this CSG with another CSG
+         * @param csg The CSG to subtract against this CSG
+         * @returns A new BABYLON.CSG
+         */
         public subtract(csg: CSG): CSG {
             var a = new Node(this.clone().polygons);
             var b = new Node(csg.clone().polygons);
@@ -402,6 +547,10 @@
             return CSG.FromPolygons(a.allPolygons()).copyTransformAttributes(this);
         }
 
+        /**
+         * Subtracts this CSG with another CSG in place
+         * @param csg The CSG to subtact against this CSG
+         */
         public subtractInPlace(csg: CSG): void {
             var a = new Node(this.polygons);
             var b = new Node(csg.polygons);
@@ -418,6 +567,11 @@
             this.polygons = a.allPolygons();
         }
 
+        /**
+         * Intersect this CSG with another CSG
+         * @param csg The CSG to intersect against this CSG
+         * @returns A new BABYLON.CSG
+         */
         public intersect(csg: CSG): CSG {
             var a = new Node(this.clone().polygons);
             var b = new Node(csg.clone().polygons);
@@ -431,6 +585,10 @@
             return CSG.FromPolygons(a.allPolygons()).copyTransformAttributes(this);
         }
 
+        /**
+         * Intersects this CSG with another CSG in place
+         * @param csg The CSG to intersect against this CSG
+         */
         public intersectInPlace(csg: CSG): void {
             var a = new Node(this.polygons);
             var b = new Node(csg.polygons);
@@ -446,21 +604,31 @@
             this.polygons = a.allPolygons();
         }
 
-        // Return a new BABYLON.CSG solid with solid and empty space switched. This solid is
-        // not modified.
+        /**
+         * Return a new BABYLON.CSG solid with solid and empty space switched. This solid is
+         * not modified.
+         * @returns A new BABYLON.CSG solid with solid and empty space switched
+         */
         public inverse(): CSG {
             var csg = this.clone();
             csg.inverseInPlace();
             return csg;
         }
 
+        /**
+         * Inverses the BABYLON.CSG in place
+         */
         public inverseInPlace(): void {
-            this.polygons.map(p => { p.flip(); });
+            this.polygons.map((p) => { p.flip(); });
         }
 
-        // This is used to keep meshes transformations so they can be restored
-        // when we build back a Babylon Mesh
-        // NB : All CSG operations are performed in world coordinates
+        /**
+         * This is used to keep meshes transformations so they can be restored
+         * when we build back a Babylon Mesh
+         * NB : All CSG operations are performed in world coordinates
+         * @param csg The BABYLON.CSG to copy the transform attributes from
+         * @returns This BABYLON.CSG
+         */
         public copyTransformAttributes(csg: CSG): CSG {
             this.matrix = csg.matrix;
             this.position = csg.position;
@@ -471,8 +639,14 @@
             return this;
         }
 
-        // Build Raw mesh from CSG
-        // Coordinates here are in world space
+        /**
+         * Build Raw mesh from CSG
+         * Coordinates here are in world space
+         * @param name The name of the mesh geometry
+         * @param scene The BABYLON.Scene
+         * @param keepSubMeshes Specifies if the submeshes should be kept
+         * @returns A new BABYLON.Mesh
+         */
         public buildMeshGeometry(name: string, scene: Scene, keepSubMeshes: boolean): Mesh {
             var matrix = this.matrix.clone();
             matrix.invert();
@@ -492,7 +666,6 @@
                 currentIndex = 0,
                 subMesh_dict = {},
                 subMesh_obj;
-
 
             if (keepSubMeshes) {
                 // Sort Polygons, since subMeshes are indices range
@@ -586,7 +759,14 @@
             return mesh;
         }
 
-        // Build Mesh from CSG taking material and transforms into account
+        /**
+         * Build Mesh from CSG taking material and transforms into account
+         * @param name The name of the BABYLON.Mesh
+         * @param material The material of the BABYLON.Mesh
+         * @param scene The BABYLON.Scene
+         * @param keepSubMeshes Specifies if submeshes should be kept
+         * @returns The new BABYLON.Mesh
+         */
         public toMesh(name: string, material: Nullable<Material>, scene: Scene, keepSubMeshes: boolean): Mesh {
             var mesh = this.buildMeshGeometry(name, scene, keepSubMeshes);
 
@@ -603,4 +783,4 @@
             return mesh;
         }
     }
-} 
+}

@@ -1,5 +1,15 @@
 module BABYLON {
 
+    /**
+     * Uniform buffer objects.
+     *
+     * Handles blocks of uniform on the GPU.
+     *
+     * If WebGL 2 is not available, this class falls back on traditionnal setUniformXXX calls.
+     *
+     * For more information, please refer to :
+     * https://www.khronos.org/opengl/wiki/Uniform_Buffer_Object
+     */
     export class UniformBuffer {
         private _engine: Engine;
         private _buffer: Nullable<WebGLBuffer>;
@@ -18,104 +28,94 @@ module BABYLON {
         private static _tempBuffer = new Float32Array(UniformBuffer._MAX_UNIFORM_SIZE);
 
         /**
-         * Wrapper for updateUniform.
-         * @method updateMatrix3x3 
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {Float32Array} matrix
+         * Lambda to Update a 3x3 Matrix in a uniform buffer.
+         * This is dynamic to allow compat with webgl 1 and 2.
+         * You will need to pass the name of the uniform as well as the value.
          */
         public updateMatrix3x3: (name: string, matrix: Float32Array) => void;
 
         /**
-         * Wrapper for updateUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {Float32Array} matrix
+         * Lambda to Update a 2x2 Matrix in a uniform buffer.
+         * This is dynamic to allow compat with webgl 1 and 2.
+         * You will need to pass the name of the uniform as well as the value.
          */
         public updateMatrix2x2: (name: string, matrix: Float32Array) => void;
 
         /**
-         * Wrapper for updateUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {number} x
+         * Lambda to Update a single float in a uniform buffer.
+         * This is dynamic to allow compat with webgl 1 and 2.
+         * You will need to pass the name of the uniform as well as the value.
          */
         public updateFloat: (name: string, x: number) => void;
 
         /**
-         * Wrapper for updateUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {number} x
-         * @param {number} y
-         * @param {string} [suffix] Suffix to add to the uniform name.
+         * Lambda to Update a vec2 of float in a uniform buffer.
+         * This is dynamic to allow compat with webgl 1 and 2.
+         * You will need to pass the name of the uniform as well as the value.
          */
         public updateFloat2: (name: string, x: number, y: number, suffix?: string) => void;
 
         /**
-         * Wrapper for updateUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {number} x
-         * @param {number} y
-         * @param {number} z
-         * @param {string} [suffix] Suffix to add to the uniform name.
+         * Lambda to Update a vec3 of float in a uniform buffer.
+         * This is dynamic to allow compat with webgl 1 and 2.
+         * You will need to pass the name of the uniform as well as the value.
          */
         public updateFloat3: (name: string, x: number, y: number, z: number, suffix?: string) => void;
 
         /**
-         * Wrapper for updateUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {number} x
-         * @param {number} y
-         * @param {number} z
-         * @param {number} w
-         * @param {string} [suffix] Suffix to add to the uniform name.
+         * Lambda to Update a vec4 of float in a uniform buffer.
+         * This is dynamic to allow compat with webgl 1 and 2.
+         * You will need to pass the name of the uniform as well as the value.
          */
         public updateFloat4: (name: string, x: number, y: number, z: number, w: number, suffix?: string) => void;
 
         /**
-         * Wrapper for updateUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {Matrix} A 4x4 matrix.
+         * Lambda to Update a 4x4 Matrix in a uniform buffer.
+         * This is dynamic to allow compat with webgl 1 and 2.
+         * You will need to pass the name of the uniform as well as the value.
          */
         public updateMatrix: (name: string, mat: Matrix) => void;
 
         /**
-         * Wrapper for updateUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {Vector3} vector
+         * Lambda to Update vec3 of float from a Vector in a uniform buffer.
+         * This is dynamic to allow compat with webgl 1 and 2.
+         * You will need to pass the name of the uniform as well as the value.
          */
         public updateVector3: (name: string, vector: Vector3) => void;
 
         /**
-         * Wrapper for updateUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {Vector4} vector
+         * Lambda to Update vec4 of float from a Vector in a uniform buffer.
+         * This is dynamic to allow compat with webgl 1 and 2.
+         * You will need to pass the name of the uniform as well as the value.
          */
         public updateVector4: (name: string, vector: Vector4) => void;
 
         /**
-         * Wrapper for updateUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {Color3} color
-         * @param {string} [suffix] Suffix to add to the uniform name.
+         * Lambda to Update vec3 of float from a Color in a uniform buffer.
+         * This is dynamic to allow compat with webgl 1 and 2.
+         * You will need to pass the name of the uniform as well as the value.
          */
         public updateColor3: (name: string, color: Color3, suffix?: string) => void;
 
         /**
-         * Wrapper for updateUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {Color3} color
-         * @param {number} alpha
-         * @param {string} [suffix] Suffix to add to the uniform name.
+         * Lambda to Update vec4 of float from a Color in a uniform buffer.
+         * This is dynamic to allow compat with webgl 1 and 2.
+         * You will need to pass the name of the uniform as well as the value.
          */
         public updateColor4: (name: string, color: Color3, alpha: number, suffix?: string) => void;
 
         /**
-         * Uniform buffer objects.
-         * 
+         * Instantiates a new Uniform buffer objects.
+         *
          * Handles blocks of uniform on the GPU.
          *
          * If WebGL 2 is not available, this class falls back on traditionnal setUniformXXX calls.
          *
-         * For more information, please refer to : 
-         * https://www.khronos.org/opengl/wiki/Uniform_Buffer_Object
+         * For more information, please refer to :
+         * @see https://www.khronos.org/opengl/wiki/Uniform_Buffer_Object
+         * @param engine Define the engine the buffer is associated with
+         * @param data Define the data contained in the buffer
+         * @param dynamic Define if the buffer is updatable
          */
         constructor(engine: Engine, data?: number[], dynamic?: boolean) {
             this._engine = engine;
@@ -159,7 +159,6 @@ module BABYLON {
 
         }
 
-        // Properties
         /**
          * Indicates if the buffer is using the WebGL2 UBO implementation,
          * or just falling back on setUniformXXX calls.
@@ -178,8 +177,9 @@ module BABYLON {
 
         /**
          * Indicates if the WebGL underlying uniform buffer is dynamic.
-         * Also, a dynamic UniformBuffer will disable cache verification and always 
+         * Also, a dynamic UniformBuffer will disable cache verification and always
          * update the underlying WebGL uniform buffer to the GPU.
+         * @returns if Dynamic, otherwise false
          */
         public isDynamic(): boolean {
             return this._dynamic !== undefined;
@@ -187,6 +187,7 @@ module BABYLON {
 
         /**
          * The data cache on JS side.
+         * @returns the underlying data as a float array
          */
         public getData(): Float32Array {
             return this._bufferData;
@@ -194,6 +195,7 @@ module BABYLON {
 
         /**
          * The underlying WebGL Uniform buffer.
+         * @returns the webgl buffer
          */
         public getBuffer(): Nullable<WebGLBuffer> {
             return this._buffer;
@@ -231,8 +233,8 @@ module BABYLON {
          * Adds an uniform in the buffer.
          * Warning : the subsequents calls of this function must be in the same order as declared in the shader
          * for the layout to be correct !
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {number|number[]} size Data size, or data directly.
+         * @param name Name of the uniform, as used in the uniform block in the shader.
+         * @param size Data size, or data directly.
          */
         public addUniform(name: string, size: number | number[]) {
             if (this._noUBO) {
@@ -259,12 +261,10 @@ module BABYLON {
                 }
             }
 
-
             this._fillAlignment(<number>size);
             this._uniformSizes[name] = <number>size;
             this._uniformLocations[name] = this._uniformLocationPointer;
             this._uniformLocationPointer += <number>size;
-
 
             for (var i = 0; i < size; i++) {
                 this._data.push(data[i]);
@@ -274,19 +274,19 @@ module BABYLON {
         }
 
         /**
-         * Wrapper for addUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {Matrix} mat A 4x4 matrix.
+         * Adds a Matrix 4x4 to the uniform buffer.
+         * @param name Name of the uniform, as used in the uniform block in the shader.
+         * @param mat A 4x4 matrix.
          */
         public addMatrix(name: string, mat: Matrix) {
             this.addUniform(name, Array.prototype.slice.call(mat.toArray()));
         }
 
         /**
-         * Wrapper for addUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {number} x
-         * @param {number} y
+         * Adds a vec2 to the uniform buffer.
+         * @param name Name of the uniform, as used in the uniform block in the shader.
+         * @param x Define the x component value of the vec2
+         * @param y Define the y component value of the vec2
          */
         public addFloat2(name: string, x: number, y: number) {
             var temp = [x, y];
@@ -294,11 +294,11 @@ module BABYLON {
         }
 
         /**
-         * Wrapper for addUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {number} x
-         * @param {number} y
-         * @param {number} z
+         * Adds a vec3 to the uniform buffer.
+         * @param name Name of the uniform, as used in the uniform block in the shader.
+         * @param x Define the x component value of the vec3
+         * @param y Define the y component value of the vec3
+         * @param z Define the z component value of the vec3
          */
         public addFloat3(name: string, x: number, y: number, z: number) {
             var temp = [x, y, z];
@@ -306,9 +306,9 @@ module BABYLON {
         }
 
         /**
-         * Wrapper for addUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {Color3} color
+         * Adds a vec3 to the uniform buffer.
+         * @param name Name of the uniform, as used in the uniform block in the shader.
+         * @param color Define the vec3 from a Color
          */
         public addColor3(name: string, color: Color3) {
             var temp = new Array<number>();
@@ -317,10 +317,10 @@ module BABYLON {
         }
 
         /**
-         * Wrapper for addUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {Color3} color
-         * @param {number} alpha
+         * Adds a vec4 to the uniform buffer.
+         * @param name Name of the uniform, as used in the uniform block in the shader.
+         * @param color Define the rgb components from a Color
+         * @param alpha Define the a component of the vec4
          */
         public addColor4(name: string, color: Color3, alpha: number) {
             var temp = new Array<number>();
@@ -330,9 +330,9 @@ module BABYLON {
         }
 
         /**
-         * Wrapper for addUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
-         * @param {Vector3} vector
+         * Adds a vec3 to the uniform buffer.
+         * @param name Name of the uniform, as used in the uniform block in the shader.
+         * @param vector Define the vec3 components from a Vector
          */
         public addVector3(name: string, vector: Vector3) {
             var temp = new Array<number>();
@@ -341,16 +341,16 @@ module BABYLON {
         }
 
         /**
-         * Wrapper for addUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * Adds a Matrix 3x3 to the uniform buffer.
+         * @param name Name of the uniform, as used in the uniform block in the shader.
          */
         public addMatrix3x3(name: string) {
             this.addUniform(name, 12);
         }
 
         /**
-         * Wrapper for addUniform.
-         * @param {string} name Name of the uniform, as used in the uniform block in the shader.
+         * Adds a Matrix 2x2 to the uniform buffer.
+         * @param name Name of the uniform, as used in the uniform block in the shader.
          */
         public addMatrix2x2(name: string) {
             this.addUniform(name, 8);
@@ -376,6 +376,7 @@ module BABYLON {
             this._needSync = true;
         }
 
+        /** @hidden */
         public _rebuild(): void {
             if (this._noUBO) {
                 return;
@@ -410,9 +411,9 @@ module BABYLON {
 
         /**
          * Updates the value of an uniform. The `update` method must be called afterwards to make it effective in the GPU.
-         * @param {string} uniformName Name of the uniform, as used in the uniform block in the shader.
-         * @param {number[]|Float32Array} data Flattened data
-         * @param {number} size Size of the data.
+         * @param uniformName Define the name of the uniform, as used in the uniform block in the shader.
+         * @param data Define the flattened data
+         * @param size Define the size of the data.
          */
         public updateUniform(uniformName: string, data: FloatArray, size: number) {
 
@@ -574,8 +575,8 @@ module BABYLON {
 
         /**
          * Sets a sampler uniform on the effect.
-         * @param {string} name Name of the sampler.
-         * @param {Texture} texture
+         * @param name Define the name of the sampler.
+         * @param texture Define the texture to set in the sampler
          */
         public setTexture(name: string, texture: Nullable<BaseTexture>) {
             this._currentEffect.setTexture(name, texture);
@@ -583,8 +584,8 @@ module BABYLON {
 
         /**
          * Directly updates the value of the uniform in the cache AND on the GPU.
-         * @param {string} uniformName Name of the uniform, as used in the uniform block in the shader.
-         * @param {number[]|Float32Array} data Flattened data
+         * @param uniformName Define the name of the uniform, as used in the uniform block in the shader.
+         * @param data Define the flattened data
          */
         public updateUniformDirectly(uniformName: string, data: FloatArray) {
             this.updateUniform(uniformName, data, data.length);
@@ -594,8 +595,8 @@ module BABYLON {
 
         /**
          * Binds this uniform buffer to an effect.
-         * @param {Effect} effect
-         * @param {string} name Name of the uniform block in the shader.
+         * @param effect Define the effect to bind the buffer to
+         * @param name Name of the uniform block in the shader.
          */
         public bindToEffect(effect: Effect, name: string): void {
             this._currentEffect = effect;
@@ -615,10 +616,12 @@ module BABYLON {
                 return;
             }
 
-            let index = this._engine._uniformBuffers.indexOf(this);
+            const uniformBuffers = this._engine._uniformBuffers;
+            let index = uniformBuffers.indexOf(this);
 
             if (index !== -1) {
-                this._engine._uniformBuffers.splice(index, 1);
+                uniformBuffers[index] = uniformBuffers[uniformBuffers.length - 1];
+                uniformBuffers.pop();
             }
 
             if (!this._buffer) {
@@ -629,4 +632,4 @@ module BABYLON {
             }
         }
     }
-} 
+}

@@ -3,7 +3,6 @@
 // Definitions by: six a <https://github.com/lostfictions>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
-
 interface VRDisplay extends EventTarget {
     /**
      * Dictionary of capabilities describing the VRDisplay.
@@ -46,25 +45,34 @@ interface VRDisplay extends EventTarget {
     /**
      * Passing the value returned by `requestAnimationFrame` to
      * `cancelAnimationFrame` will unregister the callback.
+     * @param handle Define the hanle of the request to cancel
      */
     cancelAnimationFrame(handle: number): void;
 
     /**
      * Stops presenting to the VRDisplay.
+     * @returns a promise to know when it stopped
      */
     exitPresent(): Promise<void>;
 
-    /* Return the current VREyeParameters for the given eye. */
+    /**
+     * Return the current VREyeParameters for the given eye.
+     * @param whichEye Define the eye we want the parameter for
+     * @returns the eye parameters
+     */
     getEyeParameters(whichEye: string): VREyeParameters;
 
     /**
      * Populates the passed VRFrameData with the information required to render
      * the current frame.
+     * @param frameData Define the data structure to populate
+     * @returns true if ok otherwise false
      */
     getFrameData(frameData: VRFrameData): boolean;
 
     /**
      * Get the layers currently being presented.
+     * @returns the list of VR layers
      */
     getLayers(): VRLayer[];
 
@@ -75,12 +83,14 @@ interface VRDisplay extends EventTarget {
      *
      * The VRPose will contain the position, orientation, velocity,
      * and acceleration of each of these properties.
+     * @returns the pose object
      */
     getPose(): VRPose;
 
     /**
      * Return the current instantaneous pose of the VRDisplay, with no
      * prediction applied.
+     * @returns the current instantaneous pose
      */
     getImmediatePose(): VRPose;
 
@@ -92,12 +102,16 @@ interface VRDisplay extends EventTarget {
      * identically to how window.requestAnimationFrame acts. Content should
      * make no assumptions of frame rate or vsync behavior as the HMD runs
      * asynchronously from other displays and at differing refresh rates.
+     * @param callback Define the eaction to run next frame
+     * @returns the request handle it
      */
     requestAnimationFrame(callback: FrameRequestCallback): number;
 
     /**
      * Begin presenting to the VRDisplay. Must be called in response to a user gesture.
      * Repeat calls while already presenting will update the VRLayers being displayed.
+     * @param layers Define the list of layer to present
+     * @returns a promise to know when the request has been fulfilled
      */
     requestPresent(layers: VRLayer[]): Promise<void>;
 
@@ -115,6 +129,7 @@ interface VRDisplay extends EventTarget {
      * in the HMD. Calling this function has the same effect on the source
      * canvas as any other operation that uses its source image, and canvases
      * created without preserveDrawingBuffer set to true will be cleared.
+     * @param pose Define the pose to submit
      */
     submitFrame(pose?: VRPose): void;
 }
@@ -125,8 +140,8 @@ declare var VRDisplay: {
 };
 
 interface VRLayer {
-    leftBounds?: number[] | null;
-    rightBounds?: number[] | null;
+    leftBounds?: number[] | Float32Array | null;
+    rightBounds?: number[] | Float32Array | null;
     source?: HTMLCanvasElement | null;
 }
 

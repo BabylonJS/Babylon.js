@@ -17,15 +17,19 @@ module BABYLON {
          * @param textureType Type of textures used when performing the post process. (default: 0)
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(name: string, originalFromInput:PostProcess, blurred:PostProcess, /** Weight of the bloom to be added to the original input. */ public weight:number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+        constructor(name: string, originalFromInput: PostProcess, blurred: PostProcess,
+            /** Weight of the bloom to be added to the original input. */
+            public weight: number,
+            options: number | PostProcessOptions,
+            camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
             super(name, "bloomMerge", ["bloomWeight"], ["circleOfConfusionSampler", "blurStep0", "blurStep1", "blurStep2", "bloomBlur"], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, true);
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setTextureFromPostProcess("textureSampler", originalFromInput);
                 effect.setTextureFromPostProcessOutput("bloomBlur", blurred);
-                effect.setFloat("bloomWeight", this.weight);   
+                effect.setFloat("bloomWeight", this.weight);
             });
 
-            if(!blockCompilation){
+            if (!blockCompilation) {
                 this.updateEffect();
             }
         }

@@ -25,7 +25,6 @@ module.exports = function (config) {
             { pattern: 'Playground/scenes/**/*', watched: false, included: false, served: true },
             { pattern: 'Playground/textures/**/*', watched: false, included: false, served: true },
             { pattern: 'Playground/sounds/**/*', watched: false, included: false, served: true },
-            { pattern: 'Tools/DevLoader/**/*', watched: false, included: false, served: true },            
             { pattern: 'Tools/Gulp/config.json', watched: false, included: false, served: true },
         ],
         proxies: {
@@ -44,7 +43,7 @@ module.exports = function (config) {
         browserStack: {
             project: 'Babylon JS Validation Tests',
             video: false,
-            debug : 'true',
+            debug: 'true',
             timeout: 1200,
             build: process.env.TRAVIS_BUILD_NUMBER,
             username: process.env.BROWSER_STACK_USERNAME,
@@ -75,16 +74,16 @@ module.exports = function (config) {
             bs_chrome_android: {
                 base: 'BrowserStack',
                 os: 'Android',
-                os_version : '8.0',
-                device : 'Google Pixel',
-                real_mobile : 'true'
+                os_version: '8.0',
+                device: 'Google Pixel',
+                real_mobile: 'true'
             },
             bs_safari_ios: {
                 base: 'BrowserStack',
                 os: 'ios',
-                os_version : '10.3',
-                device : 'iPhone 7',
-                real_mobile : 'true'
+                os_version: '10.3',
+                device: 'iPhone 7',
+                real_mobile: 'true'
             }
         },
         browsers: ['bs_chrome_android'],

@@ -1,18 +1,33 @@
 ﻿module BABYLON {
+    /**
+     * Manager for handling gamepads
+     */
     export class GamepadManager {
         private _babylonGamepads: Array<Gamepad> = [];
         private _oneGamepadConnected: boolean = false;
 
+        /** @hidden */
         public _isMonitoring: boolean = false;
         private _gamepadEventSupported: boolean;
         private _gamepadSupport: () => Array<any>;
 
+        /**
+         * observable to be triggered when the gamepad controller has been connected
+         */
         public onGamepadConnectedObservable: Observable<Gamepad>;
+
+        /**
+         * observable to be triggered when the gamepad controller has been disconnected
+         */
         public onGamepadDisconnectedObservable = new Observable<Gamepad>();
 
         private _onGamepadConnectedEvent: Nullable<(evt: any) => void>;
         private _onGamepadDisconnectedEvent: Nullable<(evt: any) => void>;
 
+        /**
+         * Initializes the gamepad manager
+         * @param _scene BabylonJS scene
+         */
         constructor(private _scene?: Scene) {
             if (!Tools.IsWindowObjectExist()) {
                 this._gamepadEventSupported = false;
@@ -86,10 +101,18 @@
             }
         }
 
+        /**
+         * The gamepads in the game pad manager
+         */
         public get gamepads(): Gamepad[] {
             return this._babylonGamepads;
         }
 
+        /**
+         * Get the gamepad controllers based on type
+         * @param type The type of gamepad controller
+         * @returns Nullable gamepad
+         */
         public getGamepadByType(type: number = Gamepad.XBOX): Nullable<Gamepad> {
             for (var gamepad of this._babylonGamepads) {
                 if (gamepad && gamepad.type === type) {
@@ -100,6 +123,9 @@
             return null;
         }
 
+        /**
+         * Disposes the gamepad manager
+         */
         public dispose() {
             if (this._gamepadEventSupported) {
                 if (this._onGamepadConnectedEvent) {
@@ -160,6 +186,7 @@
             this._isMonitoring = false;
         }
 
+        /** @hidden */
         public _checkGamepadsStatus() {
             // Hack to be compatible Chrome
             this._updateGamepadObjects();

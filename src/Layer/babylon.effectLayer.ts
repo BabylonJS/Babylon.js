@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Effect layer options. This helps customizing the behaviour
      * of the effect layer.
@@ -33,10 +33,10 @@
 
     /**
      * The effect layer Helps adding post process effect blended with the main pass.
-     * 
+     *
      * This can be for instance use to generate glow or higlight effects on the scene.
-     * 
-     * The effect layer class can not be used directly and is intented to inherited from to be 
+     *
+     * The effect layer class can not be used directly and is intented to inherited from to be
      * customized per effects.
      */
     export abstract class EffectLayer {
@@ -147,7 +147,7 @@
         /**
          * Get the effect name of the layer.
          * @return The effect name
-         */ 
+         */
         public abstract getEffectName(): string;
 
         /**
@@ -155,7 +155,7 @@
          * @param subMesh the mesh to check for
          * @param useInstances specify wether or not to use instances to render the mesh
          * @return true if ready otherwise, false
-         */ 
+         */
         public abstract isReady(subMesh: SubMesh, useInstances: boolean): boolean;
 
         /**
@@ -170,12 +170,12 @@
          * @returns The effect containing the shader used to merge the effect on the  main canvas
          */
         protected abstract _createMergeEffect(): Effect;
-        
+
         /**
          * Creates the render target textures and post processes used in the effect layer.
          */
         protected abstract _createTextureAndPostProcesses(): void;
-        
+
         /**
          * Implementation specific of rendering the generating effect on the main canvas.
          * @param effect The effect used to render through
@@ -343,7 +343,7 @@
                 return false;
             }
 
-            if (!material.isReady(subMesh.getMesh(), useInstances)) {
+            if (!material.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances)) {
                 return false;
             }
 
@@ -409,7 +409,7 @@
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
             }
 
-            // Morph targets         
+            // Morph targets
             var manager = (<Mesh>mesh).morphTargetManager;
             let morphInfluencers = 0;
             if (manager) {
@@ -419,7 +419,7 @@
                     defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
                     MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, {"NUM_MORPH_INFLUENCERS": morphInfluencers });
                 }
-            }            
+            }
 
             // Instances
             if (useInstances) {
@@ -451,8 +451,9 @@
             var currentEffect = this._mergeEffect;
 
             // Check
-            if (!currentEffect.isReady())
+            if (!currentEffect.isReady()) {
                 return;
+            }
 
             for (var i = 0; i < this._postProcesses.length; i++) {
                 if (!this._postProcesses[i].isReady()) {
@@ -467,7 +468,7 @@
             // Render
             engine.enableEffect(currentEffect);
             engine.setState(false);
-            
+
             // VBOs
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, currentEffect);
 
@@ -713,4 +714,4 @@
             return effectLayerType.Parse(parsedEffectLayer, scene, rootUrl);
         }
     }
-} 
+}

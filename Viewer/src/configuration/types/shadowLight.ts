@@ -31,7 +31,7 @@ export const shadowDirectionalLightConfiguration: ViewerConfiguration = {
             }
         }
     }
-}
+};
 
 /**
  * Defines a default shadow-enabled spot light for normalized objects.
@@ -63,4 +63,4 @@ export const shadowSpotlLightConfiguration: ViewerConfiguration = {
             }
         }
     }
-}
+};

@@ -1,13 +1,13 @@
-﻿module BABYLON {
+module BABYLON {
     /**
-     * The Blur Post Process which blurs an image based on a kernel and direction. 
+     * The Blur Post Process which blurs an image based on a kernel and direction.
      * Can be used twice in x and y directions to perform a guassian blur in two passes.
      */
     export class BlurPostProcess extends PostProcess {
         protected _kernel: number;
         protected _idealKernel: number;
         protected _packedFloat: boolean	= false;
-        private _staticDefines:string = ""
+        private _staticDefines: string = "";
         /**
          * Sets the length in pixels of the blur sample region
          */
@@ -19,7 +19,7 @@
             v = Math.max(v, 1);
             this._idealKernel = v;
             this._kernel = this._nearestBestKernel(v);
-            if(!this.blockCompilation){
+            if (!this.blockCompilation) {
                 this._updateParameters();
             }
         }
@@ -39,7 +39,7 @@
                 return;
             }
             this._packedFloat = v;
-            if(!this.blockCompilation){
+            if (!this.blockCompilation) {
                 this._updateParameters();
             }
         }
@@ -64,13 +64,16 @@
          * @param textureType Type of textures used when performing the post process. (default: 0)
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(name: string, /** The direction in which to blur the image. */ public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, defines = "", private blockCompilation = false) {
+        constructor(name: string,
+            /** The direction in which to blur the image. */
+            public direction: Vector2,
+            kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, defines = "", private blockCompilation = false) {
             super(name, "kernelBlur", ["delta", "direction", "cameraMinMaxZ"], ["circleOfConfusionSampler"], options, camera, samplingMode, engine, reusable, null, textureType, "kernelBlur", {varyingCount: 0, depCount: 0}, true);
             this._staticDefines = defines;
             this.onApplyObservable.add((effect: Effect) => {
-                if(this._outputTexture){
+                if (this._outputTexture) {
                     effect.setFloat2('delta', (1 / this._outputTexture.width) * this.direction.x, (1 / this._outputTexture.height) * this.direction.y);
-                }else{
+                }else {
                     effect.setFloat2('delta', (1 / this.width) * this.direction.x, (1 / this.height) * this.direction.y);
                 }
             });
@@ -161,14 +164,14 @@
             let varyingCount = Math.min(offsets.length, freeVaryingVec2);
 
             let defines = "";
-            defines+=this._staticDefines;
+            defines += this._staticDefines;
 
             // The DOF fragment should ignore the center pixel when looping as it is handled manualy in the fragment shader.
-            if(this._staticDefines.indexOf("DOF") != -1){
-                defines += `#define CENTER_WEIGHT ${this._glslFloat(weights[varyingCount-1])}\r\n`;
+            if (this._staticDefines.indexOf("DOF") != -1) {
+                defines += `#define CENTER_WEIGHT ${this._glslFloat(weights[varyingCount - 1])}\r\n`;
                 varyingCount--;
             }
-            
+
             for (let i = 0; i < varyingCount; i++) {
                 defines += `#define KERNEL_OFFSET${i} ${this._glslFloat(offsets[i])}\r\n`;
                 defines += `#define KERNEL_WEIGHT${i} ${this._glslFloat(weights[i])}\r\n`;
@@ -229,7 +232,7 @@
             let exponent = -((x * x) / (2.0 * sigma * sigma));
             let weight = (1.0 / denominator) * Math.exp(exponent);
             return weight;
-        }      
+        }
 
        /**
          * Generates a string that can be used as a floating point number in GLSL.
@@ -239,6 +242,6 @@
          */
         protected _glslFloat(x: number, decimalFigures = 8) {
             return x.toFixed(decimalFigures).replace(/0+$/, '');
-        }      
+        }
     }
-} 
+}

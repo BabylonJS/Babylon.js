@@ -1,57 +1,38 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * The Physically based material of BJS.
-     * 
+     *
      * This offers the main features of a standard PBR material.
-     * For more information, please refer to the documentation : 
+     * For more information, please refer to the documentation :
      * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
      */
     export class PBRMaterial extends PBRBaseMaterial {
-        private static _PBRMATERIAL_OPAQUE = 0;
         /**
          * PBRMaterialTransparencyMode: No transparency mode, Alpha channel is not use.
          */
-        public static get PBRMATERIAL_OPAQUE(): number {
-            return this._PBRMATERIAL_OPAQUE;
-        }
-
-        /**
-         * Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
-         */
-        private static _PBRMATERIAL_ALPHATEST = 1;
+        public static readonly PBRMATERIAL_OPAQUE = 0;
 
         /**
          * PBRMaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
          */
-        public static get PBRMATERIAL_ALPHATEST(): number {
-            return this._PBRMATERIAL_ALPHATEST;
-        }
-
-        /**
-         * Represents the value for Alpha Blend.  Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
-         */
-        private static _PBRMATERIAL_ALPHABLEND = 2;
+        public static readonly PBRMATERIAL_ALPHATEST = 1;
 
         /**
          * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
          */
-        public static get PBRMATERIAL_ALPHABLEND(): number {
-            return this._PBRMATERIAL_ALPHABLEND;
-        }
-
-        /**
-         * Represents the value for Alpha Test and Blend.  Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
-         * They are also discarded below the alpha cutoff threshold to improve performances.
-         */
-        private static _PBRMATERIAL_ALPHATESTANDBLEND = 3;
+        public static readonly PBRMATERIAL_ALPHABLEND = 2;
 
         /**
          * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
          * They are also discarded below the alpha cutoff threshold to improve performances.
          */
-        public static get PBRMATERIAL_ALPHATESTANDBLEND(): number {
-            return this._PBRMATERIAL_ALPHATESTANDBLEND;
-        }
+        public static readonly PBRMATERIAL_ALPHATESTANDBLEND = 3;
+
+        /**
+         * Defines the default value of how much AO map is occluding the analytical lights
+         * (point spot...).
+         */
+        public static DEFAULT_AO_ON_ANALYTICAL_LIGHTS = 1;
 
         /**
          * Intensity of the direct lights e.g. the four lights available in your scene.
@@ -78,7 +59,7 @@
         public environmentIntensity: number = 1.0;
 
         /**
-         * This is a special control allowing the reduction of the specular highlights coming from the 
+         * This is a special control allowing the reduction of the specular highlights coming from the
          * four lights of the scene. Those highlights may not be needed in full environment lighting.
          */
         @serialize()
@@ -112,6 +93,15 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public ambientTextureStrength: number = 1.0;
+
+        /**
+         * Defines how much the AO map is occluding the analytical lights (point spot...).
+         * 1 means it completely occludes it
+         * 0 mean it has no impact
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public ambientTextureImpactOnAnalyticalLights: number = PBRMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
 
         /**
          * Stores the alpha values in a texture.
@@ -154,7 +144,7 @@
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public metallic: number;
+        public metallic: Nullable<number>;
 
         /**
          * Specifies the roughness scalar of the metallic/roughness workflow.
@@ -162,10 +152,10 @@
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public roughness: number;
+        public roughness: Nullable<number>;
 
         /**
-         * Used to enable roughness/glossiness fetch from a separate chanel depending on the current mode.
+         * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
          * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
          */
         @serializeAsTexture()
@@ -257,6 +247,9 @@
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public linkRefractionWithTransparency = false;
 
+        /**
+         * If true, the light map contains occlusion information instead of lighting info.
+         */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useLightmapAsShadowmap = false;
@@ -283,7 +276,7 @@
         public alphaCutOff = 0.4;
 
         /**
-         * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
+         * Specifies that the material will keep the specular highlights over a transparent surface (only the most limunous ones).
          * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
          */
         @serialize()
@@ -346,8 +339,55 @@
          * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
          */
         @serialize()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public usePhysicalLightFalloff = true;
+        public get usePhysicalLightFalloff(): boolean {
+            return this._lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL;
+        }
+
+        /**
+         * BJS is using an harcoded light falloff based on a manually sets up range.
+         * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
+         * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
+         */
+        public set usePhysicalLightFalloff(value: boolean) {
+            if (value !== this.usePhysicalLightFalloff) {
+                // Ensure the effect will be rebuilt.
+                this._markAllSubMeshesAsTexturesDirty();
+
+                if (value) {
+                    this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL;
+                }
+                else {
+                    this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_STANDARD;
+                }
+            }
+        }
+
+        /**
+         * In order to support the falloff compatibility with gltf, a special mode has been added
+         * to reproduce the gltf light falloff.
+         */
+        @serialize()
+        public get useGLTFLightFalloff(): boolean {
+            return this._lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_GLTF;
+        }
+
+        /**
+         * In order to support the falloff compatibility with gltf, a special mode has been added
+         * to reproduce the gltf light falloff.
+         */
+        public set useGLTFLightFalloff(value: boolean) {
+            if (value !== this.useGLTFLightFalloff) {
+                // Ensure the effect will be rebuilt.
+                this._markAllSubMeshesAsTexturesDirty();
+
+                if (value) {
+                    this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_GLTF;
+                }
+                else {
+                    this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_STANDARD;
+                }
+            }
+        }
 
         /**
          * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
@@ -363,7 +403,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useObjectSpaceNormalMap = false;
-        
+
         /**
          * Allows using the bump map in parallax mode.
          */
@@ -499,7 +539,7 @@
 
         /**
          * Sets the Default image processing configuration used either in the this material.
-         * 
+         *
          * If sets to null, the scene one is in use.
          */
         public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
@@ -540,13 +580,13 @@
          */
         public get cameraToneMappingEnabled(): boolean {
             return this._imageProcessingConfiguration.toneMappingEnabled;
-        };
+        }
         /**
          * Sets wether tonemapping is enabled or not
          */
         public set cameraToneMappingEnabled(value: boolean) {
             this._imageProcessingConfiguration.toneMappingEnabled = value;
-        };
+        }
 
         /**
          * The camera exposure used on this material.
@@ -555,7 +595,7 @@
          */
         public get cameraExposure(): number {
             return this._imageProcessingConfiguration.exposure;
-        };
+        }
         /**
          * The camera exposure used on this material.
          * This property is here and not in the camera to allow controlling exposure without full screen post process.
@@ -563,7 +603,7 @@
          */
         public set cameraExposure(value: number) {
             this._imageProcessingConfiguration.exposure = value;
-        };
+        }
 
         /**
          * Gets The camera contrast used on this material.
@@ -593,18 +633,18 @@
         }
 
         /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
          * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         public get cameraColorCurves(): Nullable<ColorCurves> {
             return this._imageProcessingConfiguration.colorCurves;
         }
         /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
          * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         public set cameraColorCurves(value: Nullable<ColorCurves>) {
@@ -613,7 +653,7 @@
 
         /**
          * Instantiates a new PBRMaterial instance.
-         * 
+         *
          * @param name The material name
          * @param scene The scene the material will be use in.
          */

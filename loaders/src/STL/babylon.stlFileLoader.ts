@@ -1,4 +1,4 @@
-﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
 
@@ -9,7 +9,6 @@ module BABYLON {
         public normalPattern = /normal[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
         public vertexPattern = /vertex[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
 
-
         public name = "stl";
 
         // force data to come in as an ArrayBuffer
@@ -18,7 +17,7 @@ module BABYLON {
             ".stl": { isBinary: true },
         };
 
-        public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean {
+        public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<IParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean {
             var matches;
 
             if (typeof data !== "string") {
@@ -142,7 +141,6 @@ module BABYLON {
                 var normalX = reader.getFloat32(start, true);
                 var normalY = reader.getFloat32(start + 4, true);
                 var normalZ = reader.getFloat32(start + 8, true);
-
 
                 for (var i = 1; i <= 3; i++) {
 

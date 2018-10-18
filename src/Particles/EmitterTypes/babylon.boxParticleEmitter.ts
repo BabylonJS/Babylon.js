@@ -1,7 +1,7 @@
 module BABYLON {
     /**
      * Particle emitter emitting particles from the inside of a box.
-     * It emits the particles randomly between 2 given directions. 
+     * It emits the particles randomly between 2 given directions.
      */
     export class BoxParticleEmitter implements IParticleEmitterType {
 
@@ -21,8 +21,8 @@ module BABYLON {
         /**
          * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
          */
-        public maxEmitBox = new Vector3(0.5, 0.5, 0.5);  
-               
+        public maxEmitBox = new Vector3(0.5, 0.5, 0.5);
+
         /**
          * Creates a new instance BoxParticleEmitter
          */
@@ -72,10 +72,10 @@ module BABYLON {
         }
 
         /**
-         * Called by the {BABYLON.GPUParticleSystem} to setup the update shader
+         * Called by the GPUParticleSystem to setup the update shader
          * @param effect defines the update shader
-         */        
-        public applyToShader(effect: Effect): void {            
+         */
+        public applyToShader(effect: Effect): void {
             effect.setVector3("direction1", this.direction1);
             effect.setVector3("direction2", this.direction2);
             effect.setVector3("minEmitBox", this.minEmitBox);
@@ -87,7 +87,7 @@ module BABYLON {
          * @returns a string containng the defines string
          */
         public getEffectDefines(): string {
-            return "#define BOXEMITTER"
+            return "#define BOXEMITTER";
         }
 
         /**
@@ -96,12 +96,12 @@ module BABYLON {
          */
         public getClassName(): string {
             return "BoxParticleEmitter";
-        }   
-        
+        }
+
         /**
          * Serializes the particle system to a JSON object.
          * @returns the JSON object
-         */        
+         */
         public serialize(): any {
             var serializationObject: any = {};
 

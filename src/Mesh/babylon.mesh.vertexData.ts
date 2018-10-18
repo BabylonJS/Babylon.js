@@ -1,66 +1,116 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Define an interface for all classes that will get and set the data on vertices
      */
     export interface IGetSetVerticesData {
+        /**
+         * Gets a boolean indicating if specific vertex data is present
+         * @param kind defines the vertex data kind to use
+         * @returns true is data kind is present
+         */
         isVerticesDataPresent(kind: string): boolean;
+        /**
+         * Gets a specific vertex data attached to this geometry. Float data is constructed if the vertex buffer data cannot be returned directly.
+         * @param kind defines the data kind (Position, normal, etc...)
+         * @param copyWhenShared defines if the returned array must be cloned upon returning it if the current geometry is shared between multiple meshes
+         * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
+         * @returns a float array containing vertex data
+         */
         getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray>;
-        getIndices(copyWhenShared?: boolean): Nullable<IndicesArray>;
+        /**
+         * Returns an array of integers or a typed array (Int32Array, Uint32Array, Uint16Array) populated with the mesh indices.
+         * @param copyWhenShared If true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
+         * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
+         * @returns the indices array or an empty array if the mesh has no geometry
+         */
+        getIndices(copyWhenShared?: boolean, forceCopy?: boolean): Nullable<IndicesArray>;
+        /**
+         * Set specific vertex data
+         * @param kind defines the data kind (Position, normal, etc...)
+         * @param data defines the vertex data to use
+         * @param updatable defines if the vertex must be flagged as updatable (false as default)
+         * @param stride defines the stride to use (0 by default). This value is deduced from the kind value if not specified
+         */
         setVerticesData(kind: string, data: FloatArray, updatable: boolean): void;
+        /**
+         * Update a specific associated vertex buffer
+         * @param kind defines which buffer to write to (positions, indices, normals, etc). Possible `kind` values :
+         * - BABYLON.VertexBuffer.PositionKind
+         * - BABYLON.VertexBuffer.UVKind
+         * - BABYLON.VertexBuffer.UV2Kind
+         * - BABYLON.VertexBuffer.UV3Kind
+         * - BABYLON.VertexBuffer.UV4Kind
+         * - BABYLON.VertexBuffer.UV5Kind
+         * - BABYLON.VertexBuffer.UV6Kind
+         * - BABYLON.VertexBuffer.ColorKind
+         * - BABYLON.VertexBuffer.MatricesIndicesKind
+         * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
+         * - BABYLON.VertexBuffer.MatricesWeightsKind
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
+         * @param data defines the data source
+         * @param updateExtends defines if extends info of the mesh must be updated (can be null). This is mostly useful for "position" kind
+         * @param makeItUnique defines if the geometry associated with the mesh must be cloned to make the change only for this mesh (and not all meshes associated with the same geometry)
+         */
         updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): void;
+        /**
+         * Creates a new index buffer
+         * @param indices defines the indices to store in the index buffer
+         * @param totalVertices defines the total number of vertices (could be null)
+         * @param updatable defines if the index buffer must be flagged as updatable (false by default)
+         */
         setIndices(indices: IndicesArray, totalVertices: Nullable<number>, updatable?: boolean): void;
     }
 
     /**
-     * This class contains the various kinds of data on every vertex of a mesh used in determining its shape and appearance 
+     * This class contains the various kinds of data on every vertex of a mesh used in determining its shape and appearance
      */
     export class VertexData {
-        
+
         /**
          * An array of the x, y, z position of each vertex  [...., x, y, z, .....]
          */
         public positions: Nullable<FloatArray>;
-        
+
         /**
          * An array of the x, y, z normal vector of each vertex  [...., x, y, z, .....]
          */
         public normals: Nullable<FloatArray>;
-        
+
         /**
          * An array of the x, y, z tangent vector of each vertex  [...., x, y, z, .....]
          */
         public tangents: Nullable<FloatArray>;
-        
+
         /**
          * An array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
          */
         public uvs: Nullable<FloatArray>;
-        
+
         /**
          * A second array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
          */
         public uvs2: Nullable<FloatArray>;
-        
+
         /**
          * A third array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
          */
         public uvs3: Nullable<FloatArray>;
-        
+
         /**
          * A fourth array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
          */
         public uvs4: Nullable<FloatArray>;
-        
+
         /**
          * A fifth array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
          */
         public uvs5: Nullable<FloatArray>;
-        
+
         /**
          * A sixth array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
          */
         public uvs6: Nullable<FloatArray>;
-        
+
         /**
          * An array of the r, g, b, a, color of each vertex  [...., r, g, b, a, .....]
          */
@@ -85,7 +135,7 @@
          * An array extending the number of possible weights when the number of indices is extended
          */
         public matricesWeightsExtra: Nullable<FloatArray>;
-        
+
         /**
          * An array of i, j, k the three vertex indices required for each triangular facet  [...., i, j, k .....]
          */
@@ -145,10 +195,10 @@
 
         /**
          * Associates the vertexData to the passed Mesh.
-         * Sets it as updatable or not (default `false`) 
-         * @param mesh the mesh the vertexData is applied to 
-         * @param updatable when used and having the value true allows new data to update the vertexData 
-         * @returns the VertexData 
+         * Sets it as updatable or not (default `false`)
+         * @param mesh the mesh the vertexData is applied to
+         * @param updatable when used and having the value true allows new data to update the vertexData
+         * @returns the VertexData
          */
         public applyToMesh(mesh: Mesh, updatable?: boolean): VertexData {
             this._applyTo(mesh, updatable);
@@ -158,8 +208,8 @@
         /**
          * Associates the vertexData to the passed Geometry.
          * Sets it as updatable or not (default `false`)
-         * @param geometry the geometry the vertexData is applied to 
-         * @param updatable when used and having the value true allows new data to update the vertexData 
+         * @param geometry the geometry the vertexData is applied to
+         * @param updatable when used and having the value true allows new data to update the vertexData
          * @returns VertexData
          */
         public applyToGeometry(geometry: Geometry, updatable?: boolean): VertexData {
@@ -171,7 +221,7 @@
          * Updates the associated mesh
          * @param mesh the mesh to be updated
          * @param updateExtends when true the mesh BoundingInfo will be renewed when and if position kind is updated, optional with default false
-         * @param makeItUnique when true, and when and if position kind is updated, a new global geometry will be  created from these positions and set to the mesh, optional with default false 
+         * @param makeItUnique when true, and when and if position kind is updated, a new global geometry will be  created from these positions and set to the mesh, optional with default false
          * @returns VertexData
          */
         public updateMesh(mesh: Mesh, updateExtends?: boolean, makeItUnique?: boolean): VertexData {
@@ -180,10 +230,10 @@
         }
 
         /**
-         * Updates the associated geometry 
+         * Updates the associated geometry
          * @param geometry the geometry to be updated
          * @param updateExtends when true BoundingInfo will be renewed when and if position kind is updated, optional with default false
-         * @param makeItUnique when true, and when and if position kind is updated, a new global geometry will be created from these positions and set to the mesh, optional with default false 
+         * @param makeItUnique when true, and when and if position kind is updated, a new global geometry will be created from these positions and set to the mesh, optional with default false
          * @returns VertexData.
          */
         public updateGeometry(geometry: Geometry, updateExtends?: boolean, makeItUnique?: boolean): VertexData {
@@ -323,7 +373,7 @@
         /**
          * Transforms each position and each normal of the vertexData according to the passed Matrix
          * @param matrix the transforming matrix
-         * @returns the VertexData 
+         * @returns the VertexData
          */
         public transform(matrix: Matrix): VertexData {
             var flip = matrix.m[0] * matrix.m[5] * matrix.m[10] < 0;
@@ -383,10 +433,11 @@
 
         /**
          * Merges the passed VertexData into the current one
-         * @param other the VertexData to be merged into the current one  
-         * @returns the modified VertexData 
+         * @param other the VertexData to be merged into the current one
+         * @param use32BitsIndices defines a boolean indicating if indices must be store in a 32 bits array
+         * @returns the modified VertexData
          */
-        public merge(other: VertexData): VertexData {
+        public merge(other: VertexData, use32BitsIndices = false): VertexData {
             this._validate();
             other._validate();
 
@@ -413,9 +464,24 @@
                 }
 
                 var offset = this.positions ? this.positions.length / 3 : 0;
-                for (var index = 0; index < other.indices.length; index++) {
-                    //TODO check type - if Int32Array | Uint32Array | Uint16Array!
-                    (<number[]>this.indices).push(other.indices[index] + offset);
+
+                var isSrcTypedArray = (<any>this.indices).BYTES_PER_ELEMENT !== undefined;
+
+                if (isSrcTypedArray) {
+                    var len = this.indices.length + other.indices.length;
+                    var temp = use32BitsIndices || this.indices instanceof Uint32Array ? new Uint32Array(len) : new Uint16Array(len);
+                    temp.set(this.indices);
+
+                    let decal = this.indices.length;
+                    for (var index = 0; index < other.indices.length; index++) {
+                        temp[decal + index] = other.indices[index] + offset;
+                    }
+
+                    this.indices = temp;
+                } else {
+                    for (var index = 0; index < other.indices.length; index++) {
+                        (<number[]>this.indices).push(other.indices[index] + offset);
+                    }
                 }
             }
 
@@ -493,24 +559,24 @@
                 }
             };
 
-            if (this.normals) validateElementCount(VertexBuffer.NormalKind, this.normals);
-            if (this.tangents) validateElementCount(VertexBuffer.TangentKind, this.tangents);
-            if (this.uvs) validateElementCount(VertexBuffer.UVKind, this.uvs);
-            if (this.uvs2) validateElementCount(VertexBuffer.UV2Kind, this.uvs2);
-            if (this.uvs3) validateElementCount(VertexBuffer.UV3Kind, this.uvs3);
-            if (this.uvs4) validateElementCount(VertexBuffer.UV4Kind, this.uvs4);
-            if (this.uvs5) validateElementCount(VertexBuffer.UV5Kind, this.uvs5);
-            if (this.uvs6) validateElementCount(VertexBuffer.UV6Kind, this.uvs6);
-            if (this.colors) validateElementCount(VertexBuffer.ColorKind, this.colors);
-            if (this.matricesIndices) validateElementCount(VertexBuffer.MatricesIndicesKind, this.matricesIndices);
-            if (this.matricesWeights) validateElementCount(VertexBuffer.MatricesWeightsKind, this.matricesWeights);
-            if (this.matricesIndicesExtra) validateElementCount(VertexBuffer.MatricesIndicesExtraKind, this.matricesIndicesExtra);
-            if (this.matricesWeightsExtra) validateElementCount(VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra);
+            if (this.normals) { validateElementCount(VertexBuffer.NormalKind, this.normals); }
+            if (this.tangents) { validateElementCount(VertexBuffer.TangentKind, this.tangents); }
+            if (this.uvs) { validateElementCount(VertexBuffer.UVKind, this.uvs); }
+            if (this.uvs2) { validateElementCount(VertexBuffer.UV2Kind, this.uvs2); }
+            if (this.uvs3) { validateElementCount(VertexBuffer.UV3Kind, this.uvs3); }
+            if (this.uvs4) { validateElementCount(VertexBuffer.UV4Kind, this.uvs4); }
+            if (this.uvs5) { validateElementCount(VertexBuffer.UV5Kind, this.uvs5); }
+            if (this.uvs6) { validateElementCount(VertexBuffer.UV6Kind, this.uvs6); }
+            if (this.colors) { validateElementCount(VertexBuffer.ColorKind, this.colors); }
+            if (this.matricesIndices) { validateElementCount(VertexBuffer.MatricesIndicesKind, this.matricesIndices); }
+            if (this.matricesWeights) { validateElementCount(VertexBuffer.MatricesWeightsKind, this.matricesWeights); }
+            if (this.matricesIndicesExtra) { validateElementCount(VertexBuffer.MatricesIndicesExtraKind, this.matricesIndicesExtra); }
+            if (this.matricesWeightsExtra) { validateElementCount(VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra); }
         }
 
         /**
-         * Serializes the VertexData  
-         * @returns a serialized object 
+         * Serializes the VertexData
+         * @returns a serialized object
          */
         public serialize(): any {
             var serializationObject = this.serialize();
@@ -584,7 +650,7 @@
          * @param mesh the mesh from which to extract the VertexData
          * @param copyWhenShared defines if the VertexData must be cloned when shared between multiple meshes, optional, default false
          * @param forceCopy indicating that the VertexData must be cloned, optional, default false
-         * @returns the object VertexData associated to the passed mesh 
+         * @returns the object VertexData associated to the passed mesh
          */
         public static ExtractFromMesh(mesh: Mesh, copyWhenShared?: boolean, forceCopy?: boolean): VertexData {
             return VertexData._ExtractFrom(mesh, copyWhenShared, forceCopy);
@@ -595,7 +661,7 @@
          * @param geometry the geometry from which to extract the VertexData
          * @param copyWhenShared defines if the VertexData must be cloned when the geometrty is shared between multiple meshes, optional, default false
          * @param forceCopy indicating that the VertexData must be cloned, optional, default false
-         * @returns the object VertexData associated to the passed mesh 
+         * @returns the object VertexData associated to the passed mesh
          */
         public static ExtractFromGeometry(geometry: Geometry, copyWhenShared?: boolean, forceCopy?: boolean): VertexData {
             return VertexData._ExtractFrom(geometry, copyWhenShared, forceCopy);
@@ -660,19 +726,19 @@
                 result.matricesWeightsExtra = meshOrGeometry.getVerticesData(VertexBuffer.MatricesWeightsExtraKind, copyWhenShared, forceCopy);
             }
 
-            result.indices = meshOrGeometry.getIndices(copyWhenShared);
+            result.indices = meshOrGeometry.getIndices(copyWhenShared, forceCopy);
 
             return result;
         }
 
         /**
          * Creates the VertexData for a Ribbon
-         * @param options an object used to set the following optional parameters for the ribbon, required but can be empty 
-          * * pathArray array of paths, each of which an array of successive Vector3    
-          * * closeArray creates a seam between the first and the last paths of the pathArray, optional, default false  
+         * @param options an object used to set the following optional parameters for the ribbon, required but can be empty
+          * * pathArray array of paths, each of which an array of successive Vector3
+          * * closeArray creates a seam between the first and the last paths of the pathArray, optional, default false
           * * closePath creates a seam between the first and the last points of each path of the path array, optional, default false
           * * offset a positive integer, only used when pathArray contains a single path (offset = 10 means the point 1 is joined to the point 11), default rounded half size of the pathArray length
-          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
           * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
           * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
           * * invertUV swaps in the U and V coordinates when applying a texture, optional, default false
@@ -797,7 +863,6 @@
                 }
             }
 
-
             // uvs
             var u: number;
             var v: number;
@@ -913,18 +978,18 @@
 
         /**
          * Creates the VertexData for a box
-         * @param options an object used to set the following optional parameters for the box, required but can be empty 
-          * * size sets the width, height and depth of the box to the value of size, optional default 1  
+         * @param options an object used to set the following optional parameters for the box, required but can be empty
+          * * size sets the width, height and depth of the box to the value of size, optional default 1
           * * width sets the width (x direction) of the box, overwrites the width set by size, optional, default size
           * * height sets the height (y direction) of the box, overwrites the height set by size, optional, default size
           * * depth sets the depth (z direction) of the box, overwrites the depth set by size, optional, default size
           * * faceUV an array of 6 Vector4 elements used to set different images to each box side
-          * * faceColors an array of 6 Color3 elements used to set different colors to each box side   
-          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * faceColors an array of 6 Color3 elements used to set different colors to each box side
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
           * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
          * @returns the VertexData of the box
-         */ 
+         */
         public static CreateBox(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var normalsSource = [
                 new Vector3(0, 0, 1),
@@ -1033,19 +1098,19 @@
 
         /**
          * Creates the VertexData for an ellipsoid, defaults to a sphere
-         * @param options an object used to set the following optional parameters for the box, required but can be empty 
+         * @param options an object used to set the following optional parameters for the box, required but can be empty
           * * segments sets the number of horizontal strips optional, default 32
-          * * diameter sets the axes dimensions, diameterX, diameterY and diameterZ to the value of diameter, optional default 1  
+          * * diameter sets the axes dimensions, diameterX, diameterY and diameterZ to the value of diameter, optional default 1
           * * diameterX sets the diameterX (x direction) of the ellipsoid, overwrites the diameterX set by diameter, optional, default diameter
           * * diameterY sets the diameterY (y direction) of the ellipsoid, overwrites the diameterY set by diameter, optional, default diameter
           * * diameterZ sets the diameterZ (z direction) of the ellipsoid, overwrites the diameterZ set by diameter, optional, default diameter
-          * * arc a number from 0 to 1, to create an unclosed ellipsoid based on the fraction of the circumference (latitude) given by the arc value, optional, default 1 
-          * * slice a number from 0 to 1, to create an unclosed ellipsoid based on the fraction of the height (latitude) given by the arc value, optional, default 1   
-          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * arc a number from 0 to 1, to create an unclosed ellipsoid based on the fraction of the circumference (latitude) given by the arc value, optional, default 1
+          * * slice a number from 0 to 1, to create an unclosed ellipsoid based on the fraction of the height (latitude) given by the arc value, optional, default 1
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
           * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
          * @returns the VertexData of the ellipsoid
-         */         
+         */
         public static CreateSphere(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var segments: number = options.segments || 32;
             var diameterX: number = options.diameterX || options.diameter || 1;
@@ -1117,8 +1182,8 @@
 
         /**
          * Creates the VertexData for a cylinder, cone or prism
-         * @param options an object used to set the following optional parameters for the box, required but can be empty 
-          * * height sets the height (y direction) of the cylinder, optional, default 2  
+         * @param options an object used to set the following optional parameters for the box, required but can be empty
+          * * height sets the height (y direction) of the cylinder, optional, default 2
           * * diameterTop sets the diameter of the top of the cone, overwrites diameter,  optional, default diameter
           * * diameterBottom sets the diameter of the bottom of the cone, overwrites diameter,  optional, default diameter
           * * diameter sets the diameter of the top and bottom of the cone, optional default 1
@@ -1129,11 +1194,11 @@
           * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
           * * hasRings when true makes each subdivision independantly treated as a face for faceUV and faceColors, optional, default false
           * * enclose when true closes an open cylinder by adding extra flat faces between the height axis and vertical edges, think cut cake
-          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
           * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
          * @returns the VertexData of the cylinder, cone or prism
-         */         
+         */
         public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], hasRings?: boolean, enclose?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var height: number = options.height || 2;
             var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || options.diameter || 1;
@@ -1141,7 +1206,7 @@
             var tessellation: number = options.tessellation || 24;
             var subdivisions: number = options.subdivisions || 1;
             var hasRings: boolean = options.hasRings ? true : false;
-            var enclose: boolean = options.enclose ? true : false
+            var enclose: boolean = options.enclose ? true : false;
             var arc: number = options.arc && (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(3);
@@ -1387,15 +1452,15 @@
 
         /**
          * Creates the VertexData for a torus
-         * @param options an object used to set the following optional parameters for the box, required but can be empty 
+         * @param options an object used to set the following optional parameters for the box, required but can be empty
           * * diameter the diameter of the torus, optional default 1
           * * thickness the diameter of the tube forming the torus, optional default 0.5
           * * tessellation the number of prism sides, 3 for a triangular prism, optional, default 24
-          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
           * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
          * @returns the VertexData of the torus
-         */ 
+         */
         public static CreateTorus(options: { diameter?: number, thickness?: number, tessellation?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }) {
             var indices = [];
             var positions = [];
@@ -1455,7 +1520,6 @@
             // Result
             var vertexData = new VertexData();
 
-
             vertexData.indices = indices;
             vertexData.positions = positions;
             vertexData.normals = normals;
@@ -1469,7 +1533,7 @@
          * @param options an object used to set the following optional parameters for the LineSystem, required but can be empty
          *  - lines an array of lines, each line being an array of successive Vector3
          *  - colors an array of line colors, each of the line colors being an array of successive Color4, one per line point
-         * @returns the VertexData of the LineSystem 
+         * @returns the VertexData of the LineSystem
          */
         public static CreateLineSystem(options: { lines: Vector3[][], colors?: Nullable<Color4[][]> }): VertexData {
             var indices = [];
@@ -1510,7 +1574,7 @@
          *  - dashSize the size of the dashes relative to the dash number, optional, default 3
          *  - gapSize the size of the gap between two successive dashes relative to the dash number, optional, default 1
          *  - dashNb the intended total number of dashes, optional, default 200
-         * @returns the VertexData for the DashedLines  
+         * @returns the VertexData for the DashedLines
          */
         public static CreateDashedLines(options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number }): VertexData {
             var dashSize = options.dashSize || 3;
@@ -1562,7 +1626,7 @@
          *  - width the width (x direction) of the ground, optional, default 1
          *  - height the height (z direction) of the ground, optional, default 1
          *  - subdivisions the number of subdivisions per side, optional, default 1
-         * @returns the VertexData of the Ground  
+         * @returns the VertexData of the Ground
          */
         public static CreateGround(options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number }): VertexData {
             var indices = [];
@@ -1619,7 +1683,7 @@
           * * zmax the ground maximum Z coordinate, optional, default 1
           * * subdivisions a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the ground width and height creating 'tiles', default {w: 6, h: 6}
           * * precision a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the tile width and height, default {w: 2, h: 2}
-         * @returns the VertexData of the TiledGround  
+         * @returns the VertexData of the TiledGround
          */
         public static CreateTiledGround(options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; } }): VertexData {
             var xmin = (options.xmin !== undefined && options.xmin !== null) ? options.xmin : -1.0;
@@ -1714,18 +1778,20 @@
           * * minHeight the minimum altitude on the ground, optional, default 0
           * * maxHeight the maximum altitude on the ground, optional default 1
           * * colorFilter the filter to apply to the image pixel colors to compute the height, optional Color3, default (0.3, 0.59, 0.11)
-          * * buffer the array holding the image color data 
+          * * buffer the array holding the image color data
           * * bufferWidth the width of image
           * * bufferHeight the height of image
-         * @returns the VertexData of the Ground designed from a heightmap   
+          * * alphaFilter Remove any data where the alpha channel is below this value, defaults 0 (all data visible)
+         * @returns the VertexData of the Ground designed from a heightmap
          */
-        public static CreateGroundFromHeightMap(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, colorFilter: Color3, buffer: Uint8Array, bufferWidth: number, bufferHeight: number }): VertexData {
+        public static CreateGroundFromHeightMap(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, colorFilter: Color3, buffer: Uint8Array, bufferWidth: number, bufferHeight: number, alphaFilter: number }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
             var row, col;
             var filter = options.colorFilter || new Color3(0.3, 0.59, 0.11);
+            var alphaFilter = options.alphaFilter || 0.0;
 
             // Vertices
             for (row = 0; row <= options.subdivisions; row++) {
@@ -1740,10 +1806,18 @@
                     var r = options.buffer[pos] / 255.0;
                     var g = options.buffer[pos + 1] / 255.0;
                     var b = options.buffer[pos + 2] / 255.0;
+                    var a = options.buffer[pos + 3] / 255.0;
 
                     var gradient = r * filter.r + g * filter.g + b * filter.b;
 
-                    position.y = options.minHeight + (options.maxHeight - options.minHeight) * gradient;
+                    // If our alpha channel is not within our filter then we will assign a 'special' height
+                    // Then when building the indices, we will ignore any vertex that is using the special height
+                    if (a >= alphaFilter) {
+                        position.y = options.minHeight + (options.maxHeight - options.minHeight) * gradient;
+                    }
+                    else {
+                        position.y = options.minHeight - BABYLON.Epsilon; // We can't have a height below minHeight, normally.
+                    }
 
                     // Add  vertex
                     positions.push(position.x, position.y, position.z);
@@ -1755,13 +1829,30 @@
             // Indices
             for (row = 0; row < options.subdivisions; row++) {
                 for (col = 0; col < options.subdivisions; col++) {
-                    indices.push(col + 1 + (row + 1) * (options.subdivisions + 1));
-                    indices.push(col + 1 + row * (options.subdivisions + 1));
-                    indices.push(col + row * (options.subdivisions + 1));
+                    // Calculate Indices
+                    var idx1 = (col + 1 + (row + 1) * (options.subdivisions + 1));
+                    var idx2 = (col + 1 + row * (options.subdivisions + 1));
+                    var idx3 = (col + row * (options.subdivisions + 1));
+                    var idx4 = (col + (row + 1) * (options.subdivisions + 1));
 
-                    indices.push(col + (row + 1) * (options.subdivisions + 1));
-                    indices.push(col + 1 + (row + 1) * (options.subdivisions + 1));
-                    indices.push(col + row * (options.subdivisions + 1));
+                    // Check that all indices are visible (based on our special height)
+                    // Only display the vertex if all Indices are visible
+                    // Positions are stored x,y,z for each vertex, hence the * 3 and + 1 for height
+                    var isVisibleIdx1 = positions[idx1 * 3 + 1] >= options.minHeight;
+                    var isVisibleIdx2 = positions[idx2 * 3 + 1] >= options.minHeight;
+                    var isVisibleIdx3 = positions[idx3 * 3 + 1] >= options.minHeight;
+                    if (isVisibleIdx1 && isVisibleIdx2 && isVisibleIdx3) {
+                        indices.push(idx1);
+                        indices.push(idx2);
+                        indices.push(idx3);
+                    }
+
+                    var isVisibleIdx4 = positions[idx4 * 3 + 1] >= options.minHeight;
+                    if (isVisibleIdx4 && isVisibleIdx1 && isVisibleIdx3) {
+                        indices.push(idx4);
+                        indices.push(idx1);
+                        indices.push(idx3);
+                    }
                 }
             }
 
@@ -1781,15 +1872,15 @@
 
         /**
          * Creates the VertexData for a Plane
-         * @param options an object used to set the following optional parameters for the plane, required but can be empty 
-          * * size sets the width and height of the plane to the value of size, optional default 1  
+         * @param options an object used to set the following optional parameters for the plane, required but can be empty
+          * * size sets the width and height of the plane to the value of size, optional default 1
           * * width sets the width (x direction) of the plane, overwrites the width set by size, optional, default size
-          * * height sets the height (y direction) of the plane, overwrites the height set by size, optional, default size  
-          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * height sets the height (y direction) of the plane, overwrites the height set by size, optional, default size
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
           * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
          * @returns the VertexData of the box
-         */  
+         */
         public static CreatePlane(options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var indices = [];
             var positions = [];
@@ -1845,15 +1936,15 @@
 
         /**
          * Creates the VertexData of the Disc or regular Polygon
-         * @param options an object used to set the following optional parameters for the disc, required but can be empty 
-          * * radius the radius of the disc, optional default 0.5  
+         * @param options an object used to set the following optional parameters for the disc, required but can be empty
+          * * radius the radius of the disc, optional default 0.5
           * * tessellation the number of polygon sides, optional, default 64
-          * * arc a number from 0 to 1, to create an unclosed polygon based on the fraction of the circumference given by the arc value, optional, default 1 
-          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * arc a number from 0 to 1, to create an unclosed polygon based on the fraction of the circumference given by the arc value, optional, default 1
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
           * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
          * @returns the VertexData of the box
-         */ 
+         */
         public static CreateDisc(options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var positions = new Array<number>();
             var indices = new Array<number>();
@@ -1980,18 +2071,18 @@
 
         /**
          * Creates the VertexData of the IcoSphere
-         * @param options an object used to set the following optional parameters for the IcoSphere, required but can be empty 
-          * * radius the radius of the IcoSphere, optional default 1  
+         * @param options an object used to set the following optional parameters for the IcoSphere, required but can be empty
+          * * radius the radius of the IcoSphere, optional default 1
           * * radiusX allows stretching in the x direction, optional, default radius
           * * radiusY allows stretching in the y direction, optional, default radius
           * * radiusZ allows stretching in the z direction, optional, default radius
           * * flat when true creates a flat shaded mesh, optional, default true
-          * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4 
-          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
           * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
          * @returns the VertexData of the IcoSphere
-         */ 
+         */
         public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE;
             var radius = options.radius || 1;
@@ -2034,7 +2125,6 @@
                 10, // 22: A + 12
                 11 // 23: B + 12
             ];
-
 
             // uv as integer step (not pixels !)
             var ico_vertexuv = [
@@ -2218,7 +2308,7 @@
                     // Same vertex can bleong to multiple face, it is pushed multiple time (duplicate vertex are present)
                     indices.push(current_indice);
                     current_indice++;
-                }
+                };
 
                 for (var i2 = 0; i2 < subdivisions; i2++) {
                     for (var i1 = 0; i1 + i2 < subdivisions; i1++) {
@@ -2238,7 +2328,6 @@
                 }
             }
 
-
             // Sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
@@ -2251,15 +2340,14 @@
             return vertexData;
         }
 
-
         // inspired from // http://stemkoski.github.io/Three.js/Polyhedra.html
         /**
          * Creates the VertexData for a Polyhedron
-         * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty 
+         * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
          * * type provided types are:
          *  * 0 : Tetrahedron, 1 : Octahedron, 2 : Dodecahedron, 3 : Icosahedron, 4 : Rhombicuboctahedron, 5 : Triangular Prism, 6 : Pentagonal Prism, 7 : Hexagonal Prism, 8 : Square Pyramid (J1)
          *  * 9 : Pentagonal Pyramid (J2), 10 : Triangular Dipyramid (J12), 11 : Pentagonal Dipyramid (J13), 12 : Elongated Square Dipyramid (J15), 13 : Elongated Pentagonal Dipyramid (J16), 14 : Elongated Pentagonal Cupola (J20)
-         * * size the size of the IcoSphere, optional default 1  
+         * * size the size of the IcoSphere, optional default 1
          * * sizeX allows stretching in the x direction, optional, default size
          * * sizeY allows stretching in the y direction, optional, default size
          * * sizeZ allows stretching in the z direction, optional, default size
@@ -2267,11 +2355,11 @@
          * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
          * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
          * * flat when true creates a flat shaded mesh, optional, default true
-         * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4 
-         * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+         * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4
+         * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-         * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
-         * @returns the VertexData of the Polyhedron 
+         * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @returns the VertexData of the Polyhedron
          */
         public static CreatePolyhedron(options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             // provided polyhedron types :
@@ -2329,7 +2417,6 @@
             var i = 0;
             var f = 0;
             var u: number, v: number, ang: number, x: number, y: number, tmp: number;
-
 
             // default face colors and UV if undefined
             if (flat) {
@@ -2409,14 +2496,14 @@
          * Creates the VertexData for a TorusKnot
          * @param options an object used to set the following optional parameters for the TorusKnot, required but can be empty
           * * radius the radius of the torus knot, optional, default 2
-          * * tube the thickness of the tube, optional, default 0.5 
+          * * tube the thickness of the tube, optional, default 0.5
           * * radialSegments the number of sides on each tube segments, optional, default 32
           * * tubularSegments the number of tubes to decompose the knot into, optional, default 32
           * * p the number of windings around the z axis, optional,  default 2
           * * q the number of windings around the x axis, optional,  default 3
-          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
           * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
          * @returns the VertexData of the Torus Knot
          */
         public static CreateTorusKnot(options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
@@ -2537,7 +2624,7 @@
             }): void {
 
             // temporary scalar variables
-            var index = 0;                      // facet index     
+            var index = 0;                      // facet index
             var p1p2x = 0.0;                    // p1p2 vector x coordinate
             var p1p2y = 0.0;                    // p1p2 vector y coordinate
             var p1p2z = 0.0;                    // p1p2 vector z coordinate
@@ -2601,7 +2688,7 @@
                 var block_idx_o = 0;        // facet barycenter block index
                 var block_idx_v1 = 0;       // v1 vertex block index
                 var block_idx_v2 = 0;       // v2 vertex block index
-                var block_idx_v3 = 0;       // v3 vertex block index  
+                var block_idx_v3 = 0;       // v3 vertex block index
 
                 var bbSizeMax = (options.bbSize.x > options.bbSize.y) ? options.bbSize.x : options.bbSize.y;
                 bbSizeMax = (bbSizeMax > options.bbSize.z) ? bbSizeMax : options.bbSize.z;
@@ -2658,7 +2745,7 @@
                 }
 
                 if (computeFacetPositions && options) {
-                    // compute and the facet barycenter coordinates in the array facetPositions 
+                    // compute and the facet barycenter coordinates in the array facetPositions
                     options.facetPositions[index].x = (positions[v1x] + positions[v2x] + positions[v3x]) / 3.0;
                     options.facetPositions[index].y = (positions[v1y] + positions[v2y] + positions[v3y]) / 3.0;
                     options.facetPositions[index].z = (positions[v1z] + positions[v2z] + positions[v3z]) / 3.0;
@@ -2706,7 +2793,7 @@
                 if (computeDepthSort && options && options.facetPositions) {
                     var dsf = depthSortedFacets[index];
                     dsf.ind = index * 3;
-                    dsf.sqDistance = Vector3.DistanceSquared(options.facetPositions[index], distanceTo!)
+                    dsf.sqDistance = Vector3.DistanceSquared(options.facetPositions[index], distanceTo!);
                 }
 
                 // compute the normals anyway

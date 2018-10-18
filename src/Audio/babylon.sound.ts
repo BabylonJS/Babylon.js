@@ -1,36 +1,96 @@
 module BABYLON {
+    /**
+     * Defines a sound that can be played in the application.
+     * The sound can either be an ambient track or a simple sound played in reaction to a user action.
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
     export class Sound {
+        /**
+         * The name of the sound in the scene.
+         */
         public name: string;
+        /**
+         * Does the sound autoplay once loaded.
+         */
         public autoplay: boolean = false;
+        /**
+         * Does the sound loop after it finishes playing once.
+         */
         public loop: boolean = false;
+        /**
+         * Does the sound use a custom attenuation curve to simulate the falloff
+         * happening when the source gets further away from the camera.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
+         */
         public useCustomAttenuation: boolean = false;
+        /**
+         * The sound track id this sound belongs to.
+         */
         public soundTrackId: number;
+        /**
+         * Is this sound currently played.
+         */
+        public isPlaying: boolean = false;
+        /**
+         * Is this sound currently paused.
+         */
+        public isPaused: boolean = false;
+        /**
+         * Does this sound enables spatial sound.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
         public spatialSound: boolean = false;
+        /**
+         * Define the reference distance the sound should be heard perfectly.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
         public refDistance: number = 1;
+        /**
+         * Define the roll off factor of spatial sounds.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
         public rolloffFactor: number = 1;
+        /**
+         * Define the max distance the sound should be heard (intensity just became 0 at this point).
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
         public maxDistance: number = 100;
+        /**
+         * Define the distance attenuation model the sound will follow.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
         public distanceModel: string = "linear";
-        private _panningModel: string = "equalpower";
+        /**
+         * @hidden
+         * Back Compat
+         **/
         public onended: () => any;
+
+        /**
+         * Observable event when the current playing sound finishes.
+         */
+        public onEndedObservable = new Observable<Sound>();
+
+        private _panningModel: string = "equalpower";
         private _playbackRate: number = 1;
         private _streaming: boolean = false;
         private _startTime: number = 0;
         private _startOffset: number = 0;
         private _position: Vector3 = Vector3.Zero();
+        /** @hidden */
+        public _positionInEmitterSpace: boolean = false;
         private _localDirection: Vector3 = new Vector3(1, 0, 0);
         private _volume: number = 1;
         private _isReadyToPlay: boolean = false;
-        public isPlaying: boolean = false;
-        public isPaused: boolean = false;
         private _isDirectional: boolean = false;
         private _readyToPlayCallback: Nullable<() => any>;
         private _audioBuffer: Nullable<AudioBuffer>;
         private _soundSource: Nullable<AudioBufferSourceNode>;
-        private _streamingSource: MediaElementAudioSourceNode
+        private _streamingSource: MediaElementAudioSourceNode;
         private _soundPanner: Nullable<PannerNode>;
         private _soundGain: Nullable<GainNode>;
         private _inputAudioNode: AudioNode;
-        private _ouputAudioNode: AudioNode;
+        private _outputAudioNode: AudioNode;
         // Used if you'd like to create a directional sound.
         // If not set, the sound will be omnidirectional
         private _coneInnerAngle: number = 360;
@@ -46,7 +106,7 @@ module BABYLON {
 
         /**
         * Create a sound and attach it to a scene
-        * @param name Name of your sound 
+        * @param name Name of your sound
         * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
         * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
         * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
@@ -54,6 +114,12 @@ module BABYLON {
         constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback: Nullable<() => void> = null, options?: any) {
             this.name = name;
             this._scene = scene;
+            let compo = scene._getComponent(SceneComponentConstants.NAME_AUDIO);
+            if (!compo) {
+                compo = new AudioSceneComponent(scene);
+                scene._addComponent(compo);
+            }
+
             this._readyToPlayCallback = readyToPlayCallback;
             // Default custom attenuation function is a linear attenuation
             this._customAttenuationFunction = (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => {
@@ -85,7 +151,7 @@ module BABYLON {
                 this._soundGain = Engine.audioEngine.audioContext.createGain();
                 this._soundGain.gain.value = this._volume;
                 this._inputAudioNode = this._soundGain;
-                this._ouputAudioNode = this._soundGain;
+                this._outputAudioNode = this._soundGain;
                 if (this.spatialSound) {
                     this._createSpatialParameters();
                 }
@@ -112,7 +178,7 @@ module BABYLON {
                             case "MediaStream":
                                 this._streaming = true;
                                 this._isReadyToPlay = true;
-                                this._streamingSource = Engine.audioEngine.audioContext.createMediaStreamSource(urlOrArrayBuffer);
+                                this._streamingSource = Engine.audioEngine.audioContext.createMediaElementSource(urlOrArrayBuffer);
 
                                 if (this.autoplay) {
                                     this.play();
@@ -131,7 +197,7 @@ module BABYLON {
                             case "String":
                                 urls.push(urlOrArrayBuffer);
                             case "Array":
-                                if (urls.length === 0) urls = urlOrArrayBuffer;
+                                if (urls.length === 0) { urls = urlOrArrayBuffer; }
                                 // If we found a supported format, we load it immediately and stop the loop
                                 for (var i = 0; i < urls.length; i++) {
                                     var url = urls[i];
@@ -177,6 +243,7 @@ module BABYLON {
                                                 }
                                             });
                                             document.body.appendChild(this._htmlAudioElement);
+                                            this._htmlAudioElement.load();
                                         }
                                         break;
                                     }
@@ -228,6 +295,9 @@ module BABYLON {
             }
         }
 
+        /**
+         * Release the sound and its associated resources
+         */
         public dispose() {
             if (Engine.audioEngine.canUseWebAudio) {
                 if (this.isPlaying) {
@@ -237,7 +307,7 @@ module BABYLON {
                 if (this.soundTrackId === -1) {
                     this._scene.mainSoundTrack.RemoveSound(this);
                 }
-                else {
+                else if (this._scene.soundTracks) {
                     this._scene.soundTracks[this.soundTrackId].RemoveSound(this);
                 }
                 if (this._soundGain) {
@@ -271,6 +341,10 @@ module BABYLON {
             }
         }
 
+        /**
+         * Gets if the sounds is ready to be played or not.
+         * @returns true if ready, otherwise false
+         */
         public isReady(): boolean {
             return this._isReadyToPlay;
         }
@@ -287,6 +361,10 @@ module BABYLON {
             }, (err: any) => { Tools.Error("Error while decoding audio data for: " + this.name + " / Error: " + err); });
         }
 
+        /**
+         * Sets the data of the sound from an audiobuffer
+         * @param audioBuffer The audioBuffer containing the data
+         */
         public setAudioBuffer(audioBuffer: AudioBuffer): void {
             if (Engine.audioEngine.canUseWebAudio) {
                 this._audioBuffer = audioBuffer;
@@ -294,7 +372,11 @@ module BABYLON {
             }
         }
 
-        public updateOptions(options: any) {
+        /**
+         * Updates the current sounds options such as maxdistance, loop...
+         * @param options A JSON object containing values named as the object properties
+         */
+        public updateOptions(options: any): void {
             if (options) {
                 this.loop = options.loop || this.loop;
                 this.maxDistance = options.maxDistance || this.maxDistance;
@@ -324,7 +406,7 @@ module BABYLON {
                 }
                 this._soundPanner = Engine.audioEngine.audioContext.createPanner();
                 this._updateSpatialParameters();
-                this._soundPanner.connect(this._ouputAudioNode);
+                this._soundPanner.connect(this._outputAudioNode);
                 this._inputAudioNode = this._soundPanner;
             }
         }
@@ -332,7 +414,7 @@ module BABYLON {
         private _updateSpatialParameters() {
             if (this.spatialSound && this._soundPanner) {
                 if (this.useCustomAttenuation) {
-                    // Tricks to disable in a way embedded Web Audio attenuation 
+                    // Tricks to disable in a way embedded Web Audio attenuation
                     this._soundPanner.distanceModel = "linear";
                     this._soundPanner.maxDistance = Number.MAX_VALUE;
                     this._soundPanner.refDistance = 1;
@@ -349,11 +431,21 @@ module BABYLON {
             }
         }
 
+        /**
+         * Switch the panning model to HRTF:
+         * Renders a stereo output of higher quality than equalpower — it uses a convolution with measured impulse responses from human subjects.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
         public switchPanningModelToHRTF() {
             this._panningModel = "HRTF";
             this._switchPanningModel();
         }
 
+        /**
+         * Switch the panning model to Equal Power:
+         * Represents the equal-power panning algorithm, generally regarded as simple and efficient. equalpower is the default value.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
         public switchPanningModelToEqualPower() {
             this._panningModel = "equalpower";
             this._switchPanningModel();
@@ -365,12 +457,16 @@ module BABYLON {
             }
         }
 
-        public connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode) {
+        /**
+         * Connect this sound to a sound track audio node like gain...
+         * @param soundTrackAudioNode the sound track audio node to connect to
+         */
+        public connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void {
             if (Engine.audioEngine.canUseWebAudio) {
                 if (this._isOutputConnected) {
-                    this._ouputAudioNode.disconnect();
+                    this._outputAudioNode.disconnect();
                 }
-                this._ouputAudioNode.connect(soundTrackAudioNode);
+                this._outputAudioNode.connect(soundTrackAudioNode);
                 this._isOutputConnected = true;
             }
         }
@@ -381,7 +477,7 @@ module BABYLON {
         * @param coneOuterAngle Size of the outer cone in degree
         * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
         */
-        public setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number) {
+        public setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void {
             if (coneOuterAngle < coneInnerAngle) {
                 Tools.Error("setDirectionalCone(): outer angle of the cone must be superior or equal to the inner angle.");
                 return;
@@ -397,15 +493,71 @@ module BABYLON {
             }
         }
 
-        public setPosition(newPosition: Vector3) {
+        /**
+         * Gets or sets the inner angle for the directional cone.
+         */
+        public get directionalConeInnerAngle(): number {
+            return this._coneInnerAngle;
+        }
+
+        /**
+         * Gets or sets the inner angle for the directional cone.
+         */
+        public set directionalConeInnerAngle(value: number) {
+            if (value != this._coneInnerAngle) {
+                if (this._coneOuterAngle < value) {
+                    Tools.Error("directionalConeInnerAngle: outer angle of the cone must be superior or equal to the inner angle.");
+                    return;
+                }
+
+                this._coneInnerAngle = value;
+                if (Engine.audioEngine.canUseWebAudio && this.spatialSound && this._soundPanner) {
+                    this._soundPanner.coneInnerAngle = this._coneInnerAngle;
+                }
+            }
+        }
+
+        /**
+         * Gets or sets the outer angle for the directional cone.
+         */
+        public get directionalConeOuterAngle(): number {
+            return this._coneOuterAngle;
+        }
+
+        /**
+         * Gets or sets the outer angle for the directional cone.
+         */
+        public set directionalConeOuterAngle(value: number) {
+            if (value != this._coneOuterAngle) {
+                if (value < this._coneInnerAngle) {
+                    Tools.Error("directionalConeOuterAngle: outer angle of the cone must be superior or equal to the inner angle.");
+                    return;
+                }
+
+                this._coneOuterAngle = value;
+                if (Engine.audioEngine.canUseWebAudio && this.spatialSound && this._soundPanner) {
+                    this._soundPanner.coneOuterAngle = this._coneOuterAngle;
+                }
+            }
+        }
+
+        /**
+         * Sets the position of the emitter if spatial sound is enabled
+         * @param newPosition Defines the new posisiton
+         */
+        public setPosition(newPosition: Vector3): void {
             this._position = newPosition;
 
-            if (Engine.audioEngine.canUseWebAudio && this.spatialSound && this._soundPanner) {
+            if (Engine.audioEngine.canUseWebAudio && this.spatialSound && this._soundPanner && !isNaN(this._position.x) && !isNaN(this._position.y) && !isNaN(this._position.z)) {
                 this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
             }
         }
 
-        public setLocalDirectionToMesh(newLocalDirection: Vector3) {
+        /**
+         * Sets the local direction of the emitter if spatial sound is enabled
+         * @param newLocalDirection Defines the new local direction
+         */
+        public setLocalDirectionToMesh(newLocalDirection: Vector3): void {
             this._localDirection = newLocalDirection;
 
             if (Engine.audioEngine.canUseWebAudio && this._connectedMesh && this.isPlaying) {
@@ -424,6 +576,7 @@ module BABYLON {
             this._soundPanner.setOrientation(direction.x, direction.y, direction.z);
         }
 
+        /** @hidden */
         public updateDistanceFromListener() {
             if (Engine.audioEngine.canUseWebAudio && this._connectedMesh && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
                 var distance = this._connectedMesh.getDistanceToCamera(this._scene.activeCamera);
@@ -431,7 +584,12 @@ module BABYLON {
             }
         }
 
-        public setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number) {
+        /**
+         * Sets a new custom attenuation function for the sound.
+         * @param callback Defines the function used for the attenuation
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
+         */
+        public setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void {
             this._customAttenuationFunction = callback;
         }
 
@@ -440,7 +598,7 @@ module BABYLON {
         * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
         * @param offset (optional) Start the sound setting it at a specific time
         */
-        public play(time?: number, offset?: number) {
+        public play(time?: number, offset?: number): void {
             if (this._isReadyToPlay && this._scene.audioEnabled && Engine.audioEngine.audioContext) {
                 try {
                     if (this._startOffset < 0) {
@@ -450,7 +608,9 @@ module BABYLON {
                     var startTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                     if (!this._soundSource || !this._streamingSource) {
                         if (this.spatialSound && this._soundPanner) {
-                            this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
+                            if (!isNaN(this._position.x) && !isNaN(this._position.y) && !isNaN(this._position.z)) {
+                                this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
+                            }
                             if (this._isDirectional) {
                                 this._soundPanner.coneInnerAngle = this._coneInnerAngle;
                                 this._soundPanner.coneOuterAngle = this._coneOuterAngle;
@@ -473,7 +633,30 @@ module BABYLON {
                         this._streamingSource.disconnect();
                         this._streamingSource.connect(this._inputAudioNode);
                         if (this._htmlAudioElement) {
-                            this._htmlAudioElement.play();
+                            // required to manage properly the new suspended default state of Chrome
+                            // When the option 'streaming: true' is used, we need first to wait for
+                            // the audio engine to be unlocked by a user gesture before trying to play
+                            // an HTML Audio elememt
+                            var tryToPlay = () => {
+                                if (Engine.audioEngine.unlocked) {
+                                    var playPromise = this._htmlAudioElement.play();
+
+                                    // In browsers that don’t yet support this functionality,
+                                    // playPromise won’t be defined.
+                                    if (playPromise !== undefined) {
+                                        playPromise.catch(function(error) {
+                                            // Automatic playback failed.
+                                            // Waiting for the audio engine to be unlocked by user click on unmute
+                                            Engine.audioEngine.lock();
+                                            Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => { tryToPlay(); });
+                                        });
+                                    }
+                                }
+                                else {
+                                    Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => { tryToPlay(); });
+                                }
+                            };
+                            tryToPlay();
                         }
                     }
                     else {
@@ -502,13 +685,14 @@ module BABYLON {
             if (this.onended) {
                 this.onended();
             }
+            this.onEndedObservable.notifyObservers(this);
         }
 
         /**
         * Stop the sound
         * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
         */
-        public stop(time?: number) {
+        public stop(time?: number): void {
             if (this.isPlaying) {
                 if (this._streaming) {
                     if (this._htmlAudioElement) {
@@ -533,7 +717,10 @@ module BABYLON {
             }
         }
 
-        public pause() {
+        /**
+         * Put the sound in pause
+         */
+        public pause(): void {
             if (this.isPlaying) {
                 this.isPaused = true;
                 if (this._streaming) {
@@ -550,7 +737,12 @@ module BABYLON {
             }
         }
 
-        public setVolume(newVolume: number, time?: number) {
+        /**
+         * Sets a dedicated volume for this sounds
+         * @param newVolume Define the new volume of the sound
+         * @param time Define in how long the sound should be at this value
+         */
+        public setVolume(newVolume: number, time?: number): void {
             if (Engine.audioEngine.canUseWebAudio && this._soundGain) {
                 if (time && Engine.audioEngine.audioContext) {
                     this._soundGain.gain.cancelScheduledValues(Engine.audioEngine.audioContext.currentTime);
@@ -564,7 +756,11 @@ module BABYLON {
             this._volume = newVolume;
         }
 
-        public setPlaybackRate(newPlaybackRate: number) {
+        /**
+         * Set the sound play back rate
+         * @param newPlaybackRate Define the playback rate the sound should be played at
+         */
+        public setPlaybackRate(newPlaybackRate: number): void {
             this._playbackRate = newPlaybackRate;
             if (this.isPlaying) {
                 if (this._streaming && this._htmlAudioElement) {
@@ -576,11 +772,20 @@ module BABYLON {
             }
         }
 
+        /**
+         * Gets the volume of the sound.
+         * @returns the volume of the sound
+         */
         public getVolume(): number {
             return this._volume;
         }
 
-        public attachToMesh(meshToConnectTo: AbstractMesh) {
+        /**
+         * Attach the sound to a dedicated mesh
+         * @param meshToConnectTo The mesh to connect the sound with
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
+         */
+        public attachToMesh(meshToConnectTo: AbstractMesh): void {
             if (this._connectedMesh && this._registerFunc) {
                 this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
                 this._registerFunc = null;
@@ -599,6 +804,10 @@ module BABYLON {
             meshToConnectTo.registerAfterWorldMatrixUpdate(this._registerFunc);
         }
 
+        /**
+         * Detach the sound from the previously attached mesh
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
+         */
         public detachFromMesh() {
             if (this._connectedMesh && this._registerFunc) {
                 this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
@@ -612,13 +821,24 @@ module BABYLON {
                 return;
             }
             let mesh = node as AbstractMesh;
-            let boundingInfo = mesh.getBoundingInfo();
-            this.setPosition(boundingInfo.boundingSphere.centerWorld);
+            if (this._positionInEmitterSpace) {
+                mesh.worldMatrixFromCache.invertToRef(Tmp.Matrix[0]);
+                this.setPosition(Tmp.Matrix[0].getTranslation());
+            }
+            else
+            {
+                let boundingInfo = mesh.getBoundingInfo();
+                this.setPosition(boundingInfo.boundingSphere.centerWorld);
+            }
             if (Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
                 this._updateDirection();
             }
         }
 
+        /**
+         * Clone the current sound in the scene.
+         * @returns the new sound clone
+         */
         public clone(): Nullable<Sound> {
             if (!this._streaming) {
                 var setBufferAndRun = () => {
@@ -655,10 +875,18 @@ module BABYLON {
             }
         }
 
-        public getAudioBuffer() {
+        /**
+         * Gets the current underlying audio buffer containing the data
+         * @returns the audio buffer
+         */
+        public getAudioBuffer(): Nullable<AudioBuffer> {
             return this._audioBuffer;
         }
 
+        /**
+         * Serializes the Sound in a JSON representation
+         * @returns the JSON representation of the sound
+         */
         public serialize(): any {
             var serializationObject: any = {
                 name: this.name,
@@ -677,8 +905,9 @@ module BABYLON {
             };
 
             if (this.spatialSound) {
-                if (this._connectedMesh)
+                if (this._connectedMesh) {
                     serializationObject.connectedMeshId = this._connectedMesh.id;
+                }
 
                 serializationObject.position = this._position.asArray();
                 serializationObject.refDistance = this.refDistance;
@@ -694,6 +923,14 @@ module BABYLON {
             return serializationObject;
         }
 
+        /**
+         * Parse a JSON representation of a sound to innstantiate in a given scene
+         * @param parsedSound Define the JSON representation of the sound (usually coming from the serialize method)
+         * @param scene Define the scene the new parsed sound should be created in
+         * @param rootUrl Define the rooturl of the load in case we need to fetch relative dependencies
+         * @param sourceSound Define a cound place holder if do not need to instantiate a new one
+         * @returns the newly parsed sound
+         */
         public static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound {
             var soundName = parsedSound.name;
             var soundUrl;
@@ -730,7 +967,7 @@ module BABYLON {
                     else {
                         window.setTimeout(setBufferAndRun, 300);
                     }
-                }
+                };
 
                 newSound = new Sound(soundName, new ArrayBuffer(0), scene, null, options);
                 setBufferAndRun();

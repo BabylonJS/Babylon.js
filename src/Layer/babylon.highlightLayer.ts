@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     export interface AbstractScene {
         /**
          * Return a the first highlight layer of the scene with a given name.
@@ -16,7 +16,7 @@
         }
 
         return null;
-    }
+    };
 
     /**
      * Special Glow Blur post process only blurring the alpha channel
@@ -25,7 +25,7 @@
     class GlowBlurPostProcess extends PostProcess {
         constructor(name: string, public direction: Vector2, public kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean) {
             super(name, "glowBlurPostProcess", ["screenSize", "direction", "blurWidth"], null, options, camera, samplingMode, engine, reusable);
-            
+
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setFloat2("screenSize", this.width, this.height);
                 effect.setVector2("direction", this.direction);
@@ -51,7 +51,7 @@
         mainTextureFixedSize?: number;
 
         /**
-         * Multiplication factor apply to the main texture size in the first step of the blur to reduce the size 
+         * Multiplication factor apply to the main texture size in the first step of the blur to reduce the size
          * of the picture to blur (the smaller the faster).
          */
         blurTextureSizeRatio: number;
@@ -69,7 +69,7 @@
         /**
          * Alpha blending mode used to apply the blur. Default is combine.
          */
-        alphaBlendingMode: number
+        alphaBlendingMode: number;
 
         /**
          * The camera attached to the layer.
@@ -91,7 +91,7 @@
      * Storage interface grouping all the information required for glowing a mesh.
      */
     interface IHighlightLayerMesh {
-        /** 
+        /**
          * The glowy mesh
          */
         mesh: Mesh;
@@ -118,7 +118,7 @@
      * Storage interface grouping all the information required for an excluded mesh.
      */
     interface IHighlightLayerExcludedMesh {
-        /** 
+        /**
          * The glowy mesh
          */
         mesh: Mesh;
@@ -134,10 +134,10 @@
 
     /**
      * The highlight layer Helps adding a glow effect around a mesh.
-     * 
+     *
      * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
      * glowy meshes to your scene.
-     * 
+     *
      * !!! THIS REQUIRES AN ACTIVE STENCIL BUFFER ON THE CANVAS !!!
      */
     export class HighlightLayer extends EffectLayer {
@@ -148,7 +148,7 @@
 
         /**
          * The neutral color used during the preparation of the glow effect.
-         * This is black by default as the blend operation is a blend operation. 
+         * This is black by default as the blend operation is a blend operation.
          */
         public static NeutralColor: Color4 = new Color4(0, 0, 0, 0);
 
@@ -193,7 +193,7 @@
          */
         @serialize()
         public get blurHorizontalSize(): number {
-            return this._horizontalBlurPostprocess.kernel
+            return this._horizontalBlurPostprocess.kernel;
         }
 
         /**
@@ -269,7 +269,7 @@
         /**
          * Get the effect name of the layer.
          * @return The effect name
-         */ 
+         */
         public getEffectName(): string {
             return HighlightLayer.EffectName;
         }
@@ -279,8 +279,8 @@
          * to the main canvas at the end of the scene rendering.
          */
         protected _createMergeEffect(): Effect {
-             // Effect
-             return this._engine.createEffect("glowMapMerge",
+            // Effect
+            return this._engine.createEffect("glowMapMerge",
                 [VertexBuffer.PositionKind],
                 ["offset"],
                 ["textureSampler"],
@@ -321,24 +321,24 @@
             this._blurTexture.renderParticles = false;
             this._blurTexture.ignoreCameraViewport = true;
 
-            this._textures = [ this._blurTexture ];
+            this._textures = [this._blurTexture];
 
             if (this._options.alphaBlendingMode === Engine.ALPHA_COMBINE) {
                 this._downSamplePostprocess = new PassPostProcess("HighlightLayerPPP", this._options.blurTextureSizeRatio,
                     null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
-                this._downSamplePostprocess.onApplyObservable.add(effect => {
+                this._downSamplePostprocess.onApplyObservable.add((effect) => {
                     effect.setTexture("textureSampler", this._mainTexture);
                 });
 
                 this._horizontalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerHBP", new Vector2(1.0, 0), this._options.blurHorizontalSize, 1,
                     null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
-                this._horizontalBlurPostprocess.onApplyObservable.add(effect => {
+                this._horizontalBlurPostprocess.onApplyObservable.add((effect) => {
                     effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
                 });
 
                 this._verticalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerVBP", new Vector2(0, 1.0), this._options.blurVerticalSize, 1,
                     null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
-                this._verticalBlurPostprocess.onApplyObservable.add(effect => {
+                this._verticalBlurPostprocess.onApplyObservable.add((effect) => {
                     effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
                 });
 
@@ -346,20 +346,20 @@
             }
             else {
                 this._horizontalBlurPostprocess = new BlurPostProcess("HighlightLayerHBP", new Vector2(1.0, 0), this._options.blurHorizontalSize / 2, {
-                        width:  blurTextureWidth,
-                        height: blurTextureHeight
-                    },
+                    width: blurTextureWidth,
+                    height: blurTextureHeight
+                },
                     null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
                 this._horizontalBlurPostprocess.width = blurTextureWidth;
                 this._horizontalBlurPostprocess.height = blurTextureHeight;
-                this._horizontalBlurPostprocess.onApplyObservable.add(effect => {
+                this._horizontalBlurPostprocess.onApplyObservable.add((effect) => {
                     effect.setTexture("textureSampler", this._mainTexture);
                 });
 
                 this._verticalBlurPostprocess = new BlurPostProcess("HighlightLayerVBP", new Vector2(0, 1.0), this._options.blurVerticalSize / 2, {
-                        width:  blurTextureWidth,
-                        height: blurTextureHeight
-                    },
+                    width: blurTextureWidth,
+                    height: blurTextureHeight
+                },
                     null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
 
                 this._postProcesses = [this._horizontalBlurPostprocess, this._verticalBlurPostprocess];
@@ -372,7 +372,7 @@
                 if (internalTexture) {
                     this._scene.postProcessManager.directRender(
                         this._postProcesses,
-                        internalTexture, 
+                        internalTexture,
                         true);
                 }
 
@@ -380,7 +380,7 @@
             });
 
             // Prevent autoClear.
-            this._postProcesses.map(pp => { pp.autoClear = false; });
+            this._postProcesses.map((pp) => { pp.autoClear = false; });
         }
 
         /**
@@ -484,7 +484,7 @@
             // Excluded Mesh
             if (this._excludedMeshes && this._excludedMeshes[mesh.uniqueId]) {
                 return false;
-            };
+            }
 
             if (!super.hasMesh(mesh)) {
                 return false;
@@ -546,7 +546,7 @@
                     afterRender: mesh.onAfterRenderObservable.add((mesh: Mesh) => {
                         mesh.getEngine().setStencilBuffer(true);
                     }),
-                }
+                };
             }
         }
 
@@ -672,6 +672,7 @@
          * Free any resources and references associated to a mesh.
          * Internal use
          * @param mesh The mesh to free.
+         * @hidden
          */
         public _disposeMesh(mesh: Mesh): void {
             this.removeMesh(mesh);
@@ -683,7 +684,7 @@
          */
         public dispose(): void {
             if (this._meshes) {
-                // Clean mesh references 
+                // Clean mesh references
                 for (let id in this._meshes) {
                     let meshHighlight = this._meshes[id];
                     if (meshHighlight && meshHighlight.mesh) {
@@ -724,7 +725,7 @@
           * Gets the class name of the effect layer
           * @returns the string with the class name of the effect layer
           */
-         public getClassName(): string {
+        public getClassName(): string {
             return "HighlightLayer";
         }
 
@@ -784,7 +785,7 @@
             for (index = 0; index < parsedHightlightLayer.excludedMeshes.length; index++) {
                 var mesh = scene.getMeshByID(parsedHightlightLayer.excludedMeshes[index]);
                 if (mesh) {
-                    hl.addExcludedMesh(<Mesh> mesh);
+                    hl.addExcludedMesh(<Mesh>mesh);
                 }
             }
 
@@ -794,11 +795,11 @@
                 var mesh = scene.getMeshByID(highlightedMesh.meshId);
 
                 if (mesh) {
-                    hl.addMesh(<Mesh> mesh, Color3.FromArray(highlightedMesh.color), highlightedMesh.glowEmissiveOnly);
+                    hl.addMesh(<Mesh>mesh, Color3.FromArray(highlightedMesh.color), highlightedMesh.glowEmissiveOnly);
                 }
             }
 
             return hl;
         }
     }
-} 
+}

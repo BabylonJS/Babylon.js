@@ -87,11 +87,11 @@ module BABYLON {
          */
         public samples: number;
         /**
-         * Gets the type of the texture
+         * Gets the type of the texture (int, float...)
          */
         public type: number;
         /**
-         * Gets the format of the texture 
+         * Gets the format of the texture (RGB, RGBA...)
          */
         public format: number;
         /**
@@ -130,11 +130,11 @@ module BABYLON {
         /**
          * Gets or set the previous tracker in the list
          */
-        public previous: Nullable<IInternalTextureTracker> = null
+        public previous: Nullable<IInternalTextureTracker> = null;
         /**
          * Gets or set the next tracker in the list
          */
-        public next: Nullable<IInternalTextureTracker> = null
+        public next: Nullable<IInternalTextureTracker> = null;
 
         // Private
         /** @hidden */
@@ -236,16 +236,19 @@ module BABYLON {
          * Creates a new InternalTexture
          * @param engine defines the engine to use
          * @param dataSource defines the type of data that will be used
+         * @param delayAllocation if the texture allocation should be delayed (default: false)
          */
-        constructor(engine: Engine, dataSource: number) {
+        constructor(engine: Engine, dataSource: number, delayAllocation = false) {
             this._engine = engine;
             this._dataSource = dataSource;
 
-            this._webGLTexture = engine._createTexture();
+            if (!delayAllocation) {
+                this._webGLTexture = engine._createTexture();
+            }
         }
 
         /**
-         * Increments the number of references (ie. the number of {BABYLON.Texture} that point to it)
+         * Increments the number of references (ie. the number of Texture that point to it)
          */
         public incrementReferences(): void {
             this._references++;
@@ -326,7 +329,7 @@ module BABYLON {
                         let size = {
                             width: this.width,
                             height: this.height
-                        }
+                        };
 
                         proxy = this._engine.createRenderTargetTexture(size, options);
                     }
@@ -382,6 +385,7 @@ module BABYLON {
             }
         }
 
+        /** @hidden */
         public _swapAndDie(target: InternalTexture): void {
             target._webGLTexture = this._webGLTexture;
 

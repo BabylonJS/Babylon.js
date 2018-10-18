@@ -1,23 +1,49 @@
 module BABYLON {
+    /**
+     * Manage the mouse inputs to control the movement of a free camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
     export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
+        /**
+         * Defines the camera the input is attached to.
+         */
+        public camera: FreeCamera;
 
+        /**
+         * Defines the buttons associated with the input to handle camera move.
+         */
         @serialize()
         public buttons = [0, 1, 2];
 
+        /**
+         * Defines the pointer angular sensibility  along the X and Y axis or how fast is the camera rotating.
+         */
         @serialize()
         public angularSensibility = 2000.0;
 
         private _pointerInput: (p: PointerInfo, s: EventState) => void;
         private _onMouseMove: Nullable<(e: MouseEvent) => any>;
         private _observer: Nullable<Observer<PointerInfo>>;
-
         private previousPosition: Nullable<{ x: number, y: number }> = null;
 
-        constructor(public touchEnabled = true) {
+        /**
+         * Manage the mouse inputs to control the movement of a free camera.
+         * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+         * @param touchEnabled Defines if touch is enabled or not
+         */
+        constructor(
+            /**
+             * Define if touch is enabled in the mouse input
+             */
+            public touchEnabled = true) {
         }
 
-        attachControl(element: HTMLElement, noPreventDefault?: boolean) {
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
             var engine = this.camera.getEngine();
 
             if (!this._pointerInput) {
@@ -74,8 +100,8 @@ module BABYLON {
                         }
 
                         var offsetX = evt.clientX - this.previousPosition.x;
-                        if (this.camera.getScene().useRightHandedSystem) offsetX *= -1;
-                        if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) offsetX *= -1;
+                        if (this.camera.getScene().useRightHandedSystem) { offsetX *= -1; }
+                        if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) { offsetX *= -1; }
                         this.camera.cameraRotation.y += offsetX / this.angularSensibility;
 
                         var offsetY = evt.clientY - this.previousPosition.y;
@@ -90,10 +116,10 @@ module BABYLON {
                             evt.preventDefault();
                         }
                     }
-                }
+                };
             }
 
-            this._onMouseMove = evt => {
+            this._onMouseMove = (evt) => {
                 if (!engine.isPointerLock) {
                     return;
                 }
@@ -103,8 +129,8 @@ module BABYLON {
                 }
 
                 var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                if (this.camera.getScene().useRightHandedSystem) offsetX *= -1;
-                if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) offsetX *= -1;
+                if (this.camera.getScene().useRightHandedSystem) { offsetX *= -1; }
+                if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) { offsetX *= -1; }
                 this.camera.cameraRotation.y += offsetX / this.angularSensibility;
 
                 var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
@@ -122,7 +148,11 @@ module BABYLON {
 
         }
 
-        detachControl(element: Nullable<HTMLElement>) {
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        public detachControl(element: Nullable<HTMLElement>): void {
             if (this._observer && element) {
                 this.camera.getScene().onPointerObservable.remove(this._observer);
 
@@ -136,11 +166,19 @@ module BABYLON {
             }
         }
 
-        getClassName(): string {
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        public getClassName(): string {
             return "FreeCameraMouseInput";
         }
 
-        getSimpleName() {
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        public getSimpleName(): string {
             return "mouse";
         }
     }

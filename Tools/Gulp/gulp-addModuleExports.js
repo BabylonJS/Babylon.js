@@ -99,7 +99,7 @@ if(typeof earcut !== 'undefined') {
 
         try {
             //if (config.externalUsingBabylon) {
-            file.contents = new Buffer(String('').concat(moduleExportAddition(varName)));
+            file.contents = Buffer.from(String('').concat(moduleExportAddition(varName)));
             /*} else {
                 let pretext = '';
                 file.contents = new Buffer(decorateAddition.concat(new Buffer(extendsAddition.concat(String('')).concat(moduleExportAddition(varName)))));

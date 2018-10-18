@@ -1,7 +1,7 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * @hidden
-     **/        
+     **/
     export class _AlphaState {
         private _isAlphaBlendDirty = false;
         private _isBlendFunctionParametersDirty = false;
@@ -132,7 +132,7 @@
 
             // Alpha equation
             if (this._isBlendEquationParametersDirty) {
-                gl.blendEquationSeparate((<any>this._isBlendEquationParametersDirty)[0], (<any>this._isBlendEquationParametersDirty)[1]);
+                gl.blendEquationSeparate(this._blendEquationParameters[0]!, this._blendEquationParameters[1]!);
                 this._isBlendEquationParametersDirty = false;
             }
 

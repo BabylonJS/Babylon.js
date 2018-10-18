@@ -1,18 +1,44 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * Class representing a ray with position and direction
+     */
     export class Ray {
-        private _edge1: Vector3;
-        private _edge2: Vector3;
-        private _pvec: Vector3;
-        private _tvec: Vector3;
-        private _qvec: Vector3;
+        private static readonly _edge1 = Vector3.Zero();
+        private static readonly _edge2 = Vector3.Zero();
+        private static readonly _pvec = Vector3.Zero();
+        private static readonly _tvec = Vector3.Zero();
+        private static readonly _qvec = Vector3.Zero();
+        private static readonly _min = Vector3.Zero();
+        private static readonly _max = Vector3.Zero();
 
         private _tmpRay: Ray;
 
-        constructor(public origin: Vector3, public direction: Vector3, public length: number = Number.MAX_VALUE) {
+        /**
+         * Creates a new ray
+         * @param origin origin point
+         * @param direction direction
+         * @param length length of the ray
+         */
+        constructor(
+            /** origin point */
+            public origin: Vector3,
+            /** direction */
+            public direction: Vector3,
+            /** length of the ray */
+            public length: number = Number.MAX_VALUE) {
         }
 
         // Methods
-        public intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean {
+        /**
+         * Checks if the ray intersects a box
+         * @param minimum bound of the box
+         * @param maximum bound of the box
+         * @param intersectionTreshold extra extend to be added to the box in all direction
+         * @returns if the box was hit
+         */
+        public intersectsBoxMinMax(minimum: Vector3, maximum: Vector3, intersectionTreshold: number = 0): boolean {
+            const newMinimum = Ray._min.copyFromFloats(minimum.x - intersectionTreshold, minimum.y - intersectionTreshold, minimum.z - intersectionTreshold);
+            const newMaximum = Ray._max.copyFromFloats(maximum.x + intersectionTreshold, maximum.y + intersectionTreshold, maximum.z + intersectionTreshold);
             var d = 0.0;
             var maxValue = Number.MAX_VALUE;
             var inv: number;
@@ -20,14 +46,14 @@
             var max: number;
             var temp: number;
             if (Math.abs(this.direction.x) < 0.0000001) {
-                if (this.origin.x < minimum.x || this.origin.x > maximum.x) {
+                if (this.origin.x < newMinimum.x || this.origin.x > newMaximum.x) {
                     return false;
                 }
             }
             else {
                 inv = 1.0 / this.direction.x;
-                min = (minimum.x - this.origin.x) * inv;
-                max = (maximum.x - this.origin.x) * inv;
+                min = (newMinimum.x - this.origin.x) * inv;
+                max = (newMaximum.x - this.origin.x) * inv;
                 if (max === -Infinity) {
                     max = Infinity;
                 }
@@ -47,14 +73,14 @@
             }
 
             if (Math.abs(this.direction.y) < 0.0000001) {
-                if (this.origin.y < minimum.y || this.origin.y > maximum.y) {
+                if (this.origin.y < newMinimum.y || this.origin.y > newMaximum.y) {
                     return false;
                 }
             }
             else {
                 inv = 1.0 / this.direction.y;
-                min = (minimum.y - this.origin.y) * inv;
-                max = (maximum.y - this.origin.y) * inv;
+                min = (newMinimum.y - this.origin.y) * inv;
+                max = (newMaximum.y - this.origin.y) * inv;
 
                 if (max === -Infinity) {
                     max = Infinity;
@@ -75,14 +101,14 @@
             }
 
             if (Math.abs(this.direction.z) < 0.0000001) {
-                if (this.origin.z < minimum.z || this.origin.z > maximum.z) {
+                if (this.origin.z < newMinimum.z || this.origin.z > newMaximum.z) {
                     return false;
                 }
             }
             else {
                 inv = 1.0 / this.direction.z;
-                min = (minimum.z - this.origin.z) * inv;
-                max = (maximum.z - this.origin.z) * inv;
+                min = (newMinimum.z - this.origin.z) * inv;
+                max = (newMaximum.z - this.origin.z) * inv;
 
                 if (max === -Infinity) {
                     max = Infinity;
@@ -104,16 +130,29 @@
             return true;
         }
 
-        public intersectsBox(box: BoundingBox): boolean {
-            return this.intersectsBoxMinMax(box.minimum, box.maximum);
+        /**
+         * Checks if the ray intersects a box
+         * @param box the bounding box to check
+         * @param intersectionTreshold extra extend to be added to the BoundingBox in all direction
+         * @returns if the box was hit
+         */
+        public intersectsBox(box: BoundingBox, intersectionTreshold: number = 0): boolean {
+            return this.intersectsBoxMinMax(box.minimum, box.maximum, intersectionTreshold);
         }
 
-        public intersectsSphere(sphere: BoundingSphere): boolean {
+        /**
+         * If the ray hits a sphere
+         * @param sphere the bounding sphere to check
+         * @param intersectionTreshold extra extend to be added to the BoundingSphere in all direction
+         * @returns true if it hits the sphere
+         */
+        public intersectsSphere(sphere: BoundingSphere, intersectionTreshold: number = 0): boolean {
             var x = sphere.center.x - this.origin.x;
             var y = sphere.center.y - this.origin.y;
             var z = sphere.center.z - this.origin.z;
             var pyth = (x * x) + (y * y) + (z * z);
-            var rr = sphere.radius * sphere.radius;
+            const radius = sphere.radius + intersectionTreshold;
+            var rr = radius * radius;
 
             if (pyth <= rr) {
                 return true;
@@ -129,19 +168,18 @@
             return temp <= rr;
         }
 
+        /**
+         * If the ray hits a triange
+         * @param vertex0 triangle vertex
+         * @param vertex1 triangle vertex
+         * @param vertex2 triangle vertex
+         * @returns intersection information if hit
+         */
         public intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo> {
-            if (!this._edge1) {
-                this._edge1 = Vector3.Zero();
-                this._edge2 = Vector3.Zero();
-                this._pvec = Vector3.Zero();
-                this._tvec = Vector3.Zero();
-                this._qvec = Vector3.Zero();
-            }
-
-            vertex1.subtractToRef(vertex0, this._edge1);
-            vertex2.subtractToRef(vertex0, this._edge2);
-            Vector3.CrossToRef(this.direction, this._edge2, this._pvec);
-            var det = Vector3.Dot(this._edge1, this._pvec);
+            vertex1.subtractToRef(vertex0, Ray._edge1);
+            vertex2.subtractToRef(vertex0, Ray._edge2);
+            Vector3.CrossToRef(this.direction, Ray._edge2, Ray._pvec);
+            var det = Vector3.Dot(Ray._edge1, Ray._pvec);
 
             if (det === 0) {
                 return null;
@@ -149,24 +187,24 @@
 
             var invdet = 1 / det;
 
-            this.origin.subtractToRef(vertex0, this._tvec);
+            this.origin.subtractToRef(vertex0, Ray._tvec);
 
-            var bu = Vector3.Dot(this._tvec, this._pvec) * invdet;
+            var bu = Vector3.Dot(Ray._tvec, Ray._pvec) * invdet;
 
             if (bu < 0 || bu > 1.0) {
                 return null;
             }
 
-            Vector3.CrossToRef(this._tvec, this._edge1, this._qvec);
+            Vector3.CrossToRef(Ray._tvec, Ray._edge1, Ray._qvec);
 
-            var bv = Vector3.Dot(this.direction, this._qvec) * invdet;
+            var bv = Vector3.Dot(this.direction, Ray._qvec) * invdet;
 
             if (bv < 0 || bu + bv > 1.0) {
                 return null;
             }
 
             //check if the distance is longer than the predefined length.
-            var distance = Vector3.Dot(this._edge2, this._qvec) * invdet;
+            var distance = Vector3.Dot(Ray._edge2, Ray._qvec) * invdet;
             if (distance > this.length) {
                 return null;
             }
@@ -174,6 +212,11 @@
             return new IntersectionInfo(bu, bv, distance);
         }
 
+        /**
+         * Checks if ray intersects a plane
+         * @param plane the plane to check
+         * @returns the distance away it was hit
+         */
         public intersectsPlane(plane: Plane): Nullable<number> {
             var distance: number;
             var result1 = Vector3.Dot(plane.normal, this.direction);
@@ -195,15 +238,21 @@
             }
         }
 
-        public intersectsMesh(mesh:AbstractMesh, fastCheck?: boolean): PickingInfo {
+        /**
+         * Checks if ray intersects a mesh
+         * @param mesh the mesh to check
+         * @param fastCheck if only the bounding box should checked
+         * @returns picking info of the intersecton
+         */
+        public intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo {
 
             var tm = Tmp.Matrix[0];
 
             mesh.getWorldMatrix().invertToRef(tm);
 
-            if(this._tmpRay){
+            if (this._tmpRay) {
                 Ray.TransformToRef(this, tm, this._tmpRay);
-            }else{
+            }else {
                 this._tmpRay = Ray.Transform(this, tm);
             }
 
@@ -211,18 +260,25 @@
 
         }
 
-        public intersectsMeshes(meshes:Array<AbstractMesh>, fastCheck?: boolean, results?:Array<PickingInfo>): Array<PickingInfo> {
+        /**
+         * Checks if ray intersects a mesh
+         * @param meshes the meshes to check
+         * @param fastCheck if only the bounding box should checked
+         * @param results array to store result in
+         * @returns Array of picking infos
+         */
+        public intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo> {
 
-            if(results){
+            if (results) {
                 results.length = 0;
-            }else{
+            }else {
                 results = [];
             }
 
-            for(var i = 0; i < meshes.length; i++){
+            for (var i = 0; i < meshes.length; i++) {
                 var pickInfo = this.intersectsMesh(meshes[i], fastCheck);
 
-                if(pickInfo.hit){
+                if (pickInfo.hit) {
                     results.push(pickInfo);
                 }
             }
@@ -233,18 +289,17 @@
 
         }
 
-        private _comparePickingInfo(pickingInfoA:PickingInfo, pickingInfoB:PickingInfo): number{
+        private _comparePickingInfo(pickingInfoA: PickingInfo, pickingInfoB: PickingInfo): number {
 
-            if(pickingInfoA.distance < pickingInfoB.distance){
+            if (pickingInfoA.distance < pickingInfoB.distance) {
                 return -1;
-            }else if(pickingInfoA.distance > pickingInfoB.distance){
+            }else if (pickingInfoA.distance > pickingInfoB.distance) {
                 return 1;
-            }else{
+            }else {
                 return 0;
             }
 
         }
-
 
         private static smallnum = 0.00000001;
         private static rayl = 10e8;
@@ -297,8 +352,9 @@
                 // recompute sc for this edge
                 if (-d < 0.0) {
                     sN = 0.0;
-                } else if (-d > a)
+                } else if (-d > a) {
                     sN = sD;
+                       }
                 else {
                     sN = -d;
                     sD = a;
@@ -331,6 +387,17 @@
             return -1;
         }
 
+        /**
+         * Update the ray from viewport position
+         * @param x position
+         * @param y y position
+         * @param viewportWidth viewport width
+         * @param viewportHeight viewport height
+         * @param world world matrix
+         * @param view view matrix
+         * @param projection projection matrix
+         * @returns this ray updated
+         */
         public update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray {
             Vector3.UnprojectFloatsToRef(x, y, 0, viewportWidth, viewportHeight, world, view, projection, this.origin);
             Vector3.UnprojectFloatsToRef(x, y, 1, viewportWidth, viewportHeight, world, view, projection, Tmp.Vector3[0]);
@@ -341,16 +408,30 @@
         }
 
         // Statics
+        /**
+         * Creates a ray with origin and direction of 0,0,0
+         * @returns the new ray
+         */
         public static Zero(): Ray {
             return new Ray(Vector3.Zero(), Vector3.Zero());
         }
 
+        /**
+         * Creates a new ray from screen space and viewport
+         * @param x position
+         * @param y y position
+         * @param viewportWidth viewport width
+         * @param viewportHeight viewport height
+         * @param world world matrix
+         * @param view view matrix
+         * @param projection projection matrix
+         * @returns new ray
+         */
         public static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray {
             let result = Ray.Zero();
 
             return result.update(x, y, viewportWidth, viewportHeight, world, view, projection);
         }
-        
 
         /**
         * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
@@ -358,8 +439,9 @@
         * @param origin The origin point
         * @param end The end point
         * @param world a matrix to transform the ray to. Default is the identity matrix.
+        * @returns the new ray
         */
-        public static CreateNewFromTo(origin: Vector3, end: Vector3, world: Matrix = Matrix.Identity()): Ray {
+        public static CreateNewFromTo(origin: Vector3, end: Vector3, world: Readonly<Matrix> = Matrix.IdentityReadOnly): Ray {
             var direction = end.subtract(origin);
             var length = Math.sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
             direction.normalize();
@@ -367,22 +449,34 @@
             return Ray.Transform(new Ray(origin, direction, length), world);
         }
 
-        public static Transform(ray: Ray, matrix: Matrix): Ray {
-            var result = new Ray(new Vector3(0,0,0), new Vector3(0,0,0));
+        /**
+         * Transforms a ray by a matrix
+         * @param ray ray to transform
+         * @param matrix matrix to apply
+         * @returns the resulting new ray
+         */
+        public static Transform(ray: Ray, matrix: Readonly<Matrix>): Ray {
+            var result = new Ray(new Vector3(0, 0, 0), new Vector3(0, 0, 0));
             Ray.TransformToRef(ray, matrix, result);
-            
+
             return result;
         }
 
-        public static TransformToRef(ray: Ray, matrix: Matrix, result:Ray): void {
+        /**
+         * Transforms a ray by a matrix
+         * @param ray ray to transform
+         * @param matrix matrix to apply
+         * @param result ray to store result in
+         */
+        public static TransformToRef(ray: Ray, matrix: Readonly<Matrix>, result: Ray): void {
             Vector3.TransformCoordinatesToRef(ray.origin, matrix, result.origin);
             Vector3.TransformNormalToRef(ray.direction, matrix, result.direction);
             result.length = ray.length;
-            
+
             var dir = result.direction;
             var len = dir.length();
 
-            if(!(len === 0 || len === 1)){
+            if (!(len === 0 || len === 1)) {
                 var num = 1.0 / len;
                 dir.x *= num;
                 dir.y *= num;

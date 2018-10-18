@@ -54,7 +54,7 @@ module.exports = /*[
             libraryTarget: 'umd',
             library: 'BabylonViewer',
             umdNamedDefine: true,
-            devtoolModuleFilenameTemplate: '[relative-resource-path]'
+            devtoolModuleFilenameTemplate: '[absolute-resource-path]'
         },
         resolve: {
             extensions: ['.ts', '.js'],
@@ -71,6 +71,7 @@ module.exports = /*[
             oimo: 'OIMO',
             earcut: true
         },
+        mode: "development",
         devtool: 'source-map',
         plugins: [
             new webpack.WatchIgnorePlugin([
@@ -78,7 +79,7 @@ module.exports = /*[
             ])
         ],
         module: {
-            loaders: [{
+            rules: [{
                 test: /\.tsx?$/,
                 loader: 'ts-loader',
                 exclude: /node_modules/
@@ -98,7 +99,7 @@ module.exports = /*[
             },
             {
                 test: /\.(woff|ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                loader: 'base64-font-loader'
+                loader: 'base64-inline-loader?limit=1000&name=[name].[ext]'
             }]
         },
         devServer: {

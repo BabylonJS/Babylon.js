@@ -1,8 +1,11 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -24,6 +27,9 @@ var BABYLON;
             _this.BUMP = false;
             _this.REFLECTION = false;
             _this.CLIPPLANE = false;
+            _this.CLIPPLANE2 = false;
+            _this.CLIPPLANE3 = false;
+            _this.CLIPPLANE4 = false;
             _this.ALPHATEST = false;
             _this.DEPTHPREPASS = false;
             _this.POINTSIZE = false;
@@ -130,6 +136,16 @@ var BABYLON;
             };
             return _this;
         }
+        Object.defineProperty(WaterMaterial.prototype, "hasRenderTargetTextures", {
+            /**
+             * Gets a boolean indicating that current material needs to register RTT
+             */
+            get: function () {
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(WaterMaterial.prototype, "useLogarithmicDepth", {
             get: function () {
                 return this._useLogarithmicDepth;
@@ -253,7 +269,7 @@ var BABYLON;
                 }
                 this._waitingRenderList = null;
             }
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
                 scene.resetCachedMaterial();
@@ -292,7 +308,7 @@ var BABYLON;
                     "vFogInfos", "vFogColor", "pointSize",
                     "vNormalInfos",
                     "mBones",
-                    "vClipPlane", "normalMatrix",
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "normalMatrix",
                     "logarithmicDepthConstant",
                     // Water
                     "worldReflectionViewProjection", "windDirection", "waveLength", "time", "windForce",
@@ -340,13 +356,13 @@ var BABYLON;
                 return;
             }
             this._activeEffect = effect;
-            // Matrices        
+            // Matrices
             this.bindOnlyWorldMatrix(world);
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
             BABYLON.MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
             if (this._mustRebind(scene, effect)) {
-                // Textures        
+                // Textures
                 if (this.bumpTexture && BABYLON.StandardMaterial.BumpTextureEnabled) {
                     this._activeEffect.setTexture("normalSampler", this.bumpTexture);
                     this._activeEffect.setFloat2("vNormalInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);
@@ -421,17 +437,11 @@ var BABYLON;
                     isVisible = _this._mesh.isVisible;
                     _this._mesh.isVisible = false;
                 }
-                // Clip plane
-                clipPlane = scene.clipPlane;
-                var positiony = _this._mesh ? _this._mesh.position.y : 0.0;
-                scene.clipPlane = BABYLON.Plane.FromPositionAndNormal(new BABYLON.Vector3(0, positiony + 0.05, 0), new BABYLON.Vector3(0, 1, 0));
             };
             this._refractionRTT.onAfterRender = function () {
                 if (_this._mesh) {
                     _this._mesh.isVisible = isVisible;
                 }
-                // Clip plane 
-                scene.clipPlane = clipPlane;
             };
             this._reflectionRTT.onBeforeRender = function () {
                 if (_this._mesh) {

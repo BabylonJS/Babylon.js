@@ -81,7 +81,7 @@ float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness)
 
 float adjustRoughnessFromLightProperties(float roughness, float lightRadius, float lightDistance)
 {
-    #ifdef USEPHYSICALLIGHTFALLOFF
+    #if defined(USEPHYSICALLIGHTFALLOFF) || defined(USEGLTFLIGHTFALLOFF)
         // At small angle this approximation works. 
         float lightRoughness = lightRadius / lightDistance;
         // Distribution can sum.

@@ -1,8 +1,11 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -206,10 +209,7 @@ var BABYLON;
             var textureSize = _this._digitalRainFontTexture.getSize();
             var alpha = 0.0;
             var cosTimeZeroOne = 0.0;
-            var matrix = new BABYLON.Matrix();
-            for (var i = 0; i < 16; i++) {
-                matrix.m[i] = Math.random();
-            }
+            var matrix = BABYLON.Matrix.FromValues(Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random());
             _this.onApply = function (effect) {
                 effect.setTexture("digitalRainFont", _this._digitalRainFontTexture);
                 effect.setFloat4("digitalRainFontInfos", _this._digitalRainFontTexture.charSize, characterSet.length, textureSize.width, textureSize.height);

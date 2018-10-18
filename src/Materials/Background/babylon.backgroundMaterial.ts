@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Background material defines definition.
      * @hidden Mainly internal Use
@@ -71,7 +71,7 @@
         public NOISE = false;
 
         /**
-         * is the reflection texture in BGR color scheme? 
+         * is the reflection texture in BGR color scheme?
          * Mainly used to solve a bug in ios10 video tag
          */
         public REFLECTIONBGR = false;
@@ -81,6 +81,7 @@
         public VIGNETTEBLENDMODEMULTIPLY = false;
         public VIGNETTEBLENDMODEOPAQUE = false;
         public TONEMAPPING = false;
+        public TONEMAPPING_ACES = false;
         public CONTRAST = false;
         public COLORCURVES = false;
         public COLORGRADING = false;
@@ -98,6 +99,7 @@
         public REFLECTIONMAP_CUBIC = false;
         public REFLECTIONMAP_PROJECTION = false;
         public REFLECTIONMAP_SKYBOX = false;
+        public REFLECTIONMAP_SKYBOX_TRANSFORMED = false;
         public REFLECTIONMAP_EXPLICIT = false;
         public REFLECTIONMAP_EQUIRECTANGULAR = false;
         public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
@@ -115,6 +117,9 @@
         public UV1 = false;
         public UV2 = false;
         public CLIPPLANE = false;
+        public CLIPPLANE2 = false;
+        public CLIPPLANE3 = false;
+        public CLIPPLANE4 = false;
         public POINTSIZE = false;
         public FOG = false;
         public NORMAL = false;
@@ -154,12 +159,12 @@
          */
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public primaryColor = Color3.White();
-        
+
         @serializeAsColor3()
         protected __perceptualColor: Nullable<Color3>;
         /**
          * Experimental Internal Use Only.
-         * 
+         *
          * Key light Color in "perceptual value" meaning the color you would like to see on screen.
          * This acts as a helper to set the primary color to a more "human friendly" value.
          * Conversion to linear space as well as exposure and tone mapping correction will be applied to keep the
@@ -220,8 +225,8 @@
         protected _reflectionBlur: float;
         /**
          * Reflection Texture level of blur.
-         * 
-         * Can be use to reuse an existing HDR Texture and target a specific LOD to prevent authoring the 
+         *
+         * Can be use to reuse an existing HDR Texture and target a specific LOD to prevent authoring the
          * texture twice.
          */
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -274,7 +279,7 @@
         @serialize()
         protected _reflectionFresnel: boolean;
         /**
-         * This helps specifying that the material is falling off from diffuse to the reflection texture at grazing angle. 
+         * This helps specifying that the material is falling off from diffuse to the reflection texture at grazing angle.
          * This helps adding a mirror texture on the ground.
          */
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -411,7 +416,7 @@
 
             // Attaches observer.
             if (this._imageProcessingConfiguration) {
-                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
+                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add((conf) => {
                     this._computePrimaryColorFromPerceptualColor();
                     this._markAllSubMeshesAsImageProcessingDirty();
                 });
@@ -427,7 +432,7 @@
 
         /**
          * Sets the Default image processing configuration used either in the this material.
-         * 
+         *
          * If sets to null, the scene one is in use.
          */
         public set imageProcessingConfiguration(value: Nullable<ImageProcessingConfiguration>) {
@@ -468,13 +473,13 @@
          */
         public get cameraToneMappingEnabled(): boolean {
             return this._imageProcessingConfiguration.toneMappingEnabled;
-        };
+        }
         /**
          * Sets wether tonemapping is enabled or not
          */
         public set cameraToneMappingEnabled(value: boolean) {
             this._imageProcessingConfiguration.toneMappingEnabled = value;
-        };
+        }
 
         /**
          * The camera exposure used on this material.
@@ -483,7 +488,7 @@
          */
         public get cameraExposure(): float {
             return this._imageProcessingConfiguration.exposure;
-        };
+        }
         /**
          * The camera exposure used on this material.
          * This property is here and not in the camera to allow controlling exposure without full screen post process.
@@ -491,7 +496,7 @@
          */
         public set cameraExposure(value: float) {
             this._imageProcessingConfiguration.exposure = value;
-        };
+        }
 
         /**
          * Gets The camera contrast used on this material.
@@ -521,18 +526,18 @@
         }
 
         /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
          * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         public get cameraColorCurves(): Nullable<ColorCurves> {
             return (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorCurves;
         }
         /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
          * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         public set cameraColorCurves(value: Nullable<ColorCurves>) {
@@ -575,7 +580,22 @@
                 }
 
                 return this._renderTargets;
+            };
+        }
+
+        /**
+         * Gets a boolean indicating that current material needs to register RTT
+         */
+        public get hasRenderTargetTextures(): boolean {
+            if (this._diffuseTexture && this._diffuseTexture.isRenderTarget) {
+                return true;
             }
+
+            if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
+                return true;
+            }
+
+            return false;
         }
 
         /**
@@ -683,6 +703,7 @@
                                 break;
                             case Texture.SKYBOX_MODE:
                                 defines.REFLECTIONMAP_SKYBOX = true;
+                                defines.REFLECTIONMAP_SKYBOX_TRANSFORMED = !reflectionTexture.getReflectionTextureMatrix().isIdentity();
                                 break;
                             case Texture.SPHERICAL_MODE:
                                 defines.REFLECTIONMAP_SPHERICAL = true;
@@ -699,8 +720,8 @@
                             case Texture.CUBIC_MODE:
                             case Texture.INVCUBIC_MODE:
                             default:
-                                    defines.REFLECTIONMAP_CUBIC = true;
-                                    break;                        }
+                                defines.REFLECTIONMAP_CUBIC = true;
+                                break;                        }
 
                         if (this.reflectionFresnel) {
                             defines.REFLECTIONFRESNEL = true;
@@ -726,6 +747,7 @@
                         defines.REFLECTIONMAP_CUBIC = false;
                         defines.REFLECTIONMAP_PROJECTION = false;
                         defines.REFLECTIONMAP_SKYBOX = false;
+                        defines.REFLECTIONMAP_SKYBOX_TRANSFORMED = false;
                         defines.REFLECTIONMAP_EXPLICIT = false;
                         defines.REFLECTIONMAP_EQUIRECTANGULAR = false;
                         defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
@@ -812,7 +834,7 @@
 
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
                     "vFogInfos", "vFogColor", "pointSize",
-                    "vClipPlane", "mBones",
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "mBones",
 
                     "vPrimaryColor", "vPrimaryColorShadow",
                     "vReflectionInfos", "reflectionMatrix", "vReflectionMicrosurfaceInfos", "fFovMultiplier",
@@ -1073,7 +1095,7 @@
                 this.bindView(effect);
 
                 // Fog
-                MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
+                MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect, true);
 
                 // image processing
                 if (this._imageProcessingConfiguration) {
@@ -1140,7 +1162,7 @@
         /**
          * Parse a JSON input to create back a background material.
          * @param source The JSON data to parse
-         * @param scene The scene to create the parsed material in 
+         * @param scene The scene to create the parsed material in
          * @param rootUrl The root url of the assets the material depends upon
          * @returns the instantiated BackgroundMaterial.
          */

@@ -15,7 +15,12 @@ module BABYLON {
          * The sample rate to bake animation curves
          */
         animationSampleRate?: number;
-    };
+
+        /**
+         * Begin serialization without waiting for the scene to be ready
+         */
+        exportWithoutWaitingForScene?: boolean;
+    }
 
     /**
      * Class for generating glTF data from a Babylon scene.
@@ -32,8 +37,30 @@ module BABYLON {
         public static GLTFAsync(scene: Scene, filePrefix: string, options?: IExportOptions): Promise<GLTFData> {
             return scene.whenReadyAsync().then(() => {
                 const glTFPrefix = filePrefix.replace(/\.[^/.]+$/, "");
-                const gltfGenerator = new GLTF2._Exporter(scene, options);
+                const gltfGenerator = new GLTF2.Exporter._Exporter(scene, options);
                 return gltfGenerator._generateGLTFAsync(glTFPrefix);
+            });
+        }
+
+        private static _PreExportAsync(scene: Scene, options?: IExportOptions): Promise<void> {
+            return Promise.resolve().then(() => {
+                if (options && options.exportWithoutWaitingForScene) {
+                    return Promise.resolve();
+                }
+                else {
+                    return scene.whenReadyAsync();
+                }
+            });
+        }
+
+        private static _PostExportAsync(scene: Scene, glTFData: GLTFData, options?: IExportOptions): Promise<GLTFData> {
+            return Promise.resolve().then(() => {
+                if (options && options.exportWithoutWaitingForScene) {
+                    return glTFData;
+                }
+                else {
+                    return glTFData;
+                }
             });
         }
 
@@ -45,10 +72,12 @@ module BABYLON {
          * @returns Returns an object with a .glb filename as key and data as value
          */
         public static GLBAsync(scene: Scene, filePrefix: string, options?: IExportOptions): Promise<GLTFData> {
-            return scene.whenReadyAsync().then(() => {
+            return this._PreExportAsync(scene, options).then(() => {
                 const glTFPrefix = filePrefix.replace(/\.[^/.]+$/, "");
-                const gltfGenerator = new GLTF2._Exporter(scene, options);
-                return gltfGenerator._generateGLBAsync(glTFPrefix);
+                const gltfGenerator = new GLTF2.Exporter._Exporter(scene, options);
+                return gltfGenerator._generateGLBAsync(glTFPrefix).then((glTFData) => {
+                    return this._PostExportAsync(scene, glTFData, options);
+                });
             });
         }
     }

@@ -1,20 +1,20 @@
-import { viewerManager } from './viewerManager';
-import { SceneManager } from '../managers/sceneManager';
-import { ConfigurationLoader } from '../configuration/loader';
-import { Effect, Observable, Engine, Scene, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Tools, RenderingManager, TargetCamera, WebVRFreeCamera, Vector3 } from 'babylonjs';
-import { ViewerConfiguration, IObserversConfiguration, IModelConfiguration } from '../configuration/';
-
-import { ViewerModel } from '../model/viewerModel';
-import { ModelLoader } from '../loader/modelLoader';
-import { viewerGlobals } from '../configuration/globals';
-import { telemetryManager } from '../managers/telemetryManager';
-import { deepmerge } from '../helper/';
-import { ObservablesManager } from '../managers/observablesManager';
+import { Effect, Engine, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Observable, RenderingManager, Scene, SceneLoaderProgressEvent, TargetCamera, Tools, Vector3, Observer } from 'babylonjs';
+import { IModelConfiguration, IObserversConfiguration, ViewerConfiguration } from '../configuration/';
+import { processConfigurationCompatibility } from '../configuration/configurationCompatibility';
 import { ConfigurationContainer } from '../configuration/configurationContainer';
+import { viewerGlobals } from '../configuration/globals';
+import { ConfigurationLoader } from '../configuration/loader';
+import { deepmerge } from '../helper/';
+import { ModelLoader } from '../loader/modelLoader';
+import { ObservablesManager } from '../managers/observablesManager';
+import { SceneManager } from '../managers/sceneManager';
+import { telemetryManager } from '../managers/telemetryManager';
+import { ViewerModel } from '../model/viewerModel';
 import { TemplateManager } from '../templating/templateManager';
+import { viewerManager } from './viewerManager';
 
 /**
- * The AbstractViewr is the center of Babylon's viewer.
+ * The AbstractViewer is the center of Babylon's viewer.
  * It is the basic implementation of the default viewer and is responsible of loading and showing the model and the templates
  */
 export abstract class AbstractViewer {
@@ -35,7 +35,7 @@ export abstract class AbstractViewer {
     public readonly baseId: string;
 
     /**
-     * The last loader used to load a model. 
+     * The last loader used to load a model.
      * @deprecated
      */
     public lastUsedLoader: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
@@ -120,6 +120,19 @@ export abstract class AbstractViewer {
         return this.observablesManager.onFrameRenderedObservable;
     }
 
+    /**
+     * Observers registered here will be executed when VR more is entered.
+     */
+    public get onEnteringVRObservable(): Observable<AbstractViewer> {
+        return this.observablesManager.onEnteringVRObservable;
+    }
+    /**
+     * Observers registered here will be executed when VR mode is exited.
+     */
+    public get onExitingVRObservable(): Observable<AbstractViewer> {
+        return this.observablesManager.onExitingVRObservable;
+    }
+
     public observablesManager: ObservablesManager;
 
     /**
@@ -133,7 +146,6 @@ export abstract class AbstractViewer {
     public get canvas(): HTMLCanvasElement {
         return this._canvas;
     }
-
 
     /**
      * is this viewer disposed?
@@ -161,7 +173,7 @@ export abstract class AbstractViewer {
         return this._configurationContainer;
     }
 
-    constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = {}) {
+    constructor(public containerElement: Element, initialConfiguration: ViewerConfiguration = {}) {
         // if exists, use the container id. otherwise, generate a random string.
         if (containerElement.id) {
             this.baseId = containerElement.id;
@@ -172,9 +184,6 @@ export abstract class AbstractViewer {
         this._registeredOnBeforeRenderFunctions = [];
 
         this._configurationContainer = new ConfigurationContainer();
-
-        // add this viewer to the viewer manager
-        viewerManager.addViewer(this);
 
         this.observablesManager = new ObservablesManager();
 
@@ -198,6 +207,9 @@ export abstract class AbstractViewer {
         });
 
         this._prepareContainerElement();
+
+        // add this viewer to the viewer manager
+        viewerManager.addViewer(this);
 
     }
 
@@ -232,7 +244,7 @@ export abstract class AbstractViewer {
     }
 
     /**
-     * Get the configuration object. This is a reference only. 
+     * Get the configuration object. This is a reference only.
      * The configuration can ONLY be updated using the updateConfiguration function.
      * changing this object will have no direct effect on the scene.
      */
@@ -261,87 +273,114 @@ export abstract class AbstractViewer {
     private _vrModelRepositioning: number = 0;
     protected _vrScale: number = 1;
 
-    public toggleVR() {
-        this._vrToggled = !this._vrToggled;
+    protected _vrInit: boolean = false;
 
-        if (this._vrToggled && this.sceneManager.vrHelper) {
+    public toggleVR() {
+        if (!this._vrInit) {
+            this._initVR();
+        }
+
+        if (this.sceneManager.vrHelper && !this.sceneManager.vrHelper.isInVRMode) {
+
             // make sure the floor is set
             if (this.sceneManager.environmentHelper && this.sceneManager.environmentHelper.ground) {
                 this.sceneManager.vrHelper.addFloorMesh(this.sceneManager.environmentHelper.ground);
             }
 
+            this._vrToggled = true;
             this.sceneManager.vrHelper.enterVR();
-            // calculate position and vr scale
 
-            if (this.sceneManager.environmentHelper) {
-                this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(this._vrScale);
-                this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(this._vrScale);
-            }
-
-            // position the vr camera to be in front of the object
-            if (this.sceneManager.vrHelper.currentVRCamera) {
+            // position the vr camera to be in front of the object or wherever the user has configured it to be
+            if (this.sceneManager.vrHelper.currentVRCamera && this.sceneManager.vrHelper.currentVRCamera !== this.sceneManager.camera) {
                 if (this.configuration.vr && this.configuration.vr.cameraPosition !== undefined) {
                     this.sceneManager.vrHelper.currentVRCamera.position.copyFrom(this.configuration.vr.cameraPosition as Vector3);
                 } else {
                     this.sceneManager.vrHelper.currentVRCamera.position.copyFromFloats(0, this.sceneManager.vrHelper.currentVRCamera.position.y, -1);
                 }
                 (<TargetCamera>this.sceneManager.vrHelper.currentVRCamera).rotationQuaternion && (<TargetCamera>this.sceneManager.vrHelper.currentVRCamera).rotationQuaternion.copyFromFloats(0, 0, 0, 1);
+                // set the height of the model to be what the user has configured, or floating by default
                 if (this.configuration.vr && this.configuration.vr.modelHeightCorrection !== undefined) {
                     if (typeof this.configuration.vr.modelHeightCorrection === 'number') {
-                        this._vrModelRepositioning = this.configuration.vr.modelHeightCorrection
+                        this._vrModelRepositioning = this.configuration.vr.modelHeightCorrection;
                     } else if (this.configuration.vr.modelHeightCorrection) {
                         this._vrModelRepositioning = this.sceneManager.vrHelper.currentVRCamera.position.y / 2;
                     } else {
                         this._vrModelRepositioning = 0;
                     }
                 }
-            } else {
-                this._vrModelRepositioning = 0;
-            }
 
-            if (this.sceneManager.models.length) {
-                let boundingVectors = this.sceneManager.models[0].rootMesh.getHierarchyBoundingVectors();
-                let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
-                let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
-                this._vrScale = (1 / maxDimension);
-                if (this.configuration.vr && this.configuration.vr.objectScaleFactor) {
-                    this._vrScale *= this.configuration.vr.objectScaleFactor;
-                }
-
-                this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(this._vrScale);
-
-                // reposition the object to "float" in front of the user
-                this.sceneManager.models[0].rootMesh.position.y += this._vrModelRepositioning;
-                this.sceneManager.models[0].rootMesh.rotationQuaternion = null;
-            }
-
-            // post processing
-            if (this.sceneManager.defaultRenderingPipelineEnabled && this.sceneManager.defaultRenderingPipeline) {
-                this.sceneManager.defaultRenderingPipeline.imageProcessingEnabled = false;
-                this.sceneManager.defaultRenderingPipeline.prepare();
-            }
-        } else {
-            if (this.sceneManager.vrHelper) {
-                this.sceneManager.vrHelper.exitVR();
-                //this.sceneManager.scene.activeCamera = this.sceneManager.camera;
+                // scale the model
                 if (this.sceneManager.models.length) {
-                    this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(1 / this._vrScale);
-                    this.sceneManager.models[0].rootMesh.position.y -= this._vrModelRepositioning;
+                    let boundingVectors = this.sceneManager.models[0].rootMesh.getHierarchyBoundingVectors();
+                    let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
+                    let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
+                    this._vrScale = (1 / maxDimension);
+                    if (this.configuration.vr && this.configuration.vr.objectScaleFactor) {
+                        this._vrScale *= this.configuration.vr.objectScaleFactor;
+                    }
 
+                    this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(this._vrScale);
+
+                    // reposition the object to "float" in front of the user
+                    this.sceneManager.models[0].rootMesh.position.y += this._vrModelRepositioning;
+                    this.sceneManager.models[0].rootMesh.rotationQuaternion = null;
                 }
 
+                // scale the environment to match the model
                 if (this.sceneManager.environmentHelper) {
-                    this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(1 / this._vrScale);
-                    this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(1 / this._vrScale);
+                    this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(this._vrScale);
+                    this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(this._vrScale);
                 }
 
                 // post processing
                 if (this.sceneManager.defaultRenderingPipelineEnabled && this.sceneManager.defaultRenderingPipeline) {
-                    this.sceneManager.defaultRenderingPipeline.imageProcessingEnabled = true;
+                    this.sceneManager.defaultRenderingPipeline.imageProcessingEnabled = false;
                     this.sceneManager.defaultRenderingPipeline.prepare();
                 }
+            } else {
+                this._vrModelRepositioning = 0;
+            }
+        } else {
+            if (this.sceneManager.vrHelper) {
+                this.sceneManager.vrHelper.exitVR();
             }
         }
+    }
+
+    protected _initVR() {
+
+        if (this.sceneManager.vrHelper) {
+            this.observablesManager.onExitingVRObservable.add(() => {
+                if (this._vrToggled) {
+                    this._vrToggled = false;
+
+                    // undo the scaling of the model
+                    if (this.sceneManager.models.length) {
+                        this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(1 / this._vrScale);
+                        this.sceneManager.models[0].rootMesh.position.y -= this._vrModelRepositioning;
+                    }
+
+                    // undo the scaling of the environment
+                    if (this.sceneManager.environmentHelper) {
+                        this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(1 / this._vrScale);
+                        this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(1 / this._vrScale);
+                    }
+
+                    // post processing
+                    if (this.sceneManager.defaultRenderingPipelineEnabled && this.sceneManager.defaultRenderingPipeline) {
+                        this.sceneManager.defaultRenderingPipeline.imageProcessingEnabled = true;
+                        this.sceneManager.defaultRenderingPipeline.prepare();
+                    }
+
+                    // clear set height and eidth
+                    this.canvas.removeAttribute("height");
+                    this.canvas.removeAttribute("width");
+                    this.engine.resize();
+                }
+            });
+        }
+
+        this._vrInit = true;
     }
 
     /**
@@ -371,11 +410,11 @@ export abstract class AbstractViewer {
         }
         // TODO remove this after testing, as this is done in the updateConfiguration as well.
         if (this.configuration.loaderPlugins) {
-            Object.keys(this.configuration.loaderPlugins).forEach((name => {
+            Object.keys(this.configuration.loaderPlugins).forEach(((name) => {
                 if (this.configuration.loaderPlugins && this.configuration.loaderPlugins[name]) {
                     this.modelLoader.addPlugin(name);
                 }
-            }))
+            }));
         }
 
         this.templateManager = new TemplateManager(this.containerElement);
@@ -438,10 +477,10 @@ export abstract class AbstractViewer {
     /**
      * Update the current viewer configuration with new values.
      * Only provided information will be updated, old configuration values will be kept.
-     * If this.configuration was manually changed, you can trigger this function with no parameters, 
-     * and the entire configuration will be updated. 
+     * If this.configuration was manually changed, you can trigger this function with no parameters,
+     * and the entire configuration will be updated.
      * @param newConfiguration the partial configuration to update or a URL to a JSON holding the updated configuration
-     * 
+     *
      */
     public updateConfiguration(newConfiguration: Partial<ViewerConfiguration> | string = this.configuration) {
         if (typeof newConfiguration === "string") {
@@ -457,6 +496,8 @@ export abstract class AbstractViewer {
                 console.log("Error parsing file " + newConfiguration, error);
             });
         } else {
+            //backcompat
+            processConfigurationCompatibility(newConfiguration);
             // update this.configuration with the new data
             this._configurationContainer.configuration = deepmerge(this.configuration || {}, newConfiguration);
 
@@ -468,7 +509,7 @@ export abstract class AbstractViewer {
             }
 
             if (newConfiguration.loaderPlugins) {
-                Object.keys(newConfiguration.loaderPlugins).forEach((name => {
+                Object.keys(newConfiguration.loaderPlugins).forEach(((name) => {
                     if (newConfiguration.loaderPlugins && newConfiguration.loaderPlugins[name]) {
                         this.modelLoader.addPlugin(name);
                     }
@@ -507,7 +548,7 @@ export abstract class AbstractViewer {
     }
 
     /**
-     * Dispoe the entire viewer including the scene and the engine
+     * Dispose the entire viewer including the scene and the engine
      */
     public dispose() {
         if (this._isDisposed) {
@@ -523,8 +564,6 @@ export abstract class AbstractViewer {
         }
 
         this._fpsTimeoutInterval && clearInterval(this._fpsTimeoutInterval);
-
-
 
         this.observablesManager.dispose();
 
@@ -546,7 +585,7 @@ export abstract class AbstractViewer {
     /**
      * This function will execute when the HTML templates finished initializing.
      * It should initialize the engine and continue execution.
-     * 
+     *
      * @returns {Promise<AbstractViewer>} The viewer object will be returned after the object was loaded.
      */
     protected _onTemplatesLoaded(): Promise<AbstractViewer> {
@@ -570,24 +609,24 @@ export abstract class AbstractViewer {
             }).then(() => {
                 this._initTelemetryEvents();
                 if (autoLoad) {
-                    return this.loadModel(this.configuration.model!).catch(() => { }).then(() => { return this.sceneManager.scene });
+                    return this.loadModel(this.configuration.model!).catch(() => { }).then(() => { return this.sceneManager.scene; });
                 } else {
                     return this.sceneManager.scene || this.sceneManager.initScene(this.configuration.scene);
                 }
             }).then(() => {
                 return this.onInitDoneObservable.notifyObserversWithPromise(this);
-            }).catch(e => {
+            }).catch((e) => {
                 Tools.Warn(e.toString());
                 return this;
             });
-        })
+        });
     }
 
     /**
      * Initialize the engine. Retruns a promise in case async calls are needed.
-     * 
+     *
      * @protected
-     * @returns {Promise<Engine>} 
+     * @returns {Promise<Engine>}
      * @memberof Viewer
      */
     protected _initEngine(): Promise<Engine> {
@@ -609,9 +648,6 @@ export abstract class AbstractViewer {
         }
 
         this.engine = new Engine(this.canvas, !!config.antialiasing, config.engineOptions);
-
-        // Disable manifest checking
-        Database.IDBStorageEnabled = false;
 
         if (!config.disableResize) {
             window.addEventListener('resize', this._resize);
@@ -638,7 +674,7 @@ export abstract class AbstractViewer {
     /**
      * Initialize a model loading. The returned object (a ViewerModel object) will be loaded in the background.
      * The difference between this and loadModel is that loadModel will fulfill the promise when the model finished loading.
-     * 
+     *
      * @param modelConfig model configuration to use when loading the model.
      * @param clearScene should the scene be cleared before loading this model
      * @returns a ViewerModel object that is not yet fully loaded.
@@ -649,14 +685,14 @@ export abstract class AbstractViewer {
         if (typeof modelConfig === 'string') {
             configuration = {
                 url: modelConfig
-            }
+            };
         } else if (modelConfig instanceof File) {
             configuration = {
                 file: modelConfig,
                 root: "file:"
-            }
+            };
         } else {
-            configuration = modelConfig
+            configuration = modelConfig;
         }
 
         if (!configuration.url && !configuration.file) {
@@ -669,7 +705,7 @@ export abstract class AbstractViewer {
 
         //merge the configuration for future models:
         if (this.configuration.model && typeof this.configuration.model === 'object') {
-            let globalConfig = deepmerge({}, this.configuration.model)
+            let globalConfig = deepmerge({}, this.configuration.model);
             configuration = deepmerge(globalConfig, configuration);
             if (modelConfig instanceof File) {
                 configuration.file = modelConfig;
@@ -702,10 +738,10 @@ export abstract class AbstractViewer {
      * load a model using the provided configuration.
      * This function, as opposed to initModel, will return a promise that resolves when the model is loaded, and rejects with error.
      * If you want to attach to the observables of the model, use initModle instead.
-     * 
+     *
      * @param modelConfig the model configuration or URL to load.
      * @param clearScene Should the scene be cleared before loading the model
-     * @returns a Promise the fulfills when the model finished loading successfully. 
+     * @returns a Promise the fulfills when the model finished loading successfully.
      */
     public loadModel(modelConfig: string | File | IModelConfiguration, clearScene: boolean = true): Promise<ViewerModel> {
         if (this._isLoading) {
@@ -714,7 +750,7 @@ export abstract class AbstractViewer {
         }
 
         return Promise.resolve(this.sceneManager.scene).then((scene) => {
-            if (!scene) return this.sceneManager.initScene(this.configuration.scene, this.configuration.optimizer);
+            if (!scene) { return this.sceneManager.initScene(this.configuration.scene, this.configuration.optimizer); }
             return scene;
         }).then(() => {
             let model = this.initModel(modelConfig, clearScene);
@@ -727,11 +763,10 @@ export abstract class AbstractViewer {
                     reject(error);
                 });
             });
-        })
+        });
     }
 
     private _fpsTimeoutInterval: number;
-
 
     protected _initTelemetryEvents() {
         telemetryManager.broadcast("Engine Capabilities", this.baseId, this.engine.getCaps());
@@ -761,13 +796,13 @@ export abstract class AbstractViewer {
             return;
         }
         if (customShaders.shaders) {
-            Object.keys(customShaders.shaders).forEach(key => {
+            Object.keys(customShaders.shaders).forEach((key) => {
                 // typescript considers a callback "unsafe", so... '!'
                 Effect.ShadersStore[key] = customShaders!.shaders![key];
             });
         }
         if (customShaders.includes) {
-            Object.keys(customShaders.includes).forEach(key => {
+            Object.keys(customShaders.includes).forEach((key) => {
                 // typescript considers a callback "unsafe", so... '!'
                 Effect.IncludesShadersStore[key] = customShaders!.includes![key];
             });

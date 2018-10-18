@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
 	 * PostProcessManager is used to manage one or more post processes or post process pipelines
      * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
@@ -49,6 +49,7 @@
 
         /**
          * Rebuilds the vertex buffers of the manager.
+         * @hidden
          */
         public _rebuild(): void {
             let vb = this._vertexBuffers[VertexBuffer.PositionKind];
@@ -66,6 +67,7 @@
          * @param sourceTexture The input texture to the post procesess. (default: null)
          * @param postProcesses An array of post processes to be run. (default: null)
          * @returns True if the post processes were able to be run.
+         * @hidden
          */
         public _prepareFrame(sourceTexture: Nullable<InternalTexture> = null, postProcesses: Nullable<PostProcess[]> = null): boolean {
             let camera = this._scene.activeCamera;
@@ -73,7 +75,7 @@
                 return false;
             }
 
-            var postProcesses = postProcesses || (<Nullable<PostProcess[]>>camera._postProcesses.filter((pp)=>{return pp != null;}));
+            var postProcesses = postProcesses || (<Nullable<PostProcess[]>>camera._postProcesses.filter((pp) => { return pp != null; }));
 
             if (!postProcesses || postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return false;
@@ -134,6 +136,7 @@
          * @param faceIndex The index of the face to bind the target texture to.
          * @param postProcesses The array of post processes to render.
          * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight (default: false)
+         * @hidden
          */
         public _finalizeFrame(doNotPresent?: boolean, targetTexture?: InternalTexture, faceIndex?: number, postProcesses?: Array<PostProcess>, forceFullscreenViewport = false): void {
             let camera = this._scene.activeCamera;
@@ -142,7 +145,7 @@
                 return;
             }
 
-            postProcesses = postProcesses || <Array<PostProcess>>camera._postProcesses.filter((pp)=>{return pp != null;});
+            postProcesses = postProcesses || <Array<PostProcess>>camera._postProcesses.filter((pp) => { return pp != null; });
             if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return;
             }
@@ -166,7 +169,7 @@
                 if (doNotPresent) {
                     break;
                 }
-                
+
                 var effect = pp.apply();
 
                 if (effect) {
@@ -205,4 +208,4 @@
             }
         }
     }
-} 
+}

@@ -1,11 +1,11 @@
 module BABYLON {
     /**
      * Display a 360 degree photo on an approximately spherical surface, useful for VR applications or skyboxes.
-     * As a subclass of Node, this allow parenting to the camera with different locations in the scene.
+     * As a subclass of TransformNode, this allow parenting to the camera with different locations in the scene.
      * This class achieves its effect with a Texture and a correctly configured BackgroundMaterial on an inverted sphere.
      * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
      */
-    export class PhotoDome extends Node {
+    export class PhotoDome extends TransformNode {
         private _useDirectMapping = false;
 
         /**
@@ -18,7 +18,7 @@ module BABYLON {
          */
         public get photoTexture(): Texture {
             return this._photoTexture;
-        }        
+        }
 
         public set photoTexture(value: Texture) {
             if (this._photoTexture === value) {
@@ -26,7 +26,7 @@ module BABYLON {
             }
             this._photoTexture = value;
             if (this._useDirectMapping) {
-                this._photoTexture.wrapU = Texture.CLAMP_ADDRESSMODE;     
+                this._photoTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
                 this._photoTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
                 this._material.diffuseTexture = this._photoTexture;
             } else {
@@ -34,8 +34,12 @@ module BABYLON {
                 this._photoTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
                 this._material.reflectionTexture = this._photoTexture;
             }
-        }        
+        }
 
+        /**
+         * Observable raised when an error occured while loading the 360 image
+         */
+        public onLoadErrorObservable = new Observable<string>();
 
         /**
          * The skybox material
@@ -61,14 +65,15 @@ module BABYLON {
         /**
          * Create an instance of this class and pass through the parameters to the relevant classes, Texture, StandardMaterial, and Mesh.
          * @param name Element's name, child elements will append suffixes for their own names.
-         * @param urlsOfPhoto define the url of the photo to display
-         * @param options An object containing optional or exposed sub element properties
+         * @param urlsOfPhoto defines the url of the photo to display
+         * @param options defines an object containing optional or exposed sub element properties
+         * @param onError defines a callback called when an error occured while loading the texture
          */
         constructor(name: string, urlOfPhoto: string, options: {
             resolution?: number,
             size?: number,
             useDirectMapping?: boolean
-        }, scene: Scene) {
+        }, scene: Scene, onError: Nullable<(message?: string, exception?: any) => void> = null) {
             super(name, scene);
 
             // set defaults and manage values
@@ -77,10 +82,12 @@ module BABYLON {
             options.size = Math.abs(options.size as any) || (scene.activeCamera ? scene.activeCamera.maxZ * 0.48 : 1000);
 
             if (options.useDirectMapping === undefined) {
-                this._useDirectMapping = true;    
+                this._useDirectMapping = true;
             } else {
-                this._useDirectMapping = options.useDirectMapping;            
+                this._useDirectMapping = options.useDirectMapping;
             }
+
+            this._setReady(false);
 
             // create
             let material = this._material = new BackgroundMaterial(name + "_material", scene);
@@ -91,8 +98,18 @@ module BABYLON {
             material.useEquirectangularFOV = true;
             material.fovMultiplier = 1.0;
 
-            this.photoTexture = new Texture(urlOfPhoto, scene, true, !this._useDirectMapping);
-           
+            this.photoTexture = new Texture(urlOfPhoto, scene, true, !this._useDirectMapping, undefined, undefined, (message, exception) => {
+                this.onLoadErrorObservable.notifyObservers(message || "Unknown error occured");
+
+                if (onError) {
+                    onError(message, exception);
+                }
+            });
+
+            this.photoTexture.onLoadObservable.addOnce(() => {
+                this._setReady(true);
+            }) ;
+
             // configure mesh
             this._mesh.material = material;
             this._mesh.parent = this;
@@ -107,6 +124,8 @@ module BABYLON {
             this._photoTexture.dispose();
             this._mesh.dispose();
             this._material.dispose();
+
+            this.onLoadErrorObservable.clear();
 
             super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }

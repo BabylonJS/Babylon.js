@@ -1,7 +1,7 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * @hidden
-     **/        
+     **/
     export class _DepthCullingState {
         private _isDepthTestDirty = false;
         private _isDepthMaskDirty = false;

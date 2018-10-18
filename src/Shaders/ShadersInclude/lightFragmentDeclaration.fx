@@ -1,6 +1,7 @@
 ﻿#ifdef LIGHT{X}
 	uniform vec4 vLightData{X};
 	uniform vec4 vLightDiffuse{X};
+
 	#ifdef SPECULARTERM
 		uniform vec3 vLightSpecular{X};
 	#else
@@ -28,8 +29,10 @@
 	#endif
 	#ifdef SPOTLIGHT{X}
 		uniform vec4 vLightDirection{X};
-	#endif
-	#ifdef HEMILIGHT{X}
+		uniform vec4 vLightFalloff{X};
+	#elif defined(POINTLIGHT{X})
+		uniform vec4 vLightFalloff{X};
+	#elif defined(HEMILIGHT{X})
 		uniform vec3 vLightGround{X};
 	#endif
 	#ifdef PROJECTEDLIGHTTEXTURE{X}

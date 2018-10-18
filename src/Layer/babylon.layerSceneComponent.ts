@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     export interface AbstractScene {
         /**
          * The list of layers (background and foreground) of the scene
@@ -22,7 +22,6 @@
         public scene: Scene;
 
         private _engine: Engine;
-        private _layers: Array<Layer>;
 
         /**
          * Creates a new instance of the component for the given scene
@@ -31,7 +30,7 @@
         constructor(scene: Scene) {
             this.scene = scene;
             this._engine = scene.getEngine();
-            this._layers = scene.layers = new Array<Layer>();
+            scene.layers = new Array<Layer>();
         }
 
         /**
@@ -47,7 +46,9 @@
          * context lost for instance.
          */
         public rebuild(): void {
-            for (let layer of this._layers) {
+            let layers = this.scene.layers;
+
+            for (let layer of layers) {
                 layer._rebuild();
             }
         }
@@ -56,16 +57,20 @@
          * Disposes the component and the associated ressources.
          */
         public dispose(): void {
-            while (this._layers.length) {
-                this._layers[0].dispose();
+            let layers = this.scene.layers;
+
+            while (layers.length) {
+                layers[0].dispose();
             }
         }
 
         private _draw(camera: Camera, isBackground: boolean): void {
-            if (this._layers.length) {
+            let layers = this.scene.layers;
+
+            if (layers.length) {
                 this._engine.setDepthBuffer(false);
                 const cameraLayerMask = camera.layerMask;
-                for (let layer of this._layers) {
+                for (let layer of layers) {
                     if (layer.isBackground === isBackground && ((layer.layerMask & cameraLayerMask) !== 0)) {
                         layer.render();
                     }
@@ -82,4 +87,4 @@
             this._draw(camera, false);
         }
     }
-} 
+}

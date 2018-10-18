@@ -1,6 +1,7 @@
 module BABYLON {
     /**
      * This class can be used to get instrumentation data from a Babylon engine
+     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
      */
     export class SceneInstrumentation implements IDisposable {
         private _captureActiveMeshesEvaluationTime = false;
@@ -214,6 +215,10 @@ module BABYLON {
 
             this._captureSpritesRenderTime = value;
 
+            if (!this.scene.spriteManagers) {
+                return;
+            }
+
             if (value) {
                 this._onBeforeSpritesRenderingObserver = this.scene.onBeforeSpritesRenderingObservable.add(() => {
                     Tools.StartPerformanceCounter("Sprites");
@@ -255,6 +260,10 @@ module BABYLON {
                 return;
             }
 
+            if (!this.scene.onBeforePhysicsObservable) {
+                return;
+            }
+
             this._capturePhysicsTime = value;
 
             if (value) {
@@ -275,7 +284,6 @@ module BABYLON {
                 this._onAfterPhysicsObserver = null;
             }
         }
-
 
         /**
          * Gets the perf counter used for animations time
@@ -420,12 +428,12 @@ module BABYLON {
             this._captureCameraRenderTime = value;
 
             if (value) {
-                this._onBeforeCameraRenderObserver = this.scene.onBeforeCameraRenderObservable.add(camera => {
+                this._onBeforeCameraRenderObserver = this.scene.onBeforeCameraRenderObservable.add((camera) => {
                     this._cameraRenderTime.beginMonitoring();
                     Tools.StartPerformanceCounter(`Rendering camera ${camera.name}`);
                 });
 
-                this._onAfterCameraRenderObserver = this.scene.onAfterCameraRenderObservable.add(camera => {
+                this._onAfterCameraRenderObserver = this.scene.onAfterCameraRenderObservable.add((camera) => {
                     this._cameraRenderTime.endMonitoring(false);
                     Tools.EndPerformanceCounter(`Rendering camera ${camera.name}`);
                 });
@@ -445,13 +453,23 @@ module BABYLON {
         }
 
         /**
-         * Gets the perf counter used for texture collisions 
+         * Gets the perf counter used for texture collisions
          */
         public get textureCollisionsCounter(): PerfCounter {
             return this.scene.getEngine()._textureCollisions;
         }
 
-        public constructor(public scene: Scene) {
+        /**
+         * Instantiates a new scene instrumentation.
+         * This class can be used to get instrumentation data from a Babylon engine
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
+         * @param scene Defines the scene to instrument
+         */
+        public constructor(
+            /**
+             * Defines the scene to instrument
+             */
+            public scene: Scene) {
             // Before render
             this._onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
                 if (this._captureActiveMeshesEvaluationTime) {
@@ -504,6 +522,9 @@ module BABYLON {
             });
         }
 
+        /**
+         * Dispose and release associated resources.
+         */
         public dispose() {
             this.scene.onAfterRenderObservable.remove(this._onAfterRenderObserver);
             this._onAfterRenderObserver = null;
@@ -529,11 +550,15 @@ module BABYLON {
             this.scene.onAfterParticlesRenderingObservable.remove(this._onAfterParticlesRenderingObserver);
             this._onAfterParticlesRenderingObserver = null;
 
-            this.scene.onBeforeSpritesRenderingObservable.remove(this._onBeforeSpritesRenderingObserver);
-            this._onBeforeSpritesRenderingObserver = null;
+            if (this._onBeforeSpritesRenderingObserver) {
+                this.scene.onBeforeSpritesRenderingObservable.remove(this._onBeforeSpritesRenderingObserver);
+                this._onBeforeSpritesRenderingObserver = null;
+            }
 
-            this.scene.onAfterSpritesRenderingObservable.remove(this._onAfterSpritesRenderingObserver);
-            this._onAfterSpritesRenderingObserver = null;
+            if (this._onAfterSpritesRenderingObserver) {
+                this.scene.onAfterSpritesRenderingObservable.remove(this._onAfterSpritesRenderingObserver);
+                this._onAfterSpritesRenderingObserver = null;
+            }
 
             this.scene.onBeforeDrawPhaseObservable.remove(this._onBeforeDrawPhaseObserver);
             this._onBeforeDrawPhaseObserver = null;
@@ -541,11 +566,15 @@ module BABYLON {
             this.scene.onAfterDrawPhaseObservable.remove(this._onAfterDrawPhaseObserver);
             this._onAfterDrawPhaseObserver = null;
 
-            this.scene.onBeforePhysicsObservable.remove(this._onBeforePhysicsObserver);
-            this._onBeforePhysicsObserver = null;
+            if (this._onBeforePhysicsObserver) {
+                this.scene.onBeforePhysicsObservable.remove(this._onBeforePhysicsObserver);
+                this._onBeforePhysicsObserver = null;
+            }
 
-            this.scene.onAfterPhysicsObservable.remove(this._onAfterPhysicsObserver);
-            this._onAfterPhysicsObserver = null;
+            if (this._onAfterPhysicsObserver) {
+                this.scene.onAfterPhysicsObservable.remove(this._onAfterPhysicsObserver);
+                this._onAfterPhysicsObserver = null;
+            }
 
             this.scene.onAfterAnimationsObservable.remove(this._onAfterAnimationsObserver);
             this._onAfterAnimationsObserver = null;

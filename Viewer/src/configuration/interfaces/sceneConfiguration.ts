@@ -5,6 +5,7 @@ import { IGlowLayerOptions } from "babylonjs";
 export interface ISceneConfiguration {
     debug?: boolean;
     clearColor?: { r: number, g: number, b: number, a: number };
+    /** Deprecated, use environmentMap.mainColor instead. */
     mainColor?: { r?: number, g?: number, b?: number };
     imageProcessingConfiguration?: IImageProcessingConfiguration;
     environmentTexture?: string;
@@ -36,5 +37,6 @@ export interface ISceneConfiguration {
         spritesEnabled?: boolean;
         skeletonsEnabled?: boolean;
         audioEnabled?: boolean;
-    }
+    };
+    assetsRootURL?: string;
 }

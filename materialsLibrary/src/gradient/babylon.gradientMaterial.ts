@@ -1,9 +1,12 @@
-﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
     class GradientMaterialDefines extends MaterialDefines {
         public DIFFUSE = false;
         public CLIPPLANE = false;
+        public CLIPPLANE2 = false;
+        public CLIPPLANE3 = false;
+        public CLIPPLANE4 = false;
         public ALPHATEST = false;
         public DEPTHPREPASS = false;
         public POINTSIZE = false;
@@ -90,6 +93,9 @@ module BABYLON {
         public offset = 0;
 
         @serialize()
+        public scale = 1.0;
+
+        @serialize()
         public smoothness = 1.0;
 
         @serialize()
@@ -113,7 +119,7 @@ module BABYLON {
             return null;
         }
 
-        // Methods   
+        // Methods
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
@@ -145,7 +151,7 @@ module BABYLON {
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true);
 
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
 
@@ -185,7 +191,6 @@ module BABYLON {
                 MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
                 MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
-
                 // Legacy browser patch
                 var shaderName = "gradient";
                 var join = defines.toString();
@@ -194,8 +199,8 @@ module BABYLON {
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos",
                     "mBones",
-                    "vClipPlane", "diffuseMatrix",
-                    "topColor", "bottomColor", "offset", "smoothness"
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix",
+                    "topColor", "bottomColor", "offset", "smoothness", "scale"
                 ];
                 var samplers = ["diffuseSampler"];
                 var uniformBuffers = new Array<string>();
@@ -246,7 +251,7 @@ module BABYLON {
 
             this._activeEffect = effect;
 
-            // Matrices        
+            // Matrices
             this.bindOnlyWorldMatrix(world);
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
@@ -282,6 +287,7 @@ module BABYLON {
             this._activeEffect.setColor4("topColor", this.topColor, this.topColorAlpha);
             this._activeEffect.setColor4("bottomColor", this.bottomColor, this.bottomColorAlpha);
             this._activeEffect.setFloat("offset", this.offset);
+            this._activeEffect.setFloat("scale", this.scale);
             this._activeEffect.setFloat("smoothness", this.smoothness);
 
             this._afterBind(mesh, this._activeEffect);
@@ -316,4 +322,3 @@ module BABYLON {
         }
     }
 }
-

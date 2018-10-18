@@ -1,43 +1,93 @@
-﻿module BABYLON {
+module BABYLON {
+    /**
+     * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
+     * This is the base class of any Procedural texture and contains most of the shareable code.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_procedural_textures
+     */
     export class ProceduralTexture extends Texture {
+        /**
+         * Define if the texture is enabled or not (disabled texture will not render)
+         */
         @serialize()
-        private _size: number;
+        public isEnabled = true;
 
+        /**
+         * Define if the texture must be cleared before rendering (default is true)
+         */
+        @serialize()
+        public autoClear = true;
+
+        /**
+         * Callback called when the texture is generated
+         */
+        public onGenerated: () => void;
+
+        /**
+         * Event raised when the texture is generated
+         */
+        public onGeneratedObservable = new Observable<ProceduralTexture>();
+
+        /** @hidden */
         @serialize()
         public _generateMipMaps: boolean;
 
+        /** @hidden **/
+        public _effect: Effect;
+
+        /** @hidden */
+        public _textures: { [key: string]: Texture } = {};
+
         @serialize()
-        public isEnabled = true;
+        private _size: number;
         private _currentRefreshId = -1;
         private _refreshRate = 1;
-
-        public onGenerated: () => void;
-
         private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
         private _indexBuffer: Nullable<WebGLBuffer>;
-        private _effect: Effect;
-
         private _uniforms = new Array<string>();
         private _samplers = new Array<string>();
         private _fragment: any;
 
-        public _textures: {[key: string]: Texture} = {};
-        private _floats: {[key: string]: number} = {};
-        private _floatsArrays: {[key: string]: number[]} = {};
-        private _colors3: {[key: string]: Color3} = {};
-        private _colors4: {[key: string]: Color4} = {};
-        private _vectors2: {[key: string]: Vector2} = {};
-        private _vectors3: {[key: string]: Vector3} = {};
-        private _matrices: {[key: string]: Matrix} = {};
+        private _floats: { [key: string]: number } = {};
+        private _ints: { [key: string]: number } = {};
+        private _floatsArrays: { [key: string]: number[] } = {};
+        private _colors3: { [key: string]: Color3 } = {};
+        private _colors4: { [key: string]: Color4 } = {};
+        private _vectors2: { [key: string]: Vector2 } = {};
+        private _vectors3: { [key: string]: Vector3 } = {};
+        private _matrices: { [key: string]: Matrix } = {};
 
         private _fallbackTexture: Nullable<Texture>;
 
         private _fallbackTextureUsed = false;
         private _engine: Engine;
 
-        constructor(name: string, size: any, fragment: any, scene: Scene, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, public isCube = false) {
+        private _cachedDefines = "";
+
+        private _contentUpdateId = -1;
+        private _contentData: Nullable<ArrayBufferView>;
+
+        /**
+         * Instantiates a new procedural texture.
+         * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
+         * This is the base class of any Procedural texture and contains most of the shareable code.
+         * @see http://doc.babylonjs.com/how_to/how_to_use_procedural_textures
+         * @param name  Define the name of the texture
+         * @param size Define the size of the texture to create
+         * @param fragment Define the fragment shader to use to generate the texture or null if it is defined later
+         * @param scene Define the scene the texture belongs to
+         * @param fallbackTexture Define a fallback texture in case there were issues to create the custom texture
+         * @param generateMipMaps Define if the texture should creates mip maps or not
+         * @param isCube Define if the texture is a cube texture or not (this will render each faces of the cube)
+         */
+        constructor(name: string, size: any, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, public isCube = false) {
             super(null, scene, !generateMipMaps);
 
+            scene = this.getScene()!;
+            let component = scene._getComponent(SceneComponentConstants.NAME_PROCEDURALTEXTURE);
+            if (!component) {
+                component = new ProceduralTextureSceneComponent(scene);
+                scene._addComponent(component);
+            }
             scene.proceduralTextures.push(this);
 
             this._engine = scene.getEngine();
@@ -52,11 +102,11 @@
             this._fallbackTexture = fallbackTexture;
 
             if (isCube) {
-                this._texture = this._engine.createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
+                this._texture = this._engine.createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false });
                 this.setFloat("face", 0);
             }
             else {
-                this._texture = this._engine.createRenderTargetTexture(size, generateMipMaps);
+                this._texture = this._engine.createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false });
             }
 
             // VBO
@@ -69,6 +119,29 @@
             this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(this._engine, vertices, VertexBuffer.PositionKind, false, false, 2);
 
             this._createIndexBuffer();
+        }
+
+        /**
+         * The effect that is created when initializing the post process.
+         * @returns The created effect corrisponding the the postprocess.
+         */
+        public getEffect(): Effect {
+            return this._effect;
+        }
+
+        /**
+         * Gets texture content (Use this function wisely as reading from a texture can be slow)
+         * @returns an ArrayBufferView (Uint8Array or Float32Array)
+         */
+        public getContent(): Nullable<ArrayBufferView> {
+            if (this._contentData && this._currentRefreshId == this._contentUpdateId) {
+                return this._contentData;
+            }
+
+            this._contentData = this.readPixels(0, 0, this._contentData);
+            this._contentUpdateId = this._currentRefreshId;
+
+            return this._contentData;
         }
 
         private _createIndexBuffer(): void {
@@ -87,30 +160,42 @@
             this._indexBuffer = engine.createIndexBuffer(indices);
         }
 
+        /** @hidden */
         public _rebuild(): void {
             let vb = this._vertexBuffers[VertexBuffer.PositionKind];
 
             if (vb) {
                 vb._rebuild();
             }
-            
+
             this._createIndexBuffer();
 
             if (this.refreshRate === RenderTargetTexture.REFRESHRATE_RENDER_ONCE) {
                 this.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
-            }            
+            }
         }
 
+        /**
+         * Resets the texture in order to recreate its associated resources.
+         * This can be called in case of context loss
+         */
         public reset(): void {
             if (this._effect === undefined) {
                 return;
-            }      
-            
+            }
+
             var engine = this._engine;
             engine._releaseEffect(this._effect);
         }
 
+        protected _getDefines(): string {
+            return "";
+        }
 
+        /**
+         * Is the texture ready to be used ? (rendered at least once)
+         * @returns true if ready, otherwise, false.
+         */
         public isReady(): boolean {
             var engine = this._engine;
             var shaders;
@@ -123,6 +208,11 @@
                 return true;
             }
 
+            let defines = this._getDefines();
+            if (this._effect && defines === this._cachedDefines && this._effect.isReady()) {
+                return true;
+            }
+
             if (this._fragment.fragmentElement !== undefined) {
                 shaders = { vertex: "procedural", fragmentElement: this._fragment.fragmentElement };
             }
@@ -130,11 +220,13 @@
                 shaders = { vertex: "procedural", fragment: this._fragment };
             }
 
+            this._cachedDefines = defines;
+
             this._effect = engine.createEffect(shaders,
                 [VertexBuffer.PositionKind],
                 this._uniforms,
                 this._samplers,
-                "", undefined, undefined, () => {
+                defines, undefined, undefined, () => {
                     this.releaseInternalTexture();
 
                     if (this._fallbackTexture) {
@@ -151,27 +243,42 @@
             return this._effect.isReady();
         }
 
+        /**
+         * Resets the refresh counter of the texture and start bak from scratch.
+         * Could be usefull to regenerate the texture if it is setup to render only once.
+         */
         public resetRefreshCounter(): void {
             this._currentRefreshId = -1;
         }
 
+        /**
+         * Set the fragment shader to use in order to render the texture.
+         * @param fragment This can be set to a path (into the shader store) or to a json object containing a fragmentElement property.
+         */
         public setFragment(fragment: any) {
             this._fragment = fragment;
         }
 
+        /**
+         * Define the refresh rate of the texture or the rendering frequency.
+         * Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
+         */
         @serialize()
         public get refreshRate(): number {
             return this._refreshRate;
         }
 
-        // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
         public set refreshRate(value: number) {
             this._refreshRate = value;
             this.resetRefreshCounter();
         }
 
+        /** @hidden */
         public _shouldRender(): boolean {
             if (!this.isEnabled || !this.isReady() || !this._texture) {
+                if (this._texture) {
+                    this._texture.isReady = false;
+                }
                 return false;
             }
 
@@ -193,10 +300,19 @@
             return false;
         }
 
+        /**
+         * Get the size the texture is rendering at.
+         * @returns the size (texture is always squared)
+         */
         public getRenderSize(): number {
             return this._size;
         }
 
+        /**
+         * Resize the texture to new value.
+         * @param size Define the new size the texture should have
+         * @param generateMipMaps Define whether the new texture should create mip maps
+         */
         public resize(size: number, generateMipMaps: boolean): void {
             if (this._fallbackTextureUsed) {
                 return;
@@ -216,6 +332,12 @@
             }
         }
 
+        /**
+         * Set a texture in the shader program used to render.
+         * @param name Define the name of the uniform samplers as defined in the shader
+         * @param texture Define the texture to bind to this sampler
+         * @return the texture itself allowing "fluent" like uniform updates
+         */
         public setTexture(name: string, texture: Texture): ProceduralTexture {
             if (this._samplers.indexOf(name) === -1) {
                 this._samplers.push(name);
@@ -225,6 +347,12 @@
             return this;
         }
 
+        /**
+         * Set a float in the shader.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the texture itself allowing "fluent" like uniform updates
+         */
         public setFloat(name: string, value: number): ProceduralTexture {
             this._checkUniform(name);
             this._floats[name] = value;
@@ -232,6 +360,25 @@
             return this;
         }
 
+        /**
+         * Set a int in the shader.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the texture itself allowing "fluent" like uniform updates
+         */
+        public setInt(name: string, value: number): ProceduralTexture {
+            this._checkUniform(name);
+            this._ints[name] = value;
+
+            return this;
+        }
+
+        /**
+         * Set an array of floats in the shader.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the texture itself allowing "fluent" like uniform updates
+         */
         public setFloats(name: string, value: number[]): ProceduralTexture {
             this._checkUniform(name);
             this._floatsArrays[name] = value;
@@ -239,6 +386,12 @@
             return this;
         }
 
+        /**
+         * Set a vec3 in the shader from a Color3.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the texture itself allowing "fluent" like uniform updates
+         */
         public setColor3(name: string, value: Color3): ProceduralTexture {
             this._checkUniform(name);
             this._colors3[name] = value;
@@ -246,6 +399,12 @@
             return this;
         }
 
+        /**
+         * Set a vec4 in the shader from a Color4.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the texture itself allowing "fluent" like uniform updates
+         */
         public setColor4(name: string, value: Color4): ProceduralTexture {
             this._checkUniform(name);
             this._colors4[name] = value;
@@ -253,6 +412,12 @@
             return this;
         }
 
+        /**
+         * Set a vec2 in the shader from a Vector2.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the texture itself allowing "fluent" like uniform updates
+         */
         public setVector2(name: string, value: Vector2): ProceduralTexture {
             this._checkUniform(name);
             this._vectors2[name] = value;
@@ -260,6 +425,12 @@
             return this;
         }
 
+        /**
+         * Set a vec3 in the shader from a Vector3.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the texture itself allowing "fluent" like uniform updates
+         */
         public setVector3(name: string, value: Vector3): ProceduralTexture {
             this._checkUniform(name);
             this._vectors3[name] = value;
@@ -267,6 +438,12 @@
             return this;
         }
 
+        /**
+         * Set a mat4 in the shader from a MAtrix.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the texture itself allowing "fluent" like uniform updates
+         */
         public setMatrix(name: string, value: Matrix): ProceduralTexture {
             this._checkUniform(name);
             this._matrices[name] = value;
@@ -274,6 +451,10 @@
             return this;
         }
 
+        /**
+         * Render the texture to its associated render target.
+         * @param useCameraPostProcess Define if camera post process should be applied to the texture
+         */
         public render(useCameraPostProcess?: boolean): void {
             var scene = this.getScene();
 
@@ -292,42 +473,47 @@
                 this._effect.setTexture(name, this._textures[name]);
             }
 
-            // Float    
+            // Float
+            for (name in this._ints) {
+                this._effect.setInt(name, this._ints[name]);
+            }
+
+            // Float
             for (name in this._floats) {
                 this._effect.setFloat(name, this._floats[name]);
             }
 
-            // Floats   
+            // Floats
             for (name in this._floatsArrays) {
                 this._effect.setArray(name, this._floatsArrays[name]);
             }
 
-            // Color3        
+            // Color3
             for (name in this._colors3) {
                 this._effect.setColor3(name, this._colors3[name]);
             }
 
-            // Color4      
+            // Color4
             for (name in this._colors4) {
                 var color = this._colors4[name];
                 this._effect.setFloat4(name, color.r, color.g, color.b, color.a);
             }
 
-            // Vector2        
+            // Vector2
             for (name in this._vectors2) {
                 this._effect.setVector2(name, this._vectors2[name]);
             }
 
-            // Vector3        
+            // Vector3
             for (name in this._vectors3) {
                 this._effect.setVector3(name, this._vectors3[name]);
             }
 
-            // Matrix      
+            // Matrix
             for (name in this._matrices) {
                 this._effect.setMatrix(name, this._matrices[name]);
-            }           
-            
+            }
+
             if (!this._texture) {
                 return;
             }
@@ -342,7 +528,9 @@
                     this._effect.setFloat("face", face);
 
                     // Clear
-                    engine.clear(scene.clearColor, true, true, true);
+                    if (this.autoClear) {
+                        engine.clear(scene.clearColor, true, false, false);
+                    }
 
                     // Draw order
                     engine.drawElementsType(Material.TriangleFillMode, 0, 6);
@@ -359,7 +547,9 @@
                 engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
 
                 // Clear
-                engine.clear(scene.clearColor, true, true, true);
+                if (this.autoClear) {
+                    engine.clear(scene.clearColor, true, false, false);
+                }
 
                 // Draw order
                 engine.drawElementsType(Material.TriangleFillMode, 0, 6);
@@ -371,8 +561,14 @@
             if (this.onGenerated) {
                 this.onGenerated();
             }
+
+            this.onGeneratedObservable.notifyObservers(this);
         }
 
+        /**
+         * Clone the texture.
+         * @returns the cloned texture
+         */
         public clone(): ProceduralTexture {
             var textureSize = this.getSize();
             var newTexture = new ProceduralTexture(this.name, textureSize.width, this._fragment, <Scene>this.getScene(), this._fallbackTexture, this._generateMipMaps);
@@ -387,6 +583,9 @@
             return newTexture;
         }
 
+        /**
+         * Dispose the texture and release its asoociated resources.
+         */
         public dispose(): void {
             let scene = this.getScene();
 
@@ -413,4 +612,4 @@
             super.dispose();
         }
     }
-} 
+}

@@ -1,9 +1,12 @@
-﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
     class LavaMaterialDefines extends MaterialDefines {
         public DIFFUSE = false;
         public CLIPPLANE = false;
+        public CLIPPLANE2 = false;
+        public CLIPPLANE3 = false;
+        public CLIPPLANE4 = false;
         public ALPHATEST = false;
         public DEPTHPREPASS = false;
         public POINTSIZE = false;
@@ -57,6 +60,7 @@ module BABYLON {
         public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
         public INSTANCES = false;
+        public UNLIT = false;
 
         constructor() {
             super();
@@ -98,6 +102,11 @@ module BABYLON {
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public disableLighting: boolean;
 
+        @serialize("unlit")
+        private _unlit = false;
+        @expandToProperty("_markAllSubMeshesAsLightsDirty")
+        public unlit: boolean;
+
         @serialize("maxSimultaneousLights")
         private _maxSimultaneousLights = 4;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
@@ -122,7 +131,7 @@ module BABYLON {
             return null;
         }
 
-        // Methods   
+        // Methods
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
@@ -164,7 +173,9 @@ module BABYLON {
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
             // Lights
-            defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
+            defines._needNormals = true;
+
+            MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
             // Values that need to be evaluated on every frame
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
@@ -172,7 +183,7 @@ module BABYLON {
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
                 scene.resetCachedMaterial();
@@ -219,7 +230,7 @@ module BABYLON {
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos",
                     "mBones",
-                    "vClipPlane", "diffuseMatrix",
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix",
                     "time", "speed", "movingSpeed",
                     "fogColor", "fogDensity", "lowFrequencySpeed"
                 ];
@@ -227,7 +238,7 @@ module BABYLON {
                 var samplers = ["diffuseSampler",
                     "noiseTexture"
                 ];
-                var uniformBuffers = new Array<string>()
+                var uniformBuffers = new Array<string>();
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms,
@@ -275,7 +286,9 @@ module BABYLON {
             }
             this._activeEffect = effect;
 
-            // Matrices        
+            defines.UNLIT = this._unlit;
+
+            // Matrices
             this.bindOnlyWorldMatrix(world);
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
@@ -283,7 +296,7 @@ module BABYLON {
             MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
 
             if (this._mustRebind(scene, effect)) {
-                // Textures        
+                // Textures
                 if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                     this._activeEffect.setTexture("diffuseSampler", this.diffuseTexture);
 
@@ -319,7 +332,6 @@ module BABYLON {
 
             // Fog
             MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
-
 
             this._lastTime += scene.getEngine().getDeltaTime();
             this._activeEffect.setFloat("time", this._lastTime * this.speed / 1000);
@@ -402,4 +414,4 @@ module BABYLON {
             return SerializationHelper.Parse(() => new LavaMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
-} 
+}

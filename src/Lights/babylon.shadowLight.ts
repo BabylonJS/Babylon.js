@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     /**
      * Interface describing all the common properties and methods a shadow light needs to implement.
      * This helps both the shadow generator and materials to genrate the corresponding shadow maps
@@ -123,7 +123,7 @@
             this._position = value;
         }
         /**
-         * Sets the position the shadow will be casted from. Also use as the light position for both 
+         * Sets the position the shadow will be casted from. Also use as the light position for both
          * point and spot lights.
          */
         @serializeAsVector3()
@@ -131,7 +131,7 @@
             return this._position;
         }
         /**
-         * Sets the position the shadow will be casted from. Also use as the light position for both 
+         * Sets the position the shadow will be casted from. Also use as the light position for both
          * point and spot lights.
          */
         public set position(value: Vector3) {
@@ -164,7 +164,7 @@
          */
         @serialize()
         public get shadowMinZ(): number {
-            return this._shadowMinZ
+            return this._shadowMinZ;
         }
         /**
          * Sets the shadow projection clipping minimum z value.
@@ -180,7 +180,7 @@
          */
         @serialize()
         public get shadowMaxZ(): number {
-            return this._shadowMaxZ
+            return this._shadowMaxZ;
         }
         /**
          * Gets the shadow projection clipping maximum z value.
@@ -206,7 +206,6 @@
          */
         public transformedDirection: Vector3;
 
-        private _worldMatrix: Matrix;
         private _needProjectionMatrixCompute: boolean = true;
 
         /**
@@ -301,16 +300,50 @@
             this._needProjectionMatrixCompute = true;
         }
 
+        /** @hidden */
+        public _initCache() {
+            super._initCache();
+
+            this._cache.position = Vector3.Zero();
+        }
+
+        /** @hidden */
+        public _isSynchronized(): boolean {
+            if (!this._cache.position.equals(this.position)) {
+                return false;
+            }
+
+            return true;
+        }
+
         /**
-         * Get the world matrix of the sahdow lights.
-         * @hidden Internal Use Only
+         * Computes the world matrix of the node
+         * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
+         * @returns the world matrix
          */
-        public _getWorldMatrix(): Matrix {
+        public computeWorldMatrix(force?: boolean): Matrix {
+            if (!force && this.isSynchronized()) {
+                this._currentRenderId = this.getScene().getRenderId();
+                return this._worldMatrix;
+            }
+
+            this._updateCache();
+            this._cache.position.copyFrom(this.position);
+
             if (!this._worldMatrix) {
                 this._worldMatrix = Matrix.Identity();
             }
 
             Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
+
+            if (this.parent && this.parent.getWorldMatrix) {
+                this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
+
+                this._markSyncedWithParent();
+            }
+
+            // Cache the determinant
+            this._worldMatrixDeterminant = this._worldMatrix.determinant();
 
             return this._worldMatrix;
         }
