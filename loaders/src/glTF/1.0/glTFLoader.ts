@@ -1557,16 +1557,16 @@ export class GLTFLoaderBase {
 * glTF V1 Loader
 * @hidden
 */
-export class GLTF1Loader implements IGLTFLoader {
+export class GLTFLoader implements IGLTFLoader {
     public static Extensions: { [name: string]: GLTFLoaderExtension } = {};
 
     public static RegisterExtension(extension: GLTFLoaderExtension): void {
-        if (GLTF1Loader.Extensions[extension.name]) {
+        if (GLTFLoader.Extensions[extension.name]) {
             Tools.Error("Tool with the same name \"" + extension.name + "\" already exists");
             return;
         }
 
-        GLTF1Loader.Extensions[extension.name] = extension;
+        GLTFLoader.Extensions[extension.name] = extension;
     }
 
     public state: Nullable<GLTFLoaderState> = null;
@@ -1810,4 +1810,4 @@ export class GLTF1Loader implements IGLTFLoader {
     }
 }
 
-GLTFFileLoader._CreateGLTF1Loader = () => new GLTF1Loader();
+GLTFFileLoader._CreateGLTF1Loader = () => new GLTFLoader();

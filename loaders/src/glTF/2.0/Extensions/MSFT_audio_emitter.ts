@@ -1,7 +1,7 @@
 import { WeightedSound, Sound, Nullable, Mesh, Vector3, Tools, AnimationGroup, AnimationEvent } from "babylonjs";
 import { IArrayItem, IScene, INode, IAnimation } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTF2Loader, ArrayItem } from "../glTF2Loader";
+import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 const NAME = "MSFT_audio_emitter";
 
@@ -90,12 +90,12 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     /** Defines whether this extension is enabled. */
     public enabled = true;
 
-    private _loader: GLTF2Loader;
+    private _loader: GLTFLoader;
     private _clips: Array<ILoaderClip>;
     private _emitters: Array<ILoaderEmitter>;
 
     /** @hidden */
-    constructor(loader: GLTF2Loader) {
+    constructor(loader: GLTFLoader) {
         this._loader = loader;
     }
 
@@ -122,7 +122,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
 
     /** @hidden */
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
-        return GLTF2Loader.LoadExtensionAsync<IEmittersReference>(context, scene, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IEmittersReference>(context, scene, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
 
             promises.push(this._loader.loadSceneAsync(context, scene));
@@ -143,7 +143,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
 
     /** @hidden */
     public loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> {
-        return GLTF2Loader.LoadExtensionAsync<IEmittersReference, Mesh>(context, node, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IEmittersReference, Mesh>(context, node, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
 
             return this._loader.loadNodeAsync(extensionContext, node, (babylonMesh) => {
@@ -174,7 +174,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
 
     /** @hidden */
     public loadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>> {
-        return GLTF2Loader.LoadExtensionAsync<ILoaderAnimationEvents, AnimationGroup>(context, animation, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<ILoaderAnimationEvents, AnimationGroup>(context, animation, this.name, (extensionContext, extension) => {
             return this._loader.loadAnimationAsync(context, animation).then((babylonAnimationGroup) => {
                 const promises = new Array<Promise<any>>();
 
@@ -300,4 +300,4 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     }
 }
 
-GLTF2Loader.RegisterExtension(NAME, (loader) => new MSFT_audio_emitter(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_audio_emitter(loader));

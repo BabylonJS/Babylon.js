@@ -141,7 +141,8 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 var FileLoader = __webpack_require__(/*! ../src/glTF/glTFFileLoader */ "./src/glTF/glTFFileLoader.ts");
-var LoadersV1 = __webpack_require__(/*! ../src/glTF/1.0 */ "./src/glTF/1.0/index.ts");
+var GLTF1 = __webpack_require__(/*! ../src/glTF/1.0 */ "./src/glTF/1.0/index.ts");
+exports.GLTF1 = GLTF1;
 /**
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
@@ -153,21 +154,107 @@ if (typeof globalObject !== "undefined") {
         globalObject.BABYLON[key] = FileLoader[key];
     }
     globalObject.BABYLON.GLTF1 = globalObject.BABYLON.GLTF1 || {};
-    for (var key in LoadersV1) {
-        globalObject.BABYLON.GLTF1[key] = LoadersV1[key];
+    for (var key in GLTF1) {
+        globalObject.BABYLON.GLTF1[key] = GLTF1[key];
     }
 }
 __export(__webpack_require__(/*! ../src/glTF/glTFFileLoader */ "./src/glTF/glTFFileLoader.ts"));
-__export(__webpack_require__(/*! ../src/glTF/1.0 */ "./src/glTF/1.0/index.ts"));
 
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
-/***/ "./src/glTF/1.0/glTF1Loader.ts":
-/*!*************************************!*\
-  !*** ./src/glTF/1.0/glTF1Loader.ts ***!
-  \*************************************/
+/***/ "./src/glTF/1.0/glTFBinaryExtension.ts":
+/*!*********************************************!*\
+  !*** ./src/glTF/1.0/glTFBinaryExtension.ts ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var glTFLoaderExtension_1 = __webpack_require__(/*! ./glTFLoaderExtension */ "./src/glTF/1.0/glTFLoaderExtension.ts");
+var glTFLoaderUtils_1 = __webpack_require__(/*! ./glTFLoaderUtils */ "./src/glTF/1.0/glTFLoaderUtils.ts");
+var glTFLoaderInterfaces_1 = __webpack_require__(/*! ./glTFLoaderInterfaces */ "./src/glTF/1.0/glTFLoaderInterfaces.ts");
+var glTFLoader_1 = __webpack_require__(/*! ./glTFLoader */ "./src/glTF/1.0/glTFLoader.ts");
+var BinaryExtensionBufferName = "binary_glTF";
+/** @hidden */
+var GLTFBinaryExtension = /** @class */ (function (_super) {
+    __extends(GLTFBinaryExtension, _super);
+    function GLTFBinaryExtension() {
+        return _super.call(this, "KHR_binary_glTF") || this;
+    }
+    GLTFBinaryExtension.prototype.loadRuntimeAsync = function (scene, data, rootUrl, onSuccess, onError) {
+        var extensionsUsed = data.json.extensionsUsed;
+        if (!extensionsUsed || extensionsUsed.indexOf(this.name) === -1 || !data.bin) {
+            return false;
+        }
+        this._bin = data.bin;
+        onSuccess(glTFLoader_1.GLTFLoaderBase.CreateRuntime(data.json, scene, rootUrl));
+        return true;
+    };
+    GLTFBinaryExtension.prototype.loadBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
+        if (gltfRuntime.extensionsUsed.indexOf(this.name) === -1) {
+            return false;
+        }
+        if (id !== BinaryExtensionBufferName) {
+            return false;
+        }
+        onSuccess(this._bin);
+        return true;
+    };
+    GLTFBinaryExtension.prototype.loadTextureBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
+        var texture = gltfRuntime.textures[id];
+        var source = gltfRuntime.images[texture.source];
+        if (!source.extensions || !(this.name in source.extensions)) {
+            return false;
+        }
+        var sourceExt = source.extensions[this.name];
+        var bufferView = gltfRuntime.bufferViews[sourceExt.bufferView];
+        var buffer = glTFLoaderUtils_1.GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, glTFLoaderInterfaces_1.EComponentType.UNSIGNED_BYTE);
+        onSuccess(buffer);
+        return true;
+    };
+    GLTFBinaryExtension.prototype.loadShaderStringAsync = function (gltfRuntime, id, onSuccess, onError) {
+        var shader = gltfRuntime.shaders[id];
+        if (!shader.extensions || !(this.name in shader.extensions)) {
+            return false;
+        }
+        var binaryExtensionShader = shader.extensions[this.name];
+        var bufferView = gltfRuntime.bufferViews[binaryExtensionShader.bufferView];
+        var shaderBytes = glTFLoaderUtils_1.GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, glTFLoaderInterfaces_1.EComponentType.UNSIGNED_BYTE);
+        setTimeout(function () {
+            var shaderString = glTFLoaderUtils_1.GLTFUtils.DecodeBufferToText(shaderBytes);
+            onSuccess(shaderString);
+        });
+        return true;
+    };
+    return GLTFBinaryExtension;
+}(glTFLoaderExtension_1.GLTFLoaderExtension));
+exports.GLTFBinaryExtension = GLTFBinaryExtension;
+glTFLoader_1.GLTFLoader.RegisterExtension(new GLTFBinaryExtension());
+
+
+/***/ }),
+
+/***/ "./src/glTF/1.0/glTFLoader.ts":
+/*!************************************!*\
+  !*** ./src/glTF/1.0/glTFLoader.ts ***!
+  \************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1467,21 +1554,21 @@ exports.GLTFLoaderBase = GLTFLoaderBase;
 * glTF V1 Loader
 * @hidden
 */
-var GLTF1Loader = /** @class */ (function () {
-    function GLTF1Loader() {
+var GLTFLoader = /** @class */ (function () {
+    function GLTFLoader() {
         this.state = null;
     }
-    GLTF1Loader.RegisterExtension = function (extension) {
-        if (GLTF1Loader.Extensions[extension.name]) {
+    GLTFLoader.RegisterExtension = function (extension) {
+        if (GLTFLoader.Extensions[extension.name]) {
             babylonjs_1.Tools.Error("Tool with the same name \"" + extension.name + "\" already exists");
             return;
         }
-        GLTF1Loader.Extensions[extension.name] = extension;
+        GLTFLoader.Extensions[extension.name] = extension;
     };
-    GLTF1Loader.prototype.dispose = function () {
+    GLTFLoader.prototype.dispose = function () {
         // do nothing
     };
-    GLTF1Loader.prototype._importMeshAsync = function (meshesNames, scene, data, rootUrl, onSuccess, onProgress, onError) {
+    GLTFLoader.prototype._importMeshAsync = function (meshesNames, scene, data, rootUrl, onSuccess, onProgress, onError) {
         var _this = this;
         scene.useRightHandedSystem = true;
         glTFLoaderExtension_1.GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, function (gltfRuntime) {
@@ -1541,7 +1628,7 @@ var GLTF1Loader = /** @class */ (function () {
     * @param onProgress event that fires when loading progress has occured
     * @returns a promise containg the loaded meshes, particles, skeletons and animations
     */
-    GLTF1Loader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onProgress) {
+    GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onProgress) {
         var _this = this;
         return new Promise(function (resolve, reject) {
             _this._importMeshAsync(meshesNames, scene, data, rootUrl, function (meshes, skeletons) {
@@ -1556,7 +1643,7 @@ var GLTF1Loader = /** @class */ (function () {
             });
         });
     };
-    GLTF1Loader.prototype._loadAsync = function (scene, data, rootUrl, onSuccess, onProgress, onError) {
+    GLTFLoader.prototype._loadAsync = function (scene, data, rootUrl, onSuccess, onProgress, onError) {
         var _this = this;
         scene.useRightHandedSystem = true;
         glTFLoaderExtension_1.GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, function (gltfRuntime) {
@@ -1588,7 +1675,7 @@ var GLTF1Loader = /** @class */ (function () {
     * @param onProgress event that fires when loading progress has occured
     * @returns a promise which completes when objects have been loaded to the scene
     */
-    GLTF1Loader.prototype.loadAsync = function (scene, data, rootUrl, onProgress) {
+    GLTFLoader.prototype.loadAsync = function (scene, data, rootUrl, onProgress) {
         var _this = this;
         return new Promise(function (resolve, reject) {
             _this._loadAsync(scene, data, rootUrl, function () {
@@ -1598,7 +1685,7 @@ var GLTF1Loader = /** @class */ (function () {
             });
         });
     };
-    GLTF1Loader.prototype._loadShadersAsync = function (gltfRuntime, onload) {
+    GLTFLoader.prototype._loadShadersAsync = function (gltfRuntime, onload) {
         var hasShaders = false;
         var processShader = function (sha, shader) {
             glTFLoaderExtension_1.GLTFLoaderExtension.LoadShaderStringAsync(gltfRuntime, sha, function (shaderString) {
@@ -1630,7 +1717,7 @@ var GLTF1Loader = /** @class */ (function () {
             onload();
         }
     };
-    GLTF1Loader.prototype._loadBuffersAsync = function (gltfRuntime, onLoad, onProgress) {
+    GLTFLoader.prototype._loadBuffersAsync = function (gltfRuntime, onLoad, onProgress) {
         var hasBuffers = false;
         var processBuffer = function (buf, buffer) {
             glTFLoaderExtension_1.GLTFLoaderExtension.LoadBufferAsync(gltfRuntime, buf, function (bufferView) {
@@ -1662,7 +1749,7 @@ var GLTF1Loader = /** @class */ (function () {
             onLoad();
         }
     };
-    GLTF1Loader.prototype._createNodes = function (gltfRuntime) {
+    GLTFLoader.prototype._createNodes = function (gltfRuntime) {
         var currentScene = gltfRuntime.currentScene;
         if (currentScene) {
             // Only one scene even if multiple scenes are defined
@@ -1680,98 +1767,11 @@ var GLTF1Loader = /** @class */ (function () {
             }
         }
     };
-    GLTF1Loader.Extensions = {};
-    return GLTF1Loader;
+    GLTFLoader.Extensions = {};
+    return GLTFLoader;
 }());
-exports.GLTF1Loader = GLTF1Loader;
-glTFFileLoader_1.GLTFFileLoader._CreateGLTF1Loader = function () { return new GLTF1Loader(); };
-
-
-/***/ }),
-
-/***/ "./src/glTF/1.0/glTFBinaryExtension.ts":
-/*!*********************************************!*\
-  !*** ./src/glTF/1.0/glTFBinaryExtension.ts ***!
-  \*********************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    }
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var glTFLoaderExtension_1 = __webpack_require__(/*! ./glTFLoaderExtension */ "./src/glTF/1.0/glTFLoaderExtension.ts");
-var glTFLoaderUtils_1 = __webpack_require__(/*! ./glTFLoaderUtils */ "./src/glTF/1.0/glTFLoaderUtils.ts");
-var glTFLoaderInterfaces_1 = __webpack_require__(/*! ./glTFLoaderInterfaces */ "./src/glTF/1.0/glTFLoaderInterfaces.ts");
-var glTF1Loader_1 = __webpack_require__(/*! ./glTF1Loader */ "./src/glTF/1.0/glTF1Loader.ts");
-var BinaryExtensionBufferName = "binary_glTF";
-/** @hidden */
-var GLTFBinaryExtension = /** @class */ (function (_super) {
-    __extends(GLTFBinaryExtension, _super);
-    function GLTFBinaryExtension() {
-        return _super.call(this, "KHR_binary_glTF") || this;
-    }
-    GLTFBinaryExtension.prototype.loadRuntimeAsync = function (scene, data, rootUrl, onSuccess, onError) {
-        var extensionsUsed = data.json.extensionsUsed;
-        if (!extensionsUsed || extensionsUsed.indexOf(this.name) === -1 || !data.bin) {
-            return false;
-        }
-        this._bin = data.bin;
-        onSuccess(glTF1Loader_1.GLTFLoaderBase.CreateRuntime(data.json, scene, rootUrl));
-        return true;
-    };
-    GLTFBinaryExtension.prototype.loadBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
-        if (gltfRuntime.extensionsUsed.indexOf(this.name) === -1) {
-            return false;
-        }
-        if (id !== BinaryExtensionBufferName) {
-            return false;
-        }
-        onSuccess(this._bin);
-        return true;
-    };
-    GLTFBinaryExtension.prototype.loadTextureBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
-        var texture = gltfRuntime.textures[id];
-        var source = gltfRuntime.images[texture.source];
-        if (!source.extensions || !(this.name in source.extensions)) {
-            return false;
-        }
-        var sourceExt = source.extensions[this.name];
-        var bufferView = gltfRuntime.bufferViews[sourceExt.bufferView];
-        var buffer = glTFLoaderUtils_1.GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, glTFLoaderInterfaces_1.EComponentType.UNSIGNED_BYTE);
-        onSuccess(buffer);
-        return true;
-    };
-    GLTFBinaryExtension.prototype.loadShaderStringAsync = function (gltfRuntime, id, onSuccess, onError) {
-        var shader = gltfRuntime.shaders[id];
-        if (!shader.extensions || !(this.name in shader.extensions)) {
-            return false;
-        }
-        var binaryExtensionShader = shader.extensions[this.name];
-        var bufferView = gltfRuntime.bufferViews[binaryExtensionShader.bufferView];
-        var shaderBytes = glTFLoaderUtils_1.GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, glTFLoaderInterfaces_1.EComponentType.UNSIGNED_BYTE);
-        setTimeout(function () {
-            var shaderString = glTFLoaderUtils_1.GLTFUtils.DecodeBufferToText(shaderBytes);
-            onSuccess(shaderString);
-        });
-        return true;
-    };
-    return GLTFBinaryExtension;
-}(glTFLoaderExtension_1.GLTFLoaderExtension));
-exports.GLTFBinaryExtension = GLTFBinaryExtension;
-glTF1Loader_1.GLTF1Loader.RegisterExtension(new GLTFBinaryExtension());
+exports.GLTFLoader = GLTFLoader;
+glTFFileLoader_1.GLTFFileLoader._CreateGLTF1Loader = function () { return new GLTFLoader(); };
 
 
 /***/ }),
@@ -1786,7 +1786,7 @@ glTF1Loader_1.GLTF1Loader.RegisterExtension(new GLTFBinaryExtension());
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var glTF1Loader_1 = __webpack_require__(/*! ./glTF1Loader */ "./src/glTF/1.0/glTF1Loader.ts");
+var glTFLoader_1 = __webpack_require__(/*! ./glTFLoader */ "./src/glTF/1.0/glTFLoader.ts");
 /** @hidden */
 var GLTFLoaderExtension = /** @class */ (function () {
     function GLTFLoaderExtension(name) {
@@ -1859,7 +1859,7 @@ var GLTFLoaderExtension = /** @class */ (function () {
                 if (!onSuccess) {
                     return;
                 }
-                onSuccess(glTF1Loader_1.GLTFLoaderBase.CreateRuntime(data.json, scene, rootUrl));
+                onSuccess(glTFLoader_1.GLTFLoaderBase.CreateRuntime(data.json, scene, rootUrl));
             });
         });
     };
@@ -1876,7 +1876,7 @@ var GLTFLoaderExtension = /** @class */ (function () {
         GLTFLoaderExtension.ApplyExtensions(function (loaderExtension) {
             return loaderExtension.loadBufferAsync(gltfRuntime, id, onSuccess, onError, onProgress);
         }, function () {
-            glTF1Loader_1.GLTFLoaderBase.LoadBufferAsync(gltfRuntime, id, onSuccess, onError, onProgress);
+            glTFLoader_1.GLTFLoaderBase.LoadBufferAsync(gltfRuntime, id, onSuccess, onError, onProgress);
         });
     };
     GLTFLoaderExtension.LoadTextureAsync = function (gltfRuntime, id, onSuccess, onError) {
@@ -1890,33 +1890,33 @@ var GLTFLoaderExtension = /** @class */ (function () {
         GLTFLoaderExtension.ApplyExtensions(function (loaderExtension) {
             return loaderExtension.loadShaderStringAsync(gltfRuntime, id, onSuccess, onError);
         }, function () {
-            glTF1Loader_1.GLTFLoaderBase.LoadShaderStringAsync(gltfRuntime, id, onSuccess, onError);
+            glTFLoader_1.GLTFLoaderBase.LoadShaderStringAsync(gltfRuntime, id, onSuccess, onError);
         });
     };
     GLTFLoaderExtension.LoadMaterialAsync = function (gltfRuntime, id, onSuccess, onError) {
         GLTFLoaderExtension.ApplyExtensions(function (loaderExtension) {
             return loaderExtension.loadMaterialAsync(gltfRuntime, id, onSuccess, onError);
         }, function () {
-            glTF1Loader_1.GLTFLoaderBase.LoadMaterialAsync(gltfRuntime, id, onSuccess, onError);
+            glTFLoader_1.GLTFLoaderBase.LoadMaterialAsync(gltfRuntime, id, onSuccess, onError);
         });
     };
     GLTFLoaderExtension.LoadTextureBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
         GLTFLoaderExtension.ApplyExtensions(function (loaderExtension) {
             return loaderExtension.loadTextureBufferAsync(gltfRuntime, id, onSuccess, onError);
         }, function () {
-            glTF1Loader_1.GLTFLoaderBase.LoadTextureBufferAsync(gltfRuntime, id, onSuccess, onError);
+            glTFLoader_1.GLTFLoaderBase.LoadTextureBufferAsync(gltfRuntime, id, onSuccess, onError);
         });
     };
     GLTFLoaderExtension.CreateTextureAsync = function (gltfRuntime, id, buffer, onSuccess, onError) {
         GLTFLoaderExtension.ApplyExtensions(function (loaderExtension) {
             return loaderExtension.createTextureAsync(gltfRuntime, id, buffer, onSuccess, onError);
         }, function () {
-            glTF1Loader_1.GLTFLoaderBase.CreateTextureAsync(gltfRuntime, id, buffer, onSuccess, onError);
+            glTFLoader_1.GLTFLoaderBase.CreateTextureAsync(gltfRuntime, id, buffer, onSuccess, onError);
         });
     };
     GLTFLoaderExtension.ApplyExtensions = function (func, defaultFunc) {
-        for (var extensionName in glTF1Loader_1.GLTF1Loader.Extensions) {
-            var loaderExtension = glTF1Loader_1.GLTF1Loader.Extensions[extensionName];
+        for (var extensionName in glTFLoader_1.GLTFLoader.Extensions) {
+            var loaderExtension = glTFLoader_1.GLTFLoader.Extensions[extensionName];
             if (func(loaderExtension)) {
                 return;
             }
@@ -2306,7 +2306,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var _1 = __webpack_require__(/*! . */ "./src/glTF/1.0/index.ts");
 var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-var glTF1Loader_1 = __webpack_require__(/*! ./glTF1Loader */ "./src/glTF/1.0/glTF1Loader.ts");
+var glTFLoader_1 = __webpack_require__(/*! ./glTFLoader */ "./src/glTF/1.0/glTFLoader.ts");
 /** @hidden */
 var GLTFMaterialsCommonExtension = /** @class */ (function (_super) {
     __extends(GLTFMaterialsCommonExtension, _super);
@@ -2420,7 +2420,7 @@ var GLTFMaterialsCommonExtension = /** @class */ (function (_super) {
     return GLTFMaterialsCommonExtension;
 }(_1.GLTFLoaderExtension));
 exports.GLTFMaterialsCommonExtension = GLTFMaterialsCommonExtension;
-glTF1Loader_1.GLTF1Loader.RegisterExtension(new GLTFMaterialsCommonExtension());
+glTFLoader_1.GLTFLoader.RegisterExtension(new GLTFMaterialsCommonExtension());
 
 
 /***/ }),
@@ -2439,7 +2439,7 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(__webpack_require__(/*! ./glTFBinaryExtension */ "./src/glTF/1.0/glTFBinaryExtension.ts"));
-__export(__webpack_require__(/*! ./glTF1Loader */ "./src/glTF/1.0/glTF1Loader.ts"));
+__export(__webpack_require__(/*! ./glTFLoader */ "./src/glTF/1.0/glTFLoader.ts"));
 __export(__webpack_require__(/*! ./glTFLoaderExtension */ "./src/glTF/1.0/glTFLoaderExtension.ts"));
 __export(__webpack_require__(/*! ./glTFLoaderInterfaces */ "./src/glTF/1.0/glTFLoaderInterfaces.ts"));
 __export(__webpack_require__(/*! ./glTFLoaderUtils */ "./src/glTF/1.0/glTFLoaderUtils.ts"));

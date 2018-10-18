@@ -1,5 +1,5 @@
 import * as FileLoader from "../src/glTF/glTFFileLoader";
-import * as LoadersV2 from "../src/glTF/2.0";
+import * as GLTF2 from "../src/glTF/2.0";
 
 /**
  * This is the entry point for the UMD module.
@@ -11,10 +11,10 @@ if (typeof globalObject !== "undefined") {
     for (var key in FileLoader) {
         (<any>globalObject).BABYLON[key] = (<any>FileLoader)[key];
     }
-    for (var key in LoadersV2) {
-        (<any>globalObject).BABYLON[key] = (<any>LoadersV2)[key];
+    for (var key in GLTF2) {
+        (<any>globalObject).BABYLON[key] = (<any>GLTF2)[key];
     }
 }
 
 export * from "../src/glTF/glTFFileLoader";
-export * from "../src/glTF/2.0";
+export { GLTF2 };

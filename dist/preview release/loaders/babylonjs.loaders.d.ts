@@ -511,7 +511,7 @@ declare module BABYLON.GLTF1 {
      * glTF V1 Loader
      * @hidden
      */
-    export class GLTF1Loader implements IGLTFLoader {
+    export class GLTFLoader implements IGLTFLoader {
         static Extensions: {
             [name: string]: GLTFLoaderExtension;
         };
@@ -1086,7 +1086,7 @@ declare module BABYLON {
     /**
         * The glTF 2.0 loader
         */
-    export class GLTF2Loader implements IGLTFLoader {
+    export class GLTFLoader implements IGLTFLoader {
             /** The glTF object parsed from the JSON. */
             gltf: IGLTF;
             /** The Babylon scene when loading the asset. */
@@ -1098,7 +1098,7 @@ declare module BABYLON {
                 * @param name The name of the loader extension.
                 * @param factory The factory function that creates the loader extension.
                 */
-            static RegisterExtension(name: string, factory: (loader: GLTF2Loader) => IGLTFLoaderExtension): void;
+            static RegisterExtension(name: string, factory: (loader: GLTFLoader) => IGLTFLoaderExtension): void;
             /**
                 * Unregisters a loader extension.
                 * @param name The name of the loader extenion.
@@ -1557,7 +1557,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -1576,7 +1576,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -1593,7 +1593,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -1612,7 +1612,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -1629,7 +1629,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -1646,7 +1646,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -1663,7 +1663,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -1702,7 +1702,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
                 */
             onMaterialLODsLoadedObservable: BABYLON.Observable<number>;
             /** @hidden */
-            constructor(loader: GLTF2Loader);
+            constructor(loader: GLTFLoader);
             /** @hidden */
             dispose(): void;
             /** @hidden */
@@ -1720,7 +1720,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
     export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
         readonly name: string;
         enabled: boolean;
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         dispose(): void;
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: BABYLON.Material): BABYLON.Nullable<Promise<void>>;
     }
@@ -1730,7 +1730,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
     export class MSFT_sRGBFactors implements IGLTFLoaderExtension {
         readonly name: string;
         enabled: boolean;
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         dispose(): void;
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: BABYLON.Material): BABYLON.Nullable<Promise<void>>;
     }

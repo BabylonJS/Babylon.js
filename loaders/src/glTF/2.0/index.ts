@@ -1,4 +1,4 @@
-export * from "./glTF2Loader";
+export * from "./glTFLoader";
 export * from "./glTFLoaderExtension";
 export * from "./glTFLoaderInterfaces";
 export * from "./Extensions";

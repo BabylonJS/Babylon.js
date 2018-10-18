@@ -1,7 +1,7 @@
 import { Scene, Texture, Material, Nullable } from "babylonjs";
 import { IGLTFLoaderData } from "../glTFFileLoader";
 import { IGLTFRuntime } from "./glTFLoaderInterfaces";
-import { GLTF1Loader, GLTFLoaderBase } from "./glTF1Loader";
+import { GLTFLoader, GLTFLoaderBase } from "./glTFLoader";
 
 /** @hidden */
 export abstract class GLTFLoaderExtension {
@@ -148,8 +148,8 @@ export abstract class GLTFLoaderExtension {
     }
 
     private static ApplyExtensions(func: (loaderExtension: GLTFLoaderExtension) => boolean, defaultFunc: () => void): void {
-        for (var extensionName in GLTF1Loader.Extensions) {
-            var loaderExtension = GLTF1Loader.Extensions[extensionName];
+        for (var extensionName in GLTFLoader.Extensions) {
+            var loaderExtension = GLTFLoader.Extensions[extensionName];
             if (func(loaderExtension)) {
                 return;
             }

@@ -348,7 +348,7 @@ declare module 'babylonjs-loaders/src/glTF/glTFFileLoader' {
 
 declare module 'babylonjs-loaders/src/glTF/1.0' {
     export * from "babylonjs-loaders/src/glTF/1.0/glTFBinaryExtension";
-    export * from "babylonjs-loaders/src/glTF/1.0/glTF1Loader";
+    export * from "babylonjs-loaders/src/glTF/1.0/glTFLoader";
     export * from "babylonjs-loaders/src/glTF/1.0/glTFLoaderExtension";
     export * from "babylonjs-loaders/src/glTF/1.0/glTFLoaderInterfaces";
     export * from "babylonjs-loaders/src/glTF/1.0/glTFLoaderUtils";
@@ -356,7 +356,7 @@ declare module 'babylonjs-loaders/src/glTF/1.0' {
 }
 
 declare module 'babylonjs-loaders/src/glTF/2.0' {
-    export * from "babylonjs-loaders/src/glTF/2.0/glTF2Loader";
+    export * from "babylonjs-loaders/src/glTF/2.0/glTFLoader";
     export * from "babylonjs-loaders/src/glTF/2.0/glTFLoaderExtension";
     export * from "babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces";
     export * from "babylonjs-loaders/src/glTF/2.0/Extensions";
@@ -544,7 +544,7 @@ declare module 'babylonjs-loaders/src/glTF/1.0/glTFBinaryExtension' {
     }
 }
 
-declare module 'babylonjs-loaders/src/glTF/1.0/glTF1Loader' {
+declare module 'babylonjs-loaders/src/glTF/1.0/glTFLoader' {
     import { IGLTFRuntime } from "babylonjs-loaders/src/glTF/1.0/glTFLoaderInterfaces";
     import { Nullable, Skeleton, Material, AbstractMesh, Texture, Scene, SceneLoaderProgressEvent, IParticleSystem, AnimationGroup } from "babylonjs";
     import { IGLTFLoader, GLTFLoaderState, IGLTFLoaderData } from "babylonjs-loaders/src/glTF/glTFFileLoader";
@@ -565,7 +565,7 @@ declare module 'babylonjs-loaders/src/glTF/1.0/glTF1Loader' {
      * glTF V1 Loader
      * @hidden
      */
-    export class GLTF1Loader implements IGLTFLoader {
+    export class GLTFLoader implements IGLTFLoader {
         static Extensions: {
             [name: string]: GLTFLoaderExtension;
         };
@@ -1132,7 +1132,7 @@ declare module 'babylonjs-loaders/src/glTF/1.0/glTFMaterialsCommonExtension' {
     }
 }
 
-declare module 'babylonjs-loaders/src/glTF/2.0/glTF2Loader' {
+declare module 'babylonjs-loaders/src/glTF/2.0/glTFLoader' {
     import { Scene, Nullable, Mesh, Material, SceneLoaderProgressEvent, AbstractMesh, IParticleSystem, Skeleton, AnimationGroup, Camera, BaseTexture } from "babylonjs";
     import { IProperty } from "babylonjs-gltf2interface";
     import { IGLTF, INode, IScene, ICamera, IAnimation, IBufferView, IMaterial, ITextureInfo, IImage, IArrayItem } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces";
@@ -1159,7 +1159,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/glTF2Loader' {
     /**
         * The glTF 2.0 loader
         */
-    export class GLTF2Loader implements IGLTFLoader {
+    export class GLTFLoader implements IGLTFLoader {
             /** The glTF object parsed from the JSON. */
             gltf: IGLTF;
             /** The Babylon scene when loading the asset. */
@@ -1171,7 +1171,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/glTF2Loader' {
                 * @param name The name of the loader extension.
                 * @param factory The factory function that creates the loader extension.
                 */
-            static RegisterExtension(name: string, factory: (loader: GLTF2Loader) => IGLTFLoaderExtension): void;
+            static RegisterExtension(name: string, factory: (loader: GLTFLoader) => IGLTFLoaderExtension): void;
             /**
                 * Unregisters a loader extension.
                 * @param name The name of the loader extenion.
@@ -1645,7 +1645,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/EXT_lights_image_based
     import { Nullable } from "babylonjs";
     import { IScene } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderExtension";
-    import { GLTF2Loader } from "babylonjs-loaders/src/glTF/2.0/glTF2Loader";
+    import { GLTFLoader } from "babylonjs-loaders/src/glTF/2.0/glTFLoader";
     /**
       * [Specification](https://github.com/KhronosGroup/glTF/blob/eb3e32332042e04691a5f35103f8c261e50d8f1e/extensions/2.0/Khronos/EXT_lights_image_based/README.md) (Experimental)
       */
@@ -1655,7 +1655,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/EXT_lights_image_based
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -1669,7 +1669,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compres
     import { Geometry, Mesh, Nullable } from "babylonjs";
     import { IMeshPrimitive } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderExtension";
-    import { GLTF2Loader } from "babylonjs-loaders/src/glTF/2.0/glTF2Loader";
+    import { GLTFLoader } from "babylonjs-loaders/src/glTF/2.0/glTFLoader";
     /**
       * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)
       */
@@ -1679,7 +1679,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compres
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -1691,7 +1691,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/KHR_lights_punctual' {
     import { Mesh, Nullable } from "babylonjs";
     import { INode } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderExtension";
-    import { GLTF2Loader } from "babylonjs-loaders/src/glTF/2.0/glTF2Loader";
+    import { GLTFLoader } from "babylonjs-loaders/src/glTF/2.0/glTFLoader";
     /**
       * [Specification](https://github.com/KhronosGroup/glTF/blob/1048d162a44dbcb05aefc1874bfd423cf60135a6/extensions/2.0/Khronos/KHR_lights_punctual/README.md) (Experimental)
       */
@@ -1701,7 +1701,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/KHR_lights_punctual' {
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -1715,7 +1715,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecu
     import { Material, Nullable } from "babylonjs";
     import { IMaterial } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderExtension";
-    import { GLTF2Loader } from "babylonjs-loaders/src/glTF/2.0/glTF2Loader";
+    import { GLTFLoader } from "babylonjs-loaders/src/glTF/2.0/glTFLoader";
     /**
       * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness)
       */
@@ -1725,7 +1725,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecu
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -1737,7 +1737,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/KHR_materials_unlit' {
     import { Material, Nullable } from "babylonjs";
     import { IMaterial } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderExtension";
-    import { GLTF2Loader } from "babylonjs-loaders/src/glTF/2.0/glTF2Loader";
+    import { GLTFLoader } from "babylonjs-loaders/src/glTF/2.0/glTFLoader";
     /**
       * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
       */
@@ -1747,7 +1747,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/KHR_materials_unlit' {
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -1759,7 +1759,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/KHR_texture_transform'
     import { BaseTexture, Nullable } from "babylonjs";
     import { ITextureInfo } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderExtension";
-    import { GLTF2Loader } from "babylonjs-loaders/src/glTF/2.0/glTF2Loader";
+    import { GLTFLoader } from "babylonjs-loaders/src/glTF/2.0/glTFLoader";
     /**
       * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_texture_transform/README.md)
       */
@@ -1769,7 +1769,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/KHR_texture_transform'
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -1781,7 +1781,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/MSFT_audio_emitter' {
     import { Nullable, Mesh, AnimationGroup } from "babylonjs";
     import { IScene, INode, IAnimation } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderExtension";
-    import { GLTF2Loader } from "babylonjs-loaders/src/glTF/2.0/glTF2Loader";
+    import { GLTFLoader } from "babylonjs-loaders/src/glTF/2.0/glTFLoader";
     /**
       * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
       */
@@ -1791,7 +1791,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/MSFT_audio_emitter' {
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -1809,7 +1809,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/MSFT_lod' {
     import { Observable, Nullable, Mesh, Material } from "babylonjs";
     import { INode, IMaterial } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderExtension";
-    import { GLTF2Loader } from "babylonjs-loaders/src/glTF/2.0/glTF2Loader";
+    import { GLTFLoader } from "babylonjs-loaders/src/glTF/2.0/glTFLoader";
     /**
         * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_lod)
         */
@@ -1835,7 +1835,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/MSFT_lod' {
                 */
             onMaterialLODsLoadedObservable: Observable<number>;
             /** @hidden */
-            constructor(loader: GLTF2Loader);
+            constructor(loader: GLTFLoader);
             /** @hidden */
             dispose(): void;
             /** @hidden */
@@ -1853,12 +1853,12 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/MSFT_minecraftMesh' {
     import { Material, Nullable } from "babylonjs";
     import { IMaterial } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderExtension";
-    import { GLTF2Loader } from "babylonjs-loaders/src/glTF/2.0/glTF2Loader";
+    import { GLTFLoader } from "babylonjs-loaders/src/glTF/2.0/glTFLoader";
     /** @hidden */
     export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
         readonly name: string;
         enabled: boolean;
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         dispose(): void;
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
     }
@@ -1868,12 +1868,12 @@ declare module 'babylonjs-loaders/src/glTF/2.0/Extensions/MSFT_sRGBFactors' {
     import { Material, Nullable } from "babylonjs";
     import { IMaterial } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderExtension";
-    import { GLTF2Loader } from "babylonjs-loaders/src/glTF/2.0/glTF2Loader";
+    import { GLTFLoader } from "babylonjs-loaders/src/glTF/2.0/glTFLoader";
     /** @hidden */
     export class MSFT_sRGBFactors implements IGLTFLoaderExtension {
         readonly name: string;
         enabled: boolean;
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         dispose(): void;
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
     }
@@ -2393,7 +2393,7 @@ declare module BABYLON.GLTF1 {
      * glTF V1 Loader
      * @hidden
      */
-    export class GLTF1Loader implements IGLTFLoader {
+    export class GLTFLoader implements IGLTFLoader {
         static Extensions: {
             [name: string]: GLTFLoaderExtension;
         };
@@ -2968,7 +2968,7 @@ declare module BABYLON {
     /**
         * The glTF 2.0 loader
         */
-    export class GLTF2Loader implements IGLTFLoader {
+    export class GLTFLoader implements IGLTFLoader {
             /** The glTF object parsed from the JSON. */
             gltf: IGLTF;
             /** The Babylon scene when loading the asset. */
@@ -2980,7 +2980,7 @@ declare module BABYLON {
                 * @param name The name of the loader extension.
                 * @param factory The factory function that creates the loader extension.
                 */
-            static RegisterExtension(name: string, factory: (loader: GLTF2Loader) => IGLTFLoaderExtension): void;
+            static RegisterExtension(name: string, factory: (loader: GLTFLoader) => IGLTFLoaderExtension): void;
             /**
                 * Unregisters a loader extension.
                 * @param name The name of the loader extenion.
@@ -3439,7 +3439,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -3458,7 +3458,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -3475,7 +3475,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -3494,7 +3494,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -3511,7 +3511,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -3528,7 +3528,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -3545,7 +3545,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /** @hidden */
@@ -3584,7 +3584,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
                 */
             onMaterialLODsLoadedObservable: BABYLON.Observable<number>;
             /** @hidden */
-            constructor(loader: GLTF2Loader);
+            constructor(loader: GLTFLoader);
             /** @hidden */
             dispose(): void;
             /** @hidden */
@@ -3602,7 +3602,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
     export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
         readonly name: string;
         enabled: boolean;
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         dispose(): void;
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: BABYLON.Material): BABYLON.Nullable<Promise<void>>;
     }
@@ -3612,7 +3612,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
     export class MSFT_sRGBFactors implements IGLTFLoaderExtension {
         readonly name: string;
         enabled: boolean;
-        constructor(loader: GLTF2Loader);
+        constructor(loader: GLTFLoader);
         dispose(): void;
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: BABYLON.Material): BABYLON.Nullable<Promise<void>>;
     }

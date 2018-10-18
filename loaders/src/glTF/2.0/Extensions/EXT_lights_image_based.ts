@@ -2,7 +2,7 @@ import { BaseTexture, Nullable, RawCubeTexture, Quaternion, Matrix, SphericalHar
 import { IChildRootProperty } from "babylonjs-gltf2interface";
 import { IScene } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTF2Loader, ArrayItem } from "../glTF2Loader";
+import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 const NAME = "EXT_lights_image_based";
 
@@ -35,11 +35,11 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     /** Defines whether this extension is enabled. */
     public enabled = true;
 
-    private _loader: GLTF2Loader;
+    private _loader: GLTFLoader;
     private _lights?: ILight[];
 
     /** @hidden */
-    constructor(loader: GLTF2Loader) {
+    constructor(loader: GLTFLoader) {
         this._loader = loader;
     }
 
@@ -60,7 +60,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
 
     /** @hidden */
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
-        return GLTF2Loader.LoadExtensionAsync<ILightReference>(context, scene, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<ILightReference>(context, scene, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
 
             promises.push(this._loader.loadSceneAsync(context, scene));
@@ -141,4 +141,4 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     }
 }
 
-GLTF2Loader.RegisterExtension(NAME, (loader) => new EXT_lights_image_based(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_lights_image_based(loader));

@@ -2,7 +2,7 @@ import { Geometry, DracoCompression, Mesh, Nullable, VertexBuffer } from "babylo
 import { MeshPrimitiveMode } from "babylonjs-gltf2interface";
 import { IBufferView, IMeshPrimitive } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTF2Loader, ArrayItem } from "../glTF2Loader";
+import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 const NAME = "KHR_draco_mesh_compression";
 
@@ -25,11 +25,11 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
     /** Defines whether this extension is enabled. */
     public enabled = DracoCompression.DecoderAvailable;
 
-    private _loader: GLTF2Loader;
+    private _loader: GLTFLoader;
     private _dracoCompression?: DracoCompression;
 
     /** @hidden */
-    constructor(loader: GLTF2Loader) {
+    constructor(loader: GLTFLoader) {
         this._loader = loader;
     }
 
@@ -45,7 +45,7 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
 
     /** @hidden */
     public _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
-        return GLTF2Loader.LoadExtensionAsync<IKHRDracoMeshCompression, Geometry>(context, primitive, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRDracoMeshCompression, Geometry>(context, primitive, this.name, (extensionContext, extension) => {
             if (primitive.mode != undefined) {
                 if (primitive.mode !== MeshPrimitiveMode.TRIANGLE_STRIP &&
                     primitive.mode !== MeshPrimitiveMode.TRIANGLES) {
@@ -104,4 +104,4 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
     }
 }
 
-GLTF2Loader.RegisterExtension(NAME, (loader) => new KHR_draco_mesh_compression(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_draco_mesh_compression(loader));
