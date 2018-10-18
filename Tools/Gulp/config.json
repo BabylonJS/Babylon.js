@@ -1786,6 +1786,10 @@
                     {
                         "path": "babylonjs-loaders/src/glTF/1.0",
                         "namespace": "BABYLON.GLTF1"
+                    },
+                    {
+                        "path": "babylonjs-loaders/src/glTF/2.0/Extensions",
+                        "namespace": "BABYLON.GLTF2.Loader.Extensions"
                     }
                 ],
                 "importsToRemove": [],

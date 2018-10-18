@@ -50790,14 +50790,22 @@ declare module BABYLON.GUI {
         * @see http://doc.babylonjs.com/how_to/gui
         */
     export class AdvancedDynamicTexture extends BABYLON.DynamicTexture {
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */;
-            /** @hidden */;
-            /** @hidden */;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+;
+            /** @hidden */
+;
+            /** @hidden */
+;
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
             /**
                 * Gets or sets a boolean defining if alpha is stored as premultiplied
                 */
@@ -50889,7 +50897,8 @@ declare module BABYLON.GUI {
                 * Release all resources
                 */
             dispose(): void;
-            /** @hidden */
+            /** @hidden */
+
             /**
                 * Get screen coordinates for a vector3
                 * @param position defines the position to project
@@ -50897,9 +50906,12 @@ declare module BABYLON.GUI {
                 * @returns the projected position
                 */
             getProjectedPosition(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector2;
-            /** @hidden */
-            /** @hidden */, control: Control): void;
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+, control: Control): void;
+            /** @hidden */
+
             /** Attach to all scene events required to support pointer events */
             attach(): void;
             /**
@@ -51104,7 +51116,8 @@ declare module BABYLON.GUI {
         * The point can be pure 2D coordinates, a mesh or a control
         */
     export class MultiLinePoint {
-            /** @hidden */
+            /** @hidden */
+
             /**
                 * Creates a new MultiLinePoint
                 * @param multiLine defines the source MultiLine object
@@ -51135,8 +51148,10 @@ declare module BABYLON.GUI {
         * Only support font related properties so far
         */
     export class Style implements BABYLON.IDisposable {
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
             /**
                 * BABYLON.Observable raised when the style values are changed
                 */
@@ -51232,14 +51247,18 @@ declare module BABYLON.GUI {
         * @see http://doc.babylonjs.com/how_to/gui3d
         */
     export class GUI3DManager implements BABYLON.IDisposable {
-            /** @hidden */
-            /** @hidden */;
-            /** @hidden */;
+            /** @hidden */
+
+            /** @hidden */
+;
+            /** @hidden */
+;
             /**
                 * BABYLON.Observable raised when the point picked by the pointer events changed
                 */
             onPickedPointChangedObservable: BABYLON.Observable<BABYLON.Nullable<BABYLON.Vector3>>;
-            /** @hidden */;
+            /** @hidden */
+;
             /** Gets the hosting scene */
             readonly scene: BABYLON.Scene;
             /** Gets associated utility layer */
@@ -51330,11 +51349,16 @@ declare module BABYLON.GUI {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
             /**
                 * Creates a new button made with an image and a text
                 * @param name defines the name of the button
@@ -51391,8 +51415,10 @@ declare module BABYLON.GUI {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
             /**
                 * Utility function to easily create a checkbox with a header
                 * @param title defines the label to use for the header
@@ -51424,7 +51450,11 @@ declare module BABYLON.GUI {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
-            /** @hidden */
+            /** @hidden */
+
+
+
+
     }
 }
 declare module BABYLON.GUI {
@@ -51457,7 +51487,8 @@ declare module BABYLON.GUI {
                 * @param name defines the name of the container
                 */
             constructor(name?: string | undefined);
-            protected _getTypeName(): string;
+            protected _getTypeName(): string;
+
             /**
                 * Gets a child using its name
                 * @param name defines the child name to look for
@@ -51494,13 +51525,18 @@ declare module BABYLON.GUI {
                 * @returns the current container
                 */
             removeControl(control: Control): Container;
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
             /** @hidden */
             protected _localDraw(context: CanvasRenderingContext2D): void;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
             /** @hidden */
             protected _clipForChildren(context: CanvasRenderingContext2D): void;
             /** @hidden */
@@ -51517,13 +51553,18 @@ declare module BABYLON.GUI {
     export class Control {
             /** defines the name of the control */
             name?: string | undefined;
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
             /** Gets or sets the control parent */
             parent: BABYLON.Nullable<Container>;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
             /** @hidden */
             protected _fontOffset: {
                     ascent: number;
@@ -51534,19 +51575,24 @@ declare module BABYLON.GUI {
             protected _horizontalAlignment: number;
             /** @hidden */
             protected _verticalAlignment: number;
-            /** @hidden */
+            /** @hidden */
+
             /** @hidden */
             protected _cachedParentMeasure: Measure;
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
             /** @hidden */
             protected _invertTransformMatrix: Matrix2D;
             /** @hidden */
             protected _transformedPosition: BABYLON.Vector2;
-            /** @hidden */
+            /** @hidden */
+
             protected _isEnabled: boolean;
             protected _disabledColor: string;
-            /** @hidden */
+            /** @hidden */
+
             /** Gets or sets a boolean indicating if the control can be hit with pointer events */
             isHitTestVisible: boolean;
             /** Gets or sets a boolean indicating if the control can block pointer events */
@@ -51672,7 +51718,8 @@ declare module BABYLON.GUI {
                 * @see http://doc.babylonjs.com/how_to/gui#styles
                 */
             style: BABYLON.Nullable<Style>;
-            /** @hidden */protected readonly _isFontSizeInPercentage: boolean;
+            /** @hidden */
+protected readonly _isFontSizeInPercentage: boolean;
             /** Gets font size in pixels */
             readonly fontSizeInPixels: number;
             /** Gets or sets font size */
@@ -51788,7 +51835,8 @@ declare module BABYLON.GUI {
             name?: string | undefined);
             /** @hidden */
             protected _getTypeName(): string;
-            /** @hidden */
+            /** @hidden */
+
             /**
                 * Determines if a container is an ascendant of the current control
                 * @param container defines the container to look for
@@ -51826,12 +51874,18 @@ declare module BABYLON.GUI {
                 * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
                 */
             linkWithMesh(mesh: BABYLON.Nullable<BABYLON.AbstractMesh>): void;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
             /** @hidden */
             protected _transform(context: CanvasRenderingContext2D): void;
             /** @hidden */
@@ -51840,14 +51894,16 @@ declare module BABYLON.GUI {
             protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
             /** @hidden */
             protected _clip(context: CanvasRenderingContext2D): void;
-            /** @hidden */
+            /** @hidden */
+
             /** @hidden */
             protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /** @hidden */
             protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /** @hidden */
             protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
-            /** @hidden */
+            /** @hidden */
+
             /**
                 * Tests if a given coordinates belong to the current control
                 * @param x defines x coordinate to test
@@ -51855,14 +51911,22 @@ declare module BABYLON.GUI {
                 * @returns true if the coordinates are inside the control
                 */
             contains(x: number, y: number): boolean;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
             /** Releases associated resources */
             dispose(): void;
             /** HORIZONTAL_ALIGNMENT_LEFT */
@@ -51877,7 +51941,8 @@ declare module BABYLON.GUI {
             static readonly VERTICAL_ALIGNMENT_BOTTOM: number;
             /** VERTICAL_ALIGNMENT_CENTER */
             static readonly VERTICAL_ALIGNMENT_CENTER: number;
-            /** @hidden */private static _GetFontOffset(font: string): {
+            /** @hidden */
+private static _GetFontOffset(font: string): {
                     ascent: number;
                     height: number;
                     descent: number;
@@ -52075,7 +52140,8 @@ declare module BABYLON.GUI {
             constructor(name?: string | undefined, url?: BABYLON.Nullable<string>);
             protected _getTypeName(): string;
             /** Force the control to synchronize with its content */
-            synchronizeSizeWithContent(): void;
+            synchronizeSizeWithContent(): void;
+
             dispose(): void;
             /** STRETCH_NONE */
             static readonly STRETCH_NONE: number;
@@ -52093,7 +52159,8 @@ declare module BABYLON.GUI {
         */
     export class InputText extends Control implements IFocusableControl {
             name?: string | undefined;
-            /** @hidden */
+            /** @hidden */
+
             /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
             promptMessage: string;
             /** BABYLON.Observable raised when the text changes */
@@ -52153,7 +52220,10 @@ declare module BABYLON.GUI {
             /** @hidden */
             processKey(keyCode: number, key?: string): void;
             /** @hidden */
-            processKeyboard(evt: KeyboardEvent): void;
+            processKeyboard(evt: KeyboardEvent): void;
+
+
+
             protected _beforeRenderText(text: string): string;
             dispose(): void;
     }
@@ -52193,7 +52263,9 @@ declare module BABYLON.GUI {
                 * @param name defines the control name
                 */
             constructor(name?: string | undefined);
-            protected _getTypeName(): string;
+            protected _getTypeName(): string;
+
+
             protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /**
                 * Move one end of the line given 3D cartesian coordinates.
@@ -52206,7 +52278,8 @@ declare module BABYLON.GUI {
                 * Move one end of the line to a position in screen absolute space.
                 * @param projectedPosition Position in screen absolute space (X, Y)
                 * @param end (opt) Set to true to assign x2 and y2 coordinates of the line. Default assign to x1 and y1.
-                */
+                */
+
     }
 }
 declare module BABYLON.GUI {
@@ -52265,8 +52338,10 @@ declare module BABYLON.GUI {
             lineWidth: number;
             horizontalAlignment: number;
             verticalAlignment: number;
-            protected _getTypeName(): string;
-            protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+            protected _getTypeName(): string;
+
+            protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+
             protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             dispose(): void;
     }
@@ -52294,7 +52369,9 @@ declare module BABYLON.GUI {
                 * @param name defines the control name
                 */
             constructor(name?: string | undefined);
-            protected _getTypeName(): string;
+            protected _getTypeName(): string;
+
+
             /**
                 * Utility function to easily create a radio button with a header
                 * @param title defines the label to use for the header
@@ -52353,7 +52430,8 @@ declare module BABYLON.GUI {
             readonly selectors: StackPanel[];
             /** Gets and sets the group header */
             header: string;
-            /** @hidden*/
+            /** @hidden*/
+
             /** Removes the selector at the given position
              * @param selectorNb the position of the selector within the group
             */
@@ -52369,10 +52447,14 @@ declare module BABYLON.GUI {
                 * @param checked is true when Selector is checked
                 */
             addCheckbox(text: string, func?: (s: boolean) => void, checked?: boolean): void;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
     }
     /** Class used to create a RadioGroup
         * which contains groups of radio buttons
@@ -52384,10 +52466,14 @@ declare module BABYLON.GUI {
                 * @param checked is true when Selector is checked
                 */
             addRadio(label: string, func?: (n: number) => void, checked?: boolean): void;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
     }
     /** Class used to create a SliderGroup
         * which contains groups of slider buttons
@@ -52404,10 +52490,14 @@ declare module BABYLON.GUI {
                 * @param onValueChange is the function used to format the value displayed, eg radians to degrees
                 */
             addSlider(label: string, func?: (v: number) => void, unit?: string, min?: number, max?: number, value?: number, onValueChange?: (v: number) => number): void;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
     }
     /** Class used to hold the controls for the checkboxes, radio buttons and sliders
         * @see http://doc.babylonjs.com/how_to/selector
@@ -52575,7 +52665,8 @@ declare module BABYLON.GUI {
                 */
             name?: string | undefined, text?: string);
             protected _getTypeName(): string;
-            /** @hidden */
+            /** @hidden */
+
             protected _applyStates(context: CanvasRenderingContext2D): void;
             protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             protected _breakLines(refWidth: number, context: CanvasRenderingContext2D): object[];
@@ -52727,7 +52818,8 @@ declare module BABYLON.GUI {
                 * Creates a new GridDisplayRectangle
                 * @param name defines the control name
                 */
-            constructor(name?: string | undefined);
+            constructor(name?: string | undefined);
+
             protected _getTypeName(): string;
     }
 }
@@ -52778,7 +52870,10 @@ declare module BABYLON.GUI {
             protected _getTypeName(): string;
             protected _getThumbPosition(): number;
             protected _getThumbThickness(type: string): number;
-            protected _prepareRenderingData(type: string): void;
+            protected _prepareRenderingData(type: string): void;
+
+
+
     }
 }
 declare module BABYLON.GUI {
@@ -52798,7 +52893,8 @@ declare module BABYLON.GUI {
                 * @param name defines the control name
                 */
             constructor(name?: string | undefined);
-            protected _getTypeName(): string;
+            protected _getTypeName(): string;
+
     }
 }
 declare module BABYLON.GUI {
@@ -52825,7 +52921,8 @@ declare module BABYLON.GUI {
                 * @param name defines the control name
                 */
             constructor(name?: string | undefined);
-            protected _getTypeName(): string;
+            protected _getTypeName(): string;
+
     }
 }
 declare module BABYLON.GUI {
@@ -52965,7 +53062,8 @@ declare module BABYLON.GUI {
     export class Control3D implements BABYLON.IDisposable, BABYLON.IBehaviorAware<Control3D> {
             /** Defines the control name */
             name?: string | undefined;
-            /** @hidden */
+            /** @hidden */
+
             /** Gets or sets the control position  in world space */
             position: BABYLON.Vector3;
             /** Gets or sets the control scaling  in world space */
@@ -53060,7 +53158,8 @@ declare module BABYLON.GUI {
                 * @returns the current control
                 */
             linkToTransformNode(node: BABYLON.Nullable<BABYLON.TransformNode>): Control3D;
-            /** @hidden **/
+            /** @hidden **/
+
             /**
                 * Node creation.
                 * Can be overriden by children
@@ -53073,15 +53172,22 @@ declare module BABYLON.GUI {
                 * @param mesh defines the mesh which will represent the control
                 */
             protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
             /** @hidden */
             forcePointerUp(pointerId?: BABYLON.Nullable<number>): void;
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
             /**
                 * Releases all associated resources
                 */
@@ -53439,8 +53545,10 @@ declare module BABYLON {
         * File loader for loading glTF files into a scene.
         */
     export class GLTFFileLoader implements BABYLON.IDisposable, BABYLON.ISceneLoaderPluginAsync, BABYLON.ISceneLoaderPluginFactory {
-            /** @hidden */private static _CreateGLTF1Loader: (parent: GLTFFileLoader) => IGLTFLoader;
-            /** @hidden */private static _CreateGLTF2Loader: (parent: GLTFFileLoader) => IGLTFLoader;
+            /** @hidden */
+private static _CreateGLTF1Loader: (parent: GLTFFileLoader) => IGLTFLoader;
+            /** @hidden */
+private static _CreateGLTF2Loader: (parent: GLTFFileLoader) => IGLTFLoader;
             /**
                 * Raised when the asset has been parsed
                 */
@@ -53593,7 +53701,8 @@ declare module BABYLON {
                 * Disposes the loader, releases resources during load, and cancels any outstanding requests.
                 */
             dispose(): void;
-            /** @hidden */
+            /** @hidden */
+
             /**
                 * Imports one or more meshes from the loaded glTF data and adds them to the scene
                 * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
@@ -53654,11 +53763,16 @@ declare module BABYLON {
                 * @returns a promise that resolves when the asset is completely loaded.
                 */
             whenCompleteAsync(): Promise<void>;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
     }
 }
 declare module BABYLON {
@@ -54323,7 +54437,7 @@ declare module BABYLON.GLTF1 {
         };
         loadedShaderCount: number;
         importOnlyMeshes: boolean;
-        importMeshesNames?: string[];
+        importMeshesNames?: string[];IGLTFLoaderExtension
         dummyNodes: BABYLON.Node[];
     }
     /** @hidden */
@@ -54431,7 +54545,8 @@ declare module BABYLON {
             gltf: IGLTF;
             /** The Babylon scene when loading the asset. */
             babylonScene: BABYLON.Scene;
-            /** @hidden */
+            /** @hidden */
+
             /**
                 * Registers a loader extension.
                 * @param name The name of the loader extension.
@@ -54484,11 +54599,11 @@ declare module BABYLON {
                 * @returns A promise that resolves with the loaded Babylon camera when the load is complete
                 */
             loadCameraAsync(context: string, camera: ICamera, assign?: (babylonCamera: BABYLON.Camera) => void): Promise<BABYLON.Camera>;
-            /**
+            /**IGLTFLoaderExtension
                 * Loads a glTF animation.
                 * @param context The context when loading the asset
                 * @param animation The glTF animation property
-                * @returns A promise that resolves with the loaded Babylon animation group when the load is complete
+                * @reIGLTFLoaderExtensionesolves with the loaded Babylon animation group when the load is complete
                 */
             loadAnimationAsync(context: string, animation: IAnimation): Promise<BABYLON.AnimationGroup>;
             /**
@@ -54498,7 +54613,8 @@ declare module BABYLON {
                 * @returns A promise that resolves with the loaded data when the load is complete
                 */
             loadBufferViewAsync(context: string, bufferView: IBufferView): Promise<ArrayBufferView>;
-            /** @hidden */
+            /** @hidden */
+
             /**
                 * Creates a Babylon material from a glTF material.
                 * @param context The context when loading the asset
@@ -54640,14 +54756,16 @@ declare module BABYLON {
                 * @param context The context when loading the asset
                 * @param primitive The glTF mesh primitive property
                 * @returns A promise that resolves with the loaded geometry when the load is complete or null if not handled
-                */
+                */
+
             /**
                 * @hidden Define this method to modify the default behavior when loading materials. Load material creates the material and then loads material properties.
                 * @param context The context when loading the asset
                 * @param material The glTF material property
                 * @param assign A function called synchronously after parsing the glTF properties
                 * @returns A promise that resolves with the loaded Babylon material when the load is complete or null if not handled
-                */
+                */
+
             /**
                 * Define this method to modify the default behavior when creating materials.
                 * @param context The context when loading the asset
@@ -54684,7 +54802,8 @@ declare module BABYLON {
                 * @param context The context when loading the asset
                 * @param uri The uri to load
                 * @returns A promise that resolves with the loaded data when the load is complete or null if not handled
-                */
+                */
+
     }
 }
 declare module BABYLON {
@@ -54703,8 +54822,10 @@ declare module BABYLON {
         * Loader interface with additional members.
         */
     export interface IAccessor extends BABYLON.GLTF2.IAccessor, IArrayItem {
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
     }
     /**
         * Loader interface with additional members.
@@ -54721,7 +54842,8 @@ declare module BABYLON {
         * Loader interface with additional members.
         */
     export interface IAnimationSampler extends BABYLON.GLTF2.IAnimationSampler, IArrayItem {
-            /** @hidden */
+            /** @hidden */
+
     }
     /**
         * Loader interface with additional members.
@@ -54729,20 +54851,24 @@ declare module BABYLON {
     export interface IAnimation extends BABYLON.GLTF2.IAnimation, IArrayItem {
             channels: IAnimationChannel[];
             samplers: IAnimationSampler[];
-            /** @hidden */
+            /** @hidden */
+
     }
     /**
         * Loader interface with additional members.
         */
     export interface IBuffer extends BABYLON.GLTF2.IBuffer, IArrayItem {
-            /** @hidden */
+            /** @hidden */
+
     }
     /**
         * Loader interface with additional members.
         */
     export interface IBufferView extends BABYLON.GLTF2.IBufferView, IArrayItem {
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */IGLTFLoaderExtension
+
+            /** @hidden */
+
     }
     /**
         * Loader interface with additional members.
@@ -54753,11 +54879,12 @@ declare module BABYLON {
         * Loader interface with additional members.
         */
     export interface IImage extends BABYLON.GLTF2.IImage, IArrayItem {
-            /** @hidden */
+            /** @hidden */
+
     }
     /**
         * Loader interface with additional members.
-        */
+        */IGLTFLoaderExtension
     export interface IMaterialNormalTextureInfo extends BABYLON.GLTF2.IMaterialNormalTextureInfo, BABYLON.GLTF2.ITextureInfo {
     }
     /**
@@ -54773,14 +54900,15 @@ declare module BABYLON {
             metallicRoughnessTexture?: ITextureInfo;
     }
     /**
-        * Loader interface with additional members.
+        * Loader interface with additioIGLTFLoaderExtension
         */
     export interface IMaterial extends BABYLON.GLTF2.IMaterial, IArrayItem {
             pbrMetallicRoughness?: IMaterialPbrMetallicRoughness;
             normalTexture?: IMaterialNormalTextureInfo;
             occlusionTexture?: IMaterialOcclusionTextureInfo;
             emissiveTexture?: ITextureInfo;
-            /** @hidden */;
+            /** @hidden */
+;
             };
     }
     /**
@@ -54791,7 +54919,7 @@ declare module BABYLON {
     }
     /**
         * Loader interface with additional members.
-        */
+        */IGLTFLoaderExtension
     export interface IMeshPrimitive extends BABYLON.GLTF2.IMeshPrimitive, IArrayItem {
     }
     /**
@@ -54802,10 +54930,14 @@ declare module BABYLON {
                 * The parent glTF node.
                 */
             parent?: INode;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */IGLTFLoaderExtension
+
     }
     /** @hidden */
     export interface _ISamplerData {
@@ -54818,9 +54950,10 @@ declare module BABYLON {
         * Loader interface with additional members.
         */
     export interface ISampler extends BABYLON.GLTF2.ISampler, IArrayItem {
-            /** @hidden */
+            /** @hidden */
+
     }
-    /**
+    /**IGLTFLoaderExtension
         * Loader interface with additional members.
         */
     export interface IScene extends BABYLON.GLTF2.IScene, IArrayItem {
@@ -54829,13 +54962,15 @@ declare module BABYLON {
         * Loader interface with additional members.
         */
     export interface ISkin extends BABYLON.GLTF2.ISkin, IArrayItem {
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
     }
     /**
         * Loader interface with additional members.
         */
-    export interface ITexture extends BABYLON.GLTF2.ITexture, IArrayItem {
+    export interface ITexture extends BABYLON.GIGLTFLoaderExtensiontem {
     }
     /**
         * Loader interface with additional members.
@@ -54858,7 +54993,7 @@ declare module BABYLON {
             samplers?: ISampler[];
             scenes?: IScene[];
             skins?: ISkin[];
-            textures?: ITexture[];
+            textures?: ITexture[];IGLTFLoaderExtension
     }
 }
 declare module BABYLON {
@@ -54893,7 +55028,8 @@ declare module BABYLON {
         constructor(loader: GLTF2Loader);
         /** @hidden */
         dispose(): void;
-        /** @hidden */
+        /** @hidden */IGLTFLoaderExtension
+
     }
 }
 declare module BABYLON {
@@ -54902,7 +55038,7 @@ declare module BABYLON {
       */
     export class KHR_lights implements IGLTFLoaderExtensionV2 {
         /** The name of this extension. */
-        readonly name: string;
+        readonly name: string;IGLTFLoaderExtension
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         /** @hidden */
@@ -55022,8 +55158,10 @@ declare module BABYLON {
             onReady(): void;
             /** @hidden */
             loadNodeAsync(context: string, node: INode, assign: (babylonMesh: BABYLON.Mesh) => void): BABYLON.Nullable<Promise<BABYLON.Mesh>>;
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
     }
 }
 declare module BABYLON {
@@ -55153,7 +55291,8 @@ declare module BABYLON {
                 * @param convertToRightHandedSystem - Specifies if the values should be converted to right-handed.
                 * @param useQuaternion - Specifies if quaternions are used.
                 * @returns nullable IAnimationData
-                */private static _CreateNodeAnimation(babylonTransformNode: BABYLON.TransformNode, animation: BABYLON.Animation, animationChannelTargetPath: BABYLON.GLTF2.AnimationChannelTargetPath, convertToRightHandedSystem: boolean, useQuaternion: boolean, animationSampleRate: number): BABYLON.Nullable<_IAnimationData>;
+                */
+private static _CreateNodeAnimation(babylonTransformNode: BABYLON.TransformNode, animation: BABYLON.Animation, animationChannelTargetPath: BABYLON.GLTF2.AnimationChannelTargetPath, convertToRightHandedSystem: boolean, useQuaternion: boolean, animationSampleRate: number): BABYLON.Nullable<_IAnimationData>;
             /**
                 * @ignore
                 * Create node animations from the transform node animations
@@ -55166,7 +55305,8 @@ declare module BABYLON {
                 * @param bufferViews
                 * @param accessors
                 * @param convertToRightHandedSystem
-                */private static _CreateNodeAnimationFromTransformNodeAnimations(babylonTransformNode: BABYLON.TransformNode, runtimeGLTFAnimation: BABYLON.GLTF2.IAnimation, idleGLTFAnimations: BABYLON.GLTF2.IAnimation[], nodeMap: {
+                */
+private static _CreateNodeAnimationFromTransformNodeAnimations(babylonTransformNode: BABYLON.TransformNode, runtimeGLTFAnimation: BABYLON.GLTF2.IAnimation, idleGLTFAnimations: BABYLON.GLTF2.IAnimation[], nodeMap: {
                     [key: number]: number;
             }, nodes: BABYLON.GLTF2.INode[], binaryWriter: _BinaryWriter, bufferViews: BABYLON.GLTF2.IBufferView[], accessors: BABYLON.GLTF2.IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
             /**
@@ -55180,7 +55320,8 @@ declare module BABYLON {
                 * @param bufferViews
                 * @param accessors
                 * @param convertToRightHandedSystem
-                */private static _CreateNodeAnimationFromAnimationGroups(babylonScene: BABYLON.Scene, glTFAnimations: BABYLON.GLTF2.IAnimation[], nodeMap: {
+                */
+private static _CreateNodeAnimationFromAnimationGroups(babylonScene: BABYLON.Scene, glTFAnimations: BABYLON.GLTF2.IAnimation[], nodeMap: {
                     [key: number]: number;
             }, nodes: BABYLON.GLTF2.INode[], binaryWriter: _BinaryWriter, bufferViews: BABYLON.GLTF2.IBufferView[], accessors: BABYLON.GLTF2.IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
     }
@@ -55214,27 +55355,37 @@ declare module BABYLON {
     export class _Exporter {
             /**
                 * Stores all generated buffer views, which represents views into the main glTF buffer data
-                */
+                */
+
             /**
                 * Stores all the generated accessors, which is used for accessing the data within the buffer views in glTF
-                */
+                */
+
             /**
                 * Stores all the generated material information, which represents the appearance of each primitive
-                */;
+                */
+;
             /**
                 * Stores all the generated texture information, which is referenced by glTF materials
-                */
+                */
+
             /**
                 * Stores all the generated image information, which is referenced by glTF textures
-                */
+                */
+
             /**
                 * Stores all the texture samplers
-                */
+                */
+
             /**
                 * Stores a map of the image data, where the key is the file name and the value
                 * is the image data
-                */;
-            };
+                */
+;
+            };
+
+
+
             /**
                 * Creates a glTF Exporter instance, which can accept optional exporter options
                 * @param babylonScene Babylon scene object
@@ -55255,7 +55406,8 @@ declare module BABYLON {
             static UnregisterExtension(name: string): boolean;
             /**
                 * Lazy load a local engine with premultiplied alpha set to false
-                */
+                */
+
             /**
                 * Writes mesh attribute data to a data buffer
                 * Returns the bytelength of the data
@@ -55269,13 +55421,15 @@ declare module BABYLON {
                 * Generates data for .gltf and .bin files based on the glTF prefix string
                 * @param glTFPrefix Text to use when prefixing a glTF file
                 * @returns GLTFData with glTF file data
-                */
+                */
+
             /**
                 * Generates a glb file from the json and binary data
                 * Returns an object with the glb file name as the key and data as the value
                 * @param glTFPrefix
                 * @returns object with glb filename as key and data as value
-                */
+                */
+
     }
     /**
         * @hidden
@@ -55369,34 +55523,40 @@ declare module BABYLON {
                 * @param materials array of materials
                 * @param imageData mapping of texture names to base64 textures
                 * @param hasTextureCoords specifies if texture coordinates are present on the material
-                */
+                */
+
             /**
                 * Makes a copy of the glTF material without the texture parameters
                 * @param originalMaterial original glTF material
                 * @returns glTF material without texture parameters
-                */
+                */
+
             /**
                 * Specifies if the material has any texture parameters present
                 * @param material glTF BABYLON.Material
                 * @returns boolean specifying if texture parameters are present
-                */
+                */
+
             /**
                 * Converts a Babylon BABYLON.StandardMaterial to a glTF Metallic Roughness BABYLON.Material
                 * @param babylonStandardMaterial
                 * @returns glTF Metallic Roughness BABYLON.Material representation
-                */
+                */
+
             /**
                 * Computes the metallic factor
                 * @param diffuse diffused value
                 * @param specular specular value
                 * @param oneMinusSpecularStrength one minus the specular strength
                 * @returns metallic value
-                */private static _SolveMetallic(diffuse: number, specular: number, oneMinusSpecularStrength: number): number;
+                */
+private static _SolveMetallic(diffuse: number, specular: number, oneMinusSpecularStrength: number): number;
             /**
                 * Gets the glTF alpha mode from the Babylon BABYLON.Material
                 * @param babylonMaterial Babylon BABYLON.Material
                 * @returns The Babylon alpha mode value
-                */
+                */
+
             /**
                 * Converts a Babylon Standard BABYLON.Material to a glTF BABYLON.Material
                 * @param babylonStandardMaterial BJS Standard BABYLON.Material
@@ -55406,7 +55566,8 @@ declare module BABYLON {
                 * @param materials array of glTF material interfaces
                 * @param imageData map of image file name to data
                 * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
-                */
+                */
+
             /**
                 * Converts a Babylon PBR Metallic Roughness BABYLON.Material to a glTF BABYLON.Material
                 * @param babylonPBRMetalRoughMaterial BJS PBR Metallic Roughness BABYLON.Material
@@ -55416,7 +55577,8 @@ declare module BABYLON {
                 * @param materials array of glTF material interfaces
                 * @param imageData map of image file name to data
                 * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
-                */
+                */
+
             /**
                 * Converts a Babylon PBR Metallic Roughness BABYLON.Material to a glTF BABYLON.Material
                 * @param babylonPBRMaterial BJS PBR Metallic Roughness BABYLON.Material
@@ -55426,13 +55588,16 @@ declare module BABYLON {
                 * @param materials array of glTF material interfaces
                 * @param imageData map of image file name to data
                 * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
-                */
+                */
+
             /**
                 * Extracts a texture from a Babylon texture into file data and glTF data
                 * @param babylonTexture Babylon texture to extract
                 * @param mimeType Mime Type of the babylonTexture
                 * @return glTF texture info, or null if the texture format is not supported
-                */
+                */
+
+
     }
 }
 declare module BABYLON {
@@ -55491,7 +55656,8 @@ declare module BABYLON {
                 * @param byteStride byte distance between conequential elements
                 * @param name name of the buffer view
                 * @returns bufferView for glTF
-                */private static _CreateBufferView(bufferIndex: number, byteOffset: number, byteLength: number, byteStride?: number, name?: string): BABYLON.GLTF2.IBufferView;
+                */
+private static _CreateBufferView(bufferIndex: number, byteOffset: number, byteLength: number, byteStride?: number, name?: string): BABYLON.GLTF2.IBufferView;
             /**
                 * Creates an accessor based on the supplied arguments
                 * @param bufferviewIndex The index of the bufferview referenced by this accessor
@@ -55503,14 +55669,16 @@ declare module BABYLON {
                 * @param min Minimum value of each component in this attribute
                 * @param max Maximum value of each component in this attribute
                 * @returns accessor for glTF
-                */private static _CreateAccessor(bufferviewIndex: number, name: string, type: BABYLON.GLTF2.AccessorType, componentType: BABYLON.GLTF2.AccessorComponentType, count: number, byteOffset: BABYLON.Nullable<number>, min: BABYLON.Nullable<number[]>, max: BABYLON.Nullable<number[]>): BABYLON.GLTF2.IAccessor;
+                */
+private static _CreateAccessor(bufferviewIndex: number, name: string, type: BABYLON.GLTF2.AccessorType, componentType: BABYLON.GLTF2.AccessorComponentType, count: number, byteOffset: BABYLON.Nullable<number>, min: BABYLON.Nullable<number[]>, max: BABYLON.Nullable<number[]>): BABYLON.GLTF2.IAccessor;
             /**
                 * Calculates the minimum and maximum values of an array of position floats
                 * @param positions Positions array of a mesh
                 * @param vertexStart Starting vertex offset to calculate min and max values
                 * @param vertexCount Number of vertices to check for min and max values
                 * @returns min number array and max number array
-                */private static _CalculateMinMaxPositions(positions: BABYLON.FloatArray, vertexStart: number, vertexCount: number, convertToRightHandedSystem: boolean): {
+                */
+private static _CalculateMinMaxPositions(positions: BABYLON.FloatArray, vertexStart: number, vertexCount: number, convertToRightHandedSystem: boolean): {
                     min: number[];
                     max: number[];
             };
@@ -55518,44 +55686,55 @@ declare module BABYLON {
                 * Converts a new right-handed BABYLON.Vector3
                 * @param vector vector3 array
                 * @returns right-handed BABYLON.Vector3
-                */private static _GetRightHandedPositionVector3(vector: BABYLON.Vector3): BABYLON.Vector3;
+                */
+private static _GetRightHandedPositionVector3(vector: BABYLON.Vector3): BABYLON.Vector3;
             /**
                 * Converts a BABYLON.Vector3 to right-handed
                 * @param vector BABYLON.Vector3 to convert to right-handed
-                */private static _GetRightHandedPositionVector3FromRef(vector: BABYLON.Vector3): void;
+                */
+private static _GetRightHandedPositionVector3FromRef(vector: BABYLON.Vector3): void;
             /**
                 * Converts a three element number array to right-handed
                 * @param vector number array to convert to right-handed
-                */private static _GetRightHandedPositionArray3FromRef(vector: number[]): void;
+                */
+private static _GetRightHandedPositionArray3FromRef(vector: number[]): void;
             /**
                 * Converts a new right-handed BABYLON.Vector3
                 * @param vector vector3 array
                 * @returns right-handed BABYLON.Vector3
-                */private static _GetRightHandedNormalVector3(vector: BABYLON.Vector3): BABYLON.Vector3;
+                */
+private static _GetRightHandedNormalVector3(vector: BABYLON.Vector3): BABYLON.Vector3;
             /**
                 * Converts a BABYLON.Vector3 to right-handed
                 * @param vector BABYLON.Vector3 to convert to right-handed
-                */private static _GetRightHandedNormalVector3FromRef(vector: BABYLON.Vector3): void;
+                */
+private static _GetRightHandedNormalVector3FromRef(vector: BABYLON.Vector3): void;
             /**
                 * Converts a three element number array to right-handed
                 * @param vector number array to convert to right-handed
-                */private static _GetRightHandedNormalArray3FromRef(vector: number[]): void;
+                */
+private static _GetRightHandedNormalArray3FromRef(vector: number[]): void;
             /**
                 * Converts a BABYLON.Vector4 to right-handed
                 * @param vector BABYLON.Vector4 to convert to right-handed
-                */private static _GetRightHandedVector4FromRef(vector: BABYLON.Vector4): void;
+                */
+private static _GetRightHandedVector4FromRef(vector: BABYLON.Vector4): void;
             /**
                 * Converts a BABYLON.Vector4 to right-handed
                 * @param vector BABYLON.Vector4 to convert to right-handed
-                */private static _GetRightHandedArray4FromRef(vector: number[]): void;
+                */
+private static _GetRightHandedArray4FromRef(vector: number[]): void;
             /**
                 * Converts a BABYLON.Quaternion to right-handed
                 * @param quaternion Source quaternion to convert to right-handed
-                */private static _GetRightHandedQuaternionFromRef(quaternion: BABYLON.Quaternion): void;
+                */
+private static _GetRightHandedQuaternionFromRef(quaternion: BABYLON.Quaternion): void;
             /**
                 * Converts a BABYLON.Quaternion to right-handed
                 * @param quaternion Source quaternion to convert to right-handed
-                */private static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]): void;private static _NormalizeTangentFromRef(tangent: BABYLON.Vector4): void;
+                */
+private static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]): void;
+private static _NormalizeTangentFromRef(tangent: BABYLON.Vector4): void;
     }
 }
 declare module BABYLON {
@@ -56539,7 +56718,8 @@ interface IGLTFValidatorTypings {
 declare module BABYLON {
     export class CellMaterial extends BABYLON.PushMaterial {
         diffuseTexture: BABYLON.BaseTexture;
-        diffuseColor: BABYLON.Color3;
+        diffuseColor: BABYLON.Color3;
+
         computeHighLevel: boolean;
         disableLighting: boolean;
         maxSimultaneousLights: number;
@@ -56581,7 +56761,13 @@ declare module BABYLON {
     }
     export class CustomMaterial extends BABYLON.StandardMaterial {
         static ShaderIndexer: number;
-        CustomParts: ShaderSpecialParts;
+        CustomParts: ShaderSpecialParts;
+
+
+
+
+
+
         FragmentShader: string;
         VertexShader: string;
         AttachAfterBind(mesh: BABYLON.Mesh, effect: BABYLON.Effect): void;
@@ -56642,7 +56828,8 @@ declare module BABYLON {
         furTexture: BABYLON.DynamicTexture;
         disableLighting: boolean;
         maxSimultaneousLights: number;
-        highLevelFur: boolean;
+        highLevelFur: boolean;
+
         constructor(name: string, scene: BABYLON.Scene);
         furTime: number;
         needAlphaBlending(): boolean;
@@ -57445,4 +57632,4 @@ declare module BABYLON {
                 */
             static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): WoodProceduralTexture;
     }
-}
+}

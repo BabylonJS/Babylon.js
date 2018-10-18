@@ -1,7 +1,7 @@
 import { Geometry, DracoCompression, Mesh, Nullable, VertexBuffer } from "babylonjs";
 import { MeshPrimitiveMode } from "babylonjs-gltf2interface";
 import { IBufferView, IMeshPrimitive } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
+import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTF2Loader, ArrayItem } from "../glTF2Loader";
 
 const NAME = "KHR_draco_mesh_compression";
@@ -18,7 +18,7 @@ interface IBufferViewDraco extends IBufferView {
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)
  */
-export class KHR_draco_mesh_compression implements IGLTFLoaderExtensionV2 {
+export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
     /** The name of this extension. */
     public readonly name = NAME;
 

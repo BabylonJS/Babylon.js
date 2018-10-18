@@ -1098,7 +1098,7 @@ declare module BABYLON {
                 * @param name The name of the loader extension.
                 * @param factory The factory function that creates the loader extension.
                 */
-            static RegisterExtension(name: string, factory: (loader: GLTF2Loader) => IGLTFLoaderExtensionV2): void;
+            static RegisterExtension(name: string, factory: (loader: GLTF2Loader) => IGLTFLoaderExtension): void;
             /**
                 * Unregisters a loader extension.
                 * @param name The name of the loader extenion.
@@ -1261,11 +1261,11 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var __IGLTFLoaderExtensionV2: number;
+    export var __IGLTFLoaderExtension: number;
     /**
         * Interface for a glTF loader extension.
         */
-    export interface IGLTFLoaderExtensionV2 extends IGLTFLoaderExtension, BABYLON.IDisposable {
+    export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, BABYLON.IDisposable {
             /**
                 * Called after the loader state changes to LOADING.
                 */
@@ -1547,11 +1547,11 @@ declare module BABYLON {
             textures?: ITexture[];
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
       * [Specification](https://github.com/KhronosGroup/glTF/blob/eb3e32332042e04691a5f35103f8c261e50d8f1e/extensions/2.0/Khronos/EXT_lights_image_based/README.md) (Experimental)
       */
-    export class EXT_lights_image_based implements IGLTFLoaderExtensionV2 {
+    export class EXT_lights_image_based implements IGLTFLoaderExtension {
         /** The name of this extension. */
         readonly name: string;
         /** Defines whether this extension is enabled. */
@@ -1566,11 +1566,11 @@ declare module BABYLON {
         loadSceneAsync(context: string, scene: IScene): BABYLON.Nullable<Promise<void>>;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
       * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)
       */
-    export class KHR_draco_mesh_compression implements IGLTFLoaderExtensionV2 {
+    export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
         /** The name of this extension. */
         readonly name: string;
         /** Defines whether this extension is enabled. */
@@ -1583,11 +1583,11 @@ declare module BABYLON {
         _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: BABYLON.Mesh): BABYLON.Nullable<Promise<BABYLON.Geometry>>;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
       * [Specification](https://github.com/KhronosGroup/glTF/blob/1048d162a44dbcb05aefc1874bfd423cf60135a6/extensions/2.0/Khronos/KHR_lights_punctual/README.md) (Experimental)
       */
-    export class KHR_lights implements IGLTFLoaderExtensionV2 {
+    export class KHR_lights implements IGLTFLoaderExtension {
         /** The name of this extension. */
         readonly name: string;
         /** Defines whether this extension is enabled. */
@@ -1602,11 +1602,11 @@ declare module BABYLON {
         loadNodeAsync(context: string, node: INode, assign: (babylonMesh: BABYLON.Mesh) => void): BABYLON.Nullable<Promise<BABYLON.Mesh>>;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
       * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness)
       */
-    export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtensionV2 {
+    export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension {
         /** The name of this extension. */
         readonly name: string;
         /** Defines whether this extension is enabled. */
@@ -1619,11 +1619,11 @@ declare module BABYLON {
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: BABYLON.Material): BABYLON.Nullable<Promise<void>>;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
       * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
       */
-    export class KHR_materials_unlit implements IGLTFLoaderExtensionV2 {
+    export class KHR_materials_unlit implements IGLTFLoaderExtension {
         /** The name of this extension. */
         readonly name: string;
         /** Defines whether this extension is enabled. */
@@ -1636,11 +1636,11 @@ declare module BABYLON {
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: BABYLON.Material): BABYLON.Nullable<Promise<void>>;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
       * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_texture_transform/README.md)
       */
-    export class KHR_texture_transform implements IGLTFLoaderExtensionV2 {
+    export class KHR_texture_transform implements IGLTFLoaderExtension {
         /** The name of this extension. */
         readonly name: string;
         /** Defines whether this extension is enabled. */
@@ -1653,11 +1653,11 @@ declare module BABYLON {
         loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BABYLON.BaseTexture) => void): BABYLON.Nullable<Promise<BABYLON.BaseTexture>>;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
       * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
       */
-    export class MSFT_audio_emitter implements IGLTFLoaderExtensionV2 {
+    export class MSFT_audio_emitter implements IGLTFLoaderExtension {
         /** The name of this extension. */
         readonly name: string;
         /** Defines whether this extension is enabled. */
@@ -1676,11 +1676,11 @@ declare module BABYLON {
         loadAnimationAsync(context: string, animation: IAnimation): BABYLON.Nullable<Promise<BABYLON.AnimationGroup>>;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
         * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_lod)
         */
-    export class MSFT_lod implements IGLTFLoaderExtensionV2 {
+    export class MSFT_lod implements IGLTFLoaderExtension {
             /** The name of this extension. */
             readonly name: string;
             /** Defines whether this extension is enabled. */
@@ -1715,9 +1715,9 @@ declare module BABYLON {
             _loadUriAsync(context: string, uri: string): BABYLON.Nullable<Promise<ArrayBufferView>>;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /** @hidden */
-    export class MSFT_minecraftMesh implements IGLTFLoaderExtensionV2 {
+    export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
         readonly name: string;
         enabled: boolean;
         constructor(loader: GLTF2Loader);
@@ -1725,9 +1725,9 @@ declare module BABYLON {
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: BABYLON.Material): BABYLON.Nullable<Promise<void>>;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Loader.Extensions {
     /** @hidden */
-    export class MSFT_sRGBFactors implements IGLTFLoaderExtensionV2 {
+    export class MSFT_sRGBFactors implements IGLTFLoaderExtension {
         readonly name: string;
         enabled: boolean;
         constructor(loader: GLTF2Loader);

@@ -1,7 +1,7 @@
 import { IFileRequest, Buffer, Animation, Scene, Nullable, Mesh, Material, SceneLoaderProgressEvent, Tools, AbstractMesh, IParticleSystem, Skeleton, AnimationGroup, Geometry, VertexBuffer, MorphTargetManager, MorphTarget, TransformNode, Vector3, Quaternion, Matrix, Bone, Camera, FreeCamera, IAnimationKey, AnimationKeyInterpolation, IndicesArray, PBRMaterial, Color3, BaseTexture, Deferred, Texture, LoadFileError } from "babylonjs";
 import { IProperty, AccessorType, CameraType, AnimationChannelTargetPath, AnimationSamplerInterpolation, AccessorComponentType, MaterialAlphaMode, TextureMinFilter, TextureWrapMode, TextureMagFilter, MeshPrimitiveMode } from "babylonjs-gltf2interface";
 import { _IAnimationSamplerData, IGLTF, ISampler, INode, IScene, IMesh,  IAccessor, ISkin, ICamera, IAnimation, IAnimationChannel, IAnimationSampler, IBuffer, IBufferView, IMaterialPbrMetallicRoughness, IMaterial, ITextureInfo, ITexture, IImage, IMeshPrimitive, IArrayItem, _ISamplerData } from "./glTFLoaderInterfaces";
-import { IGLTFLoaderExtensionV2 } from "./glTFLoaderExtension";
+import { IGLTFLoaderExtension } from "./glTFLoaderExtension";
 import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
 
 interface IFileRequestInfo extends IFileRequest {
@@ -62,7 +62,7 @@ export class GLTF2Loader implements IGLTFLoader {
     private _disposed = false;
     private _parent: GLTFFileLoader;
     private _state: Nullable<GLTFLoaderState> = null;
-    private _extensions: { [name: string]: IGLTFLoaderExtensionV2 } = {};
+    private _extensions: { [name: string]: IGLTFLoaderExtension } = {};
     private _rootUrl: string;
     private _fileName: string;
     private _uniqueRootUrl: string;
@@ -74,14 +74,14 @@ export class GLTF2Loader implements IGLTFLoader {
     private static readonly _DefaultSampler: ISampler = { index: -1 };
 
     private static _ExtensionNames = new Array<string>();
-    private static _ExtensionFactories: { [name: string]: (loader: GLTF2Loader) => IGLTFLoaderExtensionV2 } = {};
+    private static _ExtensionFactories: { [name: string]: (loader: GLTF2Loader) => IGLTFLoaderExtension } = {};
 
     /**
      * Registers a loader extension.
      * @param name The name of the loader extension.
      * @param factory The factory function that creates the loader extension.
      */
-    public static RegisterExtension(name: string, factory: (loader: GLTF2Loader) => IGLTFLoaderExtensionV2): void {
+    public static RegisterExtension(name: string, factory: (loader: GLTF2Loader) => IGLTFLoaderExtension): void {
         if (GLTF2Loader.UnregisterExtension(name)) {
             Tools.Warn(`Extension with the name '${name}' already exists`);
         }
@@ -1955,7 +1955,7 @@ export class GLTF2Loader implements IGLTFLoader {
         });
     }
 
-    private _forEachExtensions(action: (extension: IGLTFLoaderExtensionV2) => void): void {
+    private _forEachExtensions(action: (extension: IGLTFLoaderExtension) => void): void {
         for (const name of GLTF2Loader._ExtensionNames) {
             const extension = this._extensions[name];
             if (extension.enabled) {
@@ -1964,7 +1964,7 @@ export class GLTF2Loader implements IGLTFLoader {
         }
     }
 
-    private _applyExtensions<T>(property: IProperty, actionAsync: (extension: IGLTFLoaderExtensionV2) => Nullable<T> | undefined): Nullable<T> {
+    private _applyExtensions<T>(property: IProperty, actionAsync: (extension: IGLTFLoaderExtension) => Nullable<T> | undefined): Nullable<T> {
         for (const name of GLTF2Loader._ExtensionNames) {
             const extension = this._extensions[name];
             if (extension.enabled) {

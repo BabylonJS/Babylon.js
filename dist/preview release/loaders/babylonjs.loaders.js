@@ -6575,7 +6575,7 @@ glTFFileLoader_1.GLTFFileLoader._CreateGLTF2Loader = function (parent) { return 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @hidden */
-exports.__IGLTFLoaderExtensionV2 = 0; // I am here to allow dts to be created
+exports.__IGLTFLoaderExtension = 0; // I am here to allow dts to be created
 
 
 /***/ }),
@@ -7392,8 +7392,10 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(__webpack_require__(/*! ./glTFFileLoader */ "./src/glTF/glTFFileLoader.ts"));
-__export(__webpack_require__(/*! ./1.0 */ "./src/glTF/1.0/index.ts"));
-__export(__webpack_require__(/*! ./2.0 */ "./src/glTF/2.0/index.ts"));
+var GLTF1 = __webpack_require__(/*! ./1.0 */ "./src/glTF/1.0/index.ts");
+exports.GLTF1 = GLTF1;
+var GLTF2 = __webpack_require__(/*! ./2.0 */ "./src/glTF/2.0/index.ts");
+exports.GLTF2 = GLTF2;
 
 
 /***/ }),

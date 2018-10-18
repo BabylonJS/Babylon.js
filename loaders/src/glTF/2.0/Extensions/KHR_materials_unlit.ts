@@ -1,6 +1,6 @@
 import { Material, Nullable, PBRMaterial, Color3 } from "babylonjs";
 import { IMaterial } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
+import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTF2Loader } from "../glTF2Loader";
 
 const NAME = "KHR_materials_unlit";
@@ -8,7 +8,7 @@ const NAME = "KHR_materials_unlit";
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
  */
-export class KHR_materials_unlit implements IGLTFLoaderExtensionV2 {
+export class KHR_materials_unlit implements IGLTFLoaderExtension {
     /** The name of this extension. */
     public readonly name = NAME;
 

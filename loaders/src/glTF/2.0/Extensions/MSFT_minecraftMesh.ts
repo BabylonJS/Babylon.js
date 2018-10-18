@@ -1,12 +1,12 @@
 import { Material, Nullable, PBRMaterial } from "babylonjs";
 import { IMaterial } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
+import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTF2Loader } from "../glTF2Loader";
 
 const NAME = "MSFT_minecraftMesh";
 
 /** @hidden */
-export class MSFT_minecraftMesh implements IGLTFLoaderExtensionV2 {
+export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
     public readonly name = NAME;
     public enabled = true;
 

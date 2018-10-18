@@ -1,6 +1,6 @@
 import { BaseTexture, Nullable, Texture } from "babylonjs";
 import { ITextureInfo } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
+import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTF2Loader } from "../glTF2Loader";
 
 const NAME = "KHR_texture_transform";
@@ -15,7 +15,7 @@ interface IKHRTextureTransform {
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_texture_transform/README.md)
  */
-export class KHR_texture_transform implements IGLTFLoaderExtensionV2 {
+export class KHR_texture_transform implements IGLTFLoaderExtension {
     /** The name of this extension. */
     public readonly name = NAME;
 

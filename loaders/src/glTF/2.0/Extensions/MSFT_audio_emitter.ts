@@ -1,6 +1,6 @@
 import { WeightedSound, Sound, Nullable, Mesh, Vector3, Tools, AnimationGroup, AnimationEvent } from "babylonjs";
 import { IArrayItem, IScene, INode, IAnimation } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
+import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTF2Loader, ArrayItem } from "../glTF2Loader";
 
 const NAME = "MSFT_audio_emitter";
@@ -83,7 +83,7 @@ interface ILoaderAnimationEvents {
 /**
  * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
  */
-export class MSFT_audio_emitter implements IGLTFLoaderExtensionV2 {
+export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     /** The name of this extension. */
     public readonly name = NAME;
 
