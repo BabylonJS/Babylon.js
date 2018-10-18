@@ -362,7 +362,7 @@ export class InputText extends Control implements IFocusableControl {
         if (key &&
             ((keyCode === -1) ||                     // Direct access
                 (keyCode === 32) ||                     // Space
-                (keyCode > 47 && keyCode < 60) ||       // Numbers
+                (keyCode > 47 && keyCode < 64) ||       // Numbers
                 (keyCode > 64 && keyCode < 91) ||       // Letters
                 (keyCode > 159 && keyCode < 193) ||     // Special characters
                 (keyCode > 218 && keyCode < 223) ||     // Special characters
