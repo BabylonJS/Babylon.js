@@ -1,6 +1,6 @@
 import { IFileRequest, Buffer, Animation, Scene, Nullable, Mesh, Material, SceneLoaderProgressEvent, Tools, AbstractMesh, IParticleSystem, Skeleton, AnimationGroup, Geometry, VertexBuffer, MorphTargetManager, MorphTarget, TransformNode, Vector3, Quaternion, Matrix, Bone, Camera, FreeCamera, IAnimationKey, AnimationKeyInterpolation, IndicesArray, PBRMaterial, Color3, BaseTexture, Deferred, Texture, LoadFileError } from "babylonjs";
 import { IProperty, AccessorType, CameraType, AnimationChannelTargetPath, AnimationSamplerInterpolation, AccessorComponentType, MaterialAlphaMode, TextureMinFilter, TextureWrapMode, TextureMagFilter, MeshPrimitiveMode } from "babylonjs-gltf2interface";
-import { _IAnimationSamplerData, IGLTF, ISampler, INode, IScene, IMesh,  IAccessor, ISkin, ICamera, IAnimation, IAnimationChannel, IAnimationSampler, IBuffer, IBufferView, IMaterialPbrMetallicRoughness, IMaterial, ITextureInfo, ITexture, IImage, IMeshPrimitive, IArrayItem, _ISamplerData } from "./glTFLoaderInterfaces";
+import { _IAnimationSamplerData, IGLTF, ISampler, INode, IScene, IMesh,  IAccessor, ISkin, ICamera, IAnimation, IAnimationChannel, IAnimationSampler, IBuffer, IBufferView, IMaterialPbrMetallicRoughness, IMaterial, ITextureInfo, ITexture, IImage, IMeshPrimitive, IArrayItem as ITem, _ISamplerData } from "./glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "./glTFLoaderExtension";
 import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
 
@@ -37,7 +37,7 @@ export class ArrayItem {
      * Assign an `index` field to each item of the given array.
      * @param array The array of items
      */
-    public static Assign(array?: IArrayItem[]): void {
+    public static Assign(array?: ITem[]): void {
         if (array) {
             for (let index = 0; index < array.length; index++) {
                 array[index].index = index;

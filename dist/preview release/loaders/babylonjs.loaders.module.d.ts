@@ -1135,7 +1135,7 @@ declare module 'babylonjs-loaders/src/glTF/1.0/glTFMaterialsCommonExtension' {
 declare module 'babylonjs-loaders/src/glTF/2.0/glTFLoader' {
     import { Scene, Nullable, Mesh, Material, SceneLoaderProgressEvent, AbstractMesh, IParticleSystem, Skeleton, AnimationGroup, Camera, BaseTexture } from "babylonjs";
     import { IProperty } from "babylonjs-gltf2interface";
-    import { IGLTF, INode, IScene, ICamera, IAnimation, IBufferView, IMaterial, ITextureInfo, IImage, IArrayItem } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces";
+    import { IGLTF, INode, IScene, ICamera, IAnimation, IBufferView, IMaterial, ITextureInfo, IImage, IArrayItem as ITem } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/src/glTF/2.0/glTFLoaderExtension";
     import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData } from "babylonjs-loaders/src/glTF/glTFFileLoader";
     /**
@@ -1154,7 +1154,7 @@ declare module 'babylonjs-loaders/src/glTF/2.0/glTFLoader' {
                 * Assign an `index` field to each item of the given array.
                 * @param array The array of items
                 */
-            static Assign(array?: IArrayItem[]): void;
+            static Assign(array?: ITem[]): void;
     }
     /**
         * The glTF 2.0 loader
@@ -2963,7 +2963,7 @@ declare module BABYLON.GLTF2 {
                 * Assign an `index` field to each item of the given array.
                 * @param array The array of items
                 */
-            static Assign(array?: IArrayItem[]): void;
+            static Assign(array?: BABYLON.GLTF2.Loader.IArrayItem[]): void;
     }
     /**
         * The glTF 2.0 loader

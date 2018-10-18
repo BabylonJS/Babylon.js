@@ -1081,7 +1081,7 @@ declare module BABYLON.GLTF2 {
                 * Assign an `index` field to each item of the given array.
                 * @param array The array of items
                 */
-            static Assign(array?: IArrayItem[]): void;
+            static Assign(array?: BABYLON.GLTF2.Loader.IArrayItem[]): void;
     }
     /**
         * The glTF 2.0 loader
