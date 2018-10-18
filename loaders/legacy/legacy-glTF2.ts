@@ -1,4 +1,5 @@
 import * as Extensions from "../src/glTF/2.0/Extensions";
+import * as Interfaces from "../src/glTF/2.0/glTFLoaderInterfaces";
 import * as GLTF2 from "../src/glTF/2.0";
 
 /**
@@ -16,6 +17,10 @@ if (typeof globalObject !== "undefined") {
     const keys = [];
     for (var key in Extensions) {
         BABYLON.GLTF2.Loader.Extensions[key] = (<any>Extensions)[key];
+        keys.push(key);
+    }
+    for (var key in Interfaces) {
+        BABYLON.GLTF2.Loader[key] = (<any>Interfaces)[key];
         keys.push(key);
     }
 
