@@ -18,6 +18,8 @@
 
 ## Updates
 
+### Documentation
+
 - Updated ES6 example on how to getting started [Readme](https://github.com/BabylonJS/Babylon.js/)
 
 ### GUI
