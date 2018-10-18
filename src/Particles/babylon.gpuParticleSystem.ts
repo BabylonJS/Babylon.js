@@ -38,7 +38,7 @@ module BABYLON {
         private _randomTexture: RawTexture;
         private _randomTexture2: RawTexture;
 
-        private _attributesStrideSize = 21;
+        private _attributesStrideSize: number;
         private _updateEffectOptions: EffectCreationOptions;
 
         private _randomTextureSize: number;
@@ -787,6 +787,9 @@ module BABYLON {
 
             let engine = this._scene.getEngine();
             var data = new Array<float>();
+
+            this._attributesStrideSize = 21;
+            this._targetIndex = 0;
 
             if (!this.isBillboardBased) {
                 this._attributesStrideSize += 3;
