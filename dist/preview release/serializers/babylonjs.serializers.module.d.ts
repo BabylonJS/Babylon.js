@@ -791,7 +791,7 @@ declare module BABYLON.GLTF2.Exporter {
             }, nodes: BABYLON.GLTF2.INode[], binaryWriter: _BinaryWriter, bufferViews: BABYLON.GLTF2.IBufferView[], accessors: BABYLON.GLTF2.IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
     }
 }
-declare module BABYLON.GLTF2.Exporter {
+declare module BABYLON {
     /**
         * Class for holding and downloading glTF file data
         */
@@ -1072,7 +1072,7 @@ declare module BABYLON.GLTF2.Exporter {
             _exportTextureInfoAsync(babylonTexture: BABYLON.BaseTexture, mimeType: BABYLON.GLTF2.ImageMimeType): Promise<BABYLON.Nullable<BABYLON.GLTF2.ITextureInfo>>;
     }
 }
-declare module BABYLON.GLTF2.Exporter {
+declare module BABYLON {
     /**
         * Holds a collection of exporter options and parameters
         */
@@ -1209,7 +1209,7 @@ declare module BABYLON.GLTF2.Exporter {
             static _NormalizeTangentFromRef(tangent: BABYLON.Vector4): void;
     }
 }
-declare module BABYLON.GLTF2.Exporter {
+declare module BABYLON.GLTF2.Exporter.Extensions {
     /**
         * @hidden
         */
