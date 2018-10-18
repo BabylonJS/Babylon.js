@@ -1,7 +1,7 @@
 import { Mesh, Nullable, Light, DirectionalLight, Vector3, PointLight, SpotLight, Color3 } from "babylonjs";
 import { IChildRootProperty } from "babylonjs-gltf2interface";
 import { INode } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
+import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTF2Loader, ArrayItem } from "../glTF2Loader";
 
 const NAME = "KHR_lights_punctual";
@@ -34,7 +34,7 @@ interface ILights {
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/1048d162a44dbcb05aefc1874bfd423cf60135a6/extensions/2.0/Khronos/KHR_lights_punctual/README.md) (Experimental)
  */
-export class KHR_lights implements IGLTFLoaderExtensionV2 {
+export class KHR_lights implements IGLTFLoaderExtension {
     /** The name of this extension. */
     public readonly name = NAME;
 

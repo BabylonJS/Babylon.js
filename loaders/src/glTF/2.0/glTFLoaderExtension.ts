@@ -1,14 +1,14 @@
 ﻿import { IDisposable, Nullable, Mesh, Camera, Geometry, Material, BaseTexture, AnimationGroup } from "babylonjs";
 import { IScene, INode, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation } from "./glTFLoaderInterfaces";
-import { IGLTFLoaderExtension } from "../glTFFileLoader";
+import { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "../glTFFileLoader";
 
 /** @hidden */
-export var __IGLTFLoaderExtensionV2 = 0; // I am here to allow dts to be created
+export var __IGLTFLoaderExtension = 0; // I am here to allow dts to be created
 
 /**
  * Interface for a glTF loader extension.
  */
-export interface IGLTFLoaderExtensionV2 extends IGLTFLoaderExtension, IDisposable {
+export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposable {
     /**
      * Called after the loader state changes to LOADING.
      */

@@ -1,6 +1,6 @@
 import { Material, Nullable, PBRMaterial, Color3 } from "babylonjs";
 import { ITextureInfo, IMaterial } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
+import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTF2Loader } from "../glTF2Loader";
 
 const NAME = "KHR_materials_pbrSpecularGlossiness";
@@ -16,7 +16,7 @@ interface IKHRMaterialsPbrSpecularGlossiness {
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness)
  */
-export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtensionV2 {
+export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension {
     /** The name of this extension. */
     public readonly name = NAME;
 

@@ -1,7 +1,7 @@
 import { BaseTexture, Nullable, RawCubeTexture, Quaternion, Matrix, SphericalHarmonics, SphericalPolynomial, Scalar } from "babylonjs";
 import { IChildRootProperty } from "babylonjs-gltf2interface";
 import { IScene } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
+import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTF2Loader, ArrayItem } from "../glTF2Loader";
 
 const NAME = "EXT_lights_image_based";
@@ -28,7 +28,7 @@ interface ILights {
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/eb3e32332042e04691a5f35103f8c261e50d8f1e/extensions/2.0/Khronos/EXT_lights_image_based/README.md) (Experimental)
  */
-export class EXT_lights_image_based implements IGLTFLoaderExtensionV2 {
+export class EXT_lights_image_based implements IGLTFLoaderExtension {
     /** The name of this extension. */
     public readonly name = NAME;
 

@@ -1,6 +1,6 @@
 import { Observable, Nullable, Deferred, Mesh, Material } from "babylonjs";
 import { INode, IMaterial } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtensionV2 } from "../glTFLoaderExtension";
+import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTF2Loader, ArrayItem } from "../glTF2Loader";
 
 const NAME = "MSFT_lod";
@@ -12,7 +12,7 @@ interface IMSFTLOD {
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_lod)
  */
-export class MSFT_lod implements IGLTFLoaderExtensionV2 {
+export class MSFT_lod implements IGLTFLoaderExtension {
     /** The name of this extension. */
     public readonly name = NAME;
 
