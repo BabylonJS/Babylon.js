@@ -2108,7 +2108,7 @@ module BABYLON {
 
         /**
          * Returns a new Vector3 set from the index "offset" of the given Float32Array
-         * This function is deprecated.  Use FromArray instead
+         * This function is deprecated. Use FromArray instead
          * @param array defines the source array
          * @param offset defines the offset in the source array
          * @returns the new Vector3

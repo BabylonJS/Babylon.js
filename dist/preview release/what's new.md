@@ -22,6 +22,7 @@
 
 - Added `button.image` and `button.textBlock` to simplify access to button internal parts ([Deltakosh](https://github.com/deltakosh))
 - Added `sldier.displayThumb` to show/hide slider's thumb ([Deltakosh](https://github.com/deltakosh))
+- Added `grid.rowCount`, `grid.columnCount` and `grid.getChildrenAt()` ([Deltakosh](https://github.com/deltakosh))
 
 ### Core Engine
 
@@ -41,7 +42,9 @@
   - Added `blockfreeActiveMeshesAndRenderingGroups` property in the `Scene`, following the same model as `blockMaterialDirtyMechanism`. This is to avoid calling `Scene.freeActiveMeshes` and `Scene.freeRenderingGroups` for each disposed mesh when we dispose several meshes in a row. One have to set `blockfreeActiveMeshesAndRenderingGroups` to `true` just before disposing the meshes, and set it back to `false` just after
   - Prevented code from doing useless and possible time consuming computation when disposing the `ShaderMaterial` of a `LinesMesh`
   - Make a better use of the `isIdentity` cached value wihtin a `Matrix`
+  - Make sure we browse all the submeshes only once in `Material.markAsDirty` function
 - Align `BoundingBox` and `BoundingSphere` API and behavior for clarity and simplicity. As a consequence, the `BoundingBox`'s method `setWorldMatrix` has been removed and the underlying world matrix cannot be modified but by calling `reConstruct` or `update`. ([barroij](https://github.com/barroij))
+- Make sure that `Material.markAsDirty` and all the `markXXXDirty` methods early out when `scene.blockMaterialDirtyMechanism` is true. ([barroij](https://github.com/barroij))
 
 ### glTF Loader
 
@@ -74,3 +77,21 @@
 - `scene.database` was renamed to `scene.offlineProvider` ([Deltakosh](https://github.com/deltakosh))
 - `BoundingBox.setWorldMatrix` was removed. `BoundingBox.getWorldMatrix` now returns a `Readonly<Matrix>` ([barroij](https://github.com/barroij))
 - `Matrix`'s accessor `m` and method `toArray` and `asArray` now returns a `Readonly<Float32Array>` as the matrix underlying array is not supposed to be modified manually from the outside of the class ([barroij](https://github.com/barroij))
+- Removed some deprecated (flagged since 3.0) properties and functions ([Deltakosh](https://github.com/deltakosh))
+  - `scene.getInterFramePerfCounter()`: use SceneInstrumentation class instead
+  - `scene.interFramePerfCounter`: use SceneInstrumentation class instead
+  - `scene.getLastFrameDuration()`: use SceneInstrumentation class instead
+  - `scene.lastFramePerfCounter`: use SceneInstrumentation class instead
+  - `scene.getEvaluateActiveMeshesDuration()`: use SceneInstrumentation class instead
+  - `scene.evaluateActiveMeshesDurationPerfCounter`: use SceneInstrumentation class instead
+  - `scene.getRenderTargetsDuration()`: use SceneInstrumentation class instead
+  - `scene.getRenderDuration()`: use SceneInstrumentation class instead
+  - `scene.renderDurationPerfCounter`: use SceneInstrumentation class instead
+  - `scene.getParticlesDuration()`: use SceneInstrumentation class instead
+  - `scene.particlesDurationPerfCounter`: use SceneInstrumentation class instead
+  - `scene.getSpritesDuration()`: use SceneInstrumentation class instead
+  - `scene.spriteDuractionPerfCounter`: use SceneInstrumentation class instead
+  - `engine.drawCalls`: use SceneInstrumentation class instead
+  - `engine.drawCallsPerfCounter`: use SceneInstrumentation class instead
+  - `shadowGenerator.useVarianceShadowMap`: use useExponentialShadowMap instead
+  - `shadowGenerator.useBlurVarianceShadowMap`: use useBlurExponentialShadowMap instead
