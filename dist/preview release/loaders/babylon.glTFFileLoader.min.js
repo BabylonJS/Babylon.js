@@ -198,6 +198,7 @@ if (typeof globalObject !== "undefined") {
 /* WEBPACK VAR INJECTION */(function(global) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var Extensions = __webpack_require__(/*! ../src/glTF/2.0/Extensions */ "./src/glTF/2.0/Extensions/index.ts");
+var Interfaces = __webpack_require__(/*! ../src/glTF/2.0/glTFLoaderInterfaces */ "./src/glTF/2.0/glTFLoaderInterfaces.ts");
 var GLTF2 = __webpack_require__(/*! ../src/glTF/2.0 */ "./src/glTF/2.0/index.ts");
 exports.GLTF2 = GLTF2;
 /**
@@ -214,6 +215,10 @@ if (typeof globalObject !== "undefined") {
     var keys = [];
     for (var key in Extensions) {
         BABYLON.GLTF2.Loader.Extensions[key] = Extensions[key];
+        keys.push(key);
+    }
+    for (var key in Interfaces) {
+        BABYLON.GLTF2.Loader[key] = Interfaces[key];
         keys.push(key);
     }
     for (var key in GLTF2) {
