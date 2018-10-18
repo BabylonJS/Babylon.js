@@ -1,28 +1,3 @@
-import * as FileLoader from "../src/glTF/glTFFileLoader";
-import * as GLTF1 from "../src/glTF/1.0";
-import * as GLTF2 from "../src/glTF/2.0";
-
-/**
- * This is the entry point for the UMD module.
- * The entry point for a future ESM package should be index.ts
- */
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
-if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || { };
-    for (var key in FileLoader) {
-        (<any>globalObject).BABYLON[key] = (<any>FileLoader)[key];
-    }
-    (<any>globalObject).BABYLON.GLTF1 = (<any>globalObject).BABYLON.GLTF1 || { };
-    for (var key in GLTF1) {
-        (<any>globalObject).BABYLON.GLTF1[key] = (<any>GLTF1)[key];
-    }
-    for (var key in GLTF2) {
-        (<any>globalObject).BABYLON[key] = (<any>GLTF2)[key];
-    }
-}
-
-export * from "../src/glTF/glTFFileLoader";
-export {
-    GLTF1,
-    GLTF2
-};
+export * from "./legacy-glTF";
+export * from "./legacy-glTF1";
+export * from "./legacy-glTF2";

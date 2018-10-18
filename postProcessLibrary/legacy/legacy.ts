@@ -1,15 +1,15 @@
-import * as GUI from "./index";
+import * as postProcessLibrary from "../src/index";
 
 /**
- * Legacy support, defining window.BABYLON.GUI (global variable).
  *
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    (<any>globalObject).BABYLON.GUI = GUI;
+    for (var key in postProcessLibrary) {
+        (<any>globalObject).BABYLON[key] = (<any>postProcessLibrary)[key];
+    }
 }
 
-export * from "./index";
+export * from "../src/index";

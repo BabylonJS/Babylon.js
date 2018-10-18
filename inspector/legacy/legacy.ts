@@ -1,4 +1,4 @@
-import * as INSPECTOR from "./index";
+import * as INSPECTOR from "../src/index";
 
 /**
  * Legacy support, defining window.INSPECTOR (global variable).
@@ -12,4 +12,4 @@ if (typeof globalObject !== "undefined") {
     (<any>globalObject).INSPECTOR = INSPECTOR;
 }
 
-export * from "./index";
+export * from "../src/index";
