@@ -3,7 +3,7 @@ module BABYLON {
      * Class representing a ray with position and direction
      */
     export class Ray {
-        private static readonly TmpVector3 = Tools.BuildArray(5, Vector3.Zero);
+        private static readonly TmpVector3 = Tools.BuildArray(6, Vector3.Zero);
         private _tmpRay: Ray;
 
         /**
