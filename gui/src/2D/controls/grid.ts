@@ -2,6 +2,7 @@ import { Container } from "./container";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
 import { Measure } from "../measure";
+import { Nullable } from "babylonjs";
 
 /**
  * Class used to create a 2D grid container
@@ -11,6 +12,20 @@ export class Grid extends Container {
     private _columnDefinitions = new Array<ValueAndUnit>();
     private _cells: { [key: string]: Container } = {};
     private _childControls = new Array<Control>();
+
+    /**
+     * Gets the number of columns
+     */
+    public get columnCount(): number {
+        return this._columnDefinitions.length;
+    }
+
+    /**
+     * Gets the number of rows
+     */
+    public get rowCount(): number {
+        return this._rowDefinitions.length;
+    }
 
     /** Gets the list of children */
     public get children(): Control[] {
@@ -81,6 +96,22 @@ export class Grid extends Container {
         this._markAsDirty();
 
         return this;
+    }
+
+    /**
+     * Gets the list of children stored in a specific cell
+     * @param row defines the row to check
+     * @param column defines the column to check
+     * @returns the list of controls
+     */
+    public getChildrenAt(row: number, column: number): Nullable<Array<Control>> {
+        const cell = this._cells[`${row}:${column}`];
+
+        if (!cell) {
+            return null;
+        }
+
+        return cell.children;
     }
 
     private _removeCell(cell: Container, key: string) {
