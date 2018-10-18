@@ -141,18 +141,44 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 var Exporters = __webpack_require__(/*! ../src/glTF/glTFFileExporter */ "./src/glTF/glTFFileExporter.ts");
-var Serializers = __webpack_require__(/*! ../src/glTF/2.0 */ "./src/glTF/2.0/index.ts");
+var Datas = __webpack_require__(/*! ../src/glTF/2.0/glTFData */ "./src/glTF/2.0/glTFData.ts");
+var Serializers = __webpack_require__(/*! ../src/glTF/2.0/glTFSerializer */ "./src/glTF/2.0/glTFSerializer.ts");
+var Extensions = __webpack_require__(/*! ../src/glTF/2.0/Extensions */ "./src/glTF/2.0/Extensions/index.ts");
+var GLTF2 = __webpack_require__(/*! ../src/glTF/2.0 */ "./src/glTF/2.0/index.ts");
 /**
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    for (var exporter in Exporters) {
-        globalObject.BABYLON[exporter] = Exporters[exporter];
+    globalObject.BABYLON = globalObject.BABYLON || {};
+    var BABYLON = globalObject.BABYLON;
+    BABYLON.GLTF2 = BABYLON.GLTF2 || {};
+    BABYLON.GLTF2.Exporter = BABYLON.GLTF2.Exporter || {};
+    BABYLON.GLTF2.Exporter.Extensions = BABYLON.GLTF2.Exporter.Extensions || {};
+    var keys = [];
+    for (var key in Exporters) {
+        BABYLON[key] = Exporters[key];
+        keys.push(key);
     }
-    for (var serializer in Serializers) {
-        globalObject.BABYLON[serializer] = Serializers[serializer];
+    for (var key in Datas) {
+        BABYLON[key] = Datas[key];
+        keys.push(key);
+    }
+    for (var key in Serializers) {
+        BABYLON[key] = Serializers[key];
+        keys.push(key);
+    }
+    for (var key in Extensions) {
+        BABYLON.GLTF2.Exporter.Extensions[key] = Extensions[key];
+        keys.push(key);
+    }
+    for (var key in GLTF2) {
+        // Prevent Reassignment.
+        if (keys.indexOf(key) > -1) {
+            continue;
+        }
+        BABYLON.GLTF2.Exporter[key] = GLTF2[key];
     }
 }
 __export(__webpack_require__(/*! ../src/glTF/glTFFileExporter */ "./src/glTF/glTFFileExporter.ts"));

@@ -1808,7 +1808,7 @@
         "libraries": [
             {
                 "output": "babylonjs.serializers.min.js",
-                "entry": "./src/legacy.ts"
+                "entry": "./legacy/legacy.ts"
             },
             {
                 "output": "babylon.objSerializer.min.js",

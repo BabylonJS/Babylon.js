@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/legacy.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./legacy/legacy.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -123,6 +123,117 @@ try {
 // easier to handle this case. if(!global) { ...}
 
 module.exports = g;
+
+
+/***/ }),
+
+/***/ "./legacy/legacy-glTF2Serializer.ts":
+/*!******************************************!*\
+  !*** ./legacy/legacy-glTF2Serializer.ts ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+var Exporters = __webpack_require__(/*! ../src/glTF/glTFFileExporter */ "./src/glTF/glTFFileExporter.ts");
+var Datas = __webpack_require__(/*! ../src/glTF/2.0/glTFData */ "./src/glTF/2.0/glTFData.ts");
+var Serializers = __webpack_require__(/*! ../src/glTF/2.0/glTFSerializer */ "./src/glTF/2.0/glTFSerializer.ts");
+var Extensions = __webpack_require__(/*! ../src/glTF/2.0/Extensions */ "./src/glTF/2.0/Extensions/index.ts");
+var GLTF2 = __webpack_require__(/*! ../src/glTF/2.0 */ "./src/glTF/2.0/index.ts");
+/**
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    globalObject.BABYLON = globalObject.BABYLON || {};
+    var BABYLON = globalObject.BABYLON;
+    BABYLON.GLTF2 = BABYLON.GLTF2 || {};
+    BABYLON.GLTF2.Exporter = BABYLON.GLTF2.Exporter || {};
+    BABYLON.GLTF2.Exporter.Extensions = BABYLON.GLTF2.Exporter.Extensions || {};
+    var keys = [];
+    for (var key in Exporters) {
+        BABYLON[key] = Exporters[key];
+        keys.push(key);
+    }
+    for (var key in Datas) {
+        BABYLON[key] = Datas[key];
+        keys.push(key);
+    }
+    for (var key in Serializers) {
+        BABYLON[key] = Serializers[key];
+        keys.push(key);
+    }
+    for (var key in Extensions) {
+        BABYLON.GLTF2.Exporter.Extensions[key] = Extensions[key];
+        keys.push(key);
+    }
+    for (var key in GLTF2) {
+        // Prevent Reassignment.
+        if (keys.indexOf(key) > -1) {
+            continue;
+        }
+        BABYLON.GLTF2.Exporter[key] = GLTF2[key];
+    }
+}
+__export(__webpack_require__(/*! ../src/glTF/glTFFileExporter */ "./src/glTF/glTFFileExporter.ts"));
+__export(__webpack_require__(/*! ../src/glTF/2.0 */ "./src/glTF/2.0/index.ts"));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./legacy/legacy-objSerializer.ts":
+/*!****************************************!*\
+  !*** ./legacy/legacy-objSerializer.ts ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+var Serializers = __webpack_require__(/*! ../src/OBJ */ "./src/OBJ/index.ts");
+/**
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    for (var serializer in Serializers) {
+        globalObject.BABYLON[serializer] = Serializers[serializer];
+    }
+}
+__export(__webpack_require__(/*! ../src/OBJ */ "./src/OBJ/index.ts"));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./legacy/legacy.ts":
+/*!**************************!*\
+  !*** ./legacy/legacy.ts ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__webpack_require__(/*! ../src */ "./src/index.ts");
+__export(__webpack_require__(/*! ./legacy-glTF2Serializer */ "./legacy/legacy-glTF2Serializer.ts"));
+__export(__webpack_require__(/*! ./legacy-objSerializer */ "./legacy/legacy-objSerializer.ts"));
 
 
 /***/ }),
@@ -3993,41 +4104,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __export(__webpack_require__(/*! ./OBJ */ "./src/OBJ/index.ts"));
 __export(__webpack_require__(/*! ./glTF */ "./src/glTF/index.ts"));
 
-
-/***/ }),
-
-/***/ "./src/legacy.ts":
-/*!***********************!*\
-  !*** ./src/legacy.ts ***!
-  \***********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-var Serializers = __webpack_require__(/*! ./index */ "./src/index.ts");
-/**
- * Legacy support, defining window.BABYLON.OBJSerializer... (global variable).
- *
- * This is the entry point for the UMD module.
- * The entry point for a future ESM package should be index.ts
- */
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
-if (typeof globalObject !== "undefined") {
-    globalObject.BABYLON = globalObject.BABYLON || {};
-    for (var serializer in Serializers) {
-        if (Serializers.hasOwnProperty(serializer)) {
-            globalObject.BABYLON[serializer] = Serializers[serializer];
-        }
-    }
-}
-__export(__webpack_require__(/*! ./index */ "./src/index.ts"));
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
