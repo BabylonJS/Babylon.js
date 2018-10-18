@@ -2495,6 +2495,16 @@ module BABYLON {
             return Vector3.TransformCoordinates(vector, matrix);
         }
 
+        /** @hidden */
+        private static UnprojectFromInvertedMatrixToRef(source: Vector3, matrix: Readonly<Matrix>, result: Vector3) {
+            Vector3.TransformCoordinatesToRef(source, matrix, result);
+            const m = matrix.m;
+            var num = source.x * m[3] + source.y * m[7] + source.z * m[11] + m[15];
+            if (Scalar.WithinEpsilon(num, 1.0)) {
+                result.scaleInPlace(1.0 / num);
+            }
+        }
+
         /**
          * Unproject from screen space to object space
          * @param source defines the screen space Vector3 to use
@@ -2510,14 +2520,8 @@ module BABYLON {
             matrix.invert();
             source.x = source.x / viewportWidth * 2 - 1;
             source.y = -(source.y / viewportHeight * 2 - 1);
-            var vector = Vector3.TransformCoordinates(source, matrix);
-            const m = matrix.m;
-            var num = source.x * m[3] + source.y * m[7] + source.z * m[11] + m[15];
-
-            if (Scalar.WithinEpsilon(num, 1.0)) {
-                vector = vector.scale(1.0 / num);
-            }
-
+            const vector = new Vector3();
+            Vector3.UnprojectFromInvertedMatrixToRef(source, matrix, vector);
             return vector;
         }
 
@@ -2574,13 +2578,38 @@ module BABYLON {
             screenSource.x = sourceX / viewportWidth * 2 - 1;
             screenSource.y = -(sourceY / viewportHeight * 2 - 1);
             screenSource.z = 2 * sourceZ - 1.0;
-            Vector3.TransformCoordinatesToRef(screenSource, matrix, result);
-            const m = matrix.m;
-            var num = screenSource.x * m[3] + screenSource.y * m[7] + screenSource.z * m[11] + m[15];
+            Vector3.UnprojectFromInvertedMatrixToRef(screenSource, matrix, result);
+        }
 
-            if (Scalar.WithinEpsilon(num, 1.0)) {
-                result.scaleInPlace(1.0 / num);
-            }
+       /**
+         * Unproject a ray from screen space to object space
+         * @param sourceX defines the screen space x coordinate to use
+         * @param sourceY defines the screen space y coordinate to use
+         * @param viewportWidth defines the current width of the viewport
+         * @param viewportHeight defines the current height of the viewport
+         * @param world defines the world matrix to use (can be set to Identity to go to world space)
+         * @param view defines the view matrix to use
+         * @param projection defines the projection matrix to use
+         * @param ray defines the Ray where to store the result
+         */
+        public static UnprojectRayToRef(sourceX: float, sourceY: float, viewportWidth: number, viewportHeight: number, world: Readonly<Matrix>, view: Readonly<Matrix>, projection: Readonly<Matrix>, ray: Ray): void {
+            var matrix = MathTmp.Matrix[0];
+            world.multiplyToRef(view, matrix);
+            matrix.multiplyToRef(projection, matrix);
+            matrix.invert();
+            var nearScreenSource = MathTmp.Vector3[0];
+            nearScreenSource.x = sourceX / viewportWidth * 2 - 1;
+            nearScreenSource.y = -(sourceY / viewportHeight * 2 - 1);
+            nearScreenSource.z = -1.0;
+            var farScreenSource = MathTmp.Vector3[1].copyFromFloats(nearScreenSource.x, nearScreenSource.y, 1.0);
+            const nearVec3 = MathTmp.Vector3[3];
+            const farVec3 = MathTmp.Vector3[4];
+            Vector3.UnprojectFromInvertedMatrixToRef(nearScreenSource, matrix, nearVec3);
+            Vector3.UnprojectFromInvertedMatrixToRef(farScreenSource, matrix, farVec3);
+
+            ray.origin.copyFrom(nearVec3);
+            farVec3.subtractToRef(nearVec3, ray.direction);
+            ray.direction.normalize();
         }
 
         /**
@@ -4752,9 +4781,12 @@ module BABYLON {
             }
 
             scale = scale || MathTmp.Vector3[0];
-            scale.x = Math.sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
-            scale.y = Math.sqrt(m[4] * m[4] + m[5] * m[5] + m[6] * m[6]);
-            scale.z = Math.sqrt(m[8] * m[8] + m[9] * m[9] + m[10] * m[10]);
+            const scaleXSquared = m[0] * m[0] + m[1] * m[1] + m[2] * m[2];
+            const scaleYSquared = m[4] * m[4] + m[5] * m[5] + m[6] * m[6];
+            const scaleZSquared = m[8] * m[8] + m[9] * m[9] + m[10] * m[10];
+            scale.x = Math.sqrt(scaleXSquared);
+            scale.y = scaleXSquared === scaleYSquared ? scale.x : Math.sqrt(scaleYSquared);
+            scale.z = scaleXSquared === scaleZSquared ? scale.x : Math.sqrt(scaleZSquared);
 
             if (this.determinant() <= 0) {
                 scale.y *= -1;
