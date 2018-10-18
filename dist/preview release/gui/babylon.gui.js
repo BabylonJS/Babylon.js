@@ -5481,7 +5481,7 @@ var InputText = /** @class */ (function (_super) {
                 }
                 return;
             case 46: // DELETE
-                if (this._text && this._text.length > 0) {
+                if (this._text && this._text.length > 0 && this._cursorOffset > 0) {
                     var deletePosition = this._text.length - this._cursorOffset;
                     this.text = this._text.slice(0, deletePosition) + this._text.slice(deletePosition + 1);
                     this._cursorOffset--;
@@ -5524,7 +5524,7 @@ var InputText = /** @class */ (function (_super) {
         if (key &&
             ((keyCode === -1) || // Direct access
                 (keyCode === 32) || // Space
-                (keyCode > 47 && keyCode < 58) || // Numbers
+                (keyCode > 47 && keyCode < 64) || // Numbers
                 (keyCode > 64 && keyCode < 91) || // Letters
                 (keyCode > 185 && keyCode < 193) || // Special characters
                 (keyCode > 218 && keyCode < 223) || // Special characters
