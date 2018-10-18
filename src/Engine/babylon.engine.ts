@@ -1664,18 +1664,6 @@ module BABYLON {
             return this._caps;
         }
 
-        /** @hidden */
-        public get drawCalls(): number {
-            Tools.Warn("drawCalls is deprecated. Please use SceneInstrumentation class");
-            return 0;
-        }
-
-        /** @hidden */
-        public get drawCallsPerfCounter(): Nullable<PerfCounter> {
-            Tools.Warn("drawCallsPerfCounter is deprecated. Please use SceneInstrumentation class");
-            return null;
-        }
-
         /**
          * Gets the current depth function
          * @returns a number defining the depth function

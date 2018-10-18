@@ -545,13 +545,13 @@ module BABYLON {
         private _onPointerDown: (evt: PointerEvent) => void;
         private _onPointerUp: (evt: PointerEvent) => void;
 
-        /** Deprecated. Use onPointerObservable instead */
+        /** Callback called when a pointer move is detected */
         public onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
-        /** Deprecated. Use onPointerObservable instead */
+        /** Callback called when a pointer down is detected  */
         public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
-        /** Deprecated. Use onPointerObservable instead */
+        /** Callback called when a pointer up is detected  */
         public onPointerUp: (evt: PointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
-        /** Deprecated. Use onPointerObservable instead */
+        /** Callback called when a pointer pick is detected */
         public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
 
         /**
@@ -1439,90 +1439,12 @@ module BABYLON {
             return this._activeBones;
         }
 
-        /** @hidden */
-        public getInterFramePerfCounter(): number {
-            Tools.Warn("getInterFramePerfCounter is deprecated. Please use SceneInstrumentation class");
-            return 0;
-        }
-
-        /** @hidden */
-        public get interFramePerfCounter(): Nullable<PerfCounter> {
-            Tools.Warn("interFramePerfCounter is deprecated. Please use SceneInstrumentation class");
-            return null;
-        }
-
-        /** @hidden */
-        public getLastFrameDuration(): number {
-            Tools.Warn("getLastFrameDuration is deprecated. Please use SceneInstrumentation class");
-            return 0;
-        }
-
-        /** @hidden */
-        public get lastFramePerfCounter(): Nullable<PerfCounter> {
-            Tools.Warn("lastFramePerfCounter is deprecated. Please use SceneInstrumentation class");
-            return null;
-        }
-
-        /** @hidden */
-        public getEvaluateActiveMeshesDuration(): number {
-            Tools.Warn("getEvaluateActiveMeshesDuration is deprecated. Please use SceneInstrumentation class");
-            return 0;
-        }
-
-        /** @hidden */
-        public get evaluateActiveMeshesDurationPerfCounter(): Nullable<PerfCounter> {
-            Tools.Warn("evaluateActiveMeshesDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
-            return null;
-        }
-
         /**
          * Gets the array of active meshes
          * @returns an array of AbstractMesh
          */
         public getActiveMeshes(): SmartArray<AbstractMesh> {
             return this._activeMeshes;
-        }
-
-        /** @hidden */
-        public getRenderTargetsDuration(): number {
-            Tools.Warn("getRenderTargetsDuration is deprecated. Please use SceneInstrumentation class");
-            return 0;
-        }
-
-        /** @hidden */
-        public getRenderDuration(): number {
-            Tools.Warn("getRenderDuration is deprecated. Please use SceneInstrumentation class");
-            return 0;
-        }
-
-        /** @hidden */
-        public get renderDurationPerfCounter(): Nullable<PerfCounter> {
-            Tools.Warn("renderDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
-            return null;
-        }
-
-        /** @hidden */
-        public getParticlesDuration(): number {
-            Tools.Warn("getParticlesDuration is deprecated. Please use SceneInstrumentation class");
-            return 0;
-        }
-
-        /** @hidden */
-        public get particlesDurationPerfCounter(): Nullable<PerfCounter> {
-            Tools.Warn("particlesDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
-            return null;
-        }
-
-        /** @hidden */
-        public getSpritesDuration(): number {
-            Tools.Warn("getSpritesDuration is deprecated. Please use SceneInstrumentation class");
-            return 0;
-        }
-
-        /** @hidden */
-        public get spriteDuractionPerfCounter(): Nullable<PerfCounter> {
-            Tools.Warn("spriteDuractionPerfCounter is deprecated. Please use SceneInstrumentation class");
-            return null;
         }
 
         /**
