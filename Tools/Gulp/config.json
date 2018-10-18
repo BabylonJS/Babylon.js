@@ -1790,6 +1790,10 @@
                     {
                         "path": "babylonjs-loaders/src/glTF/2.0/Extensions",
                         "namespace": "BABYLON.GLTF2.Loader.Extensions"
+                    },
+                    {
+                        "path": "babylonjs-loaders/src/glTF/2.0",
+                        "namespace": "BABYLON.GLTF2"
                     }
                 ],
                 "importsToRemove": [],
@@ -1838,7 +1842,25 @@
                     "babylonjs-loaders": "BABYLON",
                     "babylonjs-serializers": "BABYLON",
                     "babylonjs-gltf2interface": "BABYLON.GLTF2"
-                }
+                },
+                "moduleSpecifics": [
+                    {
+                        "path": "babylonjs-serializers/src/glTF/2.0/Extensions",
+                        "namespace": "BABYLON.GLTF2.Exporter.Extensions"
+                    },
+                    {
+                        "path": "babylonjs-serializers/src/glTF/2.0/glTFData",
+                        "namespace": "BABYLON"
+                    },
+                    {
+                        "path": "babylonjs-serializers/src/glTF/2.0/glTFSerializer",
+                        "namespace": "BABYLON"
+                    },
+                    {
+                        "path": "babylonjs-serializers/src/glTF/2.0",
+                        "namespace": "BABYLON.GLTF2.Exporter"
+                    }
+                ]
             }
         }
     },

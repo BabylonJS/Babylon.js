@@ -697,7 +697,7 @@ declare module BABYLON {
             required: boolean;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Exporter {
     /**
         * @hidden
         * Interface to store animation data.
@@ -791,7 +791,7 @@ declare module BABYLON {
             }, nodes: BABYLON.GLTF2.INode[], binaryWriter: _BinaryWriter, bufferViews: BABYLON.GLTF2.IBufferView[], accessors: BABYLON.GLTF2.IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Exporter {
     /**
         * Class for holding and downloading glTF file data
         */
@@ -812,7 +812,7 @@ declare module BABYLON {
             downloadFiles(): void;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Exporter {
     /**
         * Converts Babylon BABYLON.Scene into glTF 2.0.
         * @hidden
@@ -953,7 +953,7 @@ declare module BABYLON {
             setUInt32(entry: number, byteOffset?: number): void;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Exporter {
     /** @hidden */
     export var __IGLTFExporterExtensionV2: number;
     /**
@@ -979,7 +979,7 @@ declare module BABYLON {
             postExportMeshPrimitiveAsync?(context: string, meshPrimitive: BABYLON.GLTF2.IMeshPrimitive, babylonSubMesh: BABYLON.SubMesh, binaryWriter: _BinaryWriter): BABYLON.Nullable<Promise<BABYLON.GLTF2.IMeshPrimitive>>;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Exporter {
     /**
         * Utility methods for working with glTF material conversion properties.  This class should only be used internally
         * @hidden
@@ -1072,7 +1072,7 @@ declare module BABYLON {
             _exportTextureInfoAsync(babylonTexture: BABYLON.BaseTexture, mimeType: BABYLON.GLTF2.ImageMimeType): Promise<BABYLON.Nullable<BABYLON.GLTF2.ITextureInfo>>;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Exporter {
     /**
         * Holds a collection of exporter options and parameters
         */
@@ -1115,7 +1115,7 @@ declare module BABYLON {
             static GLBAsync(scene: BABYLON.Scene, filePrefix: string, options?: IExportOptions): Promise<GLTFData>;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Exporter {
     /**
         * @hidden
         */
@@ -1209,7 +1209,7 @@ declare module BABYLON {
             static _NormalizeTangentFromRef(tangent: BABYLON.Vector4): void;
     }
 }
-declare module BABYLON {
+declare module BABYLON.GLTF2.Exporter {
     /**
         * @hidden
         */
