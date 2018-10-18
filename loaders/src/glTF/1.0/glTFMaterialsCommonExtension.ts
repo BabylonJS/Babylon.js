@@ -4,7 +4,7 @@ import { IGLTFRuntime, IGLTFMaterial } from "./glTFLoaderInterfaces";
 
 import { HemisphericLight, Vector3, Color3, PointLight, DirectionalLight, SpotLight, Tools, Material, StandardMaterial } from "babylonjs";
 
-import { GLTF1Loader } from "./glTF1Loader";
+import { GLTFLoader } from "./glTFLoader";
 
 interface IGLTFMaterialsCommonExtensionValues {
     ambient?: number[] | string;
@@ -181,4 +181,4 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
     }
 }
 
-GLTF1Loader.RegisterExtension(new GLTFMaterialsCommonExtension());
+GLTFLoader.RegisterExtension(new GLTFMaterialsCommonExtension());

@@ -1,7 +1,7 @@
 import { Material, Nullable, PBRMaterial } from "babylonjs";
 import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTF2Loader } from "../glTF2Loader";
+import { GLTFLoader } from "../glTFLoader";
 
 const NAME = "MSFT_minecraftMesh";
 
@@ -10,9 +10,9 @@ export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
     public readonly name = NAME;
     public enabled = true;
 
-    private _loader: GLTF2Loader;
+    private _loader: GLTFLoader;
 
-    constructor(loader: GLTF2Loader) {
+    constructor(loader: GLTFLoader) {
         this._loader = loader;
     }
 
@@ -21,7 +21,7 @@ export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
     }
 
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTF2Loader.LoadExtraAsync<boolean>(context, material, this.name, (extraContext, extra) => {
+        return GLTFLoader.LoadExtraAsync<boolean>(context, material, this.name, (extraContext, extra) => {
             if (extra) {
                 if (!(babylonMaterial instanceof PBRMaterial)) {
                     throw new Error(`${extraContext}: Material type not supported`);
@@ -45,4 +45,4 @@ export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
     }
 }
 
-GLTF2Loader.RegisterExtension(NAME, (loader) => new MSFT_minecraftMesh(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_minecraftMesh(loader));
