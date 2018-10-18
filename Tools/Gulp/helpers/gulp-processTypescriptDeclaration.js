@@ -38,12 +38,53 @@ var processData = function(data, options) {
     // Recreate the file.
     str = lines.join('\n');
 
+    // First let s deal with internal aliased imports.
+    if (options.moduleSpecifics) {
+        // Find all imported classes and aliased classes.
+        var babylonRegex = new RegExp(`import {(.*)} from ['"](.*)['"];`, "g");
+        var match = babylonRegex.exec(str);
+        let aliasedClasses = new Set();
+        while (match != null) {
+            if (match[1]) {
+                match[1].split(",").forEach(element => {
+                    // Filter only aliased classes
+                    if (element.indexOf(" as ") > -1) {
+                        aliasedClasses.add(element.trim() + " as " + match[2]);
+                    }
+                });
+            }
+            match = babylonRegex.exec(str);
+        }
+        str = str.replace(babylonRegex, '');
+
+        // For every aliased.
+        aliasedClasses.forEach(cls => {
+            const tokens = cls.split(" as ");
+            const className = tokens[0];
+            const alias = tokens[1];
+            const package = tokens[2];
+
+            // Use the default module name.
+            let namespace = options.moduleName;
+            // If they are part of a specific module.
+            options.moduleSpecifics.forEach(function(specific) {
+                if (package.indexOf(specific.path) > -1) {
+                    namespace = specific.namespace;
+                }
+            });
+
+            // Replace
+            const rg = new RegExp(`([ <])(${alias})([^\\w])`, "g")
+            str = str.replace(rg, `$1${namespace}.${className}$3`);
+        });
+    }
+
     // Let s clean up all the import * from BABYLON or the package itself as we know it is part of
     // the same namespace... Should be
     str = str.replace("import * as BABYLON from 'babylonjs';", "");
     let regexp = new RegExp(`import {(.*)} from ['"]${options.packageName}(.*)['"];`, 'g');
     str = str.replace(regexp, '');
-
+    
     // Let s clean other chosen imports from the mix.
     if (options.importsToRemove) {
         while (options.importsToRemove.length) {
@@ -70,32 +111,22 @@ var processData = function(data, options) {
                 match = babylonRegex.exec(str);
             }
             str = str.replace(babylonRegex, '');
+
             classes.forEach(cls => {
-                let rg = new RegExp(`([ <])(${cls})([^\\w])`, "g")
-                str = str.replace(rg, `$1${options.classMap[package]}.$2$3`);
+                let className = cls;
+                let alias = cls;
+
+                // Deal with import { foo as A, bar as B } from ...
+                if (cls.indexOf(" as ") > -1) {
+                    const tokens = cls.split(" as ");
+                    className = tokens[0];
+                    alias = tokens[1];
+                }
+
+                const rg = new RegExp(`([ <])(${alias})([^\\w])`, "g")
+                str = str.replace(rg, `$1${options.classMap[package]}.${className}$3`);
             });
         });
-
-        // Replace import { foo as A, bar as B } from ...
-        // Object.keys(options.classMap).forEach(package => {
-        //     var babylonRegex = new RegExp(`import {(.*)} from ['"](${package})['"];`, "g");
-
-        //     var match = babylonRegex.exec(str);
-        //     let classes = new Set();
-        //     while (match != null) {
-        //         if (match[1]) {
-        //             match[1].split(",").forEach(element => {
-        //                 classes.add(element.trim());
-        //             });
-        //         }
-        //         match = babylonRegex.exec(str);
-        //     }
-        //     str = str.replace(babylonRegex, '');
-        //     classes.forEach(cls => {
-        //         let rg = new RegExp(`([ <])(${cls})([^\\w])`, "g")
-        //         str = str.replace(rg, `$1${options.classMap[package]}.$2$3`);
-        //     });
-        // });
 
         // Replace import * as ...
         Object.keys(options.classMap).forEach(package => {
@@ -105,14 +136,11 @@ var processData = function(data, options) {
             let localNamespace = "";
             if (match && match[1]) {
                 localNamespace = match[1].trim();
-            }
-            else {
-                return;
-            }
-            str = str.replace(babylonRegex, '');
+                str = str.replace(babylonRegex, '');
 
-            let rg = new RegExp(`([ <])(${localNamespace}.)([A-Za-z])`, "g")
-            str = str.replace(rg, `$1${options.classMap[package]}.$3`);
+                let rg = new RegExp(`([ <])(${localNamespace}.)([A-Za-z])`, "g")
+                str = str.replace(rg, `$1${options.classMap[package]}.$3`);
+            }
         });
     }
 

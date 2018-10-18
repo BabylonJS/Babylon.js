@@ -42,7 +42,7 @@ describe('Babylon glTF Serializer', () => {
             babylonStandardMaterial.specularColor = BABYLON.Color3.Black();
             babylonStandardMaterial.specularPower = 64;
             babylonStandardMaterial.alpha = 1;
-            const materialExporter = new BABYLON._GLTFMaterialExporter(new BABYLON._Exporter(scene));
+            const materialExporter = new BABYLON.GLTF2.Exporter._GLTFMaterialExporter(new BABYLON.GLTF2.Exporter._Exporter(scene));
 
             const metalRough = materialExporter._convertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
 
@@ -53,13 +53,13 @@ describe('Babylon glTF Serializer', () => {
             metalRough.roughnessFactor.should.be.approximately(0.328809, 1e-6);
         });
         it('should solve for metallic', () => {
-            BABYLON._GLTFMaterialExporter._SolveMetallic(1.0, 0.0, 1.0).should.be.equal(0);
-            BABYLON._GLTFMaterialExporter._SolveMetallic(0.0, 1.0, 1.0).should.be.approximately(1, 1e-6);
+            BABYLON.GLTF2.Exporter._GLTFMaterialExporter._SolveMetallic(1.0, 0.0, 1.0).should.be.equal(0);
+            BABYLON.GLTF2.Exporter._GLTFMaterialExporter._SolveMetallic(0.0, 1.0, 1.0).should.be.approximately(1, 1e-6);
         });
         it('should serialize empty Babylon scene to glTF with only asset property', () => {
             const scene = new BABYLON.Scene(subject);
 
-            return BABYLON.GLTF2Export.GLTFAsync(scene, 'test').then(glTFData => {
+            return BABYLON.GLTF2.Exporter.GLTF2Export.GLTFAsync(scene, 'test').then(glTFData => {
                 const jsonString = glTFData.glTFFiles['test.gltf'] as string;
                 const jsonData = JSON.parse(jsonString);
 
@@ -72,7 +72,7 @@ describe('Babylon glTF Serializer', () => {
             const scene = new BABYLON.Scene(subject);
             BABYLON.Mesh.CreateSphere('sphere', 16, 2, scene);
 
-            return BABYLON.GLTF2Export.GLTFAsync(scene, 'test')
+            return BABYLON.GLTF2.Exporter.GLTF2Export.GLTFAsync(scene, 'test')
                 .then(glTFData => {
                     const jsonString = glTFData.glTFFiles['test.gltf'] as string;
                     const jsonData = JSON.parse(jsonString);
