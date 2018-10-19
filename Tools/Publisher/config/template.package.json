@@ -1,0 +1,29 @@
+{
+    "author": {
+        "name": "David CATUHE"
+    },
+    "contributors": [
+        "David ROUSSET",
+        "Sebastien VANDENBERGHE",
+        "Raanan Weber"
+    ],
+    "name": "",
+    "description": "",
+    "version": "",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "main": "index.js",
+    "module": "index.js",
+    "esnext": "index.js",
+    "files": [],
+    "typings": "index.d.ts",
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl"
+    ],
+    "license": "Apache-2.0"
+}

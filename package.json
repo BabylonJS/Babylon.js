@@ -61,6 +61,7 @@
         "chai": "^4.1.2",
         "color-support": "^1.1.3",
         "del": "3.0.0",
+        "glob": "^7.1.3",
         "gulp": "^4.0.0",
         "gulp-clean-ts-extends": "~0.1.1",
         "gulp-concat": "~2.6.1",
