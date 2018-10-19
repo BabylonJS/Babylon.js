@@ -507,6 +507,11 @@ module BABYLON {
         public onAfterStepObservable = new Observable<Scene>();
 
         /**
+         * An event triggered when the activeCamera property is updated
+         */
+        public onActiveCameraChanged = new Observable<Scene>();
+
+        /**
          * This Observable will be triggered before rendering each renderingGroup of each rendered camera.
          * The RenderinGroupInfo class contains all the information about the context in which the observable is called
          * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
@@ -776,8 +781,21 @@ module BABYLON {
 
         /** All of the active cameras added to this scene. */
         public activeCameras = new Array<Camera>();
-        /** The current active camera */
-        public activeCamera: Nullable<Camera>;
+
+        private _activeCamera: Nullable<Camera>;
+        /** Gets or sets the current active camera */
+        public get activeCamera(): Nullable<Camera> {
+            return this._activeCamera;
+        }
+
+        public set activeCamera(value: Nullable<Camera>) {
+            if (value === this._activeCamera) {
+                return;
+            }
+
+            this._activeCamera = value;
+            this.onActiveCameraChanged.notifyObservers(this);
+        }
 
         private _defaultMaterial: Material;
 
@@ -2005,6 +2023,8 @@ module BABYLON {
                 }
 
                 this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => {
+                    this._pointerCaptures[evt.pointerId] = false;
+
                     // PreObservable support
                     if (this.onPrePointerObservable.hasObservers()) {
                         if (!clickInfo.ignore) {
@@ -2029,8 +2049,6 @@ module BABYLON {
                     if (!this.cameraToUseForPointers && !this.activeCamera) {
                         return;
                     }
-
-                    this._pointerCaptures[evt.pointerId] = false;
 
                     if (!this.pointerUpPredicate) {
                         this.pointerUpPredicate = (mesh: AbstractMesh): boolean => {
@@ -4796,6 +4814,7 @@ module BABYLON {
             this.onPointerObservable.clear();
             this.onPreKeyboardObservable.clear();
             this.onKeyboardObservable.clear();
+            this.onActiveCameraChanged.clear();
 
             this.detachControl();
 
@@ -5001,7 +5020,7 @@ module BABYLON {
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
 
-            result.update(x, y, viewport.width, viewport.height, world ? world : Matrix.Identity(), cameraViewSpace ? Matrix.Identity() : camera.getViewMatrix(), camera.getProjectionMatrix());
+            result.update(x, y, viewport.width, viewport.height, world ? world : Matrix.IdentityReadOnly, cameraViewSpace ? Matrix.IdentityReadOnly : camera.getViewMatrix(), camera.getProjectionMatrix());
             return this;
         }
 
