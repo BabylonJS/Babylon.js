@@ -3,6 +3,7 @@
         "experimentalDecorators": true,
         "module": "esnext",
         "target": "es5",
+        "moduleResolution": "node",
         "noImplicitAny": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
@@ -41,10 +42,6 @@
                 "./helpers/ISplit.d.ts"
             ]
         },
-        "outDir": "./build",
-        "exclude": [
-            "node_modules",
-            "**/*.spec.ts"
-        ]
+        "outDir": "./build"
     }
 }

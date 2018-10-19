@@ -137,7 +137,7 @@ function processLegacyPackages(version) {
             if (packageJson.dependencies) {
                 Object.keys(packageJson.dependencies).forEach(key => {
                     if (key.indexOf("babylonjs") !== -1) {
-                        packageJson.dependencies[key] = ">" + version;
+                        packageJson.dependencies[key] = version;
                     }
                 });
             }
@@ -190,7 +190,7 @@ function processEs6Packages(version) {
                 packageJson[key] = {};
                 Object.keys(package.payload[key]).forEach(packageName => {
                     if (package.payload[key][packageName] === true) {
-                        packageJson[key][packageName] = ">" + version;
+                        packageJson[key][packageName] = version;
                     } else {
                         packageJson[key][packageName] = package.payload[key][packageName];
                     }

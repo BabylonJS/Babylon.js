@@ -3,6 +3,7 @@
         "experimentalDecorators": true,
         "module": "commonjs",
         "target": "es5",
+        "moduleResolution": "node",
         "noImplicitAny": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
@@ -30,9 +31,5 @@
     },
     "include": [
         "src/**/*"
-    ],
-    "exclude": [
-        "node_modules",
-        "**/*.spec.ts"
     ]
 }
