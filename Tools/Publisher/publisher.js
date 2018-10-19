@@ -69,8 +69,9 @@ function updateEngineVersion(newVersion) {
 function getEngineVersion() {
     console.log("Get version from babylon.engine.ts");
     const engineContent = fs.readFileSync("../../src/Engine/babylon.engine.ts").toString();
-    var versionRegex = new RegExp(`public static get Version\(\): string {[\s\S]*return "([\s\S]*?)";[\s\S]*}`, "gm");
-    versionRegex.exec(engineContent);
+
+    const versionRegex = new RegExp(`public static get Version\\(\\): string {[\\s\\S]*return "([\\s\\S]*?)";[\\s\\S]*}`, "gm");
+    const match = versionRegex.exec(engineContent);
     if (match && match.length) {
         const version = match[1];
         console.log("Version found: " + version);
@@ -99,7 +100,7 @@ function publish(version, packageName, basePath) {
     }
     else {
         console.log("Executing: " + 'npm publish \"' + basePath + "\"" + ' ' + tag);
-        shelljs.exec('npm publish \"' + basePath + "\"" + ' ' + tag);
+        //shelljs.exec('npm publish \"' + basePath + "\"" + ' ' + tag);
     }
 }
 
@@ -123,6 +124,7 @@ function processLegacyPackages(version) {
     packages.forEach((package) => {
         if (package.name === "core") {
             processCore(package, version);
+        }
         else {
             if (package.required) {
                 package.required.forEach(file => {
@@ -188,7 +190,7 @@ function processEs6Packages(version) {
                 packageJson[key] = {};
                 Object.keys(package.payload[key]).forEach(packageName => {
                     if (package.payload[key][packageName] === true) {
-                        packageJson[key][packageName] = version;
+                        packageJson[key][packageName] = ">" + version;
                     } else {
                         packageJson[key][packageName] = package.payload[key][packageName];
                     }
@@ -249,7 +251,7 @@ function processCore(package, version) {
 
     // update package.json
     packageJson.version = version;
-    console.log("generating file list");
+    console.log("Generating file list");
     let packageFiles = ["package.json"];
     files.forEach(file => {
         if (!file.isDir) {
@@ -259,7 +261,7 @@ function processCore(package, version) {
             packageFiles.push(file.objectName + "/index.js", file.objectName + "/index.d.ts", file.objectName + "/es6.js")
         }
     });
-    console.log("updating package.json");
+    console.log("Updating package.json");
     packageJson.files = packageFiles;
     packageJson.main = "babylon.js";
     packageJson.typings = "babylon.d.ts";
@@ -329,4 +331,4 @@ module.exports = function(noBuild, noPublish, askVersion) {
         const version = getEngineVersion();
         createVersion(version);
     }
-}();
+};

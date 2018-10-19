@@ -8,6 +8,4 @@ const doNotPublish = true;
 /**
  * Main function driving the publication.
  */
-function main() {
-    publisher.process(doNotBuild, doNotPublish, false);
-}();
+publisher(doNotBuild, doNotPublish, false);
