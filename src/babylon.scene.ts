@@ -2005,6 +2005,8 @@ module BABYLON {
                 }
 
                 this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => {
+                    this._pointerCaptures[evt.pointerId] = false;
+
                     // PreObservable support
                     if (this.onPrePointerObservable.hasObservers()) {
                         if (!clickInfo.ignore) {
@@ -2029,8 +2031,6 @@ module BABYLON {
                     if (!this.cameraToUseForPointers && !this.activeCamera) {
                         return;
                     }
-
-                    this._pointerCaptures[evt.pointerId] = false;
 
                     if (!this.pointerUpPredicate) {
                         this.pointerUpPredicate = (mesh: AbstractMesh): boolean => {
@@ -5001,7 +5001,7 @@ module BABYLON {
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
 
-            result.update(x, y, viewport.width, viewport.height, world ? world : Matrix.Identity(), cameraViewSpace ? Matrix.Identity() : camera.getViewMatrix(), camera.getProjectionMatrix());
+            result.update(x, y, viewport.width, viewport.height, world ? world : Matrix.IdentityReadOnly, cameraViewSpace ? Matrix.IdentityReadOnly : camera.getViewMatrix(), camera.getProjectionMatrix());
             return this;
         }
 
