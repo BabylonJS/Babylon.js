@@ -43,11 +43,6 @@
         },
         "outDir": "./build"
     },
-    "exclude": [
-        "node_modules",
-        "dist",
-        "tests"
-    ],
     "include": [
         "./src/**/*.ts"
     ]

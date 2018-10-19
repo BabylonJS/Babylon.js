@@ -3,6 +3,7 @@
         "experimentalDecorators": true,
         "module": "commonjs",
         "target": "es5",
+        "moduleResolution": "node",
         "noImplicitAny": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
@@ -26,10 +27,6 @@
                 "../../dist/preview release/babylon.d.ts"
             ]
         },
-        "outDir": "./build",
-        "exclude": [
-            "node_modules",
-            "**/*.spec.ts"
-        ]
+        "outDir": "./build"
     }
 }
