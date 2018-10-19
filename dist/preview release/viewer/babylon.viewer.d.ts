@@ -1710,13 +1710,6 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
-    /**
-      * Force-apply material configuration right after a material was loaded.
-      */
-    export class ApplyMaterialConfigPlugin implements ILoaderPlugin {
-        onInit(loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync, model: ViewerModel): void;
-        onMaterialLoaded(material: BABYLON.Material): void;
-    }
 }
 declare module BabylonViewer {
     /**

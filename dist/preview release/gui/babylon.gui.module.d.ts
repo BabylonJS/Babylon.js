@@ -1609,7 +1609,7 @@ declare module 'babylonjs-gui/2D/controls/inputText' {
                 */
             keepsFocusWith(): Nullable<Control[]>;
             /** @hidden */
-            processKey(keyCode: number, key?: string): void;
+            processKey(keyCode: number, key?: string, evt?: KeyboardEvent): void;
             /** @hidden */
             processKeyboard(evt: KeyboardEvent): void;
             _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -4428,7 +4428,7 @@ declare module BABYLON.GUI {
                 */
             keepsFocusWith(): BABYLON.Nullable<Control[]>;
             /** @hidden */
-            processKey(keyCode: number, key?: string): void;
+            processKey(keyCode: number, key?: string, evt?: KeyboardEvent): void;
             /** @hidden */
             processKeyboard(evt: KeyboardEvent): void;
             _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
