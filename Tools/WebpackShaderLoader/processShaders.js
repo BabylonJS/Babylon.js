@@ -28,10 +28,10 @@ glob(shadersPath + '/**/*.fx', (err, shaderFiles) => {
             let normalized = path.normalize(file);
             let directory = path.dirname(normalized);
             let shaderName = getShaderName(filename);
-            let tsFilename = filename.replace('.fx', '.ts');
-             let shaderContent = fs.readFileSync(file).toString();
-             //TODO - take care of includes!!!
-             shaderProcessor(undefined, shaderContent, undefined, (err, data) => {
+            let tsFilename = filename.replace('.fx', '.fx.ts');
+            let shaderContent = fs.readFileSync(file).toString();
+            //TODO - take care of includes!!!
+            shaderProcessor(undefined, shaderContent, undefined, (err, data) => {
                 let tsContent = tsTemplate.replace('##PLACEHOLDER##', `name = '${shaderName}'; shader = \`${data}\`;  `);
                 fs.writeFileSync(directory + '/' + tsFilename, tsContent);
             });
