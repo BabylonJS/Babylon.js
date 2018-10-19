@@ -1,7 +1,7 @@
 module BABYLON {
     const _result0 = { min: 0, max: 0};
     const _result1 = { min: 0, max: 0};
-    const computeBoxExtents = (axis: Readonly<Vector3>, box: Readonly<BoundingBox>, result: {min: number, max: number}) => {
+    const computeBoxExtents = (axis: DeepImmutable<Vector3>, box: DeepImmutable<BoundingBox>, result: {min: number, max: number}) => {
         const p = Vector3.Dot(box.centerWorld, axis);
 
         const r0 = Math.abs(Vector3.Dot(box.directions[0], axis)) * box.extendSize.x;
@@ -13,7 +13,7 @@ module BABYLON {
         result.max = p + r;
     };
 
-    const axisOverlap = (axis: Vector3, box0: BoundingBox, box1: BoundingBox): boolean => {
+    const axisOverlap = (axis: DeepImmutable<Vector3>, box0: DeepImmutable<BoundingBox>, box1: DeepImmutable<BoundingBox>): boolean => {
         computeBoxExtents(axis, box0, _result0);
         computeBoxExtents(axis, box1, _result1);
         return !(_result0.min > _result1.max || _result1.min > _result0.max);
@@ -62,7 +62,7 @@ module BABYLON {
          * @param maximum max vector of the bounding box/sphere
          * @param worldMatrix defines the new world matrix
          */
-        constructor(minimum: Readonly<Vector3>, maximum: Readonly<Vector3>, worldMatrix?: Readonly<Matrix>) {
+        constructor(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>) {
             this.boundingBox = new BoundingBox(minimum, maximum, worldMatrix);
             this.boundingSphere = new BoundingSphere(minimum, maximum, worldMatrix);
         }
@@ -73,7 +73,7 @@ module BABYLON {
          * @param max defines the new maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
          */
-        public reConstruct(min: Readonly<Vector3>, max: Readonly<Vector3>, worldMatrix?: Readonly<Matrix>) {
+        public reConstruct(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>) {
             this.boundingBox.reConstruct(min, max, worldMatrix);
             this.boundingSphere.reConstruct(min, max, worldMatrix);
         }
@@ -108,7 +108,7 @@ module BABYLON {
          * Updates the bounding sphere and box
          * @param world world matrix to be used to update
          */
-        public update(world: Readonly<Matrix>) {
+        public update(world: DeepImmutable<Matrix>) {
             if (this._isLocked) {
                 return;
             }
@@ -122,7 +122,7 @@ module BABYLON {
          * @param extend New extend of the bounding info
          * @returns the current bounding info
          */
-        public centerOn(center: Readonly<Vector3>, extend: Readonly<Vector3>): BoundingInfo {
+        public centerOn(center: DeepImmutable<Vector3>, extend: DeepImmutable<Vector3>): BoundingInfo {
 
             const minimum = BoundingInfo.TmpVector3[0].copyFrom(center).subtractInPlace(extend);
             const maximum = BoundingInfo.TmpVector3[1].copyFrom(center).addInPlace(extend);
@@ -151,7 +151,7 @@ module BABYLON {
          * @param strategy defines the strategy to use for the culling (default is BABYLON.Scene.CULLINGSTRATEGY_STANDARD)
          * @returns true if the bounding info is in the frustum planes
          */
-        public isInFrustum(frustumPlanes: Array<Readonly<Plane>>, strategy: number = AbstractMesh.CULLINGSTRATEGY_STANDARD): boolean {
+        public isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>, strategy: number = AbstractMesh.CULLINGSTRATEGY_STANDARD): boolean {
             if (!this.boundingSphere.isInFrustum(frustumPlanes)) {
                 return false;
             }
@@ -177,7 +177,7 @@ module BABYLON {
          * @param frustumPlanes Camera near/planes
          * @returns true if the object is in frustum otherwise false
          */
-        public isCompletelyInFrustum(frustumPlanes: Array<Readonly<Plane>>): boolean {
+        public isCompletelyInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
             return this.boundingBox.isCompletelyInFrustum(frustumPlanes);
         }
         /** @hidden */
@@ -191,7 +191,7 @@ module BABYLON {
          * @param point the point to check intersection with
          * @returns if the point intersects
          */
-        public intersectsPoint(point: Readonly<Vector3>): boolean {
+        public intersectsPoint(point: DeepImmutable<Vector3>): boolean {
             if (!this.boundingSphere.centerWorld) {
                 return false;
             }
@@ -214,7 +214,7 @@ module BABYLON {
          * @param precise if the intersection should be done using OBB
          * @returns if the bounding info intersects
          */
-        public intersects(boundingInfo: Readonly<BoundingInfo>, precise: boolean): boolean {
+        public intersects(boundingInfo: DeepImmutable<BoundingInfo>, precise: boolean): boolean {
             if (!BoundingSphere.Intersects(this.boundingSphere, boundingInfo.boundingSphere)) {
                 return false;
             }
