@@ -189,7 +189,7 @@ function processEs6Packages(version) {
             if (package.payload[key]) {
                 packageJson[key] = {};
                 Object.keys(package.payload[key]).forEach(packageName => {
-                    if (package.payload[key][packageName]. === true) {
+                    if (package.payload[key][packageName] === true) {
                         packageJson[key][packageName] = ">" + version;
                     } else {
                         packageJson[key][packageName] = package.payload[key][packageName];
