@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
- function parse(loader, source, context, cb) {
+
+function parse(loader, source, context, cb) {
     var imports = [];
     var importPattern = /@import ([.\/\w_-]+);/gi;
     var match = importPattern.exec(source);
@@ -12,13 +13,14 @@ var path = require('path');
         });
         match = importPattern.exec(source);
     }
-     source = uncomment(source);
-     processImports(loader, source, context, imports, cb);
+    source = uncomment(source);
+    processImports(loader, source, context, imports, cb);
 }
- var singleComment = 1;
+
+var singleComment = 1;
 var multiComment = 2;
- function uncomment(str) {
-     var currentChar;
+function uncomment(str) {
+    var currentChar;
     var nextChar;
     var insideString = false;
     var insideComment = 0;
@@ -46,16 +48,16 @@ var multiComment = 2;
      for (var i = 0; i < str.length; i++) {
         currentChar = str[i];
         nextChar = str[i + 1];
-         if (!insideComment && currentChar === '"') {
+        if (!insideComment && currentChar === '"') {
             var escaped = str[i - 1] === '\\' && str[i - 2] !== '\\';
             if (!escaped) {
                 insideString = !insideString;
             }
         }
-         if (insideString) {
+        if (insideString) {
             continue;
         }
-         if (!insideComment && currentChar + nextChar === '//') {
+        if (!insideComment && currentChar + nextChar === '//') {
             ret += str.slice(offset, i);
             offset = i;
             insideComment = singleComment;
@@ -76,18 +78,19 @@ var multiComment = 2;
             continue;
         }
     }
-     return ret + (insideComment ? '' : str.substr(offset));
+    return ret + (insideComment ? '' : str.substr(offset));
 }
- function processImports(loader, source, context, imports, cb) {
+
+function processImports(loader, source, context, imports, cb) {
     if (imports.length === 0) {
         return cb(null, source);
     }
-     var imp = imports.pop();
-     loader.resolve(context, imp.key + '.fx', function (err, resolved) {
+    var imp = imports.pop();
+    loader.resolve(context, imp.key + '.fx', function (err, resolved) {
         if (err) {
             return cb(err);
         }
-         loader.addDependency(resolved);
+        loader.addDependency(resolved);
         fs.readFile(resolved, 'utf-8', function (err, src) {
             if (err) {
                 return cb(err);
@@ -96,10 +99,11 @@ var multiComment = 2;
                 if (err) {
                     return cb(err);
                 }
-                 source = source.replace(imp.target, bld);
+                source = source.replace(imp.target, bld);
                 processImports(loader, source, context, imports, cb);
             });
         });
     });
 }
- module.exports = parse; 
+
+module.exports = parse;

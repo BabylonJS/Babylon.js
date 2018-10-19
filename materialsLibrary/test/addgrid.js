@@ -80,11 +80,5 @@ window.prepareGrid = function() {
 		return grid.opacity;
 	});
 
-	registerRangeUI("grid", "PlainGrid", 0, 1, function(value) {
-		grid.usePlainGrid = value;
-	}, function() {
-		return grid.usePlainGrid;
-	});
-
 	return grid;
 }
