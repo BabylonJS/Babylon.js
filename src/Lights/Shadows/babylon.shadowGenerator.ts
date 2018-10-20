@@ -346,40 +346,6 @@ module BABYLON {
         }
 
         /**
-         * Gets if the current filter is set to VSM.
-         * DEPRECATED. Should use useExponentialShadowMap instead.
-         */
-        public get useVarianceShadowMap(): boolean {
-            Tools.Warn("VSM are now replaced by ESM. Please use useExponentialShadowMap instead.");
-            return this.useExponentialShadowMap;
-        }
-        /**
-         * Sets the current filter is to VSM.
-         * DEPRECATED. Should use useExponentialShadowMap instead.
-         */
-        public set useVarianceShadowMap(value: boolean) {
-            Tools.Warn("VSM are now replaced by ESM. Please use useExponentialShadowMap instead.");
-            this.useExponentialShadowMap = value;
-        }
-
-        /**
-         * Gets if the current filter is set to blurred VSM.
-         * DEPRECATED. Should use useBlurExponentialShadowMap instead.
-         */
-        public get useBlurVarianceShadowMap(): boolean {
-            Tools.Warn("VSM are now replaced by ESM. Please use useBlurExponentialShadowMap instead.");
-            return this.useBlurExponentialShadowMap;
-        }
-        /**
-         * Sets the current filter is to blurred VSM.
-         * DEPRECATED. Should use useBlurExponentialShadowMap instead.
-         */
-        public set useBlurVarianceShadowMap(value: boolean) {
-            Tools.Warn("VSM are now replaced by ESM. Please use useBlurExponentialShadowMap instead.");
-            this.useBlurExponentialShadowMap = value;
-        }
-
-        /**
          * Gets if the current filter is set to ESM.
          */
         public get useExponentialShadowMap(): boolean {
@@ -865,7 +831,7 @@ module BABYLON {
             var engine = scene.getEngine();
             let material = subMesh.getMaterial();
 
-            if (!material) {
+            if (!material || subMesh.verticesCount === 0) {
                 return;
             }
 
@@ -912,6 +878,11 @@ module BABYLON {
 
                     if (skeleton.isUsingTextureForMatrices) {
                         const boneTexture = skeleton.getTransformMatrixTexture();
+
+                        if (!boneTexture) {
+                            return;
+                        }
+
                         this._effect.setTexture("boneSampler", boneTexture);
                         this._effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
                     } else {
