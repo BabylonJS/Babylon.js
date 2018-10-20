@@ -28,6 +28,9 @@ export class InputText extends Control implements IFocusableControl {
     private _deadKey = false;
     private _addKey = true;
     private _currentKey = "";
+    private _isTextHighlightOn = false;
+    private _textHighlightColor = "#d5e0ff";
+    private _highlightedText = "";
 
     /** @hidden */
     public _connectedVirtualKeyboard: Nullable<VirtualKeyboard>;
@@ -43,6 +46,8 @@ export class InputText extends Control implements IFocusableControl {
     public onFocusObservable = new Observable<InputText>();
     /** Observable raised when the control loses the focus */
     public onBlurObservable = new Observable<InputText>();
+    /** Observable raised when the clipboard event is raised */
+    public onClipboardObservable = new Observable<InputText>();
 
     /** Gets or sets the maximum width allowed by the control */
     public get maxWidth(): string | number {
@@ -176,6 +181,19 @@ export class InputText extends Control implements IFocusableControl {
         this._deadKey = flag;
     }
 
+     /** Gets or sets the highlight text */
+     public get getHighlightedText(): string {
+        return this._highlightedText;
+    }
+
+    public set setHighlightedText(text: string) {
+        if (this._highlightedText === text) {
+            return;
+        }
+        this._highlightedText = text;
+        this._markAsDirty();
+    }
+
     /** Gets or sets if the current key should be added */
     public get addKey(): boolean {
         return this._addKey;
@@ -246,6 +264,8 @@ export class InputText extends Control implements IFocusableControl {
         this._markAsDirty();
 
         this.onBlurObservable.notifyObservers(this);
+
+        this._host.unRegisterClipboardEvents.call(this);
     }
 
     /** @hidden */
@@ -270,6 +290,9 @@ export class InputText extends Control implements IFocusableControl {
             this._host.focusedControl = null;
             return;
         }
+
+        this._host.registerClipboardEvents.call(this);
+
     }
 
     protected _getTypeName(): string {
@@ -385,6 +408,15 @@ export class InputText extends Control implements IFocusableControl {
     /** @hidden */
     public processKeyboard(evt: KeyboardEvent): void {
         this.processKey(evt.keyCode, evt.key, evt);
+    }
+
+    /** @hidden */
+    public processClipboard(show: boolean, clipboardData?: DataTransfer): void {
+        if (!show && clipboardData) {
+            clipboardData.setData("text/plain", this._highlightedText);
+            return;
+        }
+        this._isTextHighlightOn = show;
     }
 
     public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
@@ -514,6 +546,23 @@ export class InputText extends Control implements IFocusableControl {
                     this._blinkIsEven = !this._blinkIsEven;
                     this._markAsDirty();
                 }, 500);
+
+                if (this._isTextHighlightOn) {
+                    clearTimeout(this._blinkTimeout);
+                    this._blinkIsEven = true;
+                    let startIndex = this._text.length - this._cursorOffset , endIndex = startIndex;
+                    for (let rWord = /\w+/, check = 1; startIndex >= 0 && endIndex < this.text.length && check + 1;) {
+                        check = rWord.test(this.text.charAt(endIndex)) ? ++endIndex : (rWord.test(this.text.charAt(startIndex)) ? --startIndex : -1);
+                    }
+                    let highlightCursorOffsetWidth = context.measureText(this.text.substring(startIndex + 1)).width;
+                    let highlightCursorLeft = this._scrollLeft + this._textWidth - highlightCursorOffsetWidth;
+                    this._highlightedText = this.text.substring(startIndex + 1, endIndex);
+                    //for transparancy
+                    context.globalAlpha = 0.2;
+                    context.fillStyle = this._textHighlightColor;
+                    context.fillRect(highlightCursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, (context.measureText(this.text.substring(startIndex + 1, endIndex)).width), this._fontOffset.height);
+                    context.globalAlpha = 1.0;
+                }
             }
 
             context.restore();
@@ -538,6 +587,8 @@ export class InputText extends Control implements IFocusableControl {
         }
 
         this._clickedCoordinate = coordinates.x;
+        this._isTextHighlightOn = false;
+        this._highlightedText = "";
         if (this._host.focusedControl === this) {
             // Move cursor
             clearTimeout(this._blinkTimeout);
