@@ -13,6 +13,7 @@
   - webXRExperienceHelper to setup a default XR experience ([TrevorDev](https://github.com/TrevorDev))
   - WebXREnterExitUI and WebXRManagedOutputCanvas classes to configure the XR experience ([TrevorDev](https://github.com/TrevorDev))
   - WebXRInput manage controllers for the XR experience ([TrevorDev](https://github.com/TrevorDev))
+  - WebXR camera rotation using parent container ([TrevorDev](https://github.com/TrevorDev))
 
 ## Updates
 
