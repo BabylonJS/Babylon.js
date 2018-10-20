@@ -985,14 +985,13 @@ declare module 'babylonjs-viewer/templating/viewerTemplatePlugin' {
 }
 
 declare module 'babylonjs-viewer/optimizer/custom' {
-    import { extendedUpgrade } from "babylonjs-viewer/optimizer/custom/extended";
     import { SceneManager } from "babylonjs-viewer/managers/sceneManager";
     /**
       *
       * @param name the name of the custom optimizer configuration
       * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
       */
-    export function getCustomOptimizerByName(name: string, upgrade?: boolean): typeof extendedUpgrade;
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
     export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 
@@ -1663,22 +1662,6 @@ declare module 'babylonjs-viewer/loader/plugins' {
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
 }
 
-declare module 'babylonjs-viewer/optimizer/custom/extended' {
-    import { SceneManager } from 'babylonjs-viewer/managers/sceneManager';
-    /**
-        * A custom upgrade-oriented function configuration for the scene optimizer.
-        *
-        * @param viewer the viewer to optimize
-        */
-    export function extendedUpgrade(sceneManager: SceneManager): boolean;
-    /**
-        * A custom degrade-oriented function configuration for the scene optimizer.
-        *
-        * @param viewer the viewer to optimize
-        */
-    export function extendedDegrade(sceneManager: SceneManager): boolean;
-}
-
 declare module 'babylonjs-viewer/configuration/interfaces' {
     export * from 'babylonjs-viewer/configuration/interfaces/cameraConfiguration';
     export * from 'babylonjs-viewer/configuration/interfaces/colorGradingConfiguration';
@@ -1864,16 +1847,7 @@ declare module 'babylonjs-viewer/loader/plugins/msftLodLoaderPlugin' {
 }
 
 declare module 'babylonjs-viewer/loader/plugins/applyMaterialConfig' {
-    import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, Material } from 'babylonjs';
-    import { ViewerModel } from 'babylonjs-viewer/model/viewerModel';
-    import { ILoaderPlugin } from 'babylonjs-viewer/loader/plugins/loaderPlugin';
-    /**
-      * Force-apply material configuration right after a material was loaded.
-      */
-    export class ApplyMaterialConfigPlugin implements ILoaderPlugin {
-        onInit(loader: ISceneLoaderPlugin | ISceneLoaderPluginAsync, model: ViewerModel): void;
-        onMaterialLoaded(material: Material): void;
-    }
+    
 }
 
 declare module 'babylonjs-viewer/loader/plugins/extendedMaterialLoaderPlugin' {

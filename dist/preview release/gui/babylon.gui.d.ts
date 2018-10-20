@@ -1254,6 +1254,14 @@ declare module BABYLON.GUI {
         */
     export class Grid extends Container {
             name?: string | undefined;
+            /**
+                * Gets the number of columns
+                */
+            readonly columnCount: number;
+            /**
+                * Gets the number of rows
+                */
+            readonly rowCount: number;
             /** Gets the list of children */
             readonly children: Control[];
             /**
@@ -1286,6 +1294,13 @@ declare module BABYLON.GUI {
                 * @returns the current grid
                 */
             setColumnDefinition(index: number, width: number, isPixel?: boolean): Grid;
+            /**
+                * Gets the list of children stored in a specific cell
+                * @param row defines the row to check
+                * @param column defines the column to check
+                * @returns the list of controls
+                */
+            getChildrenAt(row: number, column: number): BABYLON.Nullable<Array<Control>>;
             /**
                 * Remove a column definition at specified index
                 * @param index defines the index of the column to remove
@@ -1469,7 +1484,7 @@ declare module BABYLON.GUI {
                 */
             keepsFocusWith(): BABYLON.Nullable<Control[]>;
             /** @hidden */
-            processKey(keyCode: number, key?: string): void;
+            processKey(keyCode: number, key?: string, evt?: KeyboardEvent): void;
             /** @hidden */
             processKeyboard(evt: KeyboardEvent): void;
             _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -2082,6 +2097,7 @@ declare module BABYLON.GUI {
             name?: string | undefined;
             protected _thumbWidth: ValueAndUnit;
             protected _barOffset: ValueAndUnit;
+            protected _displayThumb: boolean;
             protected _effectiveBarOffset: number;
             protected _renderLeft: number;
             protected _renderTop: number;
@@ -2092,6 +2108,8 @@ declare module BABYLON.GUI {
             protected _effectiveThumbThickness: number;
             /** BABYLON.Observable raised when the sldier value changes */
             onValueChangedObservable: BABYLON.Observable<number>;
+            /** Gets or sets a boolean indicating if the thumb must be rendered */
+            displayThumb: boolean;
             /** Gets or sets main bar offset (ie. the margin applied to the value bar) */
             barOffset: string | number;
             /** Gets main bar offset in pixels*/
@@ -2130,8 +2148,6 @@ declare module BABYLON.GUI {
         */
     export class Slider extends BaseSlider {
             name?: string | undefined;
-            /** Gets or sets a boolean indicating if the thumb must be rendered */
-            displayThumb: boolean;
             /** Gets or sets border color */
             borderColor: string;
             /** Gets or sets background color */
@@ -2153,6 +2169,7 @@ declare module BABYLON.GUI {
         */
     export class ImageBasedSlider extends BaseSlider {
             name?: string | undefined;
+            displayThumb: boolean;
             /**
                 * Gets or sets the image used to render the background
                 */

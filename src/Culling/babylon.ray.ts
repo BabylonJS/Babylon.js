@@ -3,14 +3,7 @@ module BABYLON {
      * Class representing a ray with position and direction
      */
     export class Ray {
-        private static readonly _edge1 = Vector3.Zero();
-        private static readonly _edge2 = Vector3.Zero();
-        private static readonly _pvec = Vector3.Zero();
-        private static readonly _tvec = Vector3.Zero();
-        private static readonly _qvec = Vector3.Zero();
-        private static readonly _min = Vector3.Zero();
-        private static readonly _max = Vector3.Zero();
-
+        private static readonly TmpVector3 = Tools.BuildArray(6, Vector3.Zero);
         private _tmpRay: Ray;
 
         /**
@@ -37,8 +30,8 @@ module BABYLON {
          * @returns if the box was hit
          */
         public intersectsBoxMinMax(minimum: Vector3, maximum: Vector3, intersectionTreshold: number = 0): boolean {
-            const newMinimum = Ray._min.copyFromFloats(minimum.x - intersectionTreshold, minimum.y - intersectionTreshold, minimum.z - intersectionTreshold);
-            const newMaximum = Ray._max.copyFromFloats(maximum.x + intersectionTreshold, maximum.y + intersectionTreshold, maximum.z + intersectionTreshold);
+            const newMinimum = Ray.TmpVector3[0].copyFromFloats(minimum.x - intersectionTreshold, minimum.y - intersectionTreshold, minimum.z - intersectionTreshold);
+            const newMaximum = Ray.TmpVector3[1].copyFromFloats(maximum.x + intersectionTreshold, maximum.y + intersectionTreshold, maximum.z + intersectionTreshold);
             var d = 0.0;
             var maxValue = Number.MAX_VALUE;
             var inv: number;
@@ -176,10 +169,16 @@ module BABYLON {
          * @returns intersection information if hit
          */
         public intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo> {
-            vertex1.subtractToRef(vertex0, Ray._edge1);
-            vertex2.subtractToRef(vertex0, Ray._edge2);
-            Vector3.CrossToRef(this.direction, Ray._edge2, Ray._pvec);
-            var det = Vector3.Dot(Ray._edge1, Ray._pvec);
+            const edge1 = Ray.TmpVector3[0];
+            const edge2 = Ray.TmpVector3[1];
+            const pvec = Ray.TmpVector3[2];
+            const tvec = Ray.TmpVector3[3];
+            const qvec =  Ray.TmpVector3[4];
+
+            vertex1.subtractToRef(vertex0, edge1);
+            vertex2.subtractToRef(vertex0, edge2);
+            Vector3.CrossToRef(this.direction, edge2, pvec);
+            var det = Vector3.Dot(edge1, pvec);
 
             if (det === 0) {
                 return null;
@@ -187,24 +186,24 @@ module BABYLON {
 
             var invdet = 1 / det;
 
-            this.origin.subtractToRef(vertex0, Ray._tvec);
+            this.origin.subtractToRef(vertex0, tvec);
 
-            var bu = Vector3.Dot(Ray._tvec, Ray._pvec) * invdet;
+            var bu = Vector3.Dot(tvec, pvec) * invdet;
 
             if (bu < 0 || bu > 1.0) {
                 return null;
             }
 
-            Vector3.CrossToRef(Ray._tvec, Ray._edge1, Ray._qvec);
+            Vector3.CrossToRef(tvec, edge1, qvec);
 
-            var bv = Vector3.Dot(this.direction, Ray._qvec) * invdet;
+            var bv = Vector3.Dot(this.direction, qvec) * invdet;
 
             if (bv < 0 || bu + bv > 1.0) {
                 return null;
             }
 
             //check if the distance is longer than the predefined length.
-            var distance = Vector3.Dot(Ray._edge2, Ray._qvec) * invdet;
+            var distance = Vector3.Dot(edge2, qvec) * invdet;
             if (distance > this.length) {
                 return null;
             }
@@ -312,11 +311,19 @@ module BABYLON {
          * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
          */
         intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number {
-            var rsegb = this.origin.add(this.direction.multiplyByFloats(Ray.rayl, Ray.rayl, Ray.rayl));
+            const o = this.origin;
+            const u =  Tmp.Vector3[0];
+            const rsegb  = Tmp.Vector3[1];
+            const v =  Tmp.Vector3[2];
+            const w =  Tmp.Vector3[3];
 
-            var u = segb.subtract(sega);
-            var v = rsegb.subtract(this.origin);
-            var w = sega.subtract(this.origin);
+            segb.subtractToRef(sega, u);
+
+            this.direction.scaleToRef(Ray.rayl, v);
+            o.addToRef(v, rsegb);
+
+            sega.subtractToRef(o, w);
+
             var a = Vector3.Dot(u, u);                  // always >= 0
             var b = Vector3.Dot(u, v);
             var c = Vector3.Dot(v, v);                  // always >= 0
@@ -376,8 +383,11 @@ module BABYLON {
             tc = (Math.abs(tN) < Ray.smallnum ? 0.0 : tN / tD);
 
             // get the difference of the two closest points
-            let qtc = v.multiplyByFloats(tc, tc, tc);
-            var dP = w.add(u.multiplyByFloats(sc, sc, sc)).subtract(qtc);  // = S1(sc) - S2(tc)
+            const qtc = Tmp.Vector3[4];
+            v.scaleToRef(tc, qtc);
+            const dP = Tmp.Vector3[5];
+            u.scaleToRef(sc, dP);
+            dP.addInPlace(w).subtractInPlace(qtc);  // = S1(sc) - S2(tc)
 
             var isIntersected = (tc > 0) && (tc <= this.length) && (dP.lengthSquared() < (threshold * threshold));   // return intersection result
 
@@ -398,12 +408,8 @@ module BABYLON {
          * @param projection projection matrix
          * @returns this ray updated
          */
-        public update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray {
-            Vector3.UnprojectFloatsToRef(x, y, 0, viewportWidth, viewportHeight, world, view, projection, this.origin);
-            Vector3.UnprojectFloatsToRef(x, y, 1, viewportWidth, viewportHeight, world, view, projection, Tmp.Vector3[0]);
-
-            Tmp.Vector3[0].subtractToRef(this.origin, this.direction);
-            this.direction.normalize();
+        public update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Readonly<Matrix>, view: Readonly<Matrix>, projection: Readonly<Matrix>): Ray {
+            Vector3.UnprojectRayToRef(x, y, viewportWidth, viewportHeight, world, view, projection, this);
             return this;
         }
 

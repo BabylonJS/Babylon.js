@@ -12,6 +12,19 @@ export class ImageBasedSlider extends BaseSlider {
 
     private _tempMeasure = new Measure(0, 0, 0, 0);
 
+    public get displayThumb(): boolean {
+        return this._displayThumb && this.thumbImage != null;
+    }
+
+    public set displayThumb(value: boolean) {
+        if (this._displayThumb === value) {
+            return;
+        }
+
+        this._displayThumb = value;
+        this._markAsDirty();
+    }
+
     /**
      * Gets or sets the image used to render the background
      */
@@ -103,13 +116,12 @@ export class ImageBasedSlider extends BaseSlider {
             // Background
             if (this._backgroundImage) {
                 this._tempMeasure.copyFromFloats(left, top, width, height);
-                if (this.isThumbClamped) {
+                if (this.isThumbClamped && this.displayThumb) {
                     if (this.isVertical) {
                         this._tempMeasure.height += this._effectiveThumbThickness;
                     } else {
                         this._tempMeasure.width += this._effectiveThumbThickness;
                     }
-
                 }
                 this._backgroundImage._draw(this._tempMeasure, context);
             }
@@ -117,20 +129,24 @@ export class ImageBasedSlider extends BaseSlider {
             // Bar
             if (this._valueBarImage) {
                 if (this.isVertical) {
-                    this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, height - thumbPosition);
-                    if (this.isThumbClamped) {
-                        this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, this._currentMeasure.height - thumbPosition);
+                    if (this.isThumbClamped && this.displayThumb) {
+                        this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, height - thumbPosition + this._effectiveThumbThickness);
                     } else {
                         this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, height - thumbPosition);
                     }
                 } else {
-                    this._tempMeasure.copyFromFloats(left, top, thumbPosition + this._effectiveThumbThickness / 2, height);
+                    if (this.isThumbClamped && this.displayThumb) {
+                        this._tempMeasure.copyFromFloats(left, top, thumbPosition + this._effectiveThumbThickness / 2, height);
+                    }
+                    else {
+                        this._tempMeasure.copyFromFloats(left, top, thumbPosition, height);
+                    }
                 }
                 this._valueBarImage._draw(this._tempMeasure, context);
             }
 
             // Thumb
-            if (this._thumbImage) {
+            if (this.displayThumb) {
                 if (this.isVertical) {
                     this._tempMeasure.copyFromFloats(left - this._effectiveBarOffset, this._currentMeasure.top + thumbPosition, this._currentMeasure.width, this._effectiveThumbThickness);
                 } else {
