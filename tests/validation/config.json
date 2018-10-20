@@ -2,6 +2,11 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
+      "title": "XR camera container rotation",
+      "playgroundId": "#JV98QW#1",
+      "referenceImage": "xrCameraContainerRotation.png"
+    },
+    {
       "title": "Pointers",
       "playgroundId": "#1GLEJK#5",
       "referenceImage": "pointers.png",

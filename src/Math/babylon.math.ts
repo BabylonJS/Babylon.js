@@ -1969,6 +1969,49 @@ module BABYLON {
         }
 
         /**
+         * Reorders the x y z properties of the vector in place
+         * @param order new ordering of the properties (eg. for vector 1,2,3 with "ZYX" will produce 3,2,1)
+         * @returns the current updated vector
+         */
+        public reorderInPlace(order: string) {
+            order = order.toLowerCase();
+            if (order === "xyz") {
+                return this;
+            }
+            MathTmp.Vector3[0].copyFrom(this);
+            ["x", "y", "z"].forEach((val, i) => {
+                (<any>this)[val] = (<any>MathTmp.Vector3[0])[order[i]];
+            });
+            return this;
+        }
+
+        /**
+         * Rotates the vector around 0,0,0 by a quaternion
+         * @param quaternion the rotation quaternion
+         * @param result vector to store the result
+         * @returns the resulting vector
+         */
+        public rotateByQuaternionToRef(quaternion: Quaternion, result: Vector3) {
+            quaternion.toRotationMatrix(MathTmp.Matrix[0]);
+            Vector3.TransformCoordinatesToRef(this, MathTmp.Matrix[0], result);
+            return result;
+        }
+
+        /**
+         * Rotates a vector around a given point
+         * @param quaternion the rotation quaternion
+         * @param point the point to rotate around
+         * @param result vector to store the result
+         * @returns the resulting vector
+         */
+        public rotateByQuaternionAroundPointToRef(quaternion: Quaternion, point: Vector3, result: Vector3) {
+            this.subtractToRef(point, MathTmp.Vector3[0]);
+            MathTmp.Vector3[0].rotateByQuaternionToRef(quaternion, MathTmp.Vector3[0]);
+            point.addToRef(MathTmp.Vector3[0], result);
+            return result;
+        }
+
+        /**
          * Normalize the current Vector3 with the given input length.
          * Please note that this is an in place operation.
          * @param len the length of the vector
@@ -3969,6 +4012,17 @@ module BABYLON {
         }
 
         /**
+         * Inverse a given quaternion
+         * @param q defines the source quaternion
+         * @param result the quaternion the result will be stored in
+         * @returns the result quaternion
+         */
+        public static InverseToRef(q: Quaternion, result: Quaternion): Quaternion {
+            result.set(-q.x, -q.y, -q.z, q.w);
+            return result;
+        }
+
+        /**
          * Creates an identity quaternion
          * @returns the identity quaternion
          */
@@ -4023,6 +4077,54 @@ module BABYLON {
                 offset = 0;
             }
             return new Quaternion(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
+        }
+
+        /**
+         * Create a quaternion from Euler rotation angles
+         * @param x Pitch
+         * @param y Yaw
+         * @param z Roll
+         * @returns the new Quaternion
+         */
+        public static FromEulerAngles(x: number, y: number, z: number): Quaternion {
+            var q = new Quaternion();
+            Quaternion.RotationYawPitchRollToRef(y, x, z, q);
+            return q;
+        }
+
+        /**
+         * Updates a quaternion from Euler rotation angles
+         * @param x Pitch
+         * @param y Yaw
+         * @param z Roll
+         * @param result the quaternion to store the result
+         * @returns the updated quaternion
+         */
+        public static FromEulerAnglesToRef(x: number, y: number, z: number, result: Quaternion): Quaternion {
+            Quaternion.RotationYawPitchRollToRef(y, x, z, result);
+            return result;
+        }
+
+        /**
+         * Create a quaternion from Euler rotation vector
+         * @param vec the Euler vector (x Pitch, y Yaw, z Roll)
+         * @returns the new Quaternion
+         */
+        public static FromEulerVector(vec: Vector3): Quaternion {
+            var q = new Quaternion();
+            Quaternion.RotationYawPitchRollToRef(vec.y, vec.x, vec.z, q);
+            return q;
+        }
+
+        /**
+         * Updates a quaternion from Euler rotation vector
+         * @param vec the Euler vector (x Pitch, y Yaw, z Roll)
+         * @param result the quaternion to store the result
+         * @returns the updated quaternion
+         */
+        public static FromEulerVectorToRef(vec: Vector3, result: Quaternion): Quaternion {
+            Quaternion.RotationYawPitchRollToRef(vec.y, vec.x, vec.z, result);
+            return result;
         }
 
         /**
