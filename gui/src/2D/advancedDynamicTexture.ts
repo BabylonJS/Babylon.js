@@ -1,4 +1,4 @@
-import { DynamicTexture, Nullable, Observer, Camera, Engine, KeyboardInfoPre, PointerInfoPre, PointerInfo, Layer, Viewport, Scene, Texture, KeyboardEventTypes, Vector3, Matrix, Vector2, Tools, PointerEventTypes, AbstractMesh, StandardMaterial, Color3 } from "babylonjs";
+import { DynamicTexture, Nullable, Observer, Camera, Engine, KeyboardInfoPre, ClipboardEventTypes, ClipboardInfo, PointerInfoPre, PointerInfo, Layer, Viewport, Scene, Texture, KeyboardEventTypes, Vector3, Matrix, Vector2, Tools, PointerEventTypes, AbstractMesh, StandardMaterial, Color3 } from "babylonjs";
 import { Container } from "./controls/container";
 import { Control } from "./controls/control";
 import { Style } from "./style";
@@ -23,6 +23,12 @@ export interface IFocusableControl {
     processKeyboard(evt: KeyboardEvent): void;
 
     /**
+     * Function called to let the control handle clipboard events
+     * @param {boolean} show determines whether to show the highlighted text
+     */
+    processClipboard(showHighlightedText: boolean, clipboardData?: DataTransfer): void;
+
+    /**
      * Function called to get the list of controls that should not steal the focus from this control
      * @returns an array of controls
      */
@@ -35,6 +41,7 @@ export interface IFocusableControl {
  */
 export class AdvancedDynamicTexture extends DynamicTexture {
     private _isDirty = false;
+    private _ctrKeyOn = false;
     private _renderObserver: Nullable<Observer<Camera>>;
     private _resizeObserver: Nullable<Observer<Engine>>;
     private _preKeyboardObserver: Nullable<Observer<KeyboardInfoPre>>;
@@ -258,15 +265,18 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
         this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
         this._preKeyboardObserver = scene.onPreKeyboardObservable.add((info) => {
-            if (!this._focusedControl) {
+            if (!this._focusedControl || (!this._ctrKeyOn && (info.event.ctrlKey || info.event.metaKey))) {
+                this._ctrKeyOn = true;
                 return;
             }
 
             if (info.type === KeyboardEventTypes.KEYDOWN) {
-                this._focusedControl.processKeyboard(info.event);
+                let type = ClipboardInfo.GetTypeFromCharacter(info.event);
+                (this._ctrKeyOn && type !== -1) ? this._executeClipboardEvent(type) : this._focusedControl.processKeyboard(info.event);
             }
 
             info.skipOnPointerObservable = true;
+            this._ctrKeyOn = false;
         });
 
         this._rootContainer._link(null, this);
@@ -415,6 +425,47 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (this._idealWidth || this._idealHeight) {
                 this._rootContainer._markAllAsDirty();
             }
+        }
+    }
+
+   /**
+     * @hidden
+     */
+    public registerClipboardEvents(): void {
+        this._rootCanvas!.addEventListener(ClipboardEventTypes.COPY + "_clipboard", this.onClipboardCopy, false);
+        this._rootCanvas!.addEventListener(ClipboardEventTypes.CUT + "_clipboard", this.onClipboardCut, false);
+        this._rootCanvas!.addEventListener(ClipboardEventTypes.PASTE + "_clipboard", this.onClipboardPaste, false);
+    }
+    /**
+     * @hidden
+     */
+    public unRegisterClipboardEvents(): void {
+        this._rootCanvas!.removeEventListener(ClipboardEventTypes.COPY + "_clipboard", this.onClipboardCopy, false);
+        this._rootCanvas!.removeEventListener(ClipboardEventTypes.CUT + "_clipboard", this.onClipboardCut, false);
+        this._rootCanvas!.removeEventListener(ClipboardEventTypes.PASTE + "_clipboard", this.onClipboardPaste, false);
+    }
+
+    /** @hidden */
+    private _executeClipboardEvent(type: ClipboardEventTypes): void {
+       this._simulateClipboardEvent(type);
+    }
+
+    /** @hidden */
+    private _simulateClipboardEvent(type: ClipboardEventTypes): void {
+        let ev;
+        if (type === ClipboardEventTypes.COPY) {
+            ev = new ClipboardInfo(ClipboardEventTypes.COPY, new ClipboardEvent("copy")); //new ClipboardEvent("copy");
+            this._focusedControl!.processClipboard(false, ev.clipboardData);
+        }
+        else if (type === ClipboardEventTypes.CUT) {
+            ev = new ClipboardInfo(ClipboardEventTypes.CUT, new ClipboardEvent("cut"));
+            this._focusedControl!.processClipboard(false, ev.clipboardData);
+        }
+        else if (type === ClipboardEventTypes.PASTE) {
+            ev = new ClipboardInfo(ClipboardEventTypes.PASTE, new ClipboardEvent("paste"));
+        }
+        if (typeof ev !== "undefined") {
+            this.dispatchClipboardEvents(ev);
         }
     }
 
@@ -593,11 +644,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (scene!.isPointerCaptured((<PointerEvent>(pi.event)).pointerId)) {
                 return;
             }
+            (this._focusedControl) ? ((pi.type === PointerEventTypes.POINTERDOUBLETAP) ? this._focusedControl.processClipboard(true) : null) : null;
 
             if (pi.type !== PointerEventTypes.POINTERMOVE
                 && pi.type !== PointerEventTypes.POINTERUP
                 && pi.type !== PointerEventTypes.POINTERDOWN) {
-                return;
+                    return;
             }
 
             if (!scene) {
