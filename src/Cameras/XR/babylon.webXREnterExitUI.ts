@@ -43,6 +43,13 @@ module BABYLON {
         private _overlay: HTMLDivElement;
         private _buttons: Array<WebXREnterExitUIButton> = [];
         private _activeButton: Nullable<WebXREnterExitUIButton> = null;
+        /**
+         * Fired every time the active button is changed.
+         *
+         * When xr is entered via a button that launches xr that button will be the callback parameter
+         *
+         * When exiting xr the callback parameter will be null)
+         */
         public activeButtonChangedObservable = new BABYLON.Observable<Nullable<WebXREnterExitUIButton>>();
         /**
          * Creates UI to allow the user to enter/exit XR mode
@@ -51,7 +58,7 @@ module BABYLON {
          * @param options options to configure the UI
          * @returns the created ui
          */
-        public static CreateAsync(scene: BABYLON.Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions):Promise<WebXREnterExitUI> {
+        public static CreateAsync(scene: BABYLON.Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI> {
             var ui = new WebXREnterExitUI(scene, options);
             var supportedPromises = ui._buttons.map((btn) => {
                 return helper.supportsSessionAsync(btn.initializationOptions);
