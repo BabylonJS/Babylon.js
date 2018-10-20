@@ -26,6 +26,7 @@ module BABYLON {
                 var newCamera = new BABYLON.TargetCamera("view: " + this.rigCameras.length, BABYLON.Vector3.Zero(), this.getScene());
                 newCamera.minZ = 0;
                 newCamera.parent = this;
+                newCamera.rotationQuaternion = new BABYLON.Quaternion();
                 this.rigCameras.push(newCamera);
             }
             while (this.rigCameras.length > viewCount) {
