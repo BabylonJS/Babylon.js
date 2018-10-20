@@ -49,7 +49,7 @@ module BABYLON {
         public constructor(private helper: WebXRExperienceHelper) {
             this._frameObserver = helper._sessionManager.onXRFrameObservable.add(() => {
                 if (!helper._sessionManager._currentXRFrame || !helper._sessionManager._currentXRFrame.getDevicePose) {
-                    return false;
+                    return;
                 }
 
                 var xrFrame = helper._sessionManager._currentXRFrame;

@@ -507,6 +507,11 @@ module BABYLON {
         public onAfterStepObservable = new Observable<Scene>();
 
         /**
+         * An event triggered when the activeCamera property is updated
+         */
+        public onActiveCameraChanged = new Observable<Scene>();
+
+        /**
          * This Observable will be triggered before rendering each renderingGroup of each rendered camera.
          * The RenderinGroupInfo class contains all the information about the context in which the observable is called
          * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
@@ -545,13 +550,13 @@ module BABYLON {
         private _onPointerDown: (evt: PointerEvent) => void;
         private _onPointerUp: (evt: PointerEvent) => void;
 
-        /** Deprecated. Use onPointerObservable instead */
+        /** Callback called when a pointer move is detected */
         public onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
-        /** Deprecated. Use onPointerObservable instead */
+        /** Callback called when a pointer down is detected  */
         public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
-        /** Deprecated. Use onPointerObservable instead */
+        /** Callback called when a pointer up is detected  */
         public onPointerUp: (evt: PointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
-        /** Deprecated. Use onPointerObservable instead */
+        /** Callback called when a pointer pick is detected */
         public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
 
         /**
@@ -776,8 +781,21 @@ module BABYLON {
 
         /** All of the active cameras added to this scene. */
         public activeCameras = new Array<Camera>();
-        /** The current active camera */
-        public activeCamera: Nullable<Camera>;
+
+        private _activeCamera: Nullable<Camera>;
+        /** Gets or sets the current active camera */
+        public get activeCamera(): Nullable<Camera> {
+            return this._activeCamera;
+        }
+
+        public set activeCamera(value: Nullable<Camera>) {
+            if (value === this._activeCamera) {
+                return;
+            }
+
+            this._activeCamera = value;
+            this.onActiveCameraChanged.notifyObservers(this);
+        }
 
         private _defaultMaterial: Material;
 
@@ -1439,90 +1457,12 @@ module BABYLON {
             return this._activeBones;
         }
 
-        /** @hidden */
-        public getInterFramePerfCounter(): number {
-            Tools.Warn("getInterFramePerfCounter is deprecated. Please use SceneInstrumentation class");
-            return 0;
-        }
-
-        /** @hidden */
-        public get interFramePerfCounter(): Nullable<PerfCounter> {
-            Tools.Warn("interFramePerfCounter is deprecated. Please use SceneInstrumentation class");
-            return null;
-        }
-
-        /** @hidden */
-        public getLastFrameDuration(): number {
-            Tools.Warn("getLastFrameDuration is deprecated. Please use SceneInstrumentation class");
-            return 0;
-        }
-
-        /** @hidden */
-        public get lastFramePerfCounter(): Nullable<PerfCounter> {
-            Tools.Warn("lastFramePerfCounter is deprecated. Please use SceneInstrumentation class");
-            return null;
-        }
-
-        /** @hidden */
-        public getEvaluateActiveMeshesDuration(): number {
-            Tools.Warn("getEvaluateActiveMeshesDuration is deprecated. Please use SceneInstrumentation class");
-            return 0;
-        }
-
-        /** @hidden */
-        public get evaluateActiveMeshesDurationPerfCounter(): Nullable<PerfCounter> {
-            Tools.Warn("evaluateActiveMeshesDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
-            return null;
-        }
-
         /**
          * Gets the array of active meshes
          * @returns an array of AbstractMesh
          */
         public getActiveMeshes(): SmartArray<AbstractMesh> {
             return this._activeMeshes;
-        }
-
-        /** @hidden */
-        public getRenderTargetsDuration(): number {
-            Tools.Warn("getRenderTargetsDuration is deprecated. Please use SceneInstrumentation class");
-            return 0;
-        }
-
-        /** @hidden */
-        public getRenderDuration(): number {
-            Tools.Warn("getRenderDuration is deprecated. Please use SceneInstrumentation class");
-            return 0;
-        }
-
-        /** @hidden */
-        public get renderDurationPerfCounter(): Nullable<PerfCounter> {
-            Tools.Warn("renderDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
-            return null;
-        }
-
-        /** @hidden */
-        public getParticlesDuration(): number {
-            Tools.Warn("getParticlesDuration is deprecated. Please use SceneInstrumentation class");
-            return 0;
-        }
-
-        /** @hidden */
-        public get particlesDurationPerfCounter(): Nullable<PerfCounter> {
-            Tools.Warn("particlesDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
-            return null;
-        }
-
-        /** @hidden */
-        public getSpritesDuration(): number {
-            Tools.Warn("getSpritesDuration is deprecated. Please use SceneInstrumentation class");
-            return 0;
-        }
-
-        /** @hidden */
-        public get spriteDuractionPerfCounter(): Nullable<PerfCounter> {
-            Tools.Warn("spriteDuractionPerfCounter is deprecated. Please use SceneInstrumentation class");
-            return null;
         }
 
         /**
@@ -2083,6 +2023,8 @@ module BABYLON {
                 }
 
                 this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => {
+                    this._pointerCaptures[evt.pointerId] = false;
+
                     // PreObservable support
                     if (this.onPrePointerObservable.hasObservers()) {
                         if (!clickInfo.ignore) {
@@ -2107,8 +2049,6 @@ module BABYLON {
                     if (!this.cameraToUseForPointers && !this.activeCamera) {
                         return;
                     }
-
-                    this._pointerCaptures[evt.pointerId] = false;
 
                     if (!this.pointerUpPredicate) {
                         this.pointerUpPredicate = (mesh: AbstractMesh): boolean => {
@@ -4874,6 +4814,7 @@ module BABYLON {
             this.onPointerObservable.clear();
             this.onPreKeyboardObservable.clear();
             this.onKeyboardObservable.clear();
+            this.onActiveCameraChanged.clear();
 
             this.detachControl();
 
@@ -5079,7 +5020,7 @@ module BABYLON {
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
 
-            result.update(x, y, viewport.width, viewport.height, world ? world : Matrix.Identity(), cameraViewSpace ? Matrix.Identity() : camera.getViewMatrix(), camera.getProjectionMatrix());
+            result.update(x, y, viewport.width, viewport.height, world ? world : Matrix.IdentityReadOnly, cameraViewSpace ? Matrix.IdentityReadOnly : camera.getViewMatrix(), camera.getProjectionMatrix());
             return this;
         }
 
