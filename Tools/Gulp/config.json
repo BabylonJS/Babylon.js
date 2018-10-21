@@ -158,6 +158,7 @@
                 "../../src/babylon.types.js",
                 "../../src/Events/babylon.keyboardEvents.js",
                 "../../src/Events/babylon.pointerEvents.js",
+                "../../src/Events/babylon.clipboardEvents.js",
                 "../../src/Tools/babylon.tools.js",
                 "../../src/Math/babylon.math.js",
                 "../../src/Math/babylon.math.scalar.js",

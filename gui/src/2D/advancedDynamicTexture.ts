@@ -1,4 +1,4 @@
-import { DynamicTexture, Nullable, Observer, Camera, Engine, KeyboardInfoPre, ClipboardEventTypes, ClipboardInfo, PointerInfoPre, PointerInfo, Layer, Viewport, Scene, Texture, KeyboardEventTypes, Vector3, Matrix, Vector2, Tools, PointerEventTypes, AbstractMesh, StandardMaterial, Color3 } from "babylonjs";
+import { DynamicTexture, Nullable, Observer, Camera, Engine, KeyboardInfoPre, ClipboardEventTypes, ClipboardInfo, PointerInfoPre, PointerInfo, Layer, Viewport, Scene, Texture, KeyboardEventTypes, Vector3, Matrix, Vector2, Tools, PointerEventTypes, AbstractMesh, StandardMaterial, Color3 } from 'babylonjs';
 import { Container } from "./controls/container";
 import { Control } from "./controls/control";
 import { Style } from "./style";
@@ -21,13 +21,13 @@ export interface IFocusableControl {
      * @param evt defines the current keyboard event
      */
     processKeyboard(evt: KeyboardEvent): void;
-
     /**
-     * Function called to let the control handle clipboard events
-     * @param {boolean} show determines whether to show the highlighted text
+     * Defines clipboard events
+     * @param {ClipboardEventsTypes} evt
      */
-    processClipboard(showHighlightedText: boolean, clipboardData?: DataTransfer): void;
+    onClipboardKeyBoardEvent(type: ClipboardEventTypes): void;
 
+    onClipboardPointerEvents(showHighlightedText: boolean): void;
     /**
      * Function called to get the list of controls that should not steal the focus from this control
      * @returns an array of controls
@@ -271,8 +271,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
 
             if (info.type === KeyboardEventTypes.KEYDOWN) {
+                //get the event type
                 let type = ClipboardInfo.GetTypeFromCharacter(info.event);
-                (this._ctrKeyOn && type !== -1) ? this._executeClipboardEvent(type) : this._focusedControl.processKeyboard(info.event);
+                (this._ctrKeyOn && type !== -1) ? this._focusedControl.onClipboardKeyBoardEvent(type) : this._focusedControl.processKeyboard(info.event);
             }
 
             info.skipOnPointerObservable = true;
@@ -425,47 +426,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (this._idealWidth || this._idealHeight) {
                 this._rootContainer._markAllAsDirty();
             }
-        }
-    }
-
-   /**
-     * @hidden
-     */
-    public registerClipboardEvents(): void {
-        this._rootCanvas!.addEventListener(ClipboardEventTypes.COPY + "_clipboard", this.onClipboardCopy, false);
-        this._rootCanvas!.addEventListener(ClipboardEventTypes.CUT + "_clipboard", this.onClipboardCut, false);
-        this._rootCanvas!.addEventListener(ClipboardEventTypes.PASTE + "_clipboard", this.onClipboardPaste, false);
-    }
-    /**
-     * @hidden
-     */
-    public unRegisterClipboardEvents(): void {
-        this._rootCanvas!.removeEventListener(ClipboardEventTypes.COPY + "_clipboard", this.onClipboardCopy, false);
-        this._rootCanvas!.removeEventListener(ClipboardEventTypes.CUT + "_clipboard", this.onClipboardCut, false);
-        this._rootCanvas!.removeEventListener(ClipboardEventTypes.PASTE + "_clipboard", this.onClipboardPaste, false);
-    }
-
-    /** @hidden */
-    private _executeClipboardEvent(type: ClipboardEventTypes): void {
-       this._simulateClipboardEvent(type);
-    }
-
-    /** @hidden */
-    private _simulateClipboardEvent(type: ClipboardEventTypes): void {
-        let ev;
-        if (type === ClipboardEventTypes.COPY) {
-            ev = new ClipboardInfo(ClipboardEventTypes.COPY, new ClipboardEvent("copy")); //new ClipboardEvent("copy");
-            this._focusedControl!.processClipboard(false, ev.clipboardData);
-        }
-        else if (type === ClipboardEventTypes.CUT) {
-            ev = new ClipboardInfo(ClipboardEventTypes.CUT, new ClipboardEvent("cut"));
-            this._focusedControl!.processClipboard(false, ev.clipboardData);
-        }
-        else if (type === ClipboardEventTypes.PASTE) {
-            ev = new ClipboardInfo(ClipboardEventTypes.PASTE, new ClipboardEvent("paste"));
-        }
-        if (typeof ev !== "undefined") {
-            this.dispatchClipboardEvents(ev);
         }
     }
 
@@ -644,7 +604,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (scene!.isPointerCaptured((<PointerEvent>(pi.event)).pointerId)) {
                 return;
             }
-            (this._focusedControl) ? ((pi.type === PointerEventTypes.POINTERDOUBLETAP) ? this._focusedControl.processClipboard(true) : null) : null;
+            //check for focused control and call the onClipboardPointerEvents
+            (this._focusedControl) ? ((pi.type === PointerEventTypes.POINTERDOUBLETAP) ? this._focusedControl.onClipboardPointerEvents(true) : null) : null;
 
             if (pi.type !== PointerEventTypes.POINTERMOVE
                 && pi.type !== PointerEventTypes.POINTERUP
