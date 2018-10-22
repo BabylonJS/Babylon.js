@@ -1010,7 +1010,8 @@ declare module 'babylonjs-viewer/initializer' {
 }
 
 declare module 'babylonjs-viewer/configuration' {
-    
+    export * from 'babylonjs-viewer/configuration/configuration';
+    export * from 'babylonjs-viewer/configuration/interfaces';
 }
 
 declare module 'babylonjs-viewer/configuration/configuration' {
