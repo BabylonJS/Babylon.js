@@ -438,7 +438,7 @@ module BABYLON {
                 var oldPivot = mesh.getPivotMatrix();
                 if (oldPivot) {
                     // create a copy the pivot Matrix as it is modified in place
-                    oldPivot = oldPivot.clone()
+                    oldPivot = oldPivot.clone();
                 }
                 else {
                     oldPivot = Matrix.Identity();
