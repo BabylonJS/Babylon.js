@@ -437,10 +437,11 @@ module BABYLON {
 
                 var oldPivot = mesh.getPivotMatrix();
                 if (oldPivot) {
+                    // create a copy the pivot Matrix as it is modified in place
                     oldPivot = oldPivot.clone()
                 }
                 else {
-                     Matrix.Identity();
+                    oldPivot = Matrix.Identity();
                 }
 
                 //calculate the new center using a pivot (since this.BJSCANNON.js doesn't center height maps)
