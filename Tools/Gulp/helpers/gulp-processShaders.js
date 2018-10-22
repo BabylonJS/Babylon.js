@@ -7,10 +7,8 @@ let fs = require('fs');
 let tsTemplate = 
 `import { Effect } from "babylonjs";
 
-let shader = '';
-let name = '';
-
-##PLACEHOLDER##
+let name = '##NAME_PLACEHOLDER##';
+let shader = \`##SHADER_PLACEHOLDER##\`;
 
 Effect.ShadersStore[name] = shader;
 
@@ -44,7 +42,9 @@ function main() {
             let tsFilename = filename.replace('.fx', '.fx.ts');
             let data = file.contents.toString();
 
-            let tsContent = tsTemplate.replace('##PLACEHOLDER##', `name = '${shaderName}'; shader = \`${data}\`;  `);
+            let tsContent = tsTemplate.replace('##NAME_PLACEHOLDER##', shaderName);
+            tsContent = tsContent.replace('##SHADER_PLACEHOLDER##', data);
+
             fs.writeFileSync(directory + '/' + tsFilename, tsContent);
 
             return cb();
