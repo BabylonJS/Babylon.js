@@ -2,7 +2,7 @@ var through = require('through2');
 var PluginError = require('gulp-util').PluginError;
 var uncommentShaders = require('./gulp-removeShaderComments');
 let path = require('path');
-//let fs = require('fs');
+let fs = require('fs');
 
 let tsTemplate = 
 `import { Effect } from "babylonjs";
