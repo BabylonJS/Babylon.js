@@ -24,7 +24,7 @@ var config = require("../config.json");
  * TsLint all typescript files from the src directory.
  */
 gulp.task("typescript-tsLint", function() {
-    const dtsFilter = filter(['**', '!**/*.d.ts'], { restore: false });
+    const dtsFilter = filter(['**', '!**/*.d.ts', '!**/*.fx.ts'], { restore: false });
     return gulp.src(config.typescript)
         .pipe(dtsFilter)
         .pipe(gulpTslint(tsLintConfig))
@@ -35,7 +35,9 @@ gulp.task("typescript-tsLint", function() {
  * TsLint all typescript files from the src directory.
  */
 var tsLintExternalLibrary = function(library, settings, watch) {
+    const fxFilter = filter(['**', '!**/*.fx.ts'], { restore: false });
     return gulp.src((settings.build.srcDirectory) + "/**/*.ts")
+        .pipe(fxFilter)
         .pipe(gulpTslint(tsLintConfig))
         .pipe(gulpTslint.report());
 }
