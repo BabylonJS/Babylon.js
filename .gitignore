@@ -162,6 +162,8 @@ node_modules
 !dist/**/*.d.ts
 !dist/**/*.js.map
 !lib.d.ts
+*.fragment.ts
+*.vertex.ts
 
 # Split declaration file
 !ISplit.d.ts

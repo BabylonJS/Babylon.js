@@ -1,7 +1,7 @@
 import { MaterialDefines, PushMaterial, serialize, expandToProperty, serializeAsColor3, Color3, Scene, Nullable, BaseTexture, AbstractMesh, SubMesh, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
 
-import "./gradient.fragment.fx";
-import "./gradient.vertex.fx";
+import "./gradient.fragment";
+import "./gradient.vertex";
 
 class GradientMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;

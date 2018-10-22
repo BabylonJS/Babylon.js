@@ -1,7 +1,7 @@
 import { MaterialDefines, PushMaterial, serializeAsTexture, BaseTexture, expandToProperty, serialize, serializeAsColor3, Color3, Scene, Nullable, AbstractMesh, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
 
-import "./triplanar.fragment.fx";
-import "./triplanar.vertex.fx";
+import "./triplanar.fragment";
+import "./triplanar.vertex";
 
 class TriPlanarMaterialDefines extends MaterialDefines {
     public DIFFUSEX = false;

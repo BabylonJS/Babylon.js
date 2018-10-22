@@ -1,7 +1,7 @@
 import { MaterialDefines, PushMaterial, IShadowLight, Scene, Nullable, BaseTexture, AbstractMesh, SubMesh, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, SerializationHelper } from "babylonjs";
 
-import "./shadowOnly.fragment.fx";
-import "./shadowOnly.vertex.fx";
+import "./shadowOnly.fragment";
+import "./shadowOnly.vertex";
 
 class ShadowOnlyMaterialDefines extends MaterialDefines {
     public CLIPPLANE = false;

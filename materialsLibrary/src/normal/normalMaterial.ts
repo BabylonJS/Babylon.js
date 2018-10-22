@@ -1,7 +1,7 @@
 import { MaterialDefines, PushMaterial, serializeAsTexture, BaseTexture, expandToProperty, serializeAsColor3, Color3, serialize, Scene, Nullable, AbstractMesh, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
 
-import "./normal.fragment.fx";
-import "./normal.vertex.fx";
+import "./normal.fragment";
+import "./normal.vertex";
 
 class NormalMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;
