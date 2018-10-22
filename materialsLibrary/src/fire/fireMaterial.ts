@@ -1,7 +1,7 @@
-import { Effect, MaterialDefines, PushMaterial, serializeAsTexture, Nullable, BaseTexture, expandToProperty, serializeAsColor3, Color3, serialize, Scene, AbstractMesh, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, Matrix, Mesh, IAnimatable, SerializationHelper, Tags, Texture, } from "babylonjs";
+import { MaterialDefines, PushMaterial, serializeAsTexture, Nullable, BaseTexture, expandToProperty, serializeAsColor3, Color3, serialize, Scene, AbstractMesh, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, Matrix, Mesh, IAnimatable, SerializationHelper, Tags, Texture, } from "babylonjs";
 
-Effect.ShadersStore["firePixelShader"] = require("./fire.fragment.fx");
-Effect.ShadersStore["fireVertexShader"] = require("./fire.vertex.fx");
+import "./fire.fragment.fx";
+import "./fire.vertex.fx";
 
 class FireMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;

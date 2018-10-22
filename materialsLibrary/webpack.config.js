@@ -43,12 +43,6 @@ module.exports = {
                     declarationDir: '../../dist/preview release/materialsLibrary/build'
                 }
             }]
-        },
-        {
-            test: /\.fx$/,
-            use: [{
-                loader: path.resolve(__dirname, '../Tools/WebpackShaderLoader/index.js')
-            }]
         }]
     },
     mode: "production",
@@ -65,7 +59,8 @@ module.exports = {
         ]),
         new webpack.WatchIgnorePlugin([
             /\.js$/,
-            /\.d\.ts$/
+            /\.d\.ts$/,
+            /\.fx$/
         ])
     ],
     watchOptions: {

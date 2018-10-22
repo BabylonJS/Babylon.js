@@ -1,7 +1,7 @@
-import { Effect, MaterialDefines, PushMaterial, IShadowLight, Scene, Nullable, BaseTexture, AbstractMesh, SubMesh, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, SerializationHelper } from "babylonjs";
+import { MaterialDefines, PushMaterial, IShadowLight, Scene, Nullable, BaseTexture, AbstractMesh, SubMesh, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, SerializationHelper } from "babylonjs";
 
-Effect.ShadersStore["shadowOnlyPixelShader"] = require("./shadowOnly.fragment.fx");
-Effect.ShadersStore["shadowOnlyVertexShader"] = require("./shadowOnly.vertex.fx");
+import "./shadowOnly.fragment.fx";
+import "./shadowOnly.vertex.fx";
 
 class ShadowOnlyMaterialDefines extends MaterialDefines {
     public CLIPPLANE = false;

@@ -1,7 +1,7 @@
-import { Effect, MaterialDefines, PushMaterial, serializeAsTexture, BaseTexture, expandToProperty, serializeAsColor3, Color3, serialize, serializeAsVector2, Vector2, SmartArray, RenderTargetTexture, Nullable, AbstractMesh, Matrix, Scene, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Mesh, Plane, Vector3, Camera, IAnimatable, SerializationHelper } from "babylonjs";
+import { MaterialDefines, PushMaterial, serializeAsTexture, BaseTexture, expandToProperty, serializeAsColor3, Color3, serialize, serializeAsVector2, Vector2, SmartArray, RenderTargetTexture, Nullable, AbstractMesh, Matrix, Scene, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Mesh, Plane, Vector3, Camera, IAnimatable, SerializationHelper } from "babylonjs";
 
-Effect.ShadersStore["waterPixelShader"] = require("./water.fragment.fx");
-Effect.ShadersStore["waterVertexShader"] = require("./water.vertex.fx");
+import "./water.fragment.fx";
+import "./water.vertex.fx";
 
 class WaterMaterialDefines extends MaterialDefines {
     public BUMP = false;
