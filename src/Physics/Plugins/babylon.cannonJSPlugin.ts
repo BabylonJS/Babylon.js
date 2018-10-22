@@ -435,7 +435,13 @@ module BABYLON {
                 //get original center with no rotation
                 var c = center.clone();
 
-                var oldPivot = mesh.getPivotMatrix() || Matrix.Translation(0, 0, 0);
+                var oldPivot = mesh.getPivotMatrix();
+                if (oldPivot) {
+                    oldPivot = oldPivot.clone()
+                }
+                else {
+                     Matrix.Identity();
+                }
 
                 //calculate the new center using a pivot (since this.BJSCANNON.js doesn't center height maps)
                 var p = Matrix.Translation(boundingInfo.boundingBox.extendSizeWorld.x, 0, -boundingInfo.boundingBox.extendSizeWorld.z);
