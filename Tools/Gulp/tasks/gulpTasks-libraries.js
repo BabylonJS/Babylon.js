@@ -6,6 +6,7 @@ var dtsBundle = require('dts-bundle');
 var merge2 = require("merge2");
 var path = require("path");
 var processShaders = require("../helpers/gulp-processShaders");
+var uncommentShaders = require('../helpers/gulp-removeShaderComments');
 
 // Gulp Helpers
 var processDeclaration = require('../helpers/gulp-processTypescriptDeclaration');
@@ -15,63 +16,68 @@ var rmDir = require("../helpers/gulp-rmDir");
 var config = require("../config.json");
 
 /**
+ * Create shader ts files.
+ */
+var buildShaders = function(settings) {
+    return gulp.src(settings.build.srcDirectory + "**/*.fx")
+            .pipe(uncommentShaders())
+            .pipe(processShaders());
+}
+
+/**
  * Build a single library (one of the material of mat lib) from a module (materialsLibrary for instance)
  */
 var buildExternalLibrary = function(library, settings, cb) {
-    var task = gulp.src(settings.build.srcDirectory + "**/*.fx")
-        .pipe(processShaders());
+    const sequence = [];
+    var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
 
-    task.on("end", function() {
-        const sequence = [];
-        var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
+    // Webpack Config.
+    var wpConfig = require(settings.build.webpack);
+    wpConfig.entry = {
+        'main': path.resolve(wpConfig.context, library.entry),
+    };
+    wpConfig.output.filename = library.output;
 
-        // Webpack Config.
-        var wpConfig = require(settings.build.webpack);
-        wpConfig.entry = {
-            'main': path.resolve(wpConfig.context, library.entry),
-        };
-        wpConfig.output.filename = library.output;
+    // Generate minified file.
+    let wpBuildMin = webpackStream(wpConfig, webpack);
+    let buildEventMin = wpBuildMin.pipe(gulp.dest(outputDirectory));
+    sequence.push(buildEventMin);
 
-        // Generate minified file.
-        let wpBuildMin = webpackStream(wpConfig, webpack);
-        let buildEventMin = wpBuildMin.pipe(gulp.dest(outputDirectory));
-        sequence.push(buildEventMin);
+    // Generate unminified file.
+    wpConfig.mode = "development";
+    wpConfig.output.filename = wpConfig.output.filename.replace(".min", "");
+    let wpBuildMax = webpackStream(wpConfig, webpack);
+    let buildEventMax = wpBuildMax.pipe(gulp.dest(outputDirectory));
+    sequence.push(buildEventMax);
 
-        // Generate unminified file.
-        wpConfig.mode = "development";
-        wpConfig.output.filename = wpConfig.output.filename.replace(".min", "");
-        let wpBuildMax = webpackStream(wpConfig, webpack);
-        let buildEventMax = wpBuildMax.pipe(gulp.dest(outputDirectory));
-        sequence.push(buildEventMax);
-
-        var minAndMax = merge2(sequence);
-
-        // TODO. Generate all d.ts
-        if (!library.preventLoadLibrary) {
-            minAndMax.on("end", function() {
+    return merge2(sequence)
+        .on("end", function() {
+            // TODO. Generate all d.ts
+            if (!library.preventLoadLibrary) {
                 dtsBundle.bundle(settings.build.dtsBundle);
 
                 let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
                 processDeclaration(fileLocation, settings.build.processDeclaration);
-            });
-        }
-
-        minAndMax.on("end", cb);
-    });
-
-    return task;
+            }
+            cb();
+        });
 }
 
 /**
  * Dynamic module creation In Serie for WebPack leaks.
  */
 function buildExternalLibraries(settings) {
-    var tasks = settings.libraries.map(function(library) {
-        var build = function(cb) {
-            return buildExternalLibrary(library, settings, cb);
-        }
-        return build;
-    });
+    // Clean up old build files.
+    rmDir(settings.build.dtsBundle.baseDir);
+
+    // Creates the required tasks.
+    var tasks = [];
+    for (var library of settings.libraries) {
+        var shaders = function() { return buildShaders(settings); };
+        var build = function(cb) { return buildExternalLibrary(library, settings, cb) };
+
+        tasks.push(shaders, build);
+    }
 
     return gulp.series.apply(this, tasks);
 }
@@ -80,11 +86,6 @@ function buildExternalLibraries(settings) {
  * Dynamic module creation.
  */
 config.modules.map(function(module) {
-    var settings = config[module];
-
-    // Clean up old build files.
-    rmDir(settings.build.dtsBundle.baseDir);
-
-    // Build the libraries.
+    const settings = config[module];
     gulp.task(module, buildExternalLibraries(settings));
 });
