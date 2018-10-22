@@ -3,7 +3,7 @@
   "tests": [
     {
       "title": "XR camera container rotation",
-      "playgroundId": "#JV98QW#1",
+      "playgroundId": "#JV98QW#4",
       "referenceImage": "xrCameraContainerRotation.png",
       "excludeFromAutomaticTesting": true
     },
