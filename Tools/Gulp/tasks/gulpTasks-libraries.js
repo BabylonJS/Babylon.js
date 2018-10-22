@@ -2,10 +2,10 @@
 var gulp = require("gulp");
 var webpack = require('webpack');
 var webpackStream = require("webpack-stream");
-var fs = require("fs");
 var dtsBundle = require('dts-bundle');
 var merge2 = require("merge2");
 var path = require("path");
+var processShaders = require("../helpers/gulp-processShaders");
 
 // Gulp Helpers
 var processDeclaration = require('../helpers/gulp-processTypescriptDeclaration');
@@ -18,43 +18,48 @@ var config = require("../config.json");
  * Build a single library (one of the material of mat lib) from a module (materialsLibrary for instance)
  */
 var buildExternalLibrary = function(library, settings, cb) {
-    const sequence = [];
-    var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
+    var task = gulp.src(settings.build.srcDirectory + "**/*.fx")
+        .pipe(processShaders());
 
-    // Webpack Config.
-    var wpConfig = require(settings.build.webpack);
-    wpConfig.entry = {
-        'main': path.resolve(wpConfig.context, library.entry),
-    };
-    wpConfig.output.filename = library.output;
+    task.on("end", function() {
+        const sequence = [];
+        var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
 
-    // Generate minified file.
-    let wpBuildMin = webpackStream(wpConfig, webpack);
-    let buildEventMin = wpBuildMin.pipe(gulp.dest(outputDirectory));
-    sequence.push(buildEventMin);
+        // Webpack Config.
+        var wpConfig = require(settings.build.webpack);
+        wpConfig.entry = {
+            'main': path.resolve(wpConfig.context, library.entry),
+        };
+        wpConfig.output.filename = library.output;
 
-    // Generate unminified file.
-    wpConfig.mode = "development";
-    wpConfig.output.filename = wpConfig.output.filename.replace(".min", "");
-    let wpBuildMax = webpackStream(wpConfig, webpack);
-    let buildEventMax = wpBuildMax.pipe(gulp.dest(outputDirectory));
-    sequence.push(buildEventMax);
+        // Generate minified file.
+        let wpBuildMin = webpackStream(wpConfig, webpack);
+        let buildEventMin = wpBuildMin.pipe(gulp.dest(outputDirectory));
+        sequence.push(buildEventMin);
 
-    var minAndMax = merge2(sequence);
+        // Generate unminified file.
+        wpConfig.mode = "development";
+        wpConfig.output.filename = wpConfig.output.filename.replace(".min", "");
+        let wpBuildMax = webpackStream(wpConfig, webpack);
+        let buildEventMax = wpBuildMax.pipe(gulp.dest(outputDirectory));
+        sequence.push(buildEventMax);
 
-    // TODO. Generate all d.ts
-    if (!library.preventLoadLibrary) {
-        minAndMax.on("end", function() {
-            dtsBundle.bundle(settings.build.dtsBundle);
+        var minAndMax = merge2(sequence);
 
-            let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
-            processDeclaration(fileLocation, settings.build.processDeclaration);
+        // TODO. Generate all d.ts
+        if (!library.preventLoadLibrary) {
+            minAndMax.on("end", function() {
+                dtsBundle.bundle(settings.build.dtsBundle);
 
-            cb();
-        });
-    }
+                let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
+                processDeclaration(fileLocation, settings.build.processDeclaration);
+            });
+        }
 
-    return minAndMax;
+        minAndMax.on("end", cb);
+    });
+
+    return task;
 }
 
 /**
