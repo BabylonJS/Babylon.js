@@ -40,6 +40,9 @@ function main() {
             let tsFilename = filename.replace('.fx', '.fx.ts');
             let data = file.contents.toString();
 
+            // Trailing whitespace...
+            data = data.replace(/[^\S\r\n]+$/gm, "");
+
             let tsContent = tsTemplate.replace('##NAME_PLACEHOLDER##', shaderName);
             tsContent = tsContent.replace('##SHADER_PLACEHOLDER##', data);
 
