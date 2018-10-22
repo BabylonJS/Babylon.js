@@ -14,7 +14,7 @@ float getLuminance(vec3 color)
 return clamp(dot(color,vec3(0.2126,0.7152,0.0722)),0.,1.);
 }
 
-void main(void) 
+void main(void)
 {
 float caracterSize=asciiArtFontInfos.x;
 float numChar=asciiArtFontInfos.y-1.0;

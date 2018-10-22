@@ -43,7 +43,7 @@ vec3 simplifiedRayleigh()
 return 0.0005/vec3(94,40,18);
 }
 float rayleighPhase(float cosTheta)
-{ 
+{
 return (3.0/(16.0*pi))*(1.0+pow(cosTheta,2.0));
 }
 vec3 totalMie(vec3 lambda,vec3 K,float T)
@@ -99,12 +99,12 @@ vec3 L0=vec3(0.1)*Fex;
 float sundisk=smoothstep(sunAngularDiameterCos,sunAngularDiameterCos+0.00002,cosTheta);
 L0+=(sunE*19000.0*Fex)*sundisk;
 vec3 whiteScale=1.0/Uncharted2Tonemap(vec3(W));
-vec3 texColor=(Lin+L0); 
+vec3 texColor=(Lin+L0);
 texColor*=0.04 ;
 texColor+=vec3(0.0,0.001,0.0025)*0.3;
 float g_fMaxLuminance=1.0;
-float fLumScaled=0.1/luminance; 
-float fLumCompressed=(fLumScaled*(1.0+(fLumScaled/(g_fMaxLuminance*g_fMaxLuminance))))/(1.0+fLumScaled); 
+float fLumScaled=0.1/luminance;
+float fLumCompressed=(fLumScaled*(1.0+(fLumScaled/(g_fMaxLuminance*g_fMaxLuminance))))/(1.0+fLumScaled);
 float ExposureBias=fLumCompressed;
 vec3 curr=Uncharted2Tonemap((log2(2.0/pow(luminance,4.0)))*texColor);
 

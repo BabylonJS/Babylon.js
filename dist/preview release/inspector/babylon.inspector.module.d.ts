@@ -3,103 +3,103 @@
 //   ../../../../Tools/Gulp/babylonjs
 
 declare module 'babylonjs-inspector' {
-    export * from 'babylonjs-inspector/adapters';
-    export * from 'babylonjs-inspector/details';
-    export * from 'babylonjs-inspector/gui';
-    export * from 'babylonjs-inspector/helpers';
-    export * from 'babylonjs-inspector/scheduler';
-    export * from 'babylonjs-inspector/tabs';
-    export * from 'babylonjs-inspector/tools';
-    export * from 'babylonjs-inspector/tree';
-    export * from 'babylonjs-inspector/treetools';
-    export * from 'babylonjs-inspector/Inspector';
-    export * from 'babylonjs-inspector/properties';
-    export * from 'babylonjs-inspector/properties_gui';
+    export * from 'babylonjs-inspector/src/adapters/index';
+    export * from 'babylonjs-inspector/src/details/index';
+    export * from 'babylonjs-inspector/src/gui/index';
+    export * from 'babylonjs-inspector/src/helpers/index';
+    export * from 'babylonjs-inspector/src/scheduler/index';
+    export * from 'babylonjs-inspector/src/tabs/index';
+    export * from 'babylonjs-inspector/src/tools/index';
+    export * from 'babylonjs-inspector/src/tree/index';
+    export * from 'babylonjs-inspector/src/treetools/index';
+    export * from 'babylonjs-inspector/src/Inspector';
+    export * from 'babylonjs-inspector/src/properties';
+    export * from 'babylonjs-inspector/src/properties_gui';
 }
 
-declare module 'babylonjs-inspector/adapters' {
-    export * from 'babylonjs-inspector/adapters/Adapter';
-    export * from 'babylonjs-inspector/adapters/CameraAdapter';
-    export * from 'babylonjs-inspector/adapters/GUIAdapter';
-    export * from 'babylonjs-inspector/adapters/LightAdapter';
-    export * from 'babylonjs-inspector/adapters/MaterialAdapter';
-    export * from 'babylonjs-inspector/adapters/MeshAdapter';
-    export * from 'babylonjs-inspector/adapters/PhysicsImpostorAdapter';
-    export * from 'babylonjs-inspector/adapters/SoundAdapter';
-    export * from 'babylonjs-inspector/adapters/TextureAdapter';
+declare module 'babylonjs-inspector/src/adapters/index' {
+    export * from 'babylonjs-inspector/src/adapters/Adapter';
+    export * from 'babylonjs-inspector/src/adapters/CameraAdapter';
+    export * from 'babylonjs-inspector/src/adapters/GUIAdapter';
+    export * from 'babylonjs-inspector/src/adapters/LightAdapter';
+    export * from 'babylonjs-inspector/src/adapters/MaterialAdapter';
+    export * from 'babylonjs-inspector/src/adapters/MeshAdapter';
+    export * from 'babylonjs-inspector/src/adapters/PhysicsImpostorAdapter';
+    export * from 'babylonjs-inspector/src/adapters/SoundAdapter';
+    export * from 'babylonjs-inspector/src/adapters/TextureAdapter';
 }
 
-declare module 'babylonjs-inspector/details' {
-    export * from 'babylonjs-inspector/details/DetailPanel';
-    export * from 'babylonjs-inspector/details/Property';
-    export * from 'babylonjs-inspector/details/PropertyLine';
+declare module 'babylonjs-inspector/src/details/index' {
+    export * from 'babylonjs-inspector/src/details/DetailPanel';
+    export * from 'babylonjs-inspector/src/details/Property';
+    export * from 'babylonjs-inspector/src/details/PropertyLine';
 }
 
-declare module 'babylonjs-inspector/gui' {
-    export * from 'babylonjs-inspector/gui/BasicElement';
-    export * from 'babylonjs-inspector/gui/ColorElement';
-    export * from 'babylonjs-inspector/gui/ColorPickerElement';
-    export * from 'babylonjs-inspector/gui/CubeTextureElement';
-    export * from 'babylonjs-inspector/gui/HDRCubeTextureElement';
-    export * from 'babylonjs-inspector/gui/SearchBar';
-    export * from 'babylonjs-inspector/gui/TextureElement';
-    export * from 'babylonjs-inspector/gui/Tooltip';
+declare module 'babylonjs-inspector/src/gui/index' {
+    export * from 'babylonjs-inspector/src/gui/BasicElement';
+    export * from 'babylonjs-inspector/src/gui/ColorElement';
+    export * from 'babylonjs-inspector/src/gui/ColorPickerElement';
+    export * from 'babylonjs-inspector/src/gui/CubeTextureElement';
+    export * from 'babylonjs-inspector/src/gui/HDRCubeTextureElement';
+    export * from 'babylonjs-inspector/src/gui/SearchBar';
+    export * from 'babylonjs-inspector/src/gui/TextureElement';
+    export * from 'babylonjs-inspector/src/gui/Tooltip';
 }
 
-declare module 'babylonjs-inspector/helpers' {
-    export * from 'babylonjs-inspector/helpers/Helpers';
+declare module 'babylonjs-inspector/src/helpers/index' {
+    export * from 'babylonjs-inspector/src/helpers/Helpers';
 }
 
-declare module 'babylonjs-inspector/scheduler' {
-    export * from 'babylonjs-inspector/scheduler/Scheduler';
+declare module 'babylonjs-inspector/src/scheduler/index' {
+    export * from 'babylonjs-inspector/src/scheduler/Scheduler';
 }
 
-declare module 'babylonjs-inspector/tabs' {
-    export * from 'babylonjs-inspector/tabs/CameraTab';
-    export * from 'babylonjs-inspector/tabs/ConsoleTab';
-    export * from 'babylonjs-inspector/tabs/GLTFTab';
-    export * from 'babylonjs-inspector/tabs/GUITab';
-    export * from 'babylonjs-inspector/tabs/LightTab';
-    export * from 'babylonjs-inspector/tabs/MaterialTab';
-    export * from 'babylonjs-inspector/tabs/MeshTab';
-    export * from 'babylonjs-inspector/tabs/PhysicsTab';
-    export * from 'babylonjs-inspector/tabs/PropertyTab';
-    export * from 'babylonjs-inspector/tabs/SceneTab';
-    export * from 'babylonjs-inspector/tabs/SoundTab';
-    export * from 'babylonjs-inspector/tabs/StatsTab';
-    export * from 'babylonjs-inspector/tabs/Tab';
-    export * from 'babylonjs-inspector/tabs/TabBar';
-    export * from 'babylonjs-inspector/tabs/TextureTab';
-    export * from 'babylonjs-inspector/tabs/ToolsTab';
+declare module 'babylonjs-inspector/src/tabs/index' {
+    export * from 'babylonjs-inspector/src/tabs/CameraTab';
+    export * from 'babylonjs-inspector/src/tabs/ConsoleTab';
+    export * from 'babylonjs-inspector/src/tabs/GLTFTab';
+    export * from 'babylonjs-inspector/src/tabs/GUITab';
+    export * from 'babylonjs-inspector/src/tabs/LightTab';
+    export * from 'babylonjs-inspector/src/tabs/MaterialTab';
+    export * from 'babylonjs-inspector/src/tabs/MeshTab';
+    export * from 'babylonjs-inspector/src/tabs/PhysicsTab';
+    export * from 'babylonjs-inspector/src/tabs/PropertyTab';
+    export * from 'babylonjs-inspector/src/tabs/SceneTab';
+    export * from 'babylonjs-inspector/src/tabs/SoundTab';
+    export * from 'babylonjs-inspector/src/tabs/StatsTab';
+    export * from 'babylonjs-inspector/src/tabs/Tab';
+    export * from 'babylonjs-inspector/src/tabs/TabBar';
+    export * from 'babylonjs-inspector/src/tabs/TextureTab';
+    export * from 'babylonjs-inspector/src/tabs/ToolsTab';
 }
 
-declare module 'babylonjs-inspector/tools' {
-    export * from 'babylonjs-inspector/tools/AbstractTool';
-    export * from 'babylonjs-inspector/tools/DisposeTool';
-    export * from 'babylonjs-inspector/tools/FullscreenTool';
-    export * from 'babylonjs-inspector/tools/LabelTool';
-    export * from 'babylonjs-inspector/tools/PauseScheduleTool';
-    export * from 'babylonjs-inspector/tools/PickTool';
-    export * from 'babylonjs-inspector/tools/PopupTool';
-    export * from 'babylonjs-inspector/tools/RefreshTool';
-    export * from 'babylonjs-inspector/tools/Toolbar';
+declare module 'babylonjs-inspector/src/tools/index' {
+    export * from 'babylonjs-inspector/src/tools/AbstractTool';
+    export * from 'babylonjs-inspector/src/tools/DisposeTool';
+    export * from 'babylonjs-inspector/src/tools/FullscreenTool';
+    export * from 'babylonjs-inspector/src/tools/LabelTool';
+    export * from 'babylonjs-inspector/src/tools/PauseScheduleTool';
+    export * from 'babylonjs-inspector/src/tools/PickTool';
+    export * from 'babylonjs-inspector/src/tools/PopupTool';
+    export * from 'babylonjs-inspector/src/tools/RefreshTool';
+    export * from 'babylonjs-inspector/src/tools/Toolbar';
 }
 
-declare module 'babylonjs-inspector/tree' {
-    export * from 'babylonjs-inspector/tree/TreeItem';
+declare module 'babylonjs-inspector/src/tree/index' {
+    export * from 'babylonjs-inspector/src/tree/TreeItem';
 }
 
-declare module 'babylonjs-inspector/treetools' {
-    export * from 'babylonjs-inspector/treetools/AbstractTreeTool';
-    export * from 'babylonjs-inspector/treetools/BoundingBox';
-    export * from 'babylonjs-inspector/treetools/CameraPOV';
-    export * from 'babylonjs-inspector/treetools/Checkbox';
-    export * from 'babylonjs-inspector/treetools/DebugArea';
-    export * from 'babylonjs-inspector/treetools/Info';
-    export * from 'babylonjs-inspector/treetools/SoundInteractions';
+declare module 'babylonjs-inspector/src/treetools/index' {
+    export * from 'babylonjs-inspector/src/treetools/AbstractTreeTool';
+    export * from 'babylonjs-inspector/src/treetools/BoundingBox';
+    export * from 'babylonjs-inspector/src/treetools/CameraPOV';
+    export * from 'babylonjs-inspector/src/treetools/Checkbox';
+    export * from 'babylonjs-inspector/src/treetools/DebugArea';
+    export * from 'babylonjs-inspector/src/treetools/Info';
+    export * from 'babylonjs-inspector/src/treetools/SoundInteractions';
 }
 
-declare module 'babylonjs-inspector/Inspector' {
+declare module 'babylonjs-inspector/src/Inspector' {
     import { AbstractMesh, Nullable, Scene, Observable } from "babylonjs";
     
     export class Inspector {
@@ -145,7 +145,7 @@ declare module 'babylonjs-inspector/Inspector' {
     }
 }
 
-declare module 'babylonjs-inspector/properties' {
+declare module 'babylonjs-inspector/src/properties' {
     import { Vector2, Vector3, Color3, Color4, Quaternion, Size, Texture, RenderTargetTexture, DynamicTexture, BaseTexture, CubeTexture, HDRCubeTexture, Sound, ArcRotateCamera, FreeCamera, Scene, TransformNode, AbstractMesh, Mesh, StandardMaterial, PBRMaterial, PhysicsImpostor, ImageProcessingConfiguration, ColorCurves } from "babylonjs";
     export const PROPERTIES: {
         /** Format the given object :
@@ -321,7 +321,7 @@ declare module 'babylonjs-inspector/properties' {
     };
 }
 
-declare module 'babylonjs-inspector/properties_gui' {
+declare module 'babylonjs-inspector/src/properties_gui' {
     export type GUITyping = any;
     export let guiLoaded: boolean;
     /**
@@ -330,9 +330,9 @@ declare module 'babylonjs-inspector/properties_gui' {
     export function loadGUIProperties(GUI: GUITyping): void;
 }
 
-declare module 'babylonjs-inspector/adapters/Adapter' {
-    import { PropertyLine } from "babylonjs-inspector/details/PropertyLine";
-    import { AbstractTreeTool } from "babylonjs-inspector/treetools/AbstractTreeTool";
+declare module 'babylonjs-inspector/src/adapters/Adapter' {
+    import { PropertyLine } from "babylonjs-inspector/src/details/PropertyLine";
+    import { AbstractTreeTool } from "babylonjs-inspector/src/treetools/AbstractTreeTool";
     export abstract class Adapter {
             protected _obj: any;
             constructor(obj: any);
@@ -355,12 +355,12 @@ declare module 'babylonjs-inspector/adapters/Adapter' {
     }
 }
 
-declare module 'babylonjs-inspector/adapters/CameraAdapter' {
+declare module 'babylonjs-inspector/src/adapters/CameraAdapter' {
     import { Camera } from "babylonjs";
-    import { AbstractTreeTool } from "babylonjs-inspector/treetools/AbstractTreeTool";
-    import { PropertyLine } from "babylonjs-inspector/details/PropertyLine";
-    import { ICameraPOV } from "babylonjs-inspector/treetools/CameraPOV";
-    import { Adapter } from "babylonjs-inspector/adapters/Adapter";
+    import { AbstractTreeTool } from "babylonjs-inspector/src/treetools/AbstractTreeTool";
+    import { PropertyLine } from "babylonjs-inspector/src/details/PropertyLine";
+    import { ICameraPOV } from "babylonjs-inspector/src/treetools/CameraPOV";
+    import { Adapter } from "babylonjs-inspector/src/adapters/Adapter";
     export class CameraAdapter extends Adapter implements ICameraPOV {
         constructor(obj: Camera);
         /** Returns the name displayed in the tree */
@@ -375,11 +375,11 @@ declare module 'babylonjs-inspector/adapters/CameraAdapter' {
     }
 }
 
-declare module 'babylonjs-inspector/adapters/GUIAdapter' {
-    import { PropertyLine } from "babylonjs-inspector/details/PropertyLine";
-    import { AbstractTreeTool } from "babylonjs-inspector/treetools/AbstractTreeTool";
-    import { IToolVisible } from "babylonjs-inspector/treetools/Checkbox";
-    import { Adapter } from "babylonjs-inspector/adapters/Adapter";
+declare module 'babylonjs-inspector/src/adapters/GUIAdapter' {
+    import { PropertyLine } from "babylonjs-inspector/src/details/PropertyLine";
+    import { AbstractTreeTool } from "babylonjs-inspector/src/treetools/AbstractTreeTool";
+    import { IToolVisible } from "babylonjs-inspector/src/treetools/Checkbox";
+    import { Adapter } from "babylonjs-inspector/src/adapters/Adapter";
     export class GUIAdapter extends Adapter implements IToolVisible {
         constructor(obj: any);
         /** Returns the name displayed in the tree */
@@ -394,11 +394,11 @@ declare module 'babylonjs-inspector/adapters/GUIAdapter' {
     }
 }
 
-declare module 'babylonjs-inspector/adapters/LightAdapter' {
-    import { PropertyLine } from "babylonjs-inspector/details/PropertyLine";
-    import { AbstractTreeTool } from "babylonjs-inspector/treetools/AbstractTreeTool";
-    import { IToolVisible } from "babylonjs-inspector/treetools/Checkbox";
-    import { Adapter } from "babylonjs-inspector/adapters/Adapter";
+declare module 'babylonjs-inspector/src/adapters/LightAdapter' {
+    import { PropertyLine } from "babylonjs-inspector/src/details/PropertyLine";
+    import { AbstractTreeTool } from "babylonjs-inspector/src/treetools/AbstractTreeTool";
+    import { IToolVisible } from "babylonjs-inspector/src/treetools/Checkbox";
+    import { Adapter } from "babylonjs-inspector/src/adapters/Adapter";
     export class LightAdapter extends Adapter implements IToolVisible {
         constructor(obj: BABYLON.Light);
         /** Returns the name displayed in the tree */
@@ -413,11 +413,11 @@ declare module 'babylonjs-inspector/adapters/LightAdapter' {
     }
 }
 
-declare module 'babylonjs-inspector/adapters/MaterialAdapter' {
+declare module 'babylonjs-inspector/src/adapters/MaterialAdapter' {
     import { Material } from "babylonjs";
-    import { PropertyLine } from "babylonjs-inspector/details/PropertyLine";
-    import { AbstractTreeTool } from "babylonjs-inspector/treetools/AbstractTreeTool";
-    import { Adapter } from "babylonjs-inspector/adapters/Adapter";
+    import { PropertyLine } from "babylonjs-inspector/src/details/PropertyLine";
+    import { AbstractTreeTool } from "babylonjs-inspector/src/treetools/AbstractTreeTool";
+    import { Adapter } from "babylonjs-inspector/src/adapters/Adapter";
     export class MaterialAdapter extends Adapter {
         constructor(obj: Material);
         /** Returns the name displayed in the tree */
@@ -431,15 +431,15 @@ declare module 'babylonjs-inspector/adapters/MaterialAdapter' {
     }
 }
 
-declare module 'babylonjs-inspector/adapters/MeshAdapter' {
+declare module 'babylonjs-inspector/src/adapters/MeshAdapter' {
     import { Node } from "babylonjs";
-    import { PropertyLine } from "babylonjs-inspector/details/PropertyLine";
-    import { AbstractTreeTool } from "babylonjs-inspector/treetools/AbstractTreeTool";
-    import { IToolBoundingBox } from "babylonjs-inspector/treetools/BoundingBox";
-    import { IToolVisible } from "babylonjs-inspector/treetools/Checkbox";
-    import { IToolDebug } from "babylonjs-inspector/treetools/DebugArea";
-    import { IToolInfo } from "babylonjs-inspector/treetools/Info";
-    import { Adapter } from "babylonjs-inspector/adapters/Adapter";
+    import { PropertyLine } from "babylonjs-inspector/src/details/PropertyLine";
+    import { AbstractTreeTool } from "babylonjs-inspector/src/treetools/AbstractTreeTool";
+    import { IToolBoundingBox } from "babylonjs-inspector/src/treetools/BoundingBox";
+    import { IToolVisible } from "babylonjs-inspector/src/treetools/Checkbox";
+    import { IToolDebug } from "babylonjs-inspector/src/treetools/DebugArea";
+    import { IToolInfo } from "babylonjs-inspector/src/treetools/Info";
+    import { Adapter } from "babylonjs-inspector/src/adapters/Adapter";
     export class MeshAdapter extends Adapter implements IToolVisible, IToolDebug, IToolBoundingBox, IToolInfo {
             constructor(mesh: Node);
             /** Returns the name displayed in the tree */
@@ -459,12 +459,12 @@ declare module 'babylonjs-inspector/adapters/MeshAdapter' {
     }
 }
 
-declare module 'babylonjs-inspector/adapters/PhysicsImpostorAdapter' {
+declare module 'babylonjs-inspector/src/adapters/PhysicsImpostorAdapter' {
     import { PhysicsImpostor } from "babylonjs";
-    import { PropertyLine } from "babylonjs-inspector/details/PropertyLine";
-    import { AbstractTreeTool } from "babylonjs-inspector/treetools/AbstractTreeTool";
-    import { IToolVisible } from "babylonjs-inspector/treetools/Checkbox";
-    import { Adapter } from "babylonjs-inspector/adapters/Adapter";
+    import { PropertyLine } from "babylonjs-inspector/src/details/PropertyLine";
+    import { AbstractTreeTool } from "babylonjs-inspector/src/treetools/AbstractTreeTool";
+    import { IToolVisible } from "babylonjs-inspector/src/treetools/Checkbox";
+    import { Adapter } from "babylonjs-inspector/src/adapters/Adapter";
     export class PhysicsImpostorAdapter extends Adapter implements IToolVisible {
         constructor(obj: PhysicsImpostor, viewer: any);
         /** Returns the name displayed in the tree */
@@ -479,12 +479,12 @@ declare module 'babylonjs-inspector/adapters/PhysicsImpostorAdapter' {
     }
 }
 
-declare module 'babylonjs-inspector/adapters/SoundAdapter' {
+declare module 'babylonjs-inspector/src/adapters/SoundAdapter' {
     import { Sound } from "babylonjs";
-    import { PropertyLine } from "babylonjs-inspector/details/PropertyLine";
-    import { AbstractTreeTool } from "babylonjs-inspector/treetools/AbstractTreeTool";
-    import { ISoundInteractions } from "babylonjs-inspector/treetools/SoundInteractions";
-    import { Adapter } from "babylonjs-inspector/adapters/Adapter";
+    import { PropertyLine } from "babylonjs-inspector/src/details/PropertyLine";
+    import { AbstractTreeTool } from "babylonjs-inspector/src/treetools/AbstractTreeTool";
+    import { ISoundInteractions } from "babylonjs-inspector/src/treetools/SoundInteractions";
+    import { Adapter } from "babylonjs-inspector/src/adapters/Adapter";
     export class SoundAdapter extends Adapter implements ISoundInteractions {
         constructor(obj: Sound);
         /** Returns the name displayed in the tree */
@@ -498,11 +498,11 @@ declare module 'babylonjs-inspector/adapters/SoundAdapter' {
     }
 }
 
-declare module 'babylonjs-inspector/adapters/TextureAdapter' {
-    import { Adapter } from "babylonjs-inspector/adapters/Adapter";
+declare module 'babylonjs-inspector/src/adapters/TextureAdapter' {
+    import { Adapter } from "babylonjs-inspector/src/adapters/Adapter";
     import { BaseTexture } from "babylonjs";
-    import { PropertyLine } from "babylonjs-inspector/details/PropertyLine";
-    import { AbstractTreeTool } from "babylonjs-inspector/treetools/AbstractTreeTool";
+    import { PropertyLine } from "babylonjs-inspector/src/details/PropertyLine";
+    import { AbstractTreeTool } from "babylonjs-inspector/src/treetools/AbstractTreeTool";
     export class TextureAdapter extends Adapter {
         constructor(obj: BaseTexture);
         /** Returns the name displayed in the tree */
@@ -515,9 +515,9 @@ declare module 'babylonjs-inspector/adapters/TextureAdapter' {
     }
 }
 
-declare module 'babylonjs-inspector/details/DetailPanel' {
-    import { BasicElement } from "babylonjs-inspector/gui/BasicElement";
-    import { PropertyLine } from "babylonjs-inspector/details/PropertyLine";
+declare module 'babylonjs-inspector/src/details/DetailPanel' {
+    import { BasicElement } from "babylonjs-inspector/src/gui/BasicElement";
+    import { PropertyLine } from "babylonjs-inspector/src/details/PropertyLine";
     export interface SortDirection {
             [property: string]: number;
     }
@@ -542,7 +542,7 @@ declare module 'babylonjs-inspector/details/DetailPanel' {
     }
 }
 
-declare module 'babylonjs-inspector/details/Property' {
+declare module 'babylonjs-inspector/src/details/Property' {
     /**
       * A property is a link between a data (string) and an object.
       */
@@ -555,9 +555,9 @@ declare module 'babylonjs-inspector/details/Property' {
     }
 }
 
-declare module 'babylonjs-inspector/details/PropertyLine' {
+declare module 'babylonjs-inspector/src/details/PropertyLine' {
     import { Nullable } from "babylonjs";
-    import { Property } from "babylonjs-inspector/details/Property";
+    import { Property } from "babylonjs-inspector/src/details/Property";
     export class PropertyFormatter {
             /**
                 * Format the value of the given property of the given object.
@@ -603,7 +603,7 @@ declare module 'babylonjs-inspector/details/PropertyLine' {
     }
 }
 
-declare module 'babylonjs-inspector/gui/BasicElement' {
+declare module 'babylonjs-inspector/src/gui/BasicElement' {
     /**
         * Represents a html div element.
         * The div is built when an instance of BasicElement is created.
@@ -625,9 +625,9 @@ declare module 'babylonjs-inspector/gui/BasicElement' {
     }
 }
 
-declare module 'babylonjs-inspector/gui/ColorElement' {
+declare module 'babylonjs-inspector/src/gui/ColorElement' {
     import { Color3, Color4 } from "babylonjs";
-    import { BasicElement } from "babylonjs-inspector/gui/BasicElement";
+    import { BasicElement } from "babylonjs-inspector/src/gui/BasicElement";
     /**
      * Display a very small div corresponding to the given color
      */
@@ -637,10 +637,10 @@ declare module 'babylonjs-inspector/gui/ColorElement' {
     }
 }
 
-declare module 'babylonjs-inspector/gui/ColorPickerElement' {
+declare module 'babylonjs-inspector/src/gui/ColorPickerElement' {
     import { Color3, Color4 } from "babylonjs";
-    import { PropertyLine } from "babylonjs-inspector/details/PropertyLine";
-    import { BasicElement } from "babylonjs-inspector/gui/BasicElement";
+    import { PropertyLine } from "babylonjs-inspector/src/details/PropertyLine";
+    import { BasicElement } from "babylonjs-inspector/src/gui/BasicElement";
     /**
       * Represents a html div element.
       * The div is built when an instance of BasicElement is created.
@@ -652,9 +652,9 @@ declare module 'babylonjs-inspector/gui/ColorPickerElement' {
     }
 }
 
-declare module 'babylonjs-inspector/gui/CubeTextureElement' {
+declare module 'babylonjs-inspector/src/gui/CubeTextureElement' {
     import { Mesh, Scene, Texture } from "babylonjs";
-    import { BasicElement } from "babylonjs-inspector/gui/BasicElement";
+    import { BasicElement } from "babylonjs-inspector/src/gui/BasicElement";
     /**
      * Display a very small div. A new canvas is created, with a new js scene, containing only the
      * cube texture in a cube
@@ -673,9 +673,9 @@ declare module 'babylonjs-inspector/gui/CubeTextureElement' {
     }
 }
 
-declare module 'babylonjs-inspector/gui/HDRCubeTextureElement' {
+declare module 'babylonjs-inspector/src/gui/HDRCubeTextureElement' {
     import { Texture } from "babylonjs";
-    import { CubeTextureElement } from "babylonjs-inspector/gui/CubeTextureElement";
+    import { CubeTextureElement } from "babylonjs-inspector/src/gui/CubeTextureElement";
     /**
      * Display a very small div. A new canvas is created, with a new js scene, containing only the
      * cube texture in a cube
@@ -688,10 +688,10 @@ declare module 'babylonjs-inspector/gui/HDRCubeTextureElement' {
     }
 }
 
-declare module 'babylonjs-inspector/gui/SearchBar' {
-    import { DetailPanel } from "babylonjs-inspector/details/DetailPanel";
-    import { PropertyTab } from "babylonjs-inspector/tabs/PropertyTab";
-    import { BasicElement } from "babylonjs-inspector/gui/BasicElement";
+declare module 'babylonjs-inspector/src/gui/SearchBar' {
+    import { DetailPanel } from "babylonjs-inspector/src/details/DetailPanel";
+    import { PropertyTab } from "babylonjs-inspector/src/tabs/PropertyTab";
+    import { BasicElement } from "babylonjs-inspector/src/gui/BasicElement";
     /**
       * A search bar can be used to filter elements in the tree panel.
       * At each keypress on the input, the treepanel will be filtered.
@@ -710,9 +710,9 @@ declare module 'babylonjs-inspector/gui/SearchBar' {
     }
 }
 
-declare module 'babylonjs-inspector/gui/TextureElement' {
+declare module 'babylonjs-inspector/src/gui/TextureElement' {
     import { Texture } from "babylonjs";
-    import { BasicElement } from "babylonjs-inspector/gui/BasicElement";
+    import { BasicElement } from "babylonjs-inspector/src/gui/BasicElement";
     /**
      * Display a very small div corresponding to the given texture. On mouse over, display the full image
      */
@@ -722,7 +722,7 @@ declare module 'babylonjs-inspector/gui/TextureElement' {
     }
 }
 
-declare module 'babylonjs-inspector/gui/Tooltip' {
+declare module 'babylonjs-inspector/src/gui/Tooltip' {
     import { Nullable } from "babylonjs";
     /**
       * Creates a tooltip for the parent of the given html element
@@ -732,9 +732,9 @@ declare module 'babylonjs-inspector/gui/Tooltip' {
     }
 }
 
-declare module 'babylonjs-inspector/helpers/Helpers' {
+declare module 'babylonjs-inspector/src/helpers/Helpers' {
     import { Nullable } from "babylonjs";
-    import { PropertyLine } from "babylonjs-inspector/details/PropertyLine";
+    import { PropertyLine } from "babylonjs-inspector/src/details/PropertyLine";
     export class Helpers {
             /**
                 * Returns the type of the given object. First
@@ -786,8 +786,8 @@ declare module 'babylonjs-inspector/helpers/Helpers' {
     }
 }
 
-declare module 'babylonjs-inspector/scheduler/Scheduler' {
-    import { PropertyLine } from "babylonjs-inspector/details/PropertyLine";
+declare module 'babylonjs-inspector/src/scheduler/Scheduler' {
+    import { PropertyLine } from "babylonjs-inspector/src/details/PropertyLine";
     export class Scheduler {
         /** Is this scheduler in pause ? */
         pause: boolean;
@@ -803,21 +803,21 @@ declare module 'babylonjs-inspector/scheduler/Scheduler' {
     }
 }
 
-declare module 'babylonjs-inspector/tabs/CameraTab' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { TreeItem } from "babylonjs-inspector/tree/TreeItem";
-    import { PropertyTab } from "babylonjs-inspector/tabs/PropertyTab";
-    import { TabBar } from "babylonjs-inspector/tabs/TabBar";
+declare module 'babylonjs-inspector/src/tabs/CameraTab' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { TreeItem } from "babylonjs-inspector/src/tree/TreeItem";
+    import { PropertyTab } from "babylonjs-inspector/src/tabs/PropertyTab";
+    import { TabBar } from "babylonjs-inspector/src/tabs/TabBar";
     export class CameraTab extends PropertyTab {
         constructor(tabbar: TabBar, inspector: Inspector);
         protected _getTree(): Array<TreeItem>;
     }
 }
 
-declare module 'babylonjs-inspector/tabs/ConsoleTab' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { Tab } from "babylonjs-inspector/tabs/Tab";
-    import { TabBar } from "babylonjs-inspector/tabs/TabBar";
+declare module 'babylonjs-inspector/src/tabs/ConsoleTab' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { Tab } from "babylonjs-inspector/src/tabs/Tab";
+    import { TabBar } from "babylonjs-inspector/src/tabs/TabBar";
     /**
       * The console tab will have two features :
       * - hook all console.log call and display them in this panel (and in the browser console as well)
@@ -831,10 +831,10 @@ declare module 'babylonjs-inspector/tabs/ConsoleTab' {
     }
 }
 
-declare module 'babylonjs-inspector/tabs/GLTFTab' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { Tab } from "babylonjs-inspector/tabs/Tab";
-    import { TabBar } from "babylonjs-inspector/tabs/TabBar";
+declare module 'babylonjs-inspector/src/tabs/GLTFTab' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { Tab } from "babylonjs-inspector/src/tabs/Tab";
+    import { TabBar } from "babylonjs-inspector/src/tabs/TabBar";
     export class GLTFTab extends Tab {
         static readonly IsSupported: boolean;
         /** @hidden */
@@ -846,55 +846,55 @@ declare module 'babylonjs-inspector/tabs/GLTFTab' {
     }
 }
 
-declare module 'babylonjs-inspector/tabs/GUITab' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { TreeItem } from "babylonjs-inspector/tree/TreeItem";
-    import { PropertyTab } from "babylonjs-inspector/tabs/PropertyTab";
-    import { TabBar } from "babylonjs-inspector/tabs/TabBar";
+declare module 'babylonjs-inspector/src/tabs/GUITab' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { TreeItem } from "babylonjs-inspector/src/tree/TreeItem";
+    import { PropertyTab } from "babylonjs-inspector/src/tabs/PropertyTab";
+    import { TabBar } from "babylonjs-inspector/src/tabs/TabBar";
     export class GUITab extends PropertyTab {
         constructor(tabbar: TabBar, inspector: Inspector);
         protected _getTree(): Array<TreeItem>;
     }
 }
 
-declare module 'babylonjs-inspector/tabs/LightTab' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { TreeItem } from "babylonjs-inspector/tree/TreeItem";
-    import { PropertyTab } from "babylonjs-inspector/tabs/PropertyTab";
-    import { TabBar } from "babylonjs-inspector/tabs/TabBar";
+declare module 'babylonjs-inspector/src/tabs/LightTab' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { TreeItem } from "babylonjs-inspector/src/tree/TreeItem";
+    import { PropertyTab } from "babylonjs-inspector/src/tabs/PropertyTab";
+    import { TabBar } from "babylonjs-inspector/src/tabs/TabBar";
     export class LightTab extends PropertyTab {
         constructor(tabbar: TabBar, inspector: Inspector);
         protected _getTree(): Array<TreeItem>;
     }
 }
 
-declare module 'babylonjs-inspector/tabs/MaterialTab' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { TreeItem } from "babylonjs-inspector/tree/TreeItem";
-    import { PropertyTab } from "babylonjs-inspector/tabs/PropertyTab";
-    import { TabBar } from "babylonjs-inspector/tabs/TabBar";
+declare module 'babylonjs-inspector/src/tabs/MaterialTab' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { TreeItem } from "babylonjs-inspector/src/tree/TreeItem";
+    import { PropertyTab } from "babylonjs-inspector/src/tabs/PropertyTab";
+    import { TabBar } from "babylonjs-inspector/src/tabs/TabBar";
     export class MaterialTab extends PropertyTab {
         constructor(tabbar: TabBar, inspector: Inspector);
         protected _getTree(): Array<TreeItem>;
     }
 }
 
-declare module 'babylonjs-inspector/tabs/MeshTab' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { TreeItem } from "babylonjs-inspector/tree/TreeItem";
-    import { PropertyTab } from "babylonjs-inspector/tabs/PropertyTab";
-    import { TabBar } from "babylonjs-inspector/tabs/TabBar";
+declare module 'babylonjs-inspector/src/tabs/MeshTab' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { TreeItem } from "babylonjs-inspector/src/tree/TreeItem";
+    import { PropertyTab } from "babylonjs-inspector/src/tabs/PropertyTab";
+    import { TabBar } from "babylonjs-inspector/src/tabs/TabBar";
     export class MeshTab extends PropertyTab {
         constructor(tabbar: TabBar, inspector: Inspector);
         protected _getTree(): Array<TreeItem>;
     }
 }
 
-declare module 'babylonjs-inspector/tabs/PhysicsTab' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { TreeItem } from "babylonjs-inspector/tree/TreeItem";
-    import { PropertyTab } from "babylonjs-inspector/tabs/PropertyTab";
-    import { TabBar } from "babylonjs-inspector/tabs/TabBar";
+declare module 'babylonjs-inspector/src/tabs/PhysicsTab' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { TreeItem } from "babylonjs-inspector/src/tree/TreeItem";
+    import { PropertyTab } from "babylonjs-inspector/src/tabs/PropertyTab";
+    import { TabBar } from "babylonjs-inspector/src/tabs/TabBar";
     export class PhysicsTab extends PropertyTab {
         viewer: any;
         constructor(tabbar: TabBar, inspector: Inspector);
@@ -902,14 +902,14 @@ declare module 'babylonjs-inspector/tabs/PhysicsTab' {
     }
 }
 
-declare module 'babylonjs-inspector/tabs/PropertyTab' {
+declare module 'babylonjs-inspector/src/tabs/PropertyTab' {
     import { Nullable } from "babylonjs";
-    import { DetailPanel } from "babylonjs-inspector/details/DetailPanel";
-    import { SearchBar } from "babylonjs-inspector/gui/SearchBar";
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { TreeItem } from "babylonjs-inspector/tree/TreeItem";
-    import { Tab } from "babylonjs-inspector/tabs/Tab";
-    import { TabBar } from "babylonjs-inspector/tabs/TabBar";
+    import { DetailPanel } from "babylonjs-inspector/src/details/DetailPanel";
+    import { SearchBar } from "babylonjs-inspector/src/gui/SearchBar";
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { TreeItem } from "babylonjs-inspector/src/tree/TreeItem";
+    import { Tab } from "babylonjs-inspector/src/tabs/Tab";
+    import { TabBar } from "babylonjs-inspector/src/tabs/TabBar";
     /**
       * A Property tab can creates two panels:
       * a tree panel and a detail panel,
@@ -942,10 +942,10 @@ declare module 'babylonjs-inspector/tabs/PropertyTab' {
     }
 }
 
-declare module 'babylonjs-inspector/tabs/SceneTab' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { Tab } from "babylonjs-inspector/tabs/Tab";
-    import { TabBar } from "babylonjs-inspector/tabs/TabBar";
+declare module 'babylonjs-inspector/src/tabs/SceneTab' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { Tab } from "babylonjs-inspector/src/tabs/Tab";
+    import { TabBar } from "babylonjs-inspector/src/tabs/TabBar";
     export class SceneTab extends Tab {
             constructor(tabbar: TabBar, insp: Inspector);
             /** Overrides super.dispose */
@@ -953,21 +953,21 @@ declare module 'babylonjs-inspector/tabs/SceneTab' {
     }
 }
 
-declare module 'babylonjs-inspector/tabs/SoundTab' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { TreeItem } from "babylonjs-inspector/tree/TreeItem";
-    import { PropertyTab } from "babylonjs-inspector/tabs/PropertyTab";
-    import { TabBar } from "babylonjs-inspector/tabs/TabBar";
+declare module 'babylonjs-inspector/src/tabs/SoundTab' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { TreeItem } from "babylonjs-inspector/src/tree/TreeItem";
+    import { PropertyTab } from "babylonjs-inspector/src/tabs/PropertyTab";
+    import { TabBar } from "babylonjs-inspector/src/tabs/TabBar";
     export class SoundTab extends PropertyTab {
         constructor(tabbar: TabBar, inspector: Inspector);
         protected _getTree(): Array<TreeItem>;
     }
 }
 
-declare module 'babylonjs-inspector/tabs/StatsTab' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { Tab } from "babylonjs-inspector/tabs/Tab";
-    import { TabBar } from "babylonjs-inspector/tabs/TabBar";
+declare module 'babylonjs-inspector/src/tabs/StatsTab' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { Tab } from "babylonjs-inspector/src/tabs/Tab";
+    import { TabBar } from "babylonjs-inspector/src/tabs/TabBar";
     export class StatsTab extends Tab {
         constructor(tabbar: TabBar, insp: Inspector);
         dispose(): void;
@@ -975,10 +975,10 @@ declare module 'babylonjs-inspector/tabs/StatsTab' {
     }
 }
 
-declare module 'babylonjs-inspector/tabs/Tab' {
-    import { BasicElement } from "babylonjs-inspector/gui/BasicElement";
-    import { TreeItem } from "babylonjs-inspector/tree/TreeItem";
-    import { TabBar } from "babylonjs-inspector/tabs/TabBar";
+declare module 'babylonjs-inspector/src/tabs/Tab' {
+    import { BasicElement } from "babylonjs-inspector/src/gui/BasicElement";
+    import { TreeItem } from "babylonjs-inspector/src/tree/TreeItem";
+    import { TabBar } from "babylonjs-inspector/src/tabs/TabBar";
     export abstract class Tab extends BasicElement {
             protected _tabbar: TabBar;
             name: string;
@@ -1006,11 +1006,11 @@ declare module 'babylonjs-inspector/tabs/Tab' {
     }
 }
 
-declare module 'babylonjs-inspector/tabs/TabBar' {
+declare module 'babylonjs-inspector/src/tabs/TabBar' {
     import { AbstractMesh, Nullable } from "babylonjs";
-    import { BasicElement } from "babylonjs-inspector/gui/BasicElement";
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { Tab } from "babylonjs-inspector/tabs/Tab";
+    import { BasicElement } from "babylonjs-inspector/src/gui/BasicElement";
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { Tab } from "babylonjs-inspector/src/tabs/Tab";
     /**
         * A tab bar will contains each view the inspector can have : Canvas2D, Meshes...
         * The default active tab is the first one of the list.
@@ -1042,12 +1042,12 @@ declare module 'babylonjs-inspector/tabs/TabBar' {
     }
 }
 
-declare module 'babylonjs-inspector/tabs/TextureTab' {
-    import { TextureAdapter } from "babylonjs-inspector/adapters/TextureAdapter";
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { TreeItem } from "babylonjs-inspector/tree/TreeItem";
-    import { Tab } from "babylonjs-inspector/tabs/Tab";
-    import { TabBar } from "babylonjs-inspector/tabs/TabBar";
+declare module 'babylonjs-inspector/src/tabs/TextureTab' {
+    import { TextureAdapter } from "babylonjs-inspector/src/adapters/TextureAdapter";
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { TreeItem } from "babylonjs-inspector/src/tree/TreeItem";
+    import { Tab } from "babylonjs-inspector/src/tabs/Tab";
+    import { TabBar } from "babylonjs-inspector/src/tabs/TabBar";
     export class TextureTab extends Tab {
         static DDSPreview: DDSPreview;
         /** The panel containing a list of items */
@@ -1072,18 +1072,18 @@ declare module 'babylonjs-inspector/tabs/TextureTab' {
     export {};
 }
 
-declare module 'babylonjs-inspector/tabs/ToolsTab' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { Tab } from "babylonjs-inspector/tabs/Tab";
-    import { TabBar } from "babylonjs-inspector/tabs/TabBar";
+declare module 'babylonjs-inspector/src/tabs/ToolsTab' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { Tab } from "babylonjs-inspector/src/tabs/Tab";
+    import { TabBar } from "babylonjs-inspector/src/tabs/TabBar";
     export class ToolsTab extends Tab {
         constructor(tabbar: TabBar, insp: Inspector);
         dispose(): void;
     }
 }
 
-declare module 'babylonjs-inspector/tools/AbstractTool' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
+declare module 'babylonjs-inspector/src/tools/AbstractTool' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
     export abstract class AbstractTool {
             protected _inspector: Inspector;
             constructor(iconSet: string, icon: string, parent: HTMLElement, inspector: Inspector, tooltip: string);
@@ -1100,9 +1100,9 @@ declare module 'babylonjs-inspector/tools/AbstractTool' {
     }
 }
 
-declare module 'babylonjs-inspector/tools/DisposeTool' {
-    import { AbstractTool } from "babylonjs-inspector/tools/AbstractTool";
-    import { Inspector } from "babylonjs-inspector/Inspector";
+declare module 'babylonjs-inspector/src/tools/DisposeTool' {
+    import { AbstractTool } from "babylonjs-inspector/src/tools/AbstractTool";
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
     /**
       * Removes the inspector panel
       */
@@ -1112,18 +1112,18 @@ declare module 'babylonjs-inspector/tools/DisposeTool' {
     }
 }
 
-declare module 'babylonjs-inspector/tools/FullscreenTool' {
-    import { AbstractTool } from "babylonjs-inspector/tools/AbstractTool";
-    import { Inspector } from "babylonjs-inspector/Inspector";
+declare module 'babylonjs-inspector/src/tools/FullscreenTool' {
+    import { AbstractTool } from "babylonjs-inspector/src/tools/AbstractTool";
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
     export class FullscreenTool extends AbstractTool {
         constructor(parent: HTMLElement, inspector: Inspector);
         action(): void;
     }
 }
 
-declare module 'babylonjs-inspector/tools/LabelTool' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { AbstractTool } from "babylonjs-inspector/tools/AbstractTool";
+declare module 'babylonjs-inspector/src/tools/LabelTool' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { AbstractTool } from "babylonjs-inspector/src/tools/AbstractTool";
     export class LabelTool extends AbstractTool {
         constructor(parent: HTMLElement, inspector: Inspector);
         dispose(): void;
@@ -1131,45 +1131,45 @@ declare module 'babylonjs-inspector/tools/LabelTool' {
     }
 }
 
-declare module 'babylonjs-inspector/tools/PauseScheduleTool' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { AbstractTool } from "babylonjs-inspector/tools/AbstractTool";
+declare module 'babylonjs-inspector/src/tools/PauseScheduleTool' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { AbstractTool } from "babylonjs-inspector/src/tools/AbstractTool";
     export class PauseScheduleTool extends AbstractTool {
         constructor(parent: HTMLElement, inspector: Inspector);
         action(): void;
     }
 }
 
-declare module 'babylonjs-inspector/tools/PickTool' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { AbstractTool } from "babylonjs-inspector/tools/AbstractTool";
+declare module 'babylonjs-inspector/src/tools/PickTool' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { AbstractTool } from "babylonjs-inspector/src/tools/AbstractTool";
     export class PickTool extends AbstractTool {
         constructor(parent: HTMLElement, inspector: Inspector);
         action(): void;
     }
 }
 
-declare module 'babylonjs-inspector/tools/PopupTool' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { AbstractTool } from "babylonjs-inspector/tools/AbstractTool";
+declare module 'babylonjs-inspector/src/tools/PopupTool' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { AbstractTool } from "babylonjs-inspector/src/tools/AbstractTool";
     export class PopupTool extends AbstractTool {
         constructor(parent: HTMLElement, inspector: Inspector);
         action(): void;
     }
 }
 
-declare module 'babylonjs-inspector/tools/RefreshTool' {
-    import { Inspector } from "babylonjs-inspector/Inspector";
-    import { AbstractTool } from "babylonjs-inspector/tools/AbstractTool";
+declare module 'babylonjs-inspector/src/tools/RefreshTool' {
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
+    import { AbstractTool } from "babylonjs-inspector/src/tools/AbstractTool";
     export class RefreshTool extends AbstractTool {
         constructor(parent: HTMLElement, inspector: Inspector);
         action(): void;
     }
 }
 
-declare module 'babylonjs-inspector/tools/Toolbar' {
-    import { BasicElement } from "babylonjs-inspector/gui/BasicElement";
-    import { Inspector } from "babylonjs-inspector/Inspector";
+declare module 'babylonjs-inspector/src/tools/Toolbar' {
+    import { BasicElement } from "babylonjs-inspector/src/gui/BasicElement";
+    import { Inspector } from "babylonjs-inspector/src/Inspector";
     export class Toolbar extends BasicElement {
         constructor(inspector: Inspector);
         update(): void;
@@ -1182,11 +1182,11 @@ declare module 'babylonjs-inspector/tools/Toolbar' {
     }
 }
 
-declare module 'babylonjs-inspector/tree/TreeItem' {
-    import { BasicElement } from "babylonjs-inspector/gui/BasicElement";
-    import { Tab } from "babylonjs-inspector/tabs/Tab";
-    import { Adapter } from "babylonjs-inspector/adapters/Adapter";
-    import { PropertyLine } from "babylonjs-inspector/details/PropertyLine";
+declare module 'babylonjs-inspector/src/tree/TreeItem' {
+    import { BasicElement } from "babylonjs-inspector/src/gui/BasicElement";
+    import { Tab } from "babylonjs-inspector/src/tabs/Tab";
+    import { Adapter } from "babylonjs-inspector/src/adapters/Adapter";
+    import { PropertyLine } from "babylonjs-inspector/src/details/PropertyLine";
     export class TreeItem extends BasicElement {
             children: Array<TreeItem>;
             constructor(tab: Tab, obj: Adapter);
@@ -1227,7 +1227,7 @@ declare module 'babylonjs-inspector/tree/TreeItem' {
     }
 }
 
-declare module 'babylonjs-inspector/treetools/AbstractTreeTool' {
+declare module 'babylonjs-inspector/src/treetools/AbstractTreeTool' {
     export abstract class AbstractTreeTool {
             protected _elem: HTMLElement;
             /** Is the tool enabled ? */
@@ -1243,8 +1243,8 @@ declare module 'babylonjs-inspector/treetools/AbstractTreeTool' {
     }
 }
 
-declare module 'babylonjs-inspector/treetools/BoundingBox' {
-    import { AbstractTreeTool } from "babylonjs-inspector/treetools/AbstractTreeTool";
+declare module 'babylonjs-inspector/src/treetools/BoundingBox' {
+    import { AbstractTreeTool } from "babylonjs-inspector/src/treetools/AbstractTreeTool";
     /** Any object implementing this interface should
         * provide methods to toggle its bounding box
         */
@@ -1261,8 +1261,8 @@ declare module 'babylonjs-inspector/treetools/BoundingBox' {
     }
 }
 
-declare module 'babylonjs-inspector/treetools/CameraPOV' {
-    import { AbstractTreeTool } from "babylonjs-inspector/treetools/AbstractTreeTool";
+declare module 'babylonjs-inspector/src/treetools/CameraPOV' {
+    import { AbstractTreeTool } from "babylonjs-inspector/src/treetools/AbstractTreeTool";
     export interface ICameraPOV {
         setPOV: () => void;
         getCurrentActiveCamera: () => string;
@@ -1277,8 +1277,8 @@ declare module 'babylonjs-inspector/treetools/CameraPOV' {
     }
 }
 
-declare module 'babylonjs-inspector/treetools/Checkbox' {
-    import { AbstractTreeTool } from "babylonjs-inspector/treetools/AbstractTreeTool";
+declare module 'babylonjs-inspector/src/treetools/Checkbox' {
+    import { AbstractTreeTool } from "babylonjs-inspector/src/treetools/AbstractTreeTool";
     /** Any object implementing this interface should
         * provide methods to toggle its visibility
         */
@@ -1295,8 +1295,8 @@ declare module 'babylonjs-inspector/treetools/Checkbox' {
     }
 }
 
-declare module 'babylonjs-inspector/treetools/DebugArea' {
-    import { AbstractTreeTool } from "babylonjs-inspector/treetools/AbstractTreeTool";
+declare module 'babylonjs-inspector/src/treetools/DebugArea' {
+    import { AbstractTreeTool } from "babylonjs-inspector/src/treetools/AbstractTreeTool";
     /** Any object implementing this interface should
       * provide methods to toggle a debug area
       */
@@ -1309,8 +1309,8 @@ declare module 'babylonjs-inspector/treetools/DebugArea' {
     }
 }
 
-declare module 'babylonjs-inspector/treetools/Info' {
-    import { AbstractTreeTool } from "babylonjs-inspector/treetools/AbstractTreeTool";
+declare module 'babylonjs-inspector/src/treetools/Info' {
+    import { AbstractTreeTool } from "babylonjs-inspector/src/treetools/AbstractTreeTool";
     /** Any object implementing this interface should
         * provide methods to retrieve its info
         */
@@ -1326,8 +1326,8 @@ declare module 'babylonjs-inspector/treetools/Info' {
     }
 }
 
-declare module 'babylonjs-inspector/treetools/SoundInteractions' {
-    import { AbstractTreeTool } from "babylonjs-inspector/treetools/AbstractTreeTool";
+declare module 'babylonjs-inspector/src/treetools/SoundInteractions' {
+    import { AbstractTreeTool } from "babylonjs-inspector/src/treetools/AbstractTreeTool";
     export interface ISoundInteractions {
         setPlaying: (callback: Function) => void;
     }
@@ -1344,26 +1344,6 @@ declare module 'babylonjs-inspector/treetools/SoundInteractions' {
 /*BabylonJS Inspector*/
 // Dependencies for this module:
 //   ../../../../Tools/Gulp/babylonjs
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
 declare module INSPECTOR {
     export class Inspector {
             /** The HTML document relative to this inspector (the window or the popup depending on its mode) */

@@ -64,7 +64,7 @@ float invmax=inversesqrt(max(dot(tangent,tangent),dot(binormal,binormal)));
 return mat3(tangent*invmax,binormal*invmax,normal);
 }
 vec3 perturbNormal(vec3 viewDir,vec3 mixColor)
-{ 
+{
 vec3 bump1Color=texture2D(bump1Sampler,vTextureUV*diffuse1Infos).xyz;
 vec3 bump2Color=texture2D(bump2Sampler,vTextureUV*diffuse2Infos).xyz;
 vec3 bump3Color=texture2D(bump3Sampler,vTextureUV*diffuse3Infos).xyz;

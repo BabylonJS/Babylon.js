@@ -33,7 +33,7 @@ albedo=clamp(albedo+hoverColor.rgb*pointToHover,0.,1.);
 #else
 float pointToHover=1.0;
 #endif
-#ifdef BORDER 
+#ifdef BORDER
 float borderPower=10.0;
 float inverseBorderPower=1.0/borderPower;
 vec3 borderColor=albedo*borderPower;
@@ -42,7 +42,7 @@ distanceToEdge.x=abs(vUV.x-0.5)*2.0;
 distanceToEdge.y=abs(vUV.y-0.5)*2.0;
 float borderValue=max(smoothstep(scaleInfo.x-edgeSmoothingValue,scaleInfo.x+edgeSmoothingValue,distanceToEdge.x),
 smoothstep(scaleInfo.y-edgeSmoothingValue,scaleInfo.y+edgeSmoothingValue,distanceToEdge.y));
-borderColor=borderColor*borderValue*max(borderMinValue*inverseBorderPower,pointToHover); 
+borderColor=borderColor*borderValue*max(borderMinValue*inverseBorderPower,pointToHover);
 albedo+=borderColor;
 alpha=max(alpha,borderValue);
 #endif
@@ -51,7 +51,7 @@ alpha=max(alpha,borderValue);
 vec2 uvGlow=(vUV-vec2(0.5,0.5))*(innerGlowColor.a*2.0);
 uvGlow=uvGlow*uvGlow;
 uvGlow=uvGlow*uvGlow;
-albedo+=mix(vec3(0.0,0.0,0.0),innerGlowColor.rgb,uvGlow.x+uvGlow.y); 
+albedo+=mix(vec3(0.0,0.0,0.0),innerGlowColor.rgb,uvGlow.x+uvGlow.y);
 #endif
 gl_FragColor=vec4(albedo,alpha);
 }`;

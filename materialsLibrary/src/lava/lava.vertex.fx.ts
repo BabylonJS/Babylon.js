@@ -70,12 +70,12 @@ return t*t*t*(t*(t*6.0-15.0)+10.0);
 
 float pnoise(vec3 P,vec3 rep)
 {
-vec3 Pi0=mod(floor(P),rep); 
-vec3 Pi1=mod(Pi0+vec3(1.0),rep); 
+vec3 Pi0=mod(floor(P),rep);
+vec3 Pi1=mod(Pi0+vec3(1.0),rep);
 Pi0=mod289(Pi0);
 Pi1=mod289(Pi1);
-vec3 Pf0=fract(P); 
-vec3 Pf1=Pf0-vec3(1.0); 
+vec3 Pf0=fract(P);
+vec3 Pf1=Pf0-vec3(1.0);
 vec4 ix=vec4(Pi0.x,Pi1.x,Pi0.x,Pi1.x);
 vec4 iy=vec4(Pi0.yy,Pi1.yy);
 vec4 iz0=Pi0.zzzz;

@@ -24,7 +24,8 @@
         "**/*.js.fx": true,
         "**/*.js": {
             "when": "$(basename).ts"
-        }
+        },
+        "**/*.fx.ts": true,
     },
     "files.associations": {
         "*.fx": "glsl"
@@ -41,6 +42,7 @@
             "when": "$(basename).ts"
         },
         "**/*.d.ts": true,
+        "**/*.fx.ts": true,
         "assets": true
     },
     "editor.tabSize": 4,

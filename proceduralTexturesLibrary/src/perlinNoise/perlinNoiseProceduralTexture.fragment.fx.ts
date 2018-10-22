@@ -16,7 +16,7 @@ return fract(cos(n*89.42)*343.42);
 }
 vec2 r(vec2 n)
 {
-return vec2(r(n.x*23.62-300.0+n.y*34.35),r(n.x*45.13+256.0+n.y*38.89)); 
+return vec2(r(n.x*23.62-300.0+n.y*34.35),r(n.x*45.13+256.0+n.y*38.89));
 }
 float worley(vec2 n,float s)
 {

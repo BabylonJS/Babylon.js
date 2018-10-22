@@ -28,8 +28,8 @@ float minOverMiddleScale=minScale/(scale.x+scale.y+scale.z-minScale-maxScale);
 float areaYZ=scale.y*scale.z;
 float areaXZ=scale.x*scale.z;
 float areaXY=scale.x*scale.y;
-float scaledBorderWidth=borderWidth; 
-if (abs(normal.x) == 1.0) 
+float scaledBorderWidth=borderWidth;
+if (abs(normal.x) == 1.0)
 {
 scale.x=scale.y;
 scale.y=scale.z;
@@ -38,7 +38,7 @@ if (areaYZ>areaXZ && areaYZ>areaXY)
 scaledBorderWidth*=minOverMiddleScale;
 }
 }
-else if (abs(normal.y) == 1.0) 
+else if (abs(normal.y) == 1.0)
 {
 scale.x=scale.z;
 if (areaXZ>areaXY && areaXZ>areaYZ)
@@ -46,7 +46,7 @@ if (areaXZ>areaXY && areaXZ>areaYZ)
 scaledBorderWidth*=minOverMiddleScale;
 }
 }
-else 
+else
 {
 if (areaXY>areaYZ && areaXY>areaXZ)
 {
@@ -63,8 +63,8 @@ else
 {
 scaleInfo.x=1.0-scaledBorderWidth;
 scaleInfo.y=1.0-(scaledBorderWidth*scaleRatio);
-} 
-#endif 
+}
+#endif
 vec4 worldPos=world*vec4(position,1.0);
 #ifdef HOVERLIGHT
 worldPosition=worldPos.xyz;
