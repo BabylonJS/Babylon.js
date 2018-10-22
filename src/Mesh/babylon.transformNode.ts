@@ -89,7 +89,7 @@ module BABYLON {
         private _absolutePosition = Vector3.Zero();
         private _pivotMatrix = Matrix.Identity();
         private _pivotMatrixInverse: Matrix;
-        private _postMultiplyPivotMatrix = false;
+        protected _postMultiplyPivotMatrix = false;
 
         protected _isWorldMatrixFrozen = false;
 
@@ -120,7 +120,7 @@ module BABYLON {
         /**
           * Gets or set the node position (default is (0.0, 0.0, 0.0))
           */
-         public get position(): Vector3 {
+        public get position(): Vector3 {
             return this._position;
         }
 
@@ -269,11 +269,11 @@ module BABYLON {
             this._cache.billboardMode = -1;
         }
 
-         /**
-         * Flag the transform node as dirty (Forcing it to update everything)
-         * @param property if set to "rotation" the objects rotationQuaternion will be set to null
-         * @returns this transform node
-         */
+        /**
+        * Flag the transform node as dirty (Forcing it to update everything)
+        * @param property if set to "rotation" the objects rotationQuaternion will be set to null
+        * @returns this transform node
+        */
         public markAsDirty(property: string): TransformNode {
             if (property === "rotation") {
                 this.rotationQuaternion = null;
