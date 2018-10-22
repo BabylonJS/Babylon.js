@@ -25,8 +25,8 @@
         "**/*.js": {
             "when": "$(basename).ts"
         },
-        "**/*.fragment.ts": false,
-        "**/*.vertex.ts": false
+        "**/*.fragment.ts": true,
+        "**/*.vertex.ts": true
     },
     "files.associations": {
         "*.fx": "glsl"
