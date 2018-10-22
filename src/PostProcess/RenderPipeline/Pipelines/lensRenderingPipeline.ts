@@ -1,5 +1,4 @@
 
-
 /**
  * BABYLON.JS Chromatic Aberration GLSL Shader
  * Author: Olivier Guyot

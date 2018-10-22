@@ -1,4 +1,3 @@
-
 /**
  * Defines the WebVRController object that represents controllers tracked in 3D space
  */
@@ -156,4 +155,3 @@ export abstract class WebVRController extends PoseEnabledController {
         this.onPadValuesChangedObservable.clear();
     }
 }
-

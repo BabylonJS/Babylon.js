@@ -1,5 +1,4 @@
 
-
 /**
  * Scalar computation library
  */

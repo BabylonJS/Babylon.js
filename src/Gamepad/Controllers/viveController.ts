@@ -109,4 +109,3 @@ export class ViveController extends WebVRController {
         }
     }
 }
-

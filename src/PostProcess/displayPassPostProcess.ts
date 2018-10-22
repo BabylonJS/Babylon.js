@@ -1,4 +1,3 @@
-﻿
 
 /**
  * DisplayPassPostProcess which produces an output the same as it's input

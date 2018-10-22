@@ -154,4 +154,3 @@ export interface IPhysicsEngine {
      */
     _step(delta: number): void;
 }
-

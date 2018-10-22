@@ -1,5 +1,4 @@
 
-
 /**
  * Interface for Physics-Joint data
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine

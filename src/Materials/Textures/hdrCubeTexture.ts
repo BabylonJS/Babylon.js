@@ -1,5 +1,4 @@
 
-
 /**
  * This represents a texture coming from an HDR input.
  *

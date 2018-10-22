@@ -317,4 +317,3 @@ export class StateCondition extends Condition {
         });
     }
 }
-

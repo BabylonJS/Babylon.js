@@ -1,5 +1,4 @@
 
-
 // Static values to help the garbage collector
 
 // Quaternion

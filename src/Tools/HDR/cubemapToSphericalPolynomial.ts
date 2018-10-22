@@ -1,5 +1,4 @@
 
-
 class FileFaceOrientation {
     public name: string;
     public worldAxisForNormal: Vector3; // the world axis corresponding to the normal to the face

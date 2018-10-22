@@ -177,4 +177,3 @@ export class OculusTouchController extends WebVRController {
     }
 
 }
-

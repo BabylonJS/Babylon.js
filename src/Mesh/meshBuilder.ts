@@ -1,5 +1,4 @@
 
-
 /**
  * Class containing static functions to help procedurally build meshes
  */

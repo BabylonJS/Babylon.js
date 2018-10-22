@@ -1,5 +1,4 @@
 
-
 /**
  * A class serves as a medium between the observable and its observers
  */
@@ -426,4 +425,3 @@ export class Observable<T> {
         return false;
     }
 }
-

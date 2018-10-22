@@ -1,5 +1,4 @@
 
-
 /**
  *
  * This post-process allows the modification of rendered colors by using

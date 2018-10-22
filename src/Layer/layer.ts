@@ -1,5 +1,4 @@
 
-
 /**
  * This represents a full screen 2d layer.
  * This can be usefull to display a picture in the  background of your scene for instance.

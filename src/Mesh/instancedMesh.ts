@@ -1,5 +1,4 @@
 
-
 /**
  * Creates an instance based on a source mesh.
  */

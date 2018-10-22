@@ -1,5 +1,4 @@
 
-
 /**
  * Defines supported buttons for XBox360 compatible gamepads
  */

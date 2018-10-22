@@ -1,5 +1,4 @@
 
-
 /**
  * Post process used to render in black and white
  */

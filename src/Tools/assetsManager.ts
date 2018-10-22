@@ -1,5 +1,4 @@
 
-
 /**
  * Defines the list of states available for a task inside a AssetsManager
  */

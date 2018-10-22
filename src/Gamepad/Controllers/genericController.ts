@@ -46,4 +46,3 @@ export class GenericController extends WebVRController {
         console.dir(state);
     }
 }
-

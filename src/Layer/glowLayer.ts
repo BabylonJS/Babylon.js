@@ -1,5 +1,4 @@
 
-
 export interface AbstractScene {
     /**
      * Return a the first highlight layer of the scene with a given name.

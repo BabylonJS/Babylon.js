@@ -1,5 +1,3 @@
-
-
 /**
  * Defines how a node can be built from a string name.
  */

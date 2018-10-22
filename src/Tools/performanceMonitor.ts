@@ -1,5 +1,4 @@
 
-
 /**
 	 * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
 	 */
@@ -223,4 +222,3 @@ export class RollingAverage {
     }
 
 }
-

@@ -49,7 +49,6 @@ new(stream: MediaStream, options?: MediaRecorderOptions): MediaRecorder;
  */
 declare var MediaRecorder: MediaRecorderConstructor;
 
-
 /**
  * This represents the different options avilable for the video capture.
  */

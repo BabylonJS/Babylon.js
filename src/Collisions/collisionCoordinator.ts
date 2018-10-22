@@ -1,5 +1,4 @@
 
-
 //WebWorker code will be inserted to this variable.
 /** @hidden */
 export var CollisionWorker = "";

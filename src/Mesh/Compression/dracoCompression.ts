@@ -1,7 +1,6 @@
 declare var DracoDecoderModule: any;
 declare var WebAssembly: any;
 
-
 /**
  * Configuration for Draco compression
  */

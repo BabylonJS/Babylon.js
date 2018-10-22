@@ -3,8 +3,6 @@ declare function importScripts(...urls: string[]): void;
 // since typescript doesn't understand the file's execution context, we need to override postMessage's signature for error-free compilation
 const safePostMessage: any = self.postMessage;
 
-
-
 //If this file is included in the main thread, this will be initialized.
 /** @hidden */
 export var WorkerIncluded: boolean = true;

@@ -1,5 +1,4 @@
 
-
 /**
  * Interface used to present a loading screen while loading a scene
  * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
@@ -189,4 +188,3 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         this._loadingDiv.style.height = canvasRect.height + "px";
     }
 }
-
