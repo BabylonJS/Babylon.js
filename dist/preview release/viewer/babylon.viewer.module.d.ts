@@ -1010,8 +1010,7 @@ declare module 'babylonjs-viewer/initializer' {
 }
 
 declare module 'babylonjs-viewer/configuration' {
-    export * from 'babylonjs-viewer/configuration/configuration';
-    export * from 'babylonjs-viewer/configuration/interfaces';
+    
 }
 
 declare module 'babylonjs-viewer/configuration/configuration' {
@@ -1847,7 +1846,16 @@ declare module 'babylonjs-viewer/loader/plugins/msftLodLoaderPlugin' {
 }
 
 declare module 'babylonjs-viewer/loader/plugins/applyMaterialConfig' {
-    
+    import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, Material } from 'babylonjs';
+    import { ViewerModel } from 'babylonjs-viewer/model/viewerModel';
+    import { ILoaderPlugin } from 'babylonjs-viewer/loader/plugins/loaderPlugin';
+    /**
+      * Force-apply material configuration right after a material was loaded.
+      */
+    export class ApplyMaterialConfigPlugin implements ILoaderPlugin {
+        onInit(loader: ISceneLoaderPlugin | ISceneLoaderPluginAsync, model: ViewerModel): void;
+        onMaterialLoaded(material: Material): void;
+    }
 }
 
 declare module 'babylonjs-viewer/loader/plugins/extendedMaterialLoaderPlugin' {
