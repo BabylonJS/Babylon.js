@@ -5,7 +5,7 @@ function parse(loader, source, context, cb) {
     var imports = [];
     var importPattern = /@import ([.\/\w_-]+);/gi;
     var match = importPattern.exec(source);
-     while (match != null) {
+    while (match != null) {
         imports.push({
             key: match[1],
             target: match[0],
@@ -95,7 +95,7 @@ function processImports(loader, source, context, imports, cb) {
             if (err) {
                 return cb(err);
             }
-             parse(loader, src, path.dirname(resolved), function (err, bld) {
+            parse(loader, src, path.dirname(resolved), function (err, bld) {
                 if (err) {
                     return cb(err);
                 }
