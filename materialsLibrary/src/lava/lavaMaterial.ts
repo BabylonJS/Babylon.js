@@ -1,7 +1,7 @@
-import { Effect, MaterialDefines, PushMaterial, serializeAsTexture, BaseTexture, expandToProperty, serializeAsColor3, Color3, serialize, Scene, Nullable, AbstractMesh, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
+import { MaterialDefines, PushMaterial, serializeAsTexture, BaseTexture, expandToProperty, serializeAsColor3, Color3, serialize, Scene, Nullable, AbstractMesh, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
 
-Effect.ShadersStore["lavaPixelShader"] = require("./lava.fragment.fx");
-Effect.ShadersStore["lavaVertexShader"] = require("./lava.vertex.fx");
+import "./lava.fragment.fx";
+import "./lava.vertex.fx";
 
 class LavaMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;

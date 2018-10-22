@@ -1,7 +1,7 @@
-import { Effect, MaterialDefines, PushMaterial, serializeAsTexture, BaseTexture, expandToProperty, serializeAsColor3, Color3, serialize, serializeAsVector3, Vector3, DynamicTexture, AbstractMesh, Scene, Nullable, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper, Texture, Tags } from "babylonjs";
+import { MaterialDefines, PushMaterial, serializeAsTexture, BaseTexture, expandToProperty, serializeAsColor3, Color3, serialize, serializeAsVector3, Vector3, DynamicTexture, AbstractMesh, Scene, Nullable, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper, Texture, Tags } from "babylonjs";
 
-Effect.ShadersStore["furPixelShader"] = require("./fur.fragment.fx");
-Effect.ShadersStore["furVertexShader"] = require("./fur.vertex.fx");
+import "./fur.fragment.fx";
+import "./fur.vertex.fx";
 
 class FurMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;

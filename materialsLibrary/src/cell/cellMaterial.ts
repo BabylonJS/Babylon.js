@@ -1,7 +1,7 @@
-import { Effect, MaterialDefines, PushMaterial, serializeAsTexture, expandToProperty, BaseTexture, serializeAsColor3, Scene, Color3, serialize, AbstractMesh, Nullable, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
+import { MaterialDefines, PushMaterial, serializeAsTexture, expandToProperty, BaseTexture, serializeAsColor3, Scene, Color3, serialize, AbstractMesh, Nullable, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
 
-Effect.ShadersStore["cellPixelShader"] = require("./cell.fragment.fx");
-Effect.ShadersStore["cellVertexShader"] = require("./cell.vertex.fx");
+import "./cell.fragment.fx";
+import "./cell.vertex.fx";
 
 class CellMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;

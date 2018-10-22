@@ -1,7 +1,7 @@
-import { Effect, MaterialDefines, PushMaterial, serialize, expandToProperty, serializeAsColor3, Color3, Scene, Nullable, BaseTexture, AbstractMesh, SubMesh, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
+import { MaterialDefines, PushMaterial, serialize, expandToProperty, serializeAsColor3, Color3, Scene, Nullable, BaseTexture, AbstractMesh, SubMesh, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
 
-Effect.ShadersStore["gradientPixelShader"] = require("./gradient.fragment.fx");
-Effect.ShadersStore["gradientVertexShader"] = require("./gradient.vertex.fx");
+import "./gradient.fragment.fx";
+import "./gradient.vertex.fx";
 
 class GradientMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;

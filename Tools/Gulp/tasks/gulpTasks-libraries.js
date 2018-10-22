@@ -72,7 +72,7 @@ function buildExternalLibraries(settings) {
 
     // Creates the required tasks.
     var tasks = [];
-    for (var library of settings.libraries) {
+    for (let library of settings.libraries) {
         var shaders = function() { return buildShaders(settings); };
         var build = function(cb) { return buildExternalLibrary(library, settings, cb) };
 

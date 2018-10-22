@@ -1,7 +1,7 @@
-import { Effect, MaterialDefines, serializeAsColor3, Color3, serialize, Vector3, Vector4, Scene, AbstractMesh, SubMesh, MaterialHelper, VertexBuffer, Matrix, Mesh, SerializationHelper } from "babylonjs";
+import { MaterialDefines, serializeAsColor3, Color3, serialize, Vector3, Vector4, Scene, AbstractMesh, SubMesh, MaterialHelper, VertexBuffer, Matrix, Mesh, SerializationHelper } from "babylonjs";
 
-Effect.ShadersStore["gridPixelShader"] = require("./grid.fragment.fx");
-Effect.ShadersStore["gridVertexShader"] = require("./grid.vertex.fx");
+import "./grid.fragment.fx";
+import "./grid.vertex.fx";
 
 class GridMaterialDefines extends MaterialDefines {
     public TRANSPARENT = false;
