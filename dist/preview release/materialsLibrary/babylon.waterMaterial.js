@@ -175,10 +175,10 @@ __export(__webpack_require__(/*! ./waterMaterial */ "./src/water/waterMaterial.t
 
 /***/ }),
 
-/***/ "./src/water/water.fragment.fx.ts":
-/*!****************************************!*\
-  !*** ./src/water/water.fragment.fx.ts ***!
-  \****************************************/
+/***/ "./src/water/water.fragment.ts":
+/*!*************************************!*\
+  !*** ./src/water/water.fragment.ts ***!
+  \*************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -195,10 +195,10 @@ babylonjs_1.Effect.ShadersStore[name] = shader;
 
 /***/ }),
 
-/***/ "./src/water/water.vertex.fx.ts":
-/*!**************************************!*\
-  !*** ./src/water/water.vertex.fx.ts ***!
-  \**************************************/
+/***/ "./src/water/water.vertex.ts":
+/*!***********************************!*\
+  !*** ./src/water/water.vertex.ts ***!
+  \***********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -245,8 +245,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-__webpack_require__(/*! ./water.fragment.fx */ "./src/water/water.fragment.fx.ts");
-__webpack_require__(/*! ./water.vertex.fx */ "./src/water/water.vertex.fx.ts");
+__webpack_require__(/*! ./water.fragment */ "./src/water/water.fragment.ts");
+__webpack_require__(/*! ./water.vertex */ "./src/water/water.vertex.ts");
 var WaterMaterialDefines = /** @class */ (function (_super) {
     __extends(WaterMaterialDefines, _super);
     function WaterMaterialDefines() {

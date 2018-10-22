@@ -1,7 +1,7 @@
 import { MaterialDefines, PushMaterial, serializeAsTexture, BaseTexture, expandToProperty, serializeAsColor3, Color3, serialize, serializeAsVector3, Vector3, DynamicTexture, AbstractMesh, Scene, Nullable, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper, Texture, Tags } from "babylonjs";
 
-import "./fur.fragment.fx";
-import "./fur.vertex.fx";
+import "./fur.fragment";
+import "./fur.vertex";
 
 class FurMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;

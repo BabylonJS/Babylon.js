@@ -1,7 +1,7 @@
 import { MaterialDefines, PushMaterial, serializeAsTexture, Nullable, BaseTexture, expandToProperty, serializeAsColor3, Color3, serialize, Scene, AbstractMesh, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, Matrix, Mesh, IAnimatable, SerializationHelper, Tags, Texture, } from "babylonjs";
 
-import "./fire.fragment.fx";
-import "./fire.vertex.fx";
+import "./fire.fragment";
+import "./fire.vertex";
 
 class FireMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;

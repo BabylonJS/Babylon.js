@@ -1,7 +1,7 @@
 import { MaterialDefines, PushMaterial, serializeAsTexture, BaseTexture, expandToProperty, Texture, serializeAsColor3, Color3, serialize, Scene, Nullable, AbstractMesh, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
 
-import "./terrain.fragment.fx";
-import "./terrain.vertex.fx";
+import "./terrain.fragment";
+import "./terrain.vertex";
 
 class TerrainMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;

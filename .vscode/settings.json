@@ -25,7 +25,8 @@
         "**/*.js": {
             "when": "$(basename).ts"
         },
-        "**/*.fx.ts": false,
+        "**/*.fragment.ts": false,
+        "**/*.vertex.ts": false
     },
     "files.associations": {
         "*.fx": "glsl"
@@ -42,7 +43,8 @@
             "when": "$(basename).ts"
         },
         "**/*.d.ts": true,
-        "**/*.fx.ts": true,
+        "**/*.fragment.ts": true,
+        "**/*.vertex.ts": true,
         "assets": true
     },
     "editor.tabSize": 4,

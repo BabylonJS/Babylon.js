@@ -37,7 +37,7 @@ function main() {
             let normalized = path.normalize(file.path);
             let directory = path.dirname(normalized);
             let shaderName = getShaderName(filename);
-            let tsFilename = filename.replace('.fx', '.fx.ts');
+            let tsFilename = filename.replace('.fx', '.ts');
             let data = file.contents.toString();
 
             // Trailing whitespace...

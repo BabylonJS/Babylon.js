@@ -1,7 +1,7 @@
 import { MaterialDefines, PushMaterial, serializeAsTexture, BaseTexture, expandToProperty, serializeAsColor3, Color3, serialize, Scene, Nullable, AbstractMesh, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
 
-import "./lava.fragment.fx";
-import "./lava.vertex.fx";
+import "./lava.fragment";
+import "./lava.vertex";
 
 class LavaMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;

@@ -1,7 +1,7 @@
 import { MaterialDefines, PushMaterial, serialize, serializeAsVector3, Vector3, Scene, Nullable, BaseTexture, AbstractMesh, SubMesh, MaterialHelper, EffectFallbacks, VertexBuffer, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
 
-import "./sky.fragment.fx";
-import "./sky.vertex.fx";
+import "./sky.fragment";
+import "./sky.vertex";
 
 class SkyMaterialDefines extends MaterialDefines {
     public CLIPPLANE = false;

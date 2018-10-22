@@ -1,7 +1,7 @@
 import { MaterialDefines, PushMaterial, serializeAsTexture, expandToProperty, BaseTexture, serializeAsColor3, Scene, Color3, serialize, AbstractMesh, Nullable, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
 
-import "./cell.fragment.fx";
-import "./cell.vertex.fx";
+import "./cell.fragment";
+import "./cell.vertex";
 
 class CellMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;

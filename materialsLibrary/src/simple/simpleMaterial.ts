@@ -1,7 +1,7 @@
 import { MaterialDefines, PushMaterial, serializeAsTexture, BaseTexture, expandToProperty, serializeAsColor3, Color3, serialize, Scene, Nullable, AbstractMesh, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
 
-import "./simple.fragment.fx";
-import "./simple.vertex.fx";
+import "./simple.fragment";
+import "./simple.vertex";
 
 class SimpleMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;
