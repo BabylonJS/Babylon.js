@@ -36,23 +36,23 @@ float s=0.1,fade=1.;
 vec3 v=vec3(0.);
 for (int r=0; r<volsteps; r++) {
 vec3 p=from+s*dir*.5;
-p=abs(vec3(tile)-mod(p,vec3(tile*2.))); 
+p=abs(vec3(tile)-mod(p,vec3(tile*2.)));
 float pa,a=pa=0.;
 for (int i=0; i<iterations; i++) {
-p=abs(p)/dot(p,p)-formuparam; 
-a+=abs(length(p)-pa); 
+p=abs(p)/dot(p,p)-formuparam;
+a+=abs(length(p)-pa);
 pa=length(p);
 }
-float dm=max(0.,darkmatter-a*a*.001); 
-a*=a*a; 
-if (r>6) fade*=1.-dm; 
+float dm=max(0.,darkmatter-a*a*.001);
+a*=a*a;
+if (r>6) fade*=1.-dm;
 
 v+=fade;
-v+=vec3(s,s*s,s*s*s*s)*a*brightness*fade; 
-fade*=distfading; 
+v+=vec3(s,s*s,s*s*s*s)*a*brightness*fade;
+fade*=distfading;
 s+=stepsize;
 }
-v=mix(vec3(length(v)),v,saturation); 
+v=mix(vec3(length(v)),v,saturation);
 gl_FragColor=vec4(v*.01,1.);
 }`;
 

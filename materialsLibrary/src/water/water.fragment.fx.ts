@@ -133,7 +133,7 @@ vec3 finalSpecular=specularBase*specularColor;
 #else
 vec3 finalSpecular=vec3(0.0);
 #endif
-#else 
+#else
 #ifdef REFLECTION
 
 vec3 eyeVector=normalize(vEyePosition-vPosition);

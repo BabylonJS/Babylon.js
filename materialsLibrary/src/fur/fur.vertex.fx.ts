@@ -69,7 +69,7 @@ vfur_length=furLength*texture(heightTexture,uv).x;
 #else
 vfur_length=furLength*texture2D(heightTexture,uv).r;
 #endif
-#else 
+#else
 vfur_length=(furLength*r);
 #endif
 vec3 tangent1=vec3(normal.y,-normal.x,0);

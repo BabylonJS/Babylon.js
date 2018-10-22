@@ -2,7 +2,7 @@ import { Effect } from "babylonjs";
 
 let name = 'roadProceduralTexturePixelShader';
 let shader = `precision highp float;
-varying vec2 vUV; 
+varying vec2 vUV;
 uniform vec3 roadColor;
 float rand(vec2 n) {
 return fract(cos(dot(n,vec2(12.9898,4.1414)))*43758.5453);

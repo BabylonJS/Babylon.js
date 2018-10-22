@@ -22,7 +22,7 @@ float majorGridFrequency=gridControl.y;
 if (floor(position+0.5) == floor(position/majorGridFrequency+0.5)*majorGridFrequency)
 {
 return 1.0;
-} 
+}
 return gridControl.z;
 }
 float getAnisotropicAttenuation(float differentialLength) {
@@ -30,15 +30,15 @@ const float maxNumberOfLines=10.0;
 return clamp(1.0/(differentialLength+1.0)-1.0/maxNumberOfLines,0.0,1.0);
 }
 float isPointOnLine(float position,float differentialLength) {
-float fractionPartOfPosition=position-floor(position+0.5); 
-fractionPartOfPosition/=differentialLength; 
+float fractionPartOfPosition=position-floor(position+0.5);
+fractionPartOfPosition/=differentialLength;
 fractionPartOfPosition=clamp(fractionPartOfPosition,-1.,1.);
-float result=0.5+0.5*cos(fractionPartOfPosition*PI); 
-return result; 
+float result=0.5+0.5*cos(fractionPartOfPosition*PI);
+return result;
 }
 float contributionOnAxis(float position) {
 float differentialLength=length(vec2(dFdx(position),dFdy(position)));
-differentialLength*=SQRT2; 
+differentialLength*=SQRT2;
 
 float result=isPointOnLine(position,differentialLength);
 

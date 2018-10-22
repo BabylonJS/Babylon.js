@@ -37,11 +37,11 @@ vec3 marble_color(float x)
 {
 vec3 col;
 x=0.5*(x+1.);
-x=sqrt(x); 
 x=sqrt(x);
 x=sqrt(x);
-col=vec3(.2+.75*x); 
-col.b*=0.95; 
+x=sqrt(x);
+col=vec3(.2+.75*x);
+col.b*=0.95;
 return col;
 }
 void main()

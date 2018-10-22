@@ -43,7 +43,7 @@ varying vec4 vColor;
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 void main(void) {
 #include<instancesVertex>
-#include<bonesVertex> 
+#include<bonesVertex>
 gl_Position=viewProjection*finalWorld*vec4(position,1.0);
 vec4 worldPos=finalWorld*vec4(position,1.0);
 vPositionW=vec3(worldPos);

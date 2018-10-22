@@ -16,7 +16,7 @@ float getLuminance(vec3 color)
 return clamp(dot(color,vec3(0.2126,0.7152,0.0722)),0.,1.);
 }
 
-void main(void) 
+void main(void)
 {
 float caracterSize=digitalRainFontInfos.x;
 float numChar=digitalRainFontInfos.y-1.0;
@@ -33,7 +33,7 @@ vec4 tileColor=texture2D(textureSampler,tileUV);
 vec4 baseColor=texture2D(textureSampler,vUV);
 float tileLuminance=getLuminance(tileColor.rgb);
 int st=int(mod(columnx,4.0));
-float speed=cosTimeZeroOne*(sin(tileX*314.5)*0.5+0.6); 
+float speed=cosTimeZeroOne*(sin(tileX*314.5)*0.5+0.6);
 float x=float(mod(gl_FragCoord.x,caracterSize))/fontx;
 float y=float(mod(speed+gl_FragCoord.y/screeny,1.0));
 y*=ratio;
