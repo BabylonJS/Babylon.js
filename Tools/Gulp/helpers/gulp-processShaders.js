@@ -1,6 +1,5 @@
 var through = require('through2');
 var PluginError = require('gulp-util').PluginError;
-var uncommentShaders = require('./gulp-removeShaderComments');
 let path = require('path');
 let fs = require('fs');
 
@@ -25,8 +24,7 @@ function getShaderName(filename) {
 }
 
 function main() {
-    return uncommentShaders()
-        .pipe(through.obj(function (file, enc, cb) {
+    return through.obj(function (file, enc, cb) {
             if (file.isNull()) {
                 cb(null, file);
                 return;
@@ -48,8 +46,7 @@ function main() {
             fs.writeFileSync(directory + '/' + tsFilename, tsContent);
 
             return cb();
-        })
-    );
+        });
 }
 
 module.exports = main;
