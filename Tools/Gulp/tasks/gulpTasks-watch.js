@@ -2,7 +2,8 @@
 var gulp = require("gulp");
 var webpack = require('webpack');
 var webpackStream = require("webpack-stream");
-var debug = require("gulp-debug");
+var processShaders = require("../helpers/gulp-processShaders");
+var uncommentShaders = require('../helpers/gulp-removeShaderComments');
 
 // Read the full config.
 var config = require("../config.json");
@@ -27,14 +28,15 @@ gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
     var tasks = [];
 
     config.modules.map(function(module) {
-        if (config[module].build && config[module].build.webpack) {
+        var settings = config[module].build;
+        if (settings && settings.webpack) {
             for (var index = 0; index < config[module].libraries.length; index++) {
                 var library = config[module].libraries[index];
                 if (library.preventLoadLibrary) { 
                     continue;
                 }
 
-                let wpconfig = require(config[module].build.webpack);
+                let wpconfig = require(settings.webpack);
                 // watch on.
                 wpconfig.watch = true;
                 // dev mode and absolute path sourcemaps for debugging
@@ -42,8 +44,22 @@ gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
                 wpconfig.output.devtoolModuleFilenameTemplate = "[absolute-resource-path]";
                 //config.stats = "minimal";
 
-                var outputDirectory = config.build.tempDirectory + config[module].build.distOutputDirectory;
+                var outputDirectory = config.build.tempDirectory + settings.distOutputDirectory;
                 tasks.push(webpackStream(wpconfig, webpack).pipe(gulp.dest(outputDirectory)))
+
+                tasks.push(gulp.src(settings.srcDirectory + "**/*.fx")
+                    .pipe(uncommentShaders())
+                    .pipe(processShaders())
+                );
+
+                tasks.push(
+                    gulp.watch(settings.srcDirectory + "**/*.fx", { interval: 1000 }, function() {
+                        console.log(library.output + ": Shaders.");
+                        gulp.src(settings.srcDirectory + "**/*.fx")
+                            .pipe(uncommentShaders())
+                            .pipe(processShaders());
+                    })
+                );
             }
         }
     });

@@ -5,10 +5,10 @@ var webpackStream = require("webpack-stream");
 var dtsBundle = require('dts-bundle');
 var merge2 = require("merge2");
 var path = require("path");
-var processShaders = require("../helpers/gulp-processShaders");
-var uncommentShaders = require('../helpers/gulp-removeShaderComments');
 
 // Gulp Helpers
+var processShaders = require("../helpers/gulp-processShaders");
+var uncommentShaders = require('../helpers/gulp-removeShaderComments');
 var processDeclaration = require('../helpers/gulp-processTypescriptDeclaration');
 var rmDir = require("../helpers/gulp-rmDir");
 
