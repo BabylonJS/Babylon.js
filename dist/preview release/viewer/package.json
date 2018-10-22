@@ -4,7 +4,7 @@
     },
     "name": "babylonjs-viewer",
     "description": "A simple-to-use viewer based on BabylonJS to display 3D elements natively",
-    "version": "4.0.0-alpha.4",
+    "version": "3.3.0-alpha.4",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
@@ -36,9 +36,9 @@
         "deepmerge": "~2.1.1",
         "handlebars": "~4.0.11",
         "pepjs": "~0.4.3",
-        "babylonjs": "4.0.0-alpha.4",
-        "babylonjs-loaders": "4.0.0-alpha.4",
-        "babylonjs-gltf2interface": "4.0.0-alpha.4",
-        "babylonjs-viewer-assets": "4.0.0-alpha.4"
+        "babylonjs": ">3.3.0-alpha",
+        "babylonjs-loaders": ">3.3.0-alpha",
+        "babylonjs-gltf2interface": ">3.3.0-alpha",
+        "babylonjs-viewer-assets": ">3.3.0-alpha"
     }
 }

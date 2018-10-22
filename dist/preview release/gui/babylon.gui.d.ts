@@ -2,6 +2,14 @@
 // Dependencies for this module:
 //   ../../../../Tools/Gulp/babylonjs
 declare module BABYLON.GUI {
+}
+declare module BABYLON.GUI {
+}
+declare module BABYLON.GUI {
+}
+declare module BABYLON.GUI {
+}
+declare module BABYLON.GUI {
     /**
         * Interface used to define a control that can receive focus
         */
@@ -488,6 +496,10 @@ declare module BABYLON.GUI {
             /** UNITMODE_PIXEL */
             static readonly UNITMODE_PIXEL: number;
     }
+}
+declare module BABYLON.GUI {
+}
+declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
@@ -1472,7 +1484,7 @@ declare module BABYLON.GUI {
                 */
             keepsFocusWith(): BABYLON.Nullable<Control[]>;
             /** @hidden */
-            processKey(keyCode: number, key?: string): void;
+            processKey(keyCode: number, key?: string, evt?: KeyboardEvent): void;
             /** @hidden */
             processKeyboard(evt: KeyboardEvent): void;
             _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;

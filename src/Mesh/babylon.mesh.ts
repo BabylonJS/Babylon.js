@@ -216,7 +216,7 @@ module BABYLON {
         // Will be used to save a source mesh reference, If any
         private _source: Nullable<Mesh> = null;
         // Will be used to for fast cloned mesh lookup
-        private meshMap: Nullable<{[id: string]: Mesh | undefined}>;
+        private meshMap: Nullable<{ [id: string]: Mesh | undefined }>;
 
         /**
          * Gets the source mesh (the one used to clone this one from)
@@ -2471,7 +2471,11 @@ module BABYLON {
             }
 
             serializationObject.scaling = this.scaling.asArray();
-            serializationObject.localMatrix = this.getPivotMatrix().asArray();
+            if (this._postMultiplyPivotMatrix) {
+                serializationObject.pivotMatrix = this.getPivotMatrix().asArray();
+            } else {
+                serializationObject.localMatrix = this.getPivotMatrix().asArray();
+            }
 
             serializationObject.isEnabled = this.isEnabled(false);
             serializationObject.isVisible = this.isVisible;
