@@ -1,12 +1,13 @@
 import { Behavior } from "Behaviors";
 import { Mesh, AbstractMesh } from "Mesh";
-import {Scene} from "scene";
-import { Nullable } from "index";
+import { Scene } from "scene";
+import { Nullable, PointerEventTypes } from "index";
 import { Vector3, Quaternion } from "Math";
-import {PointerInfo} from "Events";
+import { PointerInfo } from "Events";
 import { Observer, Observable } from "Tools";
-import {BoundingBoxGizmo} from "Gizmos";
-import {Camera} from "Cameras";
+import { BoundingBoxGizmo } from "Gizmos";
+import { Camera } from "Cameras";
+import { Matrix } from "Math";
     /**
      * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
      */
@@ -76,18 +77,18 @@ import {Camera} from "Cameras";
             this._ownerNode = ownerNode;
             this._scene = this._ownerNode.getScene();
             if (!SixDofDragBehavior._virtualScene) {
-                SixDofDragBehavior._virtualScene = new BABYLON.Scene(this._scene.getEngine());
+                SixDofDragBehavior._virtualScene = new Scene(this._scene.getEngine());
                 SixDofDragBehavior._virtualScene.detachControl();
                 this._scene.getEngine().scenes.pop();
             }
 
             var pickedMesh: Nullable<AbstractMesh> = null;
-            var lastSixDofOriginPosition = new BABYLON.Vector3(0, 0, 0);
+            var lastSixDofOriginPosition = new Vector3(0, 0, 0);
 
             // Setup virtual meshes to be used for dragging without dirtying the existing scene
-            this._virtualOriginMesh = new BABYLON.AbstractMesh("", SixDofDragBehavior._virtualScene);
+            this._virtualOriginMesh = new AbstractMesh("", SixDofDragBehavior._virtualScene);
             this._virtualOriginMesh.rotationQuaternion = new Quaternion();
-            this._virtualDragMesh = new BABYLON.AbstractMesh("", SixDofDragBehavior._virtualScene);
+            this._virtualDragMesh = new AbstractMesh("", SixDofDragBehavior._virtualScene);
             this._virtualDragMesh.rotationQuaternion = new Quaternion();
 
             var pickPredicate = (m: AbstractMesh) => {
@@ -95,7 +96,7 @@ import {Camera} from "Cameras";
             };
             var attachedElement: Nullable<HTMLElement> = null;
             this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo, eventState) => {
-                if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERDOWN) {
+                if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
                     if (!this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)) {
                         if (this._scene.activeCamera && this._scene.activeCamera.cameraRigMode == Camera.RIG_MODE_NONE) {
                             pointerInfo.pickInfo.ray.origin.copyFrom(this._scene.activeCamera!.position);
@@ -139,7 +140,7 @@ import {Camera} from "Cameras";
                         BoundingBoxGizmo._RestorePivotPoint(pickedMesh);
                         this.onDragStartObservable.notifyObservers({});
                     }
-                }else if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERUP) {
+                }else if (pointerInfo.type == PointerEventTypes.POINTERUP) {
                     if (this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId) {
                         this.dragging = false;
                         this._moving = false;
@@ -153,7 +154,7 @@ import {Camera} from "Cameras";
                         }
                         this.onDragEndObservable.notifyObservers({});
                     }
-                }else if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERMOVE) {
+                }else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
                     if (this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId && this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray && pickedMesh) {
                         var zDragFactor = this.zDragFactor;
                         if (this._scene.activeCamera && this._scene.activeCamera.cameraRigMode == Camera.RIG_MODE_NONE) {

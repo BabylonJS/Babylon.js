@@ -5,7 +5,7 @@ import { Observer, Tools } from "Tools";
 import { PointerInfoPre, PointerEventTypes } from "Events";
 
     /**
-     * The autoRotation behavior (BABYLON.AutoRotationBehavior) is designed to create a smooth rotation of an ArcRotateCamera when there is no user interaction.
+     * The autoRotation behavior (AutoRotationBehavior) is designed to create a smooth rotation of an ArcRotateCamera when there is no user interaction.
      * @see http://doc.babylonjs.com/how_to/camera_behaviors#autorotation-behavior
      */
     export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {

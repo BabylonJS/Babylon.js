@@ -1264,7 +1264,7 @@ import { Ray } from "Culling";
             }
 
             //collision coordinator initialization. For now legacy per default.
-            this.workerCollisions = false; //(!!Worker && (!!BABYLON.CollisionWorker || BABYLON.WorkerIncluded));
+            this.workerCollisions = false; //(!!Worker && (!!CollisionWorker || WorkerIncluded));
 
             // Uniform Buffer
             this._createUbo();
@@ -5314,7 +5314,7 @@ import { Ray } from "Culling";
         // Tags
         private _getByTags(list: any[], tagsQuery: string, forEach?: (item: any) => void): any[] {
             if (tagsQuery === undefined) {
-                // returns the complete list (could be done with BABYLON.Tags.MatchesQuery but no need to have a for-loop here)
+                // returns the complete list (could be done with Tags.MatchesQuery but no need to have a for-loop here)
                 return list;
             }
 
