@@ -1,3 +1,11 @@
+import { Animation, Animatable, AnimationRange, AnimationPropertiesOverride } from "Animations";
+import { Scene } from "scene";
+import { Nullable } from "types";
+import { Matrix } from "Math";
+import { Engine } from "Engine";
+import { AbstractMesh, TransformNode } from "Mesh";
+import { IBehaviorAware, Behavior } from "Behaviors";
+import { Observable, Observer } from "Tools";
     /**
      * Defines how a node can be built from a string name.
      */

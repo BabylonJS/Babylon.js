@@ -479,7 +479,7 @@ import { BaseTexture, Texture, CubeTexture, HDRCubeTexture } from "Materials";
          * @param url defines the location of the file to load
          * @param noMipmap defines if mipmap should not be generated (default is false)
          * @param invertY defines if texture must be inverted on Y axis (default is false)
-         * @param samplingMode defines the sampling mode to use (default is BABYLON.Texture.TRILINEAR_SAMPLINGMODE)
+         * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
          */
         constructor(
             /**
@@ -499,7 +499,7 @@ import { BaseTexture, Texture, CubeTexture, HDRCubeTexture } from "Materials";
              */
             public invertY?: boolean,
             /**
-             * Defines the sampling mode to use (default is BABYLON.Texture.TRILINEAR_SAMPLINGMODE)
+             * Defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
              */
             public samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             super(name);
@@ -801,7 +801,7 @@ import { BaseTexture, Texture, CubeTexture, HDRCubeTexture } from "Materials";
          * @param url defines the url of the file to load
          * @param noMipmap defines if the texture must not receive mipmaps (false by default)
          * @param invertY defines if you want to invert Y axis of the loaded texture (false by default)
-         * @param samplingMode defines the sampling mode to use (BABYLON.Texture.TRILINEAR_SAMPLINGMODE by default)
+         * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
          * @returns a new TextureAssetTask object
          */
         public addTextureTask(taskName: string, url: string, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): TextureAssetTask {

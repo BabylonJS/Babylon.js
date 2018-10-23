@@ -9,7 +9,7 @@ import { Nullable } from "types";
 import { Observer, Observable } from "Tools";
 
 import { Vector3 } from "Math";
-import { PointerInfo } from "Events";
+import { PointerInfo, PointerEventTypes } from "Events";
 import { BoundingBoxGizmo } from "Gizmos";
 import { Ray } from "Culling/ray";
 
@@ -125,7 +125,7 @@ import { Ray } from "Culling/ray";
         private _tmpVector = new Vector3(0, 0, 0);
         private _alternatePickedPoint = new Vector3(0, 0, 0);
         private _worldDragAxis = new Vector3(0, 0, 0);
-        private _targetPosition = new BABYLON.Vector3(0, 0, 0);
+        private _targetPosition = new Vector3(0, 0, 0);
         private _attachedElement: Nullable<HTMLElement> = null;
         /**
          * Attaches the drag behavior the passed in mesh
@@ -140,7 +140,7 @@ import { Ray } from "Culling/ray";
                 if (this._debugMode) {
                     PointerDragBehavior._planeScene = this._scene;
                 }else {
-                    PointerDragBehavior._planeScene = new BABYLON.Scene(this._scene.getEngine());
+                    PointerDragBehavior._planeScene = new Scene(this._scene.getEngine());
                     PointerDragBehavior._planeScene.detachControl();
                     this._scene.getEngine().scenes.pop();
                     this._scene.onDisposeObservable.addOnce(() => {
@@ -149,10 +149,10 @@ import { Ray } from "Culling/ray";
                     });
                 }
             }
-            this._dragPlane = BABYLON.Mesh.CreatePlane("pointerDragPlane", this._debugMode ? 1 : 10000, PointerDragBehavior._planeScene, false, BABYLON.Mesh.DOUBLESIDE);
+            this._dragPlane = Mesh.CreatePlane("pointerDragPlane", this._debugMode ? 1 : 10000, PointerDragBehavior._planeScene, false, Mesh.DOUBLESIDE);
 
             // State of the drag
-            this.lastDragPosition = new BABYLON.Vector3(0, 0, 0);
+            this.lastDragPosition = new Vector3(0, 0, 0);
 
             var pickPredicate = (m: AbstractMesh) => {
                 return this._attachedNode == m || m.isDescendantOf(this._attachedNode);
@@ -163,16 +163,16 @@ import { Ray } from "Culling/ray";
                     return;
                 }
 
-                if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERDOWN) {
+                if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
 
                     if (!this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.pickedPoint && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)) {
                         this._startDrag((<PointerEvent>pointerInfo.event).pointerId, pointerInfo.pickInfo.ray, pointerInfo.pickInfo.pickedPoint);
                     }
-                }else if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERUP) {
+                }else if (pointerInfo.type == PointerEventTypes.POINTERUP) {
                     if (this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId) {
                         this.releaseDrag();
                     }
-                }else if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERMOVE) {
+                }else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
                     var pointerId = (<PointerEvent>pointerInfo.event).pointerId;
 
                     // If drag was started with anyMouseID specified, set pointerID to the next mouse that moved
@@ -186,7 +186,7 @@ import { Ray } from "Culling/ray";
 
                     // Keep track of last pointer ray, this is used simulating the start of a drag in startDrag()
                     if (!this._lastPointerRay[pointerId]) {
-                        this._lastPointerRay[pointerId] = new BABYLON.Ray(new BABYLON.Vector3(), new BABYLON.Vector3());
+                        this._lastPointerRay[pointerId] = new Ray(new Vector3(), new Vector3());
                     }
                     if (pointerInfo.pickInfo && pointerInfo.pickInfo.ray) {
                         this._lastPointerRay[pointerId].origin.copyFrom(pointerInfo.pickInfo.ray.origin);
@@ -227,7 +227,7 @@ import { Ray } from "Culling/ray";
             }
         }
 
-        private _startDragRay = new BABYLON.Ray(new BABYLON.Vector3(), new BABYLON.Vector3());
+        private _startDragRay = new Ray(new Vector3(), new Vector3());
         private _lastPointerRay: {[key: number]: Ray} = {};
         /**
          * Simulates the start of a pointer drag event on the behavior
@@ -288,7 +288,7 @@ import { Ray } from "Culling/ray";
             BoundingBoxGizmo._RestorePivotPoint(this._attachedNode);
         }
 
-        private _dragDelta = new BABYLON.Vector3();
+        private _dragDelta = new Vector3();
         private _moveDrag(ray: Ray) {
             this._moving = true;
             var pickedPoint = this._pickWithRayOnDragPlane(ray);
@@ -306,7 +306,7 @@ import { Ray } from "Culling/ray";
 
                     // Project delta drag from the drag plane onto the drag axis
                     pickedPoint.subtractToRef(this.lastDragPosition, this._tmpVector);
-                    dragLength = BABYLON.Vector3.Dot(this._tmpVector, this._worldDragAxis);
+                    dragLength = Vector3.Dot(this._tmpVector, this._worldDragAxis);
                     this._worldDragAxis.scaleToRef(dragLength, this._dragDelta);
                 }else {
                     dragLength = this._dragDelta.length();
@@ -380,9 +380,9 @@ import { Ray } from "Culling/ray";
                 // Get perpendicular line from direction to camera and drag axis
                 this._pointB.subtractToRef(this._pointA, this._lineA);
                 this._pointC.subtractToRef(this._pointA, this._lineB);
-                BABYLON.Vector3.CrossToRef(this._lineA, this._lineB, this._lookAt);
+                Vector3.CrossToRef(this._lineA, this._lineB, this._lookAt);
                 // Get perpendicular line from previous result and drag axis to adjust lineB to be perpendiculat to camera
-                BABYLON.Vector3.CrossToRef(this._lineA, this._lookAt, this._lookAt);
+                Vector3.CrossToRef(this._lineA, this._lookAt, this._lookAt);
                 this._lookAt.normalize();
 
                 this._dragPlane.position.copyFrom(this._pointA);

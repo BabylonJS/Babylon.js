@@ -21,9 +21,9 @@ import { Scene } from "scene";
          * Instantiate a new behavior that when attached to a mesh will allow the mesh to be scaled
          */
         constructor() {
-            this._dragBehaviorA = new BABYLON.PointerDragBehavior({});
+            this._dragBehaviorA = new PointerDragBehavior({});
             this._dragBehaviorA.moveAttached = false;
-            this._dragBehaviorB = new BABYLON.PointerDragBehavior({});
+            this._dragBehaviorB = new PointerDragBehavior({});
             this._dragBehaviorB.moveAttached = false;
         }
 

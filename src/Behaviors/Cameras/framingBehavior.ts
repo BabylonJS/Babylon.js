@@ -1,15 +1,15 @@
 import { Behavior } from "Behaviors";
 import { ArcRotateCamera, Camera } from "Cameras";
-import { ExponentialEase } from "Animations";
+import { ExponentialEase, EasingFunction } from "Animations";
 import { Nullable } from "types";
 import { PointerInfoPre, PointerEventTypes } from "Events";
 import { Observer, Tools } from "Tools";
 import { AbstractMesh } from "Mesh";
 import { Vector3, Vector2 } from "Math";
-import {Animation} from "Animations";
+import { Animation, Animatable } from "Animations";
 
     /**
-     * The framing behavior (BABYLON.FramingBehavior) is designed to automatically position an ArcRotateCamera when its target is set to a mesh. It is also useful if you want to prevent the camera to go under a virtual horizontal plane.
+     * The framing behavior (FramingBehavior) is designed to automatically position an ArcRotateCamera when its target is set to a mesh. It is also useful if you want to prevent the camera to go under a virtual horizontal plane.
      * @see http://doc.babylonjs.com/how_to/camera_behaviors#framing-behavior
      */
     export class FramingBehavior implements Behavior<ArcRotateCamera> {

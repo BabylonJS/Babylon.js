@@ -1,9 +1,10 @@
 import { Observable } from "Tools";
 import { Nullable } from "types";
 import { Camera, WebXRSessionManager, WebXRCamera } from "Cameras";
-import { IDisposable } from "scene";
+import { IDisposable, Scene } from "scene";
 import { Quaternion, Vector3 } from "Math";
 import { AbstractMesh } from "Mesh";
+import { Ray } from "Culling";
     /**
      * States of the webXR experience
      */
@@ -49,7 +50,7 @@ import { AbstractMesh } from "Mesh";
             this.onStateChangedObservable.notifyObservers(this.state);
         }
 
-        private static _TmpVector = new BABYLON.Vector3();
+        private static _TmpVector = new Vector3();
 
         /**
          * Fires when the state of the experience helper has changed
@@ -69,7 +70,7 @@ import { AbstractMesh } from "Mesh";
          * @param scene the scene to attach the experience helper to
          * @returns a promise for the experience helper
          */
-        public static CreateAsync(scene: BABYLON.Scene): Promise<WebXRExperienceHelper> {
+        public static CreateAsync(scene: Scene): Promise<WebXRExperienceHelper> {
             var helper = new WebXRExperienceHelper(scene);
             return helper._sessionManager.initializeAsync().then(() => {
                 helper._supported = true;
@@ -83,9 +84,9 @@ import { AbstractMesh } from "Mesh";
          * Creates a WebXRExperienceHelper
          * @param scene The scene the helper should be created in
          */
-        private constructor(private scene: BABYLON.Scene) {
-            this.camera = new BABYLON.WebXRCamera("", scene);
-            this._sessionManager = new BABYLON.WebXRSessionManager(scene);
+        private constructor(private scene: Scene) {
+            this.camera = new WebXRCamera("", scene);
+            this._sessionManager = new WebXRSessionManager(scene);
             this.container = new AbstractMesh("", scene);
             this.camera.parent = this.container;
         }
@@ -143,7 +144,7 @@ import { AbstractMesh } from "Mesh";
          * @param ray ray to cast into the environment
          * @returns Promise which resolves with a collision point in the environment if it exists
          */
-        public environmentPointHitTestAsync(ray: BABYLON.Ray): Promise<Nullable<Vector3>> {
+        public environmentPointHitTestAsync(ray: Ray): Promise<Nullable<Vector3>> {
             return this._sessionManager.environmentPointHitTestAsync(ray);
         }
 
