@@ -1,4 +1,3 @@
-module BABYLON {
     var __decoratorInitialStore = {};
     var __mergedStore = {};
 
@@ -365,5 +364,4 @@ module BABYLON {
         public static Instanciate<T>(creationFunction: () => T, source: T): T {
             return _copySource(creationFunction, source, true);
         }
-    }
-}
+    }

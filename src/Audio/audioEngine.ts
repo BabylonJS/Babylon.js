@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This represents an audio engine and it is responsible
      * to play, synchronize and analyse sounds throughout the application.
@@ -368,4 +367,3 @@ module BABYLON {
             }
         }
     }
-}

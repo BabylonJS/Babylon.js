@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Header information of HDR texture files.
      */
@@ -257,4 +256,3 @@ module BABYLON {
             return resultArray;
         }
     }
-}

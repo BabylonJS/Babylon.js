@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * The interface for the physics imposter parameters
      * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
@@ -1005,4 +1003,3 @@ module BABYLON {
          */
         public static HeightmapImpostor = 9;
     }
-}

@@ -1,4 +1,3 @@
-module BABYLON {
     var intersectBoxAASphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean => {
         if (boxMin.x > sphereCenter.x + sphereRadius) {
             return false;
@@ -401,5 +400,4 @@ module BABYLON {
 
             this._destinationPoint.subtractToRef(this.intersectionPoint, vel);
         }
-    }
-}
+    }

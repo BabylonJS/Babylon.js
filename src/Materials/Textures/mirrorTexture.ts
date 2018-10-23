@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Mirror texture can be used to simulate the view from a mirror in a scene.
      * It will dynamically be rendered every frame to adapt to the camera point of view.
@@ -266,5 +265,4 @@ module BABYLON {
             super.dispose();
             this.scene.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigChangeObserver);
         }
-    }
-}
+    }

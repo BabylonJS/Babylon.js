@@ -1,4 +1,3 @@
-module BABYLON {
     var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
         for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
             var parsedMaterial = parsedData.materials[index];
@@ -674,4 +673,3 @@ module BABYLON {
             return container;
         }
     });
-}

@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * Class used to control physics engine
      * @see http://doc.babylonjs.com/how_to/using_the_physics_engine
@@ -213,4 +211,3 @@ module BABYLON {
             return null;
         }
     }
-}

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Define an interface for all classes that will get and set the data on vertices
      */
@@ -2978,5 +2977,4 @@ module BABYLON {
 
             geometry.setAllVerticesData(vertexData, parsedVertexData.updatable);
         }
-    }
-}
+    }

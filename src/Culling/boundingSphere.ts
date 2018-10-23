@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to store bounding sphere information
      */
@@ -145,5 +144,4 @@ module BABYLON {
 
             return true;
         }
-    }
-}
+    }

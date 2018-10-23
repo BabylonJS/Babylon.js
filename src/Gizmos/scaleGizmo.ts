@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Gizmo that enables scaling a mesh along 3 axis
      */
@@ -124,5 +123,4 @@ module BABYLON {
             this.onDragStartObservable.clear();
             this.onDragEndObservable.clear();
         }
-    }
-}
+    }

@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
      * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
@@ -560,5 +558,4 @@ module BABYLON {
         public static Parse(source: any): ColorCurves {
             return SerializationHelper.Parse(() => new ColorCurves(), source, null, null);
         }
-    }
-}
+    }

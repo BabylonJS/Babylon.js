@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to handle skinning animations
      * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
@@ -689,5 +688,4 @@ module BABYLON {
 
             bones.push(bone);
         }
-    }
-}
+    }

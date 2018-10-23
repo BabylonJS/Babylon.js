@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to store data associated with WebGL texture data for the engine
      * This class should not be used directly
@@ -443,4 +442,3 @@ module BABYLON {
             }
         }
     }
-}

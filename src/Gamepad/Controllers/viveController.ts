@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Vive Controller
      */
@@ -109,5 +108,4 @@ module BABYLON {
             }
         }
     }
-
-}
+

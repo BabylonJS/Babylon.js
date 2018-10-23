@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to store geometry data (vertex buffers + index buffer)
      */
@@ -2211,4 +2210,3 @@ module BABYLON {
         }
     }
     //}
-}

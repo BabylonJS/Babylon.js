@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This renderer is helpfull to fill one of the render target with a geometry buffer.
      */
@@ -354,5 +353,4 @@ module BABYLON {
                 }
             };
         }
-    }
-}
+    }

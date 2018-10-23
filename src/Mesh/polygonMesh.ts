@@ -1,4 +1,3 @@
-module BABYLON {
     declare var earcut: any;
     /**
      * Vector2 wth index property
@@ -341,4 +340,3 @@ module BABYLON {
             }
         }
     }
-}

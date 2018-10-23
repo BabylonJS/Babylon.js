@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * A simplifier interface for future simplification implementations
      * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
@@ -814,5 +813,4 @@ module BABYLON {
             }
             return error;
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Implementation of the DDS Texture Loader.
      */
@@ -119,5 +118,4 @@ module BABYLON {
     }
 
     // Register the loader.
-    Engine._TextureLoaders.push(new DDSTextureLoader());
-}
+    Engine._TextureLoaders.push(new DDSTextureLoader());

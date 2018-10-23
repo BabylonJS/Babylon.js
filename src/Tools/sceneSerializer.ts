@@ -1,4 +1,3 @@
-module BABYLON {
     var serializedGeometries: Geometry[] = [];
     var serializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
         if ((<any>serializedGeometries)[geometry.id]) {
@@ -341,4 +340,3 @@ module BABYLON {
             return serializationObject;
         }
     }
-}

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Specialized buffer used to store vertex data
      */
@@ -458,5 +457,4 @@ module BABYLON {
                 }
             }
         }
-    }
-}
+    }

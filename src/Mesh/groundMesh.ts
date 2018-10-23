@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Mesh representing the gorund
      */
@@ -315,5 +314,4 @@ module BABYLON {
 
             return result;
         }
-    }
-}
+    }

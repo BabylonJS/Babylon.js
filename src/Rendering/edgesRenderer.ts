@@ -1,4 +1,3 @@
-module BABYLON {
     export interface AbstractMesh {
         /**
          * Disables the mesh edge rendering mode
@@ -486,5 +485,4 @@ module BABYLON {
             engine.drawElementsType(Material.TriangleFillMode, 0, this._indicesCount);
             this._lineShader.unbind();
         }
-    }
-}
+    }

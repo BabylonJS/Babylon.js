@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This represents a set of one or more post processes in Babylon.
      * A post process can be used to apply a shader to a texture after it is rendered.
@@ -249,5 +248,4 @@ module BABYLON {
                 return this._postProcesses[camera.name];
             }
         }
-    }
-}
+    }

@@ -1,5 +1,4 @@
 
-module BABYLON {
     /**
      * BABYLON.JS Chromatic Aberration GLSL Shader
      * Author: Olivier Guyot
@@ -347,4 +346,3 @@ module BABYLON {
             (<DynamicTexture>this._grainTexture).update(false);
         }
     }
-}

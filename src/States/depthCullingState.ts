@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * @hidden
      **/
@@ -202,5 +201,4 @@ module BABYLON {
                 this._isFrontFaceDirty = false;
             }
         }
-    }
-}
+    }

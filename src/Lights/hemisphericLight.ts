@@ -1,4 +1,3 @@
-module BABYLON {
     Node.AddNodeConstructor("Light_Type_3", (name, scene) => {
         return () => new HemisphericLight(name, Vector3.Zero(), scene);
     });
@@ -119,5 +118,4 @@ module BABYLON {
         public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
             defines["HEMILIGHT" + lightIndex] = true;
         }
-    }
-}
+    }

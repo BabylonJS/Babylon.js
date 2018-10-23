@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * The ConvolutionPostProcess applies a 3x3 kernel to every pixel of the
      * input texture to perform effects such as edge detection or sharpening
@@ -54,4 +53,3 @@ module BABYLON {
      */
     public static GaussianKernel = [0, 1, 0, 1, 1, 1, 0, 1, 0];
     }
-}

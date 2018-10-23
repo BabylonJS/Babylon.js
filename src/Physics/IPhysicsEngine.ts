@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Interface used to describe a physics joint
      */
@@ -155,4 +154,3 @@ module BABYLON {
         _step(delta: number): void;
     }
 
-}

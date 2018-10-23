@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Default Inputs manager for the ArcRotateCamera.
      * It groups all the default supported inputs for ease of use.
@@ -49,4 +48,3 @@ module BABYLON {
             return this;
         }
     }
-}

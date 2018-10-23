@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Postprocess used to generate anaglyphic rendering
      */
@@ -22,5 +21,4 @@ module BABYLON {
                 effect.setTextureFromPostProcess("leftSampler", this._passedProcess);
             });
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Represents one particle of a solid particle system.
      */
@@ -261,4 +260,3 @@ module BABYLON {
          */
         public sqDistance: number = 0.0;
     }
-}

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This class is made for on one-liner static method to help creating particle system set.
      */
@@ -101,5 +100,3 @@ module BABYLON {
             return set;
         }
     }
-
-}

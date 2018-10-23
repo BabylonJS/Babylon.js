@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * VRDistortionCorrectionPostProcess used for mobile VR
      */
@@ -45,4 +44,3 @@ module BABYLON {
             });
         }
     }
-}

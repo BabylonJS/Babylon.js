@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Specifies the level of max blur that should be applied when using the depth of field effect
      */
@@ -173,4 +172,3 @@ module BABYLON {
             return true;
         }
     }
-}

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * The GrainPostProcess adds noise to the image at mid luminance levels
      */
@@ -30,5 +29,4 @@ module BABYLON {
                 effect.setFloat('animatedSeed', this.animated ? Math.random() + 1 : 1);
             });
         }
-    }
-}
+    }

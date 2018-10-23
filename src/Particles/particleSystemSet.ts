@@ -1,5 +1,3 @@
-module BABYLON {
-
     /** Internal class used to store shapes for emitters */
     class ParticleSystemSetEmitterCreationOptions {
         public kind: string;
@@ -138,4 +136,3 @@ module BABYLON {
             return result;
         }
     }
-}

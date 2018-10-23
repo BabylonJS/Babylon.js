@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Defines a sound that can be played in the application.
      * The sound can either be an ambient track or a simple sound played in reaction to a user action.
@@ -994,4 +993,3 @@ module BABYLON {
             return newSound;
         }
     }
-}

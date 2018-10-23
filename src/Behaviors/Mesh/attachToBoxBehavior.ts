@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * @hidden
      */
@@ -162,5 +161,4 @@ module BABYLON {
         detach() {
             this._scene.onBeforeRenderObservable.remove(this._onRenderObserver);
         }
-    }
-}
+    }

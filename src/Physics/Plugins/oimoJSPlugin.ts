@@ -1,4 +1,3 @@
-module BABYLON {
     declare var OIMO: any;
 
     /** @hidden */
@@ -468,4 +467,3 @@ module BABYLON {
             this.world.clear();
         }
     }
-}

@@ -1,6 +1,5 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts" />
 
-module BABYLON {
     interface WorkerInfo {
         worker: Worker;
         active: boolean;
@@ -63,4 +62,3 @@ module BABYLON {
             });
         }
     }
-}

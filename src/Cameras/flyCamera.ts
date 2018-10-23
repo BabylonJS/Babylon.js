@@ -1,5 +1,4 @@
-﻿module BABYLON {
-    /**
+﻿    /**
      * This is a flying camera, designed for 3D movement and rotation in all directions,
      * such as in a 3D Space Shooter or a Flight Simulator.
      */
@@ -417,4 +416,3 @@
             return "FlyCamera";
         }
     }
-}

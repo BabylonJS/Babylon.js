@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Default Inputs manager for the FlyCamera.
      * It groups all the default supported inputs for ease of use.
@@ -31,5 +30,4 @@ module BABYLON {
             this.add(new FlyCameraMouseInput(touchEnabled));
             return this;
         }
-    }
-}
+    }

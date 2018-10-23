@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Particle emitter emitting particles from the inside of a cone.
      * It emits the particles alongside the cone volume from the base to the particle.
@@ -191,5 +190,4 @@ module BABYLON {
             this.angle = serializationObject.angle;
             this.directionRandomizer = serializationObject.directionRandomizer;
         }
-    }
-}
+    }

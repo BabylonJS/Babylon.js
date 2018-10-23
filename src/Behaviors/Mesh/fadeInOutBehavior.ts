@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * A behavior that when attached to a mesh will allow the mesh to fade in and out
      */
@@ -88,5 +87,4 @@ module BABYLON {
             });
         }
 
-    }
-}
+    }
