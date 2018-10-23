@@ -1,4 +1,3 @@
-module BABYLON {
     export interface Scene {
         /** @hidden (Backing field) */
         _boundingBoxRenderer: BoundingBoxRenderer;
@@ -304,5 +303,4 @@ module BABYLON {
             }
             this.scene.getEngine()._releaseBuffer(this._indexBuffer);
         }
-    }
-}
+    }

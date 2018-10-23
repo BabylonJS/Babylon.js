@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * The CircleOfConfusionPostProcess computes the circle of confusion value for each pixel given required lens parameters. See https://en.wikipedia.org/wiki/Circle_of_confusion
      */
@@ -59,5 +58,4 @@ module BABYLON {
         public set depthTexture(value: RenderTargetTexture) {
             this._depthTexture = value;
         }
-    }
-}
+    }

@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * A helper for physics simulations
      * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
@@ -765,4 +763,3 @@ module BABYLON {
         cylinder: Mesh;
     }
 
-}

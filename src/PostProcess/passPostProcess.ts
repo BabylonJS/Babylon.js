@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * PassPostProcess which produces an output the same as it's input
      */
@@ -17,5 +16,4 @@ module BABYLON {
         constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
             super(name, "pass", null, null, options, camera, samplingMode, engine, reusable, undefined, textureType, undefined, null, blockCompilation);
         }
-    }
-}
+    }

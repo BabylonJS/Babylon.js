@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to store bounding box information
      */
@@ -314,5 +313,4 @@ module BABYLON {
             }
             return true;
         }
-    }
-}
+    }

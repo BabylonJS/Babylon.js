@@ -1,5 +1,4 @@
 
-module BABYLON {
     /**
      *
      * This post-process allows the modification of rendered colors by using
@@ -31,5 +30,4 @@ module BABYLON {
                 effect.setTexture("colorTable", this._colorTableTexture);
             };
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * LineEdgesRenderer for LineMeshes to remove unnecessary triangulation
      */
@@ -46,4 +45,3 @@ module BABYLON {
             this._indicesCount = this._linesIndices.length;
         }
     }
-}

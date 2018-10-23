@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * @hidden
      **/
@@ -3841,4 +3839,3 @@ module BABYLON {
             }
         }
     }
-}

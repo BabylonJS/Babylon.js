@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * The bloom effect spreads bright areas of an image to simulate artifacts seen in cameras
      */
@@ -111,5 +110,4 @@ module BABYLON {
             }
             return true;
         }
-    }
-}
+    }

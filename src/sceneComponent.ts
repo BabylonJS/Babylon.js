@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Groups all the scene component constants in one place to ease maintenance.
      * @hidden
@@ -222,4 +221,3 @@ module BABYLON {
             this.length = 0;
         }
     }
-}

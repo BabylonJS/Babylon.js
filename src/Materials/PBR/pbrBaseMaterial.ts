@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Manages the defines for the PBR Material.
      * @hiddenChildren
@@ -1838,4 +1837,3 @@ module BABYLON {
             super.dispose(forceDisposeEffect, forceDisposeTextures);
         }
     }
-}

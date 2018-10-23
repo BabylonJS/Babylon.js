@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This defines an action helpful to play a defined sound on a triggered action.
      */
@@ -83,5 +82,4 @@ module BABYLON {
                 properties: [{ name: "sound", value: this._sound.name }]
             }, parent);
         }
-    }
-}
+    }

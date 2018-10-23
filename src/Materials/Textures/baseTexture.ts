@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Base class of all the textures in babylon.
      * It groups all the common properties the materials, post process, lights... might need
@@ -635,4 +634,3 @@ module BABYLON {
             }
         }
     }
-}

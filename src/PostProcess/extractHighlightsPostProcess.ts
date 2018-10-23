@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * The extract highlights post process sets all pixels to black except pixels above the specified luminance threshold. Used as the first step for a bloom effect.
      */
@@ -25,5 +24,4 @@ module BABYLON {
                 effect.setFloat('exposure', this._exposure);
             });
         }
-    }
-}
+    }

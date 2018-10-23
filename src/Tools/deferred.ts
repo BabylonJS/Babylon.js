@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Wrapper class for promise with external resolve and reject.
      */
@@ -36,4 +35,3 @@ module BABYLON {
             });
         }
     }
-}

@@ -1,4 +1,3 @@
-module BABYLON {
     // Adds the parsers to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
 
@@ -108,5 +107,4 @@ module BABYLON {
         }
 
         return results;
-    };
-}
+    };

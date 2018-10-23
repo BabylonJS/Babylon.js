@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Single axis scale gizmo
      */
@@ -152,5 +151,4 @@ module BABYLON {
                 this._customMeshSet = false;
             }
         }
-    }
-}
+    }

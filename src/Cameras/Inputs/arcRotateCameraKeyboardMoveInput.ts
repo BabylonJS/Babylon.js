@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Manage the keyboard inputs to control the movement of an arc rotate camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -226,5 +225,4 @@ module BABYLON {
         }
     }
 
-    (<any>CameraInputTypes)["ArcRotateCameraKeyboardMoveInput"] = ArcRotateCameraKeyboardMoveInput;
-}
+    (<any>CameraInputTypes)["ArcRotateCameraKeyboardMoveInput"] = ArcRotateCameraKeyboardMoveInput;

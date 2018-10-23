@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Wraps one or more Sound objects and selects one with random weight for playback.
      */
@@ -171,4 +170,3 @@ module BABYLON {
             this.isPaused = false;
         }
     }
-}

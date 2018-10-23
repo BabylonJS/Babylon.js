@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Interface to follow in your material defines to integrate easily the
      * Image proccessing functions.
@@ -571,5 +570,4 @@ module BABYLON {
         public static get VIGNETTEMODE_OPAQUE(): number {
             return this._VIGNETTEMODE_OPAQUE;
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Interface used to define a behavior
      */
@@ -43,5 +42,4 @@ module BABYLON {
          * @returns the behavior or null if not found
          */
         getBehaviorByName(name: string): Nullable<Behavior<T>>;
-    }
-}
+    }

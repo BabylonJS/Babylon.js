@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * Scalar computation library
      */
@@ -316,4 +314,3 @@ module BABYLON {
             return angle;
         }
     }
-}

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Represents the different options available during the creation of
      * a Environment helper.
@@ -687,5 +686,4 @@ module BABYLON {
             }
             this._rootMesh.dispose(false);
         }
-    }
-}
+    }

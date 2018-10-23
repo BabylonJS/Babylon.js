@@ -1,4 +1,3 @@
-module BABYLON {
     Node.AddNodeConstructor("Light_Type_0", (name, scene) => {
         return () => new PointLight(name, Vector3.Zero(), scene);
     });
@@ -188,5 +187,4 @@ module BABYLON {
         public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
             defines["POINTLIGHT" + lightIndex] = true;
         }
-    }
-}
+    }

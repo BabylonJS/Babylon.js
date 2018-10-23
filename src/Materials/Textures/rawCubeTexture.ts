@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Raw cube texture where the raw buffers are passed in
      */
@@ -82,4 +81,3 @@ module BABYLON {
             });
         }
     }
-}

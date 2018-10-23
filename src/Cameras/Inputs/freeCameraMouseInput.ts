@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Manage the mouse inputs to control the movement of a free camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -184,4 +183,3 @@ module BABYLON {
     }
 
     (<any>CameraInputTypes)["FreeCameraMouseInput"] = FreeCameraMouseInput;
-}

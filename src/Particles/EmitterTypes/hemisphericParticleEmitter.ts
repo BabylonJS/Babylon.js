@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Particle emitter emitting particles from the inside of a hemisphere.
      * It emits the particles alongside the hemisphere radius. The emission direction might be randomized.
@@ -123,4 +122,3 @@ module BABYLON {
             this.directionRandomizer = serializationObject.directionRandomizer;
         }
     }
-}

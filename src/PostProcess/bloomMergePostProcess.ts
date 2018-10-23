@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * The BloomMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
      */
@@ -33,5 +32,4 @@ module BABYLON {
                 this.updateEffect();
             }
         }
-    }
-}
+    }

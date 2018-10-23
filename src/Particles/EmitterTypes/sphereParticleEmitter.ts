@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Particle emitter emitting particles from the inside of a sphere.
      * It emits the particles alongside the sphere radius. The emission direction might be randomized.
@@ -223,4 +222,3 @@ module BABYLON {
             this.direction2.copyFrom(serializationObject.direction2);
         }
     }
-}

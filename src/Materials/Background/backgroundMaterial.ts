@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Background material defines definition.
      * @hidden Mainly internal Use
@@ -1170,4 +1169,3 @@ module BABYLON {
             return SerializationHelper.Parse(() => new BackgroundMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
-}

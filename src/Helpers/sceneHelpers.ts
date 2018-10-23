@@ -1,4 +1,3 @@
-module BABYLON {
     export interface Scene {
         /**
          * Creates a default light for the scene.
@@ -191,4 +190,3 @@ module BABYLON {
             });
         });
     };
-}

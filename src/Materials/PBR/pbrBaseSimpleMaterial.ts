@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * The Physically based simple base material of BJS.
      *
@@ -174,5 +173,4 @@ module BABYLON {
         public getClassName(): string {
             return "PBRBaseSimpleMaterial";
         }
-    }
-}
+    }

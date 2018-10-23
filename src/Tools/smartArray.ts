@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Defines an array and its length.
      * It can be helpfull to group result from both Arrays and smart arrays in one structure.
@@ -195,5 +194,4 @@ module BABYLON {
                 this.pushNoDuplicate(item);
             }
         }
-    }
-}
+    }

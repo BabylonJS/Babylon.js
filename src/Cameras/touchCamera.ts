@@ -1,4 +1,3 @@
-module BABYLON {
     Node.AddNodeConstructor("TouchCamera", (name, scene) => {
         return () => new TouchCamera(name, Vector3.Zero(), scene);
     });
@@ -80,5 +79,4 @@ module BABYLON {
                 mouse.touchEnabled = false;
             }
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Represents a gamepad control stick position
      */
@@ -293,4 +292,3 @@ module BABYLON {
             this.onButtonUpObservable.clear();
         }
     }
-}

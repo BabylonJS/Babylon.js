@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * This represents a texture coming from an HDR input.
      *
@@ -327,4 +325,3 @@ module BABYLON {
             return serializationObject;
         }
     }
-}

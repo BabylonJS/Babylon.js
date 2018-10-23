@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
      * Custom Procedural textures are the easiest way to create your own procedural in your application.
@@ -163,5 +162,4 @@ module BABYLON {
         public set animate(value: boolean) {
             this._animate = value;
         }
-    }
-}
+    }

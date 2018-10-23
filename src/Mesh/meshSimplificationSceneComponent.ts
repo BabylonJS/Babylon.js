@@ -1,4 +1,3 @@
-module BABYLON {
     export interface Scene {
         /** @hidden (Backing field) */
         _simplificationQueue: SimplificationQueue;
@@ -103,5 +102,4 @@ module BABYLON {
                 this.scene._simplificationQueue.executeNext();
             }
         }
-    }
-}
+    }

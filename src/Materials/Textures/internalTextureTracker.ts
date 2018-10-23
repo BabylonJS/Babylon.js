@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Internal interface used to track InternalTexture already bound to the GL context
      */
@@ -25,5 +24,4 @@ module BABYLON {
          * Gets or set the next tracker in the list
          */
         public next: Nullable<IInternalTextureTracker> = null;
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
      */
@@ -397,5 +396,4 @@ module BABYLON {
                 this._scene.onBeforeRenderObservable.remove(this._beforeRenderObserver);
             }
         }
-    }
-}
+    }

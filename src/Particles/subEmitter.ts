@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Type of sub emitter
      */
@@ -116,5 +115,4 @@ module BABYLON {
         public dispose() {
             this.particleSystem.dispose();
         }
-    }
-}
+    }

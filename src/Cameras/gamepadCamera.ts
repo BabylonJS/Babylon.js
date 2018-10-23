@@ -1,4 +1,3 @@
-module BABYLON {
     Node.AddNodeConstructor("GamepadCamera", (name, scene) => {
         return () => new GamepadCamera(name, Vector3.Zero(), scene);
     });
@@ -29,5 +28,4 @@ module BABYLON {
         public getClassName(): string {
             return "GamepadCamera";
         }
-    }
-}
+    }

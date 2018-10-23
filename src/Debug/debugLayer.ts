@@ -1,5 +1,3 @@
-module BABYLON {
-
     // declare INSPECTOR namespace for compilation issue
     declare var INSPECTOR: any;
     // load the inspector using require, if not present in the global namespace.
@@ -174,4 +172,3 @@ module BABYLON {
             return this._inspector ? this._inspector.getActiveTabIndex() : -1;
         }
     }
-}

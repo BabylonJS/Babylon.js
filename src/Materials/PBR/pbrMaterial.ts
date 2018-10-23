@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * The Physically based material of BJS.
      *
@@ -811,5 +810,4 @@ module BABYLON {
         public static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial {
             return SerializationHelper.Parse(() => new PBRMaterial(source.name, scene), source, scene, rootUrl);
         }
-    }
-}
+    }

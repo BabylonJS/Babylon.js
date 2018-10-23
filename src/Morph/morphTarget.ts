@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Defines a target to use with MorphTargetManager
      * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
@@ -238,5 +237,4 @@ module BABYLON {
 
             return result;
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Set of assets to keep when moving a scene into an asset container.
      */
@@ -182,4 +181,3 @@ module BABYLON {
             return rootMesh;
         }
     }
-}

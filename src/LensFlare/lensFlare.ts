@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This represents one of the lens effect in a `BABYLON.lensFlareSystem`.
      * It controls one of the indiviual texture used in the effect.
@@ -81,5 +80,4 @@ module BABYLON {
             var index = this._system.lensFlares.indexOf(this);
             this._system.lensFlares.splice(index, 1);
         }
-    }
-}
+    }

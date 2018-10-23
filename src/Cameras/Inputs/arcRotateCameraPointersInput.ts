@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Manage the pointers inputs to control an arc rotate camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -412,4 +411,3 @@ module BABYLON {
     }
 
     (<any>CameraInputTypes)["ArcRotateCameraPointersInput"] = ArcRotateCameraPointersInput;
-}

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Interface describing all the common properties and methods a shadow light needs to implement.
      * This helps both the shadow generator and materials to genrate the corresponding shadow maps
@@ -383,4 +382,3 @@ module BABYLON {
             return this;
         }
     }
-}

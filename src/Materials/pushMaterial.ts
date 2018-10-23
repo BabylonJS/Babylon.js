@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Base class of materials working in push mode in babylon JS
      * @hidden
@@ -71,5 +70,4 @@ module BABYLON {
         protected _mustRebind(scene: Scene, effect: Effect, visibility: number = 1) {
             return scene.isCachedMaterialInvalid(this, effect, visibility);
         }
-    }
-}
+    }

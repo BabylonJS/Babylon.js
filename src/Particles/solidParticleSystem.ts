@@ -1,4 +1,3 @@
-module BABYLON {
     const depthSortFunction = (p1: DepthSortedParticle, p2: DepthSortedParticle) => p2.sqDistance - p1.sqDistance;
 
     /**
@@ -1200,5 +1199,4 @@ module BABYLON {
          */
         public afterUpdateParticles(start?: number, stop?: number, update?: boolean): void {
         }
-    }
-}
+    }

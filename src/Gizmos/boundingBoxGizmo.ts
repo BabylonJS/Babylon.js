@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Bounding box gizmo
      */
@@ -514,5 +513,4 @@ module BABYLON {
         public setCustomMesh(mesh: Mesh) {
             Tools.Error("Custom meshes are not supported on this gizmo");
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Unique ID when we import meshes from Babylon to CSG
      */
@@ -782,5 +781,4 @@ module BABYLON {
 
             return mesh;
         }
-    }
-}
+    }

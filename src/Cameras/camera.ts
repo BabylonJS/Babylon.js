@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This is the base class of all the camera used in the application.
      * @see http://doc.babylonjs.com/features/cameras
@@ -1229,4 +1228,3 @@ module BABYLON {
             return camera;
         }
     }
-}

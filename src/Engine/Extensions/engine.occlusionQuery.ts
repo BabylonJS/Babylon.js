@@ -1,4 +1,3 @@
-module BABYLON {
     /** @hidden */
     class _OcclusionDataStorage {
         /** @hidden */
@@ -446,5 +445,4 @@ module BABYLON {
         }
 
         return dataStorage.isOccluded;
-    };
-}
+    };

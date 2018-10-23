@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Defines the minimum interface to fullfil in order to be a sprite manager.
      */
@@ -378,4 +377,3 @@ module BABYLON {
             this.onDisposeObservable.clear();
         }
     }
-}
