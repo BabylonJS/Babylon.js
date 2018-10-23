@@ -209,10 +209,10 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** Gets or sets the highlight text */
-    public get getHighlightedText(): string {
+    public get highlightedText(): string {
         return this._highlightedText;
     }
-    public set setHighlightedText(text: string) {
+    public set highlightedText(text: string) {
         if (this._highlightedText === text) {
             return;
         }
@@ -489,8 +489,8 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /**
-     *  Callback in case of copy event, can be configured.
-     * @param {ClipboardEvent} ev
+     * Callback in case of copy event, can be configured.
+     * @param {ClipboardEvent} ev Defines the Clipboard event.
      */
     public onCopyText(ev: ClipboardEvent): void {
         this._isTextHighlightOn = false;
@@ -500,7 +500,7 @@ export class InputText extends Control implements IFocusableControl {
     }
     /**
      * Callback in case of cut event, can be configured.
-     * @param {ClipboardEvent} ev
+     * @param {ClipboardEvent} ev Defines the Clipboard event.
      */
     public onCutText(ev: ClipboardEvent): void {
         this.text = this._text.replace(this._highlightedText, "");
@@ -511,7 +511,7 @@ export class InputText extends Control implements IFocusableControl {
     }
     /**
      * Callback in case of paste event, can be configured.
-     *  @param {ClipboardEvent} ev
+     * @param {ClipboardEvent} ev Defines the Clipboard event.
      */
     public onPasteText(ev: ClipboardEvent): void {
         let data: string = "";

@@ -71,7 +71,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _blockNextFocusCheck = false;
     private _renderScale = 1;
     private _rootCanvas: Nullable<HTMLCanvasElement>;
-    private _clipboardData: DataTransfer;
+    private _clipboardData: DataTransfer = new DataTransfer();
+
+    /**
+     * Observable event triggered each time an clipboard event is received from the rendering canvas
+     */
     public onClipboardObserver = new Observable<ClipboardInfo>();
 
     /**
@@ -396,7 +400,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
         this._rootContainer.dispose();
         this.onClipboardObserver.clear();
-        this.clipboardData.clearData();
+        this._clipboardData.clearData();
 
         super.dispose();
     }
