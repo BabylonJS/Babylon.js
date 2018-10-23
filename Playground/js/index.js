@@ -582,25 +582,25 @@ function showError(errorMessage, errorEvent) {
                         //create scene
                         eval("scene = " + createSceneFunction + "()");
 
-                        // if scene returns a promise avoid checks
-                        if (scene.then) {
-                            checkCamera = false
-                            checkSceneCount = false
-                        }
-
                         if (!scene) {
                             showError(createSceneFunction + " function must return a scene.", null);
                             return;
                         }
 
+                        // if scene returns a promise avoid checks
+                        if (scene.then) {
+                            checkCamera = false;
+                            checkSceneCount = false;
+                        }
+
                         var createEngineZip = (createEngineFunction === "createEngine")
                             ? "createEngine()"
-                            : defaultEngineZip
+                            : defaultEngineZip;
 
                         zipCode =
                             code + "\r\n\r\n" +
                             "var engine = " + createEngineZip + ";\r\n" +
-                            "var scene = " + createSceneFunction + "();"
+                            "var scene = " + createSceneFunction + "();";
 
                     }
 
