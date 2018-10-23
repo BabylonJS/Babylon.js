@@ -1,4 +1,3 @@
-module BABYLON {
     export interface AbstractScene {
         /**
          * The list of procedural textures added to the scene
@@ -67,4 +66,3 @@ module BABYLON {
             }
         }
     }
-}

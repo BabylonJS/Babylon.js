@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * A behavior that when attached to a mesh will allow the mesh to be scaled
      */
@@ -100,5 +99,4 @@ module BABYLON {
                 this._ownerNode.removeBehavior(behavior);
             });
         }
-    }
-}
+    }

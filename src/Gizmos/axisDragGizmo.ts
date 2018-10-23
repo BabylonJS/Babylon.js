@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Single axis drag gizmo
      */
@@ -122,5 +121,4 @@ module BABYLON {
             this.dragBehavior.detach();
             super.dispose();
         }
-    }
-}
+    }

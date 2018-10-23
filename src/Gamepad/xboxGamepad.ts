@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * Defines supported buttons for XBox360 compatible gamepads
      */
@@ -449,4 +447,3 @@ module BABYLON {
             this.onPadUpObservable.clear();
         }
     }
-}

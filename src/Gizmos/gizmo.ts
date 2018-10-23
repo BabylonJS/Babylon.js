@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
      */
@@ -131,5 +130,4 @@ module BABYLON {
                 this.gizmoLayer.utilityLayerScene.onBeforeRenderObservable.remove(this._beforeRenderObserver);
             }
         }
-    }
-}
+    }

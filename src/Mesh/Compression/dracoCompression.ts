@@ -1,7 +1,6 @@
 declare var DracoDecoderModule: any;
 declare var WebAssembly: any;
 
-module BABYLON {
     /**
      * Configuration for Draco compression
      */
@@ -270,4 +269,3 @@ module BABYLON {
             });
         }
     }
-}

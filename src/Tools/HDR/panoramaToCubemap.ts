@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * CubeMap information grouping all the data for each faces as well as the cubemap size.
      */
@@ -215,4 +214,3 @@ module BABYLON {
             };
         }
     }
-}

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Generic Controller
      */
@@ -46,5 +45,4 @@ module BABYLON {
             console.dir(state);
         }
     }
-
-}
+

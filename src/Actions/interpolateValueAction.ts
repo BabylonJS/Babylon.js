@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This defines an action responsible to change the value of a property
      * by interpolating between its current value and the newly set one once triggered.
@@ -134,5 +133,4 @@ module BABYLON {
                 ]
             }, parent);
         }
-    }
-}
+    }

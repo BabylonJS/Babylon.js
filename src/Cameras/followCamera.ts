@@ -1,4 +1,3 @@
-module BABYLON {
     Node.AddNodeConstructor("FollowCamera", (name, scene) => {
         return () => new FollowCamera(name, Vector3.Zero(), scene);
     });
@@ -182,4 +181,3 @@ module BABYLON {
             return "ArcFollowCamera";
         }
     }
-}

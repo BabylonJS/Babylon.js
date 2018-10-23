@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * "Static Class" containing the most commonly used helper while dealing with material for
      * rendering purpose.
@@ -679,5 +678,4 @@ module BABYLON {
                 effect.setFloat4("vClipPlane4", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
             }
         }
-    }
-}
+    }

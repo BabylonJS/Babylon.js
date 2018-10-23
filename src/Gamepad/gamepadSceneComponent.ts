@@ -1,4 +1,3 @@
-module BABYLON {
     export interface Scene {
         /** @hidden */
         _gamepadManager: Nullable<GamepadManager>;
@@ -120,5 +119,4 @@ module BABYLON {
                 gamepadManager._checkGamepadsStatus();
             }
         }
-    }
-}
+    }

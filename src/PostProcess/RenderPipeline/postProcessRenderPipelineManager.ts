@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * PostProcessRenderPipelineManager class
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
@@ -123,5 +122,4 @@ module BABYLON {
                 }
             }
         }
-    }
-}
+    }

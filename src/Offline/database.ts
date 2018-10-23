@@ -1,5 +1,3 @@
-module BABYLON {
-
     // Sets the default offline provider to Babylon.js
     Engine.OfflineProviderFactory = (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck = false) => { return new Database(urlToScene, callbackManifestChecked, disableManifestCheck); };
 
@@ -660,4 +658,3 @@ module BABYLON {
             }
         }
     }
-}

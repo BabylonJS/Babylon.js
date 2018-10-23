@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * Class containing static functions to help procedurally build meshes
      */
@@ -1401,4 +1399,3 @@ module BABYLON {
             return extrudedGeneric;
         }
     }
-}

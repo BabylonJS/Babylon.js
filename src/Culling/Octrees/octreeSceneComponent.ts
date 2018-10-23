@@ -1,4 +1,3 @@
-module BABYLON {
     export interface Scene {
         /**
          * @hidden
@@ -230,4 +229,3 @@ module BABYLON {
             // Nothing to do here.
         }
     }
-}

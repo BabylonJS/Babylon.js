@@ -1,4 +1,3 @@
-module BABYLON {
     /** @hidden */
     class _FacetDataStorage {
         // facetData private properties
@@ -1928,4 +1927,3 @@ module BABYLON {
             return false;
         }
     }
-}

@@ -1,4 +1,3 @@
-module BABYLON {
     export interface Scene {
         /** @hidden (Backing field) */
         _depthRenderer: { [id: string]: DepthRenderer };
@@ -120,5 +119,4 @@ module BABYLON {
                 }
             }
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Manages the defines for the Material
      */
@@ -1439,4 +1438,3 @@ module BABYLON {
             return materialType.Parse(parsedMaterial, scene, rootUrl);
         }
     }
-}

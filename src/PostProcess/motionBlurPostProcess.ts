@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * The Motion Blur Post Process which blurs an image based on the objects velocity in scene.
      * Velocity can be affected by each object's rotation, position and scale depending on the transformation speed.
@@ -90,4 +89,3 @@ module BABYLON {
             super.dispose(camera);
         }
     }
-}

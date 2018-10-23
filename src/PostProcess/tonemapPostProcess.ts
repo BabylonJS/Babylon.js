@@ -1,4 +1,3 @@
-module BABYLON {
     /** Defines operator used for tonemapping */
     export enum TonemappingOperator {
         /** Hable */
@@ -54,4 +53,3 @@ module BABYLON {
             };
         }
     }
-}

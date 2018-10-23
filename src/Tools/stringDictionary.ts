@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This class implement a typical dictionary using a string as key and the generic type T as value.
      * The underlying implementation relies on an associative array to ensure the best performances.
@@ -181,5 +180,4 @@ module BABYLON {
 
         private _count = 0;
         private _data: {[key: string]: T} = {};
-    }
-}
+    }

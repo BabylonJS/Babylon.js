@@ -1,4 +1,3 @@
-module BABYLON {
     /** @hidden */
     export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         public MAINUV1 = false;
@@ -1860,4 +1859,3 @@ module BABYLON {
             Engine.MarkAllMaterialsAsDirty(Material.FresnelDirtyFlag);
         }
     }
-}

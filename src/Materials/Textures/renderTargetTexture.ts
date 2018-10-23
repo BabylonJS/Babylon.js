@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This Helps creating a texture that will be created from a camera in your scene.
      * It is basically a dynamic texture that could be used to create special effects for instance.
@@ -948,4 +947,3 @@ module BABYLON {
             }
         }
     }
-}

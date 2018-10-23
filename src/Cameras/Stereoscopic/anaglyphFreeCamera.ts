@@ -1,4 +1,3 @@
-module BABYLON {
     Node.AddNodeConstructor("AnaglyphFreeCamera", (name, scene, options) => {
         return () => new AnaglyphFreeCamera(name, Vector3.Zero(), options.interaxial_distance, scene);
     });
@@ -28,5 +27,4 @@ module BABYLON {
         public getClassName(): string {
             return "AnaglyphFreeCamera";
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Display a 360 degree photo on an approximately spherical surface, useful for VR applications or skyboxes.
      * As a subclass of TransformNode, this allow parenting to the camera with different locations in the scene.
@@ -130,4 +129,3 @@ module BABYLON {
             super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
     }
-}

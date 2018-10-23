@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Implementation of the KTX Texture Loader.
      */
@@ -93,5 +92,4 @@ module BABYLON {
     }
 
     // Register the loader.
-    Engine._TextureLoaders.unshift(new KTXTextureLoader());
-}
+    Engine._TextureLoaders.unshift(new KTXTextureLoader());

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
      * This is the base class of any Procedural texture and contains most of the shareable code.
@@ -611,5 +610,4 @@ module BABYLON {
 
             super.dispose();
         }
-    }
-}
+    }

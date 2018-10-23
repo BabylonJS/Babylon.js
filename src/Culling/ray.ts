@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class representing a ray with position and direction
      */
@@ -490,5 +489,4 @@ module BABYLON {
                 result.length *= len;
             }
         }
-    }
-}
+    }
