@@ -48,5 +48,5 @@
         "assets": true
     },
     "editor.tabSize": 4,
-    "typescript.tsdk": "./Tools/Gulp/node_modules/typescript/lib"
+    "typescript.tsdk": "node_modules\\typescript\\lib"
 }
