@@ -13,6 +13,10 @@ module BABYLON.Debug {
         private _isEnabled = false;
         private _renderFunction: () => void;
 
+        public get debugMesh(): Nullable<LinesMesh> {
+            return this._debugMesh;
+        }
+
         /**
          * Creates a new SkeletonViewer
          * @param skeleton defines the skeleton to render
@@ -20,6 +24,7 @@ module BABYLON.Debug {
          * @param scene defines the hosting scene
          * @param autoUpdateBonesMatrices defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)
          * @param renderingGroupId defines the rendering group id to use with the viewer
+         * @param utilityLayerRenderer defines an optional utility layer to render the helper on
          */
         constructor(
             /** defines the skeleton to render */
@@ -30,7 +35,10 @@ module BABYLON.Debug {
             /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
             public autoUpdateBonesMatrices = true,
             /** defines the rendering group id to use with the viewer */
-            public renderingGroupId = 1) {
+            public renderingGroupId = 1,
+            /** defines an optional utility layer to render the helper on */
+            public utilityLayerRenderer?: UtilityLayerRenderer
+        ) {
             this._scene = scene;
 
             this.update();
@@ -131,12 +139,13 @@ module BABYLON.Debug {
             } else {
                 this._getLinesForBonesWithLength(this.skeleton.bones, this.mesh.getWorldMatrix());
             }
+            const targetScene = this.utilityLayerRenderer ? this.utilityLayerRenderer.utilityLayerScene : this._scene;
 
             if (!this._debugMesh) {
-                this._debugMesh = BABYLON.MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: null }, this._scene);
+                this._debugMesh = BABYLON.MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: null }, targetScene);
                 this._debugMesh.renderingGroupId = this.renderingGroupId;
             } else {
-                BABYLON.MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: this._debugMesh }, this._scene);
+                BABYLON.MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: this._debugMesh }, targetScene);
             }
             this._debugMesh.position.copyFrom(this.mesh.position);
             this._debugMesh.color = this.color;

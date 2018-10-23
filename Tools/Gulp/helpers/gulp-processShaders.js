@@ -30,7 +30,7 @@ function main() {
                 return;
             }
             if (file.isStream()) {
-                cb(new PluginError("Remove Shader Comments", "Streaming not supported."));
+                cb(new PluginError("Process Shader", "Streaming not supported."));
             }
     
             const filename = path.basename(file.path);
