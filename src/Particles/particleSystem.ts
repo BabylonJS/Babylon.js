@@ -1,3 +1,11 @@
+import { Nullable } from "types";
+import { IAnimatable, Observable, Observer, Tools, FactorGradient, ColorGradient, Color3Gradient } from "Tools";
+import { Color4, Color3, Vector3, Matrix, Tmp, ISize, Scalar, Vector4 } from "Math";
+import { AbstractMesh, VertexBuffer } from "Mesh";
+import { IParticleSystem, BaseParticleSystem, Particle, SubEmitter, SubEmitterType, BoxParticleEmitter, IParticleEmitterType, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter } from "Particles";
+import { Material, ImageProcessingConfiguration, Effect, Texture, RawTexture, ProceduralTexture, MaterialHelper } from "Materials";
+import { Engine } from "Engine";
+import { Scene, IDisposable } from "scene";
     /**
      * This represents a particle system in Babylon.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -1290,7 +1298,7 @@
                 // Life time
                 if (this.targetStopDuration && this._lifeTimeGradients && this._lifeTimeGradients.length > 0) {
                     let ratio = Scalar.Clamp(this._actualFrame / this.targetStopDuration);
-                    Tools.GetCurrentGradient(ratio, this._lifeTimeGradients, (currentGradient, nextGradient, scale) => {
+                    Tools.GetCurrentGradient(ratio, this._lifeTimeGradients, (currentGradient, nextGradient) => {
                         let factorGradient1 = (<FactorGradient>currentGradient);
                         let factorGradient2 = (<FactorGradient>nextGradient);
                         let lifeTime1 = factorGradient1.getFactor();

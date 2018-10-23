@@ -1,3 +1,11 @@
+import { Nullable, IndicesArray, FloatArray } from "types";
+import { Color4, Vector3, Matrix, Tmp, Quaternion, Axis } from "Math";
+import { Mesh, MeshBuilder, VertexData, VertexBuffer } from "Mesh";
+import { Engine } from "Engine";
+import { Scene, IDisposable } from "scene";
+import { DepthSortedParticle, SolidParticle, ModelShape } from "Particles";
+import { TargetCamera } from "Cameras";
+import { BoundingInfo } from "Culling";
     const depthSortFunction = (p1: DepthSortedParticle, p2: DepthSortedParticle) => p2.sqDistance - p1.sqDistance;
 
     /**
@@ -595,7 +603,7 @@
             }
 
             // custom beforeUpdate
-            this.beforeUpdateParticles(start, end, update);
+            this.beforeUpdateParticles();
 
             const rotMatrix = Tmp.Matrix[0];
             const invertedMatrix = Tmp.Matrix[1];
@@ -781,7 +789,7 @@
                         const tmpVertex = tempVectors[0];
                         tmpVertex.copyFrom(shape[pt]);
                         if (this._computeParticleVertex) {
-                            this.updateParticleVertex(particle, tmpVertex, pt);
+                            this.updateParticleVertex(tmpVertex);
                         }
 
                         // positions
@@ -956,7 +964,7 @@
                     mesh._boundingInfo = new BoundingInfo(minimum, maximum, mesh._worldMatrix);
                 }
             }
-            this.afterUpdateParticles(start, end, update);
+            this.afterUpdateParticles();
             return this;
         }
 
@@ -1176,7 +1184,7 @@
          * @example : just set a vertex particle position
          * @returns the updated vertex
          */
-        public updateParticleVertex(particle: SolidParticle, vertex: Vector3, pt: number): Vector3 {
+        public updateParticleVertex(vertex: Vector3): Vector3 {
             return vertex;
         }
 
@@ -1187,7 +1195,7 @@
          * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
          * @param update the boolean update value actually passed to setParticles()
          */
-        public beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void {
+        public beforeUpdateParticles(): void {
         }
         /**
          * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
@@ -1197,6 +1205,6 @@
          * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
          * @param update the boolean update value actually passed to setParticles()
          */
-        public afterUpdateParticles(start?: number, stop?: number, update?: boolean): void {
+        public afterUpdateParticles(): void {
         }
-    }
+    }

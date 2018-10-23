@@ -1,3 +1,9 @@
+import { IDisposable, Scene } from "scene";
+import { Nullable } from "types";
+import { Observable, Observer } from "Tools";
+import { VertexBuffer } from "Mesh";
+import { Vector3 } from "Math";
+
     /**
      * Defines the minimum interface to fullfil in order to be a sprite manager.
      */

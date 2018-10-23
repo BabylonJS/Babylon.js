@@ -1,3 +1,10 @@
+import { Vector3, SphericalPolynomial, SphericalHarmonics, Scalar, ToLinearSpace, Color3 } from "Math";
+import { BaseTexture } from "Materials";
+import { Nullable } from "types";
+import { Engine } from "Engine";
+import { CubeMapInfo } from "Tools";
+
+
     class FileFaceOrientation {
         public name: string;
         public worldAxisForNormal: Vector3; // the world axis corresponding to the normal to the face

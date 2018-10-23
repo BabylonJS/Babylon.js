@@ -1,3 +1,10 @@
+import { Nullable } from "types";
+import { GeometryBufferRenderer } from "Rendering";
+import { Scene } from "scene";
+import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
+import { SmartArrayNoDuplicate } from "Tools";
+import { RenderTargetTexture } from "Materials";
+
     export interface Scene {
         /** @hidden (Backing field) */
         _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
@@ -105,4 +112,4 @@
                 renderTargets.push(this.scene._geometryBufferRenderer.getGBuffer());
             }
         }
-    }
+    }

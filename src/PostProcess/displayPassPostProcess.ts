@@ -1,4 +1,9 @@
-﻿    /**
+﻿import { Nullable } from "types";
+import { Camera } from "Cameras";
+import { PostProcess, PostProcessOptions } from "PostProcess";
+import { Engine } from "Engine";
+    
+    /**
      * DisplayPassPostProcess which produces an output the same as it's input
      */
     export class DisplayPassPostProcess extends PostProcess {
@@ -14,4 +19,4 @@
         constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean) {
             super(name, "displayPass", ["passSampler"], ["passSampler"], options, camera, samplingMode, engine, reusable);
         }
-    }
+    }

@@ -1,3 +1,7 @@
+import { Tools } from "Tools";
+import { Vector3, Matrix, Scalar } from "Math";
+import { Effect } from "Materials";
+import { IParticleEmitterType, Particle } from "Particles";
     /**
      * Particle emitter emitting particles from the inside of a cone.
      * It emits the particles alongside the cone volume from the base to the particle.
@@ -190,4 +194,4 @@
             this.angle = serializationObject.angle;
             this.directionRandomizer = serializationObject.directionRandomizer;
         }
-    }
+    }

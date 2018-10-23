@@ -1,3 +1,13 @@
+import { Nullable } from "types";
+import { IAnimatable, Tools, serialize, serializeAsTexture, SerializationHelper } from "Tools";
+import { Vector2, Vector3, Matrix, Vector4, Scalar } from "Math";
+import { Camera } from "Cameras";
+import { Effect, Texture } from "Materials";
+import { PostProcess, PostProcessRenderPipeline, BlurPostProcess, FxaaPostProcess, Scene, PostProcessRenderEffect } from "PostProcess";
+import { Engine } from "Engine";
+import { IDisposable } from "scene";
+import { SpotLight, DirectionalLight } from "Lights";
+import { GeometryBufferRenderer } from "Rendering";
     /**
      * Standard rendering pipeline
      * Default pipeline should be used going forward but the standard pipeline will be kept for backwards compatibility.
@@ -478,7 +488,7 @@
             // Create pass post-process
             if (!this._basePostProcess) {
                 this.originalPostProcess = new PostProcess("HDRPass", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", this._floatTextureType);
-                this.originalPostProcess.onApply = (effect: Effect) => {
+                this.originalPostProcess.onApply = () => {
                     this._currentDepthOfFieldSource = this.originalPostProcess;
                 };
             }
@@ -786,7 +796,7 @@
                 };
 
                 if (index === this.luminanceDownSamplePostProcesses.length - 1) {
-                    pp.onAfterRender = (effect: Effect) => {
+                    pp.onAfterRender = () => {
                         var pixel = scene.getEngine().readPixels(0, 0, 1, 1);
                         var bit_shift = new Vector4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
                         this._hdrCurrentLuminance = (pixel[0] * bit_shift.x + pixel[1] * bit_shift.y + pixel[2] * bit_shift.z + pixel[3] * bit_shift.w) / 100.0;
