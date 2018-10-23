@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * @hidden
      **/
@@ -183,5 +182,4 @@ module BABYLON {
                 this._isStencilOpDirty = false;
             }
         }
-    }
-}
+    }

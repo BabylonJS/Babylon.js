@@ -1,5 +1,3 @@
-module BABYLON {
-
     //WebWorker code will be inserted to this variable.
     /** @hidden */
     export var CollisionWorker = "";
@@ -463,4 +461,3 @@ module BABYLON {
             this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh);
         }
     }
-}

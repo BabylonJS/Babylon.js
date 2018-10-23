@@ -1,4 +1,3 @@
-module BABYLON {
     // Adds the parser to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
         // TODO: add sound
@@ -413,4 +412,3 @@ module BABYLON {
             }
         }
     }
-}

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * A multi-material is used to apply different materials to different parts of the same object without the need of
      * separate meshes. This can be use to improve performances.
@@ -189,5 +188,4 @@ module BABYLON {
 
             super.dispose(forceDisposeEffect, forceDisposeTextures);
         }
-    }
-}
+    }

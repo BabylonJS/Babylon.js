@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Renders a layer on top of an existing scene
      */
@@ -247,4 +246,3 @@ module BABYLON {
             this.utilityLayerScene.activeCamera = this.originalScene.activeCamera;
         }
     }
-}

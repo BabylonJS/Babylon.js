@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to store 3D textures containing user data
      */
@@ -54,5 +53,4 @@ module BABYLON {
             }
             this._engine.updateRawTexture3D(this._texture, data, this._texture.format, this._texture!.invertY, undefined, this._texture.type);
         }
-    }
-}
+    }

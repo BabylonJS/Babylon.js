@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Defines the root class used to create scene optimization to use with SceneOptimizer
      * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
@@ -841,5 +840,4 @@ module BABYLON {
 
             return optimizer;
         }
-    }
-}
+    }

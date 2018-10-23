@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * PostProcessRenderPipeline
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
@@ -200,5 +199,4 @@ module BABYLON {
         public dispose() {
             // Must be implemented by children
         }
-    }
-}
+    }

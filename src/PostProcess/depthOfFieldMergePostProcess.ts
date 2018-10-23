@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Options to be set when merging outputs from the default pipeline.
      */
@@ -73,5 +72,4 @@ module BABYLON {
             }
             super.updateEffect(defines, uniforms, samplers, indexParameters, onCompiled, onError);
         }
-    }
-}
+    }

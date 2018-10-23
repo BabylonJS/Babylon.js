@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Creation options of the multi render target texture.
      */
@@ -246,4 +245,3 @@ module BABYLON {
             }
         }
     }
-}

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to help managing file picking and drag'n'drop
      */
@@ -289,5 +288,4 @@ module BABYLON {
                 Tools.Error("Please provide a valid .babylon file.");
             }
         }
-    }
-}
+    }

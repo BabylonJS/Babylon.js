@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * ImageProcessingPostProcess
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#imageprocessing
@@ -381,5 +380,4 @@ module BABYLON {
                 this.imageProcessingConfiguration.applyByPostProcess = false;
             }
         }
-    }
-}
+    }

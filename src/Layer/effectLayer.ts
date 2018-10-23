@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Effect layer options. This helps customizing the behaviour
      * of the effect layer.
@@ -714,4 +713,3 @@ module BABYLON {
             return effectLayerType.Parse(parsedEffectLayer, scene, rootUrl);
         }
     }
-}

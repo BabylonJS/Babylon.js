@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * Uniform buffer objects.
      *
@@ -632,4 +630,3 @@ module BABYLON {
             }
         }
     }
-}

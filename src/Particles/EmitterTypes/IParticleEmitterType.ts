@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Particle emitter represents a volume emitting particles.
      * This is the responsibility of the implementation to define the volume shape like cone/sphere/box.
@@ -55,5 +54,4 @@ module BABYLON {
          * @param serializationObject defines the JSON object
          */
         parse(serializationObject: any): void;
-    }
-}
+    }

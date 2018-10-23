@@ -1,4 +1,3 @@
-module BABYLON {
     export interface Scene {
         /** @hidden */
         _pointerOverSprite: Nullable<Sprite>;
@@ -297,4 +296,3 @@ module BABYLON {
             return pickResult;
         }
     }
-}

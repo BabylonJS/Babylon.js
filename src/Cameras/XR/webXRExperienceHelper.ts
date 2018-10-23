@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * States of the webXR experience
      */
@@ -186,5 +185,4 @@ module BABYLON {
             this.onStateChangedObservable.clear();
             this._sessionManager.dispose();
         }
-    }
-}
+    }

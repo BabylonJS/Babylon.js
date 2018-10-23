@@ -1,4 +1,3 @@
-module BABYLON {
     export interface Engine {
         /**
          * Creates a webGL transform feedback object
@@ -70,5 +69,4 @@ module BABYLON {
 
     Engine.prototype.bindTransformFeedbackBuffer = function(value: Nullable<WebGLBuffer>): void {
         this._gl.bindBufferBase(this._gl.TRANSFORM_FEEDBACK_BUFFER, 0, value);
-    };
-}
+    };

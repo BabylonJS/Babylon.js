@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This represents a particle system in Babylon.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -2552,4 +2551,3 @@ module BABYLON {
             return particleSystem;
         }
     }
-}

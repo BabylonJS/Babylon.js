@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Size options for a post process
      */
@@ -625,4 +624,3 @@ module BABYLON {
             this.onSizeChangedObservable.clear();
         }
     }
-}

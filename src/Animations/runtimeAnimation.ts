@@ -1,5 +1,3 @@
-module BABYLON {
-
     // Static values to help the garbage collector
 
     // Quaternion
@@ -588,4 +586,3 @@ module BABYLON {
             return returnValue;
         }
     }
-}

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
      */
@@ -229,5 +228,4 @@ module BABYLON {
             this.onDragEndObservable.clear();
             this.onDragStartObservable.clear();
         }
-    }
-}
+    }

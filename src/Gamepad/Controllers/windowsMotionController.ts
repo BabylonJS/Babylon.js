@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Defines the LoadedMeshInfo object that describes information about the loaded webVR controller mesh
      */
@@ -521,4 +520,3 @@ module BABYLON {
             this.onTrackpadChangedObservable.clear();
         }
     }
-}

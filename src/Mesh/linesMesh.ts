@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Line mesh
      * @see https://doc.babylonjs.com/babylon101/parametric_shapes
@@ -169,5 +168,4 @@ module BABYLON {
         public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh {
             return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
         }
-    }
-}
+    }

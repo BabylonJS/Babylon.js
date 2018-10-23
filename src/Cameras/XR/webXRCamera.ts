@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * WebXR Camera which holds the views for the xrSession
      * @see https://doc.babylonjs.com/how_to/webxr
@@ -99,5 +98,4 @@ module BABYLON {
             });
             return true;
         }
-    }
-}
+    }

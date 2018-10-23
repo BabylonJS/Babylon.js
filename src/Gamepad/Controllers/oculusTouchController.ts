@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Oculus Touch Controller
      */
@@ -177,5 +176,4 @@ module BABYLON {
         }
 
     }
-
-}
+

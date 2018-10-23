@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Defines the WebVRController object that represents controllers tracked in 3D space
      */
@@ -157,4 +156,3 @@ module BABYLON {
         }
     }
 
-}

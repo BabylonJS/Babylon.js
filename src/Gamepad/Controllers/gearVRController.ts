@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Gear VR Controller
      */
@@ -70,5 +69,4 @@ module BABYLON {
                 }
             }
         }
-    }
-}
+    }

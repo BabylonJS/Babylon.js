@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Standard rendering pipeline
      * Default pipeline should be used going forward but the standard pipeline will be kept for backwards compatibility.
@@ -1087,4 +1086,3 @@ module BABYLON {
          */
         public static LuminanceSteps: number = 6;
     }
-}

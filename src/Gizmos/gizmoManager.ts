@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Helps setup gizmo's in the scene to rotate/scale/position meshes
      */
@@ -182,4 +181,3 @@ module BABYLON {
             this.boundingBoxDragBehavior.detach();
         }
     }
-}

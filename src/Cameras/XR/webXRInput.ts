@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Represents an XR input
      */
@@ -100,5 +99,4 @@ module BABYLON {
             });
             this.helper._sessionManager.onXRFrameObservable.remove(this._frameObserver);
         }
-    }
-}
+    }

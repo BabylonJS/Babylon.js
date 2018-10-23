@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This class is used to deform meshes using morphing between different targets
      * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
@@ -225,5 +224,4 @@ module BABYLON {
 
             return result;
         }
-    }
-}
+    }

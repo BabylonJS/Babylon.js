@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * @hidden
      */
@@ -148,4 +147,3 @@ module BABYLON {
             return new Vector2(uv0.x + uv1.x + uv2.x, uv0.y + uv1.y + uv2.y);
         }
     }
-}

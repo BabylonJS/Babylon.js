@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class representing spherical polynomial coefficients to the 3rd degree
      */
@@ -298,5 +297,4 @@ module BABYLON {
             Vector3.FromArrayToRef(data[8], 0, sh.lL22);
             return sh;
         }
-    }
-}
+    }

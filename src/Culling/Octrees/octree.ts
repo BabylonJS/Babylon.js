@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Contains an array of blocks representing the octree
      */
@@ -174,5 +173,4 @@ module BABYLON {
                 block.entries.push(entry);
             }
         }
-    }
-}
+    }

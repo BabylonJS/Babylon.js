@@ -49,7 +49,6 @@ interface MediaRecorderConstructor {
  */
 declare var MediaRecorder: MediaRecorderConstructor;
 
-module BABYLON {
     /**
      * This represents the different options avilable for the video capture.
      */
@@ -231,4 +230,3 @@ module BABYLON {
             }
         }
     }
-}

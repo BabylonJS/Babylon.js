@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
      * @see http://doc.babylonjs.com/babylon101/materials#texture
@@ -695,4 +694,3 @@ module BABYLON {
             return new Texture(name, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer, format);
         }
     }
-}

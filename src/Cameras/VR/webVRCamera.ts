@@ -1,4 +1,3 @@
-module BABYLON {
     Node.AddNodeConstructor("WebVRFreeCamera", (name, scene) => {
         return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
     });
@@ -795,4 +794,3 @@ module BABYLON {
             });
         }
     }
-}

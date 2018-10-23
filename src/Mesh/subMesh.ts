@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Base class for submeshes
      */
@@ -485,4 +484,3 @@ module BABYLON {
             return new SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex + 1, startIndex, indexCount, mesh, renderingMesh);
         }
     }
-}

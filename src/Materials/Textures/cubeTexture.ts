@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class for creating a cube texture
      */
@@ -282,4 +281,3 @@ module BABYLON {
             }, this);
         }
     }
-}

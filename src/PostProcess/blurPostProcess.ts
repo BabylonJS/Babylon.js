@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * The Blur Post Process which blurs an image based on a kernel and direction.
      * Can be used twice in x and y directions to perform a guassian blur in two passes.
@@ -243,5 +242,4 @@ module BABYLON {
         protected _glslFloat(x: number, decimalFigures = 8) {
             return x.toFixed(decimalFigures).replace(/0+$/, '');
         }
-    }
-}
+    }

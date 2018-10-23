@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Post process which applies a refractin texture
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#refraction
@@ -81,5 +80,4 @@ module BABYLON {
 
             super.dispose(camera);
         }
-    }
-}
+    }
