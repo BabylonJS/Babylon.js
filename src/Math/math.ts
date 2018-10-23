@@ -1532,7 +1532,7 @@ import { Ray } from "Culling";
      * Classed used to store (x,y,z) vector representation
      * A Vector3 is the main object used in 3D geometry
      * It can represent etiher the coordinates of a point the space, either a direction
-     * Reminder: Babylon.js uses a left handed forward facing system
+     * Reminder: js uses a left handed forward facing system
      */
     export class Vector3 {
         /**
@@ -1614,7 +1614,7 @@ import { Ray } from "Culling";
          * @returns a new Quaternion object, computed from the Vector3 coordinates
          */
         public toQuaternion(): Quaternion {
-            return BABYLON.Quaternion.RotationYawPitchRoll(this.y, this.x, this.z);
+            return Quaternion.RotationYawPitchRoll(this.y, this.x, this.z);
         }
 
         /**

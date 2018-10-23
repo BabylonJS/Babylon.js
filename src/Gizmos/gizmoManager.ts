@@ -1,13 +1,15 @@
 import { Observer } from "Tools";
 import { Nullable } from "types";
-import { PointerInfo } from "Events";
+import { PointerInfo, PointerEventTypes } from "Events";
 import { Scene, IDisposable } from "scene";
-import {Node} from "Node";
+import { Node } from "Node";
 import { AbstractMesh } from "Mesh";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { Gizmo, RotationGizmo, PositionGizmo, ScaleGizmo, BoundingBoxGizmo } from "Gizmos";
 import { UtilityLayerRenderer } from "Rendering";
+import { Color3 } from "Math";
+import { SixDofDragBehavior } from "Behaviors";
     /**
      * Helps setup gizmo's in the scene to rotate/scale/position meshes
      */
@@ -19,13 +21,13 @@ import { UtilityLayerRenderer } from "Rendering";
         private _gizmosEnabled = {positionGizmo: false, rotationGizmo: false, scaleGizmo: false, boundingBoxGizmo: false};
         private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
         private _attachedMesh: Nullable<AbstractMesh> = null;
-        private _boundingBoxColor = BABYLON.Color3.FromHexString("#0984e3");
+        private _boundingBoxColor = Color3.FromHexString("#0984e3");
         private _defaultUtilityLayer: UtilityLayerRenderer;
         private _defaultKeepDepthUtilityLayer: UtilityLayerRenderer;
         /**
          * When bounding box gizmo is enabled, this can be used to track drag/end events
          */
-        public boundingBoxDragBehavior = new BABYLON.SixDofDragBehavior();
+        public boundingBoxDragBehavior = new SixDofDragBehavior();
         /**
          * Array of meshes which will have the gizmo attached when a pointer selected them. If null, all meshes are attachable. (Default: null)
          */
@@ -51,7 +53,7 @@ import { UtilityLayerRenderer } from "Rendering";
                 if (!this.usePointerToAttachGizmos) {
                     return;
                 }
-                if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERDOWN) {
+                if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
                     if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh) {
                         var node: Nullable<Node> = pointerInfo.pickInfo.pickedMesh;
                         if (this.attachableMeshes == null) {

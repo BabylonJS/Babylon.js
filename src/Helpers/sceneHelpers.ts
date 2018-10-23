@@ -1,13 +1,11 @@
 import { Tools } from "Tools";
 import { Nullable } from "types";
-import { FreeCamera, ArcRotateCamera, TargetCamera, WebXRExperienceHelper, VRExperienceHelperOptions, VRExperienceHelper } from "Cameras";
+import { FreeCamera, ArcRotateCamera, TargetCamera, WebXRExperienceHelper, VRExperienceHelperOptions, VRExperienceHelper, WebXRManagedOutputCanvas, WebXRInput, WebXREnterExitUI } from "Cameras";
 import { Scene } from "scene";
 import { Vector3 } from "Math";
 import { Mesh } from "Mesh";
 import { StandardMaterial, Texture, BaseTexture } from "Materials";
 import { HemisphericLight } from "Lights";
-import { _TimeToken } from "Instrumentation";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { IEnvironmentHelperOptions, EnvironmentHelper } from "./environmentHelper";
     export interface Scene {
         /**
@@ -191,12 +189,12 @@ import { IEnvironmentHelperOptions, EnvironmentHelper } from "./environmentHelpe
         return new VRExperienceHelper(this, webVROptions);
     };
 
-    Scene.prototype.createDefaultXRExperienceAsync = function(): Promise<BABYLON.WebXRExperienceHelper> {
-        return BABYLON.WebXRExperienceHelper.CreateAsync(this).then((helper) => {
-            var outputCanvas = new BABYLON.WebXRManagedOutputCanvas(helper);
-            return BABYLON.WebXREnterExitUI.CreateAsync(this, helper, {outputCanvasContext: outputCanvas.canvasContext})
+    Scene.prototype.createDefaultXRExperienceAsync = function(): Promise<WebXRExperienceHelper> {
+        return WebXRExperienceHelper.CreateAsync(this).then((helper) => {
+            var outputCanvas = new WebXRManagedOutputCanvas(helper);
+            return WebXREnterExitUI.CreateAsync(this, helper, {outputCanvasContext: outputCanvas.canvasContext})
             .then(() => {
-                    new BABYLON.WebXRInput(helper);
+                    new WebXRInput(helper);
                     return helper;
                 });
         });

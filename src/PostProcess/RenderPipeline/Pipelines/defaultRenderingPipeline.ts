@@ -321,7 +321,7 @@ import { GlowLayer } from "Layer";
          */
         public set glowLayerEnabled(enabled: boolean) {
             if (enabled && !this._glowLayer) {
-                this._glowLayer = new BABYLON.GlowLayer("", this._scene);
+                this._glowLayer = new GlowLayer("", this._scene);
             }else if (!enabled && this._glowLayer) {
                 this._glowLayer.dispose();
                 this._glowLayer = null;
@@ -374,7 +374,7 @@ import { GlowLayer } from "Layer";
          * @param cameras - The array of cameras that the rendering pipeline will be attached to (default: scene.cameras)
          * @param automaticBuild - if false, you will have to manually call prepare() to update the pipeline (default: true)
          */
-        constructor(name: string = "", hdr: boolean = true, scene: Scene = BABYLON.Engine.LastCreatedScene!, cameras?: Camera[], automaticBuild = true) {
+        constructor(name: string = "", hdr: boolean = true, scene: Scene = Engine.LastCreatedScene!, cameras?: Camera[], automaticBuild = true) {
             super(scene.getEngine(), name);
             this._cameras = cameras ||  scene.cameras;
             this._cameras = this._cameras.slice();
@@ -571,7 +571,7 @@ import { GlowLayer } from "Layer";
             }
 
             if (!this._enableMSAAOnFirstPostProcess(this.samples) && this.samples > 1) {
-                BABYLON.Tools.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
+                Tools.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
             }
         }
 

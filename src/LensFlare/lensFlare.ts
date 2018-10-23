@@ -6,7 +6,7 @@ import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { LensFlareSystem } from "LensFlare";
     /**
-     * This represents one of the lens effect in a `BABYLON.lensFlareSystem`.
+     * This represents one of the lens effect in a `lensFlareSystem`.
      * It controls one of the indiviual texture used in the effect.
      * @see http://doc.babylonjs.com/how_to/how_to_use_lens_flares
      */
@@ -30,7 +30,7 @@ import { LensFlareSystem } from "LensFlare";
 
         /**
          * Creates a new Lens Flare.
-         * This represents one of the lens effect in a `BABYLON.lensFlareSystem`.
+         * This represents one of the lens effect in a `lensFlareSystem`.
          * It controls one of the indiviual texture used in the effect.
          * @see http://doc.babylonjs.com/how_to/how_to_use_lens_flares
          * @param size Define the size of the lens flare (a floating value between 0 and 1)
@@ -46,7 +46,7 @@ import { LensFlareSystem } from "LensFlare";
 
         /**
          * Instantiates a new Lens Flare.
-         * This represents one of the lens effect in a `BABYLON.lensFlareSystem`.
+         * This represents one of the lens effect in a `lensFlareSystem`.
          * It controls one of the indiviual texture used in the effect.
          * @see http://doc.babylonjs.com/how_to/how_to_use_lens_flares
          * @param size Define the size of the lens flare in the system (a floating value between 0 and 1)

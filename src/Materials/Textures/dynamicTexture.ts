@@ -22,8 +22,8 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * @param options provides 3 alternatives for width and height of texture, a canvas, object with width and height properties, number for both width and height
          * @param scene defines the scene where you want the texture
          * @param generateMipMaps defines the use of MinMaps or not (default is false)
-         * @param samplingMode defines the sampling mode to use (default is BABYLON.Texture.TRILINEAR_SAMPLINGMODE)
-         * @param format defines the texture format to use (default is BABYLON.Engine.TEXTUREFORMAT_RGBA)
+         * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
+         * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
          */
 
         constructor(name: string, options: any, scene: Nullable<Scene> = null, generateMipMaps: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, format: number = Engine.TEXTUREFORMAT_RGBA) {

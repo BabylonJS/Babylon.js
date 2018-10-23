@@ -1557,7 +1557,7 @@ import { BoundingInfo } from "index";
          * @param offset defines the offset between points
          * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
          * @param mesh defines the hosting mesh (can be null)
-         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+         * @param side defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
          */
         constructor(
             id: string, scene: Scene,
@@ -1580,7 +1580,7 @@ import { BoundingInfo } from "index";
             canBeRegenerated?: boolean,
             mesh?: Mesh,
             /**
-             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+             * Defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
              */
             public side: number = Mesh.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
@@ -1609,7 +1609,7 @@ import { BoundingInfo } from "index";
          * @param size defines the zise of the box (width, height and depth are the same)
          * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
          * @param mesh defines the hosting mesh (can be null)
-         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+         * @param side defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
          */
         constructor(
             id: string, scene: Scene,
@@ -1620,7 +1620,7 @@ import { BoundingInfo } from "index";
             canBeRegenerated?: boolean,
             mesh: Nullable<Mesh> = null,
             /**
-             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+             * Defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
              */
             public side: number = Mesh.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
@@ -1673,7 +1673,7 @@ import { BoundingInfo } from "index";
          * @param diameter defines the diameter of the sphere
          * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
          * @param mesh defines the hosting mesh (can be null)
-         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+         * @param side defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
          */
         constructor(
             id: string, scene: Scene,
@@ -1688,7 +1688,7 @@ import { BoundingInfo } from "index";
             canBeRegenerated?: boolean,
             mesh: Nullable<Mesh> = null,
             /**
-             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+             * Defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
              */
             public side: number = Mesh.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
@@ -1742,7 +1742,7 @@ import { BoundingInfo } from "index";
          * @param tessellation defines the tesselation factor to apply to the disc
          * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
          * @param mesh defines the hosting mesh (can be null)
-         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+         * @param side defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
          */
         constructor(
             id: string, scene: Scene,
@@ -1757,7 +1757,7 @@ import { BoundingInfo } from "index";
             canBeRegenerated?: boolean,
             mesh: Nullable<Mesh> = null,
             /**
-             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+             * Defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
              */
             public side: number = Mesh.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
@@ -1790,7 +1790,7 @@ import { BoundingInfo } from "index";
          * @param subdivisions defines the number of subdivisions to apply to the cylinder (number of rings) (1 by default)
          * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
          * @param mesh defines the hosting mesh (can be null)
-         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+         * @param side defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
          */
         constructor(
             id: string, scene: Scene,
@@ -1817,7 +1817,7 @@ import { BoundingInfo } from "index";
             canBeRegenerated?: boolean, mesh:
                 Nullable<Mesh> = null,
             /**
-             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+             * Defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
              */
             public side: number = Mesh.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
@@ -1874,7 +1874,7 @@ import { BoundingInfo } from "index";
          * @param tessellation defines the tesselation factor to apply to the torus (number of segments along the circle)
          * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
          * @param mesh defines the hosting mesh (can be null)
-         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+         * @param side defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
          */
         constructor(
             id: string, scene: Scene,
@@ -1893,7 +1893,7 @@ import { BoundingInfo } from "index";
             canBeRegenerated?: boolean,
             mesh: Nullable<Mesh> = null,
             /**
-             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+             * Defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
              */
             public side: number = Mesh.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
@@ -2077,7 +2077,7 @@ import { BoundingInfo } from "index";
          * @param size defines the size of the plane (width === height)
          * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
          * @param mesh defines the hosting mesh (can be null)
-         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+         * @param side defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
          */
         constructor(
             id: string, scene: Scene,
@@ -2088,7 +2088,7 @@ import { BoundingInfo } from "index";
             canBeRegenerated?: boolean,
             mesh: Nullable<Mesh> = null,
             /**
-             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+             * Defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
              */
             public side: number = Mesh.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
@@ -2145,7 +2145,7 @@ import { BoundingInfo } from "index";
          * @param q defines the second number of windings
          * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
          * @param mesh defines the hosting mesh (can be null)
-         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+         * @param side defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
          */
         constructor(
             id: string, scene: Scene,
@@ -2176,7 +2176,7 @@ import { BoundingInfo } from "index";
             canBeRegenerated?: boolean,
             mesh: Nullable<Mesh> = null,
             /**
-             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+             * Defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
              */
             public side: number = Mesh.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);

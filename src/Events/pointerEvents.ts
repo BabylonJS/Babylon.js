@@ -44,12 +44,12 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     export class PointerInfoBase {
         /**
          * Instantiates the base class of pointers info.
-         * @param type Defines the type of event (BABYLON.PointerEventTypes)
+         * @param type Defines the type of event (PointerEventTypes)
          * @param event Defines the related dom event
          */
         constructor(
             /**
-             * Defines the type of event (BABYLON.PointerEventTypes)
+             * Defines the type of event (PointerEventTypes)
              */
             public type: number,
             /**
@@ -81,7 +81,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
         /**
          * Instantiates a PointerInfoPre to store pointer related info to the onPrePointerObservable event.
-         * @param type Defines the type of event (BABYLON.PointerEventTypes)
+         * @param type Defines the type of event (PointerEventTypes)
          * @param event Defines the related dom event
          * @param localX Defines the local x coordinates of the pointer when the event occured
          * @param localY Defines the local y coordinates of the pointer when the event occured
@@ -100,7 +100,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     export class PointerInfo extends PointerInfoBase {
         /**
          * Instantiates a PointerInfo to store pointer related info to the onPointerObservable event.
-         * @param type Defines the type of event (BABYLON.PointerEventTypes)
+         * @param type Defines the type of event (PointerEventTypes)
          * @param event Defines the related dom event
          * @param pickInfo Defines the picking info associated to the info (if any)\
          */

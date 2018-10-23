@@ -28,7 +28,7 @@ import { Mesh, VertexBuffer } from "Mesh";
          * @param useBytes set to true if the stride in in bytes (optional)
          */
         constructor(engine: any, data: DataArray, updatable: boolean, stride = 0, postponeInternalCreation = false, instanced = false, useBytes = false) {
-            if (engine instanceof Mesh) { // old versions of BABYLON.VertexBuffer accepted 'mesh' instead of 'engine'
+            if (engine instanceof Mesh) { // old versions of VertexBuffer accepted 'mesh' instead of 'engine'
                 this._engine = engine.getScene().getEngine();
             }
             else {

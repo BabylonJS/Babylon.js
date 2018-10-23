@@ -57,7 +57,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         @serialize("rotationY")
         public set rotationY(value: number) {
             this._rotationY = value;
-            this.setReflectionTextureMatrix(BABYLON.Matrix.RotationY(this._rotationY));
+            this.setReflectionTextureMatrix(Matrix.RotationY(this._rotationY));
         }
         /**
          * Gets texture matrix rotation angle around Y axis radians.

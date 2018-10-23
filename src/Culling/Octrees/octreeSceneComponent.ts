@@ -188,7 +188,7 @@ import { SceneComponentConstants } from "sceneComponent";
             return this.scene._getDefaultSubMeshCandidates(mesh);
         }
 
-        private _tempRay = new BABYLON.Ray(Vector3.Zero(), new Vector3(1, 1, 1));
+        private _tempRay = new Ray(Vector3.Zero(), new Vector3(1, 1, 1));
         /**
          * Return the list of sub meshes intersecting with a given local ray
          * @param mesh defines the mesh to find the submesh for

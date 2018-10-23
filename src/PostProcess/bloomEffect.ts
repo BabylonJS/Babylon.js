@@ -1,6 +1,7 @@
 import { PostProcessRenderEffect, PostProcess, ExtractHighlightsPostProcess, BlurPostProcess, BloomMergePostProcess, Scene } from "PostProcess";
 import { Vector2 } from "Math";
 import { Camera } from "Cameras";
+import { Texture } from "Materials";
 
     /**
      * The bloom effect spreads bright areas of an image to simulate artifacts seen in cameras
@@ -77,7 +78,7 @@ import { Camera } from "Cameras";
 
             this._effects = [this._downscale, this._blurX, this._blurY];
 
-            this._merge = new BloomMergePostProcess("bloomMerge", this._downscale, this._blurY, bloomWeight, bloomScale, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+            this._merge = new BloomMergePostProcess("bloomMerge", this._downscale, this._blurY, bloomWeight, bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
             this._merge.autoClear = false;
             this._effects.push(this._merge);
         }

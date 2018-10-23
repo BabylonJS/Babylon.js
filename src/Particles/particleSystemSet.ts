@@ -5,6 +5,7 @@ import { IParticleSystem, ParticleHelper, GPUParticleSystem } from "Particles";
 import { Engine } from "Engine";
 import { ParticleSystem } from "Particles";
 import { Scene, IDisposable } from "scene";
+import { StandardMaterial } from "Materials";
     /** Internal class used to store shapes for emitters */
     class ParticleSystemSetEmitterCreationOptions {
         public kind: string;
@@ -51,7 +52,7 @@ import { Scene, IDisposable } from "scene";
             let emitterMesh = MeshBuilder.CreateSphere("emitterSphere", {diameter: options.diameter, segments: options.segments}, scene);
             emitterMesh.renderingGroupId = renderingGroupId;
 
-            var material = new BABYLON.StandardMaterial("emitterSphereMaterial", scene);
+            var material = new StandardMaterial("emitterSphereMaterial", scene);
             material.emissiveColor = options.color;
             emitterMesh.material = material;
 
