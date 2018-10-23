@@ -154,7 +154,7 @@ module BABYLON {
                 const postProcesses = this._postProcesses[this._singleInstance ? 0 : cameraName];
 
                 if (postProcesses) {
-                    this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess: PostProcess) => {
+                    postProcesses.forEach((postProcess: PostProcess) => {
                         camera.detachPostProcess(postProcess);
                     });
                 }
