@@ -13,6 +13,7 @@
   - webXRExperienceHelper to setup a default XR experience ([TrevorDev](https://github.com/TrevorDev))
   - WebXREnterExitUI and WebXRManagedOutputCanvas classes to configure the XR experience ([TrevorDev](https://github.com/TrevorDev))
   - WebXRInput manage controllers for the XR experience ([TrevorDev](https://github.com/TrevorDev))
+  - WebXR camera rotation using parent container ([TrevorDev](https://github.com/TrevorDev))
 - GUI:
   - Added new [ImageBasedSlider](http://doc.babylonjs.com/how_to/gui#imagebasedslider) to let users customize sliders using images ([Deltakosh](https://github.com/deltakosh))
 
@@ -57,6 +58,8 @@
 
 ## Bug fixes
 - Refocusing on input gui with pointer events ([TrevorDev](https://github.com/TrevorDev))
+- Gizmo scaling not consistent when camera is parented ([TrevorDev](https://github.com/TrevorDev))
+- Context loss causing unexpected results with dynamic textures ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))

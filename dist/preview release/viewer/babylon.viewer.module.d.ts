@@ -1792,32 +1792,7 @@ declare module 'babylonjs-viewer/labs/viewerLabs' {
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/modelAnimationConfiguration' {
-    /**
-        * Defines an animation to be applied to a model (translation, scale or rotation).
-        */
-    export interface IModelAnimationConfiguration {
-            /**
-                * Time of animation, in seconds
-                */
-            time?: number;
-            /**
-                * Scale to apply
-                */
-            scaling?: {
-                    x: number;
-                    y: number;
-                    z: number;
-            };
-            /**
-                * Easing function to apply
-                */
-            easingFunction?: number;
-            /**
-                * An Easing mode to apply to the easing function
-                * See BABYLON.EasingFunction
-                */
-            easingMode?: number;
-    }
+    
 }
 
 declare module 'babylonjs-viewer/loader/plugins/telemetryLoaderPlugin' {
@@ -1847,7 +1822,16 @@ declare module 'babylonjs-viewer/loader/plugins/msftLodLoaderPlugin' {
 }
 
 declare module 'babylonjs-viewer/loader/plugins/applyMaterialConfig' {
-    
+    import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, Material } from 'babylonjs';
+    import { ViewerModel } from 'babylonjs-viewer/model/viewerModel';
+    import { ILoaderPlugin } from 'babylonjs-viewer/loader/plugins/loaderPlugin';
+    /**
+      * Force-apply material configuration right after a material was loaded.
+      */
+    export class ApplyMaterialConfigPlugin implements ILoaderPlugin {
+        onInit(loader: ISceneLoaderPlugin | ISceneLoaderPluginAsync, model: ViewerModel): void;
+        onMaterialLoaded(material: Material): void;
+    }
 }
 
 declare module 'babylonjs-viewer/loader/plugins/extendedMaterialLoaderPlugin' {

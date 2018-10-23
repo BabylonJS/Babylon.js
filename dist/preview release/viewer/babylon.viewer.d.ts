@@ -1665,32 +1665,6 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
-    /**
-        * Defines an animation to be applied to a model (translation, scale or rotation).
-        */
-    export interface IModelAnimationConfiguration {
-            /**
-                * Time of animation, in seconds
-                */
-            time?: number;
-            /**
-                * Scale to apply
-                */
-            scaling?: {
-                    x: number;
-                    y: number;
-                    z: number;
-            };
-            /**
-                * Easing function to apply
-                */
-            easingFunction?: number;
-            /**
-                * An Easing mode to apply to the easing function
-                * See BABYLON.EasingFunction
-                */
-            easingMode?: number;
-    }
 }
 declare module BabylonViewer {
     export class TelemetryLoaderPlugin implements ILoaderPlugin {
@@ -1710,6 +1684,13 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
+    /**
+      * Force-apply material configuration right after a material was loaded.
+      */
+    export class ApplyMaterialConfigPlugin implements ILoaderPlugin {
+        onInit(loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync, model: ViewerModel): void;
+        onMaterialLoaded(material: BABYLON.Material): void;
+    }
 }
 declare module BabylonViewer {
     /**
