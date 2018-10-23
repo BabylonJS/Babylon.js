@@ -1,3 +1,12 @@
+import { Nullable } from "types";
+import { Tools } from "Tools";
+import { Vector3 } from "Math";
+import { AbstractMesh } from "Mesh";
+import { IParticleSystem, GPUParticleSystem, ParticleSystemSet } from "Particles";
+import { Texture } from "Materials";
+import { Engine } from "Engine";
+import { ParticleSystem } from "Particles";
+import { Scene } from "scene";
     /**
      * This class is made for on one-liner static method to help creating particle system set.
      */
@@ -72,11 +81,11 @@
                     return reject("Particle system with GPU is not supported.");
                 }
 
-                Tools.LoadFile(`${ParticleHelper.BaseAssetsUrl}/systems/${type}.json`, (data, response) => {
+                Tools.LoadFile(`${ParticleHelper.BaseAssetsUrl}/systems/${type}.json`, (data) => {
                     scene!._removePendingData(token);
                     const newData = JSON.parse(data.toString());
                     return resolve(ParticleSystemSet.Parse(newData, scene!, gpu));
-                }, undefined, undefined, undefined, (req, exception) => {
+                }, undefined, undefined, undefined, () => {
                     scene!._removePendingData(token);
                     return reject(`An error occured while the creation of your particle system. Check if your type '${type}' exists.`);
                 });

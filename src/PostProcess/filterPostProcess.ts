@@ -1,3 +1,9 @@
+import { Nullable } from "types";
+import { Matrix } from "Math";
+import { Camera } from "Cameras";
+import { Effect } from "Materials";
+import { PostProcess, PostProcessOptions } from "PostProcess";
+import { Engine } from "Engine";
     /**
      * Applies a kernel filter to the image
      */
@@ -27,4 +33,4 @@
                 effect.setMatrix("kernelMatrix", this.kernelMatrix);
             };
         }
-    }
+    }

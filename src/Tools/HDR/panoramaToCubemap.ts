@@ -1,3 +1,7 @@
+import { Nullable } from "types";
+import { Vector3 } from "Math";
+import { Engine } from "Engine";
+
     /**
      * CubeMap information grouping all the data for each faces as well as the cubemap size.
      */

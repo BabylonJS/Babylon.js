@@ -1,3 +1,6 @@
+import { ISceneComponent } from "sceneComponent";
+import { PostProcessRenderPipelineManager } from "PostProcess";
+import { Scene } from "scene";
     export interface Scene {
         /** @hidden (Backing field) */
         _postProcessRenderPipelineManager: PostProcessRenderPipelineManager;
@@ -76,9 +79,9 @@
             }
         }
 
-        private _gatherRenderTargets(renderTargets: SmartArrayNoDuplicate<RenderTargetTexture>): void {
+        private _gatherRenderTargets(): void {
             if (this.scene._postProcessRenderPipelineManager) {
                 this.scene._postProcessRenderPipelineManager.update();
             }
         }
-    }
+    }

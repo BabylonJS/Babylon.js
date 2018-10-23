@@ -1,3 +1,16 @@
+import { Scene } from "Physics";
+import { Nullable } from "types";
+import { AbstractMesh, Geometry, TransformNode } from "Mesh";
+import { Skeleton } from "Bones";
+import { MorphTargetManager } from "Morph";
+import { AssetContainer } from "assetContainer";
+import { IParticleSystem } from "Particles";
+import { AnimationGroup } from "Animations";
+import { MultiMaterial, Material, BaseTexture } from "Materials";
+import { ActionManager } from "Actions";
+import { Camera } from "Cameras";
+import { Light } from "Lights";
+
     /**
      * Defines how the parser contract is defined.
      * These parsers are used to parse a list of specific assets (like particle systems, etc..)

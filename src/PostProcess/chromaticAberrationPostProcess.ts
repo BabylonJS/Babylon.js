@@ -1,3 +1,10 @@
+import { Vector2 } from "Math";
+import { Nullable } from "types";
+import { PostProcess, PostProcessOptions } from "PostProcess";
+import { Effect } from "Materials";
+import { Camera } from "Cameras";
+import { Engine } from "Engine";
+
     /**
      * The ChromaticAberrationPostProcess separates the rgb channels in an image to produce chromatic distortion around the edges of the screen
      */
@@ -46,4 +53,4 @@
                 effect.setFloat2('centerPosition', this.centerPosition.x, this.centerPosition.y);
             });
         }
-    }
+    }

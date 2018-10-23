@@ -1,3 +1,9 @@
+import { Vector3, Color4 } from "Math";
+import { Nullable } from "types";
+import { ActionManager } from "Actions";
+import { ISpriteManager } from "Sprites";
+
+
     /**
      * Class used to represent a sprite
      * @see http://doc.babylonjs.com/babylon101/sprites
@@ -136,4 +142,4 @@
                 }
             }
         }
-    }
+    }

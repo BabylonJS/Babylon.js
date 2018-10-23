@@ -1,3 +1,5 @@
+import { Engine } from "Engine";
+
     /**
      * @hidden
      **/
@@ -182,4 +184,4 @@
                 this._isStencilOpDirty = false;
             }
         }
-    }
+    }
