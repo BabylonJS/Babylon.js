@@ -1,11 +1,11 @@
-import { Effect, Texture, Nullable, Vector2, Scene, BaseTexture, ProceduralTexture, Tools } from "babylonjs";
+import { Texture, Nullable, Vector2, Scene, BaseTexture, ProceduralTexture, Tools } from "babylonjs";
 import { ImageMimeType } from "babylonjs-gltf2interface";
 import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
 
 const NAME = "KHR_texture_transform";
 
-Effect.ShadersStore["textureTransformPixelShader"] = require("../shaders/textureTransform.fragment.fx");
+import "../shaders/textureTransform.fragment";
 
 /**
  * Interface for handling KHR texture transform

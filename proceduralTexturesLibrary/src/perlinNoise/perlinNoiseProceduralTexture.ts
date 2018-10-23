@@ -1,6 +1,6 @@
-import { Effect, ProceduralTexture, serialize, Scene, Texture, SerializationHelper } from "babylonjs";
+import { ProceduralTexture, serialize, Scene, Texture, SerializationHelper } from "babylonjs";
 
-Effect.ShadersStore["perlinNoiseProceduralTexturePixelShader"] = require("./perlinNoiseProceduralTexture.fragment.fx");
+import "./perlinNoiseProceduralTexture.fragment";
 
 export class PerlinNoiseProceduralTexture extends ProceduralTexture {
     @serialize()

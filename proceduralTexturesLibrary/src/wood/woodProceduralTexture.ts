@@ -1,6 +1,6 @@
-import { Effect, ProceduralTexture, Color3, Scene, Texture, serialize, serializeAsColor3, SerializationHelper } from "babylonjs";
+import { ProceduralTexture, Color3, Scene, Texture, serialize, serializeAsColor3, SerializationHelper } from "babylonjs";
 
-Effect.ShadersStore["woodProceduralTexturePixelShader"] = require("./woodProceduralTexture.fragment.fx");
+import "./woodProceduralTexture.fragment";
 
 export class WoodProceduralTexture extends ProceduralTexture {
     private _ampScale: number = 100.0;

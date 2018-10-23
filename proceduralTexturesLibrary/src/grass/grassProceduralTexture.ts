@@ -1,6 +1,6 @@
-import { Effect, ProceduralTexture, Color3, Scene, Texture, serializeAsColor3, SerializationHelper } from "babylonjs";
+import { ProceduralTexture, Color3, Scene, Texture, serializeAsColor3, SerializationHelper } from "babylonjs";
 
-Effect.ShadersStore["grassProceduralTexturePixelShader"] = require("./grassProceduralTexture.fragment.fx");
+import "./grassProceduralTexture.fragment";
 
 export class GrassProceduralTexture extends ProceduralTexture {
     private _grassColors: Color3[];

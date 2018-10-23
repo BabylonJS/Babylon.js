@@ -1,6 +1,6 @@
-import { Effect, ProceduralTexture, Vector2, Color3, Scene, Texture, serialize, serializeAsVector2, SerializationHelper } from "babylonjs";
+import { ProceduralTexture, Vector2, Color3, Scene, Texture, serialize, serializeAsVector2, SerializationHelper } from "babylonjs";
 
-Effect.ShadersStore["fireProceduralTexturePixelShader"] = require("./fireProceduralTexture.fragment.fx");
+import "./fireProceduralTexture.fragment";
 
 export class FireProceduralTexture extends ProceduralTexture {
     private _time: number = 0.0;

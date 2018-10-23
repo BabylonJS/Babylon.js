@@ -1,6 +1,6 @@
-import { Effect, ProceduralTexture, Color3, Scene, Texture, serializeAsColor3, SerializationHelper } from "babylonjs";
+import { ProceduralTexture, Color3, Scene, Texture, serializeAsColor3, SerializationHelper } from "babylonjs";
 
-Effect.ShadersStore["roadProceduralTexturePixelShader"] = require("./roadProceduralTexture.fragment.fx");
+import "./roadProceduralTexture.fragment";
 
 export class RoadProceduralTexture extends ProceduralTexture {
     private _roadColor = new Color3(0.53, 0.53, 0.53);

@@ -1,6 +1,6 @@
-import { Effect, ProceduralTexture, Texture, Scene, serializeAsTexture, SerializationHelper } from "babylonjs";
+import { ProceduralTexture, Texture, Scene, serializeAsTexture, SerializationHelper } from "babylonjs";
 
-Effect.ShadersStore["normalMapProceduralTexturePixelShader"] = require("./normalMapProceduralTexture.fragment.fx");
+import "./normalMapProceduralTexture.fragment";
 
 export class NormalMapProceduralTexture extends ProceduralTexture {
     private _baseTexture: Texture;
