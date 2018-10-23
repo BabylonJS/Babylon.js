@@ -1,3 +1,5 @@
+import { CubeMapInfo, PanoramaToCubeMapTools } from ".";
+
     /**
      * Header information of HDR texture files.
      */

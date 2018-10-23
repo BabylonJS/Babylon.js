@@ -1,3 +1,8 @@
+import { Nullable, FloatArray } from "types";
+import { Tools } from "Tools";
+import { Vector3, Matrix, Quaternion } from "Math";
+import { AbstractMesh, VertexBuffer } from "Mesh";
+import { IPhysicsEnginePlugin, PhysicsImpostor, PhysicsImpostorJoint, PhysicsJoint, DistanceJointData, SpringJointData, PhysicsEngine, IPhysicsEnabledObject, IMotorEnabledJoint } from "Physics";
     //declare var require: any;
     declare var CANNON: any;
 
@@ -36,7 +41,7 @@
             return this._fixedTimeStep;
         }
 
-        public executeStep(delta: number, impostors: Array<PhysicsImpostor>): void {
+        public executeStep(delta: number): void {
             this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
         }
 
@@ -543,7 +548,7 @@
             impostor.physicsBody.wakeUp();
         }
 
-        public updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number) {
+        public updateDistanceJoint(joint: PhysicsJoint, maxDistance: number) {
             joint.physicsJoint.distance = maxDistance;
         }
 

@@ -1,3 +1,15 @@
+import { Scene } from "./boundingBoxRenderer";
+import { SmartArray } from "Tools";
+import { SubMesh } from "Mesh";
+import { Nullable } from "types";
+import { AbstractMesh } from "Culling";
+import { Vector3 } from "Math";
+import { IParticleSystem } from "Particles";
+import { IEdgesRenderer } from "Rendering";
+import { ISpriteManager } from "Sprites";
+import { Engine } from "Engine";
+import { Material } from "Materials";
+
     /**
      * This represents the object necessary to create a rendering group.
      * This is exclusively used and created by the rendering manager.
@@ -404,4 +416,4 @@
             }
             this._scene.onAfterSpritesRenderingObservable.notifyObservers(this._scene);
         }
-    }
+    }

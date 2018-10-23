@@ -1,3 +1,10 @@
+import { Nullable } from "types";
+import { Observable, Observer, SmartArray, Tools } from "Tools";
+import { Color4, Vector2 } from "Math";
+import { Camera, WebVRFreeCamera } from "Cameras";
+import { Effect, Texture, InternalTexture } from "Materials";
+import { Engine } from "Engine";
+import { Scene } from "Rendering/outlineRenderer";
     /**
      * Size options for a post process
      */

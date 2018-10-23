@@ -1,3 +1,7 @@
+import { Camera } from "Cameras";
+import { Effect, Texture } from "Materials";
+import { PostProcess } from "PostProcess";
+import { Engine } from "Engine";
     /** Defines operator used for tonemapping */
     export enum TonemappingOperator {
         /** Hable */

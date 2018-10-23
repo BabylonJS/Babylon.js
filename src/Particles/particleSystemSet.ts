@@ -1,3 +1,10 @@
+import { Nullable } from "types";
+import { Color3 } from "Math";
+import { TransformNode, AbstractMesh, MeshBuilder } from "Mesh";
+import { IParticleSystem, ParticleHelper, GPUParticleSystem } from "Particles";
+import { Engine } from "Engine";
+import { ParticleSystem } from "Particles";
+import { Scene, IDisposable } from "scene";
     /** Internal class used to store shapes for emitters */
     class ParticleSystemSetEmitterCreationOptions {
         public kind: string;

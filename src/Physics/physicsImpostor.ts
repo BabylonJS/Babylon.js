@@ -1,3 +1,10 @@
+import { Nullable, IndicesArray } from "types";
+import { Tools } from "Tools";
+import { Vector3, Matrix, Quaternion, Space } from "Math";
+import { TransformNode, AbstractMesh, Scene } from "Mesh";
+import { Bone } from "Bones";
+import { BoundingInfo } from "Culling";
+import { IPhysicsEngine, PhysicsJoint, PhysicsJointData } from "Physics";
     /**
      * The interface for the physics imposter parameters
      * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
@@ -331,7 +338,7 @@
          * Sets the updated scaling
          * @param updated Specifies if the scaling is updated
          */
-        public setScalingUpdated(updated: boolean) {
+        public setScalingUpdated() {
             this.forceUpdate();
         }
 

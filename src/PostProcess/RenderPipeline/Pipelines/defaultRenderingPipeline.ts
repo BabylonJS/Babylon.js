@@ -1,3 +1,12 @@
+import { Nullable } from "types";
+import { IAnimatable, Observer, serialize, SerializationHelper } from "Tools";
+import { Camera } from "Cameras";
+import { ImageProcessingConfiguration, Texture } from "Materials";
+import { PostProcess, PostProcessRenderPipeline, Scene, SharpenPostProcess, PostProcessRenderEffect, BloomEffect, DepthOfFieldEffect, FxaaPostProcess, ImageProcessingPostProcess, ChromaticAberrationPostProcess, GrainPostProcess, DepthOfFieldEffectBlurLevel } from "PostProcess";
+import { Engine } from "Engine";
+import { IDisposable } from "scene";
+import { GlowLayer } from "Layer";
+    
     /**
 	 * The default rendering pipeline can be added to a scene to apply common post processing effects such as anti-aliasing or depth of field.
      * See https://doc.babylonjs.com/how_to/using_default_rendering_pipeline

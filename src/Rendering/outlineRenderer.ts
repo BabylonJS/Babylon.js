@@ -1,3 +1,9 @@
+import { AbstractMesh, SubMesh, _InstancesBatch, VertexBuffer } from "Mesh";
+import { Scene } from "scene";
+import { Engine } from "Particles";
+import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
+import { Effect, Material } from "Materials";
+
     export interface Scene {
         /** @hidden */
         _outlineRenderer: OutlineRenderer;
@@ -282,4 +288,4 @@
                 this._engine.setAlphaMode(currentMode);
             }
         }
-    }
+    }
