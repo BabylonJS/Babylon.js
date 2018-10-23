@@ -26,7 +26,8 @@
             "when": "$(basename).ts"
         },
         "**/*.fragment.ts": true,
-        "**/*.vertex.ts": true
+        "**/*.vertex.ts": true,
+        "**/ShadersInclude/**/*.ts": true
     },
     "files.associations": {
         "*.fx": "glsl"
@@ -45,6 +46,7 @@
         "**/*.d.ts": true,
         "**/*.fragment.ts": true,
         "**/*.vertex.ts": true,
+        "**/ShadersInclude/**/*.ts": true,
         "assets": true
     },
     "editor.tabSize": 4,
