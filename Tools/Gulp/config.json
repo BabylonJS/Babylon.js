@@ -1495,6 +1495,7 @@
         }
     ],
     "modules": [
+        "core",
         "materialsLibrary",
         "postProcessesLibrary",
         "proceduralTexturesLibrary",
@@ -1507,6 +1508,36 @@
         "viewer",
         "viewer-assets"
     ],
+    "core": {
+        "libraries": [
+            {
+                "output": "babylon.js",
+                "maxOutput": "babylon.max.js",
+                "entry": "../src/Legacy/legacy.ts"
+            }
+        ],
+        "build": {
+            "webpack": "../../src/webpack.config.js",
+            "srcDirectory": "../../src/",
+            "distOutputDirectory": "/",
+            "dtsBundle": {
+                "name": "babylonjs",
+                "main": "../../dist/preview release/build/src/index.d.ts",
+                "out": "../babylon.module.d.ts",
+                "baseDir": "../../dist/preview release/build/",
+                "headerText": "BabylonJS"
+            },
+            "processDeclaration": {
+                "filename": "babylon.module.d.ts",
+                "packageName": "babylonjs",
+                "moduleName": "BABYLON",
+                "importsToRemove": [],
+                "classMap": {
+                    "babylonjs": "BABYLON"
+                }
+            }
+        }
+    },
     "materialsLibrary": {
         "libraries": [
             {

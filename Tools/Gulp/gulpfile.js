@@ -38,7 +38,6 @@ var config = require("./config.json");
 
 var includeShadersStream;
 var shadersStream;
-var workersStream;
 
 var extendsSearchRegex = /var\s__extends[\s\S]+?\}\)\(\);/g;
 var decorateSearchRegex = /var\s__decorate[\s\S]+?\};/g;
@@ -161,43 +160,6 @@ gulp.task("shaders", gulp.series("includeShaders", function(cb) {
     cb();
 }));
 
-gulp.task("workers", function(cb) {
-    workersStream = config.workers.map(function(workerDef) {
-        return gulp.src(workerDef.files).
-            pipe(expect.real({ errorOnFailure: true }, workerDef.files)).
-            pipe(uglify()).
-            pipe(srcToVariable({
-                variableName: workerDef.variable
-            }));
-    });
-    cb();
-});
-
-/**
- * Build tasks to concat minify uflify optimise the BJS js in different flavor (workers...).
- */
-gulp.task("buildWorker", gulp.series(gulp.parallel("workers", "shaders"), function() {
-    var filesToProcess = determineFilesToProcess("files");
-    return merge2(
-        gulp.src(filesToProcess).
-            pipe(expect.real({ errorOnFailure: true }, filesToProcess)),
-        shadersStream,
-        includeShadersStream,
-        workersStream
-    )
-        .pipe(concat(config.build.minWorkerFilename))
-        .pipe(cleants())
-        .pipe(replace(extendsSearchRegex, ""))
-        .pipe(replace(decorateSearchRegex, ""))
-        .pipe(addDecorateAndExtends())
-        .pipe(addModuleExports("BABYLON", {
-            dependencies: config.build.dependencies
-        }))
-        .pipe(uglify())
-        .pipe(optimisejs())
-        .pipe(gulp.dest(config.build.outputDirectory));
-}));
-
 gulp.task("build", gulp.series("shaders", function build() {
     var filesToProcess = determineFilesToProcess("files");
     var directFilesToProcess = determineFilesToProcess("directFiles");
@@ -275,7 +237,7 @@ gulp.task("typescript-compile", function() {
 /**
  * Build the releasable files.
  */
-gulp.task("typescript", gulp.series("typescript-compile", "buildWorker", "build"));
+gulp.task("typescript", gulp.series("typescript-compile", "build"));
 
 /**
  * Build all libs.

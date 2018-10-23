@@ -1,24 +1,28 @@
 {
-  "compileOnSave": true,
   "compilerOptions": {
-    "noResolve": true,
-    "target": "es5",
-    "declaration": true,
-    "experimentalDecorators": true,
-    "isolatedModules": false,
-    "sourceMap": true,
-    "types": [],
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noUnusedLocals": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "skipLibCheck": true,
-    "lib": [
-        "dom",
-        "es2015.promise",
-        "es5"
-    ]
+      "experimentalDecorators": true,
+      "module": "commonjs",
+      "target": "es5",
+      "moduleResolution": "node",
+      "noImplicitAny": true,
+      "noImplicitReturns": true,
+      "noImplicitThis": true,
+      "noUnusedLocals": true,
+      "strictNullChecks": true,
+      "strictFunctionTypes": true,
+      "declaration": true,
+      "sourceMap": true,
+      "lib": [
+          "es5",
+          "dom",
+          "es2015.promise",
+          "es2015.collection",
+          "es2015.iterable"
+      ],
+      "skipDefaultLibCheck": true,
+      "skipLibCheck": true,
+      "baseUrl": "./",
+      "rootDir": "./",
+      "outDir": "./build"
   }
 }
