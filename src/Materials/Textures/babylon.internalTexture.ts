@@ -311,6 +311,7 @@ module BABYLON {
                 case InternalTexture.DATASOURCE_DYNAMIC:
                     proxy = this._engine.createDynamicTexture(this.baseWidth, this.baseHeight, this.generateMipMaps, this.samplingMode);
                     proxy._swapAndDie(this);
+                    this._engine.updateDynamicTexture(this, this._engine.getRenderingCanvas()!, this.invertY, undefined, undefined, true);
 
                     // The engine will make sure to update content so no need to flag it as isReady = true
                     return;

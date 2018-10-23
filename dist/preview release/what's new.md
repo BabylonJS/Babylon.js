@@ -59,6 +59,7 @@
 ## Bug fixes
 - Refocusing on input gui with pointer events ([TrevorDev](https://github.com/TrevorDev))
 - Gizmo scaling not consistent when camera is parented ([TrevorDev](https://github.com/TrevorDev))
+- Context loss causing unexpected results with dynamic textures ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
