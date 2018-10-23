@@ -16,6 +16,7 @@ TestResults
 
 # javascript files
 src/**/*.js
+!src/webpack.config.js
 src/**/*.d.ts
 loaders/src/**/*.js
 materialsLibrary/src/**/*.js
