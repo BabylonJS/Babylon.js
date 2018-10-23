@@ -3,12 +3,13 @@ import { Nullable } from "types";
 import { PointerInfo } from "Events";
 import { Scene } from "scene";
 import { Quaternion, Matrix, Vector3, Color3 } from "Math";
-import { Mesh, AbstractMesh } from "Mesh";
+import { Mesh, AbstractMesh, MeshBuilder } from "Mesh";
 import { PointerDragBehavior } from "Behaviors";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { Gizmo } from "Gizmos";
 import { UtilityLayerRenderer } from "Rendering";
+import { StandardMaterial } from "Materials";
     /**
      * Bounding box gizmo
      */
@@ -16,7 +17,7 @@ import { UtilityLayerRenderer } from "Rendering";
         private _lineBoundingBox: AbstractMesh;
         private _rotateSpheresParent: AbstractMesh;
         private _scaleBoxesParent: AbstractMesh;
-        private _boundingDimensions = new BABYLON.Vector3(1, 1, 1);
+        private _boundingDimensions = new Vector3(1, 1, 1);
         private _renderObserver: Nullable<Observer<Scene>> = null;
         private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
         private _scaleDragSpeed = 0.2;
@@ -124,42 +125,42 @@ import { UtilityLayerRenderer } from "Rendering";
 
             this._anchorMesh = new AbstractMesh("anchor", gizmoLayer.utilityLayerScene);
             // Create Materials
-            var coloredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
+            var coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
             coloredMaterial.disableLighting = true;
             coloredMaterial.emissiveColor = color;
-            var hoverColoredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
+            var hoverColoredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
             hoverColoredMaterial.disableLighting = true;
             hoverColoredMaterial.emissiveColor = color.clone().add(new Color3(0.3, 0.3, 0.3));
 
             // Build bounding box out of lines
-            this._lineBoundingBox = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene);
-            this._lineBoundingBox.rotationQuaternion = new BABYLON.Quaternion();
+            this._lineBoundingBox = new AbstractMesh("", gizmoLayer.utilityLayerScene);
+            this._lineBoundingBox.rotationQuaternion = new Quaternion();
             var lines = [];
-            lines.push(BABYLON.MeshBuilder.CreateLines("lines", { points: [new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(this._boundingDimensions.x, 0, 0)] }, gizmoLayer.utilityLayerScene));
-            lines.push(BABYLON.MeshBuilder.CreateLines("lines", { points: [new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(0, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
-            lines.push(BABYLON.MeshBuilder.CreateLines("lines", { points: [new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(0, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
-            lines.push(BABYLON.MeshBuilder.CreateLines("lines", { points: [new BABYLON.Vector3(this._boundingDimensions.x, 0, 0), new BABYLON.Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
-            lines.push(BABYLON.MeshBuilder.CreateLines("lines", { points: [new BABYLON.Vector3(this._boundingDimensions.x, 0, 0), new BABYLON.Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
-            lines.push(BABYLON.MeshBuilder.CreateLines("lines", { points: [new BABYLON.Vector3(0, this._boundingDimensions.y, 0), new BABYLON.Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
-            lines.push(BABYLON.MeshBuilder.CreateLines("lines", { points: [new BABYLON.Vector3(0, this._boundingDimensions.y, 0), new BABYLON.Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
-            lines.push(BABYLON.MeshBuilder.CreateLines("lines", { points: [new BABYLON.Vector3(0, 0, this._boundingDimensions.z), new BABYLON.Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
-            lines.push(BABYLON.MeshBuilder.CreateLines("lines", { points: [new BABYLON.Vector3(0, 0, this._boundingDimensions.z), new BABYLON.Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
-            lines.push(BABYLON.MeshBuilder.CreateLines("lines", { points: [new BABYLON.Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z), new BABYLON.Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
-            lines.push(BABYLON.MeshBuilder.CreateLines("lines", { points: [new BABYLON.Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z), new BABYLON.Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
-            lines.push(BABYLON.MeshBuilder.CreateLines("lines", { points: [new BABYLON.Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z), new BABYLON.Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
+            lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(0, 0, 0), new Vector3(this._boundingDimensions.x, 0, 0)] }, gizmoLayer.utilityLayerScene));
+            lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(0, 0, 0), new Vector3(0, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
+            lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(0, 0, 0), new Vector3(0, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
+            lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(this._boundingDimensions.x, 0, 0), new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
+            lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(this._boundingDimensions.x, 0, 0), new Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
+            lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(0, this._boundingDimensions.y, 0), new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
+            lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(0, this._boundingDimensions.y, 0), new Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
+            lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(0, 0, this._boundingDimensions.z), new Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
+            lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(0, 0, this._boundingDimensions.z), new Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
+            lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z), new Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
+            lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z), new Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
+            lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z), new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
             lines.forEach((l) => {
                 l.color = color;
-                l.position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
+                l.position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
                 l.isPickable = false;
                 this._lineBoundingBox.addChild(l);
             });
             this._rootMesh.addChild(this._lineBoundingBox);
 
             // Create rotation spheres
-            this._rotateSpheresParent = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene);
+            this._rotateSpheresParent = new AbstractMesh("", gizmoLayer.utilityLayerScene);
             this._rotateSpheresParent.rotationQuaternion = new Quaternion();
             for (let i = 0; i < 12; i++) {
-                let sphere = BABYLON.MeshBuilder.CreateSphere("", { diameter: 1 }, gizmoLayer.utilityLayerScene);
+                let sphere = MeshBuilder.CreateSphere("", { diameter: 1 }, gizmoLayer.utilityLayerScene);
                 sphere.rotationQuaternion = new Quaternion();
                 sphere.material = coloredMaterial;
 
@@ -236,16 +237,16 @@ import { UtilityLayerRenderer } from "Rendering";
             this._rootMesh.addChild(this._rotateSpheresParent);
 
             // Create scale cubes
-            this._scaleBoxesParent = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene);
+            this._scaleBoxesParent = new AbstractMesh("", gizmoLayer.utilityLayerScene);
             this._scaleBoxesParent.rotationQuaternion = new Quaternion();
             for (var i = 0; i < 2; i++) {
                 for (var j = 0; j < 2; j++) {
                     for (var k = 0; k < 2; k++) {
-                        let box = BABYLON.MeshBuilder.CreateBox("", { size: 1 }, gizmoLayer.utilityLayerScene);
+                        let box = MeshBuilder.CreateBox("", { size: 1 }, gizmoLayer.utilityLayerScene);
                         box.material = coloredMaterial;
 
                         // Dragging logic
-                        let dragAxis = new BABYLON.Vector3(i == 0 ? -1 : 1, j == 0 ? -1 : 1, k == 0 ? -1 : 1);
+                        let dragAxis = new Vector3(i == 0 ? -1 : 1, j == 0 ? -1 : 1, k == 0 ? -1 : 1);
                         var _dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
                         _dragBehavior.moveAttached = false;
                         box.addBehavior(_dragBehavior);
@@ -393,17 +394,17 @@ import { UtilityLayerRenderer } from "Rendering";
                         var index = ((i * 4) + (j * 2)) + k;
                         if (i == 0) {
                             rotateSpheres[index].position.set(this._boundingDimensions.x / 2, this._boundingDimensions.y * j, this._boundingDimensions.z * k);
-                            rotateSpheres[index].position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
+                            rotateSpheres[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
                             rotateSpheres[index].lookAt(Vector3.Cross(Vector3.Right(), rotateSpheres[index].position.normalizeToNew()).normalizeToNew().add(rotateSpheres[index].position));
                         }
                         if (i == 1) {
                             rotateSpheres[index].position.set(this._boundingDimensions.x * j, this._boundingDimensions.y / 2, this._boundingDimensions.z * k);
-                            rotateSpheres[index].position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
+                            rotateSpheres[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
                             rotateSpheres[index].lookAt(Vector3.Cross(Vector3.Up(), rotateSpheres[index].position.normalizeToNew()).normalizeToNew().add(rotateSpheres[index].position));
                         }
                         if (i == 2) {
                             rotateSpheres[index].position.set(this._boundingDimensions.x * j, this._boundingDimensions.y * k, this._boundingDimensions.z / 2);
-                            rotateSpheres[index].position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
+                            rotateSpheres[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
                             rotateSpheres[index].lookAt(Vector3.Cross(Vector3.Forward(), rotateSpheres[index].position.normalizeToNew()).normalizeToNew().add(rotateSpheres[index].position));
                         }
                         if (this.fixedDragMeshScreenSize) {
@@ -428,7 +429,7 @@ import { UtilityLayerRenderer } from "Rendering";
                         var index = ((i * 4) + (j * 2)) + k;
                         if (scaleBoxes[index]) {
                             scaleBoxes[index].position.set(this._boundingDimensions.x * i, this._boundingDimensions.y * j, this._boundingDimensions.z * k);
-                            scaleBoxes[index].position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
+                            scaleBoxes[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
                             if (this.fixedDragMeshScreenSize) {
                                 this._rootMesh.computeWorldMatrix();
                                 this._scaleBoxesParent.computeWorldMatrix();
@@ -501,7 +502,7 @@ import { UtilityLayerRenderer } from "Rendering";
             mesh.position.set(0, 0, 0);
 
             // Update bounding dimensions/positions
-            var box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, mesh.getScene());
+            var box = MeshBuilder.CreateBox("box", { size: 1 }, mesh.getScene());
             var boundingMinMax = mesh.getHierarchyBoundingVectors();
             boundingMinMax.max.subtractToRef(boundingMinMax.min, box.scaling);
             box.position.set((boundingMinMax.max.x + boundingMinMax.min.x) / 2, (boundingMinMax.max.y + boundingMinMax.min.y) / 2, (boundingMinMax.max.z + boundingMinMax.min.z) / 2);

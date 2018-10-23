@@ -1,6 +1,6 @@
 import { Nullable } from "types";
 import { Tools } from "Tools";
-import { Vector3 } from "Math";
+import { Vector3, Color4 } from "Math";
 import { AbstractMesh } from "Mesh";
 import { IParticleSystem, GPUParticleSystem, ParticleSystemSet } from "Particles";
 import { Texture } from "Materials";
@@ -38,9 +38,9 @@ import { Scene } from "scene";
             system.createConeEmitter(0.1, Math.PI / 4);
 
             // Particle color
-            system.color1 = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
-            system.color2 = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
-            system.colorDead = new BABYLON.Color4(1.0, 1.0, 1.0, 0.0);
+            system.color1 = new Color4(1.0, 1.0, 1.0, 1.0);
+            system.color2 = new Color4(1.0, 1.0, 1.0, 1.0);
+            system.colorDead = new Color4(1.0, 1.0, 1.0, 0.0);
 
             // Particle Size
             system.minSize = 0.1;

@@ -16,7 +16,7 @@ import { BlurPostProcess } from "PostProcess";
     export class MirrorTexture extends RenderTargetTexture {
         /**
          * Define the reflection plane we want to use. The mirrorPlane is usually set to the constructed reflector.
-         * It is possible to directly set the mirrorPlane by directly using a BABYLON.Plane(a, b, c, d) where a, b and c give the plane normal vector (a, b, c) and d is a scalar displacement from the mirrorPlane to the origin. However in all but the very simplest of situations it is more straight forward to set it to the reflector as stated in the doc.
+         * It is possible to directly set the mirrorPlane by directly using a Plane(a, b, c, d) where a, b and c give the plane normal vector (a, b, c) and d is a scalar displacement from the mirrorPlane to the origin. However in all but the very simplest of situations it is more straight forward to set it to the reflector as stated in the doc.
          * @see https://doc.babylonjs.com/how_to/reflect#mirrors
          */
         public mirrorPlane = new Plane(0, 1, 0, 1);

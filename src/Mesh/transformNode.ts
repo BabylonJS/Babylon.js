@@ -3,7 +3,7 @@ import { Nullable } from "types";
 import { Camera } from "Cameras";
 import { Scene } from "scene";
 import { Quaternion, Matrix, Vector3, Tmp, Space } from "Math";
-import {Node} from "Node";
+import { Node } from "Node";
 import { Bone } from "Bones";
     /**
      * A TransformNode is an object that is not rendered but can be used as a center of transformation. This can decrease memory usage and increase rendering speed compared to using an empty mesh as a parent and is less complicated than using a pivot matrix.
@@ -668,7 +668,7 @@ import { Bone } from "Bones";
         private static _rotationAxisCache = new Quaternion();
         /**
          * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.
-         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
+         * space (default LOCAL) can be either Space.LOCAL, either Space.WORLD.
          * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
          * The passed axis is also normalized.
          * @param axis the axis to rotate around
@@ -745,7 +745,7 @@ import { Bone } from "Bones";
 
         /**
          * Translates the mesh along the axis vector for the passed distance in the given space.
-         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
+         * space (default LOCAL) can be either Space.LOCAL, either Space.WORLD.
          * @param axis the axis to translate in
          * @param distance the distance to translate
          * @param space Space to rotate in (Default: local)

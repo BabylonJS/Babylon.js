@@ -232,7 +232,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         }
 
         /**
-         * Gets the data source type of the texture (can be one of the BABYLON.InternalTexture.DATASOURCE_XXXX)
+         * Gets the data source type of the texture (can be one of the InternalTexture.DATASOURCE_XXXX)
          */
         public get dataSource(): number {
             return this._dataSource;

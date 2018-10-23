@@ -2,7 +2,7 @@ import { Observer, Observable } from "Tools";
 import { Nullable } from "types";
 import { PointerInfo } from "Events";
 import { Vector3, Color3 } from "Math";
-import { Mesh, AbstractMesh, LinesMesh } from "Mesh";
+import { Mesh, AbstractMesh, LinesMesh, MeshBuilder } from "Mesh";
 import { StandardMaterial } from "Materials";
 import { PointerDragBehavior } from "Behaviors";
 import { _TimeToken } from "Instrumentation";
@@ -42,18 +42,18 @@ import { UtilityLayerRenderer } from "Rendering";
             super(gizmoLayer);
 
             // Create Material
-            this._coloredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
+            this._coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
             this._coloredMaterial.disableLighting = true;
             this._coloredMaterial.emissiveColor = color;
 
-            var hoverMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
+            var hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
             hoverMaterial.disableLighting = true;
             hoverMaterial.emissiveColor = color.add(new Color3(0.3, 0.3, 0.3));
 
             // Build mesh on root node
-            var arrow = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene);
-            var arrowMesh = BABYLON.MeshBuilder.CreateBox("yPosMesh", {size: 0.4}, gizmoLayer.utilityLayerScene);
-            var arrowTail = BABYLON.MeshBuilder.CreateLines("yPosMesh", {points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)]}, gizmoLayer.utilityLayerScene);
+            var arrow = new AbstractMesh("", gizmoLayer.utilityLayerScene);
+            var arrowMesh = MeshBuilder.CreateBox("yPosMesh", {size: 0.4}, gizmoLayer.utilityLayerScene);
+            var arrowTail = MeshBuilder.CreateLines("yPosMesh", {points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)]}, gizmoLayer.utilityLayerScene);
             arrowTail.color = this._coloredMaterial.emissiveColor;
             arrow.addChild(arrowMesh);
             arrow.addChild(arrowTail);

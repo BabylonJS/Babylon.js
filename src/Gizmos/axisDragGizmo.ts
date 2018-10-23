@@ -1,13 +1,14 @@
 import { Observer, Observable } from "Tools";
 import { Nullable } from "types";
 import { PointerInfo } from "Events";
-import { Vector3, Color3 } from "Math";
-import { Mesh, AbstractMesh, LinesMesh } from "Mesh";
+import { Vector3, Color3, Matrix } from "Math";
+import { Mesh, AbstractMesh, LinesMesh, MeshBuilder } from "Mesh";
 import { PointerDragBehavior } from "Behaviors";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { Gizmo } from "Gizmos";
 import { UtilityLayerRenderer } from "Rendering";
+import { StandardMaterial } from "Materials";
     /**
      * Single axis drag gizmo
      */
@@ -36,18 +37,18 @@ import { UtilityLayerRenderer } from "Rendering";
             super(gizmoLayer);
 
             // Create Material
-            var coloredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
+            var coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
             coloredMaterial.disableLighting = true;
             coloredMaterial.emissiveColor = color;
 
-            var hoverMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
+            var hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
             hoverMaterial.disableLighting = true;
             hoverMaterial.emissiveColor = color.add(new Color3(0.3, 0.3, 0.3));
 
             // Build mesh on root node
-            var arrow = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene);
-            var arrowMesh = BABYLON.MeshBuilder.CreateCylinder("yPosMesh", {diameterTop: 0, height: 1.5, diameterBottom: 0.75, tessellation: 96}, gizmoLayer.utilityLayerScene);
-            var arrowTail = BABYLON.MeshBuilder.CreateLines("yPosMesh", {points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)]}, gizmoLayer.utilityLayerScene);
+            var arrow = new AbstractMesh("", gizmoLayer.utilityLayerScene);
+            var arrowMesh = MeshBuilder.CreateCylinder("yPosMesh", {diameterTop: 0, height: 1.5, diameterBottom: 0.75, tessellation: 96}, gizmoLayer.utilityLayerScene);
+            var arrowTail = MeshBuilder.CreateLines("yPosMesh", {points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)]}, gizmoLayer.utilityLayerScene);
             arrowTail.color = coloredMaterial.emissiveColor;
             arrow.addChild(arrowMesh);
             arrow.addChild(arrowTail);
@@ -73,8 +74,8 @@ import { UtilityLayerRenderer } from "Rendering";
             this.dragBehavior.moveAttached = false;
             this._rootMesh.addBehavior(this.dragBehavior);
 
-            var localDelta = new BABYLON.Vector3();
-            var tmpMatrix = new BABYLON.Matrix();
+            var localDelta = new Vector3();
+            var tmpMatrix = new Matrix();
             this.dragBehavior.onDragObservable.add((event) => {
                 if (this.attachedMesh) {
                     // Convert delta to local translation if it has a parent

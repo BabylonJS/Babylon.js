@@ -2,7 +2,7 @@ import { Tools } from "Tools";
 import { Nullable } from "types";
 import { Camera } from "Cameras";
 import { Scene } from "scene";
-import { Tmp } from "Math";
+import { Tmp, Color3 } from "Math";
 import { Engine } from "Engine";
 import { Mesh, AbstractMesh, VertexBuffer } from "Mesh";
 import { UniformBuffer, Effect, BaseTexture, EffectFallbacks, EffectCreationOptions } from "Materials";
@@ -586,7 +586,7 @@ import { Light } from "Lights";
             }
         }
 
-        private static _tempFogColor = BABYLON.Color3.Black();
+        private static _tempFogColor = Color3.Black();
         /**
          * Binds the fog information from the scene to the effect for the given mesh.
          * @param scene The scene the lights belongs to

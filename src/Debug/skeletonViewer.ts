@@ -72,7 +72,7 @@ module BABYLON.Debug {
 
             if (x !== 0 || y !== 0 || z !== 0) {
                 var tmat2 = Tmp.Matrix[1];
-                BABYLON.Matrix.IdentityToRef(tmat2);
+                Matrix.IdentityToRef(tmat2);
                 tmat2.setTranslationFromFloats(x, y, z);
                 tmat2.multiplyToRef(tmat, tmat);
             }
@@ -142,10 +142,10 @@ module BABYLON.Debug {
             const targetScene = this.utilityLayerRenderer ? this.utilityLayerRenderer.utilityLayerScene : this._scene;
 
             if (!this._debugMesh) {
-                this._debugMesh = BABYLON.MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: null }, targetScene);
+                this._debugMesh = MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: null }, targetScene);
                 this._debugMesh.renderingGroupId = this.renderingGroupId;
             } else {
-                BABYLON.MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: this._debugMesh }, targetScene);
+                MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: this._debugMesh }, targetScene);
             }
             this._debugMesh.position.copyFrom(this.mesh.position);
             this._debugMesh.color = this.color;

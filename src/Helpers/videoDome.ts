@@ -82,7 +82,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
             let tempOptions: VideoTextureSettings = { loop: options.loop, autoPlay: options.autoPlay, autoUpdateTexture: true, poster: options.poster };
             let material = this._material = new BackgroundMaterial(name + "_material", scene);
             let texture = this._videoTexture = new VideoTexture(name + "_texture", urlsOrVideo, scene, false, this._useDirectMapping, Texture.TRILINEAR_SAMPLINGMODE, tempOptions);
-            this._mesh = BABYLON.Mesh.CreateSphere(name + "_mesh", options.resolution, options.size, scene, false, BABYLON.Mesh.BACKSIDE);
+            this._mesh = Mesh.CreateSphere(name + "_mesh", options.resolution, options.size, scene, false, Mesh.BACKSIDE);
 
             texture.onLoadObservable.addOnce(() => {
                 this._setReady(true);

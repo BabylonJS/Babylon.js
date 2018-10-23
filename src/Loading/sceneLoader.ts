@@ -524,7 +524,7 @@ import { Skeleton } from "Bones";
          * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
          * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene the instance of BABYLON.Scene to append to
+         * @param scene the instance of Scene to append to
          * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
          * @param onProgress a callback with a progress event for each file being loaded
          * @param onError a callback with the scene, a message, and possibly an exception when import fails
@@ -621,7 +621,7 @@ import { Skeleton } from "Bones";
          * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
          * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene the instance of BABYLON.Scene to append to
+         * @param scene the instance of Scene to append to
          * @param onProgress a callback with a progress event for each file being loaded
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
@@ -646,7 +646,7 @@ import { Skeleton } from "Bones";
          * Load a scene
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
          * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param engine is the instance of BABYLON.Engine to use to create the scene
+         * @param engine is the instance of Engine to use to create the scene
          * @param onSuccess a callback with the scene when import succeeds
          * @param onProgress a callback with a progress event for each file being loaded
          * @param onError a callback with the scene, a message, and possibly an exception when import fails
@@ -661,7 +661,7 @@ import { Skeleton } from "Bones";
          * Load a scene
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
          * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param engine is the instance of BABYLON.Engine to use to create the scene
+         * @param engine is the instance of Engine to use to create the scene
          * @param onProgress a callback with a progress event for each file being loaded
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded scene
@@ -680,7 +680,7 @@ import { Skeleton } from "Bones";
          * Append a scene
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
          * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to
+         * @param scene is the instance of Scene to append to
          * @param onSuccess a callback with the scene when import succeeds
          * @param onProgress a callback with a progress event for each file being loaded
          * @param onError a callback with the scene, a message, and possibly an exception when import fails
@@ -775,7 +775,7 @@ import { Skeleton } from "Bones";
          * Append a scene
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
          * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to
+         * @param scene is the instance of Scene to append to
          * @param onProgress a callback with a progress event for each file being loaded
          * @param pluginExtension the extension used to determine the plugin
          * @returns The given scene
@@ -794,7 +794,7 @@ import { Skeleton } from "Bones";
          * Load a scene into an asset container
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
          * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+         * @param scene is the instance of Scene to append to (default: last created scene)
          * @param onSuccess a callback with the scene when import succeeds
          * @param onProgress a callback with a progress event for each file being loaded
          * @param onError a callback with the scene, a message, and possibly an exception when import fails
@@ -804,7 +804,7 @@ import { Skeleton } from "Bones";
         public static LoadAssetContainer(
             rootUrl: string,
             sceneFilename: string = "",
-            scene: Nullable<Scene> = BABYLON.Engine.LastCreatedScene,
+            scene: Nullable<Scene> = Engine.LastCreatedScene,
             onSuccess: Nullable<(assets: AssetContainer) => void> = null,
             onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null,
             onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
@@ -895,7 +895,7 @@ import { Skeleton } from "Bones";
          * Load a scene into an asset container
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
          * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to
+         * @param scene is the instance of Scene to append to
          * @param onProgress a callback with a progress event for each file being loaded
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded asset container

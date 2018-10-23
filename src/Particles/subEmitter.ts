@@ -45,7 +45,7 @@ import { Scene } from "scene";
         ) {
             // Create mesh as emitter to support rotation
             if (!particleSystem.emitter || !(<AbstractMesh>particleSystem.emitter).dispose) {
-                particleSystem.emitter = new BABYLON.AbstractMesh("SubemitterSystemEmitter", particleSystem.getScene());
+                particleSystem.emitter = new AbstractMesh("SubemitterSystemEmitter", particleSystem.getScene());
             }
 
             // Automatically dispose of subemitter when system is disposed
