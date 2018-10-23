@@ -1,3 +1,10 @@
+import { Nullable } from "types";
+import { Vector2 } from "Math";
+import { Camera } from "Cameras";
+import { Effect, Texture } from "Materials";
+import { PostProcess, BlurPostProcess, Scene, PostProcessOptions } from "PostProcess";
+import { Engine } from "Engine";
+    
     /**
      * The DepthOfFieldBlurPostProcess applied a blur in a give direction.
      * This blur differs from the standard BlurPostProcess as it attempts to avoid blurring pixels
@@ -21,7 +28,7 @@
          * @param textureType Type of textures used when performing the post process. (default: 0)
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(name: string, scene: Scene, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, circleOfConfusion: PostProcess, imageToBlur: Nullable<PostProcess> = null, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+        constructor(name: string, scene: Scene, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, circleOfConfusion: PostProcess, imageToBlur: Nullable<PostProcess> = null, engine?: Engine, reusable?: boolean, blockCompilation = false) {
             super(name, direction, kernel, options, camera, samplingMode = Texture.BILINEAR_SAMPLINGMODE, engine, reusable, textureType = Engine.TEXTURETYPE_UNSIGNED_INT, `#define DOF 1\r\n`, blockCompilation);
 
             this.onApplyObservable.add((effect: Effect) => {
@@ -34,4 +41,4 @@
                 }
             });
         }
-    }
+    }

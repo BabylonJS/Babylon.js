@@ -1,3 +1,9 @@
+import { Nullable } from "types";
+import { Engine } from "Particles";
+import { PostProcess, PostProcessOptions } from "PostProcess";
+import { Camera } from "Cameras";
+import { Effect } from "Materials";
+
     /**
      * Postprocess used to generate anaglyphic rendering
      */
@@ -21,4 +27,4 @@
                 effect.setTextureFromPostProcess("leftSampler", this._passedProcess);
             });
         }
-    }
+    }

@@ -1,3 +1,6 @@
+import { Vector3, Matrix } from "Math";
+import { Effect } from "Materials";
+import { IParticleEmitterType, Particle } from "Particles";
     /**
      * Particle emitter represents a volume emitting particles.
      * This is the responsibility of the implementation to define the volume shape like cone/sphere/box.
@@ -54,4 +57,4 @@
          * @param serializationObject defines the JSON object
          */
         parse(serializationObject: any): void;
-    }
+    }

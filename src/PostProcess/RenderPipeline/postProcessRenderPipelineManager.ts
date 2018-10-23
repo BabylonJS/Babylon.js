@@ -1,3 +1,5 @@
+import { Camera } from "Cameras";
+import { PostProcessRenderPipeline } from "PostProcess";
     /**
      * PostProcessRenderPipelineManager class
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
@@ -122,4 +124,4 @@
                 }
             }
         }
-    }
+    }

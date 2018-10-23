@@ -1,3 +1,10 @@
+import { Vector2 } from "Math";
+import { Nullable } from "types";
+import { PostProcess, PostProcessOptions } from "PostProcess";
+import { Camera } from "Cameras";
+import { Texture, Effect } from "Materials";
+import { Engine } from "Engine";
+
     /**
      * The Blur Post Process which blurs an image based on a kernel and direction.
      * Can be used twice in x and y directions to perform a guassian blur in two passes.
@@ -242,4 +249,4 @@
         protected _glslFloat(x: number, decimalFigures = 8) {
             return x.toFixed(decimalFigures).replace(/0+$/, '');
         }
-    }
+    }
