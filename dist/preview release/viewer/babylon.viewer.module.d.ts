@@ -961,18 +961,37 @@ declare module 'babylonjs-viewer/loader/plugins/loaderPlugin' {
 }
 
 declare module 'babylonjs-viewer/templating/viewerTemplatePlugin' {
-    
+    import { EventCallback, Template } from "babylonjs-viewer/templating/templateManager";
+    export interface IViewerTemplatePlugin {
+        readonly templateName: string;
+        readonly eventsToAttach?: Array<string>;
+        interactionPredicate(event: EventCallback): boolean;
+        onEvent?(event: EventCallback): void;
+        addHTMLTemplate?(template: Template): void;
+    }
+    export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugin {
+        readonly templateName: string;
+        readonly eventsToAttach: Array<string>;
+        protected _prepend: boolean;
+        protected _buttonName: string;
+        protected _buttonClass: string;
+        protected _htmlTemplate: string;
+        constructor(buttonName: string, buttonClass?: string, htmlTemplate?: string);
+        interactionPredicate(event: EventCallback): boolean;
+        abstract onEvent(event: EventCallback): void;
+        addHTMLTemplate(template: Template): void;
+        protected _generateHTMLElement(template: Template): Element | DocumentFragment;
+    }
 }
 
 declare module 'babylonjs-viewer/optimizer/custom' {
-    import { extendedUpgrade } from "babylonjs-viewer/optimizer/custom/extended";
     import { SceneManager } from "babylonjs-viewer/managers/sceneManager";
     /**
       *
       * @param name the name of the custom optimizer configuration
       * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
       */
-    export function getCustomOptimizerByName(name: string, upgrade?: boolean): typeof extendedUpgrade;
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
     export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 
@@ -1641,22 +1660,6 @@ declare module 'babylonjs-viewer/loader/plugins' {
         *
         */
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
-}
-
-declare module 'babylonjs-viewer/optimizer/custom/extended' {
-    import { SceneManager } from 'babylonjs-viewer/managers/sceneManager';
-    /**
-        * A custom upgrade-oriented function configuration for the scene optimizer.
-        *
-        * @param viewer the viewer to optimize
-        */
-    export function extendedUpgrade(sceneManager: SceneManager): boolean;
-    /**
-        * A custom degrade-oriented function configuration for the scene optimizer.
-        *
-        * @param viewer the viewer to optimize
-        */
-    export function extendedDegrade(sceneManager: SceneManager): boolean;
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces' {
