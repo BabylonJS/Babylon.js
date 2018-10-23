@@ -1,4 +1,3 @@
-import { Scene } from "./boundingBoxRenderer";
 import { SmartArray } from "Tools";
 import { SubMesh } from "Mesh";
 import { Nullable } from "types";
@@ -9,6 +8,7 @@ import { IEdgesRenderer } from "Rendering";
 import { ISpriteManager } from "Sprites";
 import { Engine } from "Engine";
 import { Material } from "Materials";
+import { Scene } from "scene";
 
     /**
      * This represents the object necessary to create a rendering group.

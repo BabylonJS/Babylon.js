@@ -4,7 +4,7 @@ import { Color4, Vector2 } from "Math";
 import { Camera, WebVRFreeCamera } from "Cameras";
 import { Effect, Texture, InternalTexture } from "Materials";
 import { Engine } from "Engine";
-import { Scene } from "Rendering/outlineRenderer";
+import { Scene } from "scene";
     /**
      * Size options for a post process
      */
