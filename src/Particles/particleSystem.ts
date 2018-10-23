@@ -50,7 +50,7 @@ import { Scene, IDisposable } from "scene";
         /**
          * @hidden
          */
-        public _inheritedVelocityOffset = new BABYLON.Vector3();
+        public _inheritedVelocityOffset = new Vector3();
         /**
         * An event triggered when the system is disposed
         */

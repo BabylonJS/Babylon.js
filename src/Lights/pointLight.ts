@@ -1,7 +1,7 @@
 import { serialize } from "Tools";
 import { Scene } from "scene";
 import { Matrix, Vector3 } from "Math";
-import {Node} from "Node";
+import { Node } from "Node";
 import { AbstractMesh } from "Mesh";
 import { ShadowLight, Light } from "Lights";
 import { _TimeToken } from "Instrumentation";
@@ -65,7 +65,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * It can cast shadows.
          * If the scene camera is already defined and you want to set your PointLight at the camera position, just set it :
          * ```javascript
-         * var pointLight = new BABYLON.PointLight("pl", camera.position, scene);
+         * var pointLight = new PointLight("pl", camera.position, scene);
          * ```
          * Documentation : http://doc.babylonjs.com/tutorials/lights
          * @param name The light friendly name

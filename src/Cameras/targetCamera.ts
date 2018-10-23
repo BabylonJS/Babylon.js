@@ -71,7 +71,7 @@ import { Quaternion, Matrix, Vector3, Vector2, Epsilon, Tmp } from "Math";
         /** @hidden */
         public _reset: () => void;
 
-        private _defaultUp = BABYLON.Vector3.Up();
+        private _defaultUp = Vector3.Up();
 
         /**
          * Instantiates a target camera that takes a meshor position as a target and continues to look at it while it moves.

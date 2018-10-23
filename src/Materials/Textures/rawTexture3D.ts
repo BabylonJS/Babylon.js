@@ -17,7 +17,7 @@ import { Texture } from "Materials";
          * @param scene defines the hosting scene
          * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
          * @param invertY defines if texture must be stored with Y axis inverted
-         * @param samplingMode defines the sampling mode to use (BABYLON.Texture.TRILINEAR_SAMPLINGMODE by default)
+         * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
          * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
          */
         constructor(data: ArrayBufferView, width: number, height: number, depth: number,

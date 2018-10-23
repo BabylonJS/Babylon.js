@@ -46,7 +46,7 @@ declare var WebAssembly: any;
      *
      * To update the configuration, use the following code:
      * ```javascript
-     *     BABYLON.DracoCompression.Configuration = {
+     *     DracoCompression.Configuration = {
      *         decoder: {
      *             wasmUrl: "<url to the WebAssembly library>",
      *             wasmBinaryUrl: "<url to the WebAssembly binary>",
@@ -57,13 +57,13 @@ declare var WebAssembly: any;
      *
      * Draco has two versions, one for WebAssembly and one for JavaScript. The decoder configuration can be set to only support Webssembly or only support the JavaScript version.
      * Decoding will automatically fallback to the JavaScript version if WebAssembly version is not configured or if WebAssembly is not supported by the browser.
-     * Use `BABYLON.DracoCompression.DecoderAvailable` to determine if the decoder is available for the current session.
+     * Use `DracoCompression.DecoderAvailable` to determine if the decoder is available for the current session.
      *
      * To decode Draco compressed data, create a DracoCompression object and call decodeMeshAsync:
      * ```javascript
-     *     var dracoCompression = new BABYLON.DracoCompression();
+     *     var dracoCompression = new DracoCompression();
      *     var vertexData = await dracoCompression.decodeMeshAsync(data, {
-     *         [BABYLON.VertexBuffer.PositionKind]: 0
+     *         [VertexBuffer.PositionKind]: 0
      *     });
      * ```
      *

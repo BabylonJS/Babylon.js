@@ -1,3 +1,4 @@
+    import { Animation } from "Animations";
     /**
      * Interface for any object that can request an animation frame
      */

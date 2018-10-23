@@ -1,11 +1,11 @@
 import { Observer, Observable } from "Tools";
 import { Nullable } from "types";
-import { FreeCamera, Camera, WebVROptions, WebVRFreeCamera, TargetCamera } from "Cameras";
+import { FreeCamera, Camera, WebVROptions, TargetCamera } from "Cameras";
 import { Scene } from "scene";
 import { Quaternion, Matrix, Vector3 } from "Math";
-import {Gamepad, WebVRController, PoseEnabledControllerType} from "Gamepad"
+import { Gamepad, WebVRController, PoseEnabledControllerType } from "Gamepad";
 import { IDisplayChangedEventArgs } from "Engine";
-import {Node} from "Node";
+import { Node } from "Node";
 import { AbstractMesh } from "Mesh";
 import { Ray } from "Culling";
 import { HemisphericLight } from "Lights";
@@ -626,7 +626,7 @@ import { HemisphericLight } from "Lights";
             return Matrix.Identity();
         }
 
-        private _tmpMatrix = new BABYLON.Matrix();
+        private _tmpMatrix = new Matrix();
         /**
          * This function is called by the two RIG cameras.
          * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)

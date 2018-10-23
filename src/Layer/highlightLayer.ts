@@ -250,7 +250,7 @@ import { AbstractScene } from "abstractScene";
 
             // Warn on stencil
             if (!this._engine.isStencilEnable) {
-                Tools.Warn("Rendering the Highlight Layer requires the stencil to be active on the canvas. var engine = new BABYLON.Engine(canvas, antialias, { stencil: true }");
+                Tools.Warn("Rendering the Highlight Layer requires the stencil to be active on the canvas. var engine = new Engine(canvas, antialias, { stencil: true }");
             }
 
             // Adapt options

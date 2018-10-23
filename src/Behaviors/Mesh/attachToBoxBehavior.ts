@@ -1,9 +1,10 @@
 import { Vector3, Matrix, Quaternion } from "Math";
-import { Mesh } from "Mesh";
+import { Mesh, TransformNode } from "Mesh";
 import { Scene } from "scene";
 import { Nullable } from "types";
 import { Observer } from "Tools";
 import { WebVRFreeCamera } from "Cameras";
+import { Behavior } from "Behaviors";
 
     /**
      * @hidden
@@ -15,7 +16,7 @@ import { WebVRFreeCamera } from "Cameras";
     /**
      * A behavior that when attached to a mesh will will place a specified node on the meshes face pointing towards the camera
      */
-    export class AttachToBoxBehavior implements BABYLON.Behavior<Mesh> {
+    export class AttachToBoxBehavior implements Behavior<Mesh> {
         /**
          *  The name of the behavior
          */
@@ -39,7 +40,7 @@ import { WebVRFreeCamera } from "Cameras";
          * Creates the AttachToBoxBehavior, used to attach UI to the closest face of the box to a camera
          * @param ui The transform node that should be attched to the mesh
          */
-        constructor(private ui: BABYLON.TransformNode) {
+        constructor(private ui: TransformNode) {
             /* Does nothing */
         }
 
@@ -75,9 +76,9 @@ import { WebVRFreeCamera } from "Cameras";
         private _zeroVector = Vector3.Zero();
         private _lookAtTmpMatrix = new Matrix();
         private _lookAtToRef(pos: Vector3, up = new Vector3(0, 1, 0), ref: Quaternion) {
-            BABYLON.Matrix.LookAtLHToRef(this._zeroVector, pos, up, this._lookAtTmpMatrix);
+            Matrix.LookAtLHToRef(this._zeroVector, pos, up, this._lookAtTmpMatrix);
             this._lookAtTmpMatrix.invert();
-            BABYLON.Quaternion.FromRotationMatrixToRef(this._lookAtTmpMatrix, ref);
+            Quaternion.FromRotationMatrixToRef(this._lookAtTmpMatrix, ref);
         }
 
         /**

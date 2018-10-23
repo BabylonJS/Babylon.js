@@ -3,6 +3,7 @@ import { Camera } from "Cameras";
 import { Effect } from "Materials";
 import { PostProcess, PostProcessOptions } from "PostProcess";
 import { Engine } from "Engine";
+import { ToGammaSpace } from "Math";
     
     /**
      * The extract highlights post process sets all pixels to black except pixels above the specified luminance threshold. Used as the first step for a bloom effect.
@@ -26,7 +27,7 @@ import { Engine } from "Engine";
                 if (this._inputPostProcess) {
                     effect.setTextureFromPostProcess("textureSampler", this._inputPostProcess);
                 }
-                effect.setFloat('threshold', Math.pow(this.threshold, BABYLON.ToGammaSpace));
+                effect.setFloat('threshold', Math.pow(this.threshold, ToGammaSpace));
                 effect.setFloat('exposure', this._exposure);
             });
         }

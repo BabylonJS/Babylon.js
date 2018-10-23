@@ -1,8 +1,9 @@
 import { Observable } from "Tools";
 import { Nullable } from "types";
-import { IDisposable } from "scene";
-import { Vector3 } from "Math";
-import { RenderTargetTexture } from "Materials";
+import { IDisposable, Scene } from "scene";
+import { Vector3, Matrix } from "Math";
+import { RenderTargetTexture, InternalTexture } from "Materials";
+import { Ray } from "Culling";
     /**
      * Manages an XRSession
      * @see https://doc.babylonjs.com/how_to/webxr
@@ -11,11 +12,11 @@ import { RenderTargetTexture } from "Materials";
         /**
          * Fires every time a new xrFrame arrives which can be used to update the camera
          */
-        public onXRFrameObservable: Observable<any> = new BABYLON.Observable<any>();
+        public onXRFrameObservable: Observable<any> = new Observable<any>();
         /**
          * Fires when the xr session is ended either by the device or manually done
          */
-        public onXRSessionEnded: Observable<any> = new BABYLON.Observable<any>();
+        public onXRSessionEnded: Observable<any> = new Observable<any>();
 
         /** @hidden */
         public _xrSession: XRSession;
@@ -27,13 +28,13 @@ import { RenderTargetTexture } from "Materials";
         public _currentXRFrame: Nullable<XRFrame>;
         private _xrNavigator: any;
         private _xrDevice: XRDevice;
-        private _tmpMatrix = new BABYLON.Matrix();
+        private _tmpMatrix = new Matrix();
 
         /**
          * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
          * @param scene The scene which the session should be created for
          */
-        constructor(private scene: BABYLON.Scene) {
+        constructor(private scene: Scene) {
 
         }
 
@@ -116,7 +117,7 @@ import { RenderTargetTexture } from "Materials";
          * @param ray ray to cast into the environment
          * @returns Promise which resolves with a collision point in the environment if it exists
          */
-        public environmentPointHitTestAsync(ray: BABYLON.Ray): Promise<Nullable<Vector3>> {
+        public environmentPointHitTestAsync(ray: Ray): Promise<Nullable<Vector3>> {
             return new Promise((res) => {
                 // Compute left handed inputs to request hit test
                 var origin = new Float32Array([ray.origin.x, ray.origin.y, ray.origin.z]);
@@ -130,7 +131,7 @@ import { RenderTargetTexture } from "Materials";
                 this._xrSession.requestHitTest(origin, direction, this._frameOfReference)
                 .then((hits: any) => {
                     if (hits.length > 0) {
-                        BABYLON.Matrix.FromFloat32ArrayToRefScaled(hits[0].hitMatrix, 0, 1.0, this._tmpMatrix);
+                        Matrix.FromFloat32ArrayToRefScaled(hits[0].hitMatrix, 0, 1.0, this._tmpMatrix);
                         var hitPoint = this._tmpMatrix.getTranslation();
                         if (!this.scene.useRightHandedSystem) {
                             hitPoint.z *= -1;
@@ -164,15 +165,15 @@ import { RenderTargetTexture } from "Materials";
          * @param session session to create render target for
          * @param scene scene the new render target should be created for
          */
-        public static _CreateRenderTargetTextureFromSession(session: XRSession, scene: BABYLON.Scene) {
+        public static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene) {
             // Create internal texture
-            var internalTexture = new BABYLON.InternalTexture(scene.getEngine(), BABYLON.InternalTexture.DATASOURCE_UNKNOWN, true);
+            var internalTexture = new InternalTexture(scene.getEngine(), InternalTexture.DATASOURCE_UNKNOWN, true);
             internalTexture.width = session.baseLayer.framebufferWidth;
             internalTexture.height = session.baseLayer.framebufferHeight;
             internalTexture._framebuffer = session.baseLayer.framebuffer;
 
              // Create render target texture from the internal texture
-            var renderTargetTexture = new BABYLON.RenderTargetTexture("XR renderTargetTexture", {width: internalTexture.width, height: internalTexture.height}, scene, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
+            var renderTargetTexture = new RenderTargetTexture("XR renderTargetTexture", {width: internalTexture.width, height: internalTexture.height}, scene, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
             renderTargetTexture._texture = internalTexture;
 
              return renderTargetTexture;

@@ -1,13 +1,14 @@
 import { Observable } from "Tools";
 import { Nullable } from "types";
 import { WebVRFreeCamera, TargetCamera, PoseControlled, DevicePose } from "Cameras";
-import { Quaternion, Matrix, Vector3 } from "Math";
-import {Gamepad, ExtendedGamepadButton, OculusTouchController, WindowsMotionController, ViveController, GearVRController, DaydreamController, GenericController} from "Gamepad"
-import {Node} from "Node";
+import { Quaternion, Matrix, Vector3, Tmp } from "Math";
+import { Gamepad, ExtendedGamepadButton, OculusTouchController, WindowsMotionController, ViveController, GearVRController, DaydreamController, GenericController } from "Gamepad";
+import { Node } from "Node";
 import { AbstractMesh } from "Mesh";
 import { Ray } from "Culling";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Engine } from "Engine";
     /**
     * Defines the types of pose enabled controllers that are supported
     */
@@ -224,17 +225,17 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
             var pose: GamepadPose = this.browserGamepad.pose;
             this.updateFromDevice(pose);
 
-            if (!this._trackPosition && BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.activeCamera && (<WebVRFreeCamera>BABYLON.Engine.LastCreatedScene.activeCamera).devicePosition) {
-                var camera = <WebVRFreeCamera>BABYLON.Engine.LastCreatedScene.activeCamera;
+            if (!this._trackPosition && Engine.LastCreatedScene && Engine.LastCreatedScene.activeCamera && (<WebVRFreeCamera>Engine.LastCreatedScene.activeCamera).devicePosition) {
+                var camera = <WebVRFreeCamera>Engine.LastCreatedScene.activeCamera;
                 camera._computeDevicePosition();
 
                 this._deviceToWorld.setTranslation(camera.devicePosition);
                 if (camera.deviceRotationQuaternion) {
                     var camera = camera;
-                    camera._deviceRoomRotationQuaternion.toEulerAnglesToRef(BABYLON.Tmp.Vector3[0]);
+                    camera._deviceRoomRotationQuaternion.toEulerAnglesToRef(Tmp.Vector3[0]);
 
                     // Find the radian distance away that the headset is from the controllers rotation
-                    var distanceAway = Math.atan2(Math.sin(BABYLON.Tmp.Vector3[0].y - this._draggedRoomRotation), Math.cos(BABYLON.Tmp.Vector3[0].y - this._draggedRoomRotation));
+                    var distanceAway = Math.atan2(Math.sin(Tmp.Vector3[0].y - this._draggedRoomRotation), Math.cos(Tmp.Vector3[0].y - this._draggedRoomRotation));
                     if (Math.abs(distanceAway) > this._maxRotationDistFromHeadset) {
                         // Only rotate enouph to be within the _maxRotationDistFromHeadset
                         var rotationAmount = distanceAway - (distanceAway < 0 ? -this._maxRotationDistFromHeadset : this._maxRotationDistFromHeadset);

@@ -3,7 +3,7 @@ import { Nullable } from "types";
 import { FreeCamera, UniversalCamera, VRCameraMetrics, TargetCamera, CameraInputsManager } from "Cameras";
 import { Scene } from "scene";
 import { Matrix, Vector3, Viewport, Plane, Frustum } from "Math";
-import {Node} from "Node";
+import { Node } from "Node";
 import { Mesh, AbstractMesh } from "Mesh";
 import { Ray, ICullable } from "Culling";
 import { RenderTargetTexture } from "Materials";

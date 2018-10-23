@@ -8,6 +8,7 @@ import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { Gizmo } from "Gizmos";
 import { UtilityLayerRenderer } from "Rendering";
+import { StandardMaterial } from "Materials";
     /**
      * Single plane rotation gizmo
      */
@@ -39,16 +40,16 @@ import { UtilityLayerRenderer } from "Rendering";
             super(gizmoLayer);
 
             // Create Material
-            var coloredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
+            var coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
             coloredMaterial.disableLighting = true;
             coloredMaterial.emissiveColor = color;
 
-            var hoverMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
+            var hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
             hoverMaterial.disableLighting = true;
             hoverMaterial.emissiveColor = color.add(new Color3(0.3, 0.3, 0.3));
 
             // Build mesh on root node
-            var parentMesh = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene);
+            var parentMesh = new AbstractMesh("", gizmoLayer.utilityLayerScene);
 
             // Create circle out of lines
             var radius = 0.8;
@@ -90,9 +91,9 @@ import { UtilityLayerRenderer } from "Rendering";
 
             var tmpSnapEvent = {snapDistance: 0};
             var currentSnapDragDistance = 0;
-            var tmpMatrix = new BABYLON.Matrix();
-            var tmpVector = new BABYLON.Vector3();
-            var amountToRotate = new BABYLON.Quaternion();
+            var tmpMatrix = new Matrix();
+            var tmpVector = new Vector3();
+            var amountToRotate = new Quaternion();
             this.dragBehavior.onDragObservable.add((event) => {
                 if (this.attachedMesh) {
                     if (!this.attachedMesh.rotationQuaternion) {
@@ -150,7 +151,7 @@ import { UtilityLayerRenderer } from "Rendering";
                     // If the meshes local scale is inverted (eg. loaded gltf file parent with z scale of -1) the rotation needs to be inverted on the y axis
                     if (tmpMatrix.determinant() > 0) {
                         amountToRotate.toEulerAnglesToRef(tmpVector);
-                        BABYLON.Quaternion.RotationYawPitchRollToRef(tmpVector.y, -tmpVector.x, -tmpVector.z, amountToRotate);
+                        Quaternion.RotationYawPitchRollToRef(tmpVector.y, -tmpVector.x, -tmpVector.z, amountToRotate);
                     }
 
                      if (this.updateGizmoRotationToMatchAttachedMesh) {

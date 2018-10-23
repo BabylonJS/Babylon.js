@@ -2,8 +2,9 @@ import { IDisposable, Scene } from "scene";
 import { Nullable } from "types";
 import { Observable, Observer } from "Tools";
 import { AbstractMesh } from "Culling";
-import { PointerInfoPre, PointerInfo } from "Events";
+import { PointerInfoPre, PointerInfo, PointerEventTypes } from "Events";
 import { PickingInfo } from "Collisions";
+import { Engine } from "Engine";
 
     /**
      * Renders a layer on top of an existing scene
@@ -18,7 +19,7 @@ import { PickingInfo } from "Collisions";
          */
         public static get DefaultUtilityLayer(): UtilityLayerRenderer {
             if (UtilityLayerRenderer._DefaultUtilityLayer == null) {
-                UtilityLayerRenderer._DefaultUtilityLayer = new UtilityLayerRenderer(BABYLON.Engine.LastCreatedScene!);
+                UtilityLayerRenderer._DefaultUtilityLayer = new UtilityLayerRenderer(Engine.LastCreatedScene!);
                 UtilityLayerRenderer._DefaultUtilityLayer.originalScene.onDisposeObservable.addOnce(() => {
                     UtilityLayerRenderer._DefaultUtilityLayer = null;
                 });
@@ -30,7 +31,7 @@ import { PickingInfo } from "Collisions";
          */
         public static get DefaultKeepDepthUtilityLayer(): UtilityLayerRenderer {
             if (UtilityLayerRenderer._DefaultKeepDepthUtilityLayer == null) {
-                UtilityLayerRenderer._DefaultKeepDepthUtilityLayer = new UtilityLayerRenderer(BABYLON.Engine.LastCreatedScene!);
+                UtilityLayerRenderer._DefaultKeepDepthUtilityLayer = new UtilityLayerRenderer(Engine.LastCreatedScene!);
                 UtilityLayerRenderer._DefaultKeepDepthUtilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
                 UtilityLayerRenderer._DefaultKeepDepthUtilityLayer.originalScene.onDisposeObservable.addOnce(() => {
                     UtilityLayerRenderer._DefaultKeepDepthUtilityLayer = null;
@@ -77,7 +78,7 @@ import { PickingInfo } from "Collisions";
             /** the original scene that will be rendered on top of */
             public originalScene: Scene) {
             // Create scene which will be rendered in the foreground and remove it from being referenced by engine to avoid interfering with existing app
-            this.utilityLayerScene = new BABYLON.Scene(originalScene.getEngine());
+            this.utilityLayerScene = new Scene(originalScene.getEngine());
             this.utilityLayerScene.useRightHandedSystem = originalScene.useRightHandedSystem;
             this.utilityLayerScene._allowPostProcessClearColor = false;
             originalScene.getEngine().scenes.pop();
@@ -87,9 +88,9 @@ import { PickingInfo } from "Collisions";
             this._originalPointerObserver = originalScene.onPrePointerObservable.add((prePointerInfo, eventState) => {
 
                 if (!this.processAllEvents) {
-                    if (prePointerInfo.type !== BABYLON.PointerEventTypes.POINTERMOVE
-                        && prePointerInfo.type !== BABYLON.PointerEventTypes.POINTERUP
-                        && prePointerInfo.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
+                    if (prePointerInfo.type !== PointerEventTypes.POINTERMOVE
+                        && prePointerInfo.type !== PointerEventTypes.POINTERUP
+                        && prePointerInfo.type !== PointerEventTypes.POINTERDOWN) {
                         return;
                     }
                 }
@@ -109,11 +110,11 @@ import { PickingInfo } from "Collisions";
                 this.utilityLayerScene.onPrePointerObservable.notifyObservers(prePointerInfo);
 
                 // allow every non pointer down event to flow to the utility layer
-                if (this.onlyCheckPointerDownEvents && prePointerInfo.type != BABYLON.PointerEventTypes.POINTERDOWN) {
+                if (this.onlyCheckPointerDownEvents && prePointerInfo.type != PointerEventTypes.POINTERDOWN) {
                     if (!prePointerInfo.skipOnPointerObservable) {
                         this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick));
                     }
-                    if (prePointerInfo.type === BABYLON.PointerEventTypes.POINTERUP && this._pointerCaptures[pointerEvent.pointerId]) {
+                    if (prePointerInfo.type === PointerEventTypes.POINTERUP && this._pointerCaptures[pointerEvent.pointerId]) {
                         this._pointerCaptures[pointerEvent.pointerId] = false;
                     }
                     return;
@@ -141,7 +142,7 @@ import { PickingInfo } from "Collisions";
                                 // We touched an utility mesh present in the main scene
                                 this._notifyObservers(prePointerInfo, originalScenePick, pointerEvent);
                                 prePointerInfo.skipOnPointerObservable = true;
-                            } else if (prePointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                            } else if (prePointerInfo.type === PointerEventTypes.POINTERDOWN) {
                                 this._pointerCaptures[pointerEvent.pointerId] = true;
                             } else if (this._lastPointerEvents[pointerEvent.pointerId]) {
                                 // We need to send a last pointerup to the utilityLayerScene to make sure animations can complete
@@ -169,7 +170,7 @@ import { PickingInfo } from "Collisions";
                             }
                         }
 
-                        if (prePointerInfo.type === BABYLON.PointerEventTypes.POINTERUP && this._pointerCaptures[pointerEvent.pointerId]) {
+                        if (prePointerInfo.type === PointerEventTypes.POINTERUP && this._pointerCaptures[pointerEvent.pointerId]) {
                             this._pointerCaptures[pointerEvent.pointerId] = false;
                         }
                     }

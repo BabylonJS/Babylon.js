@@ -3,6 +3,7 @@ import { Engine } from "Particles";
 import { PostProcess, PostProcessOptions } from "PostProcess";
 import { RenderTargetTexture, Effect } from "Materials";
 import { Camera } from "Cameras";
+import { Tools } from "Tools";
 
     /**
      * The CircleOfConfusionPostProcess computes the circle of confusion value for each pixel given required lens parameters. See https://en.wikipedia.org/wiki/Circle_of_confusion
@@ -43,7 +44,7 @@ import { Camera } from "Cameras";
             this._depthTexture = depthTexture;
             this.onApplyObservable.add((effect: Effect) => {
                 if (!this._depthTexture) {
-                    BABYLON.Tools.Warn("No depth texture set on CircleOfConfusionPostProcess");
+                    Tools.Warn("No depth texture set on CircleOfConfusionPostProcess");
                     return;
                 }
                 effect.setTexture("depthSampler", this._depthTexture);

@@ -1,3 +1,7 @@
+import { AbstractScene } from "abstractScene";
+import { Scene } from "scene";
+import { Mesh } from "Mesh";
+
     /**
      * Set of assets to keep when moving a scene into an asset container.
      */
@@ -171,7 +175,7 @@
          * @returns the root mesh
          */
         public createRootMesh() {
-            var rootMesh = new BABYLON.Mesh("assetContainerRootMesh", this.scene);
+            var rootMesh = new Mesh("assetContainerRootMesh", this.scene);
             this.meshes.forEach((m) => {
                 if (!m.parent) {
                     rootMesh.addChild(m);

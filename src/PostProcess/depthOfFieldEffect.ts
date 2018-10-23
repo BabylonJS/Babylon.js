@@ -87,7 +87,7 @@ import { PostProcess, PostProcessRenderEffect, CircleOfConfusionPostProcess, Dep
                 return this._effects;
             }, true);
             // Circle of confusion value for each pixel is used to determine how much to blur that pixel
-            this._circleOfConfusion = new BABYLON.CircleOfConfusionPostProcess("circleOfConfusion", depthTexture, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+            this._circleOfConfusion = new CircleOfConfusionPostProcess("circleOfConfusion", depthTexture, 1, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
 
             // Create a pyramid of blurred images (eg. fullSize 1/4 blur, half size 1/2 blur, quarter size 3/4 blur, eith size 4/4 blur)
             // Blur the image but do not blur on sharp far to near distance changes to avoid bleeding artifacts
@@ -133,7 +133,7 @@ import { PostProcess, PostProcessRenderEffect, CircleOfConfusionPostProcess, Dep
             }
 
             // Merge blurred images with original image based on circleOfConfusion
-            this._dofMerge = new DepthOfFieldMergePostProcess("dofMerge", this._circleOfConfusion, this._circleOfConfusion, this._depthOfFieldBlurX, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+            this._dofMerge = new DepthOfFieldMergePostProcess("dofMerge", this._circleOfConfusion, this._circleOfConfusion, this._depthOfFieldBlurX, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
             this._dofMerge.autoClear = false;
             this._effects.push(this._dofMerge);
         }

@@ -574,7 +574,7 @@ import { GeometryBufferRenderer } from "Rendering";
             }
 
             if (!this._enableMSAAOnFirstPostProcess(this._samples) && this._samples > 1) {
-                BABYLON.Tools.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
+                Tools.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
             }
         }
 

@@ -400,7 +400,7 @@ import { Engine } from "Engine";
          * @returns a new AnimationGroup
          */
         public static Parse(parsedAnimationGroup: any, scene: Scene): AnimationGroup {
-            var animationGroup = new BABYLON.AnimationGroup(parsedAnimationGroup.name, scene);
+            var animationGroup = new AnimationGroup(parsedAnimationGroup.name, scene);
             for (var i = 0; i < parsedAnimationGroup.targetedAnimations.length; i++) {
                 var targetedAnimation = parsedAnimationGroup.targetedAnimations[i];
                 var animation = Animation.Parse(targetedAnimation.animation);

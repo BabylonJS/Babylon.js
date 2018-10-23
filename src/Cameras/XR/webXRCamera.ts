@@ -1,33 +1,35 @@
-import { FreeCamera, WebXRSessionManager } from "Cameras";
+import { FreeCamera, WebXRSessionManager, Camera, TargetCamera } from "Cameras";
+import { Vector3, Matrix, Quaternion, Viewport } from "Math";
+import { Scene } from "scene";
 
     /**
      * WebXR Camera which holds the views for the xrSession
      * @see https://doc.babylonjs.com/how_to/webxr
      */
     export class WebXRCamera extends FreeCamera {
-        private static _TmpMatrix = new BABYLON.Matrix();
+        private static _TmpMatrix = new Matrix();
 
         /**
          * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
          * @param name the name of the camera
          * @param scene the scene to add the camera to
          */
-        constructor(name: string, scene: BABYLON.Scene) {
-            super(name, BABYLON.Vector3.Zero(), scene);
+        constructor(name: string, scene: Scene) {
+            super(name, Vector3.Zero(), scene);
 
             // Initial camera configuration
             this.minZ = 0;
-            this.rotationQuaternion = new BABYLON.Quaternion();
-            this.cameraRigMode = BABYLON.Camera.RIG_MODE_CUSTOM;
+            this.rotationQuaternion = new Quaternion();
+            this.cameraRigMode = Camera.RIG_MODE_CUSTOM;
             this._updateNumberOfRigCameras(1);
         }
 
         private _updateNumberOfRigCameras(viewCount = 1) {
             while (this.rigCameras.length < viewCount) {
-                var newCamera = new BABYLON.TargetCamera("view: " + this.rigCameras.length, BABYLON.Vector3.Zero(), this.getScene());
+                var newCamera = new TargetCamera("view: " + this.rigCameras.length, Vector3.Zero(), this.getScene());
                 newCamera.minZ = 0;
                 newCamera.parent = this;
-                newCamera.rotationQuaternion = new BABYLON.Quaternion();
+                newCamera.rotationQuaternion = new Quaternion();
                 this.rigCameras.push(newCamera);
             }
             while (this.rigCameras.length > viewCount) {
@@ -42,10 +44,10 @@ import { FreeCamera, WebXRSessionManager } from "Cameras";
         public _updateForDualEyeDebugging(pupilDistance = 0.01) {
             // Create initial camera rigs
             this._updateNumberOfRigCameras(2);
-            this.rigCameras[0].viewport = new BABYLON.Viewport(0, 0, 0.5, 1.0);
+            this.rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
             this.rigCameras[0].position.x = -pupilDistance / 2;
             this.rigCameras[0].outputRenderTarget = null;
-            this.rigCameras[1].viewport = new BABYLON.Viewport(0.5, 0, 0.5, 1.0);
+            this.rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
             this.rigCameras[1].position.x = pupilDistance / 2;
             this.rigCameras[1].outputRenderTarget = null;
         }
@@ -66,21 +68,21 @@ import { FreeCamera, WebXRSessionManager } from "Cameras";
             }
 
             // Update the parent cameras matrix
-            BABYLON.Matrix.FromFloat32ArrayToRefScaled(pose.poseModelMatrix, 0, 1, WebXRCamera._TmpMatrix);
+            Matrix.FromFloat32ArrayToRefScaled(pose.poseModelMatrix, 0, 1, WebXRCamera._TmpMatrix);
             if (!this._scene.useRightHandedSystem) {
                 WebXRCamera._TmpMatrix.toggleModelMatrixHandInPlace();
             }
             WebXRCamera._TmpMatrix.getTranslationToRef(this.position);
             WebXRCamera._TmpMatrix.getRotationMatrixToRef(WebXRCamera._TmpMatrix);
-            BABYLON.Quaternion.FromRotationMatrixToRef(WebXRCamera._TmpMatrix, this.rotationQuaternion);
+            Quaternion.FromRotationMatrixToRef(WebXRCamera._TmpMatrix, this.rotationQuaternion);
             this.computeWorldMatrix();
 
             // Update camera rigs
             this._updateNumberOfRigCameras(xrSessionManager._currentXRFrame.views.length);
             xrSessionManager._currentXRFrame.views.forEach((view, i) => {
                 // Update view/projection matrix
-                BABYLON.Matrix.FromFloat32ArrayToRefScaled(pose.getViewMatrix(view), 0, 1, this.rigCameras[i]._computedViewMatrix);
-                BABYLON.Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, this.rigCameras[i]._projectionMatrix);
+                Matrix.FromFloat32ArrayToRefScaled(pose.getViewMatrix(view), 0, 1, this.rigCameras[i]._computedViewMatrix);
+                Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, this.rigCameras[i]._projectionMatrix);
                 if (!this._scene.useRightHandedSystem) {
                     this.rigCameras[i]._computedViewMatrix.toggleModelMatrixHandInPlace();
                     this.rigCameras[i]._projectionMatrix.toggleProjectionMatrixHandInPlace();

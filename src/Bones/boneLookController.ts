@@ -35,7 +35,7 @@ import { Nullable } from "types";
         public upAxis: Vector3 = Vector3.Up();
 
         /**
-         * The space that the up axis is in - BABYLON.Space.BONE, BABYLON.Space.LOCAL (default), or BABYLON.Space.WORLD
+         * The space that the up axis is in - Space.BONE, Space.LOCAL (default), or Space.WORLD
          */
         public upAxisSpace: Space = Space.LOCAL;
 
@@ -149,7 +149,7 @@ import { Nullable } from "types";
          * * minPitch: the minimum angle the bone will yaw to
          * * slerpAmount: set the between 0 and 1 to make the bone slerp to the target.
          * * upAxis: the up axis of the coordinate system
-         * * upAxisSpace: the space that the up axis is in - BABYLON.Space.BONE, BABYLON.Space.LOCAL (default), or BABYLON.Space.WORLD.
+         * * upAxisSpace: the space that the up axis is in - Space.BONE, Space.LOCAL (default), or Space.WORLD.
          * * yawAxis: set yawAxis if the bone does not yaw on the y axis
          * * pitchAxis: set pitchAxis if the bone does not pitch on the x axis
          * * adjustYaw: used to make an adjustment to the yaw of the bone
