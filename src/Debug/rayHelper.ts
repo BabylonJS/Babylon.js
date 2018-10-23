@@ -1,3 +1,10 @@
+import { Nullable } from "types";
+import { Ray } from "index";
+import { Vector3, Color3 } from "Math";
+import { LinesMesh } from "Rendering";
+import { Scene } from "scene";
+import { AbstractMesh, Mesh } from "Mesh";
+
     /**
      * As raycast might be hard to debug, the RayHelper can help rendering the different rays
      * in order to better appreciate the issue one might have.
@@ -206,4 +213,4 @@
             this.detachFromMesh();
             this.ray = null;
         }
-    }
+    }

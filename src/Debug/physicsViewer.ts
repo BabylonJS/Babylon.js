@@ -1,6 +1,10 @@
-module BABYLON.Debug {
+import { Nullable } from "types";
+import { PhysicsImpostor, IPhysicsEnginePlugin, StandardMaterial, Engine, Material } from "index";
+import { Scene } from "scene";
+import { Mesh, MeshBuilder, AbstractMesh } from "Mesh";
+import { Quaternion } from "Math";
 
-    /**
+/**
      * Used to show the physics impostor around the specific mesh
      */
     export class PhysicsViewer {
@@ -205,4 +209,3 @@ module BABYLON.Debug {
             this._physicsEnginePlugin = null;
         }
     }
-}

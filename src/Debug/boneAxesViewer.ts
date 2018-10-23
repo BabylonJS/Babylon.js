@@ -1,6 +1,11 @@
-module BABYLON.Debug {
+import { AxesViewer } from "Debug";
+import { Nullable } from "types";
+import { Mesh } from "Particles";
+import { Bone } from "Bones";
+import { Vector3, Axis } from "Math";
+import { Scene } from "scene";
 
-    /**
+/**
      * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
      * @see demo here: https://www.babylonjs-playground.com/#0DE8F4#8
      */
@@ -72,4 +77,3 @@ module BABYLON.Debug {
         }
 
     }
-}
