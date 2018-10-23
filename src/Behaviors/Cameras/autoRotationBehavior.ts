@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * The autoRotation behavior (BABYLON.AutoRotationBehavior) is designed to create a smooth rotation of an ArcRotateCamera when there is no user interaction.
      * @see http://doc.babylonjs.com/how_to/camera_behaviors#autorotation-behavior
@@ -202,5 +201,4 @@ module BABYLON {
                 this._attachedCamera.inertialPanningY !== 0 ||
                 this._isPointerDown;
         }
-    }
-}
+    }

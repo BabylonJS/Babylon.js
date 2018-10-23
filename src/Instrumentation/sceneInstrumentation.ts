@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This class can be used to get instrumentation data from a Babylon engine
      * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
@@ -588,4 +587,3 @@ module BABYLON {
             (<any>this.scene) = null;
         }
     }
-}

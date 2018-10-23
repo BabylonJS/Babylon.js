@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Implementation of the TGA Texture Loader.
      */
@@ -71,5 +70,4 @@ module BABYLON {
     }
 
     // Register the loader.
-    Engine._TextureLoaders.push(new TGATextureLoader());
-}
+    Engine._TextureLoaders.push(new TGATextureLoader());

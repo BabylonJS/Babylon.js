@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to represent data loading progression
      */
@@ -899,4 +898,3 @@ module BABYLON {
             });
         }
     }
-}

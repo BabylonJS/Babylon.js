@@ -1,4 +1,3 @@
-module BABYLON {
     Node.AddNodeConstructor("Light_Type_1", (name, scene) => {
         return () => new DirectionalLight(name, Vector3.Zero(), scene);
     });
@@ -234,4 +233,3 @@ module BABYLON {
             defines["DIRLIGHT" + lightIndex] = true;
         }
     }
-}

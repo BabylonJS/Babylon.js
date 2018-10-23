@@ -1,4 +1,3 @@
-module BABYLON {
     Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
         return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
     });
@@ -378,5 +377,4 @@ module BABYLON {
             defines["SPOTLIGHT" + lightIndex] = true;
             defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = this.projectionTexture ? true : false;
         }
-    }
-}
+    }

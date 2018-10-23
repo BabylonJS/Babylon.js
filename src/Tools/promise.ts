@@ -1,5 +1,3 @@
-module BABYLON {
-
     enum PromiseStates {
         Pending,
         Fulfilled,
@@ -253,5 +251,4 @@ module BABYLON {
                 root.Promise = InternalPromise;
             }
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This represents the required contract to create a new type of texture loader.
      */
@@ -53,5 +52,4 @@ module BABYLON {
          */
         loadData(data: ArrayBuffer, texture: InternalTexture,
             callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
-    }
-}
+    }

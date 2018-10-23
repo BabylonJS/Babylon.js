@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * A Condition applied to an Action
      */
@@ -317,5 +316,4 @@ module BABYLON {
             });
         }
     }
-
-}
+

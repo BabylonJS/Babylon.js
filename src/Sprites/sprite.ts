@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to represent a sprite
      * @see http://doc.babylonjs.com/babylon101/sprites
@@ -137,5 +136,4 @@ module BABYLON {
                 }
             }
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to store a cell in an octree
      * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
@@ -191,5 +190,4 @@ module BABYLON {
         public createInnerBlocks(): void {
             Octree._CreateBlocks(this._minPoint, this._maxPoint, this.entries, this._capacity, this._depth, this._maxDepth, this, this._creationFunc);
         }
-    }
-}
+    }

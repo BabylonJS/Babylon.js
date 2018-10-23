@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to enable access to offline support
      * @see http://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
@@ -37,5 +36,4 @@ module BABYLON {
          * @param useArrayBuffer defines a boolean to use array buffer instead of text string
          */
         loadFile(url: string, sceneLoaded: (data: any) => void, progressCallBack?: (data: any) => void, errorCallback?: () => void, useArrayBuffer?: boolean): void;
-    }
-}
+    }

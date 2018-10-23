@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Google Daydream controller
      */
@@ -61,5 +60,4 @@ module BABYLON {
                 Tools.Warn(`Unrecognized Daydream button index: ${buttonIdx}`);
             }
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     export interface Scene {
         /** @hidden (Backing field) */
         _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
@@ -106,5 +105,4 @@ module BABYLON {
                 renderTargets.push(this.scene._geometryBufferRenderer.getGBuffer());
             }
         }
-    }
-}
+    }

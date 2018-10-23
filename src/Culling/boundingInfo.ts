@@ -1,4 +1,3 @@
-module BABYLON {
     const _result0 = { min: 0, max: 0};
     const _result1 = { min: 0, max: 0};
     const computeBoxExtents = (axis: Readonly<Vector3>, box: Readonly<BoundingBox>, result: {min: number, max: number}) => {
@@ -248,5 +247,4 @@ module BABYLON {
 
             return true;
         }
-    }
-}
+    }

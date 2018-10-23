@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * A target camera takes a mesh or position as a target and continues to look at it while it moves.
      * This is the base of the follow, arc rotate cameras and Free camera
@@ -474,4 +473,3 @@ module BABYLON {
             return "TargetCamera";
         }
     }
-}

@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * Post process used to render in black and white
      */
@@ -26,5 +24,4 @@ module BABYLON {
                 effect.setFloat("degree", this.degree);
             });
         }
-    }
-}
+    }

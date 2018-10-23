@@ -1,4 +1,3 @@
-module BABYLON {
     // Adds the parser to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
         // Shadows
@@ -106,5 +105,4 @@ module BABYLON {
                 }
             }
         }
-    }
-}
+    }

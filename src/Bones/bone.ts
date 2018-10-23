@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to store bone information
      * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
@@ -1104,5 +1103,4 @@ module BABYLON {
 
             Vector3.TransformCoordinatesToRef(position, tmat, result);
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Gather the list of pointer event types as constants.
      */
@@ -107,5 +106,4 @@ module BABYLON {
             public pickInfo: Nullable<PickingInfo>) {
             super(type, event);
         }
-    }
-}
+    }

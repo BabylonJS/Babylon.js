@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Manage the device orientation inputs (gyroscope) to control an arc rotate camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -97,4 +96,3 @@ module BABYLON {
     }
 
     (<any>CameraInputTypes)["ArcRotateCameraVRDeviceOrientationInput"] = ArcRotateCameraVRDeviceOrientationInput;
-}

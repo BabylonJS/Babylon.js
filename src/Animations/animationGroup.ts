@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This class defines the direct association between an animation and a target
      */
@@ -443,4 +442,3 @@ module BABYLON {
         }
 
     }
-}

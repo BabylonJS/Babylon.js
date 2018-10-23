@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Interface representing a particle system in Babylon.js.
      * This groups the common functionalities that needs to be implemented in order to create a particle system.
@@ -611,5 +610,4 @@ module BABYLON {
          * @returns the scene
          */
         getScene(): Scene;
-    }
-}
+    }

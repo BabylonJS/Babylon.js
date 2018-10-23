@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Listen to keyboard events to control the camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -190,5 +189,4 @@ module BABYLON {
         }
     }
 
-    (<any>CameraInputTypes)["FlyCameraKeyboardInput"] = FlyCameraKeyboardInput;
-}
+    (<any>CameraInputTypes)["FlyCameraKeyboardInput"] = FlyCameraKeyboardInput;

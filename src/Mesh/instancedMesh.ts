@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * Creates an instance based on a source mesh.
      */
@@ -329,5 +327,4 @@ module BABYLON {
             this._sourceMesh.removeInstance(this);
             super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
 	 * The default rendering pipeline can be added to a scene to apply common post processing effects such as anti-aliasing or depth of field.
      * See https://doc.babylonjs.com/how_to/using_default_rendering_pipeline
@@ -679,4 +678,3 @@ module BABYLON {
             return SerializationHelper.Parse(() => new DefaultRenderingPipeline(source._name, source._name._hdr, scene), source, scene, rootUrl);
         }
     }
-}

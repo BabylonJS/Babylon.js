@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * A class extending Texture allowing drawing on a texture
      * @see http://doc.babylonjs.com/how_to/dynamictexture
@@ -202,4 +201,3 @@ module BABYLON {
             this.update();
         }
     }
-}

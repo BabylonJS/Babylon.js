@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to override all child animations of a given target
      */
@@ -17,5 +16,4 @@ module BABYLON {
          * Gets or sets the default loop mode to use
          */
         public loopMode = Animation.ANIMATIONLOOPMODE_CYCLE;
-    }
-}
+    }

@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * This represents the main contract an easing function should follow.
      * Easing functions are used throughout the animation system.
@@ -341,4 +339,3 @@ module BABYLON {
             return BezierCurve.Interpolate(gradient, this.x1, this.y1, this.x2, this.y2);
         }
     }
-}

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to store an actual running animation
      */
@@ -397,4 +396,3 @@ module BABYLON {
             return running;
         }
     }
-}

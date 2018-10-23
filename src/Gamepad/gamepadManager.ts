@@ -1,5 +1,4 @@
-﻿module BABYLON {
-    /**
+﻿    /**
      * Manager for handling gamepads
      */
     export class GamepadManager {
@@ -227,5 +226,4 @@
                 }
             }
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
     * Defines the types of pose enabled controllers that are supported
     */
@@ -376,4 +375,3 @@ module BABYLON {
             return new Ray(origin, direction, length);
         }
     }
-}

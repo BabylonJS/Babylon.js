@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Single plane rotation gizmo
      */
@@ -191,4 +190,3 @@ module BABYLON {
             super.dispose();
         }
     }
-}

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Defines how the parser contract is defined.
      * These parsers are used to parse a list of specific assets (like particle systems, etc..)
@@ -175,4 +174,3 @@ module BABYLON {
          */
         public textures = new Array<BaseTexture>();
     }
-}

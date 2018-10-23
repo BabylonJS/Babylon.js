@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Applies a kernel filter to the image
      */
@@ -28,5 +27,4 @@ module BABYLON {
                 effect.setMatrix("kernelMatrix", this.kernelMatrix);
             };
         }
-    }
-}
+    }

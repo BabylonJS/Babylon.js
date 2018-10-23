@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to generate noise procedural textures
      */
@@ -90,5 +89,4 @@ module BABYLON {
 
             return texture;
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     export interface Scene {
         /**
          * The list of reflection probes added to the scene
@@ -162,5 +161,4 @@ module BABYLON {
                 (<any>this._renderTargetTexture) = null;
             }
         }
-    }
-}
+    }

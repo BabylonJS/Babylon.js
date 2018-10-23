@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * The PBR material of BJS following the specular glossiness convention.
      *
@@ -127,5 +126,4 @@ module BABYLON {
         public static Parse(source: any, scene: Scene, rootUrl: string): PBRSpecularGlossinessMaterial {
             return SerializationHelper.Parse(() => new PBRSpecularGlossinessMaterial(source.name, scene), source, scene, rootUrl);
         }
-    }
-}
+    }

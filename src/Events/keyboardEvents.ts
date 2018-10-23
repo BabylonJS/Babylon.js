@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Gather the list of keyboard event types as constants.
      */
@@ -63,5 +62,4 @@ module BABYLON {
             super(type, event);
             this.skipOnPointerObservable = false;
         }
-    }
-}
+    }

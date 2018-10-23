@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Represents the range of an animation
      */
@@ -1231,4 +1230,3 @@ module BABYLON {
             }
         }
     }
-}

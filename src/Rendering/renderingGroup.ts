@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This represents the object necessary to create a rendering group.
      * This is exclusively used and created by the rendering manager.
@@ -405,5 +404,4 @@ module BABYLON {
             }
             this._scene.onAfterSpritesRenderingObservable.notifyObservers(this._scene);
         }
-    }
-}
+    }

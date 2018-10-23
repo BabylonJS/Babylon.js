@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * @hidden
      **/
@@ -142,5 +141,4 @@ module BABYLON {
                 this._isBlendConstantsDirty = false;
             }
         }
-    }
-}
+    }

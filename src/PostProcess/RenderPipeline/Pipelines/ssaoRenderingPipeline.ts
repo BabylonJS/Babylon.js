@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Render pipeline to produce ssao effect
      */
@@ -257,5 +256,4 @@ module BABYLON {
 
             this._randomTexture.update(false);
         }
-    }
-}
+    }

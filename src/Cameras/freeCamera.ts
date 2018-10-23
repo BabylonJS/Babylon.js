@@ -1,4 +1,3 @@
-module BABYLON {
     Node.AddNodeConstructor("FreeCamera", (name, scene) => {
         // Forcing to use the Universal camera
         return () => new UniversalCamera(name, Vector3.Zero(), scene);
@@ -307,4 +306,3 @@ module BABYLON {
             return "FreeCamera";
         }
     }
-}

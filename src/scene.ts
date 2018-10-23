@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Define an interface for all classes that will hold resources
      */
@@ -5454,4 +5453,3 @@ module BABYLON {
             });
         }
     }
-}

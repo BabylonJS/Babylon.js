@@ -1,4 +1,3 @@
-module BABYLON {
     Node.AddNodeConstructor("StereoscopicGamepadCamera", (name, scene, options) => {
         return () => new StereoscopicGamepadCamera(name, Vector3.Zero(), options.interaxial_distance, options.isStereoscopicSideBySide, scene);
     });
@@ -30,5 +29,4 @@ module BABYLON {
         public getClassName(): string {
             return "StereoscopicGamepadCamera";
         }
-    }
-}
+    }

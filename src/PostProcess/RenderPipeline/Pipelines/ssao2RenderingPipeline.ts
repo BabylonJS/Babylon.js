@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Render pipeline to produce ssao effect
      */
@@ -445,5 +444,4 @@ module BABYLON {
         public static Parse(source: any, scene: Scene, rootUrl: string): SSAO2RenderingPipeline {
             return SerializationHelper.Parse(() => new SSAO2RenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
         }
-    }
-}
+    }

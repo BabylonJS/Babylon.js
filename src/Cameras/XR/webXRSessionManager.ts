@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Manages an XRSession
      * @see https://doc.babylonjs.com/how_to/webxr
@@ -181,5 +180,4 @@ module BABYLON {
             this.onXRFrameObservable.clear();
             this.onXRSessionEnded.clear();
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Raw texture data and descriptor sufficient for WebGL texture upload
      */
@@ -594,5 +593,4 @@ module BABYLON {
             Vector3.FromArrayToRef(irradianceInfo.xy, 0, sp.xy);
             texture._sphericalPolynomial = sp;
         }
-    }
-}
+    }

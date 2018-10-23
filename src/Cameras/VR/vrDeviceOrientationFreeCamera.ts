@@ -1,4 +1,3 @@
-module BABYLON {
     Node.AddNodeConstructor("VRDeviceOrientationFreeCamera", (name, scene) => {
         return () => new VRDeviceOrientationFreeCamera(name, Vector3.Zero(), scene);
     });
@@ -32,4 +31,3 @@ module BABYLON {
             return "VRDeviceOrientationFreeCamera";
         }
     }
-}

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Creates a refraction texture used by refraction channel of the standard material.
      * It is like a mirror but to see through a material.
@@ -82,5 +81,4 @@ module BABYLON {
 
             return serializationObject;
         }
-    }
-}
+    }
