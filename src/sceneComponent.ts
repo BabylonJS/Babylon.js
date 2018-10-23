@@ -1,5 +1,4 @@
 import { Scene } from "scene";
-import { AbstractScene } from "Audio/audioSceneComponent";
 import { AbstractMesh } from "Culling";
 import { SubMesh, _InstancesBatch } from "Mesh";
 import { SmartArrayNoDuplicate } from "Tools";
@@ -7,6 +6,7 @@ import { Nullable } from "types";
 import { Camera } from "Cameras";
 import { RenderTargetTexture } from "Materials";
 import { PickingInfo } from "Collisions";
+import { AbstractScene } from "abstractScene";
 
     /**
      * Groups all the scene component constants in one place to ease maintenance.
