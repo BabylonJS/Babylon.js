@@ -45,7 +45,8 @@ var buildExternalLibrary = function(library, settings, cb) {
 
     // Generate unminified file.
     wpConfig.mode = "development";
-    wpConfig.output.filename = wpConfig.output.filename.replace(".min", "");
+    // Allow babylon.max.js and babylon.js
+    wpConfig.output.filename = library.maxOutput || wpConfig.output.filename.replace(".min", "");
     let wpBuildMax = webpackStream(wpConfig, webpack);
     let buildEventMax = wpBuildMax.pipe(gulp.dest(outputDirectory));
     sequence.push(buildEventMax);
