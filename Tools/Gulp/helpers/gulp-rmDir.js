@@ -24,7 +24,7 @@ var rmDir = function(dirPath) {
 }
 
 module.exports = function(dirPath) {
-    // Retry cause  sometimes locked on my mac :-)
+    // Retry cause sometimes locked on my mac :-)
     try {
         rmDir(dirPath);
     }

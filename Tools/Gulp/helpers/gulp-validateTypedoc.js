@@ -2,7 +2,6 @@
 
 var fs = require('fs');
 var Vinyl = require('vinyl');
-var path = require('path');
 var through = require('through2');
 var PluginError = require('plugin-error');
 var supportsColor = require('color-support');

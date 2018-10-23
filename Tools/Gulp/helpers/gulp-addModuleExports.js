@@ -1,5 +1,5 @@
-var gutil = require('gulp-util');
 var through = require('through2');
+var PluginError = require('plugin-error');
 
 /**
  * The parameters for this function has grown during development.
@@ -106,7 +106,7 @@ if(typeof earcut !== 'undefined') {
             }*/
             this.push(file);
         } catch (err) {
-            this.emit('error', new gutil.PluginError('gulp-add-module-exports', err, { fileName: file.path }));
+            this.emit('error', new PluginError('gulp-add-module-exports', err, { fileName: file.path }));
         }
         cb();
     });
