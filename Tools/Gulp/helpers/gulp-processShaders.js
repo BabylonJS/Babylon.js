@@ -15,7 +15,7 @@ let shader = \`##SHADER_PLACEHOLDER##\`;
 
 Effect.##SHADERSTORE_PLACEHOLDER##[name] = shader;
 
-export { shader, name };
+//export { shader, name };
 `;
 
 
