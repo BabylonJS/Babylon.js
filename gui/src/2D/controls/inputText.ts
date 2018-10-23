@@ -4,7 +4,6 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { Nullable, Observable, Vector2, ClipboardEventTypes, ClipboardInfo } from "babylonjs";
 import { Measure } from "../measure";
 import { VirtualKeyboard } from "./virtualKeyboard";
-import { TextBlock } from './textBlock';
 
 /**
  * Class used to create input text control
@@ -31,6 +30,7 @@ export class InputText extends Control implements IFocusableControl {
     private _currentKey = "";
     private _isTextHighlightOn = false;
     private _textHighlightColor = "#d5e0ff";
+    private _highligherOpacity = 0.4;
     private _highlightedText = "";
     private _startHighlightIndex = 0;
     private _endHighlightIndex = 0;
@@ -49,8 +49,6 @@ export class InputText extends Control implements IFocusableControl {
     public onFocusObservable = new Observable<InputText>();
     /** Observable raised when the control loses the focus */
     public onBlurObservable = new Observable<InputText>();
-    /** Observable raised when the clipboard event is raised */
-    public onClipboardObservable = new Observable<InputText>();
 
     /** Gets or sets the maximum width allowed by the control */
     public get maxWidth(): string | number {
@@ -70,6 +68,32 @@ export class InputText extends Control implements IFocusableControl {
         if (this._maxWidth.fromString(value)) {
             this._markAsDirty();
         }
+    }
+
+    /** Gets and sets the text highlighter transparancy; default: 0.4 */
+    public get highligherOpacity(): number {
+        return this._highligherOpacity;
+    }
+
+    public set highligherOpacity(value: number) {
+        if (this._highligherOpacity === value) {
+            return;
+        }
+        this._highligherOpacity = value;
+        this._markAsDirty();
+    }
+
+    /** Gets and sets the text hightlight color */
+    public get textHighlightColor(): string {
+        return this._textHighlightColor;
+    }
+
+    public set textHighlightColor(value: string) {
+        if (this._textHighlightColor === value) {
+            return;
+        }
+        this._textHighlightColor = value;
+        this._markAsDirty();
     }
 
     /** Gets or sets control margin */
@@ -184,11 +208,10 @@ export class InputText extends Control implements IFocusableControl {
         this._deadKey = flag;
     }
 
-     /** Gets or sets the highlight text */
-     public get getHighlightedText(): string {
+    /** Gets or sets the highlight text */
+    public get getHighlightedText(): string {
         return this._highlightedText;
     }
-
     public set setHighlightedText(text: string) {
         if (this._highlightedText === text) {
             return;
@@ -315,6 +338,12 @@ export class InputText extends Control implements IFocusableControl {
 
     /** @hidden */
     public processKey(keyCode: number, key?: string, evt?: KeyboardEvent) {
+
+        //get the clipboard Event from the keycode, returns -1 if not found.
+        let clipboardEventType: ClipboardEventTypes = ClipboardInfo.GetTypeFromCharacter(keyCode);
+        if (evt && (evt.ctrlKey || evt.metaKey) && clipboardEventType !== -1) {
+            return;
+        }
         // Specific cases
         switch (keyCode) {
             case 32: //SPACE
@@ -327,6 +356,12 @@ export class InputText extends Control implements IFocusableControl {
                 break;
             case 8: // BACKSPACE
                 if (this._text && this._text.length > 0) {
+                    if (this._isTextHighlightOn) {
+                        this.text = this._text.slice(0, this._startHighlightIndex) + this._text.slice(this._endHighlightIndex);
+                        this._isTextHighlightOn = false;
+                        this._blinkIsEven = false;
+                        return;
+                    }
                     if (this._cursorOffset === 0) {
                         this.text = this._text.substr(0, this._text.length - 1);
                     } else {
@@ -341,6 +376,15 @@ export class InputText extends Control implements IFocusableControl {
                 }
                 return;
             case 46: // DELETE
+                if (this._isTextHighlightOn) {
+                    this.text = this._text.slice(0, this._startHighlightIndex) + this._text.slice(this._endHighlightIndex);
+                    let decrementor = (this._endHighlightIndex - this._startHighlightIndex);
+                    while (decrementor > 0 && this._cursorOffset > 0) {
+                        this._cursorOffset--;
+                    }
+                    this._isTextHighlightOn = false;
+                    return;
+                }
                 if (this._text && this._text.length > 0  && this._cursorOffset > 0) {
                     let deletePosition = this._text.length - this._cursorOffset;
                     this.text = this._text.slice(0, deletePosition) + this._text.slice(deletePosition + 1);
@@ -361,6 +405,14 @@ export class InputText extends Control implements IFocusableControl {
                 this._markAsDirty();
                 return;
             case 37: // LEFT
+                if (evt && evt.shiftKey) {
+                    if (!this._isTextHighlightOn) {
+                        this._isTextHighlightOn = true;
+                        this._endHighlightIndex = this._text.length - this._cursorOffset;
+                        this._startHighlightIndex = this._endHighlightIndex;
+                    }
+                    (this._startHighlightIndex < 0) ? 0 : --this._startHighlightIndex;
+                }
                 this._cursorOffset++;
                 if (this._cursorOffset > this._text.length) {
                     this._cursorOffset = this._text.length;
@@ -369,6 +421,14 @@ export class InputText extends Control implements IFocusableControl {
                 this._markAsDirty();
                 return;
             case 39: // RIGHT
+                if (evt && evt.shiftKey) {
+                    if (!this._isTextHighlightOn) {
+                        this._isTextHighlightOn = true;
+                        this._startHighlightIndex = this._text.length - this._cursorOffset;
+                        this._endHighlightIndex = this._startHighlightIndex;
+                    }
+                    (this._endHighlightIndex > this._text.length) ? this._text.length - 1 : ++this._endHighlightIndex;
+                }
                 this._cursorOffset--;
                 if (this._cursorOffset < 0) {
                     this._cursorOffset = 0;
@@ -383,6 +443,7 @@ export class InputText extends Control implements IFocusableControl {
                 this.deadKey = true;
                 break;
         }
+        this._isTextHighlightOn = false;
 
         // Printable characters
         if (key &&
@@ -407,67 +468,81 @@ export class InputText extends Control implements IFocusableControl {
             }
         }
     }
-
     /** @hidden */
-    public processKeyboard(evt: KeyboardEvent): void {
-        this.processKey(evt.keyCode, evt.key, evt);
-    }
-
-    /** @hidden */
-    public onClipboardPointerEvents(showHighlightedText: boolean): void {
-        if (!showHighlightedText) {
-            return;
+    private _processDblClick(evt: PointerEvent) {
+        //pre-find the start and end index of the word under cursor, speeds up the rendering
+        this._startHighlightIndex = this._text.length - this._cursorOffset;
+        this._endHighlightIndex = this._startHighlightIndex;
+        for (let rWord = /\w+/g, left = 1, right = 1; this._startHighlightIndex > 0 && this._endHighlightIndex < this._text.length && (left || right);) {
+            right = (this._text[this._endHighlightIndex].search(rWord) !== -1) ? ++this._endHighlightIndex : 0;
+            left =  (this._text[this._startHighlightIndex - 1 ].search(rWord) !== -1) ? --this._startHighlightIndex : 0;
         }
         this._isTextHighlightOn = true;
+        this._blinkIsEven = false;
     }
-     /** @hidden */
-    public onClipboardKeyBoardEvent(type: number) {
-        this.executeClipboardEvent(type, this._highlightedText);
-    }
+
     /** @hidden */
-    private _processDataTransfer(data: DataTransfer, text: string = ""): void {
-        //FOR TESTING: TODO: remove this in final version
-        let textbl = new TextBlock();
-        textbl.text = "text copied : " + text;
-        textbl.color = "white";
-        textbl.fontSize = 24;
-        textbl.top = this.topInPixels - 23;
-        this._host.addControl(textbl);
-        setTimeout(() => {textbl.dispose(); }, 2000);
-
-        //copy data to the custom DataTransfer object
-        data.setData("text/plain", text);
+    public processKeyboard(evt: KeyboardEvent | PointerEvent | ClipboardEvent): void {
+        // check the event type and call its action
+        (evt instanceof KeyboardEvent) ? this.processKey(evt.keyCode, evt.key, evt) :
+         ((evt instanceof PointerEvent) ? this._processDblClick(evt) : this._processClipboardEvent(evt));
     }
 
-     /** @hidden */
-    private executeClipboardEvent(type: ClipboardEventTypes, text: string): void {
-        this._simulateClipboardEvent(type, text);
+    /**
+     *  Callback in case of copy event, can be configured.
+     * @param {ClipboardEvent} ev
+     */
+    public onCopyText(ev: ClipboardEvent): void {
+        this._isTextHighlightOn = false;
+        ev.clipboardData.setData("text/plain", this._highlightedText);
+        this._host.clipboardData = ev.clipboardData;
+        console.log("copy succcessful");
+    }
+    /**
+     * Callback in case of cut event, can be configured.
+     * @param {ClipboardEvent} ev
+     */
+    public onCutText(ev: ClipboardEvent): void {
+        this.text = this._text.replace(this._highlightedText, "");
+        this._isTextHighlightOn = false;
+        ev.clipboardData.setData("text/plain", this._highlightedText);
+        this._host.clipboardData = ev.clipboardData;
+        console.log("cut succcessful");
+    }
+    /**
+     * Callback in case of paste event, can be configured.
+     *  @param {ClipboardEvent} ev
+     */
+    public onPasteText(ev: ClipboardEvent): void {
+        let data: string = "";
+        if (ev.clipboardData) {
+            data = ev.clipboardData.getData("text/plain");
+            let insertPosition = this._text.length - this._cursorOffset;
+            this.text = this._text.slice(0, insertPosition) + data + this._text.slice(insertPosition);
+            console.log("paste succcessful");
+        }
+        if (this._host.clipboardData) {
+            this._host.clipboardData.setData("text/plain", data);
+        }
     }
 
-     /** @hidden */
-    private _simulateClipboardEvent(type: ClipboardEventTypes, text: string): void {
-         let ev;
-         switch (type){
-             case ClipboardEventTypes.COPY:
-                    ev = new ClipboardInfo(ClipboardEventTypes.COPY, new ClipboardEvent("copy")); //new ClipboardEvent("copy");
-                    this._processDataTransfer(ev.clipboardData, text);
-                    super.dispatchClipboardEvent(ev);
+    /**
+     * @hidden
+     * Currently placed at control level but can be moved to ADT if required.
+    */
+    private _processClipboardEvent(ev: ClipboardEvent): void {
+        // call the clipboard event's callback, invoked by ADT's onClipboardObserver
+         switch (ev.type){
+            case "copy":
+                    this.onCopyText(ev);
                     break;
-              case ClipboardEventTypes.CUT:
-                    ev = new ClipboardInfo(ClipboardEventTypes.CUT, new ClipboardEvent("cut", {dataType: 'text/plain', data: text }));
-                    this.text = this._text.replace(text, "");
-                    this._isTextHighlightOn = false;
-                    this._processDataTransfer(ev.clipboardData, text);
-                    super.dispatchClipboardEvent(ev);
+            case "cut":
+                    this.onCutText(ev);
                     break;
-               case ClipboardEventTypes.PASTE:
-                    if (this.clipboardData.items.length > 0) {
-                        let data = this.clipboardData.getData("text/plain");
-                        let insertPosition = this._text.length - this._cursorOffset;
-                        this.text = this._text.slice(0, insertPosition) + data + this._text.slice(insertPosition);
-                    }
+            case "paste":
+                    this.onPasteText(ev);
                     break;
-                default: return;
+            default: return;
          }
     }
 
@@ -602,15 +677,13 @@ export class InputText extends Control implements IFocusableControl {
                  //show the highlighted text
                 if (this._isTextHighlightOn) {
                     clearTimeout(this._blinkTimeout);
-                    this._blinkIsEven = true;
-
-                    let highlightCursorOffsetWidth = context.measureText(this.text.substring(this._startHighlightIndex + 1)).width;
+                    let highlightCursorOffsetWidth = context.measureText(this.text.substring(this._startHighlightIndex)).width;
                     let highlightCursorLeft = this._scrollLeft + this._textWidth - highlightCursorOffsetWidth;
-                    this._highlightedText = this.text.substring(this._startHighlightIndex + 1, this._endHighlightIndex);
+                    this._highlightedText = this.text.substring(this._startHighlightIndex, this._endHighlightIndex);
                     //for transparancy
-                    context.globalAlpha = 0.4;
+                    context.globalAlpha = this._highligherOpacity;
                     context.fillStyle = this._textHighlightColor;
-                    context.fillRect(highlightCursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, context.measureText(this.text.substring(this._startHighlightIndex + 1, this._endHighlightIndex)).width, this._fontOffset.height);
+                    context.fillRect(highlightCursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, context.measureText(this.text.substring(this._startHighlightIndex, this._endHighlightIndex)).width, this._fontOffset.height);
                     context.globalAlpha = 1.0;
                 }
             }
@@ -655,13 +728,6 @@ export class InputText extends Control implements IFocusableControl {
 
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
-
-        //pre-find the start and end index of the word under cursor, speeds up the rendering
-        this._startHighlightIndex = this._text.length - this._cursorOffset;
-        this._endHighlightIndex = this._startHighlightIndex;
-        for (let rWord = /\w+/, check = 1; this._startHighlightIndex >= 0 && this._endHighlightIndex < this.text.length && check + 1;) {
-            check = rWord.test(this.text.charAt(this._endHighlightIndex)) ? ++this._endHighlightIndex : (rWord.test(this.text.charAt(this._startHighlightIndex)) ? --this._startHighlightIndex : -1);
-        }
     }
 
     protected _beforeRenderText(text: string): string {
@@ -674,6 +740,6 @@ export class InputText extends Control implements IFocusableControl {
         this.onBlurObservable.clear();
         this.onFocusObservable.clear();
         this.onTextChangedObservable.clear();
-        this.onClipboardObservable.clear();
+        // this.onClipboardObservable.clear();
     }
 }
