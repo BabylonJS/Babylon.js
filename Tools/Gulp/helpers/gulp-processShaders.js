@@ -1,8 +1,12 @@
+// Dependencies.
 var through = require('through2');
-var PluginError = require('gulp-util').PluginError;
+var PluginError = require('plugin-error');
 let path = require('path');
 let fs = require('fs');
 
+/**
+ * Template creating hidden ts file containing the shaders.
+ */
 let tsShaderTemplate = 
 `import { Effect } from "babylonjs";
 ##INCLUDES_PLACEHOLDER##
@@ -14,6 +18,10 @@ Effect.##SHADERSTORE_PLACEHOLDER##[name] = shader;
 export { shader, name };
 `;
 
+
+/**
+ * Get the shaders name from their path.
+ */
 function getShaderName(filename) {
     let parts = filename.split('.');
     if (parts[1] !== 'fx') {
@@ -23,6 +31,9 @@ function getShaderName(filename) {
     }
 }
 
+/**
+ * Get the shaders included in the current one to generate to proper imports.
+ */
 function getIncludes(sourceCode) {
     var regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
     var match = regex.exec(sourceCode);
@@ -55,6 +66,9 @@ function getIncludes(sourceCode) {
     return includes;
 }
 
+/**
+ * Generate a ts file per shader file.
+ */
 function main(isCore) {
     return through.obj(function (file, enc, cb) {
             if (file.isNull()) {
@@ -70,11 +84,12 @@ function main(isCore) {
             const directory = path.dirname(normalized);
             const shaderName = getShaderName(filename);
             const tsFilename = filename.replace('.fx', '.ts');
-
             let fxData = file.contents.toString();
-            // Trailing whitespace...
+
+            // Remove Trailing whitespace...
             fxData = fxData.replace(/[^\S\r\n]+$/gm, "");
 
+            // Generate imports for includes.
             let includeText = "";
             const includes = getIncludes(fxData);
             includes.forEach((entry) => {
@@ -88,13 +103,16 @@ function main(isCore) {
                 }
             });
 
+            // Chose shader store.
             const shaderStore = directory.indexOf("ShadersInclude") > -1 ? "IncludesShadersStore" : "ShadersStore";
 
+            // Fill template in.
             let tsContent = tsShaderTemplate.replace('##INCLUDES_PLACEHOLDER##', includeText);
             tsContent = tsContent.replace('##NAME_PLACEHOLDER##', shaderName);
             tsContent = tsContent.replace('##SHADER_PLACEHOLDER##', fxData);
             tsContent = tsContent.replace('##SHADERSTORE_PLACEHOLDER##', shaderStore);
 
+            // Go to disk.
             fs.writeFileSync(directory + '/' + tsFilename, tsContent);
 
             return cb();
