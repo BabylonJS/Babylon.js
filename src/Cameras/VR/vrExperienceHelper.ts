@@ -1,3 +1,17 @@
+import { Observer, Observable, Tools } from "Tools";
+import { Nullable } from "types";
+import { FreeCamera, DeviceOrientationCamera, Camera, VRDeviceOrientationFreeCamera, WebVROptions, WebVRFreeCamera, TargetCamera } from "Cameras";
+import { PointerEventTypes } from "Events";
+import { Scene, IDisposable } from "scene";
+import { Quaternion, Matrix, Vector3, Color3, Color4 } from "Math";
+import {Gamepad, WebVRController, PoseEnabledController, Xbox360Pad, Xbox360Button, StickValues, PoseEnabledControllerType} from "Gamepad"
+import { IDisplayChangedEventArgs } from "Engine";
+import { Mesh, AbstractMesh } from "Mesh";
+import { PickingInfo } from "Collisions";
+import { Ray } from "Culling";
+import { StandardMaterial, ImageProcessingConfiguration, DynamicTexture } from "Materials";
+import { ImageProcessingPostProcess } from "PostProcess";
+import { SineEase, EasingFunction, Animation } from "Animations";
     /**
      * Options to modify the vr teleportation behavior.
      */
@@ -122,7 +136,7 @@
         }
 
         /** @hidden */
-        public _updatePointerDistance(distance: number = 100) {
+        public _updatePointerDistance() {
         }
 
         public dispose() {
@@ -705,7 +719,7 @@
             document.addEventListener("keydown", this._onKeyDown);
 
             // Exiting VR mode double tapping the touch screen
-            this._scene.onPrePointerObservable.add((pointerInfo, eventState) => {
+            this._scene.onPrePointerObservable.add(() => {
                 if (this.isInVRMode) {
                     this.exitVR();
                     if (this._fullscreenVRpresenting) {
@@ -721,7 +735,7 @@
                 this._webVRrequesting = true;
                 this.updateButtonVisibility();
             };
-            this._onVRRequestPresentComplete = (success: boolean) => {
+            this._onVRRequestPresentComplete = () => {
                 this._webVRrequesting = false;
                 this.updateButtonVisibility();
             };
@@ -999,7 +1013,7 @@
                     return mesh.isVisible && (mesh.isPickable || mesh.name === this._floorMeshName);
                 };
 
-                this.meshSelectionPredicate = (mesh) => {
+                this.meshSelectionPredicate = () => {
                     return true;
                 };
 
@@ -1730,7 +1744,7 @@
                 }
 
                 // Changing the size of the laser pointer based on the distance from the targetted point
-                gazer._updatePointerDistance(hit.distance);
+                gazer._updatePointerDistance();
             }
             else {
                 gazer._updatePointerDistance();

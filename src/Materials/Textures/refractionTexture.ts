@@ -1,3 +1,6 @@
+import { Scene } from "scene";
+import { Plane } from "Math";
+import { RenderTargetTexture } from "Materials";
     /**
      * Creates a refraction texture used by refraction channel of the standard material.
      * It is like a mirror but to see through a material.
@@ -81,4 +84,4 @@
 
             return serializationObject;
         }
-    }
+    }

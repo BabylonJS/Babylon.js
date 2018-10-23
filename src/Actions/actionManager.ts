@@ -1,3 +1,12 @@
+import { Nullable } from "types";
+import { AbstractMesh } from "Mesh";
+import { Sprite } from "Sprites";
+import { Scene } from "scene";
+import { Vector2, Vector3, Vector4, Color3, Color4 } from "Math";
+import { Action, Condition, ValueCondition, DoNothingAction } from "Actions";
+import { Engine } from "Engine";
+import { Tools } from "Tools";
+
     /**
      * ActionEvent is the event being sent when an action is triggered.
      */

@@ -1,3 +1,6 @@
+import { Nullable } from "types";
+import { Vector3, Plane } from "Math";
+import { AbstractMesh } from "Mesh";
     var intersectBoxAASphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean => {
         if (boxMin.x > sphereCenter.x + sphereRadius) {
             return false;
@@ -400,4 +403,4 @@
 
             this._destinationPoint.subtractToRef(this.intersectionPoint, vel);
         }
-    }
+    }

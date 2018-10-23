@@ -1,3 +1,10 @@
+import { serialize, Observable, SerializationHelper, serializeAsVector3, serializeAsQuaternion, Tags } from "Tools";
+import { Nullable } from "types";
+import { Camera } from "Cameras";
+import { Scene } from "scene";
+import { Quaternion, Matrix, Vector3, Tmp, Space } from "Math";
+import {Node} from "Node";
+import { Bone } from "Bones";
     /**
      * A TransformNode is an object that is not rendered but can be used as a center of transformation. This can decrease memory usage and increase rendering speed compared to using an empty mesh as a parent and is less complicated than using a pivot matrix.
      * @see https://doc.babylonjs.com/how_to/transformnode

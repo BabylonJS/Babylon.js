@@ -1,3 +1,4 @@
+    import {Animation} from "Animations"
     /**
      * Class used to override all child animations of a given target
      */
@@ -16,4 +17,4 @@
          * Gets or sets the default loop mode to use
          */
         public loopMode = Animation.ANIMATIONLOOPMODE_CYCLE;
-    }
+    }

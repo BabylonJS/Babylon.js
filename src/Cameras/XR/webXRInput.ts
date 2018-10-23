@@ -1,3 +1,7 @@
+import { Observer } from "Tools";
+import { Nullable } from "types";
+import { WebXRExperienceHelper } from "Cameras";
+import { IDisposable } from "scene";
     /**
      * Represents an XR input
      */
@@ -99,4 +103,4 @@
             });
             this.helper._sessionManager.onXRFrameObservable.remove(this._frameObserver);
         }
-    }
+    }

@@ -1,3 +1,7 @@
+import { Nullable } from "types";
+import { IInternalTextureTracker } from "Materials";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Internal interface used to track InternalTexture already bound to the GL context
      */
@@ -24,4 +28,4 @@
          * Gets or set the next tracker in the list
          */
         public next: Nullable<IInternalTextureTracker> = null;
-    }
+    }

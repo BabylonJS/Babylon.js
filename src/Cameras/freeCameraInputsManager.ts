@@ -1,3 +1,4 @@
+import { FreeCamera, CameraInputsManager, FreeCameraKeyboardMoveInput, FreeCameraMouseInput, FreeCameraDeviceOrientationInput, FreeCameraTouchInput, FreeCameraVirtualJoystickInput } from "Cameras";
     /**
      * Default Inputs manager for the FreeCamera.
      * It groups all the default supported inputs for ease of use.
@@ -57,4 +58,4 @@
             this.add(new FreeCameraVirtualJoystickInput());
             return this;
         }
-    }
+    }

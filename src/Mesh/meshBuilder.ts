@@ -1,3 +1,11 @@
+import { Tools } from "Tools";
+import { Nullable, FloatArray, IndicesArray } from "types";
+import { Camera } from "Cameras";
+import { Scene } from "scene";
+import { Matrix, Vector3, Vector2, Color3, Color4, Plane, Tmp, Epsilon, Vector4, Axis, Path3D, PositionNormalVertex } from "Math";
+import { Mesh, AbstractMesh, VertexBuffer, LinesMesh, VertexData, _CreationDataStorage, GroundMesh, PolygonMeshBuilder } from "Mesh";
+import { BoundingInfo } from "Culling";
+
     /**
      * Class containing static functions to help procedurally build meshes
      */

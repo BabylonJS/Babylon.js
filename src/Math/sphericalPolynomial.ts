@@ -1,3 +1,4 @@
+import { Vector3, Color3 } from "Math";
     /**
      * Class representing spherical polynomial coefficients to the 3rd degree
      */
@@ -297,4 +298,4 @@
             Vector3.FromArrayToRef(data[8], 0, sh.lL22);
             return sh;
         }
-    }
+    }

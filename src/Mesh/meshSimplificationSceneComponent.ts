@@ -1,3 +1,6 @@
+import { Scene } from "scene";
+import { Mesh, SimplificationQueue, ISimplificationSettings, SimplificationType } from "Mesh";
+import { SceneComponentConstants, ISceneComponent } from "sceneComponent";
     export interface Scene {
         /** @hidden (Backing field) */
         _simplificationQueue: SimplificationQueue;
@@ -102,4 +105,4 @@
                 this.scene._simplificationQueue.executeNext();
             }
         }
-    }
+    }

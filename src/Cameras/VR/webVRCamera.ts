@@ -1,3 +1,14 @@
+import { Observer, Observable } from "Tools";
+import { Nullable } from "types";
+import { FreeCamera, Camera, WebVROptions, WebVRFreeCamera, TargetCamera } from "Cameras";
+import { Scene } from "scene";
+import { Quaternion, Matrix, Vector3 } from "Math";
+import {Gamepad, WebVRController, PoseEnabledControllerType} from "Gamepad"
+import { IDisplayChangedEventArgs } from "Engine";
+import {Node} from "Node";
+import { AbstractMesh } from "Mesh";
+import { Ray } from "Culling";
+import { HemisphericLight } from "Lights";
     Node.AddNodeConstructor("WebVRFreeCamera", (name, scene) => {
         return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
     });
@@ -310,7 +321,7 @@
          * Enables the standing matrix when supported. This can be used to position the user's view the correct height from the ground.
          * @param callback will be called when the standing matrix is set. Callback parameter is if the standing matrix is supported.
          */
-        public useStandingMatrix(callback = (bool: boolean) => { }) {
+        public useStandingMatrix(callback = () => { }) {
             // Use standing matrix if available
             this.getEngine().initWebVRAsync().then((result) => {
                 if (!result.vrDisplay || !result.vrDisplay.stageParameters || !result.vrDisplay.stageParameters.sittingToStandingTransform  || !this.webVROptions.trackPosition) {
@@ -333,7 +344,7 @@
          * @returns A promise with a boolean set to if the standing matrix is supported.
          */
         public useStandingMatrixAsync(): Promise<boolean> {
-            return new Promise((res, rej) => {
+            return new Promise((res) => {
                 this.useStandingMatrix((supported) => {
                     res(supported);
                 });

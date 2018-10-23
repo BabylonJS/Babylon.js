@@ -1,3 +1,10 @@
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Matrix } from "Math";
+import { Engine } from "Engine";
+import { Texture, InternalTexture, BaseTexture } from "Materials";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * This represents a color grading texture. This acts as a lookup table LUT, useful during post process
      * It can help converting any input color in a desired output one. This can then be used to create effects
@@ -235,7 +242,7 @@
          * @param rootUrl The root url of the data assets to load
          * @return A color gradind texture
          */
-        public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): Nullable<ColorGradingTexture> {
+        public static Parse(parsedTexture: any, scene: Scene): Nullable<ColorGradingTexture> {
             var texture = null;
             if (parsedTexture.name && !parsedTexture.isRenderTarget) {
                 texture = new ColorGradingTexture(parsedTexture.name, scene);

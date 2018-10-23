@@ -1,3 +1,6 @@
+import { Scene } from "scene";
+import { Vector3, Vector2, Tmp, Vector4 } from "Math";
+import { Mesh, VertexBuffer } from "Mesh";
     /**
      * Mesh representing the gorund
      */
@@ -314,4 +317,4 @@
 
             return result;
         }
-    }
+    }

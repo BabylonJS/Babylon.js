@@ -1,3 +1,4 @@
+import { FlyCamera, CameraInputsManager, FlyCameraMouseInput, FlyCameraKeyboardInput } from "Cameras";
     /**
      * Default Inputs manager for the FlyCamera.
      * It groups all the default supported inputs for ease of use.
@@ -30,4 +31,4 @@
             this.add(new FlyCameraMouseInput(touchEnabled));
             return this;
         }
-    }
+    }

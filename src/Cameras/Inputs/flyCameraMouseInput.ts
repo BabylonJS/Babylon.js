@@ -1,3 +1,8 @@
+import { serialize, Observer } from "Tools";
+import { Nullable } from "types";
+import { ICameraInput, CameraInputTypes, FlyCamera } from "Cameras";
+import { PointerInfo, PointerEventTypes } from "Events";
+import { Scene } from "scene";
     /**
      * Listen to mouse events to control the camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -301,4 +306,4 @@
         }
     }
 
-    (<any>CameraInputTypes)["FlyCameraMouseInput"] = FlyCameraMouseInput;
+    (<any>CameraInputTypes)["FlyCameraMouseInput"] = FlyCameraMouseInput;

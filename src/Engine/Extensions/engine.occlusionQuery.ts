@@ -1,3 +1,7 @@
+import { Nullable, int } from "types";
+import { Engine } from "Engine";
+import { AbstractMesh } from "Mesh";
+import { _TimeToken } from "Instrumentation";
     /** @hidden */
     class _OcclusionDataStorage {
         /** @hidden */
@@ -445,4 +449,4 @@
         }
 
         return dataStorage.isOccluded;
-    };
+    };

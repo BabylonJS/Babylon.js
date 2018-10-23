@@ -1,3 +1,7 @@
+import { ICameraInput, ArcRotateCamera, CameraInputTypes } from "index";
+import { Nullable } from "types";
+import { serialize, Observer } from "Tools";
+import {Gamepad} from "Gamepad";
     /**
      * Manage the gamepad inputs to control an arc rotate camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs

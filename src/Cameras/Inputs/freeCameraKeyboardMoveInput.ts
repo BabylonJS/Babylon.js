@@ -1,3 +1,10 @@
+import { serialize, Observer } from "Tools";
+import { Nullable } from "types";
+import { ICameraInput, CameraInputTypes, FreeCamera } from "Cameras";
+import { KeyboardInfo, KeyboardEventTypes } from "Events";
+import { Scene } from "scene";
+import { Vector3 } from "Math";
+import { Engine } from "Engine";
     /**
      * Manage the keyboard inputs to control the movement of a free camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -151,7 +158,7 @@
         }
 
         /** @hidden */
-        public _onLostFocus(e: FocusEvent): void {
+        public _onLostFocus(): void {
             this._keys = [];
         }
 
@@ -164,4 +171,4 @@
         }
     }
 
-    (<any>CameraInputTypes)["FreeCameraKeyboardMoveInput"] = FreeCameraKeyboardMoveInput;
+    (<any>CameraInputTypes)["FreeCameraKeyboardMoveInput"] = FreeCameraKeyboardMoveInput;

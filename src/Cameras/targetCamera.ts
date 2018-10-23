@@ -1,3 +1,8 @@
+import { serialize } from "Tools";
+import { Nullable } from "types";
+import { Camera } from "Cameras";
+import { Scene } from "scene";
+import { Quaternion, Matrix, Vector3, Vector2, Epsilon, Tmp } from "Math";
     /**
      * A target camera takes a mesh or position as a target and continues to look at it while it moves.
      * This is the base of the follow, arc rotate cameras and Free camera

@@ -1,3 +1,7 @@
+import { Nullable } from "types";
+import { Matrix, Vector3 } from "Math";
+import { Collider, SerializedMesh, SerializedGeometry, SerializedSubMesh, InitPayload, UpdatePayload, CollidePayload, WorkerReply, WorkerReplyType, WorkerTaskType, CollisionReplyPayload, BabylonMessage } from "Collisions";
+
 declare function importScripts(...urls: string[]): void;
 
 // since typescript doesn't understand the file's execution context, we need to override postMessage's signature for error-free compilation
