@@ -111,7 +111,7 @@ module BABYLON {
                     this._rootMesh.position.copyFrom(this.attachedMesh.absolutePosition);
                 }
                 if (this._updateScale && this.gizmoLayer.utilityLayerScene.activeCamera && this.attachedMesh) {
-                    var cameraPosition = this.gizmoLayer.utilityLayerScene.activeCamera.position;
+                    var cameraPosition = this.gizmoLayer.utilityLayerScene.activeCamera.globalPosition;
                     if ((<WebVRFreeCamera>this.gizmoLayer.utilityLayerScene.activeCamera).devicePosition) {
                         cameraPosition = (<WebVRFreeCamera>this.gizmoLayer.utilityLayerScene.activeCamera).devicePosition;
                     }
