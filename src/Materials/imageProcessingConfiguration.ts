@@ -1,3 +1,7 @@
+import { serialize, Observable, Tools, SerializationHelper, serializeAsTexture } from "Tools";
+import { Nullable } from "types";
+import { Color4 } from "Math";
+import { Effect, BaseTexture, IImageProcessingConfigurationDefines, ColorCurves, MaterialDefines } from "Materials";
     /**
      * Interface to follow in your material defines to integrate easily the
      * Image proccessing functions.
@@ -570,4 +574,4 @@
         public static get VIGNETTEMODE_OPAQUE(): number {
             return this._VIGNETTEMODE_OPAQUE;
         }
-    }
+    }

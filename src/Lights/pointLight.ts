@@ -1,3 +1,11 @@
+import { serialize } from "Tools";
+import { Scene } from "scene";
+import { Matrix, Vector3 } from "Math";
+import {Node} from "Node";
+import { AbstractMesh } from "Mesh";
+import { ShadowLight, Light } from "Lights";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     Node.AddNodeConstructor("Light_Type_0", (name, scene) => {
         return () => new PointLight(name, Vector3.Zero(), scene);
     });
@@ -156,7 +164,7 @@
          * @param lightIndex The index of the light in the effect to update
          * @returns The point light
          */
-        public transferToEffect(effect: Effect, lightIndex: string): PointLight {
+        public transferToEffect(lightIndex: string): PointLight {
             if (this.computeTransformedInformation()) {
                 this._uniformBuffer.updateFloat4("vLightData",
                     this.transformedPosition.x,
@@ -187,4 +195,4 @@
         public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
             defines["POINTLIGHT" + lightIndex] = true;
         }
-    }
+    }

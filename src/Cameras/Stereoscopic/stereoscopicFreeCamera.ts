@@ -1,3 +1,7 @@
+import { FreeCamera } from "Cameras";
+import { Scene } from "scene";
+import { Vector3 } from "Math";
+import {Node} from "Node";
     Node.AddNodeConstructor("StereoscopicFreeCamera", (name, scene, options) => {
         return () => new StereoscopicFreeCamera(name, Vector3.Zero(), options.interaxial_distance, options.isStereoscopicSideBySide, scene);
     });
@@ -29,4 +33,4 @@
         public getClassName(): string {
             return "StereoscopicFreeCamera";
         }
-    }
+    }

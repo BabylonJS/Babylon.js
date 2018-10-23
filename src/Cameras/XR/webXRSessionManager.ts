@@ -1,3 +1,8 @@
+import { Observable } from "Tools";
+import { Nullable } from "types";
+import { IDisposable } from "scene";
+import { Vector3 } from "Math";
+import { RenderTargetTexture } from "Materials";
     /**
      * Manages an XRSession
      * @see https://doc.babylonjs.com/how_to/webxr
@@ -112,7 +117,7 @@
          * @returns Promise which resolves with a collision point in the environment if it exists
          */
         public environmentPointHitTestAsync(ray: BABYLON.Ray): Promise<Nullable<Vector3>> {
-            return new Promise((res, rej) => {
+            return new Promise((res) => {
                 // Compute left handed inputs to request hit test
                 var origin = new Float32Array([ray.origin.x, ray.origin.y, ray.origin.z]);
                 var direction = new Float32Array([ray.direction.x, ray.direction.y, ray.direction.z]);
@@ -134,9 +139,9 @@
                     }else {
                         res(null);
                     }
-                }).catch((e: Error) => {
-                    res(null);
-                });
+                }).catch(() => {
+                        res(null);
+                    });
             });
         }
 
@@ -148,9 +153,9 @@
         public supportsSessionAsync(options: XRSessionCreationOptions) {
             return this._xrDevice.supportsSession(options).then(() => {
                 return true;
-            }).catch((e) => {
-                return false;
-            });
+            }).catch(() => {
+                    return false;
+                });
         }
 
         /**
@@ -180,4 +185,4 @@
             this.onXRFrameObservable.clear();
             this.onXRSessionEnded.clear();
         }
-    }
+    }

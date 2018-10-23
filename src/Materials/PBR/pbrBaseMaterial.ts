@@ -1,3 +1,13 @@
+import { serialize, Observer, Tools, SmartArray, serializeAsImageProcessingConfiguration, TextureTools, IAnimatable } from "Tools";
+import { Nullable } from "types";
+import { Camera } from "Cameras";
+import { Scene } from "scene";
+import { Matrix, Color3, Vector4 } from "Math";
+import { Engine } from "Engine";
+import { Mesh, AbstractMesh, VertexBuffer, SubMesh } from "Mesh";
+import { StandardMaterial, ImageProcessingConfiguration, RenderTargetTexture, Material, Texture, Effect, BaseTexture, CubeTexture, MaterialHelper, IImageProcessingConfigurationDefines, PushMaterial, EffectFallbacks, EffectCreationOptions, MaterialDefines, PBRMaterial } from "Materials";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Manages the defines for the PBR Material.
      * @hiddenChildren
@@ -554,7 +564,7 @@
 
             // Attaches observer.
             if (this._imageProcessingConfiguration) {
-                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add((conf) => {
+                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(() => {
                     this._markAllSubMeshesAsImageProcessingDirty();
                 });
             }
@@ -738,10 +748,6 @@
             return this._albedoTexture;
         }
 
-        /**
-         * Stores the reflectivity values based on metallic roughness workflow.
-         */
-        private static _scaledReflectivity = new Color3();
 
         /**
          * Specifies that the submesh is ready to be used.

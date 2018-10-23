@@ -1,3 +1,16 @@
+import { serialize, Observable, Tools, SmartArray } from "Tools";
+import { Nullable } from "types";
+import { Camera } from "Cameras";
+import { Scene } from "scene";
+import { Color4, ISize } from "Math";
+import { Engine } from "Engine";
+import { Mesh, AbstractMesh, VertexBuffer, SubMesh } from "Mesh";
+import { RenderTargetTexture, Material, Texture, Effect, BaseTexture, MaterialHelper } from "Materials";
+import { PostProcess } from "PostProcess";
+import { SceneComponentConstants } from "sceneComponent";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { EffectLayerSceneComponent } from "Layer";
     /**
      * Effect layer options. This helps customizing the behaviour
      * of the effect layer.
@@ -522,7 +535,7 @@
          * @param mesh The mesh to render
          * @returns true if it should render otherwise false
          */
-        protected _shouldRenderMesh(mesh: Mesh): boolean {
+        protected _shouldRenderMesh(): boolean {
             return true;
         }
 
@@ -531,7 +544,7 @@
          * @param mesh The mesh to render
          * @returns true if it should render otherwise false
          */
-        protected _shouldRenderEmissiveTextureForMesh(mesh: Mesh): boolean {
+        protected _shouldRenderEmissiveTextureForMesh(): boolean {
             return true;
         }
 
@@ -567,7 +580,7 @@
             }
 
             // Early Exit per mesh
-            if (!this._shouldRenderMesh(mesh)) {
+            if (!this._shouldRenderMesh()) {
                 return;
             }
 

@@ -1,3 +1,14 @@
+import { serialize } from "Tools";
+import { Camera } from "Cameras";
+import { Scene } from "scene";
+import { Matrix, Vector3 } from "Math";
+import {ArcRotateCameraInputsManager} from "Gamepad";
+import {Node} from "Node";
+import { AbstractMesh } from "Mesh";
+import { Effect } from "Materials";
+import { ShadowLight, Light } from "Lights";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     Node.AddNodeConstructor("Light_Type_1", (name, scene) => {
         return () => new DirectionalLight(name, Vector3.Zero(), scene);
     });
@@ -96,7 +107,7 @@
          */
         protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
             if (this.shadowFrustumSize > 0) {
-                this._setDefaultFixedFrustumShadowProjectionMatrix(matrix, viewMatrix);
+                this._setDefaultFixedFrustumShadowProjectionMatrix(matrix);
             }
             else {
                 this._setDefaultAutoExtendShadowProjectionMatrix(matrix, viewMatrix, renderList);
@@ -107,7 +118,7 @@
          * Sets the passed matrix "matrix" as fixed frustum projection matrix for the shadows cast by the light according to the passed view matrix.
          * Returns the DirectionalLight Shadow projection matrix.
          */
-        protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix): void {
+        protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix): void {
             var activeCamera = this.getScene().activeCamera;
 
             if (!activeCamera) {
@@ -191,7 +202,7 @@
          * @param lightIndex The index of the light in the effect to update
          * @returns The directional light
          */
-        public transferToEffect(effect: Effect, lightIndex: string): DirectionalLight {
+        public transferToEffect(lightIndex: string): DirectionalLight {
             if (this.computeTransformedInformation()) {
                 this._uniformBuffer.updateFloat4("vLightData", this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z, 1, lightIndex);
                 return this;

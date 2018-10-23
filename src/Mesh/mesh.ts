@@ -1,3 +1,18 @@
+import { Observer, Observable, Tools, IAnimatable, Tags, AsyncLoop } from "Tools";
+import { Nullable, FloatArray, IndicesArray } from "types";
+import { Camera } from "Cameras";
+import { Scene } from "scene";
+import { Quaternion, Matrix, Vector3, Vector2, Color3, Color4, Plane, Tmp, Vector4, Path3D } from "Math";
+import { Engine } from "Engine";
+import {Node} from "Node";
+import { AbstractMesh, Geometry, InstancedMesh, VertexBuffer, SubMesh, LinesMesh, IGetSetVerticesData, MeshLODLevel, VertexData, GroundMesh, MeshBuilder } from "Mesh";
+import { BoundingSphere, BoundingInfo } from "Culling";
+import { Material, Effect } from "Materials";
+import { Animation } from "Animations";
+import { SceneLoader } from "Loading";
+import { Skeleton } from "Bones";
+import { MorphTargetManager } from "Morph";
+import { PhysicsImpostor } from "Physics";
     /**
      * @hidden
      **/
@@ -698,7 +713,7 @@
             if (!this._geometry) {
                 var result = new Array<string>();
                 if (this._delayInfo) {
-                    this._delayInfo.forEach(function(kind, index, array) {
+                    this._delayInfo.forEach(function(kind) {
                         result.push(kind);
                     });
                 }
@@ -3690,7 +3705,7 @@
             var minVector: Nullable<Vector3> = null;
             var maxVector: Nullable<Vector3> = null;
 
-            meshes.forEach(function(mesh, index, array) {
+            meshes.forEach(function(mesh) {
                 let boundingInfo = mesh.getBoundingInfo();
 
                 let boundingBox = boundingInfo.boundingBox;

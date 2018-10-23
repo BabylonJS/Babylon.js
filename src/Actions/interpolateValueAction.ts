@@ -1,3 +1,9 @@
+import { Action, Condition } from "Actions";
+
+import { Observable, Tools } from "Tools";
+
+import { Color3, Vector3, Matrix, Quaternion } from "Math";
+
     /**
      * This defines an action responsible to change the value of a property
      * by interpolating between its current value and the newly set one once triggered.
@@ -133,4 +139,4 @@
                 ]
             }, parent);
         }
-    }
+    }

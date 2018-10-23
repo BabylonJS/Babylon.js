@@ -1,3 +1,13 @@
+import { serialize } from "Tools";
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Matrix, Vector3 } from "Math";
+import {Node} from "Node";
+import { AbstractMesh } from "Mesh";
+import { Effect, BaseTexture } from "Materials";
+import { ShadowLight, Light } from "Lights";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
         return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
     });
@@ -377,4 +387,4 @@
             defines["SPOTLIGHT" + lightIndex] = true;
             defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = this.projectionTexture ? true : false;
         }
-    }
+    }

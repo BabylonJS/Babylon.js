@@ -1,3 +1,5 @@
+import { Nullable } from "types";
+
     /**
      * Interface used to define a behavior
      */
@@ -42,4 +44,4 @@
          * @returns the behavior or null if not found
          */
         getBehaviorByName(name: string): Nullable<Behavior<T>>;
-    }
+    }

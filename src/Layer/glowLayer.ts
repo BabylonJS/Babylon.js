@@ -1,3 +1,16 @@
+import { serialize, Tools, SerializationHelper } from "Tools";
+import { Nullable } from "types";
+import { Camera } from "Cameras";
+import { Scene } from "scene";
+import { Vector2, Color4 } from "Math";
+import { Engine } from "Engine";
+import { Mesh, AbstractMesh, VertexBuffer, SubMesh } from "Mesh";
+import { RenderTargetTexture, Material, Texture, Effect } from "Materials";
+import { PostProcess, BlurPostProcess } from "PostProcess";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { EffectLayer } from "Layer";
+import { AbstractScene } from "abstractScene";
     export interface AbstractScene {
         /**
          * Return a the first highlight layer of the scene with a given name.

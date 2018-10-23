@@ -1,3 +1,10 @@
+import { Observable, Tools } from "Tools";
+import { Nullable } from "types";
+import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "Math";
+import { Engine } from "Engine";
+import { AbstractMesh } from "Mesh";
+import { RenderTargetTexture, Material, InternalTexture, BaseTexture } from "Materials";
+import { PostProcess } from "PostProcess";
     /**
      * EffectFallbacks can be used to add fallbacks (properties to disable) to certain properties when desired to improve performance.
      * (Eg. Start at high quality with reflection and fog, if fps is low, remove reflection, if still low remove fog)
@@ -1496,4 +1503,4 @@
         public static ResetCache() {
             Effect._baseCache = {};
         }
-    }
+    }

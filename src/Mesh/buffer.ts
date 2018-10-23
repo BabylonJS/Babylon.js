@@ -1,3 +1,6 @@
+import { Nullable, DataArray } from "types";
+import { Engine } from "Engine";
+import { Mesh, VertexBuffer } from "Mesh";
     /**
      * Class used to store data that will be store in GPU memory
      */

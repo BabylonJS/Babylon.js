@@ -1,3 +1,7 @@
+import { Nullable, FloatArray } from "types";
+import { Vector3, Vector2, Tmp } from "Math";
+import { AbstractMesh, VertexBuffer } from "Mesh";
+import { Ray } from "Culling";
     /**
      * @hidden
      */

@@ -1,3 +1,9 @@
+import { Observer, PerfCounter } from "Tools";
+import { Nullable } from "types";
+import { IDisposable } from "scene";
+import { Engine } from "Engine";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * This class can be used to get instrumentation data from a Babylon engine
      * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
@@ -140,4 +146,4 @@
 
             (<any>this.engine) = null;
         }
-    }
+    }

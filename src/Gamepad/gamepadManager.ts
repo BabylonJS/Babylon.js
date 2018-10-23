@@ -1,4 +1,10 @@
-﻿    /**
+﻿import { Observable, Tools } from "Tools";
+import { Nullable } from "types";
+import { Scene } from "scene";
+import {Gamepad, Xbox360Pad, PoseEnabledControllerHelper, GenericPad} from "Gamepad"
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+    /**
      * Manager for handling gamepads
      */
     export class GamepadManager {
@@ -226,4 +232,4 @@
                 }
             }
         }
-    }
+    }

@@ -1,3 +1,9 @@
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Color3 } from "Math";
+import {Node} from "Node";
+import { Mesh, VertexBuffer, SubMesh } from "Mesh";
+import { Material, Effect, ShaderMaterial } from "Materials";
     /**
      * Line mesh
      * @see https://doc.babylonjs.com/babylon101/parametric_shapes
@@ -168,4 +174,4 @@
         public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh {
             return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
         }
-    }
+    }

@@ -1,3 +1,12 @@
+import { Behavior } from "Behaviors";
+import { Mesh, AbstractMesh } from "Mesh";
+import {Scene} from "scene";
+import { Nullable } from "index";
+import { Vector3, Quaternion } from "Math";
+import {PointerInfo} from "Events";
+import { Observer, Observable } from "Tools";
+import {BoundingBoxGizmo} from "Gizmos";
+import {Camera} from "Cameras";
     /**
      * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
      */
@@ -228,4 +237,4 @@
             this.onDragEndObservable.clear();
             this.onDragStartObservable.clear();
         }
-    }
+    }

@@ -1,3 +1,14 @@
+import { Camera } from "Cameras";
+import { Scene } from "scene";
+import { Engine } from "Engine";
+import { AbstractMesh } from "Mesh";
+import { RenderTargetTexture } from "Materials";
+import { SceneComponentConstants, ISceneSerializableComponent } from "sceneComponent";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { EffectLayer } from "Layer";
+import { AbstractScene } from "abstractScene";
+import { AssetContainer } from "assetContainer";
     // Adds the parser to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
         if (parsedData.effectLayers) {
@@ -200,14 +211,14 @@
             }
         }
 
-        private _setStencil(camera: Camera) {
+        private _setStencil() {
             // Activate effect Layer stencil
             if (this._needStencil) {
                 this._engine.setStencilBuffer(true);
             }
         }
 
-        private _setStencilBack(camera: Camera) {
+        private _setStencilBack() {
             // Restore effect Layer stencil
             if (this._needStencil) {
                 this._engine.setStencilBuffer(this._previousStencilState);
@@ -231,7 +242,7 @@
             }
         }
 
-        private _drawCamera(camera: Camera): void {
+        private _drawCamera(): void {
             if (this._renderEffects) {
                 this._draw(-1);
             }

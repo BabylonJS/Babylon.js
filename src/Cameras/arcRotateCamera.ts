@@ -1,3 +1,11 @@
+import { serialize, Observable } from "Tools";
+import { Nullable } from "types";
+import { Camera, TargetCamera, ArcRotateCameraPointersInput, ArcRotateCameraKeyboardMoveInput, ArcRotateCameraMouseWheelInput, ArcRotateCameraInputsManager } from "Cameras";
+import { Scene } from "scene";
+import { Matrix, Vector3, Vector2 } from "Math";
+import {Node} from "Node";
+import { Mesh, AbstractMesh } from "Mesh";
+import { BouncingBehavior, FramingBehavior, AutoRotationBehavior } from "Behaviors";
     Node.AddNodeConstructor("ArcRotateCamera", (name, scene) => {
         return () => new ArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);
     });

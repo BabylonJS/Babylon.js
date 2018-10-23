@@ -1,3 +1,9 @@
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Engine } from "Engine";
+import { Texture, ProceduralTexture } from "Materials";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Class used to generate noise procedural textures
      */
@@ -79,7 +85,7 @@
          * @param rootUrl defines the root URL containing noise procedural texture information
          * @returns a parsed NoiseProceduralTexture
          */
-        public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): NoiseProceduralTexture {
+        public static Parse(parsedTexture: any, scene: Scene): NoiseProceduralTexture {
             var texture = new NoiseProceduralTexture(parsedTexture.name, parsedTexture.size, scene, undefined, parsedTexture.generateMipMaps);
 
             texture.brightness = parsedTexture.brightness;
@@ -89,4 +95,4 @@
 
             return texture;
         }
-    }
+    }

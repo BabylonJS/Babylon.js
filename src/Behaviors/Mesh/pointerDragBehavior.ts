@@ -1,3 +1,18 @@
+import { Behavior } from "Behaviors";
+
+import { Mesh, AbstractMesh } from "Mesh";
+
+import { Scene } from "scene";
+
+import { Nullable } from "types";
+
+import { Observer, Observable } from "Tools";
+
+import { Vector3 } from "Math";
+import { PointerInfo } from "Events";
+import { BoundingBoxGizmo } from "Gizmos";
+import { Ray } from "Culling/ray";
+
     /**
      * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
      */
@@ -396,4 +411,4 @@
                 this._scene.onBeforeRenderObservable.remove(this._beforeRenderObserver);
             }
         }
-    }
+    }

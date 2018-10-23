@@ -1,3 +1,5 @@
+import { Tools } from "Tools";
+import { Matrix, Vector3, Plane } from "Math";
     /**
      * Class used to store bounding sphere information
      */
@@ -144,4 +146,4 @@
 
             return true;
         }
-    }
+    }

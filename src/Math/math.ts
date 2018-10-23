@@ -1,3 +1,8 @@
+import { Tools } from "Tools";
+import { Nullable, FloatArray, float } from "types";
+import { Scalar, ISize } from "Math";
+import { Engine } from "Engine";
+import { Ray } from "Culling";
     /**
      * Constant used to convert a value to gamma space
      * @ignorenaming
@@ -3876,7 +3881,7 @@
          */
         public toEulerAngles(order = "YZX"): Vector3 {
             var result = Vector3.Zero();
-            this.toEulerAnglesToRef(result, order);
+            this.toEulerAnglesToRef(result);
             return result;
         }
 
@@ -3886,7 +3891,7 @@
          * @param order is a reserved parameter and is ignore for now
          * @returns the current unchanged quaternion
          */
-        public toEulerAnglesToRef(result: Vector3, order = "YZX"): Quaternion {
+        public toEulerAnglesToRef(result: Vector3): Quaternion {
 
             var qz = this.z;
             var qx = this.x;
@@ -6999,7 +7004,7 @@
 
             // normals and binormals at first point : arbitrary vector with _normalVector()
             var tg0 = this._tangents[0];
-            var pp0 = this._normalVector(this._curve[0], tg0, firstNormal);
+            var pp0 = this._normalVector(tg0, firstNormal);
             this._normals[0] = pp0;
             if (!this._raw) {
                 this._normals[0].normalize();
@@ -7069,7 +7074,7 @@
         // private function normalVector(v0, vt, va) :
         // returns an arbitrary point in the plane defined by the point v0 and the vector vt orthogonal to this plane
         // if va is passed, it returns the va projection on the plane orthogonal to vt at the point v0
-        private _normalVector(v0: Vector3, vt: Vector3, va: Nullable<Vector3>): Vector3 {
+        private _normalVector(vt: Vector3, va: Nullable<Vector3>): Vector3 {
             var normal0: Vector3;
             var tgl = vt.length();
             if (tgl === 0.0) {

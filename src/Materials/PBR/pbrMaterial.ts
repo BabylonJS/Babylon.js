@@ -1,3 +1,10 @@
+import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, TextureTools, serializeAsTexture } from "Tools";
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Color3 } from "Math";
+import { ImageProcessingConfiguration, BaseTexture, ColorCurves, PBRBaseMaterial } from "Materials";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * The Physically based material of BJS.
      *
@@ -810,4 +817,4 @@
         public static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial {
             return SerializationHelper.Parse(() => new PBRMaterial(source.name, scene), source, scene, rootUrl);
         }
-    }
+    }

@@ -1,3 +1,8 @@
+import { serialize, Observer, EventState } from "Tools";
+import { Nullable } from "types";
+import { ICameraInput, CameraInputTypes, FreeCamera } from "Cameras";
+import { PointerInfo, PointerEventTypes } from "Events";
+import { Matrix, Vector3 } from "Math";
     /**
      * Manage the touch inputs to control the movement of a free camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -39,12 +44,12 @@
             var previousPosition: Nullable<{ x: number, y: number }> = null;
 
             if (this._pointerInput === undefined) {
-                this._onLostFocus = (evt) => {
+                this._onLostFocus = () => {
                     this._offsetX = null;
                     this._offsetY = null;
                 };
 
-                this._pointerInput = (p, s) => {
+                this._pointerInput = (p) => {
                     var evt = <PointerEvent>p.event;
 
                     if (evt.pointerType === "mouse") {

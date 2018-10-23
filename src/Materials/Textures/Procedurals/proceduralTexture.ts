@@ -1,5 +1,15 @@
+import { serialize, Observable } from "Tools";
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Matrix, Vector3, Vector2, Color3, Color4 } from "Math";
+import { Engine } from "Engine";
+import { VertexBuffer } from "Mesh";
+import { RenderTargetTexture, Material, Texture, Effect, ProceduralTextureSceneComponent } from "Materials";
+import { SceneComponentConstants } from "sceneComponent";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
-     * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
+     * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.
      * This is the base class of any Procedural texture and contains most of the shareable code.
      * @see http://doc.babylonjs.com/how_to/how_to_use_procedural_textures
      */
@@ -454,7 +464,7 @@
          * Render the texture to its associated render target.
          * @param useCameraPostProcess Define if camera post process should be applied to the texture
          */
-        public render(useCameraPostProcess?: boolean): void {
+        public render(): void {
             var scene = this.getScene();
 
             if (!scene) {
@@ -610,4 +620,4 @@
 
             super.dispose();
         }
-    }
+    }

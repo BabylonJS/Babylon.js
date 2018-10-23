@@ -1,3 +1,9 @@
+import { SerializationHelper, EnvironmentTextureTools } from "Tools";
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { SphericalPolynomial } from "Math";
+import { Engine } from "Engine";
+import { Texture, InternalTexture, CubeTexture } from "Materials";
     /**
      * Raw cube texture where the raw buffers are passed in
      */
@@ -32,7 +38,7 @@
          * @param compression defines the compression used (null by default)
          * @param level defines which level of the texture to update
          */
-        public update(data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null, level = 0): void {
+        public update(data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null): void {
             this._texture!.getEngine().updateRawCubeTexture(this._texture!, data, format, type, invertY, compression);
         }
 

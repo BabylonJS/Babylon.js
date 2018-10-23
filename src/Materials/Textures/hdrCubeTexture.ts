@@ -1,3 +1,11 @@
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Matrix, Vector3, ToGammaSpace } from "Math";
+import { Engine } from "Engine";
+import { Material, Texture, BaseTexture } from "Materials";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { HDRTools, CubeMapToSphericalPolynomialTools } from "Tools";
     /**
      * This represents a texture coming from an HDR input.
      *
@@ -100,7 +108,7 @@
          * @param gammaSpace Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
          * @param reserved Reserved flag for internal use.
          */
-        constructor(url: string, scene: Scene, size: number, noMipmap = false, generateHarmonics = true, gammaSpace = false, reserved = false, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null) {
+        constructor(url: string, scene: Scene, size: number, noMipmap = false, gammaSpace = false, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null) {
             super(scene);
 
             if (!url) {

@@ -1,3 +1,7 @@
+import { serialize, Observer, EventState } from "Tools";
+import { Nullable } from "types";
+import { ICameraInput, CameraInputTypes, FreeCamera } from "Cameras";
+import { PointerInfo, PointerEventTypes } from "Events";
     /**
      * Manage the mouse inputs to control the movement of a free camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -46,7 +50,7 @@
             var engine = this.camera.getEngine();
 
             if (!this._pointerInput) {
-                this._pointerInput = (p, s) => {
+                this._pointerInput = (p) => {
                     var evt = <PointerEvent>p.event;
 
                     if (engine.isInVRExclusivePointerMode) {

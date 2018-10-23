@@ -1,3 +1,8 @@
+import { Vector3, Quaternion, Matrix, Space } from "Math";
+import { AbstractMesh } from "Mesh";
+import { Nullable } from "types";
+import { Bone } from "Bones";
+
     /**
      * Class used to apply inverse kinematics to bones
      * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#boneikcontroller
@@ -339,4 +344,4 @@
             this._bone2.setAxisAngle(this._bendAxis, angC, Space.LOCAL);
             this._bone2Ang = angC;
         }
-    }
+    }

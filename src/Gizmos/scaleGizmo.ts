@@ -1,3 +1,11 @@
+import { Observable, Tools } from "Tools";
+import { Nullable } from "types";
+import { Vector3 } from "Math";
+import { AbstractMesh } from "Mesh";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Gizmo, AxisScaleGizmo } from "Gizmos";
+import { UtilityLayerRenderer } from "Rendering";
     /**
      * Gizmo that enables scaling a mesh along 3 axis
      */
@@ -123,4 +131,4 @@
             this.onDragStartObservable.clear();
             this.onDragEndObservable.clear();
         }
-    }
+    }

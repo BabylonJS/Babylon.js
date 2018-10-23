@@ -1,3 +1,13 @@
+import { serialize, Observer, Tools, SmartArray, SerializationHelper, serializeAsColor3, expandToProperty } from "Tools";
+import { Nullable, int, float } from "types";
+import { Scene } from "scene";
+import { Matrix, Vector3, Color3 } from "Math";
+import { Engine } from "Engine";
+import { Mesh, AbstractMesh, VertexBuffer, SubMesh } from "Mesh";
+import { StandardMaterial, ImageProcessingConfiguration, RenderTargetTexture, Texture, Effect, BaseTexture, MaterialHelper, IImageProcessingConfigurationDefines, PushMaterial, ColorCurves, EffectFallbacks, EffectCreationOptions, MaterialDefines } from "Materials";
+import { IShadowLight } from "Lights";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Background material defines definition.
      * @hidden Mainly internal Use
@@ -415,7 +425,7 @@
 
             // Attaches observer.
             if (this._imageProcessingConfiguration) {
-                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add((conf) => {
+                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(() => {
                     this._computePrimaryColorFromPerceptualColor();
                     this._markAllSubMeshesAsImageProcessingDirty();
                 });

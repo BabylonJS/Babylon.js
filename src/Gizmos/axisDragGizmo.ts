@@ -1,3 +1,13 @@
+import { Observer, Observable } from "Tools";
+import { Nullable } from "types";
+import { PointerInfo } from "Events";
+import { Vector3, Color3 } from "Math";
+import { Mesh, AbstractMesh, LinesMesh } from "Mesh";
+import { PointerDragBehavior } from "Behaviors";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Gizmo } from "Gizmos";
+import { UtilityLayerRenderer } from "Rendering";
     /**
      * Single axis drag gizmo
      */
@@ -93,7 +103,7 @@
                 }
             });
 
-            this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo, eventState) => {
+            this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
                 if (this._customMeshSet) {
                     return;
                 }
@@ -121,4 +131,4 @@
             this.dragBehavior.detach();
             super.dispose();
         }
-    }
+    }

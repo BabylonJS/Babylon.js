@@ -1,3 +1,23 @@
+import { Tools } from "Tools";
+import { Nullable } from "types";
+import { Camera } from "Cameras";
+import { Scene } from "scene";
+import { Vector3, Color3, Color4 } from "Math";
+import { Mesh, AbstractMesh, Geometry, TransformNode, BoxGeometry, SphereGeometry, CylinderGeometry, TorusGeometry, GroundGeometry, PlaneGeometry, TorusKnotGeometry } from "Mesh";
+import { Material, CubeTexture, HDRCubeTexture } from "Materials";
+import { Animation } from "Animations";
+import { Light } from "Lights";
+import { SceneComponentConstants } from "sceneComponent";
+import { _TimeToken } from "Instrumentation";
+import { SceneLoader } from "Loading";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { AbstractScene } from "abstractScene";
+import { AssetContainer } from "assetContainer";
+import { ActionManager } from "Actions";
+import { IParticleSystem } from "Particles";
+import { Skeleton } from "Bones";
+import { MorphTargetManager } from "Morph";
+import { CannonJSPlugin, OimoJSPlugin } from "Physics";
     var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
         for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
             var parsedMaterial = parsedData.materials[index];

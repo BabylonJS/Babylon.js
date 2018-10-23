@@ -1,3 +1,8 @@
+import { Tools } from "Tools";
+import { Nullable, FloatArray } from "types";
+import { Matrix, Vector3, Color3, Vector4 } from "Math";
+import { Engine } from "Engine";
+import { Effect, BaseTexture } from "Materials";
     /**
      * Uniform buffer objects.
      *
@@ -496,7 +501,7 @@
             this._currentEffect.setFloat2(name + suffix, x, y);
         }
 
-        private _updateFloat2ForUniform(name: string, x: number, y: number, suffix = "") {
+        private _updateFloat2ForUniform(name: string, x: number, y: number) {
             UniformBuffer._tempBuffer[0] = x;
             UniformBuffer._tempBuffer[1] = y;
             this.updateUniform(name, UniformBuffer._tempBuffer, 2);
@@ -506,7 +511,7 @@
             this._currentEffect.setFloat3(name + suffix, x, y, z);
         }
 
-        private _updateFloat3ForUniform(name: string, x: number, y: number, z: number, suffix = "") {
+        private _updateFloat3ForUniform(name: string, x: number, y: number, z: number) {
             UniformBuffer._tempBuffer[0] = x;
             UniformBuffer._tempBuffer[1] = y;
             UniformBuffer._tempBuffer[2] = z;
@@ -518,7 +523,7 @@
             this._currentEffect.setFloat4(name + suffix, x, y, z, w);
         }
 
-        private _updateFloat4ForUniform(name: string, x: number, y: number, z: number, w: number, suffix = "") {
+        private _updateFloat4ForUniform(name: string, x: number, y: number, z: number, w: number) {
             UniformBuffer._tempBuffer[0] = x;
             UniformBuffer._tempBuffer[1] = y;
             UniformBuffer._tempBuffer[2] = z;
@@ -556,7 +561,7 @@
             this._currentEffect.setColor3(name + suffix, color);
         }
 
-        private _updateColor3ForUniform(name: string, color: Color3, suffix = "") {
+        private _updateColor3ForUniform(name: string, color: Color3) {
             color.toArray(UniformBuffer._tempBuffer);
             this.updateUniform(name, UniformBuffer._tempBuffer, 3);
         }
@@ -565,7 +570,7 @@
             this._currentEffect.setColor4(name + suffix, color, alpha);
         }
 
-        private _updateColor4ForUniform(name: string, color: Color3, alpha: number, suffix = "") {
+        private _updateColor4ForUniform(name: string, color: Color3, alpha: number) {
             color.toArray(UniformBuffer._tempBuffer);
             UniformBuffer._tempBuffer[3] = alpha;
             this.updateUniform(name, UniformBuffer._tempBuffer, 4);

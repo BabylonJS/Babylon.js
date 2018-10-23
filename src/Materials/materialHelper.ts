@@ -1,3 +1,12 @@
+import { Tools } from "Tools";
+import { Nullable } from "types";
+import { Camera } from "Cameras";
+import { Scene } from "scene";
+import { Tmp } from "Math";
+import { Engine } from "Engine";
+import { Mesh, AbstractMesh, VertexBuffer } from "Mesh";
+import { UniformBuffer, Effect, BaseTexture, EffectFallbacks, EffectCreationOptions } from "Materials";
+import { Light } from "Lights";
     /**
      * "Static Class" containing the most commonly used helper while dealing with material for
      * rendering purpose.
@@ -521,7 +530,7 @@
          * @param lightIndex The light index in the effect used to render the mesh
          * @param effect The effect we are binding the data to
          */
-        public static BindLightShadow(light: Light, scene: Scene, mesh: AbstractMesh, lightIndex: string, effect: Effect): void {
+        public static BindLightShadow(light: Light, mesh: AbstractMesh, lightIndex: string, effect: Effect): void {
             if (light.shadowEnabled && mesh.receiveShadows) {
                 var shadowGenerator = light.getShadowGenerator();
                 if (shadowGenerator) {
@@ -571,7 +580,7 @@
 
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    this.BindLightShadow(light, scene, mesh, iAsString, effect);
+                    this.BindLightShadow(light, mesh, iAsString, effect);
                 }
                 light._uniformBuffer.update();
             }
@@ -678,4 +687,4 @@
                 effect.setFloat4("vClipPlane4", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
             }
         }
-    }
+    }

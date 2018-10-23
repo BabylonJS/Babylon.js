@@ -1,3 +1,9 @@
+import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "Tools";
+import { Scene } from "scene";
+import { Color3 } from "Math";
+import { BaseTexture, PBRBaseSimpleMaterial } from "Materials";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * The PBR material of BJS following the metal roughness convention.
      *
@@ -136,4 +142,4 @@
         public static Parse(source: any, scene: Scene, rootUrl: string): PBRMetallicRoughnessMaterial {
             return SerializationHelper.Parse(() => new PBRMetallicRoughnessMaterial(source.name, scene), source, scene, rootUrl);
         }
-    }
+    }

@@ -1,3 +1,8 @@
+import { Nullable, FloatArray, IndicesArray } from "types";
+import { Scene } from "scene";
+import { Quaternion, Matrix, Vector3, Vector2 } from "Math";
+import { Mesh, AbstractMesh, VertexBuffer, SubMesh } from "Mesh";
+import { Material } from "Materials";
     /**
      * Unique ID when we import meshes from Babylon to CSG
      */
@@ -781,4 +786,4 @@
 
             return mesh;
         }
-    }
+    }

@@ -1,3 +1,17 @@
+import { Observer, Observable, Tools, ICustomAnimationFrameRequester, PerfCounter, PerformanceMonitor, StringDictionary, IFileRequest, PromisePolyfill, DDSTools, DDSInfo } from "Tools";
+import { Nullable, FloatArray, DataArray, IndicesArray } from "types";
+import { Camera } from "Cameras";
+import { Scene } from "scene";
+import { Matrix, Color3, Color4, Viewport, Size, Scalar } from "Math";
+import { IDisplayChangedEventArgs } from "Engine";
+import { VertexBuffer } from "Mesh";
+import { RenderTargetTexture, Material, IInternalTextureLoader, Texture, UniformBuffer, InternalTexture, Effect, DummyInternalTextureTracker, IMultiRenderTargetOptions, BaseTexture, IInternalTextureTracker, VideoTexture } from "Materials";
+import { PostProcess, PassPostProcess } from "PostProcess";
+import { _TimeToken } from "Instrumentation";
+import { IAudioEngine } from "Audio";
+import { IOfflineProvider } from "Offline";
+import { ILoadingScreen, DefaultLoadingScreen } from "Loading";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Keeps track of all the buffer info used in engine.
      */
@@ -1110,28 +1124,21 @@
                         this.onContextLostObservable.notifyObservers(this);
                     };
 
-                    this._onContextRestored = (evt: Event) => {
+                    this._onContextRestored = () => {
                         // Adding a timeout to avoid race condition at browser level
                         setTimeout(() => {
                             // Rebuild gl context
                             this._initGLContext();
-
                             // Rebuild effects
                             this._rebuildEffects();
-
                             // Rebuild textures
                             this._rebuildInternalTextures();
-
                             // Rebuild buffers
                             this._rebuildBuffers();
-
                             // Cache
                             this.wipeCaches(true);
-
                             Tools.Warn("WebGL context successfully restored.");
-
                             this.onContextRestoredObservable.notifyObservers(this);
-
                             this._contextWasLost = false;
                         }, 0);
                     };
@@ -2241,7 +2248,7 @@
         }
 
         private _getVRDisplaysAsync(): Promise<IDisplayChangedEventArgs> {
-            return new Promise((res, rej) => {
+            return new Promise((res) => {
                 if (navigator.getVRDisplays) {
                     navigator.getVRDisplays().then((devices: Array<any>) => {
                         this._vrSupported = true;
@@ -2613,7 +2620,7 @@
          * @param indices defines the data to update
          * @param offset defines the offset in the target index buffer where update should start
          */
-        public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset: number = 0): void {
+        public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray): void {
             // Force cache update
             this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = null;
             this.bindIndexBuffer(indexBuffer);
@@ -4192,7 +4199,7 @@
             }
         }
 
-        private _cascadeLoadImgs(rootUrl: string, scene: Nullable<Scene>,
+        private _cascadeLoadImgs(scene: Nullable<Scene>,
             onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null) {
 
             var loadedImages: HTMLImageElement[] = [];
@@ -5727,7 +5734,7 @@
                     throw new Error("Cannot load cubemap because files were not defined");
                 }
 
-                this._cascadeLoadImgs(rootUrl, scene, (imgs) => {
+                this._cascadeLoadImgs(scene, (imgs) => {
                     var width = this.needPOTTextures ? Tools.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
                     var height = width;
 
@@ -7498,7 +7505,7 @@
             });
         }
 
-        private _partialLoadFile(url: string, index: number, loadedFiles: (string | ArrayBuffer)[], scene: Nullable<Scene>, onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {
+        private _partialLoadFile(url: string, index: number, loadedFiles: (string | ArrayBuffer)[], onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {
             var onload = (data: string | ArrayBuffer) => {
                 loadedFiles[index] = data;
                 (<any>loadedFiles)._internalCount++;
@@ -7522,7 +7529,7 @@
             (<any>loadedFiles)._internalCount = 0;
 
             for (let index = 0; index < 6; index++) {
-                this._partialLoadFile(files[index], index, loadedFiles, scene, onfinish, onError);
+                this._partialLoadFile(files[index], index, loadedFiles, onfinish, onError);
             }
         }
 

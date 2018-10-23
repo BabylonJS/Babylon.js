@@ -1,3 +1,14 @@
+import { Tools } from "Tools";
+import { Nullable } from "types";
+import { FreeCamera, ArcRotateCamera, TargetCamera, WebXRExperienceHelper, VRExperienceHelperOptions, VRExperienceHelper } from "Cameras";
+import { Scene } from "scene";
+import { Vector3 } from "Math";
+import { Mesh } from "Mesh";
+import { StandardMaterial, Texture, BaseTexture } from "Materials";
+import { HemisphericLight } from "Lights";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { IEnvironmentHelperOptions, EnvironmentHelper } from "./environmentHelper";
     export interface Scene {
         /**
          * Creates a default light for the scene.
@@ -184,9 +195,9 @@
         return BABYLON.WebXRExperienceHelper.CreateAsync(this).then((helper) => {
             var outputCanvas = new BABYLON.WebXRManagedOutputCanvas(helper);
             return BABYLON.WebXREnterExitUI.CreateAsync(this, helper, {outputCanvasContext: outputCanvas.canvasContext})
-            .then((ui) => {
-                new BABYLON.WebXRInput(helper);
-                return helper;
-            });
+            .then(() => {
+                    new BABYLON.WebXRInput(helper);
+                    return helper;
+                });
         });
     };

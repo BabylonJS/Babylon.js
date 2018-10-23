@@ -1,3 +1,10 @@
+import { serialize, Observer } from "Tools";
+import { Nullable } from "types";
+import { ICameraInput, CameraInputTypes, FlyCamera } from "Cameras";
+import { Engine } from "Engine";
+import { KeyboardInfo, KeyboardEventTypes } from "Events";
+import { Scene } from "scene";
+
     /**
      * Listen to keyboard events to control the camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -189,4 +196,4 @@
         }
     }
 
-    (<any>CameraInputTypes)["FlyCameraKeyboardInput"] = FlyCameraKeyboardInput;
+    (<any>CameraInputTypes)["FlyCameraKeyboardInput"] = FlyCameraKeyboardInput;

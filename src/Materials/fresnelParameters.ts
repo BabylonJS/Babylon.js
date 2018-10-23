@@ -1,3 +1,7 @@
+import { Tools } from "Tools";
+import { Color3 } from "Math";
+import { Engine } from "Engine";
+import { Material } from "Materials";
     /**
      * This represents all the required information to add a fresnel effect on a material:
      * @see http://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
@@ -83,4 +87,4 @@
 
             return fresnelParameters;
         }
-    }
+    }

@@ -1,3 +1,8 @@
+import { Scene, IDisposable } from "scene";
+import { Observable } from "Tools";
+import { Nullable } from "types";
+import { IAnimationKey, Animation, Animatable } from "Animations";
+import { Engine } from "Engine";
     /**
      * This class defines the direct association between an animation and a target
      */

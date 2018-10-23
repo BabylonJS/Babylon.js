@@ -1,3 +1,5 @@
+import { Nullable } from "types";
+import { Mesh } from "Mesh";
     /**
      * Class used to represent a specific level of detail of a mesh
      * @see http://doc.babylonjs.com/how_to/how_to_use_lod
@@ -14,4 +16,4 @@
             /** Defines the mesh to use to render this level */
             public mesh: Nullable<Mesh>) {
         }
-    }
+    }

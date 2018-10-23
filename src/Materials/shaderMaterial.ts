@@ -1,3 +1,8 @@
+import { SerializationHelper } from "Tools";
+import { Scene } from "scene";
+import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "Math";
+import { Mesh, AbstractMesh, VertexBuffer } from "Mesh";
+import { Material, Texture, BaseTexture, MaterialHelper, EffectFallbacks, EffectCreationOptions } from "Materials";
     /**
      * Defines the options associated with the creation of a shader material.
      */
@@ -344,7 +349,7 @@
             return this;
         }
 
-        private _checkCache(scene: Scene, mesh?: AbstractMesh, useInstances?: boolean): boolean {
+        private _checkCache(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             if (!mesh) {
                 return true;
             }
@@ -368,7 +373,7 @@
 
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
-                    if (this._checkCache(scene, mesh, useInstances)) {
+                    if (this._checkCache(mesh, useInstances)) {
                         return true;
                     }
                 }
