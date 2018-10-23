@@ -201,7 +201,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
 var glTFExporter_1 = __webpack_require__(/*! ../glTFExporter */ "./src/glTF/2.0/glTFExporter.ts");
 var NAME = "KHR_texture_transform";
-babylonjs_1.Effect.ShadersStore["textureTransformPixelShader"] = __webpack_require__(/*! ../shaders/textureTransform.fragment.fx */ "./src/glTF/2.0/shaders/textureTransform.fragment.fx");
+__webpack_require__(/*! ../shaders/textureTransform.fragment */ "./src/glTF/2.0/shaders/textureTransform.fragment.ts");
 /**
  * @hidden
  */
@@ -3816,14 +3816,23 @@ __export(__webpack_require__(/*! ./Extensions */ "./src/glTF/2.0/Extensions/inde
 
 /***/ }),
 
-/***/ "./src/glTF/2.0/shaders/textureTransform.fragment.fx":
+/***/ "./src/glTF/2.0/shaders/textureTransform.fragment.ts":
 /*!***********************************************************!*\
-  !*** ./src/glTF/2.0/shaders/textureTransform.fragment.fx ***!
+  !*** ./src/glTF/2.0/shaders/textureTransform.fragment.ts ***!
   \***********************************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = "precision highp float;\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform mat4 textureTransformMat;\nvoid main(void) {\nvec2 uvTransformed=(textureTransformMat*vec4(vUV.xy,1,1)).xy;\ngl_FragColor=texture2D(textureSampler,uvTransformed);\n}"
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
+var name = 'textureTransformPixelShader';
+exports.name = name;
+var shader = "precision highp float;\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform mat4 textureTransformMat;\nvoid main(void) {\nvec2 uvTransformed=(textureTransformMat*vec4(vUV.xy,1,1)).xy;\ngl_FragColor=texture2D(textureSampler,uvTransformed);\n}";
+exports.shader = shader;
+babylonjs_1.Effect.ShadersStore[name] = shader;
+
 
 /***/ }),
 
