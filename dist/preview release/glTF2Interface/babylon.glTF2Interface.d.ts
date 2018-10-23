@@ -901,7 +901,7 @@ declare module BABYLON.GLTF2 {
      */
     interface IGLTFValidatorTypings {
         validateString: (json: string, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
-    };
+    }
 }
 
 /**
@@ -950,4 +950,4 @@ interface IGLTFValidationOptions {
  */
 interface IGLTFValidatorTypings {
     validateString: (json: string, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
-};
+}
