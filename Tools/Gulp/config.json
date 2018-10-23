@@ -1509,6 +1509,7 @@
         "viewer-assets"
     ],
     "core": {
+        "isCore": true,
         "libraries": [
             {
                 "output": "babylon.js",

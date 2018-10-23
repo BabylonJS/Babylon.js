@@ -50,7 +50,7 @@ gulp.task("watch", function startWatch() {
 
                 tasks.push(gulp.src(settings.srcDirectory + "**/*.fx")
                     .pipe(uncommentShaders())
-                    .pipe(processShaders())
+                    .pipe(processShaders(config[module].isCore))
                 );
 
                 tasks.push(
@@ -58,7 +58,7 @@ gulp.task("watch", function startWatch() {
                         console.log(library.output + ": Shaders.");
                         gulp.src(settings.srcDirectory + "**/*.fx")
                             .pipe(uncommentShaders())
-                            .pipe(processShaders());
+                            .pipe(processShaders(config[module].isCore));
                     })
                 );
             }

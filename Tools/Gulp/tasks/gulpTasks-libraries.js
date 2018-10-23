@@ -21,7 +21,7 @@ var config = require("../config.json");
 var buildShaders = function(settings) {
     return gulp.src(settings.build.srcDirectory + "**/*.fx")
             .pipe(uncommentShaders())
-            .pipe(processShaders());
+            .pipe(processShaders(settings.isCore));
 }
 
 /**
