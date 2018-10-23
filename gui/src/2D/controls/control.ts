@@ -1,7 +1,7 @@
 import { Container } from "./container";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
-import { Nullable, Observer, Vector2, AbstractMesh, Observable, Vector3, Scene, Tools, Matrix, PointerEventTypes, ClipboardInfo } from "babylonjs";
+import { Nullable, Observer, Vector2, AbstractMesh, Observable, Vector3, Scene, Tools, Matrix, PointerEventTypes, ClipboardInfo, ClipboardEventTypes } from "babylonjs";
 import { Measure } from "../measure";
 import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
@@ -80,8 +80,6 @@ export class Control {
     protected _disabledColor = "#9a9a9a";
     /** @hidden */
     public _tag: any;
-    /** @hidden */
-    private _clipboardData: DataTransfer;
 
     /** Gets or sets a boolean indicating if the control can be hit with pointer events */
     public isHitTestVisible = true;
@@ -157,6 +155,9 @@ export class Control {
    */
     public onAfterDrawObservable = new Observable<Control>();
 
+    /** Observable raised when the clipboard event is raised */
+    public onClipboardObservable: Nullable<Observer<ClipboardInfo>>;
+
     /** Gets or set information about font offsets (used to render and align text) */
     public get fontOffset(): { ascent: number, height: number, descent: number } {
         return this._fontOffset;
@@ -164,15 +165,6 @@ export class Control {
 
     public set fontOffset(offset: { ascent: number, height: number, descent: number }) {
         this._fontOffset = offset;
-    }
-
-     /** Gets or set information about font offsets (used to render and align text) */
-     public get clipboardData(): DataTransfer {
-        return this._clipboardData;
-    }
-
-    public set clipboardData(data: DataTransfer) {
-        this._clipboardData = data;
     }
 
     /** Gets or sets alpha value for the control (1 means opaque and 0 means entirely transparent) */
@@ -1380,54 +1372,39 @@ export class Control {
         return false;
     }
 
-     /** @hidden */
-    public onClipboardCopy(evt: ClipboardEvent): void {
-        console.log(this._clipboardData!, "copy");
+    /** @hidden */
+    private onClipboardCopy = (evt: ClipboardEvent) => {
+        let ev = new ClipboardInfo(ClipboardEventTypes.COPY, evt);
+        this._host.onClipboardObserver.notifyObservers(ev);
         evt.preventDefault();
     }
      /** @hidden */
-    public onClipboardCut(evt: ClipboardEvent): void {
-        console.log("Cut ! " + this._clipboardData.getData("text/plain"));
+    private onClipboardCut = (evt: ClipboardEvent) => {
+        let ev = new ClipboardInfo(ClipboardEventTypes.CUT, evt);
+        this._host.onClipboardObserver.notifyObservers(ev);
         evt.preventDefault();
     }
-     /** @hidden */
-    public onClipboardPaste(evt: ClipboardEvent): void {
-        if (evt.clipboardData.types.indexOf('text/plain') > -1) {
-            var text = evt.clipboardData.getData('text/plain');
-            console.log(text);
-            evt.preventDefault();
-          }
+    /** @hidden */
+    private onClipboardPaste = (evt: ClipboardEvent) => {
+        let ev = new ClipboardInfo(ClipboardEventTypes.PASTE, evt);
+        this._host.onClipboardObserver.notifyObservers(ev);
     }
 
    /**
      * @hidden
      */
     protected registerClipboardEvents(): void {
-        //binds the current focusedControl item to actions
-        this.onClipboardCopy = this.onClipboardCopy.bind(this);
-        this.onClipboardCut = this.onClipboardCut.bind(this);
-        this.onClipboardPaste = this.onClipboardPaste.bind(this);
-
-        document.addEventListener("copy", this.onClipboardCopy, false);
-        document.addEventListener("cut", this.onClipboardCut, false);
-        document.addEventListener("paste", this.onClipboardPaste, false);
+        self.addEventListener("copy", this.onClipboardCopy, false);
+        self.addEventListener("cut", this.onClipboardCut, false);
+        self.addEventListener("paste", this.onClipboardPaste, false);
     }
     /**
      * @hidden
      */
     protected unRegisterClipboardEvents(): void {
-        document.removeEventListener("copy", this.onClipboardCopy);
-        document.removeEventListener("cut", this.onClipboardCut);
-        document.removeEventListener("paste", this.onClipboardPaste);
-    }
-
-    /**
-     * @hidden dispatchClipboardEvent
-    */
-    protected dispatchClipboardEvent(event: ClipboardInfo): void {
-            // custom copy as navigator.clipboard as well as clipboardData in ClipboardInit not supported!
-            this._clipboardData = event.clipboardData;
-            document.dispatchEvent(event.event);
+        self.removeEventListener("copy", this.onClipboardCopy);
+        self.removeEventListener("cut",  this.onClipboardCut);
+        self.removeEventListener("paste", this.onClipboardPaste);
     }
 
     private _prepareFont() {

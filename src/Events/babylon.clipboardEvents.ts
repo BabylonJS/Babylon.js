@@ -30,7 +30,6 @@ module BABYLON {
          *Creates an instance of ClipboardInfo.
          * @param {number} type
          * @param {ClipboardEvent} event
-         * @memberof ClipboardInfo
          */
         constructor(
             /**
@@ -66,13 +65,13 @@ module BABYLON {
             this._clipboardData = value;
         }
 
-        /**
-         * This method is used to get the clipboard event type from the event.key
-         * @param {KeyboardEvent} e  triggered keyboard event
-         * @returns {number} clipboard event type (BABYLON.ClipboardEventTypes)
-         */
-        public static GetTypeFromCharacter(e: KeyboardEvent): number {
-            let charCode = (typeof e.which == "number") ? e.which : e.keyCode;
+       /**
+        *  Get the clipboard event's type from the keycode.
+        * @param keyCode
+        * @return {number}
+        */
+        public static GetTypeFromCharacter(keyCode: number): number {
+            let charCode = keyCode;
             //TODO: add codes for extended ASCII
             switch (charCode){
                 case 67: return ClipboardEventTypes.COPY;
