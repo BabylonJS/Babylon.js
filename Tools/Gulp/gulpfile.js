@@ -14,6 +14,15 @@ require("./tasks/gulpTasks-typedoc");
 require("./tasks/gulpTasks-intellisense");
 require("./tasks/gulpTasks-tests");
 
+// Import Build Config
+var config = require("./config.json");
+
+/**
+ * Full TsLint.
+ * Back Compat Only, now included in typescript-libraries-tsLint.
+ */
+gulp.task("tsLint", gulp.series("typescript-libraries-tsLint"));
+
 /**
  * Build the releasable files.
  * Back Compat Only, now name core as it is a lib

@@ -23,17 +23,6 @@ var config = require("../config.json");
 /*
  * TsLint all typescript files from the src directory.
  */
-gulp.task("typescript-tsLint", function() {
-    const dtsFilter = filter(['**', '!**/*.d.ts', '!**/*.fragment.ts', '!**/*.vertex.ts', '!**/ShadersInclude/**'], { restore: false });
-    return gulp.src(config.typescript)
-        .pipe(dtsFilter)
-        .pipe(gulpTslint(tsLintConfig))
-        .pipe(gulpTslint.report());
-});
-
-/*
- * TsLint all typescript files from the src directory.
- */
 var tsLintExternalLibrary = function(library, settings, watch) {
     const fxFilter = filter(['**', '!**/*.fragment.ts', '!**/*.vertex.ts', '!**/ShadersInclude/**'], { restore: false });
     return gulp.src((settings.build.srcDirectory) + "/**/*.ts")
@@ -67,8 +56,3 @@ gulp.task("typescript-libraries-tsLint",
         return module + "-tsLint";
     })
 ));
-
-/**
- * Full TsLint.
- */
-gulp.task("tsLint", gulp.series("typescript-tsLint", "typescript-libraries-tsLint"));
