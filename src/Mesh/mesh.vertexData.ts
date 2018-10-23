@@ -1,3 +1,6 @@
+import { Nullable, FloatArray, IndicesArray } from "types";
+import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "Math";
+import { Mesh, Geometry, VertexBuffer } from "Mesh";
     /**
      * Define an interface for all classes that will get and set the data on vertices
      */
@@ -223,7 +226,7 @@
          * @param makeItUnique when true, and when and if position kind is updated, a new global geometry will be  created from these positions and set to the mesh, optional with default false
          * @returns VertexData
          */
-        public updateMesh(mesh: Mesh, updateExtends?: boolean, makeItUnique?: boolean): VertexData {
+        public updateMesh(mesh: Mesh): VertexData {
             this._update(mesh);
             return this;
         }
@@ -235,7 +238,7 @@
          * @param makeItUnique when true, and when and if position kind is updated, a new global geometry will be created from these positions and set to the mesh, optional with default false
          * @returns VertexData.
          */
-        public updateGeometry(geometry: Geometry, updateExtends?: boolean, makeItUnique?: boolean): VertexData {
+        public updateGeometry(geometry: Geometry): VertexData {
             this._update(geometry);
             return this;
         }
@@ -2977,4 +2980,4 @@
 
             geometry.setAllVerticesData(vertexData, parsedVertexData.updatable);
         }
-    }
+    }

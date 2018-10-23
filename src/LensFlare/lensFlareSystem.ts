@@ -1,3 +1,15 @@
+import { Tools } from "Tools";
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Matrix, Vector3, Color3, Viewport, Scalar } from "Math";
+import { Engine } from "Engine";
+import { AbstractMesh, VertexBuffer } from "Mesh";
+import { Ray } from "Culling";
+import { Material, Effect } from "Materials";
+import { SceneComponentConstants } from "sceneComponent";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { LensFlare, LensFlareSystemSceneComponent } from "LensFlare";
     /**
      * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
      * It is usually composed of several `BABYLON.lensFlare`.
@@ -398,4 +410,4 @@
 
             return serializationObject;
         }
-    }
+    }

@@ -1,3 +1,8 @@
+import { GamepadCamera } from "Cameras";
+import { Scene } from "scene";
+import { Vector3 } from "Math";
+import {Node} from "Node";
+
     Node.AddNodeConstructor("AnaglyphGamepadCamera", (name, scene, options) => {
         return () => new AnaglyphGamepadCamera(name, Vector3.Zero(), options.interaxial_distance, scene);
     });
@@ -27,4 +32,4 @@
         public getClassName(): string {
             return "AnaglyphGamepadCamera";
         }
-    }
+    }

@@ -1,3 +1,6 @@
+import { Sound } from "Audio";
+import { Tools } from "Tools";
+
     /**
      * Wraps one or more Sound objects and selects one with random weight for playback.
      */

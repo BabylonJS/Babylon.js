@@ -1,3 +1,6 @@
+import { Nullable } from "types";
+import { ICameraInput, CameraInputTypes, FreeCamera } from "Cameras";
+import { Quaternion } from "Math";
     /**
      * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
      * Screen rotation is taken into account.

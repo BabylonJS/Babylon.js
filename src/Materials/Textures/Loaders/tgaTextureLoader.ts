@@ -1,3 +1,9 @@
+import { TGATools } from "Tools";
+import { Nullable } from "types";
+import { Engine } from "Engine";
+import { IInternalTextureLoader, InternalTexture } from "Materials";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Implementation of the TGA Texture Loader.
      */
@@ -70,4 +76,4 @@
     }
 
     // Register the loader.
-    Engine._TextureLoaders.push(new TGATextureLoader());
+    Engine._TextureLoaders.push(new TGATextureLoader());

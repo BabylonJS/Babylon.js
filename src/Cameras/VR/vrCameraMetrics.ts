@@ -1,4 +1,5 @@
-﻿    /**
+﻿import { Matrix } from "Math";
+    /**
      * This represents all the required metrics to create a VR camera.
      * @see http://doc.babylonjs.com/babylon101/cameras#device-orientation-camera
      */
@@ -128,4 +129,4 @@
 
             return result;
         }
-    }
+    }

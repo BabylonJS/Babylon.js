@@ -1,3 +1,11 @@
+import { Observer } from "Tools";
+import { Nullable } from "types";
+import { Camera } from "Cameras";
+import { Scene } from "scene";
+import { Matrix, Vector3, Vector2, Plane } from "Math";
+import { Engine } from "Engine";
+import { ImageProcessingConfiguration, RenderTargetTexture, Texture } from "Materials";
+import { BlurPostProcess } from "PostProcess";
     /**
      * Mirror texture can be used to simulate the view from a mirror in a scene.
      * It will dynamically be rendered every frame to adapt to the camera point of view.
@@ -265,4 +273,4 @@
             super.dispose();
             this.scene.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigChangeObserver);
         }
-    }
+    }

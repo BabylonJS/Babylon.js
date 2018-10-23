@@ -1,3 +1,10 @@
+import { serialize, Observer, SmartArray, SerializationHelper, serializeAsColor3, expandToProperty, IAnimatable, serializeAsTexture, serializeAsFresnelParameters } from "Tools";
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Matrix, Color3 } from "Math";
+import { Engine } from "Engine";
+import { Mesh, AbstractMesh, VertexBuffer, SubMesh } from "Mesh";
+import { ImageProcessingConfiguration, RenderTargetTexture, Material, Texture, BaseTexture, CubeTexture, MaterialHelper, IImageProcessingConfigurationDefines, PushMaterial, ColorCurves, EffectFallbacks, EffectCreationOptions, MaterialDefines, FresnelParameters } from "Materials";
     /** @hidden */
     export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         public MAINUV1 = false;
@@ -514,7 +521,7 @@
 
             // Attaches observer.
             if (this._imageProcessingConfiguration) {
-                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add((conf) => {
+                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(() => {
                     this._markAllSubMeshesAsImageProcessingDirty();
                 });
             }

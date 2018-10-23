@@ -1,3 +1,8 @@
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { AbstractMesh, BaseSubMesh } from "Mesh";
+import { Material, BaseTexture } from "Materials";
+import { Tags } from "Tools";
     /**
      * A multi-material is used to apply different materials to different parts of the same object without the need of
      * separate meshes. This can be use to improve performances.
@@ -188,4 +193,4 @@
 
             super.dispose(forceDisposeEffect, forceDisposeTextures);
         }
-    }
+    }

@@ -1,3 +1,9 @@
+import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture } from "Tools";
+import { Scene } from "scene";
+import { Color3 } from "Math";
+import { BaseTexture, PBRBaseMaterial } from "Materials";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * The Physically based simple base material of BJS.
      *
@@ -173,4 +179,4 @@
         public getClassName(): string {
             return "PBRBaseSimpleMaterial";
         }
-    }
+    }

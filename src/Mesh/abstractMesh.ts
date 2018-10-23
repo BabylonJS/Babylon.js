@@ -1,3 +1,19 @@
+import { Observer, Observable, Tools } from "Tools";
+import { Nullable, FloatArray, IndicesArray } from "types";
+import { Camera } from "Cameras";
+import { Scene, IDisposable } from "scene";
+import { Quaternion, Matrix, Vector3, Color3, Color4, Plane, Tmp, Epsilon, Axis } from "Math";
+import { Engine } from "Engine";
+import {Node} from "Node";
+import { InstancedMesh, VertexBuffer, TransformNode, SubMesh, LinesMesh, IGetSetVerticesData, VertexData } from "Mesh";
+import { PickingInfo, Collider, IntersectionInfo } from "Collisions";
+import { Ray, ICullable, BoundingInfo } from "Culling";
+import { Material, MaterialDefines } from "Materials";
+import { Light } from "Lights";
+import { ActionManager } from "Actions";
+import { Skeleton } from "Bones";
+import { IEdgesRenderer } from "Rendering";
+import { SolidParticle } from "Particles";
     /** @hidden */
     class _FacetDataStorage {
         // facetData private properties

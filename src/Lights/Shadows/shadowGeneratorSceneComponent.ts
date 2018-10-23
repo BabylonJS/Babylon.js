@@ -1,5 +1,13 @@
+import { SmartArrayNoDuplicate } from "Tools";
+import { Scene } from "scene";
+import { RenderTargetTexture } from "Materials";
+import { ShadowGenerator } from "Lights";
+import { SceneComponentConstants, ISceneSerializableComponent } from "sceneComponent";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { AbstractScene } from "abstractScene";
     // Adds the parser to the scene parsers.
-    AbstractScene.AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
+    AbstractScene.AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedData: any, scene: Scene) => {
         // Shadows
         if (parsedData.shadowGenerators !== undefined && parsedData.shadowGenerators !== null) {
             for (var index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
@@ -105,4 +113,4 @@
                 }
             }
         }
-    }
+    }

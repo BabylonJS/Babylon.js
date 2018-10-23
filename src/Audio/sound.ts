@@ -1,3 +1,18 @@
+import { Observable, Tools } from "Tools";
+
+import { Vector3, Tmp } from "Math";
+
+import { Nullable } from "types";
+
+import { Scene } from "scene";
+
+import { Engine } from "Engine";
+
+import { AudioSceneComponent } from "Audio";
+
+import { TransformNode, AbstractMesh } from "Mesh";
+import { SceneComponentConstants } from "sceneComponent";
+
     /**
      * Defines a sound that can be played in the application.
      * The sound can either be an ambient track or a simple sound played in reaction to a user action.

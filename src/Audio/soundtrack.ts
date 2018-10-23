@@ -1,3 +1,8 @@
+import { Sound, Analyser } from "Audio";
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Engine } from "Engine";
+
     /**
      * Options allowed during the creation of a sound track.
      */
@@ -172,4 +177,4 @@
                 this._connectedAnalyser.connectAudioNodes(this._outputAudioNode, Engine.audioEngine.masterGain);
             }
         }
-    }
+    }

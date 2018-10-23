@@ -1,3 +1,10 @@
+import { ISmartArrayLike } from "Tools";
+import { Scene } from "scene";
+import { Vector3 } from "Math";
+import { AbstractMesh, SubMesh } from "Mesh";
+import { Collider } from "Collisions";
+import { Ray, Octree } from "Culling";
+import { SceneComponentConstants } from "sceneComponent";
     export interface Scene {
         /**
          * @hidden

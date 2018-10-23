@@ -1,3 +1,6 @@
+import { Scene } from "scene";
+import { Engine } from "Engine";
+import { RenderTargetTexture, Texture, InternalTexture, IMultiRenderTargetOptions } from "Materials";
     /**
      * Creation options of the multi render target texture.
      */

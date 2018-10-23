@@ -1,3 +1,7 @@
+import { Tools } from "Tools";
+import { Nullable } from "types";
+import { Engine } from "Engine";
+import { IOfflineProvider } from "Offline";
     // Sets the default offline provider to Babylon.js
     Engine.OfflineProviderFactory = (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck = false) => { return new Database(urlToScene, callbackManifestChecked, disableManifestCheck); };
 
@@ -133,7 +137,7 @@
                 }
             }, false);
 
-            xhr.addEventListener("error", (event) => {
+            xhr.addEventListener("error", () => {
                 if (timeStampUsed) {
                     timeStampUsed = false;
                     // Let's retry without the timeStamp
@@ -181,18 +185,18 @@
                     var request: IDBOpenDBRequest = this._idbFactory.open("babylonjs", 1);
 
                     // Could occur if user is blocking the quota for the DB and/or doesn't grant access to IndexedDB
-                    request.onerror = (event) => {
+                    request.onerror = () => {
                         handleError();
                     };
 
                     // executes when a version change transaction cannot complete due to other active transactions
-                    request.onblocked = (event) => {
+                    request.onblocked = () => {
                         Tools.Error("IDB request blocked. Please reload the page.");
                         handleError();
                     };
 
                     // DB has been opened successfully
-                    request.onsuccess = (event) => {
+                    request.onsuccess = () => {
                         this._db = request.result;
                         successCallback();
                     };
@@ -254,16 +258,15 @@
                 var texture: any;
                 var transaction: IDBTransaction = this._db.transaction(["textures"]);
 
-                transaction.onabort = (event) => {
+                transaction.onabort = () => {
                     image.src = url;
                 };
 
-                transaction.oncomplete = (event) => {
+                transaction.oncomplete = () => {
                     var blobTextureURL: string;
                     if (texture) {
                         var URL = window.URL || window.webkitURL;
                         blobTextureURL = URL.createObjectURL(texture.data);
-
                         image.onerror = () => {
                             Tools.Error("Error loading image from blob URL: " + blobTextureURL + " switching back to web url: " + url);
                             image.src = url;
@@ -280,7 +283,7 @@
                 getRequest.onsuccess = (event) => {
                     texture = (<any>(event.target)).result;
                 };
-                getRequest.onerror = (event) => {
+                getRequest.onerror = () => {
                     Tools.Error("Error loading texture " + url + " from DB.");
                     image.src = url;
                 };
@@ -341,7 +344,7 @@
                                 generateBlobUrl();
                             };
 
-                            transaction.oncomplete = (event) => {
+                            transaction.oncomplete = () => {
                                 generateBlobUrl();
                             };
 
@@ -350,9 +353,9 @@
                             try {
                                 // Put the blob into the dabase
                                 var addRequest = transaction.objectStore("textures").put(newTexture);
-                                addRequest.onsuccess = (event) => {
+                                addRequest.onsuccess = () => {
                                 };
-                                addRequest.onerror = (event) => {
+                                addRequest.onerror = () => {
                                     generateBlobUrl();
                                 };
                             }
@@ -370,7 +373,7 @@
                         }
                     }, false);
 
-                    xhr.addEventListener("error", (event) => {
+                    xhr.addEventListener("error", () => {
                         Tools.Error("Error in XHR request in BABYLON.Database.");
                         image.src = url;
                     }, false);
@@ -401,7 +404,7 @@
                 try {
                     var transaction = this._db.transaction(["versions"]);
 
-                    transaction.oncomplete = (event) => {
+                    transaction.oncomplete = () => {
                         if (version) {
                             // If the version in the JSON file is different from the version in DB
                             if (this._manifestVersionFound !== version.data) {
@@ -419,7 +422,7 @@
                         }
                     };
 
-                    transaction.onabort = (event) => {
+                    transaction.onabort = () => {
                         callback(-1);
                     };
 
@@ -428,7 +431,7 @@
                     getRequest.onsuccess = (event) => {
                         version = (<any>(event.target)).result;
                     };
-                    getRequest.onerror = (event) => {
+                    getRequest.onerror = () => {
                         Tools.Error("Error loading version for scene " + url + " from DB.");
                         callback(-1);
                     };
@@ -462,7 +465,7 @@
                         callback(-1);
                     };
 
-                    transaction.oncomplete = (event) => {
+                    transaction.oncomplete = () => {
                         callback(this._manifestVersionFound);
                     };
 
@@ -470,9 +473,9 @@
 
                     // Put the scene into the database
                     var addRequest = transaction.objectStore("versions").put(newVersion);
-                    addRequest.onsuccess = (event) => {
+                    addRequest.onsuccess = () => {
                     };
-                    addRequest.onerror = (event) => {
+                    addRequest.onerror = () => {
                         Tools.Error("Error in DB add version request in BABYLON.Database.");
                     };
                 }
@@ -505,7 +508,7 @@
             this._checkVersionFromDB(completeUrl, (version) => {
                 if (version !== -1) {
                     if (!this._mustUpdateRessources) {
-                        this._loadFileAsync(completeUrl, sceneLoaded, saveAndLoadFile, useArrayBuffer);
+                        this._loadFileAsync(completeUrl, sceneLoaded, saveAndLoadFile);
                     }
                     else {
                         this._saveFileAsync(completeUrl, sceneLoaded, progressCallBack, useArrayBuffer, errorCallback);
@@ -519,7 +522,7 @@
             });
         }
 
-        private _loadFileAsync(url: string, callback: (data?: any) => void, notInDBCallback: () => void, useArrayBuffer?: boolean) {
+        private _loadFileAsync(url: string, callback: (data?: any) => void, notInDBCallback: () => void) {
             if (this._isSupported && this._db) {
                 var targetStore: string;
                 if (url.indexOf(".babylon") !== -1) {
@@ -532,7 +535,7 @@
                 var file: any;
                 var transaction = this._db.transaction([targetStore]);
 
-                transaction.oncomplete = (event) => {
+                transaction.oncomplete = () => {
                     if (file) {
                         callback(file.data);
                     }
@@ -542,7 +545,7 @@
                     }
                 };
 
-                transaction.onabort = (event) => {
+                transaction.onabort = () => {
                     notInDBCallback();
                 };
 
@@ -551,7 +554,7 @@
                 getRequest.onsuccess = (event) => {
                     file = (<any>(event.target)).result;
                 };
-                getRequest.onerror = (event) => {
+                getRequest.onerror = () => {
                     Tools.Error("Error loading file " + url + " from DB.");
                     notInDBCallback();
                 };
@@ -607,7 +610,7 @@
                                 callback(fileData);
                             };
 
-                            transaction.oncomplete = (event) => {
+                            transaction.oncomplete = () => {
                                 callback(fileData);
                             };
 
@@ -622,9 +625,9 @@
                             try {
                                 // Put the scene into the database
                                 var addRequest = transaction.objectStore(targetStore).put(newFile);
-                                addRequest.onsuccess = (event) => {
+                                addRequest.onsuccess = () => {
                                 };
-                                addRequest.onerror = (event) => {
+                                addRequest.onerror = () => {
                                     Tools.Error("Error in DB add file request in BABYLON.Database.");
                                 };
                             }
@@ -645,7 +648,7 @@
                     }
                 }, false);
 
-                xhr.addEventListener("error", (event) => {
+                xhr.addEventListener("error", () => {
                     Tools.Error("error on XHR request.");
                     callback();
                 }, false);

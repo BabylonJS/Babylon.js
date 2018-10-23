@@ -1,3 +1,13 @@
+import { Observer, Observable, Tools, SmartArray } from "Tools";
+import { Nullable } from "types";
+import { Camera } from "Cameras";
+import { Scene } from "scene";
+import { Matrix, Vector3, Color4 } from "Math";
+import { Engine, RenderTargetCreationOptions } from "Engine";
+import { AbstractMesh, SubMesh } from "Mesh";
+import { Material, Texture, InternalTexture } from "Materials";
+import { PostProcess } from "PostProcess";
+import { RenderingManager } from "Rendering";
     /**
      * This Helps creating a texture that will be created from a camera in your scene.
      * It is basically a dynamic texture that could be used to create special effects for instance.
@@ -679,12 +689,12 @@
 
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
-                    this.renderToTarget(face, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug);
+                    this.renderToTarget(face, currentRenderList, useCameraPostProcess, dumpForDebug);
                     scene.incrementRenderId();
                     scene.resetCachedMaterial();
                 }
             } else {
-                this.renderToTarget(0, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug);
+                this.renderToTarget(0, currentRenderList, useCameraPostProcess, dumpForDebug);
             }
 
             this.onAfterUnbindObservable.notifyObservers(this);
@@ -717,7 +727,7 @@
             });
         }
 
-        private renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], currentRenderListLength: number, useCameraPostProcess: boolean, dumpForDebug: boolean): void {
+        private renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], useCameraPostProcess: boolean, dumpForDebug: boolean): void {
             var scene = this.getScene();
 
             if (!scene) {

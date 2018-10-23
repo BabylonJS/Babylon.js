@@ -1,3 +1,10 @@
+import { DDSTools, DDSInfo } from "Tools";
+import { Nullable } from "types";
+import { SphericalPolynomial } from "Math";
+import { Engine } from "Engine";
+import { IInternalTextureLoader, InternalTexture } from "Materials";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Implementation of the DDS Texture Loader.
      */
@@ -118,4 +125,4 @@
     }
 
     // Register the loader.
-    Engine._TextureLoaders.push(new DDSTextureLoader());
+    Engine._TextureLoaders.push(new DDSTextureLoader());

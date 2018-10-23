@@ -1,3 +1,7 @@
+import { FreeCamera, FreeCameraTouchInput, FreeCameraMouseInput } from "Cameras";
+import { Scene } from "scene";
+import { Vector3 } from "Math";
+import {Node} from "Node";
     Node.AddNodeConstructor("TouchCamera", (name, scene) => {
         return () => new TouchCamera(name, Vector3.Zero(), scene);
     });
@@ -79,4 +83,4 @@
                 mouse.touchEnabled = false;
             }
         }
-    }
+    }

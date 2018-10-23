@@ -1,3 +1,9 @@
+import { serialize, Observer } from "Tools";
+import { Nullable } from "types";
+import { ICameraInput, CameraInputTypes, FreeCamera } from "Cameras";
+import { Matrix, Vector3, Vector2 } from "Math";
+import {Gamepad} from "Gamepad"
+
     /**
      * Manage the gamepad inputs to control a free camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -127,4 +133,4 @@
         }
     }
 
-    (<any>CameraInputTypes)["FreeCameraGamepadInput"] = FreeCameraGamepadInput;
+    (<any>CameraInputTypes)["FreeCameraGamepadInput"] = FreeCameraGamepadInput;

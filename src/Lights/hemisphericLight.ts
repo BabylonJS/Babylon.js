@@ -1,3 +1,12 @@
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Matrix, Vector3, Color3 } from "Math";
+import {ArcRotateCameraInputsManager} from "Gamepad";
+import {Node} from "Node";
+import { Effect } from "Materials";
+import { Light } from "Lights";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     Node.AddNodeConstructor("Light_Type_3", (name, scene) => {
         return () => new HemisphericLight(name, Vector3.Zero(), scene);
     });
@@ -95,7 +104,7 @@
          * @param useWasUpdatedFlag defines a reserved property
          * @returns the world matrix
          */
-        public computeWorldMatrix(force?: boolean, useWasUpdatedFlag?: boolean): Matrix {
+        public computeWorldMatrix(): Matrix {
             if (!this._worldMatrix) {
                 this._worldMatrix = Matrix.Identity();
             }
@@ -118,4 +127,4 @@
         public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
             defines["HEMILIGHT" + lightIndex] = true;
         }
-    }
+    }

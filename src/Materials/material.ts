@@ -1,3 +1,11 @@
+import { serialize, Observer, Observable, Tools, SmartArray, SerializationHelper, IAnimatable, Tags } from "Tools";
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Plane } from "Math";
+import { Engine } from "Engine";
+import { Mesh, AbstractMesh, Geometry, BaseSubMesh } from "Mesh";
+import { StandardMaterial, RenderTargetTexture, UniformBuffer, Effect, BaseTexture, MultiMaterial } from "Materials";
+import { Animation } from "Animations";
     /**
      * Manages the defines for the Material
      */
@@ -848,7 +856,7 @@
          * @param useInstances specifies if instances should be used
          * @returns a boolean indicating if the material is ready to be used
          */
-        public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
+        public isReady(): boolean {
             return true;
         }
 
@@ -859,7 +867,7 @@
          * @param useInstances specifies that instances should be used
          * @returns a boolean indicating that the submesh is ready or not
          */
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
+        public isReadyForSubMesh(): boolean {
             return false;
         }
 
@@ -937,7 +945,7 @@
          * @param world defines the world transformation matrix
          * @param mesh defines the mesh to bind the material to
          */
-        public bind(world: Matrix, mesh?: Mesh): void {
+        public bind(): void {
         }
 
         /**
@@ -946,14 +954,14 @@
          * @param mesh defines the mesh containing the submesh
          * @param subMesh defines the submesh to bind the material to
          */
-        public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+        public bindForSubMesh(): void {
         }
 
         /**
          * Binds the world matrix to the material
          * @param world defines the world transformation matrix
          */
-        public bindOnlyWorldMatrix(world: Matrix): void {
+        public bindOnlyWorldMatrix(): void {
         }
 
         /**
@@ -1047,7 +1055,7 @@
          * @param texture defines the texture to check against the material
          * @returns a boolean specifying if the material uses the texture
          */
-        public hasTexture(texture: BaseTexture): boolean {
+        public hasTexture(): boolean {
             return false;
         }
 
@@ -1056,7 +1064,7 @@
          * @param name defines the new name for the duplicated material
          * @returns the cloned material
          */
-        public clone(name: string): Nullable<Material> {
+        public clone(): Nullable<Material> {
             return null;
         }
 
@@ -1112,7 +1120,7 @@
                 }
 
                 if (this._storeEffectOnSubMeshes) {
-                    if (this.isReadyForSubMesh(mesh, subMesh)) {
+                    if (this.isReadyForSubMesh()) {
                         if (onCompiled) {
                             onCompiled(this);
                         }
@@ -1121,7 +1129,7 @@
                         setTimeout(checkReady, 16);
                     }
                 } else {
-                    if (this.isReady(mesh)) {
+                    if (this.isReady()) {
                         if (onCompiled) {
                             onCompiled(this);
                         }
@@ -1305,7 +1313,7 @@
          * @param forceDisposeTextures specifies if textures should be forcefully disposed
          * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to any mesh
          */
-        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
+        public dispose(forceDisposeEffect?: boolean, notBoundToMesh?: boolean): void {
             const scene = this.getScene();
             // Animations
             scene.stopAnimation(this);

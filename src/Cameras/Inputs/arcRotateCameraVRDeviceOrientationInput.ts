@@ -1,3 +1,6 @@
+import { Nullable } from "types";
+import { ICameraInput, ArcRotateCamera, CameraInputTypes } from "Cameras";
+
     /**
      * Manage the device orientation inputs (gyroscope) to control an arc rotate camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs

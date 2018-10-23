@@ -1,3 +1,7 @@
+import { Observable } from "Tools";
+import {Gamepad} from "Gamepad"
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Defines supported buttons for XBox360 compatible gamepads
      */
