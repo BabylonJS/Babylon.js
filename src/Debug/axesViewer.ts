@@ -1,9 +1,9 @@
-/**
- * Module Debug contains the (visual) components to debug a scene correctly
- */
-module BABYLON.Debug {
+import { Vector3, Color3 } from "Math";
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { LinesMesh, Mesh } from "Mesh";
 
-    /**
+/**
      * The Axes viewer will show 3 axes in a specific point in space
      */
     export class AxesViewer {
@@ -117,4 +117,3 @@ module BABYLON.Debug {
         }
 
     }
-}

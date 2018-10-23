@@ -1,5 +1,18 @@
-module BABYLON.Debug {
-    /**
+import { Color3, Vector3, Matrix, Tmp } from "Math";
+
+import { Scene } from "scene";
+
+import { Nullable } from "types";
+
+import { LinesMesh } from "Mesh";
+
+import { Skeleton, Bone } from "Bones";
+
+import { AbstractMesh } from "Mesh";
+
+import { UtilityLayerRenderer } from "index";
+
+/**
      * Class used to render a debug view of a given skeleton
      * @see http://www.babylonjs-playground.com/#1BZJVJ#8
      */
@@ -160,4 +173,3 @@ module BABYLON.Debug {
             }
         }
     }
-}
