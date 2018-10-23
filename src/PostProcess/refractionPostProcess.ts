@@ -1,3 +1,8 @@
+import { Color3 } from "Math";
+import { Camera } from "Cameras";
+import { Effect, Texture } from "Materials";
+import { PostProcess, PostProcessOptions } from "PostProcess";
+import { Engine } from "Engine";
     /**
      * Post process which applies a refractin texture
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#refraction
@@ -80,4 +85,4 @@
 
             super.dispose(camera);
         }
-    }
+    }

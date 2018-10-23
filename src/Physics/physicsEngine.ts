@@ -1,3 +1,6 @@
+import { Nullable } from "types";
+import { Vector3 } from "Math";
+import { IPhysicsEngine, PhysicsImpostor, PhysicsImpostorJoint, IPhysicsEnginePlugin, CannonJSPlugin, PhysicsJoint, IPhysicsEnabledObject } from "Physics";
     /**
      * Class used to control physics engine
      * @see http://doc.babylonjs.com/how_to/using_the_physics_engine

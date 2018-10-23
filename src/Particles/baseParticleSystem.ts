@@ -1,3 +1,11 @@
+import { Nullable } from "types";
+import { Color4, Vector2, Vector3 } from "Math";
+import { AbstractMesh } from "Mesh";
+import { ImageProcessingConfiguration, Texture, ProceduralTexture, ImageProcessingConfigurationDefines, RawTexture } from "Materials";
+import { Scene } from "scene";
+import { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "Tools";
+import { BoxParticleEmitter, IParticleEmitterType, ParticleSystem, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, CylinderDirectedParticleEmitter, ConeParticleEmitter } from "Particles";
+    
     /**
      * This represents the base class for particle system in Babylon.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -716,4 +724,4 @@
             this.maxEmitBox = maxEmitBox;
             return particleEmitter;
         }
-    }
+    }

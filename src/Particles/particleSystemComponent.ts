@@ -1,3 +1,11 @@
+import { Mesh } from "Mesh";
+import { IParticleSystem } from "Particles";
+import { AbstractScene } from "abstractScene";
+import { Effect } from "Materials";
+import { Engine } from "Engine";
+import { ParticleSystem } from "Particles";
+import { Scene } from "scene";
+import { SceneComponentConstants } from "sceneComponent";
     // Adds the parsers to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
 
@@ -107,4 +115,4 @@
         }
 
         return results;
-    };
+    };

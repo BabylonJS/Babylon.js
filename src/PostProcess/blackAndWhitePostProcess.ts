@@ -1,3 +1,7 @@
+import { PostProcess, PostProcessOptions } from "PostProcess";
+import { Camera } from "Cameras";
+import { Effect } from "Materials";
+
     /**
      * Post process used to render in black and white
      */
@@ -24,4 +28,4 @@
                 effect.setFloat("degree", this.degree);
             });
         }
-    }
+    }

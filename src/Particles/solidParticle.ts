@@ -1,3 +1,8 @@
+import { Nullable } from "types";
+import { Color4, Vector3, Matrix, Tmp, Quaternion, Vector4 } from "Math";
+import { Mesh } from "Mesh";
+import { BoundingInfo, BoundingSphere } from "Culling";
+import { SolidParticleSystem } from "Particles";
     /**
      * Represents one particle of a solid particle system.
      */

@@ -1,3 +1,7 @@
+import { Vector3 } from "Math";
+import { Mesh, AbstractMesh } from "Mesh";
+import { ParticleSystem } from "Particles";
+import { Scene } from "scene";
     /**
      * Type of sub emitter
      */
@@ -115,4 +119,4 @@
         public dispose() {
             this.particleSystem.dispose();
         }
-    }
+    }

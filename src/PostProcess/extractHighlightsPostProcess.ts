@@ -1,3 +1,9 @@
+import { Nullable } from "types";
+import { Camera } from "Cameras";
+import { Effect } from "Materials";
+import { PostProcess, PostProcessOptions } from "PostProcess";
+import { Engine } from "Engine";
+    
     /**
      * The extract highlights post process sets all pixels to black except pixels above the specified luminance threshold. Used as the first step for a bloom effect.
      */
@@ -24,4 +30,4 @@
                 effect.setFloat('exposure', this._exposure);
             });
         }
-    }
+    }

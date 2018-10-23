@@ -1,3 +1,12 @@
+import { Nullable } from "types";
+import { Observable } from "Tools";
+import { Scene } from "scene";
+import { Sprite, ISpriteManager } from "Sprites";
+import { Ray } from "Culling";
+import { Camera } from "Cameras";
+import { PickingInfo } from "Collisions";
+import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
+
     export interface Scene {
         /** @hidden */
         _pointerOverSprite: Nullable<Sprite>;

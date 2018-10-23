@@ -1,3 +1,10 @@
+import { Tools, serialize, SerializationHelper } from "Tools";
+import { Vector3, Tmp } from "Math";
+import { Camera } from "Cameras";
+import { Effect, Texture, DynamicTexture } from "Materials";
+import { PostProcess, PostProcessRenderPipeline, Scene, PassPostProcess, PostProcessRenderEffect } from "PostProcess";
+import { Engine } from "Engine";
+import { GeometryBufferRenderer } from "index";
     /**
      * Render pipeline to produce ssao effect
      */
@@ -444,4 +451,4 @@
         public static Parse(source: any, scene: Scene, rootUrl: string): SSAO2RenderingPipeline {
             return SerializationHelper.Parse(() => new SSAO2RenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
         }
-    }
+    }

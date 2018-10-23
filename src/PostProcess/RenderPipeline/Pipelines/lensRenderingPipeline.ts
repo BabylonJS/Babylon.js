@@ -1,4 +1,7 @@
 
+import { Camera } from "Cameras";
+import { RenderTargetTexture, Effect, Texture, DynamicTexture } from "Materials";
+import { PostProcess, PostProcessRenderPipeline, Scene, PostProcessRenderEffect } from "PostProcess";
     /**
      * BABYLON.JS Chromatic Aberration GLSL Shader
      * Author: Olivier Guyot

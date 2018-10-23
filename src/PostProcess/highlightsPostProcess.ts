@@ -1,3 +1,7 @@
+import { Nullable } from "types";
+import { Camera } from "Cameras";
+import { PostProcess, PostProcessOptions } from "PostProcess";
+import { Engine } from "Engine";
     /**
      * Extracts highlights from the image
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses
@@ -17,4 +21,4 @@
         constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             super(name, "highlights", null, null, options, camera, samplingMode, engine, reusable, null, textureType);
         }
-    }
+    }

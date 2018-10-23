@@ -1,3 +1,7 @@
+import { Nullable } from "types";
+import { Camera } from "Cameras";
+import { PostProcess, PostProcessOptions } from "PostProcess";
+import { Engine } from "Engine";
     /**
      * PassPostProcess which produces an output the same as it's input
      */
@@ -16,4 +20,4 @@
         constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
             super(name, "pass", null, null, options, camera, samplingMode, engine, reusable, undefined, textureType, undefined, null, blockCompilation);
         }
-    }
+    }

@@ -1,3 +1,10 @@
+import { Nullable } from "types";
+import { Observable, Observer, Tools } from "Tools";
+import { Vector3 } from "Math";
+import { Mesh, AbstractMesh } from "Mesh";
+import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
+import { IPhysicsEngine, IPhysicsEnginePlugin, PhysicsEngine, PhysicsImpostor, PhysicsJoint } from "Physics";
+import { Scene } from "scene";
     export interface Scene {
         /** @hidden (Backing field) */
         _physicsEngine: Nullable<IPhysicsEngine>;
@@ -292,4 +299,4 @@
                 this.scene.disablePhysicsEngine();
             }
         }
-    }
+    }
