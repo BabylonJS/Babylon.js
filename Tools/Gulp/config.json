@@ -1513,11 +1513,11 @@
             {
                 "output": "babylon.js",
                 "maxOutput": "babylon.max.js",
-                "entry": "../src/Legacy/legacy.ts"
+                "entry": "./Legacy/legacy.ts"
             }
         ],
         "build": {
-            "webpack": "../../src/webpack.config.js",
+            "webpack": "../../../src/webpack.config.js",
             "srcDirectory": "../../src/",
             "distOutputDirectory": "/",
             "dtsBundle": {

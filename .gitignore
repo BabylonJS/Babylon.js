@@ -164,6 +164,7 @@ node_modules
 !lib.d.ts
 *.fragment.ts
 *.vertex.ts
+**/ShadersInclude/**/*.ts
 
 # Split declaration file
 !ISplit.d.ts
