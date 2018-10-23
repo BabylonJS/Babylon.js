@@ -1,3 +1,12 @@
+import { Scene } from "scene";
+import { AbstractMesh, VertexBuffer, SubMesh, VertexData } from "Mesh";
+import { Color3, Matrix } from "Math";
+import { SmartArray } from "Tools";
+import { Nullable, FloatArray } from "types";
+import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
+import { BoundingBox } from "Culling";
+import { ShaderMaterial, Material, Effect } from "Materials";
+
     export interface Scene {
         /** @hidden (Backing field) */
         _boundingBoxRenderer: BoundingBoxRenderer;
@@ -303,4 +312,4 @@
             }
             this.scene.getEngine()._releaseBuffer(this._indexBuffer);
         }
-    }
+    }

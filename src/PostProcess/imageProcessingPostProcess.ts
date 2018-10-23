@@ -1,3 +1,10 @@
+import { Nullable } from "types";
+import { Observer, serialize } from "Tools";
+import { Color4 } from "Math";
+import { Camera } from "Cameras";
+import { BaseTexture, ImageProcessingConfiguration, Effect, ColorCurves, IImageProcessingConfigurationDefines } from "Materials";
+import { PostProcess, Scene, PostProcessOptions } from "PostProcess";
+import { Engine } from "Engine";
     /**
      * ImageProcessingPostProcess
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#imageprocessing
@@ -69,7 +76,7 @@
 
             // Attaches observer.
             if (this._imageProcessingConfiguration) {
-                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add((conf) => {
+                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(() => {
                     this._updateParameters();
                 });
             }
@@ -380,4 +387,4 @@
                 this.imageProcessingConfiguration.applyByPostProcess = false;
             }
         }
-    }
+    }

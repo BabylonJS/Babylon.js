@@ -1,3 +1,13 @@
+import { Nullable } from "types";
+import { RenderingGroupInfo, Scene } from "scene";
+import { AbstractMesh } from "Culling";
+import { SubMesh } from "Mesh";
+import { RenderingGroup } from "Rendering";
+import { SmartArray } from "Tools";
+import { ISpriteManager } from "Sprites";
+import { IParticleSystem } from "Particles";
+import { Material } from "Materials";
+
     /**
      * Interface describing the different options available in the rendering manager
      * regarding Auto Clear between groups.

@@ -1,3 +1,12 @@
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { SmartArrayNoDuplicate } from "Tools";
+import { DepthRenderer } from "Rendering";
+import { Camera } from "Cameras";
+import { Engine } from "Engine";
+import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
+import { RenderTargetTexture } from "Materials";
+
     export interface Scene {
         /** @hidden (Backing field) */
         _depthRenderer: { [id: string]: DepthRenderer };
@@ -119,4 +128,4 @@
                 }
             }
         }
-    }
+    }

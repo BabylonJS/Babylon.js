@@ -1,3 +1,14 @@
+import { Nullable } from "types";
+import { Color4 } from "Math";
+import { SubMesh, VertexBuffer } from "Mesh";
+import { SmartArray } from "Tools";
+import { Scene } from "scene";
+import { RenderTargetTexture, Effect, Texture, Material } from "Materials";
+import { Camera } from "Cameras";
+import { Engine } from "Engine";
+import { SceneComponentConstants } from "sceneComponent";
+import { DepthRendererSceneComponent } from "Rendering";
+
     /**
      * This represents a depth renderer in Babylon.
      * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
@@ -208,4 +219,4 @@
         public dispose(): void {
             this._depthMap.dispose();
         }
-    }
+    }

@@ -1,3 +1,7 @@
+import { Vector2 } from "Math";
+import { Camera, VRCameraMetrics } from "Cameras";
+import { Effect, Texture } from "Materials";
+import { PostProcess } from "PostProcess";
     /**
      * VRDistortionCorrectionPostProcess used for mobile VR
      */

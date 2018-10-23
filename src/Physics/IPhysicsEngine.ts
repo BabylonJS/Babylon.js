@@ -1,3 +1,7 @@
+import { Nullable } from "types";
+import { Vector3, Quaternion } from "Math";
+import { AbstractMesh } from "Mesh";
+import { PhysicsImpostor, PhysicsJoint, IMotorEnabledJoint, IPhysicsEnabledObject } from "Physics";
     /**
      * Interface used to describe a physics joint
      */

@@ -1,3 +1,13 @@
+import { Nullable } from "types";
+import { AbstractMesh, LinesMesh, InstancedMesh, VertexBuffer } from "Mesh";
+import { Vector3 } from "Math";
+import { IDisposable } from "scene";
+import { Observer } from "Tools";
+import { LineEdgesRenderer } from "Rendering";
+import { ShaderMaterial, Effect, Material } from "Materials";
+import { Camera } from "Cameras";
+import { Engine } from "Engine";
+
     export interface AbstractMesh {
         /**
          * Disables the mesh edge rendering mode
@@ -485,4 +495,4 @@
             engine.drawElementsType(Material.TriangleFillMode, 0, this._indicesCount);
             this._lineShader.unbind();
         }
-    }
+    }

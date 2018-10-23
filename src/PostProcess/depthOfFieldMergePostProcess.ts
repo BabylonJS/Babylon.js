@@ -1,3 +1,8 @@
+import { Nullable } from "types";
+import { Camera } from "Cameras";
+import { Effect } from "Materials";
+import { PostProcess } from "PostProcess";
+import { Engine } from "Engine";
     /**
      * Options to be set when merging outputs from the default pipeline.
      */
@@ -72,4 +77,4 @@
             }
             super.updateEffect(defines, uniforms, samplers, indexParameters, onCompiled, onError);
         }
-    }
+    }

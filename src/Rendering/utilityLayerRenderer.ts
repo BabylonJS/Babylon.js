@@ -1,3 +1,10 @@
+import { IDisposable, Scene } from "scene";
+import { Nullable } from "types";
+import { Observable, Observer } from "Tools";
+import { AbstractMesh } from "Culling";
+import { PointerInfoPre, PointerInfo } from "Events";
+import { PickingInfo } from "Collisions";
+
     /**
      * Renders a layer on top of an existing scene
      */

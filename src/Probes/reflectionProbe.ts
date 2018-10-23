@@ -1,3 +1,8 @@
+import { RenderTargetTexture } from "Materials";
+import { Matrix, Vector3 } from "Math";
+import { AbstractMesh } from "Mesh";
+import { Nullable } from "types";
+
     export interface Scene {
         /**
          * The list of reflection probes added to the scene
@@ -161,4 +166,4 @@
                 (<any>this._renderTargetTexture) = null;
             }
         }
-    }
+    }

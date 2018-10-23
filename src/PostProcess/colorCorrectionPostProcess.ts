@@ -1,3 +1,7 @@
+import { PostProcess, PostProcessOptions } from "PostProcess";
+import { Texture, Effect } from "Materials";
+import { Engine } from "Particles";
+import { Camera } from "Cameras";
 
     /**
      *
@@ -30,4 +34,4 @@
                 effect.setTexture("colorTable", this._colorTableTexture);
             };
         }
-    }
+    }

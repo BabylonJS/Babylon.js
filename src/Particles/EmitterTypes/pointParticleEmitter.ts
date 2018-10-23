@@ -1,3 +1,7 @@
+import { Tools } from "Tools";
+import { Vector3, Matrix, Scalar } from "Math";
+import { Effect } from "Materials";
+import { IParticleEmitterType, Particle } from "Particles";
     /**
      * Particle emitter emitting particles from a point.
      * It emits the particles randomly between 2 given directions.
@@ -104,4 +108,4 @@
             Vector3.FromArrayToRef(serializationObject.direction1, 0, this.direction1);
             Vector3.FromArrayToRef(serializationObject.direction2, 0, this.direction2);
         }
-    }
+    }

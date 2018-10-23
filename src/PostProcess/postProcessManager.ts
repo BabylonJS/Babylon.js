@@ -1,3 +1,9 @@
+import { Nullable } from "types";
+import { Material, InternalTexture } from "Materials";
+import { PostProcess } from "PostProcess";
+import { Engine } from "Engine";
+import { Scene } from "scene";
+import { VertexBuffer } from "Mesh";
     /**
 	 * PostProcessManager is used to manage one or more post processes or post process pipelines
      * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
@@ -206,4 +212,4 @@
                 this._indexBuffer = null;
             }
         }
-    }
+    }

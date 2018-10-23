@@ -1,3 +1,5 @@
+import { Nullable } from "types";
+
     /**
      * @hidden
      **/
@@ -141,4 +143,4 @@
                 this._isBlendConstantsDirty = false;
             }
         }
-    }
+    }
