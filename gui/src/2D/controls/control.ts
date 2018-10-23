@@ -1339,7 +1339,7 @@ export class Control {
             this._onPointerMove(this, this._dummyVector2);
 
             var previousControlOver = this._host._lastControlOver[pointerId];
-            if (previousControlOver && previousControlOver !== this) {
+            if (previousControlOver && previousControlOver !== this && !this.isAscendant(previousControlOver)) {
                 previousControlOver._onPointerOut(this);
             }
 
