@@ -1,6 +1,6 @@
-import { Effect, ProceduralTexture, Scene, Texture, serialize, SerializationHelper } from "babylonjs";
+import { ProceduralTexture, Scene, Texture, serialize, SerializationHelper } from "babylonjs";
 
-Effect.ShadersStore["starfieldProceduralTexturePixelShader"] = require("./starfieldProceduralTexture.fragment.fx");
+import "./starfieldProceduralTexture.fragment";
 
 export class StarfieldProceduralTexture extends ProceduralTexture {
     private _time = 1;

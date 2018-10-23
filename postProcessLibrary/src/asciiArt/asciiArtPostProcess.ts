@@ -1,6 +1,6 @@
 import { BaseTexture, serialize, Nullable, Scene, Texture, SerializationHelper, PostProcess, Camera, Effect } from "babylonjs";
 
-Effect.ShadersStore["asciiartPixelShader"] = require("./asciiart.fragment.fx");
+import "./asciiart.fragment";
 
 /**
  * AsciiArtFontTexture is the helper class used to easily create your ascii art font texture.

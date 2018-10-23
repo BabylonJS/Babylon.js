@@ -1,6 +1,6 @@
-import { Effect, ProceduralTexture, Color3, Scene, Texture, serialize, SerializationHelper } from "babylonjs";
+import { ProceduralTexture, Color3, Scene, Texture, serialize, SerializationHelper } from "babylonjs";
 
-Effect.ShadersStore["marbleProceduralTexturePixelShader"] = require("./marbleProceduralTexture.fragment.fx");
+import "./marbleProceduralTexture.fragment";
 
 export class MarbleProceduralTexture extends ProceduralTexture {
     private _numberOfTilesHeight: number = 3;

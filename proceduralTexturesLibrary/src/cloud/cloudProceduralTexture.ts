@@ -1,6 +1,6 @@
-import { Effect, ProceduralTexture, Color4, Scene, Texture, serializeAsColor4, SerializationHelper } from "babylonjs";
+import { ProceduralTexture, Color4, Scene, Texture, serializeAsColor4, SerializationHelper } from "babylonjs";
 
-Effect.ShadersStore["cloudProceduralTexturePixelShader"] = require("./cloudProceduralTexture.fragment.fx");
+import "./cloudProceduralTexture.fragment";
 
 export class CloudProceduralTexture extends ProceduralTexture {
     private _skyColor = new Color4(0.15, 0.68, 1.0, 1.0);

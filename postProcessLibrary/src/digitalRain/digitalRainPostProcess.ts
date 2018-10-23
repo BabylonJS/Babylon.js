@@ -1,6 +1,6 @@
 import { BaseTexture, serialize, Nullable, Scene, Texture, SerializationHelper, PostProcess, Camera, Matrix, Effect } from "babylonjs";
 
-Effect.ShadersStore["digitalrainPixelShader"] = require("./digitalrain.fragment.fx");
+import "./digitalrain.fragment";
 
 /**
  * DigitalRainFontTexture is the helper class used to easily create your digital rain font texture.

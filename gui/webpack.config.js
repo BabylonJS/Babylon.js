@@ -40,12 +40,6 @@ module.exports = {
                 configFileName: '../../gui/tsconfig.json',
                 declarationDir: '../../dist/preview release/gui/build'
             }
-        },
-        {
-            test: /\.fx$/,
-            use: [{
-                loader: path.resolve(__dirname, '../Tools/WebpackShaderLoader/index.js')
-            }]
         }]
     },
     mode: "production",
@@ -60,17 +54,10 @@ module.exports = {
             path.resolve(__dirname, './src/**/*.js'),
             path.resolve(__dirname, './src/**/*.map')
         ]),
-        // moved out of here due to the way gulp works...
-        /*new DtsBundleWebpack({
-            name: "babylonjs-gui",
-            main: path.resolve(__dirname, '../dist/preview release/gui/build/index.d.ts'),
-            out: path.resolve(__dirname, '../dist/preview release/gui/babylon.gui.module.d.ts'),
-            baseDir: path.resolve(__dirname, '../dist/preview release/gui/build/'),
-            headerText: "BabylonJS GUI"
-        }),*/
         new webpack.WatchIgnorePlugin([
             /\.js$/,
-            /\.d\.ts$/
+            /\.d\.ts$/,
+            /\.fx$/
         ])
     ],
     watchOptions: {

@@ -1,6 +1,6 @@
-import { Effect, ProceduralTexture, Color3, Scene, Texture, serialize, serializeAsColor3, SerializationHelper } from "babylonjs";
+import { ProceduralTexture, Color3, Scene, Texture, serialize, serializeAsColor3, SerializationHelper } from "babylonjs";
 
-Effect.ShadersStore["brickProceduralTexturePixelShader"] = require("./brickProceduralTexture.fragment.fx");
+import "./brickProceduralTexture.fragment";
 
 export class BrickProceduralTexture extends ProceduralTexture {
     private _numberOfBricksHeight: number = 15;

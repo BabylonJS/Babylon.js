@@ -2858,6 +2858,8 @@ declare module 'babylonjs-gui/src/3D/controls/volumeBasedPanel' {
 
 declare module 'babylonjs-gui/src/3D/materials/fluentMaterial' {
     import { MaterialDefines, PushMaterial, Color3, Color4, Vector3, Scene, Nullable, BaseTexture, AbstractMesh, SubMesh, Matrix, Mesh } from "babylonjs";
+    import "./shaders/fluent.vertex";
+    import "./shaders/fluent.fragment";
     /** @hidden */
     export class FluentMaterialDefines extends MaterialDefines {
             INNERGLOW: boolean;

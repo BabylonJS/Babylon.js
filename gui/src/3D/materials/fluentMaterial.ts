@@ -1,9 +1,7 @@
 import { MaterialDefines, PushMaterial, serialize, expandToProperty, serializeAsColor3, Color3, serializeAsColor4, Color4, serializeAsVector3, Vector3, Scene, Nullable, BaseTexture, AbstractMesh, SubMesh, VertexBuffer, MaterialHelper, EffectCreationOptions, Matrix, Mesh, Tmp, SerializationHelper, serializeAsTexture } from "babylonjs";
 
-import { registerShader } from "./shaders/fluent";
-
-// register shaders
-registerShader();
+import "./shaders/fluent.vertex";
+import "./shaders/fluent.fragment";
 
 /** @hidden */
 export class FluentMaterialDefines extends MaterialDefines {
