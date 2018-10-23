@@ -3,13 +3,13 @@ var PluginError = require('gulp-util').PluginError;
 let path = require('path');
 let fs = require('fs');
 
-let tsTemplate = 
+let tsShaderTemplate = 
 `import { Effect } from "babylonjs";
 
 let name = '##NAME_PLACEHOLDER##';
 let shader = \`##SHADER_PLACEHOLDER##\`;
 
-Effect.ShadersStore[name] = shader;
+Effect.##SHADERSTORE_PLACEHOLDER##[name] = shader;
 
 export { shader, name };
 `;
@@ -33,18 +33,21 @@ function main() {
                 cb(new PluginError("Remove Shader Comments", "Streaming not supported."));
             }
     
-            let filename = path.basename(file.path);
-            let normalized = path.normalize(file.path);
-            let directory = path.dirname(normalized);
-            let shaderName = getShaderName(filename);
-            let tsFilename = filename.replace('.fx', '.ts');
-            let data = file.contents.toString();
+            const filename = path.basename(file.path);
+            const normalized = path.normalize(file.path);
+            const directory = path.dirname(normalized);
+            const shaderName = getShaderName(filename);
+            const tsFilename = filename.replace('.fx', '.ts');
 
+            let fxData = file.contents.toString();
             // Trailing whitespace...
-            data = data.replace(/[^\S\r\n]+$/gm, "");
+            fxData = fxData.replace(/[^\S\r\n]+$/gm, "");
 
-            let tsContent = tsTemplate.replace('##NAME_PLACEHOLDER##', shaderName);
-            tsContent = tsContent.replace('##SHADER_PLACEHOLDER##', data);
+            const shaderStore = directory.indexOf("ShadersInclude") > -1 ? "IncludesShadersStore" : "ShadersStore";
+
+            let tsContent = tsShaderTemplate.replace('##NAME_PLACEHOLDER##', shaderName);
+            tsContent = tsContent.replace('##SHADER_PLACEHOLDER##', fxData);
+            tsContent = tsContent.replace('##SHADERSTORE_PLACEHOLDER##', shaderStore);
 
             fs.writeFileSync(directory + '/' + tsFilename, tsContent);
 

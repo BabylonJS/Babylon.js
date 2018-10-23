@@ -24,7 +24,8 @@ gulp.task("srcTscWatch", function() {
 /**
  * Watch ts files and fire repective tasks.
  */
-gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
+//gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
+gulp.task("watch", function startWatch() {
     var tasks = [];
 
     config.modules.map(function(module) {
@@ -65,4 +66,5 @@ gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
     });
 
     return Promise.resolve();
-}));
+});
+//}));
