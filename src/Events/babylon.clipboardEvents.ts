@@ -50,24 +50,20 @@ module BABYLON {
          * @type {DataTransfer}
          */
         private _clipboardData: DataTransfer;
+
         /**
-         * Getter clipboardData
-         * @return {DataTransfer}
+         * Getter, setter for clipboardData
          */
         public get clipboardData(): DataTransfer {
             return this._clipboardData;
         }
-        /**
-         * Setter clipboardData
-         * @param {DataTransfer} value
-         */
         public set clipboardData(value: DataTransfer) {
             this._clipboardData = value;
         }
 
        /**
         *  Get the clipboard event's type from the keycode.
-        * @param keyCode
+        * @param keyCode Defines the keyCode for the current keyboard event.
         * @return {number}
         */
         public static GetTypeFromCharacter(keyCode: number): number {
