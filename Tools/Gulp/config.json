@@ -75,6 +75,12 @@
                 "filename": "babylon.module.d.ts",
                 "packageName": "babylonjs",
                 "moduleName": "BABYLON",
+                "moduleSpecifics": [
+                    {
+                        "path": "babylonjs/Debug",
+                        "namespace": "BABYLON.Debug"
+                    }
+                ],
                 "importsToRemove": [],
                 "classMap": {
                     "babylonjs": "BABYLON"
