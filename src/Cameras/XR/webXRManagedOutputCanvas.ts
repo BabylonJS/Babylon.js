@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Creates a canvas that is added/removed from the webpage when entering/exiting XR
      */
@@ -58,5 +57,4 @@ module BABYLON {
                 document.body.removeChild(this._canvas);
             }
         }
-    }
-}
+    }

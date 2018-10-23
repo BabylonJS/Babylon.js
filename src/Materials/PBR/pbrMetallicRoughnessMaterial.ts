@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * The PBR material of BJS following the metal roughness convention.
      *
@@ -137,5 +136,4 @@ module BABYLON {
         public static Parse(source: any, scene: Scene, rootUrl: string): PBRMetallicRoughnessMaterial {
             return SerializationHelper.Parse(() => new PBRMetallicRoughnessMaterial(source.name, scene), source, scene, rootUrl);
         }
-    }
-}
+    }

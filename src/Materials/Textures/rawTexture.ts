@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Raw texture can help creating a texture directly from an array of data.
      * This can be super useful if you either get the data from an uncompressed source or
@@ -136,5 +135,4 @@ module BABYLON {
         public static CreateRTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, type: number = Engine.TEXTURETYPE_FLOAT): RawTexture {
             return new RawTexture(data, width, height, Engine.TEXTUREFORMAT_R, scene, generateMipMaps, invertY, samplingMode, type);
         }
-    }
-}
+    }

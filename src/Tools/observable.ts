@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * A class serves as a medium between the observable and its observers
      */
@@ -426,5 +424,4 @@ module BABYLON {
             return false;
         }
     }
-
-}
+

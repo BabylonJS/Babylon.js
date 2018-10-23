@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Options allowed during the creation of a sound track.
      */
@@ -173,5 +172,4 @@ module BABYLON {
                 this._connectedAnalyser.connectAudioNodes(this._outputAudioNode, Engine.audioEngine.masterGain);
             }
         }
-    }
-}
+    }

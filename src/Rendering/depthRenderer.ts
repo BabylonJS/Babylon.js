@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This represents a depth renderer in Babylon.
      * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
@@ -209,5 +208,4 @@ module BABYLON {
         public dispose(): void {
             this._depthMap.dispose();
         }
-    }
-}
+    }

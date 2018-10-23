@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * The ChromaticAberrationPostProcess separates the rgb channels in an image to produce chromatic distortion around the edges of the screen
      */
@@ -47,5 +46,4 @@ module BABYLON {
                 effect.setFloat2('centerPosition', this.centerPosition.x, this.centerPosition.y);
             });
         }
-    }
-}
+    }

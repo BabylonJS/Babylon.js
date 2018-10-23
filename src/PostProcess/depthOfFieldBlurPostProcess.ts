@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * The DepthOfFieldBlurPostProcess applied a blur in a give direction.
      * This blur differs from the standard BlurPostProcess as it attempts to avoid blurring pixels
@@ -35,5 +34,4 @@ module BABYLON {
                 }
             });
         }
-    }
-}
+    }

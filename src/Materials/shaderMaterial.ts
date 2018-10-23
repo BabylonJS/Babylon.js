@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Defines the options associated with the creation of a shader material.
      */
@@ -909,4 +908,3 @@ module BABYLON {
             return material;
         }
     }
-}

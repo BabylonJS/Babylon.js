@@ -1,4 +1,3 @@
-module BABYLON {
     // Adds the parser to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
         if (parsedData.effectLayers) {
@@ -243,4 +242,3 @@ module BABYLON {
             }
         }
     }
-}

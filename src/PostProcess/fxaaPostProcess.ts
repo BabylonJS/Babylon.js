@@ -1,5 +1,4 @@
-﻿module BABYLON {
-    /**
+﻿    /**
      * Fxaa post process
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#fxaa
      */
@@ -34,5 +33,4 @@
 
             return null;
         }
-    }
-}
+    }

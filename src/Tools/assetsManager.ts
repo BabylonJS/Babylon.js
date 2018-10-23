@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * Defines the list of states available for a task inside a AssetsManager
      */
@@ -977,4 +975,3 @@ module BABYLON {
             return this;
         }
     }
-}

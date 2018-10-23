@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * StereoscopicInterlacePostProcess used to render stereo views from a rigged camera
      */
@@ -30,4 +29,3 @@ module BABYLON {
             });
         }
     }
-}

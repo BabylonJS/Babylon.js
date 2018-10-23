@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Implementation of the ENV Texture Loader.
      */
@@ -86,5 +85,4 @@ module BABYLON {
     }
 
     // Register the loader.
-    Engine._TextureLoaders.push(new ENVTextureLoader());
-}
+    Engine._TextureLoaders.push(new ENVTextureLoader());

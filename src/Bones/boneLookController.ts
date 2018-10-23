@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to make a bone look toward a point in space
      * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#bonelookcontroller
@@ -562,5 +561,4 @@ module BABYLON {
             return false;
         }
 
-    }
-}
+    }

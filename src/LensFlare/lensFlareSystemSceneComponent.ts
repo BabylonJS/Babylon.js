@@ -1,4 +1,3 @@
-module BABYLON {
     // Adds the parser to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_LENSFLARESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
         // Lens flares
@@ -184,5 +183,4 @@ module BABYLON {
                 Tools.EndPerformanceCounter("Lens flares", lensFlareSystems.length > 0);
             }
         }
-    }
-}
+    }

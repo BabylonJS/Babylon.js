@@ -1,4 +1,3 @@
-module BABYLON {
     //declare var require: any;
     declare var CANNON: any;
 
@@ -647,4 +646,3 @@ module BABYLON {
             };
         }
     }
-}

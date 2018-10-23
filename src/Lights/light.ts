@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Base class of all the lights in Babylon. It groups all the generic information about lights.
      * Lights are used, as you would expect, to affect how meshes are seen, in terms of both illumination and colour.
@@ -765,4 +764,3 @@ module BABYLON {
          */
         public abstract prepareLightSpecificDefines(defines: any, lightIndex: number): void;
     }
-}

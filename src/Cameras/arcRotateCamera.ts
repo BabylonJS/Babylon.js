@@ -1,4 +1,3 @@
-module BABYLON {
     Node.AddNodeConstructor("ArcRotateCamera", (name, scene) => {
         return () => new ArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);
     });
@@ -1088,4 +1087,3 @@ module BABYLON {
             return "ArcRotateCamera";
         }
     }
-}

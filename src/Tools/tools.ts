@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Interface for any object that can request an animation frame
      */
@@ -2285,4 +2284,3 @@ module BABYLON {
             }, callback);
         }
     }
-}

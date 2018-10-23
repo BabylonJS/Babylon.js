@@ -1,4 +1,3 @@
-module BABYLON {
     /** Alias type for value that can be null */
     export type Nullable<T> = T | null;
     /**
@@ -26,4 +25,3 @@ module BABYLON {
      * Alias for types that can be used by a Buffer or VertexBuffer.
      */
     export type DataArray = number[] | ArrayBuffer | ArrayBufferView;
-}

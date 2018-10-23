@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Button which can be used to enter a different mode of XR
      */
@@ -142,5 +141,4 @@ module BABYLON {
             }
             this.activeButtonChangedObservable.clear();
         }
-    }
-}
+    }

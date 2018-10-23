@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Interface to implement to create a shadow generator compatible with BJS.
      */
@@ -1497,5 +1496,4 @@ module BABYLON {
 
             return shadowGenerator;
         }
-    }
-}
+    }

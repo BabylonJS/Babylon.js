@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Options to modify the vr teleportation behavior.
      */
@@ -1902,4 +1901,3 @@ module BABYLON {
             return "VRExperienceHelper";
         }
     }
-}

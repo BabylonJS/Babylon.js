@@ -1,4 +1,3 @@
-module BABYLON {
     export interface Scene {
         /** @hidden (Backing field) */
         _postProcessRenderPipelineManager: PostProcessRenderPipelineManager;
@@ -82,5 +81,4 @@ module BABYLON {
                 this.scene._postProcessRenderPipelineManager.update();
             }
         }
-    }
-}
+    }

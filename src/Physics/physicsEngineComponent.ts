@@ -1,4 +1,3 @@
-module BABYLON {
     export interface Scene {
         /** @hidden (Backing field) */
         _physicsEngine: Nullable<IPhysicsEngine>;
@@ -293,5 +292,4 @@ module BABYLON {
                 this.scene.disablePhysicsEngine();
             }
         }
-    }
-}
+    }

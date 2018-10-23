@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Keeps track of all the buffer info used in engine.
      */
@@ -7545,4 +7544,3 @@ module BABYLON {
             }
         }
     }
-}

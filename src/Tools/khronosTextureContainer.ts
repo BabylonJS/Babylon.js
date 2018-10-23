@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
      * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
@@ -189,5 +188,4 @@ module BABYLON {
                 height = Math.max(1.0, height * 0.5);
             }
         }
-    }
-}
+    }

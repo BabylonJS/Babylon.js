@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
      * It is usually composed of several `BABYLON.lensFlare`.
@@ -399,5 +398,4 @@ module BABYLON {
 
             return serializationObject;
         }
-    }
-}
+    }

@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Manage the keyboard inputs to control the movement of a free camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -165,5 +164,4 @@ module BABYLON {
         }
     }
 
-    (<any>CameraInputTypes)["FreeCameraKeyboardMoveInput"] = FreeCameraKeyboardMoveInput;
-}
+    (<any>CameraInputTypes)["FreeCameraKeyboardMoveInput"] = FreeCameraKeyboardMoveInput;

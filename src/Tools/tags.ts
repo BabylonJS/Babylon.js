@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to store custom tags
      */
@@ -154,4 +153,3 @@ module BABYLON {
             return AndOrNotEvaluator.Eval(tagsQuery, (r) => Tags.HasTags(obj) && obj._tags[r]);
         }
     }
-}

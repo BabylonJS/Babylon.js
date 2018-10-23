@@ -1,4 +1,3 @@
-module BABYLON {
     Node.AddNodeConstructor("StereoscopicFreeCamera", (name, scene, options) => {
         return () => new StereoscopicFreeCamera(name, Vector3.Zero(), options.interaxial_distance, options.isStereoscopicSideBySide, scene);
     });
@@ -30,5 +29,4 @@ module BABYLON {
         public getClassName(): string {
             return "StereoscopicFreeCamera";
         }
-    }
-}
+    }

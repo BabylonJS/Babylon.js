@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Gizmo that enables rotating a mesh along 3 axis
      */
@@ -109,5 +108,4 @@ module BABYLON {
         public setCustomMesh(mesh: Mesh) {
             Tools.Error("Custom meshes are not supported on this gizmo, please set the custom meshes on the gizmos contained within this one (gizmo.xGizmo, gizmo.yGizmo, gizmo.zGizmo)");
         }
-    }
-}
+    }

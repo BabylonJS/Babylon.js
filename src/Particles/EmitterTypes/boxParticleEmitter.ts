@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Particle emitter emitting particles from the inside of a box.
      * It emits the particles randomly between 2 given directions.
@@ -124,5 +123,4 @@ module BABYLON {
             Vector3.FromArrayToRef(serializationObject.minEmitBox, 0, this.minEmitBox);
             Vector3.FromArrayToRef(serializationObject.maxEmitBox, 0, this.maxEmitBox);
         }
-    }
-}
+    }

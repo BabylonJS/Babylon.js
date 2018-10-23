@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * Interface for Physics-Joint data
      * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
@@ -337,4 +335,3 @@ module BABYLON {
         /** this callback will be called when applying the force to the impostors. */
         forceApplicationCallback: () => void;
     }
-}

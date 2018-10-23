@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Constant used to convert a value to gamma space
      * @ignorenaming
@@ -7347,4 +7346,3 @@ module BABYLON {
         public static Matrix: Matrix[] = Tools.BuildArray(2, Matrix.Identity);
         public static Quaternion: Quaternion[] = Tools.BuildArray(3, Quaternion.Zero);
     }
-}

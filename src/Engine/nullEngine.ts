@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * Options to create the null engine
      */
@@ -524,4 +522,3 @@ module BABYLON {
         public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {
         }
     }
-}

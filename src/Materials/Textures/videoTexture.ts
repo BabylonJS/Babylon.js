@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Settings for finer control over video usage
      */
@@ -407,4 +406,3 @@ module BABYLON {
             }
         }
     }
-}

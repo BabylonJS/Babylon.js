@@ -1,4 +1,3 @@
-module BABYLON {
     export interface AbstractScene {
         /**
          * The list of layers (background and foreground) of the scene
@@ -87,4 +86,3 @@ module BABYLON {
             this._draw(camera, false);
         }
     }
-}

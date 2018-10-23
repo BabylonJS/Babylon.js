@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Class used to evalaute queries containing `and` and `or` operators
      */
@@ -109,5 +108,4 @@ module BABYLON {
 
             return booleanString;
         }
-    }
-}
+    }

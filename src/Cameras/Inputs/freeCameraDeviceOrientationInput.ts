@@ -1,4 +1,3 @@
-module BABYLON {
     /**
      * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
      * Screen rotation is taken into account.
@@ -107,4 +106,3 @@ module BABYLON {
     }
 
     (<any>CameraInputTypes)["FreeCameraDeviceOrientationInput"] = FreeCameraDeviceOrientationInput;
-}

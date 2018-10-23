@@ -1,5 +1,3 @@
-module BABYLON {
-
     /**
      * Defines how a node can be built from a string name.
      */
@@ -731,4 +729,3 @@ module BABYLON {
             }
         }
     }
-}

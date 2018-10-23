@@ -1,5 +1,3 @@
-module BABYLON {
-
     Node.AddNodeConstructor("DeviceOrientationCamera", (name, scene) => {
         return () => new DeviceOrientationCamera(name, Vector3.Zero(), scene);
     });
@@ -74,4 +72,3 @@ module BABYLON {
             this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
         }
     }
-}

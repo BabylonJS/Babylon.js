@@ -1,4 +1,3 @@
-module BABYLON {
     export interface Scene {
         /** @hidden */
         _outlineRenderer: OutlineRenderer;
@@ -283,5 +282,4 @@ module BABYLON {
                 this._engine.setAlphaMode(currentMode);
             }
         }
-    }
-}
+    }
