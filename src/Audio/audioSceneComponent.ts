@@ -1,3 +1,11 @@
+import {Engine} from "Engine"
+import {Camera} from "Cameras"
+import { Sound, SoundTrack } from "Audio";
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Matrix, Vector3 } from "Math";
+import { SceneComponentConstants, ISceneSerializableComponent } from "sceneComponent";
+
     // Adds the parser to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
         // TODO: add sound

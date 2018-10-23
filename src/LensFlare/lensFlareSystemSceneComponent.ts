@@ -1,3 +1,13 @@
+import { Tools } from "Tools";
+import { Nullable } from "types";
+import { Camera } from "Cameras";
+import { Scene } from "scene";
+import { SceneComponentConstants, ISceneSerializableComponent } from "sceneComponent";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { AbstractScene } from "abstractScene";
+import { AssetContainer } from "assetContainer";
+import { LensFlareSystem } from "LensFlare";
     // Adds the parser to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_LENSFLARESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
         // Lens flares
@@ -183,4 +193,4 @@
                 Tools.EndPerformanceCounter("Lens flares", lensFlareSystems.length > 0);
             }
         }
-    }
+    }

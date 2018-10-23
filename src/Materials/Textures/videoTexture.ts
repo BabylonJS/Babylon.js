@@ -1,3 +1,8 @@
+import { Observable, Tools } from "Tools";
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Engine } from "Engine";
+import { Texture, VideoTextureSettings } from "Materials";
     /**
      * Settings for finer control over video usage
      */
@@ -270,14 +275,13 @@
             this._updateInternalTexture();
         }
 
-        protected _updateInternalTexture = (e?: Event): void => {
+        protected _updateInternalTexture = (): void => {
             if (this._texture == null || !this._texture.isReady) {
                 return;
             }
             if (this.video.readyState < this.video.HAVE_CURRENT_DATA) {
                 return;
             }
-
             this._engine.updateVideoTexture(this._texture, this.video, this._invertY);
         }
 

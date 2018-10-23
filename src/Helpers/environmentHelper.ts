@@ -1,3 +1,13 @@
+import { Observable } from "Tools";
+import { Nullable } from "types";
+import { ArcRotateCamera } from "Cameras";
+import { Scene } from "scene";
+import { Vector3, Color3, Color4, Plane } from "Math";
+import { Engine } from "Engine";
+import { Mesh, AbstractMesh } from "Mesh";
+import { Texture, BaseTexture, BackgroundMaterial, MirrorTexture, CubeTexture } from "Materials";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Represents the different options available during the creation of
      * a Environment helper.
@@ -686,4 +696,4 @@
             }
             this._rootMesh.dispose(false);
         }
-    }
+    }

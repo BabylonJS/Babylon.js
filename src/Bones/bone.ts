@@ -1,3 +1,10 @@
+import { Vector3, Quaternion, Matrix, Space } from "Math";
+import { Tools } from "Tools";
+import { Nullable } from "types";
+import { Skeleton } from "Bones";
+import { AnimationPropertiesOverride } from "Animations";
+import { AbstractMesh } from "Mesh";
+
     /**
      * Class used to store bone information
      * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
@@ -1103,4 +1110,4 @@
 
             Vector3.TransformCoordinatesToRef(position, tmat, result);
         }
-    }
+    }

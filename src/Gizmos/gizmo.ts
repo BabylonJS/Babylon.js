@@ -1,3 +1,12 @@
+import { Observer } from "Tools";
+import { Nullable } from "types";
+import { WebVRFreeCamera } from "Cameras";
+import { Scene, IDisposable } from "scene";
+import { Quaternion, Matrix, Vector3 } from "Math";
+import { Mesh, AbstractMesh } from "Mesh";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { UtilityLayerRenderer } from "Rendering";
     /**
      * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
      */
@@ -26,7 +35,7 @@
         public set attachedMesh(value) {
             this._attachedMesh = value;
             this._rootMesh.setEnabled(value ? true : false);
-            this._attachedMeshChanged(value);
+            this._attachedMeshChanged();
         }
 
         /**
@@ -57,7 +66,7 @@
          */
         protected _updateScale = true;
         protected _interactionsEnabled = true;
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {
+        protected _attachedMeshChanged() {
         }
 
         private _beforeRenderObserver: Nullable<Observer<Scene>>;
@@ -130,4 +139,4 @@
                 this.gizmoLayer.utilityLayerScene.onBeforeRenderObservable.remove(this._beforeRenderObserver);
             }
         }
-    }
+    }

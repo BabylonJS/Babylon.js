@@ -1,3 +1,14 @@
+import { serialize, Observable, Tools, SmartArray, SerializationHelper } from "Tools";
+import { Nullable } from "types";
+import { FreeCamera, UniversalCamera, VRCameraMetrics, TargetCamera, CameraInputsManager } from "Cameras";
+import { Scene } from "scene";
+import { Matrix, Vector3, Viewport, Plane, Frustum } from "Math";
+import {Node} from "Node";
+import { Mesh, AbstractMesh } from "Mesh";
+import { Ray, ICullable } from "Culling";
+import { RenderTargetTexture } from "Materials";
+import { PostProcess, PassPostProcess, AnaglyphPostProcess, StereoscopicInterlacePostProcess, VRDistortionCorrectionPostProcess } from "PostProcess";
+import { Animation } from "Animations";
     /**
      * This is the base class of all the camera used in the application.
      * @see http://doc.babylonjs.com/features/cameras
@@ -465,14 +476,14 @@
          * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+        public attachControl(): void {
         }
 
         /**
          * Detach the current controls from the specified dom element.
          * @param element Defines the element to stop listening the inputs from
          */
-        public detachControl(element: HTMLElement): void {
+        public detachControl(): void {
         }
 
         /**
@@ -924,8 +935,8 @@
 
             // create the rig cameras, unless none
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
-                let leftCamera = this.createRigCamera(this.name + "_L", 0);
-                let rightCamera = this.createRigCamera(this.name + "_R", 1);
+                let leftCamera = this.createRigCamera();
+                let rightCamera = this.createRigCamera();
                 if (leftCamera && rightCamera) {
                     this._rigCameras.push(leftCamera);
                     this._rigCameras.push(rightCamera);
@@ -1057,7 +1068,7 @@
          * needs to be overridden by children so sub has required properties to be copied
          * @hidden
          */
-        public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
+        public createRigCamera(): Nullable<Camera> {
             return null;
         }
 

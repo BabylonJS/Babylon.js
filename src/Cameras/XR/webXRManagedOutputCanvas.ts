@@ -1,3 +1,6 @@
+import { Nullable } from "types";
+import { WebXRExperienceHelper, WebXRState } from "Cameras";
+import { IDisposable } from "scene";
     /**
      * Creates a canvas that is added/removed from the webpage when entering/exiting XR
      */
@@ -57,4 +60,4 @@
                 document.body.removeChild(this._canvas);
             }
         }
-    }
+    }

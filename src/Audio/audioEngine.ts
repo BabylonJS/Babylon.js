@@ -1,3 +1,9 @@
+import { IDisposable } from "scene";
+import { Nullable } from "types";
+import { Observable, Tools } from "Tools";
+import { Engine } from "Engine";
+import { Analyser } from "Audio";
+
     /**
      * This represents an audio engine and it is responsible
      * to play, synchronize and analyse sounds throughout the application.

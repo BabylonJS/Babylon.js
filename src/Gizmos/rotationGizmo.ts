@@ -1,3 +1,12 @@
+import { Observable, Tools } from "Tools";
+import { Nullable } from "types";
+import { Vector3 } from "Math";
+import {ArcRotateCameraInputsManager} from "Gamepad";
+import { Mesh, AbstractMesh } from "Mesh";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Gizmo, PlaneRotationGizmo } from "Gizmos";
+import { UtilityLayerRenderer } from "Rendering";
     /**
      * Gizmo that enables rotating a mesh along 3 axis
      */
@@ -108,4 +117,4 @@
         public setCustomMesh(mesh: Mesh) {
             Tools.Error("Custom meshes are not supported on this gizmo, please set the custom meshes on the gizmos contained within this one (gizmo.xGizmo, gizmo.yGizmo, gizmo.zGizmo)");
         }
-    }
+    }

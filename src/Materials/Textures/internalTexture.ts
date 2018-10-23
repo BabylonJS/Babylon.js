@@ -1,3 +1,10 @@
+import { Observable } from "Tools";
+import { Nullable, int } from "types";
+import { SphericalPolynomial } from "Math";
+import { Engine, RenderTargetCreationOptions } from "Engine";
+import { Texture, BaseTexture, IInternalTextureTracker, RawCubeTexture } from "Materials";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Class used to store data associated with WebGL texture data for the engine
      * This class should not be used directly

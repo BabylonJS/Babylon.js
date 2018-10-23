@@ -1,3 +1,4 @@
+import { Nullable, DataArray } from "types";
     /**
      * Specialized buffer used to store vertex data
      */
@@ -457,4 +458,4 @@
                 }
             }
         }
-    }
+    }

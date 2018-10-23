@@ -1,3 +1,15 @@
+import { Observable, Tools, IFileRequest, FilesInput } from "Tools";
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Engine } from "Engine";
+import { AbstractMesh } from "Mesh";
+import { AnimationGroup } from "Animations";
+import { _TimeToken } from "Instrumentation";
+import { IOfflineProvider } from "Offline";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { AssetContainer } from "assetContainer";
+import { IParticleSystem } from "Particles";
+import { Skeleton } from "Bones";
     /**
      * Class used to represent data loading progression
      */
@@ -732,7 +744,7 @@
                 scene._removePendingData(loadingToken);
             };
 
-            return SceneLoader._loadData(fileInfo, scene, (plugin, data, responseURL) => {
+            return SceneLoader._loadData(fileInfo, scene, (plugin, data) => {
                 if ((<any>plugin).load) {
                     var syncedPlugin = <ISceneLoaderPlugin>plugin;
                     if (!syncedPlugin.load(scene, data, fileInfo.rootUrl, errorHandler)) {
@@ -849,7 +861,7 @@
                 scene._removePendingData(loadingToken);
             };
 
-            return SceneLoader._loadData(fileInfo, scene, (plugin, data, responseURL) => {
+            return SceneLoader._loadData(fileInfo, scene, (plugin, data) => {
                 if ((<any>plugin).loadAssetContainer) {
                     var syncedPlugin = <ISceneLoaderPlugin>plugin;
                     var assetContainer = syncedPlugin.loadAssetContainer(scene, data, fileInfo.rootUrl, errorHandler);

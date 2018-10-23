@@ -1,3 +1,9 @@
+import { Vector3, Quaternion, Matrix, Space, Axis } from "Math";
+import { Tools } from "Tools";
+import { AbstractMesh } from "Mesh";
+import { Bone } from "Bones";
+import { Nullable } from "types";
+
     /**
      * Class used to make a bone look toward a point in space
      * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#bonelookcontroller
@@ -561,4 +567,4 @@
             return false;
         }
 
-    }
+    }

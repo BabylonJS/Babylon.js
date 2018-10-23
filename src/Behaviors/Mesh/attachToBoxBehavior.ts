@@ -1,14 +1,21 @@
+import { Vector3, Matrix, Quaternion } from "Math";
+import { Mesh } from "Mesh";
+import { Scene } from "scene";
+import { Nullable } from "types";
+import { Observer } from "Tools";
+import { WebVRFreeCamera } from "Cameras";
+
     /**
      * @hidden
      */
     class FaceDirectionInfo {
-        constructor(public direction: Vector3, public rotatedDirection = new BABYLON.Vector3(), public diff = 0, public ignore = false) {}
+        constructor(public direction: Vector3, public rotatedDirection = new Vector3(), public diff = 0, public ignore = false) {}
     }
 
     /**
      * A behavior that when attached to a mesh will will place a specified node on the meshes face pointing towards the camera
      */
-    export class AttachToBoxBehavior implements BABYLON.Behavior<BABYLON.Mesh> {
+    export class AttachToBoxBehavior implements BABYLON.Behavior<Mesh> {
         /**
          *  The name of the behavior
          */
@@ -21,7 +28,7 @@
          * The distance from the bottom of the face that the UI should be attached to (default: 0.15)
          */
         public distanceAwayFromBottomOfFace = 0.15;
-        private _faceVectors = [new FaceDirectionInfo(BABYLON.Vector3.Up()), new FaceDirectionInfo(BABYLON.Vector3.Down()), new FaceDirectionInfo(BABYLON.Vector3.Left()), new FaceDirectionInfo(BABYLON.Vector3.Right()), new FaceDirectionInfo(BABYLON.Vector3.Forward()), new FaceDirectionInfo(BABYLON.Vector3.Forward().scaleInPlace(-1))];
+        private _faceVectors = [new FaceDirectionInfo(Vector3.Up()), new FaceDirectionInfo(Vector3.Down()), new FaceDirectionInfo(Vector3.Left()), new FaceDirectionInfo(Vector3.Right()), new FaceDirectionInfo(Vector3.Forward()), new FaceDirectionInfo(Vector3.Forward().scaleInPlace(-1))];
         private _target: Mesh;
         private _scene: Scene;
         private _onRenderObserver: Nullable<Observer<Scene>>;
@@ -50,8 +57,8 @@
                     this._target.rotationQuaternion = Quaternion.RotationYawPitchRoll(this._target.rotation.y, this._target.rotation.x, this._target.rotation.z);
                 }
                 this._target.rotationQuaternion.toRotationMatrix(this._tmpMatrix);
-                BABYLON.Vector3.TransformCoordinatesToRef(v.direction, this._tmpMatrix, v.rotatedDirection);
-                v.diff = BABYLON.Vector3.GetAngleBetweenVectors(v.rotatedDirection, targetDirection, BABYLON.Vector3.Cross(v.rotatedDirection, targetDirection));
+                Vector3.TransformCoordinatesToRef(v.direction, this._tmpMatrix, v.rotatedDirection);
+                v.diff = Vector3.GetAngleBetweenVectors(v.rotatedDirection, targetDirection, Vector3.Cross(v.rotatedDirection, targetDirection));
             });
             // Return the face information of the one with the normal closeset to target direction
             return this._faceVectors.reduce((min, p) => {
@@ -67,7 +74,7 @@
 
         private _zeroVector = Vector3.Zero();
         private _lookAtTmpMatrix = new Matrix();
-        private _lookAtToRef(pos: Vector3, up = new BABYLON.Vector3(0, 1, 0), ref: Quaternion) {
+        private _lookAtToRef(pos: Vector3, up = new Vector3(0, 1, 0), ref: Quaternion) {
             BABYLON.Matrix.LookAtLHToRef(this._zeroVector, pos, up, this._lookAtTmpMatrix);
             this._lookAtTmpMatrix.invert();
             BABYLON.Quaternion.FromRotationMatrixToRef(this._lookAtTmpMatrix, ref);
@@ -77,7 +84,7 @@
          * Attaches the AttachToBoxBehavior to the passed in mesh
          * @param target The mesh that the specified node will be attached to
          */
-        attach(target: BABYLON.Mesh) {
+        attach(target: Mesh) {
             this._target = target;
             this._scene = this._target.getScene();
 
@@ -100,7 +107,7 @@
                 }
 
                 // Get camera up direction
-                BABYLON.Vector3.TransformCoordinatesToRef(BABYLON.Vector3.Up(), this._tmpMatrix, this._tmpVector);
+                Vector3.TransformCoordinatesToRef(Vector3.Up(), this._tmpMatrix, this._tmpVector);
                 // Ignore faces to not select a parrelel face for the up vector of the UI
                 this._faceVectors.forEach((v) => {
                     if (facing.direction.x && v.direction.x) {
@@ -161,4 +168,4 @@
         detach() {
             this._scene.onBeforeRenderObservable.remove(this._onRenderObserver);
         }
-    }
+    }

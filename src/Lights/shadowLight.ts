@@ -1,3 +1,11 @@
+import { serialize } from "Tools";
+import { Camera } from "Cameras";
+import { Scene } from "scene";
+import { Matrix, Vector3, Axis } from "Math";
+import { AbstractMesh } from "Mesh";
+import { IShadowLight, Light } from "Lights";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Interface describing all the common properties and methods a shadow light needs to implement.
      * This helps both the shadow generator and materials to genrate the corresponding shadow maps

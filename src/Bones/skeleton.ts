@@ -1,3 +1,13 @@
+import { IAnimatable, Observable, Tools } from "Tools";
+import { Bone } from "Bones";
+import { Vector3, Matrix, Tmp } from "Math";
+import { Scene } from "scene";
+import { Nullable } from "types";
+import { AbstractMesh } from "Mesh";
+import { RawTexture } from "Materials";
+import { AnimationRange, AnimationPropertiesOverride } from "Animations";
+import { Engine } from "Engine";
+
     /**
      * Class used to handle skinning animations
      * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
@@ -688,4 +698,4 @@
 
             bones.push(bone);
         }
-    }
+    }

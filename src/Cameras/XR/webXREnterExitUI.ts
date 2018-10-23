@@ -1,3 +1,6 @@
+import { Nullable } from "types";
+import { WebXRExperienceHelper, WebXRState } from "Cameras";
+import { IDisposable } from "scene";
     /**
      * Button which can be used to enter a different mode of XR
      */
@@ -17,7 +20,7 @@
          * Overwritable function which can be used to update the button's visuals when the state changes
          * @param activeButton the current active button in the UI
          */
-        update(activeButton: Nullable<WebXREnterExitUIButton>) {
+        update() {
         }
     }
 
@@ -126,7 +129,7 @@
         private _updateButtons(activeButton: Nullable<WebXREnterExitUIButton>) {
             this._activeButton = activeButton;
             this._buttons.forEach((b) => {
-                b.update(this._activeButton);
+                b.update();
             });
             this.activeButtonChangedObservable.notifyObservers(this._activeButton);
         }
@@ -141,4 +144,4 @@
             }
             this.activeButtonChangedObservable.clear();
         }
-    }
+    }

@@ -1,3 +1,10 @@
+import { serialize, Observer } from "Tools";
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { ICameraInput, ArcRotateCamera, CameraInputTypes } from "Cameras";
+import { Engine } from "Engine";
+import { KeyboardInfo, KeyboardEventTypes } from "Events";
+
     /**
      * Manage the keyboard inputs to control the movement of an arc rotate camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -225,4 +232,4 @@
         }
     }
 
-    (<any>CameraInputTypes)["ArcRotateCameraKeyboardMoveInput"] = ArcRotateCameraKeyboardMoveInput;
+    (<any>CameraInputTypes)["ArcRotateCameraKeyboardMoveInput"] = ArcRotateCameraKeyboardMoveInput;

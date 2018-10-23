@@ -1,3 +1,5 @@
+import { ArcRotateCamera, ArcRotateCameraPointersInput, ArcRotateCameraKeyboardMoveInput, ArcRotateCameraMouseWheelInput, CameraInputsManager, ArcRotateCameraVRDeviceOrientationInput } from "Cameras";
+
     /**
      * Default Inputs manager for the ArcRotateCamera.
      * It groups all the default supported inputs for ease of use.

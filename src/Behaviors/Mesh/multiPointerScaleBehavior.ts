@@ -1,3 +1,10 @@
+import { Mesh } from "Mesh";
+import { PointerDragBehavior, Behavior } from "Behaviors";
+import { Vector3 } from "Math";
+import { Nullable } from "types";
+import { Observer } from "Tools";
+import { Scene } from "scene";
+
     /**
      * A behavior that when attached to a mesh will allow the mesh to be scaled
      */
@@ -99,4 +106,4 @@
                 this._ownerNode.removeBehavior(behavior);
             });
         }
-    }
+    }

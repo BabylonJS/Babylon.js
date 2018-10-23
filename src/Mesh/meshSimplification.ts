@@ -1,3 +1,6 @@
+import { IndicesArray } from "types";
+import { Vector3, Vector2, Color4, Epsilon } from "Math";
+import { Mesh, VertexBuffer, SubMesh } from "Mesh";
     /**
      * A simplifier interface for future simplification implementations
      * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
@@ -365,12 +368,12 @@
                                 var uv = Vector2.Zero();
                                 var color = new Color4(0, 0, 0, 1);
 
-                                this.calculateError(v0, v1, p, n, uv, color);
+                                this.calculateError(v0, v1, p);
 
                                 var delTr = new Array<DecimationTriangle>();
 
-                                if (this.isFlipped(v0, v1, p, deleted0, t.borderFactor, delTr)) { continue; }
-                                if (this.isFlipped(v1, v0, p, deleted1, t.borderFactor, delTr)) { continue; }
+                                if (this.isFlipped(v0, v1, p, deleted0, delTr)) { continue; }
+                                if (this.isFlipped(v1, v0, p, deleted1, delTr)) { continue; }
 
                                 if (deleted0.indexOf(true) < 0 || deleted1.indexOf(true) < 0) {
                                     continue;
@@ -629,7 +632,7 @@
             this._reconstructedMesh.renderingGroupId = this._mesh.renderingGroupId;
         }
 
-        private isFlipped(vertex1: DecimationVertex, vertex2: DecimationVertex, point: Vector3, deletedArray: Array<boolean>, borderFactor: number, delTr: Array<DecimationTriangle>): boolean {
+        private isFlipped(vertex1: DecimationVertex, vertex2: DecimationVertex, point: Vector3, deletedArray: Array<boolean>, delTr: Array<DecimationTriangle>): boolean {
 
             for (var i = 0; i < vertex1.triangleCount; ++i) {
                 var t = this.triangles[this.references[vertex1.triangleStart + i].triangleId];
@@ -776,7 +779,7 @@
                 + 2 * q.data[5] * y * z + 2 * q.data[6] * y + q.data[7] * z * z + 2 * q.data[8] * z + q.data[9];
         }
 
-        private calculateError(vertex1: DecimationVertex, vertex2: DecimationVertex, pointResult?: Vector3, normalResult?: Vector3, uvResult?: Vector2, colorResult?: Color4): number {
+        private calculateError(vertex1: DecimationVertex, vertex2: DecimationVertex, pointResult?: Vector3): number {
             var q = vertex1.q.add(vertex2.q);
             var border = vertex1.isBorder && vertex2.isBorder;
             var error: number = 0;
@@ -813,4 +816,4 @@
             }
             return error;
         }
-    }
+    }

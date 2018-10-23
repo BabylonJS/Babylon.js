@@ -1,3 +1,8 @@
+import { serialize, EventState, Observer, Tools } from "Tools";
+import { Nullable } from "types";
+import { ICameraInput, ArcRotateCamera, CameraInputTypes } from "Cameras";
+import { PointerInfo, PointerEventTypes } from "Events";
+
     /**
      * Manage the pointers inputs to control an arc rotate camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs

@@ -1,3 +1,5 @@
+import { ActionManager, Action } from "Actions";
+
     /**
      * A Condition applied to an Action
      */
@@ -316,4 +318,4 @@
             });
         }
     }
-
+

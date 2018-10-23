@@ -1,3 +1,13 @@
+import { Observer } from "Tools";
+import { Nullable } from "types";
+import { PointerInfo } from "Events";
+import { Scene, IDisposable } from "scene";
+import {Node} from "Node";
+import { AbstractMesh } from "Mesh";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Gizmo, RotationGizmo, PositionGizmo, ScaleGizmo, BoundingBoxGizmo } from "Gizmos";
+import { UtilityLayerRenderer } from "Rendering";
     /**
      * Helps setup gizmo's in the scene to rotate/scale/position meshes
      */
@@ -37,7 +47,7 @@
             this.gizmos = {positionGizmo: null, rotationGizmo: null, scaleGizmo: null, boundingBoxGizmo: null};
 
             // Instatiate/dispose gizmos based on pointer actions
-            this._pointerObserver = scene.onPointerObservable.add((pointerInfo, state) => {
+            this._pointerObserver = scene.onPointerObservable.add((pointerInfo) => {
                 if (!this.usePointerToAttachGizmos) {
                     return;
                 }

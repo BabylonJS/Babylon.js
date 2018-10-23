@@ -1,3 +1,9 @@
+import { Observer, Tools, SmartArray } from "Tools";
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Engine } from "Engine";
+import { Mesh } from "Mesh";
+import { MorphTarget } from "Morph";
     /**
      * This class is used to deform meshes using morphing between different targets
      * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
@@ -224,4 +230,4 @@
 
             return result;
         }
-    }
+    }

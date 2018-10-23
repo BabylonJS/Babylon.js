@@ -1,3 +1,10 @@
+import { Nullable } from "types";
+import { FreeCameraGamepadInput, FreeCameraInputsManager, ArcRotateCameraInputsManager, ArcRotateCameraGamepadInput } from "Cameras";
+import { Scene } from "scene";
+import {GamepadManager} from "Gamepad"
+import { SceneComponentConstants, ISceneComponent } from "sceneComponent";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     export interface Scene {
         /** @hidden */
         _gamepadManager: Nullable<GamepadManager>;
@@ -119,4 +126,4 @@
                 gamepadManager._checkGamepadsStatus();
             }
         }
-    }
+    }

@@ -1,3 +1,7 @@
+import { Behavior } from "index";
+import { Mesh, AbstractMesh } from "Mesh";
+import { Nullable } from "types";
+
     /**
      * A behavior that when attached to a mesh will allow the mesh to fade in and out
      */
@@ -87,4 +91,4 @@
             });
         }
 
-    }
+    }

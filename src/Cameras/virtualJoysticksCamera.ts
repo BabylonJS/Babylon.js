@@ -1,3 +1,7 @@
+import { FreeCamera } from "Cameras";
+import { Scene } from "scene";
+import { Vector3 } from "Math";
+import {Node} from "Node";
     Node.AddNodeConstructor("VirtualJoysticksCamera", (name, scene) => {
         return () => new VirtualJoysticksCamera(name, Vector3.Zero(), scene);
     });
@@ -31,4 +35,4 @@
         public getClassName(): string {
             return "VirtualJoysticksCamera";
         }
-    }
+    }

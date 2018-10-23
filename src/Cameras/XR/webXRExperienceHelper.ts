@@ -1,3 +1,9 @@
+import { Observable } from "Tools";
+import { Nullable } from "types";
+import { Camera, WebXRSessionManager, WebXRCamera } from "Cameras";
+import { IDisposable } from "scene";
+import { Quaternion, Vector3 } from "Math";
+import { AbstractMesh } from "Mesh";
     /**
      * States of the webXR experience
      */
@@ -185,4 +191,4 @@
             this.onStateChangedObservable.clear();
             this._sessionManager.dispose();
         }
-    }
+    }

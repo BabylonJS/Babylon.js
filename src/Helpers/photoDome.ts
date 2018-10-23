@@ -1,3 +1,10 @@
+import { Observable } from "Tools";
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Mesh, TransformNode } from "Mesh";
+import { Texture, BackgroundMaterial } from "Materials";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Display a 360 degree photo on an approximately spherical surface, useful for VR applications or skyboxes.
      * As a subclass of TransformNode, this allow parenting to the camera with different locations in the scene.

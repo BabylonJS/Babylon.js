@@ -1,3 +1,6 @@
+import { Scene } from "scene";
+import { Engine } from "Engine";
+import { Texture } from "Materials";
     /**
      * Class used to store 3D textures containing user data
      */
@@ -53,4 +56,4 @@
             }
             this._engine.updateRawTexture3D(this._texture, data, this._texture.format, this._texture!.invertY, undefined, this._texture.type);
         }
-    }
+    }

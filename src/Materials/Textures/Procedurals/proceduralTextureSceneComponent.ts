@@ -1,3 +1,11 @@
+import { Tools } from "Tools";
+import { Scene } from "scene";
+import { ProceduralTexture } from "Materials";
+import { SceneComponentConstants, ISceneComponent } from "sceneComponent";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Layer } from "Layer";
+import { AbstractScene } from "abstractScene";
     export interface AbstractScene {
         /**
          * The list of procedural textures added to the scene

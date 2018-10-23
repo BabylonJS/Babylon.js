@@ -1,3 +1,7 @@
+import { Action, Condition } from "Actions";
+
+import { Sound } from "Audio";
+
     /**
      * This defines an action helpful to play a defined sound on a triggered action.
      */
@@ -82,4 +86,4 @@
                 properties: [{ name: "sound", value: this._sound.name }]
             }, parent);
         }
-    }
+    }

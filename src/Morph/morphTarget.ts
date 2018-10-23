@@ -1,3 +1,9 @@
+import { Observable, IAnimatable } from "Tools";
+import { Nullable, FloatArray } from "types";
+import { Scene } from "scene";
+import { Engine } from "Engine";
+import { AbstractMesh, VertexBuffer } from "Mesh";
+import { Animation, AnimationPropertiesOverride } from "Animations";
     /**
      * Defines a target to use with MorphTargetManager
      * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
@@ -237,4 +243,4 @@
 
             return result;
         }
-    }
+    }

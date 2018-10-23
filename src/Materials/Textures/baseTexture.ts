@@ -1,3 +1,12 @@
+import { serialize, Observer, Observable, Tools, SerializationHelper, CubeMapToSphericalPolynomialTools } from "Tools";
+import { Nullable } from "types";
+import { Scene } from "scene";
+import { Matrix, Size, ISize, SphericalPolynomial } from "Math";
+import { Engine } from "Engine";
+import { Material, Texture, InternalTexture } from "Materials";
+import { Animation } from "Animations";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Base class of all the textures in babylon.
      * It groups all the common properties the materials, post process, lights... might need
@@ -380,7 +389,7 @@
          * Scales the texture if is `canRescale()`
          * @param ratio the resize factor we want to use to rescale
          */
-        public scale(ratio: number): void {
+        public scale(): void {
         }
 
         /**

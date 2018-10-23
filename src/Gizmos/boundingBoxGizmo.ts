@@ -1,3 +1,14 @@
+import { Observer, Observable, Tools } from "Tools";
+import { Nullable } from "types";
+import { PointerInfo } from "Events";
+import { Scene } from "scene";
+import { Quaternion, Matrix, Vector3, Color3 } from "Math";
+import { Mesh, AbstractMesh } from "Mesh";
+import { PointerDragBehavior } from "Behaviors";
+import { _TimeToken } from "Instrumentation";
+import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Gizmo } from "Gizmos";
+import { UtilityLayerRenderer } from "Rendering";
     /**
      * Bounding box gizmo
      */
@@ -159,7 +170,7 @@
                 sphere.addBehavior(_dragBehavior);
                 let startingTurnDirection = new Vector3(1, 0, 0);
                 let totalTurnAmountOfDrag = 0;
-                _dragBehavior.onDragStartObservable.add((event) => {
+                _dragBehavior.onDragStartObservable.add(() => {
                     startingTurnDirection.copyFrom(sphere.forward);
                     totalTurnAmountOfDrag = 0;
                 });
@@ -290,7 +301,7 @@
 
             // Hover color change
             var pointerIds = new Array<AbstractMesh>();
-            this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo, eventState) => {
+            this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
                 if (!pointerIds[(<PointerEvent>pointerInfo.event).pointerId]) {
                     this._rotateSpheresParent.getChildMeshes().concat(this._scaleBoxesParent.getChildMeshes()).forEach((mesh) => {
                         if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh == mesh) {
@@ -330,7 +341,7 @@
 
         private _selectNode(selectedMesh: Nullable<Mesh>) {
             this._rotateSpheresParent.getChildMeshes()
-                .concat(this._scaleBoxesParent.getChildMeshes()).forEach((m, i) => {
+                .concat(this._scaleBoxesParent.getChildMeshes()).forEach((m) => {
                     m.isVisible = (!selectedMesh || m == selectedMesh);
                 });
         }
@@ -513,4 +524,4 @@
         public setCustomMesh(mesh: Mesh) {
             Tools.Error("Custom meshes are not supported on this gizmo");
         }
-    }
+    }
