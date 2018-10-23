@@ -1,9 +1,7 @@
 import { Observable, Tools } from "Tools";
 import { Nullable } from "types";
-import { Vector3 } from "Math";
-import { AbstractMesh } from "Mesh";
-import { _TimeToken } from "Instrumentation";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Vector3, Color3 } from "Math";
+import { AbstractMesh, Mesh } from "Mesh";
 import { Gizmo, AxisScaleGizmo } from "Gizmos";
 import { UtilityLayerRenderer } from "Rendering";
     /**
@@ -47,18 +45,18 @@ import { UtilityLayerRenderer } from "Rendering";
          */
         constructor(gizmoLayer: UtilityLayerRenderer= UtilityLayerRenderer.DefaultUtilityLayer) {
             super(gizmoLayer);
-            this.xGizmo = new AxisScaleGizmo(new Vector3(1, 0, 0), BABYLON.Color3.Red().scale(0.5), gizmoLayer);
-            this.yGizmo = new AxisScaleGizmo(new Vector3(0, 1, 0), BABYLON.Color3.Green().scale(0.5), gizmoLayer);
-            this.zGizmo = new AxisScaleGizmo(new Vector3(0, 0, 1), BABYLON.Color3.Blue().scale(0.5), gizmoLayer);
+            this.xGizmo = new AxisScaleGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer);
+            this.yGizmo = new AxisScaleGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer);
+            this.zGizmo = new AxisScaleGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), gizmoLayer);
 
             // Create uniform scale gizmo
-            this.uniformScaleGizmo = new AxisScaleGizmo(new Vector3(0, 1, 0), BABYLON.Color3.Yellow().scale(0.5), gizmoLayer);
+            this.uniformScaleGizmo = new AxisScaleGizmo(new Vector3(0, 1, 0), Color3.Yellow().scale(0.5), gizmoLayer);
             this.uniformScaleGizmo.updateGizmoRotationToMatchAttachedMesh = false;
             this.uniformScaleGizmo.uniformScaling = true;
-            var uniformScalingMesh = BABYLON.Mesh.CreatePolyhedron("", {type: 1}, this.uniformScaleGizmo.gizmoLayer.utilityLayerScene);
+            var uniformScalingMesh = Mesh.CreatePolyhedron("", {type: 1}, this.uniformScaleGizmo.gizmoLayer.utilityLayerScene);
             uniformScalingMesh.scaling.scaleInPlace(0.02);
             uniformScalingMesh.visibility = 0;
-            var octahedron = BABYLON.Mesh.CreatePolyhedron("", {type: 1}, this.uniformScaleGizmo.gizmoLayer.utilityLayerScene);
+            var octahedron = Mesh.CreatePolyhedron("", {type: 1}, this.uniformScaleGizmo.gizmoLayer.utilityLayerScene);
             octahedron.scaling.scaleInPlace(0.007);
             uniformScalingMesh.addChild(octahedron);
             this.uniformScaleGizmo.setCustomMesh(uniformScalingMesh, true);

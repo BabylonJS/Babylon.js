@@ -4,7 +4,7 @@ import { Camera } from "Cameras";
 import { Scene, IDisposable } from "scene";
 import { Quaternion, Matrix, Vector3, Color3, Color4, Plane, Tmp, Epsilon, Axis } from "Math";
 import { Engine } from "Engine";
-import {Node} from "Node";
+import { Node } from "Node";
 import { InstancedMesh, VertexBuffer, TransformNode, SubMesh, LinesMesh, IGetSetVerticesData, VertexData } from "Mesh";
 import { PickingInfo, Collider, IntersectionInfo } from "Collisions";
 import { Ray, ICullable, BoundingInfo } from "Culling";
@@ -14,6 +14,7 @@ import { ActionManager } from "Actions";
 import { Skeleton } from "Bones";
 import { IEdgesRenderer } from "Rendering";
 import { SolidParticle } from "Particles";
+
     /** @hidden */
     class _FacetDataStorage {
         // facetData private properties
@@ -780,18 +781,18 @@ import { SolidParticle } from "Particles";
          * Note that a new underlying VertexBuffer object is created each call.
          * If the `kind` is the `PositionKind`, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.
          * @param kind defines vertex data kind:
-         * * BABYLON.VertexBuffer.PositionKind
-         * * BABYLON.VertexBuffer.UVKind
-         * * BABYLON.VertexBuffer.UV2Kind
-         * * BABYLON.VertexBuffer.UV3Kind
-         * * BABYLON.VertexBuffer.UV4Kind
-         * * BABYLON.VertexBuffer.UV5Kind
-         * * BABYLON.VertexBuffer.UV6Kind
-         * * BABYLON.VertexBuffer.ColorKind
-         * * BABYLON.VertexBuffer.MatricesIndicesKind
-         * * BABYLON.VertexBuffer.MatricesIndicesExtraKind
-         * * BABYLON.VertexBuffer.MatricesWeightsKind
-         * * BABYLON.VertexBuffer.MatricesWeightsExtraKind
+         * * VertexBuffer.PositionKind
+         * * VertexBuffer.UVKind
+         * * VertexBuffer.UV2Kind
+         * * VertexBuffer.UV3Kind
+         * * VertexBuffer.UV4Kind
+         * * VertexBuffer.UV5Kind
+         * * VertexBuffer.UV6Kind
+         * * VertexBuffer.ColorKind
+         * * VertexBuffer.MatricesIndicesKind
+         * * VertexBuffer.MatricesIndicesExtraKind
+         * * VertexBuffer.MatricesWeightsKind
+         * * VertexBuffer.MatricesWeightsExtraKind
          * @param data defines the data source
          * @param updatable defines if the data must be flagged as updatable (or static)
          * @param stride defines the vertex stride (size of an entire vertex). Can be null and in this case will be deduced from vertex data kind
@@ -805,18 +806,18 @@ import { SolidParticle } from "Particles";
          * Updates the existing vertex data of the mesh geometry for the requested `kind`.
          * If the mesh has no geometry, it is simply returned as it is.
          * @param kind defines vertex data kind:
-         * * BABYLON.VertexBuffer.PositionKind
-         * * BABYLON.VertexBuffer.UVKind
-         * * BABYLON.VertexBuffer.UV2Kind
-         * * BABYLON.VertexBuffer.UV3Kind
-         * * BABYLON.VertexBuffer.UV4Kind
-         * * BABYLON.VertexBuffer.UV5Kind
-         * * BABYLON.VertexBuffer.UV6Kind
-         * * BABYLON.VertexBuffer.ColorKind
-         * * BABYLON.VertexBuffer.MatricesIndicesKind
-         * * BABYLON.VertexBuffer.MatricesIndicesExtraKind
-         * * BABYLON.VertexBuffer.MatricesWeightsKind
-         * * BABYLON.VertexBuffer.MatricesWeightsExtraKind
+         * * VertexBuffer.PositionKind
+         * * VertexBuffer.UVKind
+         * * VertexBuffer.UV2Kind
+         * * VertexBuffer.UV3Kind
+         * * VertexBuffer.UV4Kind
+         * * VertexBuffer.UV5Kind
+         * * VertexBuffer.UV6Kind
+         * * VertexBuffer.ColorKind
+         * * VertexBuffer.MatricesIndicesKind
+         * * VertexBuffer.MatricesIndicesExtraKind
+         * * VertexBuffer.MatricesWeightsKind
+         * * VertexBuffer.MatricesWeightsExtraKind
          * @param data defines the data source
          * @param updateExtends If `kind` is `PositionKind` and if `updateExtends` is true, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed
          * @param makeItUnique If true, a new global geometry is created from this data and is set to the mesh

@@ -1,4 +1,4 @@
-import { serialize, Observable, Tools, SerializationHelper, serializeAsTexture } from "Tools";
+import { serialize, Observable, Tools, SerializationHelper, serializeAsTexture, serializeAsColorCurves, serializeAsColor4 } from "Tools";
 import { Nullable } from "types";
 import { Color4 } from "Math";
 import { Effect, BaseTexture, IImageProcessingConfigurationDefines, ColorCurves, MaterialDefines } from "Materials";

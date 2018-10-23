@@ -3,15 +3,15 @@ import { Nullable } from "types";
 import { FreeCamera, DeviceOrientationCamera, Camera, VRDeviceOrientationFreeCamera, WebVROptions, WebVRFreeCamera, TargetCamera } from "Cameras";
 import { PointerEventTypes } from "Events";
 import { Scene, IDisposable } from "scene";
-import { Quaternion, Matrix, Vector3, Color3, Color4 } from "Math";
-import {Gamepad, WebVRController, PoseEnabledController, Xbox360Pad, Xbox360Button, StickValues, PoseEnabledControllerType} from "Gamepad"
+import { Quaternion, Matrix, Vector3, Color3, Color4, Axis } from "Math";
+import { Gamepad, WebVRController, PoseEnabledController, Xbox360Pad, Xbox360Button, StickValues, PoseEnabledControllerType } from "Gamepad";
 import { IDisplayChangedEventArgs } from "Engine";
 import { Mesh, AbstractMesh } from "Mesh";
 import { PickingInfo } from "Collisions";
 import { Ray } from "Culling";
 import { StandardMaterial, ImageProcessingConfiguration, DynamicTexture } from "Materials";
 import { ImageProcessingPostProcess } from "PostProcess";
-import { SineEase, EasingFunction, Animation } from "Animations";
+import { SineEase, EasingFunction, Animation, CircleEase } from "Animations";
     /**
      * Options to modify the vr teleportation behavior.
      */
@@ -1671,7 +1671,7 @@ import { SineEase, EasingFunction, Animation } from "Animations";
 
         private _convertNormalToDirectionOfRay(normal: Nullable<Vector3>, ray: Ray) {
             if (normal) {
-                var angle = Math.acos(BABYLON.Vector3.Dot(normal, ray.direction));
+                var angle = Math.acos(Vector3.Dot(normal, ray.direction));
                 if (angle < Math.PI / 2) {
                     normal.scaleInPlace(-1);
                 }

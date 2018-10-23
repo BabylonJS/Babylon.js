@@ -84,7 +84,7 @@ import { Material } from "Materials";
         }
 
         /**
-         * `BABYLON.CSG.Plane.EPSILON` is the tolerance used by `splitPolygon()` to decide if a
+         * `CSG.Plane.EPSILON` is the tolerance used by `splitPolygon()` to decide if a
          * point is on the plane
          */
         static EPSILON = 1e-5;
@@ -406,9 +406,9 @@ import { Material } from "Materials";
         public scaling: Vector3;
 
         /**
-         * Convert the BABYLON.Mesh to BABYLON.CSG
-         * @param mesh The BABYLON.Mesh to convert to BABYLON.CSG
-         * @returns A new BABYLON.CSG from the BABYLON.Mesh
+         * Convert the Mesh to CSG
+         * @param mesh The Mesh to convert to CSG
+         * @returns A new CSG from the Mesh
          */
         public static FromMesh(mesh: Mesh): CSG {
             var vertex: Vertex, normal: Vector3, uv: Vector2, position: Vector3,
@@ -477,8 +477,8 @@ import { Material } from "Materials";
         }
 
         /**
-         * Construct a BABYLON.CSG solid from a list of `BABYLON.CSG.Polygon` instances.
-         * @param polygons Polygons used to construct a BABYLON.CSG solid
+         * Construct a CSG solid from a list of `CSG.Polygon` instances.
+         * @param polygons Polygons used to construct a CSG solid
          */
         private static FromPolygons(polygons: Polygon[]): CSG {
             var csg = new CSG();
@@ -487,8 +487,8 @@ import { Material } from "Materials";
         }
 
         /**
-         * Clones, or makes a deep copy, of the BABYLON.CSG
-         * @returns A new BABYLON.CSG
+         * Clones, or makes a deep copy, of the CSG
+         * @returns A new CSG
          */
         public clone(): CSG {
             var csg = new CSG();
@@ -535,7 +535,7 @@ import { Material } from "Materials";
         /**
          * Subtracts this CSG with another CSG
          * @param csg The CSG to subtract against this CSG
-         * @returns A new BABYLON.CSG
+         * @returns A new CSG
          */
         public subtract(csg: CSG): CSG {
             var a = new Node(this.clone().polygons);
@@ -574,7 +574,7 @@ import { Material } from "Materials";
         /**
          * Intersect this CSG with another CSG
          * @param csg The CSG to intersect against this CSG
-         * @returns A new BABYLON.CSG
+         * @returns A new CSG
          */
         public intersect(csg: CSG): CSG {
             var a = new Node(this.clone().polygons);
@@ -609,9 +609,9 @@ import { Material } from "Materials";
         }
 
         /**
-         * Return a new BABYLON.CSG solid with solid and empty space switched. This solid is
+         * Return a new CSG solid with solid and empty space switched. This solid is
          * not modified.
-         * @returns A new BABYLON.CSG solid with solid and empty space switched
+         * @returns A new CSG solid with solid and empty space switched
          */
         public inverse(): CSG {
             var csg = this.clone();
@@ -620,7 +620,7 @@ import { Material } from "Materials";
         }
 
         /**
-         * Inverses the BABYLON.CSG in place
+         * Inverses the CSG in place
          */
         public inverseInPlace(): void {
             this.polygons.map((p) => { p.flip(); });
@@ -630,8 +630,8 @@ import { Material } from "Materials";
          * This is used to keep meshes transformations so they can be restored
          * when we build back a Babylon Mesh
          * NB : All CSG operations are performed in world coordinates
-         * @param csg The BABYLON.CSG to copy the transform attributes from
-         * @returns This BABYLON.CSG
+         * @param csg The CSG to copy the transform attributes from
+         * @returns This CSG
          */
         public copyTransformAttributes(csg: CSG): CSG {
             this.matrix = csg.matrix;
@@ -647,9 +647,9 @@ import { Material } from "Materials";
          * Build Raw mesh from CSG
          * Coordinates here are in world space
          * @param name The name of the mesh geometry
-         * @param scene The BABYLON.Scene
+         * @param scene The Scene
          * @param keepSubMeshes Specifies if the submeshes should be kept
-         * @returns A new BABYLON.Mesh
+         * @returns A new Mesh
          */
         public buildMeshGeometry(name: string, scene: Scene, keepSubMeshes: boolean): Mesh {
             var matrix = this.matrix.clone();
@@ -765,11 +765,11 @@ import { Material } from "Materials";
 
         /**
          * Build Mesh from CSG taking material and transforms into account
-         * @param name The name of the BABYLON.Mesh
-         * @param material The material of the BABYLON.Mesh
-         * @param scene The BABYLON.Scene
+         * @param name The name of the Mesh
+         * @param material The material of the Mesh
+         * @param scene The Scene
          * @param keepSubMeshes Specifies if submeshes should be kept
-         * @returns The new BABYLON.Mesh
+         * @returns The new Mesh
          */
         public toMesh(name: string, material: Nullable<Material>, scene: Scene, keepSubMeshes: boolean): Mesh {
             var mesh = this.buildMeshGeometry(name, scene, keepSubMeshes);

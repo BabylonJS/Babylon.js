@@ -1,7 +1,6 @@
 import { Observable, Tools } from "Tools";
 import { Nullable } from "types";
-import { Vector3 } from "Math";
-import {ArcRotateCameraInputsManager} from "Gamepad";
+import { Vector3, Color3 } from "Math";
 import { Mesh, AbstractMesh } from "Mesh";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
@@ -43,9 +42,9 @@ import { UtilityLayerRenderer } from "Rendering";
          */
         constructor(gizmoLayer: UtilityLayerRenderer= UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32) {
             super(gizmoLayer);
-            this.xGizmo = new PlaneRotationGizmo(new Vector3(1, 0, 0), BABYLON.Color3.Red().scale(0.5), gizmoLayer, tessellation);
-            this.yGizmo = new PlaneRotationGizmo(new Vector3(0, 1, 0), BABYLON.Color3.Green().scale(0.5), gizmoLayer, tessellation);
-            this.zGizmo = new PlaneRotationGizmo(new Vector3(0, 0, 1), BABYLON.Color3.Blue().scale(0.5), gizmoLayer, tessellation);
+            this.xGizmo = new PlaneRotationGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer, tessellation);
+            this.yGizmo = new PlaneRotationGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, tessellation);
+            this.zGizmo = new PlaneRotationGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), gizmoLayer, tessellation);
 
             // Relay drag events
             [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {

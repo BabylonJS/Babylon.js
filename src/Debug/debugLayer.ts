@@ -52,7 +52,7 @@ import { Scene } from "scene";
         /**
          * Observable triggered when a property is changed through the inspector.
          */
-        public onPropertyChangedObservable = new BABYLON.Observable<{ object: any, property: string, value: any, initialValue: any }>();
+        public onPropertyChangedObservable = new Observable<{ object: any, property: string, value: any, initialValue: any }>();
 
         /**
          * Instantiates a new debug layer.

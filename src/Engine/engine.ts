@@ -2,7 +2,7 @@ import { Observer, Observable, Tools, ICustomAnimationFrameRequester, PerfCounte
 import { Nullable, FloatArray, DataArray, IndicesArray } from "types";
 import { Camera } from "Cameras";
 import { Scene } from "scene";
-import { Matrix, Color3, Color4, Viewport, Size, Scalar } from "Math";
+import { Matrix, Color3, Color4, Viewport, Size, Scalar, Vector4, SphericalPolynomial } from "Math";
 import { IDisplayChangedEventArgs } from "Engine";
 import { VertexBuffer } from "Mesh";
 import { RenderTargetTexture, Material, IInternalTextureLoader, Texture, UniformBuffer, InternalTexture, Effect, DummyInternalTextureTracker, IMultiRenderTargetOptions, BaseTexture, IInternalTextureTracker, VideoTexture } from "Materials";
@@ -564,7 +564,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         public enableOfflineSupport = false;
 
         /**
-         * Gets or sets a boolean to enable/disable checking manifest if IndexedDB support is enabled (Babylon.js will always consider the database is up to date)
+         * Gets or sets a boolean to enable/disable checking manifest if IndexedDB support is enabled (js will always consider the database is up to date)
          **/
         public disableManifestCheck = false;
 
@@ -2012,7 +2012,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
             }
         }
 
-        private _viewportCached = new BABYLON.Vector4(0, 0, 0, 0);
+        private _viewportCached = new Vector4(0, 0, 0, 0);
 
         /** @hidden */
         public _viewport(x: number, y: number, width: number, height: number): void {
@@ -3924,7 +3924,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
         /**
          * Sets the current alpha mode
-         * @param mode defines the mode to use (one of the BABYLON.Engine.ALPHA_XXX)
+         * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
          * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
          * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
          */
@@ -4222,7 +4222,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         }
 
         /**
-         * Usually called from BABYLON.Texture.ts.
+         * Usually called from Texture.ts.
          * Passed information to create a WebGLTexture
          * @param urlArg defines a value which contains one of the following:
          * * A conventional http URL, e.g. 'http://...' or 'file://...'
@@ -4231,14 +4231,14 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * @param noMipmap defines a boolean indicating that no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file
          * @param invertY when true, image is flipped when loaded.  You probably want true. Ignored for compressed textures.  Must be flipped in the file
          * @param scene needed for loading to the correct scene
-         * @param samplingMode mode with should be used sample / access the texture (Default: BABYLON.Texture.TRILINEAR_SAMPLINGMODE)
+         * @param samplingMode mode with should be used sample / access the texture (Default: Texture.TRILINEAR_SAMPLINGMODE)
          * @param onLoad optional callback to be called upon successful completion
          * @param onError optional callback to be called upon failure
          * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
          * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
          * @param forcedExtension defines the extension to use to pick the right loader
-         * @returns a InternalTexture for assignment back into BABYLON.Texture
+         * @returns a InternalTexture for assignment back into Texture
          */
         public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
             onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
@@ -4460,7 +4460,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * @param format defines the format of the data
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the compression used (null by default)
-         * @param type defines the type fo the data (BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
          */
         public updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type = Engine.TEXTURETYPE_UNSIGNED_INT): void {
             if (!texture) {
@@ -4508,9 +4508,9 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * @param format defines the format of the data
          * @param generateMipMaps defines if the engine should generate the mip levels
          * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (BABYLON.Texture.NEAREST_SAMPLINGMODE by default)
+         * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
          * @param compression defines the compression used (null by default)
-         * @param type defines the type fo the data (BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
          * @returns the raw texture inside an InternalTexture
          */
         public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Engine.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
@@ -4580,7 +4580,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * @param width defines the width of the texture
          * @param height defines the height of the texture
          * @param generateMipMaps defines if the engine should generate the mip levels
-         * @param samplingMode defines the required sampling mode (BABYLON.Texture.NEAREST_SAMPLINGMODE by default)
+         * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
          * @returns the dynamic texture inside an InternalTexture
          */
         public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
@@ -5573,7 +5573,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
                 let texture = loadData.texture as InternalTexture;
                 if (!createPolynomials) {
-                    texture._sphericalPolynomial = new BABYLON.SphericalPolynomial();
+                    texture._sphericalPolynomial = new SphericalPolynomial();
                 }
                 else if (loadData.info.sphericalPolynomial) {
                     texture._sphericalPolynomial = loadData.info.sphericalPolynomial;
@@ -5807,7 +5807,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * @param texture defines the texture to udpdate
          * @param data defines the data to store
          * @param format defines the data format
-         * @param type defines the type fo the data (BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the compression used (null by default)
          * @param level defines which level of the texture to update
@@ -5866,10 +5866,10 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * @param data defines the array of data to use to create each face
          * @param size defines the size of the textures
          * @param format defines the format of the data
-         * @param type defines the type of the data (like BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT)
+         * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
          * @param generateMipMaps  defines if the engine should generate the mip levels
          * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (like BABYLON.Texture.NEAREST_SAMPLINGMODE)
+         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
          * @param compression defines the compression used (null by default)
          * @returns the cube texture as an InternalTexture
          */
@@ -5896,20 +5896,20 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
             if (textureType === gl.FLOAT && !this._caps.textureFloatLinearFiltering) {
                 generateMipMaps = false;
                 samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
-                BABYLON.Tools.Warn("Float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
+                Tools.Warn("Float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
             }
             else if (textureType === this._gl.HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
                 generateMipMaps = false;
                 samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
-                BABYLON.Tools.Warn("Half float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
+                Tools.Warn("Half float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
             }
             else if (textureType === gl.FLOAT && !this._caps.textureFloatRender) {
                 generateMipMaps = false;
-                BABYLON.Tools.Warn("Render to float textures is not supported. Mipmap generation forced to false.");
+                Tools.Warn("Render to float textures is not supported. Mipmap generation forced to false.");
             }
             else if (textureType === gl.HALF_FLOAT && !this._caps.colorBufferFloat) {
                 generateMipMaps = false;
-                BABYLON.Tools.Warn("Render to half float textures is not supported. Mipmap generation forced to false.");
+                Tools.Warn("Render to half float textures is not supported. Mipmap generation forced to false.");
             }
 
             var width = size;
@@ -5955,13 +5955,13 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * @param scene defines the current scene
          * @param size defines the size of the textures
          * @param format defines the format of the data
-         * @param type defines the type fo the data (like BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT)
+         * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
          * @param noMipmap defines if the engine should avoid generating the mip levels
          * @param callback defines a callback used to extract texture data from loaded data
          * @param mipmapGenerator defines to provide an optional tool to generate mip levels
          * @param onLoad defines a callback called when texture is loaded
          * @param onError defines a callback called if there is an error
-         * @param samplingMode defines the required sampling mode (like BABYLON.Texture.NEAREST_SAMPLINGMODE)
+         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
          * @param invertY defines if data must be stored with Y axis inverted
          * @returns the cube texture as an InternalTexture
          */
@@ -6094,7 +6094,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * @param format defines the format of the texture
          * @param generateMipMaps defines if the engine must generate mip levels
          * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (like BABYLON.Texture.NEAREST_SAMPLINGMODE)
+         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
          * @param compression defines the compressed used (can be null)
          * @param textureType defines the compressed used (can be null)
          * @returns a new raw 3D texture (stored in an InternalTexture)

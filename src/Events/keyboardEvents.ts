@@ -19,12 +19,12 @@
         /**
          * Instantiates a new keyboard info.
          * This class is used to store keyboard related info for the onKeyboardObservable event.
-         * @param type Defines the type of event (BABYLON.KeyboardEventTypes)
+         * @param type Defines the type of event (KeyboardEventTypes)
          * @param event Defines the related dom event
          */
         constructor(
             /**
-             * Defines the type of event (BABYLON.KeyboardEventTypes)
+             * Defines the type of event (KeyboardEventTypes)
              */
             public type: number,
             /**
@@ -47,12 +47,12 @@
         /**
          * Instantiates a new keyboard pre info.
          * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-         * @param type Defines the type of event (BABYLON.KeyboardEventTypes)
+         * @param type Defines the type of event (KeyboardEventTypes)
          * @param event Defines the related dom event
          */
         constructor(
             /**
-             * Defines the type of event (BABYLON.KeyboardEventTypes)
+             * Defines the type of event (KeyboardEventTypes)
              */
             public type: number,
             /**
@@ -62,4 +62,4 @@
             super(type, event);
             this.skipOnPointerObservable = false;
         }
-    }
+    }

@@ -97,7 +97,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
             // create
             let material = this._material = new BackgroundMaterial(name + "_material", scene);
-            this._mesh = BABYLON.Mesh.CreateSphere(name + "_mesh", options.resolution, options.size, scene, false, BABYLON.Mesh.BACKSIDE);
+            this._mesh = Mesh.CreateSphere(name + "_mesh", options.resolution, options.size, scene, false, Mesh.BACKSIDE);
 
             // configure material
             material.opacityFresnel = false;

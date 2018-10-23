@@ -1,7 +1,7 @@
 import { Scene } from "scene";
 import { Vector3 } from "Math";
-import {WebVRController, PoseEnabledControllerType, ExtendedGamepadButton, GamepadButtonChanges} from "Gamepad"
-import { AbstractMesh } from "Mesh";
+import { WebVRController, PoseEnabledControllerType, ExtendedGamepadButton, GamepadButtonChanges } from "Gamepad";
+import { AbstractMesh, Mesh } from "Mesh";
 import { _TimeToken } from "Instrumentation";
 import { SceneLoader } from "Loading";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
@@ -48,7 +48,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         public initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void) {
             SceneLoader.ImportMesh("", GearVRController.MODEL_BASE_URL, GearVRController.MODEL_FILENAME, scene, (newMeshes) => {
                 // Offset the controller so it will rotate around the users wrist
-                var mesh = new BABYLON.Mesh("", scene);
+                var mesh = new Mesh("", scene);
                 newMeshes[1].parent = mesh;
                 newMeshes[1].position.z = -0.15;
                 this._defaultModel = mesh;

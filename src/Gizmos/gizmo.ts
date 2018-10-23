@@ -78,7 +78,7 @@ import { UtilityLayerRenderer } from "Rendering";
         constructor(
             /** The utility layer the gizmo will be added to */
             public gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
-            this._rootMesh = new BABYLON.Mesh("gizmoRootNode", gizmoLayer.utilityLayerScene);
+            this._rootMesh = new Mesh("gizmoRootNode", gizmoLayer.utilityLayerScene);
             this._beforeRenderObserver = this.gizmoLayer.utilityLayerScene.onBeforeRenderObservable.add(() => {
                 this._update();
             });

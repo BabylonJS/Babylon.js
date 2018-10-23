@@ -1,5 +1,5 @@
 import { Path2, Vector3, Quaternion, Vector2, Color3, Size, Scalar, Matrix } from "Math";
-import { IEasingFunction, RuntimeAnimation, EasingFunction } from "Animations";
+import { IEasingFunction, RuntimeAnimation, EasingFunction, Animatable } from "Animations";
 import { Nullable } from "types";
 import { Scene } from "Debug/debugLayer";
 import { IAnimatable } from "Tools";

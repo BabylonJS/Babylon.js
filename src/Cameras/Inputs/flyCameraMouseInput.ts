@@ -3,6 +3,7 @@ import { Nullable } from "types";
 import { ICameraInput, CameraInputTypes, FlyCamera } from "Cameras";
 import { PointerInfo, PointerEventTypes } from "Events";
 import { Scene } from "scene";
+import { Quaternion, Axis } from "Math";
     /**
      * Listen to mouse events to control the camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -258,17 +259,17 @@ import { Scene } from "scene";
             var y = offsetY / this.angularSensibility;
 
             // Initialize to current rotation.
-            var currentRotation = BABYLON.Quaternion.RotationYawPitchRoll(
+            var currentRotation = Quaternion.RotationYawPitchRoll(
                 camera.rotation.y,
                 camera.rotation.x,
                 camera.rotation.z
             );
-            var rotationChange: BABYLON.Quaternion;
+            var rotationChange: Quaternion;
 
             // Pitch.
             if (this.buttonsPitch.some((v) => { return v === this.activeButton; })) {
                 // Apply change in Radians to vector Angle.
-                rotationChange = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, y);
+                rotationChange = Quaternion.RotationAxis(Axis.X, y);
                 // Apply Pitch to quaternion.
                 currentRotation.multiplyInPlace(rotationChange);
             }
@@ -276,7 +277,7 @@ import { Scene } from "scene";
             // Yaw.
             if (this.buttonsYaw.some((v) => { return v === this.activeButton; })) {
                 // Apply change in Radians to vector Angle.
-                rotationChange = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, x);
+                rotationChange = Quaternion.RotationAxis(Axis.Y, x);
                 // Apply Yaw to quaternion.
                 currentRotation.multiplyInPlace(rotationChange);
 
@@ -285,7 +286,7 @@ import { Scene } from "scene";
                 if (camera.bankedTurn && -limit < camera.rotation.z && camera.rotation.z < limit) {
                     let bankingDelta = camera.bankedTurnMultiplier * -x;
                     // Apply change in Radians to vector Angle.
-                    rotationChange = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, bankingDelta);
+                    rotationChange = Quaternion.RotationAxis(Axis.Z, bankingDelta);
                     // Apply Yaw to quaternion.
                     currentRotation.multiplyInPlace(rotationChange);
                 }
@@ -294,7 +295,7 @@ import { Scene } from "scene";
             // Roll.
             if (this.buttonsRoll.some((v) => { return v === this.activeButton; })) {
                 // Apply change in Radians to vector Angle.
-                rotationChange = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -x);
+                rotationChange = Quaternion.RotationAxis(Axis.Z, -x);
                 // Track Rolling.
                 camera._trackRoll -= x;
                 // Apply Pitch to quaternion.

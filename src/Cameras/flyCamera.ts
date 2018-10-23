@@ -42,13 +42,13 @@ import { Collider } from "Collisions";
         /**
          * Define the current direction the camera is moving to.
          */
-        public cameraDirection = BABYLON.Vector3.Zero();
+        public cameraDirection = Vector3.Zero();
 
         /**
          * Define the current local rotation of the camera as a quaternion to prevent Gimbal lock.
          * This overrides and empties cameraRotation.
          */
-        public rotationQuaternion: BABYLON.Quaternion;
+        public rotationQuaternion: Quaternion;
 
         /**
          * Track Roll to maintain the wanted Rolling when looking around.

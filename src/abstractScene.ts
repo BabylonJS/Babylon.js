@@ -10,6 +10,7 @@ import { MultiMaterial, Material, BaseTexture } from "Materials";
 import { ActionManager } from "Actions";
 import { Camera } from "Cameras";
 import { Light } from "Lights";
+import { Node } from "Node";
 
     /**
      * Defines how the parser contract is defined.

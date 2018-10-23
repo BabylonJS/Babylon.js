@@ -1,6 +1,7 @@
 import { Nullable } from "types";
 import { WebXRExperienceHelper, WebXRState } from "Cameras";
-import { IDisposable } from "scene";
+import { IDisposable, Scene } from "scene";
+import { Observable } from "Tools";
     /**
      * Button which can be used to enter a different mode of XR
      */
@@ -52,7 +53,7 @@ import { IDisposable } from "scene";
          *
          * When exiting xr the callback parameter will be null)
          */
-        public activeButtonChangedObservable = new BABYLON.Observable<Nullable<WebXREnterExitUIButton>>();
+        public activeButtonChangedObservable = new Observable<Nullable<WebXREnterExitUIButton>>();
         /**
          * Creates UI to allow the user to enter/exit XR mode
          * @param scene the scene to add the ui to
@@ -60,7 +61,7 @@ import { IDisposable } from "scene";
          * @param options options to configure the UI
          * @returns the created ui
          */
-        public static CreateAsync(scene: BABYLON.Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI> {
+        public static CreateAsync(scene: Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI> {
             var ui = new WebXREnterExitUI(scene, options);
             var supportedPromises = ui._buttons.map((btn) => {
                 return helper.supportsSessionAsync(btn.initializationOptions);
@@ -75,11 +76,11 @@ import { IDisposable } from "scene";
                     if (supported) {
                         ui._overlay.appendChild(ui._buttons[i].element);
                         ui._buttons[i].element.onclick = async() => {
-                            if (helper.state == BABYLON.WebXRState.IN_XR) {
+                            if (helper.state == WebXRState.IN_XR) {
                                 ui._updateButtons(null);
                                 await helper.exitXRAsync();
                                 return;
-                            } else if (helper.state == BABYLON.WebXRState.NOT_IN_XR) {
+                            } else if (helper.state == WebXRState.NOT_IN_XR) {
                                 ui._updateButtons(ui._buttons[i]);
                                 await helper.enterXRAsync(ui._buttons[i].initializationOptions, "eye-level");
                             }
@@ -90,7 +91,7 @@ import { IDisposable } from "scene";
             });
         }
 
-        private constructor(private scene: BABYLON.Scene, options: WebXREnterExitUIOptions) {
+        private constructor(private scene: Scene, options: WebXREnterExitUIOptions) {
             this._overlay = document.createElement("div");
             this._overlay.style.cssText = "z-index:11;position: absolute; right: 20px;bottom: 50px;";
 

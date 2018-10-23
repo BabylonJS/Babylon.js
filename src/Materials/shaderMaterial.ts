@@ -80,7 +80,7 @@ import { Material, Texture, BaseTexture, MaterialHelper, EffectFallbacks, Effect
          * @param name Define the name of the material in the scene
          * @param scene Define the scene the material belongs to
          * @param shaderPath Defines  the route to the shader code in one of three ways:
-         *     - object - { vertex: "custom", fragment: "custom" }, used with BABYLON.Effect.ShadersStore["customVertexShader"] and BABYLON.Effect.ShadersStore["customFragmentShader"]
+         *     - object - { vertex: "custom", fragment: "custom" }, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
          *     - object - { vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }, used with shader code in <script> tags
          *     - string - "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
          * @param options Define the options used to create the shader
@@ -705,7 +705,7 @@ import { Material, Texture, BaseTexture, MaterialHelper, EffectFallbacks, Effect
          */
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
-            serializationObject.customType = "BABYLON.ShaderMaterial";
+            serializationObject.customType = "ShaderMaterial";
 
             serializationObject.options = this._options;
             serializationObject.shaderPath = this._shaderPath;

@@ -1,7 +1,9 @@
 import { Observer } from "Tools";
 import { Nullable } from "types";
 import { WebXRExperienceHelper } from "Cameras";
-import { IDisposable } from "scene";
+import { IDisposable, Scene } from "scene";
+import { AbstractMesh } from "Mesh";
+import { Matrix, Quaternion } from "Math";
     /**
      * Represents an XR input
      */
@@ -9,19 +11,19 @@ import { IDisposable } from "scene";
         /**
          * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
          */
-        public grip?: BABYLON.AbstractMesh;
+        public grip?: AbstractMesh;
         /**
          * Pointer which can be used to select objects or attach a visible laser to
          */
-        public pointer: BABYLON.AbstractMesh;
+        public pointer: AbstractMesh;
 
         /**
          * Creates the controller
          * @see https://doc.babylonjs.com/how_to/webxr
          * @param scene the scene which the controller should be associated to
          */
-        constructor(scene: BABYLON.Scene) {
-            this.pointer = new BABYLON.AbstractMesh("controllerPointer", scene);
+        constructor(scene: Scene) {
+            this.pointer = new AbstractMesh("controllerPointer", scene);
         }
         /**
          * Disposes of the object
@@ -42,7 +44,7 @@ import { IDisposable } from "scene";
          * XR controllers being tracked
          */
         public controllers: Array<WebXRController> = [];
-        private _tmpMatrix = new BABYLON.Matrix();
+        private _tmpMatrix = new Matrix();
         private _frameObserver: Nullable<Observer<any>>;
 
         /**
@@ -69,25 +71,25 @@ import { IDisposable } from "scene";
                         // Manage the grip if it exists
                         if (inputPose.gripMatrix) {
                             if (!controller.grip) {
-                                controller.grip = new BABYLON.AbstractMesh("controllerGrip", helper.container.getScene());
+                                controller.grip = new AbstractMesh("controllerGrip", helper.container.getScene());
                             }
-                            BABYLON.Matrix.FromFloat32ArrayToRefScaled(inputPose.gripMatrix, 0, 1, this._tmpMatrix);
+                            Matrix.FromFloat32ArrayToRefScaled(inputPose.gripMatrix, 0, 1, this._tmpMatrix);
                             if (!controller.grip.getScene().useRightHandedSystem) {
                                 this._tmpMatrix.toggleModelMatrixHandInPlace();
                             }
                             if (!controller.grip.rotationQuaternion) {
-                                controller.grip.rotationQuaternion = new BABYLON.Quaternion();
+                                controller.grip.rotationQuaternion = new Quaternion();
                             }
                             this._tmpMatrix.decompose(controller.grip.scaling, controller.grip.rotationQuaternion, controller.grip.position);
                         }
 
                         // Manager pointer of controller
-                        BABYLON.Matrix.FromFloat32ArrayToRefScaled(inputPose.targetRay.transformMatrix, 0, 1, this._tmpMatrix);
+                        Matrix.FromFloat32ArrayToRefScaled(inputPose.targetRay.transformMatrix, 0, 1, this._tmpMatrix);
                         if (!controller.pointer.getScene().useRightHandedSystem) {
                             this._tmpMatrix.toggleModelMatrixHandInPlace();
                         }
                         if (!controller.pointer.rotationQuaternion) {
-                            controller.pointer.rotationQuaternion = new BABYLON.Quaternion();
+                            controller.pointer.rotationQuaternion = new Quaternion();
                         }
                         this._tmpMatrix.decompose(controller.pointer.scaling, controller.pointer.rotationQuaternion, controller.pointer.position);
                     }
