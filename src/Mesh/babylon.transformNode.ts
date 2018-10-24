@@ -993,6 +993,31 @@ module BABYLON {
         }
 
         /**
+         * Gets the position of the current mesh in camera space
+         * @param camera defines the camera to use
+         * @returns a position
+         */
+        public getPositionInCameraSpace(camera: Nullable<Camera> = null): Vector3 {
+            if (!camera) {
+                camera = (<Camera>this.getScene().activeCamera);
+            }
+
+            return Vector3.TransformCoordinates(this.absolutePosition, camera.getViewMatrix());
+        }
+
+        /**
+         * Returns the distance from the mesh to the active camera
+         * @param camera defines the camera to use
+         * @returns the distance
+         */
+        public getDistanceToCamera(camera: Nullable<Camera> = null): number {
+            if (!camera) {
+                camera = (<Camera>this.getScene().activeCamera);
+            }
+            return this.absolutePosition.subtract(camera.position).length();
+        }
+
+        /**
          * Clone the current transform node
          * @param name Name of the new clone
          * @param newParent New parent for the clone

@@ -1038,6 +1038,94 @@ module BABYLON {
             };
         }
 
+        /**
+         * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
+         * This means the mesh underlying bounding box and sphere are recomputed.
+         * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+         * @returns the current mesh
+         */
+        public refreshBoundingInfo(applySkeleton: boolean = false): AbstractMesh {
+            if (this._boundingInfo && this._boundingInfo.isLocked) {
+                return this;
+            }
+
+            this._refreshBoundingInfo(this._getPositionData(applySkeleton), null);
+            return this;
+        }
+
+        /** @hidden */
+        public _refreshBoundingInfo(data: Nullable<FloatArray>, bias: Nullable<Vector2>): void {
+            if (data) {
+                var extend = Tools.ExtractMinAndMax(data, 0, this.getTotalVertices(), bias);
+                if (this._boundingInfo) {
+                    this._boundingInfo.reConstruct(extend.minimum, extend.maximum);
+                }
+                else {
+                    this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
+                }
+            }
+
+            if (this.subMeshes) {
+                for (var index = 0; index < this.subMeshes.length; index++) {
+                    this.subMeshes[index].refreshBoundingInfo();
+                }
+            }
+
+            this._updateBoundingInfo();
+        }
+
+        /** @hidden */
+        public _getPositionData(applySkeleton: boolean): Nullable<FloatArray> {
+            var data = this.getVerticesData(VertexBuffer.PositionKind);
+
+            if (data && applySkeleton && this.skeleton) {
+                data = Tools.Slice(data);
+
+                var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
+                var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
+                if (matricesWeightsData && matricesIndicesData) {
+                    var needExtras = this.numBoneInfluencers > 4;
+                    var matricesIndicesExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind) : null;
+                    var matricesWeightsExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind) : null;
+
+                    var skeletonMatrices = this.skeleton.getTransformMatrices(this);
+
+                    var tempVector = Tmp.Vector3[0];
+                    var finalMatrix = Tmp.Matrix[0];
+                    var tempMatrix = Tmp.Matrix[1];
+
+                    var matWeightIdx = 0;
+                    for (var index = 0; index < data.length; index += 3, matWeightIdx += 4) {
+                        finalMatrix.reset();
+
+                        var inf: number;
+                        var weight: number;
+                        for (inf = 0; inf < 4; inf++) {
+                            weight = matricesWeightsData[matWeightIdx + inf];
+                            if (weight > 0) {
+                                Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesData[matWeightIdx + inf] * 16), weight, tempMatrix);
+                                finalMatrix.addToSelf(tempMatrix);
+                            }
+                        }
+                        if (needExtras) {
+                            for (inf = 0; inf < 4; inf++) {
+                                weight = matricesWeightsExtraData![matWeightIdx + inf];
+                                if (weight > 0) {
+                                    Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesExtraData![matWeightIdx + inf] * 16), weight, tempMatrix);
+                                    finalMatrix.addToSelf(tempMatrix);
+                                }
+                            }
+                        }
+
+                        Vector3.TransformCoordinatesFromFloatsToRef(data[index], data[index + 1], data[index + 2], finalMatrix, tempVector);
+                        tempVector.toArray(data, index);
+                    }
+                }
+            }
+
+            return data;
+        }
+
         /** @hidden */
         public _updateBoundingInfo(): AbstractMesh {
             if (this._boundingInfo) {
@@ -1129,31 +1217,6 @@ module BABYLON {
             }
 
             return this._boundingInfo.intersectsPoint(point);
-        }
-
-        /**
-         * Gets the position of the current mesh in camera space
-         * @param camera defines the camera to use
-         * @returns a position
-         */
-        public getPositionInCameraSpace(camera: Nullable<Camera> = null): Vector3 {
-            if (!camera) {
-                camera = (<Camera>this.getScene().activeCamera);
-            }
-
-            return Vector3.TransformCoordinates(this.absolutePosition, camera.getViewMatrix());
-        }
-
-        /**
-         * Returns the distance from the mesh to the active camera
-         * @param camera defines the camera to use
-         * @returns the distance
-         */
-        public getDistanceToCamera(camera: Nullable<Camera> = null): number {
-            if (!camera) {
-                camera = (<Camera>this.getScene().activeCamera);
-            }
-            return this.absolutePosition.subtract(camera.position).length();
         }
 
         // Collisions

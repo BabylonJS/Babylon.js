@@ -51,6 +51,9 @@
 
 ### glTF Loader
 
+- Added support for mesh instancing for improved performance when multiple nodes point to the same mesh ([bghgary](https://github.com/bghgary))
+- Create `TransformNode` objects instead of `Mesh` objects for glTF nodes without geometry ([bghgary](https://github.com/bghgary))
+
 ### glTF Serializer
 
 ### Viewer
@@ -103,3 +106,8 @@
   - `engine.drawCallsPerfCounter`: use SceneInstrumentation class instead
   - `shadowGenerator.useVarianceShadowMap`: use useExponentialShadowMap instead
   - `shadowGenerator.useBlurVarianceShadowMap`: use useBlurExponentialShadowMap instead
+- The glTF loader now creates `InstancedMesh` objects when two nodes point to the same mesh ([bghgary](https://github.com/bghgary))
+- The glTF loader now creates `TransformNode` objects instead of `Mesh` objects for glTF nodes without geometry ([bghgary](https://github.com/bghgary))
+  - _Note: The root node is still a `Mesh` object and is still the first in the returned list of meshes_
+  - `TransformNode` objects are excluded from the returned list of meshes when importing mesh
+  - `TransformNode` objects do not raise `onMeshLoaded` events
