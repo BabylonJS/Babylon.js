@@ -1,3 +1,5 @@
+    import { BezierCurve } from "Math";
+
     /**
      * This represents the main contract an easing function should follow.
      * Easing functions are used throughout the animation system.

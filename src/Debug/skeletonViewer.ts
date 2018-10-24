@@ -26,6 +26,9 @@ import { UtilityLayerRenderer } from "index";
         private _isEnabled = false;
         private _renderFunction: () => void;
 
+        /**
+         * Returns the mesh used to render the bones
+         */
         public get debugMesh(): Nullable<LinesMesh> {
             return this._debugMesh;
         }

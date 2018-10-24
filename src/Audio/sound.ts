@@ -1,15 +1,9 @@
 import { Observable, Tools } from "Tools";
-
 import { Vector3, Tmp } from "Math";
-
 import { Nullable } from "types";
-
 import { Scene } from "scene";
-
 import { Engine } from "Engine";
-
 import { AudioSceneComponent } from "Audio";
-
 import { TransformNode, AbstractMesh } from "Mesh";
 import { SceneComponentConstants } from "sceneComponent";
 

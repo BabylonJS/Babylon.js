@@ -8,7 +8,7 @@ import { MorphTargetManager } from "Morph";
 import { Camera } from "Cameras";
 import { AbstractScene } from "abstractScene";
 import { BaseTexture, Material, ImageProcessingConfiguration, StandardMaterial, RenderTargetTexture, Effect, UniformBuffer, MultiMaterial, Texture } from "Materials";
-import { AnimationPropertiesOverride, Animatable, RuntimeAnimation, AnimationGroup } from "Animations";
+import { AnimationPropertiesOverride, Animatable, RuntimeAnimation, AnimationGroup, Animation } from "Animations";
 import { Light } from "Lights";
 import { PickingInfo, ICollisionCoordinator, CollisionCoordinatorLegacy, CollisionWorker, CollisionCoordinatorWorker } from "Collisions";
 import { PointerEventTypes, PointerInfoPre, PointerInfo, KeyboardInfoPre, KeyboardInfo, KeyboardEventTypes } from "Events";
@@ -19,6 +19,7 @@ import { RenderingManager, IRenderingManagerAutoClearSetup } from "Rendering";
 import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction } from "sceneComponent";
 import { Engine } from "Engine";
 import { Ray } from "Culling";
+import { Node } from "node";
 
     /**
      * Define an interface for all classes that will hold resources

@@ -4,7 +4,7 @@ import { Scene } from "scene";
 import { Mesh } from "Mesh";
 import { Light } from "Lights";
 import { Camera } from "Cameras";
-import {Node} from "Node";
+import { Node } from "Node";
 import { ActionManager, Condition, ActionEvent } from "Actions";
     /**
      * The action to be carried out following a trigger
