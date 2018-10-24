@@ -536,7 +536,7 @@ import { Effect, BaseTexture } from "Materials";
         }
 
         private _updateMatrixForUniform(name: string, mat: Matrix) {
-            this.updateUniform(name, mat.toArray(), 16);
+            this.updateUniform(name, <any>mat.toArray(), 16);
         }
 
         private _updateVector3ForEffect(name: string, vector: Vector3) {

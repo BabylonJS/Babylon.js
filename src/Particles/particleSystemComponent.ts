@@ -1,11 +1,12 @@
 import { Mesh } from "Mesh";
-import { IParticleSystem } from "Particles";
+import { IParticleSystem, GPUParticleSystem } from "Particles";
 import { AbstractScene } from "abstractScene";
-import { Effect } from "Materials";
+import { Effect, EffectFallbacks } from "Materials";
 import { Engine } from "Engine";
 import { ParticleSystem } from "Particles";
 import { Scene } from "scene";
 import { SceneComponentConstants } from "sceneComponent";
+import { AssetContainer } from "index";
     // Adds the parsers to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
 
