@@ -7,6 +7,7 @@ import { Engine } from "Engine";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
 import { RenderTargetTexture } from "Materials";
 
+declare module "scene" {
     export interface Scene {
         /** @hidden (Backing field) */
         _depthRenderer: { [id: string]: DepthRenderer };
@@ -24,6 +25,7 @@ import { RenderTargetTexture } from "Materials";
          */
         disableDepthRenderer(camera?: Nullable<Camera>): void;
     }
+}
 
     Scene.prototype.enableDepthRenderer = function(camera?: Nullable<Camera>): DepthRenderer {
         camera = camera || this.activeCamera;

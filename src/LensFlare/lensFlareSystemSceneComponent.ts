@@ -24,6 +24,7 @@ import { LensFlareSystem } from "LensFlare";
         }
     });
 
+declare module "abstractScene" {
     export interface AbstractScene {
         /**
          * The list of lens flare system added to the scene
@@ -58,6 +59,7 @@ import { LensFlareSystem } from "LensFlare";
          */
         getLensFlareSystemByID(id: string): Nullable<LensFlareSystem>;
     }
+}
 
     AbstractScene.prototype.getLensFlareSystemByName = function(name: string): Nullable<LensFlareSystem> {
         for (var index = 0; index < this.lensFlareSystems.length; index++) {

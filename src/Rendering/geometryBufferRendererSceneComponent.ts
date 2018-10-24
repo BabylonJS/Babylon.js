@@ -5,6 +5,7 @@ import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
 import { SmartArrayNoDuplicate } from "Tools";
 import { RenderTargetTexture } from "Materials";
 
+declare module "scene" {
     export interface Scene {
         /** @hidden (Backing field) */
         _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
@@ -26,6 +27,7 @@ import { RenderTargetTexture } from "Materials";
          */
         disableGeometryBufferRenderer(): void;
     }
+}
 
     Object.defineProperty(Scene.prototype, "geometryBufferRenderer", {
         get: function(this: Scene) {

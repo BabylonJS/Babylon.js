@@ -9,6 +9,8 @@ import { RenderTargetTexture, Material, Texture, Effect } from "Materials";
 import { PostProcess, BlurPostProcess } from "PostProcess";
 import { EffectLayer } from "Layer";
 import { AbstractScene } from "abstractScene";
+
+declare module "abstractScene" {
     export interface AbstractScene {
         /**
          * Return a the first highlight layer of the scene with a given name.
@@ -17,6 +19,7 @@ import { AbstractScene } from "abstractScene";
          */
         getGlowLayerByName(name: string): Nullable<GlowLayer>;
     }
+}
 
     AbstractScene.prototype.getGlowLayerByName = function(name: string): Nullable<GlowLayer> {
         for (var index = 0; index < this.effectLayers.length; index++) {

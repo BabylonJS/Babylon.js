@@ -7,6 +7,8 @@ import { Mesh } from "Mesh";
 import { StandardMaterial, Texture, BaseTexture } from "Materials";
 import { HemisphericLight } from "Lights";
 import { IEnvironmentHelperOptions, EnvironmentHelper } from "./environmentHelper";
+
+declare module "scene" {
     export interface Scene {
         /**
          * Creates a default light for the scene.
@@ -68,6 +70,7 @@ import { IEnvironmentHelperOptions, EnvironmentHelper } from "./environmentHelpe
          */
         createDefaultXRExperienceAsync(): Promise<WebXRExperienceHelper>;
     }
+}
 
     Scene.prototype.createDefaultLight = function(replace = false): void {
         // Dispose existing light in replace mode.

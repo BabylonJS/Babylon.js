@@ -23,6 +23,7 @@ import { AssetContainer } from "assetContainer";
         }
     });
 
+declare module "abstractScene" {
     export interface AbstractScene {
         /**
          * The list of effect layers (highlights/glow) added to the scene
@@ -44,6 +45,7 @@ import { AssetContainer } from "assetContainer";
          */
         addEffectLayer(newEffectLayer: EffectLayer): void;
     }
+}
 
     AbstractScene.prototype.removeEffectLayer = function(toRemove: EffectLayer): number {
         var index = this.effectLayers.indexOf(toRemove);

@@ -7,6 +7,7 @@ import { Camera } from "Cameras";
 import { PickingInfo } from "Collisions";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
 
+declare module "scene" {
     export interface Scene {
         /** @hidden */
         _pointerOverSprite: Nullable<Sprite>;
@@ -69,6 +70,7 @@ import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
          */
         getPointerOverSprite(): Nullable<Sprite>;
     }
+}
 
     Scene.prototype._internalPickSprites = function(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
         if (!PickingInfo) {

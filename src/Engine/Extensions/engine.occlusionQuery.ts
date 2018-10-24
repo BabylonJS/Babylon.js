@@ -23,6 +23,7 @@ import { _TimeToken } from "Instrumentation";
         public occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
     }
 
+declare module "Engine/Engine" {
     export interface Engine {
         /**
          * Create a new webGL query (you must be sure that queries are supported by checking getCaps() function)
@@ -100,6 +101,7 @@ import { _TimeToken } from "Instrumentation";
         /** @hidden */
         _getTimeQueryAvailability(query: WebGLQuery): any;
     }
+}
 
     Engine.prototype.createQuery = function(): WebGLQuery {
         return this._gl.createQuery();
@@ -272,6 +274,7 @@ import { _TimeToken } from "Instrumentation";
         return algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
     };
 
+declare module "Mesh/AbstractMesh" {
     export interface AbstractMesh {
         /**
          * Backing filed
@@ -321,7 +324,7 @@ import { _TimeToken } from "Instrumentation";
          */
         isOcclusionQueryInProgress: boolean;
     }
-
+}
     Object.defineProperty(AbstractMesh.prototype, "isOcclusionQueryInProgress", {
         get: function(this: AbstractMesh) {
             return this._occlusionDataStorage.isOcclusionQueryInProgress;
