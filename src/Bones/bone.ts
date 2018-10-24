@@ -2,8 +2,9 @@ import { Vector3, Quaternion, Matrix, Space } from "Math";
 import { Tools } from "Tools";
 import { Nullable } from "types";
 import { Skeleton } from "Bones";
-import { AnimationPropertiesOverride } from "Animations";
+import { AnimationPropertiesOverride, Animation } from "Animations";
 import { AbstractMesh } from "Mesh";
+import { Node } from "Node";
 
     /**
      * Class used to store bone information

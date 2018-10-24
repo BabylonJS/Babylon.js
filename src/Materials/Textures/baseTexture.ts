@@ -389,7 +389,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * Scales the texture if is `canRescale()`
          * @param ratio the resize factor we want to use to rescale
          */
-        public scale(): void {
+        public scale(ratio: number): void {
         }
 
         /**

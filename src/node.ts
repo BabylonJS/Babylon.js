@@ -5,7 +5,8 @@ import { Matrix } from "Math";
 import { Engine } from "Engine";
 import { AbstractMesh, TransformNode } from "Mesh";
 import { IBehaviorAware, Behavior } from "Behaviors";
-import { Observable, Observer } from "Tools";
+import { Observable, Observer, serialize } from "Tools";
+
     /**
      * Defines how a node can be built from a string name.
      */

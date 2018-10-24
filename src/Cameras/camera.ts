@@ -1,4 +1,4 @@
-import { serialize, Observable, Tools, SmartArray, SerializationHelper } from "Tools";
+import { serialize, Observable, Tools, SmartArray, SerializationHelper, serializeAsVector3 } from "Tools";
 import { Nullable } from "types";
 import { FreeCamera, UniversalCamera, VRCameraMetrics, TargetCamera, CameraInputsManager } from "Cameras";
 import { Scene } from "scene";
@@ -476,14 +476,14 @@ import { Animation } from "Animations";
          * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        public attachControl(): void {
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
         }
 
         /**
          * Detach the current controls from the specified dom element.
          * @param element Defines the element to stop listening the inputs from
          */
-        public detachControl(): void {
+        public detachControl(element: HTMLElement): void {
         }
 
         /**

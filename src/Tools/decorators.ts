@@ -1,3 +1,8 @@
+import { Tags } from ".";
+import { Nullable } from "types";
+import { Color4, Quaternion, Color3, Vector2, Vector3 } from "Math";
+import { ImageProcessingConfiguration, Camera, Scene, Texture, FresnelParameters, ColorCurves } from "index";
+
     var __decoratorInitialStore = {};
     var __mergedStore = {};
 
@@ -364,4 +369,4 @@
         public static Instanciate<T>(creationFunction: () => T, source: T): T {
             return _copySource(creationFunction, source, true);
         }
-    }
+    }

@@ -5,7 +5,7 @@ import { Scene } from "scene";
 import { Nullable } from "types";
 import { AbstractMesh } from "Mesh";
 import { RawTexture } from "Materials";
-import { AnimationRange, AnimationPropertiesOverride } from "Animations";
+import { AnimationRange, AnimationPropertiesOverride, Animation, Animatable } from "Animations";
 import { Engine } from "Engine";
 
     /**

@@ -5,7 +5,7 @@ import { Skeleton } from "Bones";
 import { MorphTargetManager } from "Morph";
 import { AssetContainer } from "assetContainer";
 import { IParticleSystem } from "Particles";
-import { AnimationGroup } from "Animations";
+import { AnimationGroup, Animation } from "Animations";
 import { MultiMaterial, Material, BaseTexture } from "Materials";
 import { ActionManager } from "Actions";
 import { Camera } from "Cameras";

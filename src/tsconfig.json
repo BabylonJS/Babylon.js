@@ -19,6 +19,7 @@
           "es2015.collection",
           "es2015.iterable"
       ],
+      "types" : [],
       "skipDefaultLibCheck": true,
       "skipLibCheck": true,
       "baseUrl": "./",
