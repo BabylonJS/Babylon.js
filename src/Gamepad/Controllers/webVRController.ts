@@ -1,6 +1,6 @@
 import { Observable } from "Tools";
 import { Scene } from "scene";
-import {PoseEnabledController, StickValues, ExtendedGamepadButton, GamepadButtonChanges, MutableGamepadButton} from "Gamepad"
+import { PoseEnabledController, StickValues, ExtendedGamepadButton, GamepadButtonChanges, MutableGamepadButton } from "Gamepad";
 import { AbstractMesh } from "Mesh";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
@@ -161,4 +161,3 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
             this.onPadValuesChangedObservable.clear();
         }
     }
-

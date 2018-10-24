@@ -11,7 +11,7 @@ import { PickingInfo } from "Collisions";
 import { Ray } from "Culling";
 import { StandardMaterial, ImageProcessingConfiguration, DynamicTexture } from "Materials";
 import { ImageProcessingPostProcess } from "PostProcess";
-import { SineEase, EasingFunction, Animation, CircleEase } from "Animations";
+import { Animation, SineEase, EasingFunction, CircleEase } from "Animations";
     /**
      * Options to modify the vr teleportation behavior.
      */

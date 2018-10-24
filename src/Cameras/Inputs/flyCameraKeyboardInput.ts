@@ -4,6 +4,7 @@ import { ICameraInput, CameraInputTypes, FlyCamera } from "Cameras";
 import { Engine } from "Engine";
 import { KeyboardInfo, KeyboardEventTypes } from "Events";
 import { Scene } from "scene";
+import { Vector3 } from "Math";
 
     /**
      * Listen to keyboard events to control the camera.

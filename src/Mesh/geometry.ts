@@ -1,4 +1,3 @@
-    
     import { Tools, Tags } from "Tools";
     import { Nullable, FloatArray, DataArray, IndicesArray } from "types";
     import { Scene } from "scene";
@@ -7,7 +6,7 @@
     import { Mesh, AbstractMesh, VertexBuffer, SubMesh, IGetSetVerticesData, VertexData } from "Mesh";
     import { Effect } from "Materials";
     import { SceneLoader } from "Loading";
-import { BoundingInfo } from "index";
+    import { BoundingInfo } from "index";
     /**
      * Class used to store geometry data (vertex buffers + index buffer)
      */

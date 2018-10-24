@@ -935,8 +935,8 @@ import { Animation } from "Animations";
 
             // create the rig cameras, unless none
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
-                let leftCamera = this.createRigCamera();
-                let rightCamera = this.createRigCamera();
+                let leftCamera = this.createRigCamera(this.name + "_L", 0);
+                let rightCamera = this.createRigCamera(this.name + "_R", 1);
                 if (leftCamera && rightCamera) {
                     this._rigCameras.push(leftCamera);
                     this._rigCameras.push(rightCamera);
@@ -1068,7 +1068,7 @@ import { Animation } from "Animations";
          * needs to be overridden by children so sub has required properties to be copied
          * @hidden
          */
-        public createRigCamera(): Nullable<Camera> {
+        public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
             return null;
         }
 

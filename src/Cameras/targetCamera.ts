@@ -1,4 +1,4 @@
-import { serialize } from "Tools";
+import { serialize, serializeAsVector3, serializeAsMeshReference } from "Tools";
 import { Nullable } from "types";
 import { Camera } from "Cameras";
 import { Scene } from "scene";

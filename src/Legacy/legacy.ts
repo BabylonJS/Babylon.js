@@ -1,6 +1,8 @@
 import * as Babylon from "../index";
 import * as Debug from "../Debug/index";
 
+declare var global: any;
+
 /**
  * Legacy support, defining window.BABYLON (global variable).
  *

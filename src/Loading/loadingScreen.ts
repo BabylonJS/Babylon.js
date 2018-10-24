@@ -191,4 +191,3 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
             this._loadingDiv.style.height = canvasRect.height + "px";
         }
     }
-

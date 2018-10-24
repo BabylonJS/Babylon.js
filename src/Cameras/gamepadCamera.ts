@@ -1,7 +1,7 @@
 import { UniversalCamera } from "Cameras";
 import { Scene } from "scene";
 import { Vector3 } from "Math";
-import {Node} from "Node";
+import { Node } from "Node";
     Node.AddNodeConstructor("GamepadCamera", (name, scene) => {
         return () => new GamepadCamera(name, Vector3.Zero(), scene);
     });

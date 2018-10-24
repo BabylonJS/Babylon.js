@@ -2,8 +2,8 @@ import { Observable, Tools } from "Tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { Quaternion, Vector3 } from "Math";
-import {WebVRController, PoseEnabledController, StickValues, PoseEnabledControllerType, ExtendedGamepadButton, GamepadButtonChanges, GenericController} from "Gamepad"
-import {Node} from "Node";
+import { WebVRController, PoseEnabledController, StickValues, PoseEnabledControllerType, ExtendedGamepadButton, GamepadButtonChanges, GenericController } from "Gamepad";
+import { Node } from "Node";
 import { Mesh, AbstractMesh } from "Mesh";
 import { Ray } from "Culling";
 import { _TimeToken } from "Instrumentation";

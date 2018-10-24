@@ -1,4 +1,4 @@
-import { Nullable } from "types";
+import { Nullable, IndicesArray } from "types";
 import { Vector3, Plane } from "Math";
 import { AbstractMesh } from "Mesh";
     var intersectBoxAASphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean => {

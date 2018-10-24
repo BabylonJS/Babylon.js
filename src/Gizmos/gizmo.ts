@@ -35,7 +35,7 @@ import { UtilityLayerRenderer } from "Rendering";
         public set attachedMesh(value) {
             this._attachedMesh = value;
             this._rootMesh.setEnabled(value ? true : false);
-            this._attachedMeshChanged();
+            this._attachedMeshChanged(value);
         }
 
         /**
@@ -66,7 +66,7 @@ import { UtilityLayerRenderer } from "Rendering";
          */
         protected _updateScale = true;
         protected _interactionsEnabled = true;
-        protected _attachedMeshChanged() {
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {
         }
 
         private _beforeRenderObserver: Nullable<Observer<Scene>>;

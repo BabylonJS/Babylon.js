@@ -1,7 +1,7 @@
-import { UniversalCamera } from "Cameras";
+import { UniversalCamera, Camera } from "Cameras";
 import { Scene } from "scene";
 import { Vector3 } from "Math";
-import {Node} from "Node";
+import { Node } from "Node";
 
     Node.AddNodeConstructor("AnaglyphUniversalCamera", (name, scene, options) => {
         return () => new AnaglyphUniversalCamera(name, Vector3.Zero(), options.interaxial_distance, scene);

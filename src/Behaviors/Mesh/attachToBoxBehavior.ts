@@ -3,7 +3,6 @@ import { Mesh, TransformNode } from "Mesh";
 import { Scene } from "scene";
 import { Nullable } from "types";
 import { Observer } from "Tools";
-import { WebVRFreeCamera } from "Cameras";
 import { Behavior } from "Behaviors";
 
     /**
@@ -97,8 +96,8 @@ import { Behavior } from "Behaviors";
 
                 // Find the face closest to the cameras position
                 var cameraPos = this._scene.activeCamera.position;
-                if ((<WebVRFreeCamera>this._scene.activeCamera).devicePosition) {
-                    cameraPos = (<WebVRFreeCamera>this._scene.activeCamera).devicePosition;
+                if ((<any>this._scene.activeCamera).devicePosition) {
+                    cameraPos = (<any>this._scene.activeCamera).devicePosition;
                 }
                 var facing = this._closestFace(cameraPos.subtract(target.position));
                 if (this._scene.activeCamera.leftCamera) {

@@ -1,7 +1,7 @@
-import { serialize, Observer, Tools, SmartArray, SerializationHelper, serializeAsColor3, expandToProperty } from "Tools";
+import { serialize, Observer, Tools, SmartArray, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture, serializeAsVector3, serializeAsImageProcessingConfiguration } from "Tools";
 import { Nullable, int, float } from "types";
 import { Scene } from "scene";
-import { Matrix, Vector3, Color3 } from "Math";
+import { Matrix, Vector3, Color3, Vector4 } from "Math";
 import { Engine } from "Engine";
 import { Mesh, AbstractMesh, VertexBuffer, SubMesh } from "Mesh";
 import { StandardMaterial, ImageProcessingConfiguration, RenderTargetTexture, Texture, Effect, BaseTexture, MaterialHelper, IImageProcessingConfigurationDefines, PushMaterial, ColorCurves, EffectFallbacks, EffectCreationOptions, MaterialDefines } from "Materials";

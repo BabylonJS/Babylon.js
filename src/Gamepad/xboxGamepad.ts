@@ -1,5 +1,5 @@
 import { Observable } from "Tools";
-import {Gamepad} from "Gamepad"
+import { Gamepad } from "Gamepad";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**

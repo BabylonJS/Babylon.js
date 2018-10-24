@@ -5,7 +5,8 @@ import { ImageProcessingConfiguration, Texture, ProceduralTexture, ImageProcessi
 import { Scene } from "scene";
 import { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "Tools";
 import { BoxParticleEmitter, IParticleEmitterType, ParticleSystem, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, CylinderDirectedParticleEmitter, ConeParticleEmitter } from "Particles";
-    
+import { Animation } from "Animations";
+
     /**
      * This represents the base class for particle system in Babylon.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.

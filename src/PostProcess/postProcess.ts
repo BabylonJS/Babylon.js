@@ -5,6 +5,7 @@ import { Camera, WebVRFreeCamera } from "Cameras";
 import { Effect, Texture, InternalTexture } from "Materials";
 import { Engine } from "Engine";
 import { Scene } from "scene";
+import { Animation } from "Animations";
     /**
      * Size options for a post process
      */

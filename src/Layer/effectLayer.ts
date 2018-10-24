@@ -1,4 +1,4 @@
-import { serialize, Observable, Tools, SmartArray } from "Tools";
+import { serialize, Observable, Tools, SmartArray, serializeAsColor4, serializeAsCameraReference } from "Tools";
 import { Nullable } from "types";
 import { Camera } from "Cameras";
 import { Scene } from "scene";
@@ -535,7 +535,7 @@ import { EffectLayerSceneComponent } from "Layer";
          * @param mesh The mesh to render
          * @returns true if it should render otherwise false
          */
-        protected _shouldRenderMesh(): boolean {
+        protected _shouldRenderMesh(mesh: AbstractMesh): boolean {
             return true;
         }
 
@@ -580,7 +580,7 @@ import { EffectLayerSceneComponent } from "Layer";
             }
 
             // Early Exit per mesh
-            if (!this._shouldRenderMesh()) {
+            if (!this._shouldRenderMesh(mesh)) {
                 return;
             }
 

@@ -1,6 +1,6 @@
 import { AxesViewer } from "Debug";
 import { Nullable } from "types";
-import { Mesh } from "Particles";
+import { Mesh } from "Mesh";
 import { Bone } from "Bones";
 import { Vector3, Axis } from "Math";
 import { Scene } from "scene";

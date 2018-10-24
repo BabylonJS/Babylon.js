@@ -1,4 +1,4 @@
-import { UniversalCamera, TouchCamera, FreeCameraGamepadInput } from "Cameras";
+import { TouchCamera, FreeCameraGamepadInput } from "Cameras";
 import { Scene } from "scene";
 import { Vector3 } from "Math";
     /**

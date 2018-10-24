@@ -2,13 +2,12 @@ import { serialize } from "Tools";
 import { Camera } from "Cameras";
 import { Scene } from "scene";
 import { Matrix, Vector3 } from "Math";
-import {ArcRotateCameraInputsManager} from "Gamepad";
-import {Node} from "Node";
+import { Node } from "Node";
 import { AbstractMesh } from "Mesh";
-import { Effect } from "Materials";
 import { ShadowLight, Light } from "Lights";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Effect } from "Materials";
     Node.AddNodeConstructor("Light_Type_1", (name, scene) => {
         return () => new DirectionalLight(name, Vector3.Zero(), scene);
     });
@@ -202,7 +201,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * @param lightIndex The index of the light in the effect to update
          * @returns The directional light
          */
-        public transferToEffect(lightIndex: string): DirectionalLight {
+        public transferToEffect(effect: Effect, lightIndex: string): DirectionalLight {
             if (this.computeTransformedInformation()) {
                 this._uniformBuffer.updateFloat4("vLightData", this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z, 1, lightIndex);
                 return this;

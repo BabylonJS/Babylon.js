@@ -198,6 +198,11 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         public static readonly LIGHTFALLOFF_STANDARD = 2;
 
         /**
+         * Stores the reflectivity values based on metallic roughness workflow.
+         */
+        private static _scaledReflectivity = new Color3();
+
+        /**
          * Intensity of the direct lights e.g. the four lights available in your scene.
          * This impacts both the direct diffuse and specular highlights.
          */
@@ -747,7 +752,6 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         public getAlphaTestTexture(): BaseTexture {
             return this._albedoTexture;
         }
-
 
         /**
          * Specifies that the submesh is ready to be used.
