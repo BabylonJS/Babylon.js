@@ -8,7 +8,7 @@ let fs = require('fs');
  * Template creating hidden ts file containing the shaders.
  */
 let tsShaderTemplate = 
-`import { Effect } from "babylonjs";
+`import { Effect } from "##EFFECTLOCATION_PLACEHOLDER##";
 ##INCLUDES_PLACEHOLDER##
 let name = '##NAME_PLACEHOLDER##';
 let shader = \`##SHADER_PLACEHOLDER##\`;
@@ -105,9 +105,11 @@ function main(isCore) {
 
             // Chose shader store.
             const shaderStore = directory.indexOf("ShadersInclude") > -1 ? "IncludesShadersStore" : "ShadersStore";
+            const effectLocation = isCore ? "Materials" : "babylonjs";
 
             // Fill template in.
-            let tsContent = tsShaderTemplate.replace('##INCLUDES_PLACEHOLDER##', includeText);
+            let tsContent = tsShaderTemplate.replace('##EFFECTLOCATION_PLACEHOLDER##', effectLocation);
+            tsContent = tsContent.replace('##INCLUDES_PLACEHOLDER##', includeText);
             tsContent = tsContent.replace('##NAME_PLACEHOLDER##', shaderName);
             tsContent = tsContent.replace('##SHADER_PLACEHOLDER##', fxData);
             tsContent = tsContent.replace('##SHADERSTORE_PLACEHOLDER##', shaderStore);

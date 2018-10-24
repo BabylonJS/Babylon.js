@@ -5,6 +5,7 @@ import { Mesh, AbstractMesh } from "Mesh";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
 import { IPhysicsEngine, IPhysicsEnginePlugin, PhysicsEngine, PhysicsImpostor, PhysicsJoint } from "Physics";
 import { Scene } from "scene";
+import { Node } from "node";
 
 declare module "scene" {
     export interface Scene {
