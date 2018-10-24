@@ -1,10 +1,12 @@
-import {Engine} from "Engine"
-import {Camera} from "Cameras"
+import { Engine } from "Engine";
+import { Camera } from "Cameras";
 import { Sound, SoundTrack } from "Audio";
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { Matrix, Vector3 } from "Math";
 import { SceneComponentConstants, ISceneSerializableComponent } from "sceneComponent";
+import { AbstractScene } from "abstractScene";
+import { AssetContainer } from "assetContainer";
 
     // Adds the parser to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
@@ -34,13 +36,16 @@ import { SceneComponentConstants, ISceneSerializableComponent } from "sceneCompo
         loadedSounds = [];
     });
 
+declare module "abstractScene" {
     export interface AbstractScene {
         /**
          * The list of sounds used in the scene.
          */
         sounds: Nullable<Array<Sound>>;
     }
+}
 
+declare module "scene" {
     export interface Scene {
         /**
          * @hidden
@@ -77,6 +82,7 @@ import { SceneComponentConstants, ISceneSerializableComponent } from "sceneCompo
          */
         headphone: boolean;
     }
+}
 
     Object.defineProperty(Scene.prototype, "mainSoundTrack", {
         get: function(this: Scene) {

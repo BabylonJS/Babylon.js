@@ -1,9 +1,6 @@
 import { Nullable } from "types";
-
-import { RuntimeAnimation } from "Animations";
-
-import { Scene } from "Gamepad/gamepadSceneComponent";
-
+import { RuntimeAnimation, Animation } from "Animations";
+import { Scene } from "scene";
 import { Observable } from "Tools";
 
     /**

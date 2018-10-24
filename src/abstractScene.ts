@@ -1,4 +1,4 @@
-import { Scene } from "Physics";
+import { Scene } from "scene";
 import { Nullable } from "types";
 import { AbstractMesh, Geometry, TransformNode } from "Mesh";
 import { Skeleton } from "Bones";

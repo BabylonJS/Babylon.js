@@ -1,13 +1,8 @@
 import { Behavior } from "Behaviors";
-
 import { Mesh, AbstractMesh } from "Mesh";
-
 import { Scene } from "scene";
-
 import { Nullable } from "types";
-
 import { Observer, Observable } from "Tools";
-
 import { Vector3 } from "Math";
 import { PointerInfo, PointerEventTypes } from "Events";
 import { BoundingBoxGizmo } from "Gizmos";
