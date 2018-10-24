@@ -1522,6 +1522,16 @@ import { FloatArray, IndicesArray, Nullable } from "types";
                 scene.activeCamera = camera;
             }
 
+            var renderCanvas = engine.getRenderingCanvas();
+            if (!renderCanvas) {
+                Tools.Error("No rendering canvas found !");
+                return;
+            }
+
+            var originalSize = {width: renderCanvas.width, height: renderCanvas.height};
+            engine.setSize(width, height);
+            scene.render();
+
             // At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
             var texture = new RenderTargetTexture("screenShot", size, scene, false, false, Engine.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
             texture.renderList = null;
@@ -1541,7 +1551,7 @@ import { FloatArray, IndicesArray, Nullable } from "types";
             if (previousCamera) {
                 scene.activeCamera = previousCamera;
             }
-
+            engine.setSize(originalSize.width, originalSize.height);
             camera.getProjectionMatrix(true); // Force cache refresh;
         }
 

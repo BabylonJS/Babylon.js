@@ -710,6 +710,9 @@ import { BoundingInfo } from "index";
 
             // morphTargets
             mesh._syncGeometryWithMorphTargetManager();
+
+            // instances
+            mesh.synchronizeInstances();
         }
 
         private notifyUpdate(kind?: string) {

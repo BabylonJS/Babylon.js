@@ -105,7 +105,7 @@ import { SceneComponentConstants } from "sceneComponent";
         private _coneOuterAngle: number = 360;
         private _coneOuterGain: number = 0;
         private _scene: Scene;
-        private _connectedMesh: Nullable<AbstractMesh>;
+        private _connectedTransformNode: Nullable<TransformNode>;
         private _customAttenuationFunction: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number;
         private _registerFunc: Nullable<(connectedMesh: TransformNode) => void>;
         private _isOutputConnected = false;
@@ -342,9 +342,9 @@ import { SceneComponentConstants } from "sceneComponent";
                     this._streamingSource.disconnect();
                 }
 
-                if (this._connectedMesh && this._registerFunc) {
-                    this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
-                    this._connectedMesh = null;
+                if (this._connectedTransformNode && this._registerFunc) {
+                    this._connectedTransformNode.unregisterAfterWorldMatrixUpdate(this._registerFunc);
+                    this._connectedTransformNode = null;
                 }
             }
         }
@@ -568,17 +568,17 @@ import { SceneComponentConstants } from "sceneComponent";
         public setLocalDirectionToMesh(newLocalDirection: Vector3): void {
             this._localDirection = newLocalDirection;
 
-            if (Engine.audioEngine.canUseWebAudio && this._connectedMesh && this.isPlaying) {
+            if (Engine.audioEngine.canUseWebAudio && this._connectedTransformNode && this.isPlaying) {
                 this._updateDirection();
             }
         }
 
         private _updateDirection() {
-            if (!this._connectedMesh || !this._soundPanner) {
+            if (!this._connectedTransformNode || !this._soundPanner) {
                 return;
             }
 
-            var mat = this._connectedMesh.getWorldMatrix();
+            var mat = this._connectedTransformNode.getWorldMatrix();
             var direction = Vector3.TransformNormal(this._localDirection, mat);
             direction.normalize();
             this._soundPanner.setOrientation(direction.x, direction.y, direction.z);
@@ -586,8 +586,8 @@ import { SceneComponentConstants } from "sceneComponent";
 
         /** @hidden */
         public updateDistanceFromListener() {
-            if (Engine.audioEngine.canUseWebAudio && this._connectedMesh && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
-                var distance = this._connectedMesh.getDistanceToCamera(this._scene.activeCamera);
+            if (Engine.audioEngine.canUseWebAudio && this._connectedTransformNode && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
+                var distance = this._connectedTransformNode.getDistanceToCamera(this._scene.activeCamera);
                 this._soundGain.gain.value = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
             }
         }
@@ -623,7 +623,7 @@ import { SceneComponentConstants } from "sceneComponent";
                                 this._soundPanner.coneInnerAngle = this._coneInnerAngle;
                                 this._soundPanner.coneOuterAngle = this._coneOuterAngle;
                                 this._soundPanner.coneOuterGain = this._coneOuterGain;
-                                if (this._connectedMesh) {
+                                if (this._connectedTransformNode) {
                                     this._updateDirection();
                                 }
                                 else {
@@ -790,15 +790,15 @@ import { SceneComponentConstants } from "sceneComponent";
 
         /**
          * Attach the sound to a dedicated mesh
-         * @param meshToConnectTo The mesh to connect the sound with
+         * @param transformNode The transform node to connect the sound with
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
          */
-        public attachToMesh(meshToConnectTo: AbstractMesh): void {
-            if (this._connectedMesh && this._registerFunc) {
-                this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
+        public attachToMesh(transformNode: TransformNode): void {
+            if (this._connectedTransformNode && this._registerFunc) {
+                this._connectedTransformNode.unregisterAfterWorldMatrixUpdate(this._registerFunc);
                 this._registerFunc = null;
             }
-            this._connectedMesh = meshToConnectTo;
+            this._connectedTransformNode = transformNode;
             if (!this.spatialSound) {
                 this.spatialSound = true;
                 this._createSpatialParameters();
@@ -807,9 +807,9 @@ import { SceneComponentConstants } from "sceneComponent";
                     this.play();
                 }
             }
-            this._onRegisterAfterWorldMatrixUpdate(this._connectedMesh);
-            this._registerFunc = (connectedMesh: TransformNode) => this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
-            meshToConnectTo.registerAfterWorldMatrixUpdate(this._registerFunc);
+            this._onRegisterAfterWorldMatrixUpdate(this._connectedTransformNode);
+            this._registerFunc = (transformNode: TransformNode) => this._onRegisterAfterWorldMatrixUpdate(transformNode);
+            this._connectedTransformNode.registerAfterWorldMatrixUpdate(this._registerFunc);
         }
 
         /**
@@ -817,10 +817,10 @@ import { SceneComponentConstants } from "sceneComponent";
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
          */
         public detachFromMesh() {
-            if (this._connectedMesh && this._registerFunc) {
-                this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
+            if (this._connectedTransformNode && this._registerFunc) {
+                this._connectedTransformNode.unregisterAfterWorldMatrixUpdate(this._registerFunc);
                 this._registerFunc = null;
-                this._connectedMesh = null;
+                this._connectedTransformNode = null;
             }
         }
 
@@ -913,8 +913,8 @@ import { SceneComponentConstants } from "sceneComponent";
             };
 
             if (this.spatialSound) {
-                if (this._connectedMesh) {
-                    serializationObject.connectedMeshId = this._connectedMesh.id;
+                if (this._connectedTransformNode) {
+                    serializationObject.connectedMeshId = this._connectedTransformNode.id;
                 }
 
                 serializationObject.position = this._position.asArray();

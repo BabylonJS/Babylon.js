@@ -3800,27 +3800,32 @@ import { Node } from "node";
          * @return the found node or null if not found at all
          */
         public getNodeByID(id: string): Nullable<Node> {
-            var mesh = this.getMeshByID(id);
-
+            const mesh = this.getMeshByID(id);
             if (mesh) {
                 return mesh;
             }
 
-            var light = this.getLightByID(id);
+            const transformNode = this.getTransformNodeByID(id);
+            if (transformNode) {
+                return transformNode;
+            }
 
+            const light = this.getLightByID(id);
             if (light) {
                 return light;
             }
 
-            var camera = this.getCameraByID(id);
-
+            const camera = this.getCameraByID(id);
             if (camera) {
                 return camera;
             }
 
-            var bone = this.getBoneByID(id);
+            const bone = this.getBoneByID(id);
+            if (bone) {
+                return bone;
+            }
 
-            return bone;
+            return null;
         }
 
         /**
@@ -3829,27 +3834,32 @@ import { Node } from "node";
          * @return the found node or null if not found at all.
          */
         public getNodeByName(name: string): Nullable<Node> {
-            var mesh = this.getMeshByName(name);
-
+            const mesh = this.getMeshByName(name);
             if (mesh) {
                 return mesh;
             }
 
-            var light = this.getLightByName(name);
+            const transformNode = this.getTransformNodeByName(name);
+            if (transformNode) {
+                return transformNode;
+            }
 
+            const light = this.getLightByName(name);
             if (light) {
                 return light;
             }
 
-            var camera = this.getCameraByName(name);
-
+            const camera = this.getCameraByName(name);
             if (camera) {
                 return camera;
             }
 
-            var bone = this.getBoneByName(name);
+            const bone = this.getBoneByName(name);
+            if (bone) {
+                return bone;
+            }
 
-            return bone;
+            return null;
         }
 
         /**

@@ -16,7 +16,7 @@ import { Observable, Observer, serialize } from "Tools";
      * Node is the basic class for all scene objects (Mesh, Light, Camera.)
      */
     export class Node implements IBehaviorAware<Node> {
-        private static _NodeConstructors: {[key: string]: any} = {};
+        private static _NodeConstructors: { [key: string]: any } = {};
 
         /**
          * Add a new node constructor
@@ -235,15 +235,18 @@ import { Observable, Observer, serialize } from "Tools";
          * Creates a new Node
          * @param name the name and id to be given to this node
          * @param scene the scene this node will be added to
+         * @param addToRootNodes the node will be added to scene.rootNodes
          */
-        constructor(name: string, scene: Nullable<Scene> = null) {
+        constructor(name: string, scene: Nullable<Scene> = null, addToRootNodes = true) {
             this.name = name;
             this.id = name;
             this._scene = <Scene>(scene || Engine.LastCreatedScene);
             this.uniqueId = this._scene.getUniqueId();
             this._initCache();
 
-            this.addToSceneRootNodes();
+            if (addToRootNodes) {
+                this.addToSceneRootNodes();
+            }
         }
 
         /**
