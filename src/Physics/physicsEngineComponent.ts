@@ -5,6 +5,8 @@ import { Mesh, AbstractMesh } from "Mesh";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
 import { IPhysicsEngine, IPhysicsEnginePlugin, PhysicsEngine, PhysicsImpostor, PhysicsJoint } from "Physics";
 import { Scene } from "scene";
+
+declare module "scene" {
     export interface Scene {
         /** @hidden (Backing field) */
         _physicsEngine: Nullable<IPhysicsEngine>;
@@ -50,6 +52,7 @@ import { Scene } from "scene";
          */
         onAfterPhysicsObservable: Observable<Scene>;
     }
+}
 
     /**
      * Gets the current physics engine
@@ -128,6 +131,7 @@ import { Scene } from "scene";
         }
     };
 
+declare module "Mesh/AbstractMesh" {
     export interface AbstractMesh {
         /** @hidden */
         _physicsImpostor: Nullable<PhysicsImpostor>;
@@ -167,6 +171,7 @@ import { Scene } from "scene";
         /** @hidden */
         _disposePhysicsObserver: Nullable<Observer<Node>>;
     }
+}
 
     Object.defineProperty(AbstractMesh.prototype, "physicsImpostor", {
         get: function(this: AbstractMesh) {

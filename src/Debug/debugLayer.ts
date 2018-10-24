@@ -5,6 +5,7 @@ import { Scene } from "scene";
     declare var INSPECTOR: any;
     // load the inspector using require, if not present in the global namespace.
 
+declare module "scene" {
     export interface Scene {
         /**
          * @hidden
@@ -18,7 +19,7 @@ import { Scene } from "scene";
          */
         debugLayer: DebugLayer;
     }
-
+}
     Object.defineProperty(Scene.prototype, "debugLayer", {
         get: function(this: Scene) {
             if (!this._debugLayer) {

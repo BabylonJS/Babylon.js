@@ -1,6 +1,8 @@
 import { ISceneComponent } from "sceneComponent";
 import { PostProcessRenderPipelineManager } from "PostProcess";
 import { Scene } from "scene";
+
+declare module "scene" {
     export interface Scene {
         /** @hidden (Backing field) */
         _postProcessRenderPipelineManager: PostProcessRenderPipelineManager;
@@ -12,6 +14,7 @@ import { Scene } from "scene";
          */
         readonly postProcessRenderPipelineManager: PostProcessRenderPipelineManager;
     }
+}
 
     Object.defineProperty(Scene.prototype, "postProcessRenderPipelineManager", {
         get: function(this: Scene) {

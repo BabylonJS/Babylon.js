@@ -4,6 +4,7 @@ import { Engine } from "Particles";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
 import { Effect, Material } from "Materials";
 
+declare module "scene" {
     export interface Scene {
         /** @hidden */
         _outlineRenderer: OutlineRenderer;
@@ -14,6 +15,7 @@ import { Effect, Material } from "Materials";
          */
         getOutlineRenderer(): OutlineRenderer;
     }
+}
 
     /**
      * Gets the outline renderer associated with the scene
@@ -26,6 +28,7 @@ import { Effect, Material } from "Materials";
         return this._outlineRenderer;
     };
 
+declare module "Mesh/AbstractMesh" {
     export interface AbstractMesh {
         /** @hidden (Backing field) */
         _renderOutline: boolean;
@@ -43,6 +46,7 @@ import { Effect, Material } from "Materials";
          */
         renderOverlay: boolean;
     }
+}
 
     Object.defineProperty(AbstractMesh.prototype, "renderOutline", {
         get: function(this: AbstractMesh) {

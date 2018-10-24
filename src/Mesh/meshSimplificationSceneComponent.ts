@@ -1,6 +1,8 @@
 import { Scene } from "scene";
 import { Mesh, SimplificationQueue, ISimplificationSettings, SimplificationType } from "Mesh";
 import { SceneComponentConstants, ISceneComponent } from "sceneComponent";
+
+declare module "scene" {
     export interface Scene {
         /** @hidden (Backing field) */
         _simplificationQueue: SimplificationQueue;
@@ -11,7 +13,7 @@ import { SceneComponentConstants, ISceneComponent } from "sceneComponent";
          */
         simplificationQueue: SimplificationQueue;
     }
-
+}
     Object.defineProperty(Scene.prototype, "simplificationQueue", {
         get: function(this: Scene) {
             if (!this._simplificationQueue) {
@@ -31,6 +33,7 @@ import { SceneComponentConstants, ISceneComponent } from "sceneComponent";
         configurable: true
     });
 
+declare module "Mesh/Mesh" {
     export interface Mesh {
         /**
          * Simplify the mesh according to the given array of settings.
@@ -43,6 +46,7 @@ import { SceneComponentConstants, ISceneComponent } from "sceneComponent";
          */
         simplify(settings: Array<ISimplificationSettings>, parallelProcessing?: boolean, simplificationType?: SimplificationType, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): Mesh;
     }
+}
 
     Mesh.prototype.simplify = function(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, simplificationType: SimplificationType = SimplificationType.QUADRATIC, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): Mesh {
         this.getScene().simplificationQueue.addTask({

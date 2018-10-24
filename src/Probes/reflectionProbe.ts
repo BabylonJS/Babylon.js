@@ -3,6 +3,7 @@ import { Matrix, Vector3 } from "Math";
 import { AbstractMesh } from "Mesh";
 import { Nullable } from "types";
 
+declare module "scene" {
     export interface Scene {
         /**
          * The list of reflection probes added to the scene
@@ -10,6 +11,7 @@ import { Nullable } from "types";
          */
         reflectionProbes: Array<ReflectionProbe>;
     }
+}
 
     /**
      * Class used to generate realtime reflection / refraction cube textures

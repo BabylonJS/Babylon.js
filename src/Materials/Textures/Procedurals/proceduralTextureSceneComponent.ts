@@ -6,6 +6,8 @@ import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { Layer } from "Layer";
 import { AbstractScene } from "abstractScene";
+
+declare module "abstractScene" {
     export interface AbstractScene {
         /**
          * The list of procedural textures added to the scene
@@ -13,7 +15,7 @@ import { AbstractScene } from "abstractScene";
          */
         proceduralTextures: Array<ProceduralTexture>;
     }
-
+}
     /**
      * Defines the Procedural Texture scene component responsible to manage any Procedural Texture
      * in a given scene.

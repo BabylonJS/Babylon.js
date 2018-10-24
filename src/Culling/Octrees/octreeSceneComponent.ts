@@ -5,6 +5,8 @@ import { AbstractMesh, SubMesh } from "Mesh";
 import { Collider } from "Collisions";
 import { Ray, Octree } from "Culling";
 import { SceneComponentConstants } from "sceneComponent";
+
+declare module "scene" {
     export interface Scene {
         /**
          * @hidden
@@ -27,6 +29,7 @@ import { SceneComponentConstants } from "sceneComponent";
          */
         createOrUpdateSelectionOctree(maxCapacity?: number, maxDepth?: number): Octree<AbstractMesh>;
     }
+}
 
     Scene.prototype.createOrUpdateSelectionOctree = function(maxCapacity = 64, maxDepth = 2): Octree<AbstractMesh> {
         let component = this._getComponent(SceneComponentConstants.NAME_OCTREE);
@@ -55,6 +58,7 @@ import { SceneComponentConstants } from "sceneComponent";
         configurable: true
     });
 
+declare module "Mesh/AbstractMesh" {
     export interface AbstractMesh {
         /**
          * @hidden
@@ -73,6 +77,7 @@ import { SceneComponentConstants } from "sceneComponent";
          */
         createOrUpdateSubmeshesOctree(maxCapacity?: number, maxDepth?: number): Octree<SubMesh>;
     }
+}
 
     /**
      * This function will create an octree to help to select the right submeshes for rendering, picking and collision computations.

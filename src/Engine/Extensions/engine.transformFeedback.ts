@@ -1,6 +1,8 @@
 import { Nullable } from "types";
 import { Engine } from "Engine";
 import { _TimeToken } from "Instrumentation";
+
+declare module "Engine/Engine" {
     export interface Engine {
         /**
          * Creates a webGL transform feedback object
@@ -45,6 +47,7 @@ import { _TimeToken } from "Instrumentation";
          */
         bindTransformFeedbackBuffer(value: Nullable<WebGLBuffer>): void;
     }
+}
 
     Engine.prototype.createTransformFeedback = function(): WebGLTransformFeedback {
         return this._gl.createTransformFeedback();

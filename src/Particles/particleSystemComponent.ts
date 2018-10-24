@@ -34,6 +34,7 @@ import { SceneComponentConstants } from "sceneComponent";
         }
     });
 
+declare module "Engine/Engine" {
     export interface Engine {
         /**
          * Create an effect to use with particle systems.
@@ -50,6 +51,7 @@ import { SceneComponentConstants } from "sceneComponent";
         createEffectForParticles(fragmentName: string, uniformsNames: string[], samplers: string[], defines: string, fallbacks?: EffectFallbacks,
             onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect;
     }
+}
 
     Engine.prototype.createEffectForParticles = function(fragmentName: string, uniformsNames: string[] = [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
         onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
@@ -75,6 +77,7 @@ import { SceneComponentConstants } from "sceneComponent";
             samplers, defines, fallbacks, onCompiled, onError);
     };
 
+declare module "Mesh/Mesh" {
     export interface Mesh {
         /**
          * Returns an array populated with IParticleSystem objects whose the mesh is the emitter
@@ -88,6 +91,7 @@ import { SceneComponentConstants } from "sceneComponent";
          */
         getHierarchyEmittedParticleSystems(): IParticleSystem[];
     }
+}
 
     Mesh.prototype.getEmittedParticleSystems = function(): IParticleSystem[] {
         var results = new Array<IParticleSystem>();

@@ -5,6 +5,8 @@ import {GamepadManager} from "Gamepad"
 import { SceneComponentConstants, ISceneComponent } from "sceneComponent";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+
+declare module "scene" {
     export interface Scene {
         /** @hidden */
         _gamepadManager: Nullable<GamepadManager>;
@@ -15,6 +17,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          */
         gamepadManager: GamepadManager;
     }
+}
 
     Object.defineProperty(Scene.prototype, "gamepadManager", {
         get: function(this: Scene) {

@@ -7,6 +7,7 @@ import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
 import { BoundingBox } from "Culling";
 import { ShaderMaterial, Material, Effect } from "Materials";
 
+declare module "scene" {
     export interface Scene {
         /** @hidden (Backing field) */
         _boundingBoxRenderer: BoundingBoxRenderer;
@@ -25,6 +26,7 @@ import { ShaderMaterial, Material, Effect } from "Materials";
          */
         getBoundingBoxRenderer(): BoundingBoxRenderer;
     }
+}
 
     Object.defineProperty(Scene.prototype, "forceShowBoundingBoxes", {
         get: function(this: Scene) {
@@ -50,6 +52,7 @@ import { ShaderMaterial, Material, Effect } from "Materials";
         return this._boundingBoxRenderer;
     };
 
+declare module "Mesh/AbstractMesh" {
     export interface AbstractMesh {
         /** @hidden (Backing field) */
         _showBoundingBox: boolean;
@@ -59,6 +62,7 @@ import { ShaderMaterial, Material, Effect } from "Materials";
          */
         showBoundingBox: boolean;
     }
+}
 
     Object.defineProperty(AbstractMesh.prototype, "showBoundingBox", {
         get: function(this: AbstractMesh) {

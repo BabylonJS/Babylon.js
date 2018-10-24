@@ -11,6 +11,8 @@ import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { EffectLayer } from "Layer";
 import { AbstractScene } from "abstractScene";
+
+declare module "abstractScene" {
     export interface AbstractScene {
         /**
          * Return a the first highlight layer of the scene with a given name.
@@ -19,6 +21,7 @@ import { AbstractScene } from "abstractScene";
          */
         getHighlightLayerByName(name: string): Nullable<HighlightLayer>;
     }
+}
 
     AbstractScene.prototype.getHighlightLayerByName = function(name: string): Nullable<HighlightLayer> {
         for (var index = 0; index < this.effectLayers.length; index++) {
