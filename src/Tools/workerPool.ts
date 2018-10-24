@@ -1,4 +1,4 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+import { IDisposable } from "scene";
 
     interface WorkerInfo {
         worker: Worker;

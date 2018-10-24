@@ -1,9 +1,8 @@
-interface HTMLCanvasElement {
-    /** Track wether a record is in progress */
-    isRecording: boolean;
-    /** Capture Stream method defined by some browsers */
-    captureStream(fps?: number): MediaStream;
-}
+import { Engine } from "index";
+
+import { Nullable } from "types";
+
+import { Tools } from ".";
 
 interface MediaRecorder {
     /** Starts recording */
@@ -82,7 +81,7 @@ declare var MediaRecorder: MediaRecorderConstructor;
          */
         public static IsSupported(engine: Engine): boolean {
             const canvas = engine.getRenderingCanvas();
-            return (!!canvas && typeof canvas.captureStream === "function");
+            return (!!canvas && typeof (<any>canvas).captureStream === "function");
         }
 
         private readonly _options: VideoRecorderOptions;
