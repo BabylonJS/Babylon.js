@@ -1,11 +1,12 @@
 import { Nullable } from "types";
 import { IAnimatable, Observable, Observer, Tools, FactorGradient, ColorGradient, Color3Gradient } from "Tools";
 import { Color4, Color3, Vector3, Matrix, Tmp, ISize, Scalar, Vector4 } from "Math";
-import { AbstractMesh, VertexBuffer } from "Mesh";
+import { AbstractMesh, VertexBuffer, Buffer } from "Mesh";
 import { IParticleSystem, BaseParticleSystem, Particle, SubEmitter, SubEmitterType, BoxParticleEmitter, IParticleEmitterType, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter } from "Particles";
 import { Material, ImageProcessingConfiguration, Effect, Texture, RawTexture, ProceduralTexture, MaterialHelper } from "Materials";
 import { Engine } from "Engine";
 import { Scene, IDisposable } from "scene";
+import { Animation } from "Animations";
     /**
      * This represents a particle system in Babylon.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.

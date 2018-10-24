@@ -74,6 +74,7 @@ declare module "Mesh/LinesMesh" {
         return this;
     };
 
+declare module "Mesh/InstancedMesh" {
     export interface InstancedMesh {
         /**
          * Enables the edge rendering mode on the mesh.
@@ -85,6 +86,7 @@ declare module "Mesh/LinesMesh" {
          */
         enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): InstancedMesh;
     }
+}
 
     InstancedMesh.prototype.enableEdgesRendering = function(epsilon = 0.95, checkVerticesInsteadOfIndices = false): InstancedMesh {
         if (this.sourceMesh.getClassName() === 'LinesMesh') {
