@@ -62,8 +62,8 @@ module BABYLON.GLTF2.Loader.Extensions {
         }
 
         /** @hidden */
-        public loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> {
-            return GLTFLoader.LoadExtensionAsync<ILightReference, Mesh>(context, node, this.name, (extensionContext, extension) => {
+        public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
+            return GLTFLoader.LoadExtensionAsync<ILightReference, TransformNode>(context, node, this.name, (extensionContext, extension) => {
                 return this._loader.loadNodeAsync(context, node, (babylonMesh) => {
                     let babylonLight: Light;
 
