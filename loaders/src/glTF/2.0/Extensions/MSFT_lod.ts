@@ -111,9 +111,9 @@ module BABYLON.GLTF2.Loader.Extensions {
         }
 
         /** @hidden */
-        public loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> {
-            return GLTFLoader.LoadExtensionAsync<IMSFTLOD, Mesh>(context, node, this.name, (extensionContext, extension) => {
-                let firstPromise: Promise<Mesh>;
+        public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
+            return GLTFLoader.LoadExtensionAsync<IMSFTLOD, TransformNode>(context, node, this.name, (extensionContext, extension) => {
+                let firstPromise: Promise<TransformNode>;
 
                 const nodeLODs = this._getLODs(extensionContext, node, this._loader.gltf.nodes, extension.ids);
                 this._loader.logOpen(`${extensionContext}`);
@@ -126,17 +126,19 @@ module BABYLON.GLTF2.Loader.Extensions {
                         this._nodeSignalLODs[indexLOD] = this._nodeSignalLODs[indexLOD] || new Deferred();
                     }
 
-                    const promise = this._loader.loadNodeAsync(`#/nodes/${nodeLOD.index}`, nodeLOD).then((babylonMesh) => {
+                    const assign = (babylonTransformNode: TransformNode) => { babylonTransformNode.setEnabled(false); };
+                    const promise = this._loader.loadNodeAsync(`#/nodes/${nodeLOD.index}`, nodeLOD, assign).then((babylonMesh) => {
                         if (indexLOD !== 0) {
                             // TODO: should not rely on _babylonMesh
                             const previousNodeLOD = nodeLODs[indexLOD - 1];
-                            if (previousNodeLOD._babylonMesh) {
-                                previousNodeLOD._babylonMesh.dispose();
-                                delete previousNodeLOD._babylonMesh;
+                            if (previousNodeLOD._babylonTransformNode) {
+                                previousNodeLOD._babylonTransformNode.dispose();
+                                delete previousNodeLOD._babylonTransformNode;
                                 this._disposeUnusedMaterials();
                             }
                         }
 
+                        babylonMesh.setEnabled(true);
                         return babylonMesh;
                     });
 
@@ -184,11 +186,11 @@ module BABYLON.GLTF2.Loader.Extensions {
                         if (indexLOD !== 0) {
                             assign(babylonMaterial);
 
-                            // TODO: should not rely on _babylonData
-                            const previousBabylonDataLOD = materialLODs[indexLOD - 1]._babylonData!;
-                            if (previousBabylonDataLOD[babylonDrawMode]) {
-                                previousBabylonDataLOD[babylonDrawMode].material.dispose();
-                                delete previousBabylonDataLOD[babylonDrawMode];
+                            // TODO: should not rely on _data
+                            const previousDataLOD = materialLODs[indexLOD - 1]._data!;
+                            if (previousDataLOD[babylonDrawMode]) {
+                                previousDataLOD[babylonDrawMode].babylonMaterial.dispose();
+                                delete previousDataLOD[babylonDrawMode];
                             }
                         }
 
@@ -256,16 +258,16 @@ module BABYLON.GLTF2.Loader.Extensions {
         }
 
         private _disposeUnusedMaterials(): void {
-            // TODO: should not rely on _babylonData
+            // TODO: should not rely on _data
             const materials = this._loader.gltf.materials;
             if (materials) {
                 for (const material of materials) {
-                    if (material._babylonData) {
-                        for (const drawMode in material._babylonData) {
-                            const babylonData = material._babylonData[drawMode];
-                            if (babylonData.meshes.length === 0) {
-                                babylonData.material.dispose(false, true);
-                                delete material._babylonData[drawMode];
+                    if (material._data) {
+                        for (const drawMode in material._data) {
+                            const data = material._data[drawMode];
+                            if (data.babylonMeshes.length === 0) {
+                                data.babylonMaterial.dispose(false, true);
+                                delete material._data[drawMode];
                             }
                         }
                     }
