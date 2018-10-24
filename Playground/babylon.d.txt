@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-=======
-
 
 declare module 'babylonjs' { 
     export = BABYLON; 
@@ -50864,14 +50861,22 @@ declare module BABYLON.GUI {
         * @see http://doc.babylonjs.com/how_to/gui
         */
     export class AdvancedDynamicTexture extends BABYLON.DynamicTexture {
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */;
-            /** @hidden */;
-            /** @hidden */;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+;
+            /** @hidden */
+;
+            /** @hidden */
+;
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
             /**
                 * Gets or sets a boolean defining if alpha is stored as premultiplied
                 */
@@ -50963,7 +50968,8 @@ declare module BABYLON.GUI {
                 * Release all resources
                 */
             dispose(): void;
-            /** @hidden */
+            /** @hidden */
+
             /**
                 * Get screen coordinates for a vector3
                 * @param position defines the position to project
@@ -50971,9 +50977,12 @@ declare module BABYLON.GUI {
                 * @returns the projected position
                 */
             getProjectedPosition(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector2;
-            /** @hidden */
-            /** @hidden */, control: Control): void;
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+, control: Control): void;
+            /** @hidden */
+
             /** Attach to all scene events required to support pointer events */
             attach(): void;
             /**
@@ -51178,7 +51187,8 @@ declare module BABYLON.GUI {
         * The point can be pure 2D coordinates, a mesh or a control
         */
     export class MultiLinePoint {
-            /** @hidden */
+            /** @hidden */
+
             /**
                 * Creates a new MultiLinePoint
                 * @param multiLine defines the source MultiLine object
@@ -51209,8 +51219,10 @@ declare module BABYLON.GUI {
         * Only support font related properties so far
         */
     export class Style implements BABYLON.IDisposable {
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
             /**
                 * BABYLON.Observable raised when the style values are changed
                 */
@@ -51310,14 +51322,18 @@ declare module BABYLON.GUI {
         * @see http://doc.babylonjs.com/how_to/gui3d
         */
     export class GUI3DManager implements BABYLON.IDisposable {
-            /** @hidden */
-            /** @hidden */;
-            /** @hidden */;
+            /** @hidden */
+
+            /** @hidden */
+;
+            /** @hidden */
+;
             /**
                 * BABYLON.Observable raised when the point picked by the pointer events changed
                 */
             onPickedPointChangedObservable: BABYLON.Observable<BABYLON.Nullable<BABYLON.Vector3>>;
-            /** @hidden */;
+            /** @hidden */
+;
             /** Gets the hosting scene */
             readonly scene: BABYLON.Scene;
             /** Gets associated utility layer */
@@ -51408,11 +51424,16 @@ declare module BABYLON.GUI {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
             /**
                 * Creates a new button made with an image and a text
                 * @param name defines the name of the button
@@ -51469,8 +51490,10 @@ declare module BABYLON.GUI {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
             /**
                 * Utility function to easily create a checkbox with a header
                 * @param title defines the label to use for the header
@@ -51502,7 +51525,11 @@ declare module BABYLON.GUI {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
-            /** @hidden */
+            /** @hidden */
+
+
+
+
     }
 }
 declare module BABYLON.GUI {
@@ -51535,7 +51562,8 @@ declare module BABYLON.GUI {
                 * @param name defines the name of the container
                 */
             constructor(name?: string | undefined);
-            protected _getTypeName(): string;
+            protected _getTypeName(): string;
+
             /**
                 * Gets a child using its name
                 * @param name defines the child name to look for
@@ -51572,13 +51600,18 @@ declare module BABYLON.GUI {
                 * @returns the current container
                 */
             removeControl(control: Control): Container;
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
             /** @hidden */
             protected _localDraw(context: CanvasRenderingContext2D): void;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
             /** @hidden */
             protected _clipForChildren(context: CanvasRenderingContext2D): void;
             /** @hidden */
@@ -51595,13 +51628,18 @@ declare module BABYLON.GUI {
     export class Control {
             /** defines the name of the control */
             name?: string | undefined;
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
             /** Gets or sets the control parent */
             parent: BABYLON.Nullable<Container>;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
             /** @hidden */
             protected _fontOffset: {
                     ascent: number;
@@ -51612,19 +51650,24 @@ declare module BABYLON.GUI {
             protected _horizontalAlignment: number;
             /** @hidden */
             protected _verticalAlignment: number;
-            /** @hidden */
+            /** @hidden */
+
             /** @hidden */
             protected _cachedParentMeasure: Measure;
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
             /** @hidden */
             protected _invertTransformMatrix: Matrix2D;
             /** @hidden */
             protected _transformedPosition: BABYLON.Vector2;
-            /** @hidden */
+            /** @hidden */
+
             protected _isEnabled: boolean;
             protected _disabledColor: string;
-            /** @hidden */
+            /** @hidden */
+
             /** Gets or sets a boolean indicating if the control can be hit with pointer events */
             isHitTestVisible: boolean;
             /** Gets or sets a boolean indicating if the control can block pointer events */
@@ -51750,7 +51793,8 @@ declare module BABYLON.GUI {
                 * @see http://doc.babylonjs.com/how_to/gui#styles
                 */
             style: BABYLON.Nullable<Style>;
-            /** @hidden */protected readonly _isFontSizeInPercentage: boolean;
+            /** @hidden */
+protected readonly _isFontSizeInPercentage: boolean;
             /** Gets font size in pixels */
             readonly fontSizeInPixels: number;
             /** Gets or sets font size */
@@ -51866,7 +51910,8 @@ declare module BABYLON.GUI {
             name?: string | undefined);
             /** @hidden */
             protected _getTypeName(): string;
-            /** @hidden */
+            /** @hidden */
+
             /**
                 * Determines if a container is an ascendant of the current control
                 * @param container defines the container to look for
@@ -51904,12 +51949,18 @@ declare module BABYLON.GUI {
                 * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
                 */
             linkWithMesh(mesh: BABYLON.Nullable<BABYLON.AbstractMesh>): void;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
             /** @hidden */
             protected _transform(context: CanvasRenderingContext2D): void;
             /** @hidden */
@@ -51918,14 +51969,16 @@ declare module BABYLON.GUI {
             protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
             /** @hidden */
             protected _clip(context: CanvasRenderingContext2D): void;
-            /** @hidden */
+            /** @hidden */
+
             /** @hidden */
             protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /** @hidden */
             protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /** @hidden */
             protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
-            /** @hidden */
+            /** @hidden */
+
             /**
                 * Tests if a given coordinates belong to the current control
                 * @param x defines x coordinate to test
@@ -51933,14 +51986,22 @@ declare module BABYLON.GUI {
                 * @returns true if the coordinates are inside the control
                 */
             contains(x: number, y: number): boolean;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
             /** Releases associated resources */
             dispose(): void;
             /** HORIZONTAL_ALIGNMENT_LEFT */
@@ -51955,7 +52016,8 @@ declare module BABYLON.GUI {
             static readonly VERTICAL_ALIGNMENT_BOTTOM: number;
             /** VERTICAL_ALIGNMENT_CENTER */
             static readonly VERTICAL_ALIGNMENT_CENTER: number;
-            /** @hidden */private static _GetFontOffset(font: string): {
+            /** @hidden */
+private static _GetFontOffset(font: string): {
                     ascent: number;
                     height: number;
                     descent: number;
@@ -52153,7 +52215,8 @@ declare module BABYLON.GUI {
             constructor(name?: string | undefined, url?: BABYLON.Nullable<string>);
             protected _getTypeName(): string;
             /** Force the control to synchronize with its content */
-            synchronizeSizeWithContent(): void;
+            synchronizeSizeWithContent(): void;
+
             dispose(): void;
             /** STRETCH_NONE */
             static readonly STRETCH_NONE: number;
@@ -52171,7 +52234,8 @@ declare module BABYLON.GUI {
         */
     export class InputText extends Control implements IFocusableControl {
             name?: string | undefined;
-            /** @hidden */
+            /** @hidden */
+
             /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
             promptMessage: string;
             /** BABYLON.Observable raised when the text changes */
@@ -52231,7 +52295,10 @@ declare module BABYLON.GUI {
             /** @hidden */
             processKey(keyCode: number, key?: string, evt?: KeyboardEvent): void;
             /** @hidden */
-            processKeyboard(evt: KeyboardEvent): void;
+            processKeyboard(evt: KeyboardEvent): void;
+
+
+
             protected _beforeRenderText(text: string): string;
             dispose(): void;
     }
@@ -52271,7 +52338,9 @@ declare module BABYLON.GUI {
                 * @param name defines the control name
                 */
             constructor(name?: string | undefined);
-            protected _getTypeName(): string;
+            protected _getTypeName(): string;
+
+
             protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /**
                 * Move one end of the line given 3D cartesian coordinates.
@@ -52284,7 +52353,8 @@ declare module BABYLON.GUI {
                 * Move one end of the line to a position in screen absolute space.
                 * @param projectedPosition Position in screen absolute space (X, Y)
                 * @param end (opt) Set to true to assign x2 and y2 coordinates of the line. Default assign to x1 and y1.
-                */
+                */
+
     }
 }
 declare module BABYLON.GUI {
@@ -52343,8 +52413,10 @@ declare module BABYLON.GUI {
             lineWidth: number;
             horizontalAlignment: number;
             verticalAlignment: number;
-            protected _getTypeName(): string;
-            protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+            protected _getTypeName(): string;
+
+            protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+
             protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             dispose(): void;
     }
@@ -52372,7 +52444,9 @@ declare module BABYLON.GUI {
                 * @param name defines the control name
                 */
             constructor(name?: string | undefined);
-            protected _getTypeName(): string;
+            protected _getTypeName(): string;
+
+
             /**
                 * Utility function to easily create a radio button with a header
                 * @param title defines the label to use for the header
@@ -52431,7 +52505,8 @@ declare module BABYLON.GUI {
             readonly selectors: StackPanel[];
             /** Gets and sets the group header */
             header: string;
-            /** @hidden*/
+            /** @hidden*/
+
             /** Removes the selector at the given position
              * @param selectorNb the position of the selector within the group
             */
@@ -52447,10 +52522,14 @@ declare module BABYLON.GUI {
                 * @param checked is true when Selector is checked
                 */
             addCheckbox(text: string, func?: (s: boolean) => void, checked?: boolean): void;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
     }
     /** Class used to create a RadioGroup
         * which contains groups of radio buttons
@@ -52462,10 +52541,14 @@ declare module BABYLON.GUI {
                 * @param checked is true when Selector is checked
                 */
             addRadio(label: string, func?: (n: number) => void, checked?: boolean): void;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
     }
     /** Class used to create a SliderGroup
         * which contains groups of slider buttons
@@ -52482,10 +52565,14 @@ declare module BABYLON.GUI {
                 * @param onValueChange is the function used to format the value displayed, eg radians to degrees
                 */
             addSlider(label: string, func?: (v: number) => void, unit?: string, min?: number, max?: number, value?: number, onValueChange?: (v: number) => number): void;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
     }
     /** Class used to hold the controls for the checkboxes, radio buttons and sliders
         * @see http://doc.babylonjs.com/how_to/selector
@@ -52653,7 +52740,8 @@ declare module BABYLON.GUI {
                 */
             name?: string | undefined, text?: string);
             protected _getTypeName(): string;
-            /** @hidden */
+            /** @hidden */
+
             protected _applyStates(context: CanvasRenderingContext2D): void;
             protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             protected _breakLines(refWidth: number, context: CanvasRenderingContext2D): object[];
@@ -52805,7 +52893,8 @@ declare module BABYLON.GUI {
                 * Creates a new GridDisplayRectangle
                 * @param name defines the control name
                 */
-            constructor(name?: string | undefined);
+            constructor(name?: string | undefined);
+
             protected _getTypeName(): string;
     }
 }
@@ -52856,7 +52945,10 @@ declare module BABYLON.GUI {
             protected _getTypeName(): string;
             protected _getThumbPosition(): number;
             protected _getThumbThickness(type: string): number;
-            protected _prepareRenderingData(type: string): void;
+            protected _prepareRenderingData(type: string): void;
+
+
+
     }
 }
 declare module BABYLON.GUI {
@@ -52876,7 +52968,8 @@ declare module BABYLON.GUI {
                 * @param name defines the control name
                 */
             constructor(name?: string | undefined);
-            protected _getTypeName(): string;
+            protected _getTypeName(): string;
+
     }
 }
 declare module BABYLON.GUI {
@@ -52903,7 +52996,8 @@ declare module BABYLON.GUI {
                 * @param name defines the control name
                 */
             constructor(name?: string | undefined);
-            protected _getTypeName(): string;
+            protected _getTypeName(): string;
+
     }
 }
 declare module BABYLON.GUI {
@@ -53043,7 +53137,8 @@ declare module BABYLON.GUI {
     export class Control3D implements BABYLON.IDisposable, BABYLON.IBehaviorAware<Control3D> {
             /** Defines the control name */
             name?: string | undefined;
-            /** @hidden */
+            /** @hidden */
+
             /** Gets or sets the control position  in world space */
             position: BABYLON.Vector3;
             /** Gets or sets the control scaling  in world space */
@@ -53138,7 +53233,8 @@ declare module BABYLON.GUI {
                 * @returns the current control
                 */
             linkToTransformNode(node: BABYLON.Nullable<BABYLON.TransformNode>): Control3D;
-            /** @hidden **/
+            /** @hidden **/
+
             /**
                 * Node creation.
                 * Can be overriden by children
@@ -53151,15 +53247,22 @@ declare module BABYLON.GUI {
                 * @param mesh defines the mesh which will represent the control
                 */
             protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
+            /** @hidden */
+
             /** @hidden */
             forcePointerUp(pointerId?: BABYLON.Nullable<number>): void;
-            /** @hidden */
-            /** @hidden */
+            /** @hidden */
+
+            /** @hidden */
+
             /**
                 * Releases all associated resources
                 */
@@ -56480,4 +56583,3 @@ interface IGLTFValidationOptions {
 declare var GLTFValidator: {
     validateString: (json: string, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
 };
->>>>>>> upstream/master
