@@ -1274,9 +1274,7 @@ export class Control {
         }
         this._enterCount = 0;
 
-        var canNotify: boolean = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
-
-        if (canNotify && this.parent != null) { this.parent._onPointerOut(target); }
+        this.onPointerOutObservable.notifyObservers(this, -1, target, this);
     }
 
     /** @hidden */
