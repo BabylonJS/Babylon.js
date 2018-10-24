@@ -1,11 +1,13 @@
 import { serialize, Observer, Observable, Tools, SmartArray, SerializationHelper, IAnimatable, Tags } from "Tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Plane } from "Math";
+import { Plane, Matrix } from "Math";
 import { Engine } from "Engine";
-import { Mesh, AbstractMesh, Geometry, BaseSubMesh } from "Mesh";
+import { Mesh, AbstractMesh, Geometry, BaseSubMesh, SubMesh } from "Mesh";
 import { StandardMaterial, RenderTargetTexture, UniformBuffer, Effect, BaseTexture, MultiMaterial } from "Materials";
 import { Animation } from "Animations";
+
+declare var BABYLON: any;
     /**
      * Manages the defines for the Material
      */
@@ -867,7 +869,7 @@ import { Animation } from "Animations";
          * @param useInstances specifies that instances should be used
          * @returns a boolean indicating that the submesh is ready or not
          */
-        public isReadyForSubMesh(): boolean {
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
             return false;
         }
 
@@ -945,7 +947,7 @@ import { Animation } from "Animations";
          * @param world defines the world transformation matrix
          * @param mesh defines the mesh to bind the material to
          */
-        public bind(): void {
+        public bind(world: Matrix, mesh?: Mesh): void {
         }
 
         /**
@@ -954,14 +956,14 @@ import { Animation } from "Animations";
          * @param mesh defines the mesh containing the submesh
          * @param subMesh defines the submesh to bind the material to
          */
-        public bindForSubMesh(): void {
+        public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         }
 
         /**
          * Binds the world matrix to the material
          * @param world defines the world transformation matrix
          */
-        public bindOnlyWorldMatrix(): void {
+        public bindOnlyWorldMatrix(world: Matrix): void {
         }
 
         /**
@@ -1055,7 +1057,7 @@ import { Animation } from "Animations";
          * @param texture defines the texture to check against the material
          * @returns a boolean specifying if the material uses the texture
          */
-        public hasTexture(): boolean {
+        public hasTexture(texture: BaseTexture): boolean {
             return false;
         }
 
@@ -1064,7 +1066,7 @@ import { Animation } from "Animations";
          * @param name defines the new name for the duplicated material
          * @returns the cloned material
          */
-        public clone(): Nullable<Material> {
+        public clone(name: string): Nullable<Material> {
             return null;
         }
 
@@ -1120,7 +1122,7 @@ import { Animation } from "Animations";
                 }
 
                 if (this._storeEffectOnSubMeshes) {
-                    if (this.isReadyForSubMesh()) {
+                    if (this.isReadyForSubMesh(mesh, subMesh)) {
                         if (onCompiled) {
                             onCompiled(this);
                         }

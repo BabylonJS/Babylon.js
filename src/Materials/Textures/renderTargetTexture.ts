@@ -6,7 +6,7 @@ import { Matrix, Vector3, Color4 } from "Math";
 import { Engine, RenderTargetCreationOptions } from "Engine";
 import { AbstractMesh, SubMesh } from "Mesh";
 import { Material, Texture, InternalTexture } from "Materials";
-import { PostProcess } from "PostProcess";
+import { PostProcessManager, PostProcess } from "PostProcess";
 import { RenderingManager } from "Rendering";
     /**
      * This Helps creating a texture that will be created from a camera in your scene.

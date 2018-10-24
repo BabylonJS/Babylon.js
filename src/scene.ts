@@ -10,7 +10,7 @@ import { AbstractScene } from "abstractScene";
 import { BaseTexture, Material, ImageProcessingConfiguration, StandardMaterial, RenderTargetTexture, Effect, UniformBuffer, MultiMaterial, Texture } from "Materials";
 import { AnimationPropertiesOverride, Animatable, RuntimeAnimation, AnimationGroup, Animation } from "Animations";
 import { Light } from "Lights";
-import { PickingInfo, ICollisionCoordinator, CollisionCoordinatorLegacy, CollisionWorker, CollisionCoordinatorWorker } from "Collisions";
+import { PickingInfo, ICollisionCoordinator, CollisionCoordinatorLegacy, CollisionWorker, CollisionCoordinatorWorker, Collider } from "Collisions";
 import { PointerEventTypes, PointerInfoPre, PointerInfo, KeyboardInfoPre, KeyboardInfo, KeyboardEventTypes } from "Events";
 import { ActionManager, ActionEvent } from "Actions";
 import { PostProcess, PostProcessManager } from "PostProcess";

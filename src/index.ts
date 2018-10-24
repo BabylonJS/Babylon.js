@@ -16,7 +16,6 @@ export * from "./Gizmos";
 export * from "./Helpers";
 export * from "./Instrumentation";
 export * from "./Layer";
-export * from "./Legacy";
 export * from "./LensFlare";
 export * from "./Lights";
 export * from "./Loading";

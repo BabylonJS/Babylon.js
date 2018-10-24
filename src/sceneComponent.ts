@@ -1,6 +1,5 @@
 import { Scene } from "scene";
-import { AbstractMesh } from "Culling";
-import { SubMesh, _InstancesBatch } from "Mesh";
+import { AbstractMesh, SubMesh, _InstancesBatch } from "Mesh";
 import { SmartArrayNoDuplicate } from "Tools";
 import { Nullable } from "types";
 import { Camera } from "Cameras";
