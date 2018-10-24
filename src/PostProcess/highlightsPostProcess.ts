@@ -2,6 +2,7 @@ import { Nullable } from "types";
 import { Camera } from "Cameras";
 import { PostProcess, PostProcessOptions } from "PostProcess";
 import { Engine } from "Engine";
+
     /**
      * Extracts highlights from the image
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses

@@ -2,6 +2,7 @@ import { Nullable } from "types";
 import { Tools } from "Tools";
 import { Camera } from "Cameras";
 import { PostProcess } from "PostProcess";
+import { Engine } from "Engine";
     /**
      * This represents a set of one or more post processes in Babylon.
      * A post process can be used to apply a shader to a texture after it is rendered.
@@ -30,7 +31,7 @@ import { PostProcess } from "PostProcess";
          * @param getPostProcesses A function that returns a set of post processes which the effect will run in order to be run.
          * @param singleInstance False if this post process can be run on multiple cameras. (default: true)
          */
-        constructor(name: string, getPostProcesses: () => Nullable<PostProcess | Array<PostProcess>>, singleInstance?: boolean) {
+        constructor(engine: Engine, name: string, getPostProcesses: () => Nullable<PostProcess | Array<PostProcess>>, singleInstance?: boolean) {
             this._name = name;
             this._singleInstance = singleInstance || true;
 

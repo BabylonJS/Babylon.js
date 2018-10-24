@@ -1,5 +1,5 @@
 import { Nullable } from "types";
-import { Engine } from "Particles";
+import { Engine } from "Engine";
 import { PostProcess, PostProcessOptions } from "PostProcess";
 import { RenderTargetTexture, Effect } from "Materials";
 import { Camera } from "Cameras";

@@ -1,8 +1,10 @@
 import { IDisposable, Scene } from "scene";
 import { Nullable } from "types";
 import { Observable, Observer } from "Tools";
-import { VertexBuffer } from "Mesh";
+import { VertexBuffer, Buffer } from "Mesh";
 import { Vector3 } from "Math";
+import { Sprite, SpriteSceneComponent } from ".";
+import { Ray, Camera, PickingInfo, Texture, Effect, SceneComponentConstants, Material, Engine } from "index";
 
     /**
      * Defines the minimum interface to fullfil in order to be a sprite manager.

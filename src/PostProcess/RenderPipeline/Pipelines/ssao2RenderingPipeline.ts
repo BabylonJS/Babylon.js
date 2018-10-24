@@ -2,9 +2,11 @@ import { Tools, serialize, SerializationHelper } from "Tools";
 import { Vector3, Tmp } from "Math";
 import { Camera } from "Cameras";
 import { Effect, Texture, DynamicTexture } from "Materials";
-import { PostProcess, PostProcessRenderPipeline, Scene, PassPostProcess, PostProcessRenderEffect } from "PostProcess";
+import { PostProcess, PostProcessRenderPipeline, PassPostProcess, PostProcessRenderEffect } from "PostProcess";
 import { Engine } from "Engine";
 import { GeometryBufferRenderer } from "index";
+import { Scene } from "scene";
+
     /**
      * Render pipeline to produce ssao effect
      */

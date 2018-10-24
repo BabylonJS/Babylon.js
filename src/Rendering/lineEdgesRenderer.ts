@@ -1,5 +1,5 @@
-import { EdgesRenderer, AbstractMesh } from "Rendering";
-import { VertexBuffer } from "Mesh";
+import { EdgesRenderer } from "Rendering";
+import { VertexBuffer, AbstractMesh } from "Mesh";
 import { Tmp, Vector3 } from "Math";
 
     /**

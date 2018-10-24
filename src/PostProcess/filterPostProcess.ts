@@ -4,6 +4,7 @@ import { Camera } from "Cameras";
 import { Effect } from "Materials";
 import { PostProcess, PostProcessOptions } from "PostProcess";
 import { Engine } from "Engine";
+
     /**
      * Applies a kernel filter to the image
      */

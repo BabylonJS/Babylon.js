@@ -4,7 +4,7 @@ import { Effect } from "Materials";
 import { PostProcess, PostProcessOptions } from "PostProcess";
 import { Engine } from "Engine";
 import { ToGammaSpace } from "Math";
-    
+
     /**
      * The extract highlights post process sets all pixels to black except pixels above the specified luminance threshold. Used as the first step for a bloom effect.
      */

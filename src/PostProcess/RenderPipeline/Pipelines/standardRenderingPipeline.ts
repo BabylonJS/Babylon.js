@@ -3,11 +3,14 @@ import { IAnimatable, Tools, serialize, serializeAsTexture, SerializationHelper 
 import { Vector2, Vector3, Matrix, Vector4, Scalar } from "Math";
 import { Camera } from "Cameras";
 import { Effect, Texture } from "Materials";
-import { PostProcess, PostProcessRenderPipeline, BlurPostProcess, FxaaPostProcess, Scene, PostProcessRenderEffect } from "PostProcess";
+import { PostProcess, PostProcessRenderPipeline, BlurPostProcess, FxaaPostProcess, PostProcessRenderEffect } from "PostProcess";
 import { Engine } from "Engine";
 import { IDisposable } from "scene";
 import { SpotLight, DirectionalLight } from "Lights";
 import { GeometryBufferRenderer } from "Rendering";
+import { Scene } from "scene";
+import { Animation } from "Animations";
+
     /**
      * Standard rendering pipeline
      * Default pipeline should be used going forward but the standard pipeline will be kept for backwards compatibility.

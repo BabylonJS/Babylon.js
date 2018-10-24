@@ -1,3 +1,11 @@
+import { Nullable } from "types";
+
+import { Tools } from ".";
+
+import { CubeTexture, Engine, Scene, Texture, PostProcess, InternalTexture, BaseTexture } from "index";
+
+import { Scalar, SphericalPolynomial, Vector3 } from "Math";
+
     /**
      * Raw texture data and descriptor sufficient for WebGL texture upload
      */
@@ -593,4 +601,4 @@
             Vector3.FromArrayToRef(irradianceInfo.xy, 0, sp.xy);
             texture._sphericalPolynomial = sp;
         }
-    }
+    }

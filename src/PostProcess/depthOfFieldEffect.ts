@@ -2,8 +2,9 @@ import { Nullable } from "types";
 import { Vector2 } from "Math";
 import { Camera } from "Cameras";
 import { RenderTargetTexture, Texture } from "Materials";
-import { PostProcess, PostProcessRenderEffect, CircleOfConfusionPostProcess, DepthOfFieldBlurPostProcess, DepthOfFieldMergePostProcess, Scene } from "PostProcess";
-    
+import { PostProcess, PostProcessRenderEffect, CircleOfConfusionPostProcess, DepthOfFieldBlurPostProcess, DepthOfFieldMergePostProcess } from "PostProcess";
+import { Scene } from "scene";
+
     /**
      * Specifies the level of max blur that should be applied when using the depth of field effect
      */

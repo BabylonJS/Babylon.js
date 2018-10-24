@@ -1,3 +1,11 @@
+import { Scene, IDisposable, Engine } from "index";
+
+import { AbstractMesh, Mesh } from "Mesh";
+
+import { Nullable } from "types";
+
+import { Observer, Observable } from ".";
+
     /**
      * Defines the root class used to create scene optimization to use with SceneOptimizer
      * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
@@ -840,4 +848,4 @@
 
             return optimizer;
         }
-    }
+    }

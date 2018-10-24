@@ -3,7 +3,7 @@ import { Camera } from "Cameras";
 import { Effect, Texture } from "Materials";
 import { PostProcess, PostProcessOptions } from "PostProcess";
 import { Engine } from "Engine";
-    
+
     /**
      * Fxaa post process
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#fxaa

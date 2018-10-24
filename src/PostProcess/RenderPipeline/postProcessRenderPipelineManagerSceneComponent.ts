@@ -1,4 +1,4 @@
-import { ISceneComponent } from "sceneComponent";
+import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
 import { PostProcessRenderPipelineManager } from "PostProcess";
 import { Scene } from "scene";
 

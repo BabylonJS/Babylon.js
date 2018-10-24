@@ -2,7 +2,7 @@ import { Observer, Observable, Tools } from "Tools";
 import { Nullable, FloatArray, IndicesArray } from "types";
 import { Camera } from "Cameras";
 import { Scene, IDisposable } from "scene";
-import { Quaternion, Matrix, Vector3, Color3, Color4, Plane, Tmp, Epsilon, Axis } from "Math";
+import { Quaternion, Matrix, Vector3, Color3, Color4, Plane, Tmp, Epsilon, Axis, Vector2 } from "Math";
 import { Engine } from "Engine";
 import { Node } from "Node";
 import { InstancedMesh, VertexBuffer, TransformNode, SubMesh, LinesMesh, IGetSetVerticesData, VertexData } from "Mesh";
