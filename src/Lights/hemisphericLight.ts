@@ -1,12 +1,12 @@
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { Matrix, Vector3, Color3 } from "Math";
-import {ArcRotateCameraInputsManager} from "Gamepad";
-import {Node} from "Node";
+import { Node } from "Node";
 import { Effect } from "Materials";
-import { Light } from "Lights";
+import { Light, IShadowGenerator } from "Lights";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { serializeAsColor3, serializeAsVector3 } from "index";
     Node.AddNodeConstructor("Light_Type_3", (name, scene) => {
         return () => new HemisphericLight(name, Vector3.Zero(), scene);
     });

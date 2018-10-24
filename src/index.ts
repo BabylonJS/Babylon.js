@@ -22,7 +22,6 @@ export * from "./Loading";
 export * from "./Materials";
 export * from "./Math";
 export * from "./Mesh";
-export * from "./mixins";
 export * from "./Morph";
 export * from "./node";
 export * from "./Offline";

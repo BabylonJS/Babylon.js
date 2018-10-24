@@ -5,7 +5,7 @@ import { Scene } from "scene";
 import { Vector3, Color3, Color4 } from "Math";
 import { Mesh, AbstractMesh, Geometry, TransformNode, BoxGeometry, SphereGeometry, CylinderGeometry, TorusGeometry, GroundGeometry, PlaneGeometry, TorusKnotGeometry } from "Mesh";
 import { Material, CubeTexture, HDRCubeTexture } from "Materials";
-import { Animation } from "Animations";
+import { Animation, AnimationGroup } from "Animations";
 import { Light } from "Lights";
 import { SceneComponentConstants } from "sceneComponent";
 import { _TimeToken } from "Instrumentation";

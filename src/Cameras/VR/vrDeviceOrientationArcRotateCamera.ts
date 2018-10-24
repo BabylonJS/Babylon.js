@@ -1,7 +1,8 @@
 import { ArcRotateCamera, VRCameraMetrics, Camera } from "Cameras";
 import { Scene } from "scene";
 import { Vector3 } from "Math";
-import {Node} from "Node";
+import { Node } from "Node";
+
     Node.AddNodeConstructor("VRDeviceOrientationFreeCamera", (name, scene) => {
         return () => new VRDeviceOrientationArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);
     });

@@ -1,7 +1,8 @@
 import { Nullable, IndicesArray } from "types";
 import { Tools } from "Tools";
 import { Vector3, Matrix, Quaternion, Space } from "Math";
-import { TransformNode, AbstractMesh, Scene } from "Mesh";
+import { TransformNode, AbstractMesh } from "Mesh";
+import { Scene } from "scene";
 import { Bone } from "Bones";
 import { BoundingInfo } from "Culling";
 import { IPhysicsEngine, PhysicsJoint, PhysicsJointData } from "Physics";

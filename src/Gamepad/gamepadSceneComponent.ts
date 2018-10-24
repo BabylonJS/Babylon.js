@@ -1,7 +1,7 @@
 import { Nullable } from "types";
 import { FreeCameraGamepadInput, FreeCameraInputsManager, ArcRotateCameraInputsManager, ArcRotateCameraGamepadInput } from "Cameras";
 import { Scene } from "scene";
-import {GamepadManager} from "Gamepad"
+import { GamepadManager } from "Gamepad";
 import { SceneComponentConstants, ISceneComponent } from "sceneComponent";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
@@ -36,6 +36,7 @@ declare module "scene" {
         configurable: true
     });
 
+declare module "Cameras/FreeCameraInputsManager" {
     /**
      * Interface representing a free camera inputs manager
      */
@@ -46,6 +47,7 @@ declare module "scene" {
          */
         addGamepad(): FreeCameraInputsManager;
     }
+}
 
     /**
      * Adds a gamepad to the free camera inputs manager
@@ -55,6 +57,7 @@ declare module "scene" {
         return this;
     };
 
+declare module "Cameras/ArcRotateCameraInputsManager" {
     /**
      * Interface representing an arc rotate camera inputs manager
      */
@@ -65,6 +68,7 @@ declare module "scene" {
          */
         addGamepad(): ArcRotateCameraInputsManager;
     }
+}
 
     /**
      * Adds a gamepad to the arc rotate camera inputs manager

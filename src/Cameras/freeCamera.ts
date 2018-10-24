@@ -6,6 +6,7 @@ import { Collider } from "Collisions";
 import { Scene } from "scene";
 import { Nullable } from "types";
 import { Engine } from "Engine";
+import { serializeAsVector3, serialize } from "index";
 
     Node.AddNodeConstructor("FreeCamera", (name, scene) => {
         // Forcing to use the Universal camera

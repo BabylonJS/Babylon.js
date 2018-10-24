@@ -5,7 +5,6 @@ import { SceneComponentConstants, ISceneComponent } from "sceneComponent";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { Layer } from "Layer";
-import { AbstractScene } from "abstractScene";
 
 declare module "abstractScene" {
     export interface AbstractScene {

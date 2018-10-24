@@ -1,8 +1,8 @@
-﻿import { serialize } from "Tools";
+﻿import { serialize, serializeAsVector3 } from "Tools";
 import { Nullable } from "types";
 import { TargetCamera, FlyCameraInputsManager, FlyCameraMouseInput, FlyCameraKeyboardInput } from "Cameras";
 import { Scene } from "scene";
-import { Vector3 } from "Math";
+import { Vector3, Quaternion } from "Math";
 import { Engine } from "Engine";
 import { AbstractMesh } from "Mesh";
 import { Collider } from "Collisions";

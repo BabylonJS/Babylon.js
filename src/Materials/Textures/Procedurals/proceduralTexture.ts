@@ -464,7 +464,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * Render the texture to its associated render target.
          * @param useCameraPostProcess Define if camera post process should be applied to the texture
          */
-        public render(): void {
+        public render(useCameraPostProcess?: boolean): void {
             var scene = this.getScene();
 
             if (!scene) {

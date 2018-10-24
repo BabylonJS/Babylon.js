@@ -321,7 +321,7 @@ import { HemisphericLight } from "Lights";
          * Enables the standing matrix when supported. This can be used to position the user's view the correct height from the ground.
          * @param callback will be called when the standing matrix is set. Callback parameter is if the standing matrix is supported.
          */
-        public useStandingMatrix(callback = () => { }) {
+        public useStandingMatrix(callback = (bool: boolean) => { }) {
             // Use standing matrix if available
             this.getEngine().initWebVRAsync().then((result) => {
                 if (!result.vrDisplay || !result.vrDisplay.stageParameters || !result.vrDisplay.stageParameters.sittingToStandingTransform  || !this.webVROptions.trackPosition) {

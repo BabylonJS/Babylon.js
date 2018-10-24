@@ -1,6 +1,7 @@
 import { IndicesArray } from "types";
-import { Vector3, Vector2, Color4, Epsilon } from "Math";
+import { Vector3, Epsilon } from "Math";
 import { Mesh, VertexBuffer, SubMesh } from "Mesh";
+import { AsyncLoop } from "index";
     /**
      * A simplifier interface for future simplification implementations
      * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
@@ -364,9 +365,9 @@ import { Mesh, VertexBuffer, SubMesh } from "Mesh";
                                 if (v0.isBorder || v1.isBorder) { continue; }
 
                                 var p = Vector3.Zero();
-                                var n = Vector3.Zero();
-                                var uv = Vector2.Zero();
-                                var color = new Color4(0, 0, 0, 1);
+                                // var n = Vector3.Zero();
+                                // var uv = Vector2.Zero();
+                                // var color = new Color4(0, 0, 0, 1);
 
                                 this.calculateError(v0, v1, p);
 

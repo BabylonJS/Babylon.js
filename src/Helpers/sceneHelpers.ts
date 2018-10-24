@@ -4,7 +4,7 @@ import { FreeCamera, ArcRotateCamera, TargetCamera, WebXRExperienceHelper, VRExp
 import { Scene } from "scene";
 import { Vector3 } from "Math";
 import { Mesh } from "Mesh";
-import { StandardMaterial, Texture, BaseTexture } from "Materials";
+import { StandardMaterial, Texture, BaseTexture, PBRMaterial } from "Materials";
 import { HemisphericLight } from "Lights";
 import { IEnvironmentHelperOptions, EnvironmentHelper } from "./environmentHelper";
 

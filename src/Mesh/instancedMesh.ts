@@ -2,11 +2,11 @@ import { Tools } from "Tools";
 import { Nullable, FloatArray, IndicesArray } from "types";
 import { Camera } from "Cameras";
 import { Vector3 } from "Math";
-import {Node} from "Node";
+import { Node } from "Node";
 import { Mesh, AbstractMesh } from "Mesh";
 import { Material } from "Materials";
 import { Skeleton } from "Bones";
-import { BoundingInfo } from "Culling";
+
     /**
      * Creates an instance based on a source mesh.
      */

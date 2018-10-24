@@ -5,7 +5,7 @@ import { Scene } from "scene";
 import { Matrix, Color3, Color4, Viewport, Size, Scalar, Vector4, SphericalPolynomial } from "Math";
 import { IDisplayChangedEventArgs } from "Engine";
 import { VertexBuffer } from "Mesh";
-import { RenderTargetTexture, Material, IInternalTextureLoader, Texture, UniformBuffer, InternalTexture, Effect, DummyInternalTextureTracker, IMultiRenderTargetOptions, BaseTexture, IInternalTextureTracker, VideoTexture } from "Materials";
+import { RenderTargetTexture, Material, IInternalTextureLoader, Texture, UniformBuffer, InternalTexture, Effect, DummyInternalTextureTracker, IMultiRenderTargetOptions, BaseTexture, IInternalTextureTracker, VideoTexture, EffectCreationOptions, EffectFallbacks } from "Materials";
 import { PostProcess, PassPostProcess } from "PostProcess";
 import { _TimeToken } from "Instrumentation";
 import { IAudioEngine } from "Audio";
@@ -2620,7 +2620,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * @param indices defines the data to update
          * @param offset defines the offset in the target index buffer where update should start
          */
-        public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray): void {
+        public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset: number = 0): void {
             // Force cache update
             this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = null;
             this.bindIndexBuffer(indexBuffer);

@@ -858,7 +858,7 @@ declare var BABYLON: any;
          * @param useInstances specifies if instances should be used
          * @returns a boolean indicating if the material is ready to be used
          */
-        public isReady(): boolean {
+        public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             return true;
         }
 
@@ -1315,7 +1315,7 @@ declare var BABYLON: any;
          * @param forceDisposeTextures specifies if textures should be forcefully disposed
          * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to any mesh
          */
-        public dispose(forceDisposeEffect?: boolean, notBoundToMesh?: boolean): void {
+        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
             const scene = this.getScene();
             // Animations
             scene.stopAnimation(this);

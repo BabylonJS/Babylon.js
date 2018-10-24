@@ -4,8 +4,8 @@ import { Matrix, Vector3, Plane } from "Math";
 import { Engine } from "Engine";
 import { Mesh, AbstractMesh, InstancedMesh, VertexBuffer, LinesMesh } from "Mesh";
 import { Collider, IntersectionInfo } from "Collisions";
-import { Ray, ICullable } from "Culling";
-import { Material, Effect, MaterialDefines } from "Materials";
+import { Ray, ICullable, BoundingInfo } from "Culling";
+import { Material, Effect, MaterialDefines, MultiMaterial } from "Materials";
     /**
      * Base class for submeshes
      */

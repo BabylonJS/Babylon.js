@@ -21,7 +21,7 @@ import { Observable } from "Tools";
          * Overwritable function which can be used to update the button's visuals when the state changes
          * @param activeButton the current active button in the UI
          */
-        update() {
+        update(activeButton: Nullable<WebXREnterExitUIButton>) {
         }
     }
 
@@ -130,7 +130,7 @@ import { Observable } from "Tools";
         private _updateButtons(activeButton: Nullable<WebXREnterExitUIButton>) {
             this._activeButton = activeButton;
             this._buttons.forEach((b) => {
-                b.update();
+                b.update(this._activeButton);
             });
             this.activeButtonChangedObservable.notifyObservers(this._activeButton);
         }

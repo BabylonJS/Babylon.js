@@ -1,5 +1,5 @@
 import { Nullable, FloatArray, IndicesArray } from "types";
-import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "Math";
+import { Matrix, Vector3, Vector2, Color3, Color4, Vector4, Axis, Epsilon } from "Math";
 import { Mesh, Geometry, VertexBuffer } from "Mesh";
     /**
      * Define an interface for all classes that will get and set the data on vertices

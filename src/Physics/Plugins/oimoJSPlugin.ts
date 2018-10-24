@@ -1,4 +1,5 @@
-import { IPhysicsEnginePlugin, PhysicsImpostor, IPhysicsEnabledObject, PhysicsEngine, PhysicsImpostorJoint, PhysicsJoint, SpringJointData, DistanceJointData, IMotorEnabledJoint, AbstractMesh } from "Physics";
+import { IPhysicsEnginePlugin, PhysicsImpostor, IPhysicsEnabledObject, PhysicsEngine, PhysicsImpostorJoint, PhysicsJoint, SpringJointData, DistanceJointData, IMotorEnabledJoint } from "Physics";
+import { AbstractMesh } from "Mesh";
 import { Vector3, Quaternion } from "Math";
 import { Nullable } from "types";
 import { Tools } from "Tools";

@@ -1,4 +1,5 @@
 import { Nullable, DataArray } from "types";
+import { Buffer } from ".";
     /**
      * Specialized buffer used to store vertex data
      */

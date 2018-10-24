@@ -1,4 +1,4 @@
-import { serialize } from "Tools";
+import { serialize, serializeAsVector3 } from "Tools";
 import { Camera } from "Cameras";
 import { Scene } from "scene";
 import { Matrix, Vector3, Axis } from "Math";

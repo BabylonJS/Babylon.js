@@ -1,12 +1,13 @@
 import { Nullable, float } from "types";
 import { IAnimatable, Observable, Tools, IValueGradient, ColorGradient, FactorGradient, Color3Gradient } from "Tools";
 import { Color4, Color3, Vector3, Matrix, Tmp, Scalar } from "Math";
-import { AbstractMesh, VertexBuffer } from "Mesh";
+import { AbstractMesh, VertexBuffer, Buffer } from "Mesh";
 import { IParticleSystem, BaseParticleSystem } from "Particles";
 import { Material, ImageProcessingConfiguration, Effect, Texture, RawTexture, EffectCreationOptions, MaterialHelper } from "Materials";
 import { Engine } from "Engine";
 import { BoxParticleEmitter, ParticleSystem } from "Particles";
 import { Scene, IDisposable } from "scene";
+
     /**
      * This represents a GPU particle system in Babylon
      * This is the fastest particle system in Babylon as it uses the GPU to update the individual particle data

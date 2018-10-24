@@ -54,6 +54,7 @@ declare module "Mesh/AbstractMesh" {
         configurable: true
     });
 
+declare module "Mesh/LinesMesh" {
     export interface LinesMesh {
         /**
          * Enables the edge rendering mode on the mesh.
@@ -65,7 +66,7 @@ declare module "Mesh/AbstractMesh" {
          */
         enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
     }
-
+}
     LinesMesh.prototype.enableEdgesRendering = function(epsilon = 0.95, checkVerticesInsteadOfIndices = false): AbstractMesh {
         this.disableEdgesRendering();
         this._edgesRenderer = new LineEdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);

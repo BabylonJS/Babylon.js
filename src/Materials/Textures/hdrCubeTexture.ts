@@ -237,7 +237,7 @@ import { HDRTools, CubeMapToSphericalPolynomialTools } from "Tools";
             }
 
             var newTexture = new HDRCubeTexture(this.url, scene, this._size, this._noMipmap,
-                this._generateHarmonics, this.gammaSpace);
+                this.gammaSpace);
 
             // Base texture
             newTexture.level = this.level;

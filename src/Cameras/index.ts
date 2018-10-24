@@ -16,5 +16,4 @@ export * from "./touchCamera";
 export * from "./universalCamera";
 export * from "./virtualJoysticksCamera";
 export * from "./VR";
-export * from "./webvr";
 export * from "./XR";
