@@ -58,6 +58,7 @@
 ### Materials Library
 
 ## Bug fixes
+- Removed bones from rootNodes where they should never have been ([Deltakosh](https://github.com/deltakosh))
 - Refocusing on input gui with pointer events ([TrevorDev](https://github.com/TrevorDev))
 - Gizmo scaling not consistent when camera is parented ([TrevorDev](https://github.com/TrevorDev))
 - Context loss causing unexpected results with dynamic textures ([TrevorDev](https://github.com/TrevorDev))
