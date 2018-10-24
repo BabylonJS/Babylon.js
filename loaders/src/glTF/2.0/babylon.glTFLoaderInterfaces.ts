@@ -117,10 +117,10 @@ module BABYLON.GLTF2.Loader {
         emissiveTexture?: ITextureInfo;
 
         /** @hidden */
-        _babylonData?: {
-            [drawMode: number]: {
-                material: Material;
-                meshes: AbstractMesh[];
+        _data?: {
+            [babylonDrawMode: number]: {
+                babylonMaterial: Material;
+                babylonMeshes: AbstractMesh[];
                 promise: Promise<void>;
             }
         };
@@ -137,6 +137,11 @@ module BABYLON.GLTF2.Loader {
      * Loader interface with additional members.
      */
     export interface IMeshPrimitive extends GLTF2.IMeshPrimitive, IArrayItem {
+        /** @hidden */
+        _instanceData?: {
+            babylonSourceMesh: Mesh;
+            promise: Promise<any>;
+        };
     }
 
     /**
@@ -149,10 +154,10 @@ module BABYLON.GLTF2.Loader {
         parent?: INode;
 
         /** @hidden */
-        _babylonMesh?: Mesh;
+        _babylonTransformNode?: TransformNode;
 
         /** @hidden */
-        _primitiveBabylonMeshes?: Mesh[];
+        _primitiveBabylonMeshes?: AbstractMesh[];
 
         /** @hidden */
         _babylonBones?: Bone[];
@@ -188,10 +193,10 @@ module BABYLON.GLTF2.Loader {
      */
     export interface ISkin extends GLTF2.ISkin, IArrayItem {
         /** @hidden */
-        _babylonSkeleton?: Skeleton;
-
-        /** @hidden */
-        _promise?: Promise<void>;
+        _data?: {
+            babylonSkeleton: Skeleton;
+            promise: Promise<void>;
+        };
     }
 
     /**
