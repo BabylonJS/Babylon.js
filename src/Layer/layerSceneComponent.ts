@@ -6,12 +6,15 @@ import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { Layer } from "Layer";
 import { AbstractScene } from "abstractScene";
+
+declare module "abstractScene" {
     export interface AbstractScene {
         /**
          * The list of layers (background and foreground) of the scene
          */
         layers: Array<Layer>;
     }
+}
 
     /**
      * Defines the layer scene component responsible to manage any layers

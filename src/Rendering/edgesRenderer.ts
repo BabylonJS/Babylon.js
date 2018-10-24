@@ -8,6 +8,7 @@ import { ShaderMaterial, Effect, Material } from "Materials";
 import { Camera } from "Cameras";
 import { Engine } from "Engine";
 
+declare module "Mesh/AbstractMesh" {
     export interface AbstractMesh {
         /**
          * Disables the mesh edge rendering mode
@@ -30,7 +31,7 @@ import { Engine } from "Engine";
          */
         edgesRenderer: Nullable<EdgesRenderer>;
     }
-
+}
     AbstractMesh.prototype.disableEdgesRendering = function(): AbstractMesh {
         if (this._edgesRenderer) {
             this._edgesRenderer.dispose();
