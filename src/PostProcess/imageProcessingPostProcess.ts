@@ -3,8 +3,10 @@ import { Observer, serialize } from "Tools";
 import { Color4 } from "Math";
 import { Camera } from "Cameras";
 import { BaseTexture, ImageProcessingConfiguration, Effect, ColorCurves, IImageProcessingConfigurationDefines } from "Materials";
-import { PostProcess, Scene, PostProcessOptions } from "PostProcess";
+import { PostProcess, PostProcessOptions } from "PostProcess";
 import { Engine } from "Engine";
+import { Scene } from "scene";
+
     /**
      * ImageProcessingPostProcess
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#imageprocessing

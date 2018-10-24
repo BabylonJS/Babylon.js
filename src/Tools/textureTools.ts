@@ -1,3 +1,5 @@
+import { Texture, Scene, RenderTargetTexture, InternalTexture, PassPostProcess, Engine, BaseTexture } from "index";
+
     /**
      * Class used to host texture specific utilities
      */

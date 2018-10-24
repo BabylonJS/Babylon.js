@@ -1,3 +1,5 @@
+import { Tools, AndOrNotEvaluator } from ".";
+
     /**
      * Class used to store custom tags
      */

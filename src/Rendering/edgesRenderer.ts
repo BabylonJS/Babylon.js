@@ -7,6 +7,7 @@ import { LineEdgesRenderer } from "Rendering";
 import { ShaderMaterial, Effect, Material } from "Materials";
 import { Camera } from "Cameras";
 import { Engine } from "Engine";
+import { Node } from "node";
 
 declare module "Mesh/AbstractMesh" {
     export interface AbstractMesh {

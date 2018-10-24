@@ -1,3 +1,11 @@
+import { SphericalPolynomial, Scalar } from "Math";
+
+import { Engine, InternalTexture } from "index";
+
+import { Nullable } from "types";
+
+import { Tools, CubeMapToSphericalPolynomialTools } from ".";
+
     // Based on demo done by Brandon Jones - http://media.tojicode.com/webgl-samples/dds.html
     // All values and structures referenced from:
     // http://msdn.microsoft.com/en-us/library/bb943991.aspx/
@@ -639,4 +647,4 @@
                 info.sphericalPolynomial = undefined;
             }
         }
-    }
+    }

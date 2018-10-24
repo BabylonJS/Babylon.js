@@ -1,3 +1,7 @@
+import { InternalTexture } from "index";
+
+import { Tools } from ".";
+
     /**
      * Based on jsTGALoader - Javascript loader for TGA file
      * By Vincent Thibault
@@ -330,4 +334,4 @@
             return imageData;
         }
 
-    }
+    }

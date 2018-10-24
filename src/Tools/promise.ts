@@ -1,3 +1,7 @@
+import { Nullable } from "types";
+
+import { Tools } from ".";
+
     enum PromiseStates {
         Pending,
         Fulfilled,
@@ -251,4 +255,4 @@
                 root.Promise = InternalPromise;
             }
         }
-    }
+    }

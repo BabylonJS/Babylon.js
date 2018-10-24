@@ -1,5 +1,5 @@
 import { Nullable } from "types";
-import { Tools } from "Tools";
+import { Tools, serialize } from "Tools";
 import { Camera } from "Cameras";
 import { Engine } from "Engine";
 import { PostProcessRenderEffect } from "PostProcess";

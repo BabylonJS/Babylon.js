@@ -6,6 +6,7 @@ import { Ray } from "Culling";
 import { Camera } from "Cameras";
 import { PickingInfo } from "Collisions";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
+import { ActionManager, ActionEvent } from "index";
 
 declare module "scene" {
     export interface Scene {

@@ -1,6 +1,7 @@
 import { PostProcess, PostProcessOptions } from "PostProcess";
 import { Camera } from "Cameras";
 import { Effect } from "Materials";
+import { Engine } from "Engine";
 
     /**
      * Post process used to render in black and white

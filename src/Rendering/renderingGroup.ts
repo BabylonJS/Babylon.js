@@ -1,7 +1,6 @@
 import { SmartArray } from "Tools";
-import { SubMesh } from "Mesh";
+import { AbstractMesh, SubMesh } from "Mesh";
 import { Nullable } from "types";
-import { AbstractMesh } from "Culling";
 import { Vector3 } from "Math";
 import { IParticleSystem } from "Particles";
 import { IEdgesRenderer } from "Rendering";
@@ -9,6 +8,7 @@ import { ISpriteManager } from "Sprites";
 import { Engine } from "Engine";
 import { Material } from "Materials";
 import { Scene } from "scene";
+import { Camera } from "Cameras";
 
     /**
      * This represents the object necessary to create a rendering group.

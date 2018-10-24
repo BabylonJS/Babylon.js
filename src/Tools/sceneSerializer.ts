@@ -1,3 +1,11 @@
+import { Geometry, BoxGeometry, SphereGeometry, CylinderGeometry, TorusGeometry, GroundGeometry, TorusKnotGeometry, _PrimitiveGeometry, Mesh } from "Mesh";
+
+import { Plane } from "Math";
+
+import { Engine, MultiMaterial, Material, Scene, Light } from "index";
+
+import { Animation } from "Animations";
+
     var serializedGeometries: Geometry[] = [];
     var serializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
         if ((<any>serializedGeometries)[geometry.id]) {

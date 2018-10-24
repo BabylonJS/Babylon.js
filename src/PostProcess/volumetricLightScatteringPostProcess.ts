@@ -1,10 +1,12 @@
 import { SmartArray, Tools, serializeAsVector3, serialize, serializeAsMeshReference } from "Tools";
 import { Color4, Color3, Vector2, Vector3, Matrix, Viewport } from "Math";
-import { Mesh, SubMesh, AbstractMesh, Scene, VertexBuffer } from "Mesh";
+import { Mesh, SubMesh, AbstractMesh, VertexBuffer } from "Mesh";
 import { Camera } from "Cameras";
 import { Material, StandardMaterial, RenderTargetTexture, Effect, Texture } from "Materials";
 import { PostProcess } from "PostProcess";
 import { Engine } from "Engine";
+import { Scene } from "scene";
+
     /**
      *  Inspired by http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html
      */

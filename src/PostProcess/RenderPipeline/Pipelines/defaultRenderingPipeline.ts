@@ -1,5 +1,5 @@
 import { Nullable } from "types";
-import { IAnimatable, Observer, serialize, SerializationHelper } from "Tools";
+import { IAnimatable, Observer, serialize, SerializationHelper, Tools } from "Tools";
 import { Camera } from "Cameras";
 import { ImageProcessingConfiguration, Texture } from "Materials";
 import { PostProcess, PostProcessRenderPipeline, SharpenPostProcess, PostProcessRenderEffect, BloomEffect, DepthOfFieldEffect, FxaaPostProcess, ImageProcessingPostProcess, ChromaticAberrationPostProcess, GrainPostProcess, DepthOfFieldEffectBlurLevel } from "PostProcess";

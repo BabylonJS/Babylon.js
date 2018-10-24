@@ -3,9 +3,11 @@ import { Tools } from "Tools";
 import { Vector2 } from "Math";
 import { Camera } from "Cameras";
 import { Effect } from "Materials";
-import { PostProcess, Scene, PostProcessOptions } from "PostProcess";
+import { PostProcess, PostProcessOptions } from "PostProcess";
 import { Engine } from "Engine";
 import { GeometryBufferRenderer } from "Rendering";
+import { Scene } from "scene";
+
     /**
      * The Motion Blur Post Process which blurs an image based on the objects velocity in scene.
      * Velocity can be affected by each object's rotation, position and scale depending on the transformation speed.

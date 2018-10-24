@@ -1,3 +1,7 @@
+import { Engine, Scene, SceneLoaderProgressEvent, SceneLoader } from "index";
+
+import { Tools } from ".";
+
     /**
      * Class used to help managing file picking and drag'n'drop
      */
@@ -288,4 +292,4 @@
                 Tools.Error("Please provide a valid .babylon file.");
             }
         }
-    }
+    }

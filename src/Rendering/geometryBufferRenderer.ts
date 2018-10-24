@@ -1,10 +1,11 @@
 import { Matrix, Color4 } from "Math";
 import { Mesh, SubMesh, VertexBuffer } from "Mesh";
-import { Engine } from "Particles";
+import { Engine } from "Engine";
 import { SmartArray } from "Tools";
 import { MultiRenderTarget, Effect, Texture, Material } from "Materials";
 import { GeometryBufferRendererSceneComponent } from "Rendering";
 import { Scene } from "scene";
+import { SceneComponentConstants } from "sceneComponent";
 
     /**
      * This renderer is helpfull to fill one of the render target with a geometry buffer.

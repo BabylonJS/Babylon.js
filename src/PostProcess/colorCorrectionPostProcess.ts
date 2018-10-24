@@ -1,6 +1,6 @@
 import { PostProcess, PostProcessOptions } from "PostProcess";
 import { Texture, Effect } from "Materials";
-import { Engine } from "Particles";
+import { Engine } from "Engine";
 import { Camera } from "Cameras";
 
     /**

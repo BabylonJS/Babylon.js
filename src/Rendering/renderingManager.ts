@@ -1,7 +1,6 @@
 import { Nullable } from "types";
 import { RenderingGroupInfo, Scene } from "scene";
-import { AbstractMesh } from "Culling";
-import { SubMesh } from "Mesh";
+import { AbstractMesh, SubMesh } from "Mesh";
 import { RenderingGroup } from "Rendering";
 import { SmartArray } from "Tools";
 import { ISpriteManager } from "Sprites";
