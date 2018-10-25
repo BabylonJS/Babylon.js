@@ -344,6 +344,17 @@ export class InputText extends Control implements IFocusableControl {
         if (evt && (evt.ctrlKey || evt.metaKey) && clipboardEventType !== -1) {
             return;
         }
+
+        //select all
+        if (evt && (evt.ctrlKey || evt.metaKey) && keyCode === 65) {
+            this._startHighlightIndex = 0;
+            this._endHighlightIndex = this._text.length;
+            this._isTextHighlightOn = true;
+            this._blinkIsEven = true;
+            this._cursorOffset = 0;
+            evt.preventDefault();
+            return;
+        }
         // Specific cases
         switch (keyCode) {
             case 32: //SPACE
@@ -356,12 +367,18 @@ export class InputText extends Control implements IFocusableControl {
                 break;
             case 8: // BACKSPACE
                 if (this._text && this._text.length > 0) {
+                    //delete the highlighted text
                     if (this._isTextHighlightOn) {
                         this.text = this._text.slice(0, this._startHighlightIndex) + this._text.slice(this._endHighlightIndex);
                         this._isTextHighlightOn = false;
+                        this._cursorOffset =  this.text.length - this._startHighlightIndex;
                         this._blinkIsEven = false;
+                        if (evt) {
+                            evt.preventDefault();
+                        }
                         return;
                     }
+                    //delete individual character
                     if (this._cursorOffset === 0) {
                         this.text = this._text.substr(0, this._text.length - 1);
                     } else {
@@ -383,12 +400,19 @@ export class InputText extends Control implements IFocusableControl {
                         this._cursorOffset--;
                     }
                     this._isTextHighlightOn = false;
+                    this._cursorOffset = this.text.length - this._startHighlightIndex;
+                    if (evt) {
+                        evt.preventDefault();
+                    }
                     return;
                 }
                 if (this._text && this._text.length > 0  && this._cursorOffset > 0) {
                     let deletePosition = this._text.length - this._cursorOffset;
                     this.text = this._text.slice(0, deletePosition) + this._text.slice(deletePosition + 1);
                     this._cursorOffset--;
+                }
+                if (evt) {
+                    evt.preventDefault();
                 }
                 return;
             case 13: // RETURN
@@ -481,7 +505,10 @@ export class InputText extends Control implements IFocusableControl {
         this._blinkIsEven = false;
     }
 
-    /** @hidden */
+    /**
+     * Called by the onClipboardObservable of AdvanceDynamicTexture
+     * @param evt Event object
+     */
     public processKeyboard(evt: KeyboardEvent | PointerEvent | ClipboardEvent): void {
         // check the event type and call its action
         if (evt instanceof KeyboardEvent) {
@@ -499,23 +526,40 @@ export class InputText extends Control implements IFocusableControl {
 
     /**
      * Callback in case of copy event, can be configured.
+     * @param ev ClipboardEvent
      */
     public onCopyText(ev: ClipboardEvent): void {
         this._isTextHighlightOn = false;
-        ev.clipboardData.setData("text/plain", this._highlightedText);
+        //when write permission to clipbaord data is denied
+        try {
+            ev.clipboardData.setData("text/plain", this._highlightedText);
+        }
+        catch {
+            //pass
+        }
         this._host.clipboardData = this._highlightedText;
     }
     /**
      * Callback in case of cut event, can be configured.
+     * @param ev ClipboardEvent
      */
     public onCutText(ev: ClipboardEvent): void {
-        this.text = this._text.replace(this._highlightedText, "");
+        this.text = this._text.slice(0, this._startHighlightIndex) + this._text.slice(this._endHighlightIndex);
         this._isTextHighlightOn = false;
-        ev.clipboardData.setData("text/plain", this._highlightedText);
+        this._cursorOffset = this.text.length - this._startHighlightIndex;
+        //when write permission to clipbaord data is denied
+        try {
+            ev.clipboardData.setData("text/plain", this._highlightedText);
+        }
+        catch {
+            //pass
+        }
+
         this._host.clipboardData = this._highlightedText;
     }
     /**
      * Callback in case of paste event, can be configured.
+     * @param ev ClipboardEvent
      */
     public onPasteText(ev: ClipboardEvent): void {
         let data: string = "";
