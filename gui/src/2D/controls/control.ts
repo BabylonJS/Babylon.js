@@ -155,9 +155,6 @@ export class Control {
    */
     public onAfterDrawObservable = new Observable<Control>();
 
-    /** Observable raised when the clipboard event is raised */
-    public onClipboardObservable: Nullable<Observer<ClipboardInfo>>;
-
     /** Gets or set information about font offsets (used to render and align text) */
     public get fontOffset(): { ascent: number, height: number, descent: number } {
         return this._fontOffset;
@@ -1375,19 +1372,19 @@ export class Control {
     /** @hidden */
     private onClipboardCopy = (evt: ClipboardEvent) => {
         let ev = new ClipboardInfo(ClipboardEventTypes.COPY, evt);
-        this._host.onClipboardObserver.notifyObservers(ev);
+        this._host.onClipboardObservable.notifyObservers(ev);
         evt.preventDefault();
     }
      /** @hidden */
     private onClipboardCut = (evt: ClipboardEvent) => {
         let ev = new ClipboardInfo(ClipboardEventTypes.CUT, evt);
-        this._host.onClipboardObserver.notifyObservers(ev);
+        this._host.onClipboardObservable.notifyObservers(ev);
         evt.preventDefault();
     }
     /** @hidden */
     private onClipboardPaste = (evt: ClipboardEvent) => {
         let ev = new ClipboardInfo(ClipboardEventTypes.PASTE, evt);
-        this._host.onClipboardObserver.notifyObservers(ev);
+        this._host.onClipboardObservable.notifyObservers(ev);
     }
 
    /**

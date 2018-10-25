@@ -291,7 +291,7 @@ export class InputText extends Control implements IFocusableControl {
 
         this.onBlurObservable.notifyObservers(this);
 
-        this.unRegisterClipboardEvents();
+        this._host.unRegisterClipboardEvents();
     }
 
     /** @hidden */
@@ -317,7 +317,7 @@ export class InputText extends Control implements IFocusableControl {
             return;
         }
 
-        this.registerClipboardEvents();
+        this._host.registerClipboardEvents();
 
     }
 
@@ -484,46 +484,49 @@ export class InputText extends Control implements IFocusableControl {
     /** @hidden */
     public processKeyboard(evt: KeyboardEvent | PointerEvent | ClipboardEvent): void {
         // check the event type and call its action
-        (evt instanceof KeyboardEvent) ? this.processKey(evt.keyCode, evt.key, evt) :
-         ((evt instanceof PointerEvent) ? this._processDblClick(evt) : this._processClipboardEvent(evt));
+        if (evt instanceof KeyboardEvent) {
+            this.processKey(evt.keyCode, evt.key, evt);
+        }
+        else if (evt instanceof PointerEvent) {
+            this._processDblClick(evt);
+            evt.preventDefault();
+        }
+        else if (evt instanceof ClipboardEvent) {
+            this._processClipboardEvent(evt);
+            evt.preventDefault();
+        }
     }
 
     /**
      * Callback in case of copy event, can be configured.
-     * @param {ClipboardEvent} ev Defines the Clipboard event.
      */
     public onCopyText(ev: ClipboardEvent): void {
         this._isTextHighlightOn = false;
         ev.clipboardData.setData("text/plain", this._highlightedText);
-        this._host.clipboardData = ev.clipboardData;
-        console.log("copy succcessful");
+        this._host.clipboardData = this._highlightedText;
     }
     /**
      * Callback in case of cut event, can be configured.
-     * @param {ClipboardEvent} ev Defines the Clipboard event.
      */
     public onCutText(ev: ClipboardEvent): void {
         this.text = this._text.replace(this._highlightedText, "");
         this._isTextHighlightOn = false;
         ev.clipboardData.setData("text/plain", this._highlightedText);
-        this._host.clipboardData = ev.clipboardData;
-        console.log("cut succcessful");
+        this._host.clipboardData = this._highlightedText;
     }
     /**
      * Callback in case of paste event, can be configured.
-     * @param {ClipboardEvent} ev Defines the Clipboard event.
      */
     public onPasteText(ev: ClipboardEvent): void {
         let data: string = "";
-        if (ev.clipboardData) {
+        if (ev.clipboardData && ev.clipboardData.types.indexOf("text/plain") !== -1) {
             data = ev.clipboardData.getData("text/plain");
-            let insertPosition = this._text.length - this._cursorOffset;
-            this.text = this._text.slice(0, insertPosition) + data + this._text.slice(insertPosition);
-            console.log("paste succcessful");
         }
-        if (this._host.clipboardData) {
-            this._host.clipboardData.setData("text/plain", data);
+        else {
+            data = this._host.clipboardData;
         }
+        let insertPosition = this._text.length - this._cursorOffset;
+        this.text = this._text.slice(0, insertPosition) + data + this._text.slice(insertPosition);
     }
 
     /**
@@ -740,6 +743,5 @@ export class InputText extends Control implements IFocusableControl {
         this.onBlurObservable.clear();
         this.onFocusObservable.clear();
         this.onTextChangedObservable.clear();
-        // this.onClipboardObservable.clear();
     }
 }

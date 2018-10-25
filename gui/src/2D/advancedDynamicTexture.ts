@@ -1,4 +1,4 @@
-import { DynamicTexture, Nullable, Observer, Camera, Engine, KeyboardInfoPre, PointerInfoPre, PointerInfo, Layer, Viewport, Scene, Texture, KeyboardEventTypes, Vector3, Matrix, Vector2, Tools, PointerEventTypes, AbstractMesh, StandardMaterial, Color3, Observable, ClipboardInfo } from 'babylonjs';
+import { DynamicTexture, Nullable, Observer, Camera, Engine, KeyboardInfoPre, PointerInfoPre, PointerInfo, ClipboardEventTypes, Layer, Viewport, Scene, Texture, KeyboardEventTypes, Vector3, Matrix, Vector2, Tools, PointerEventTypes, AbstractMesh, StandardMaterial, Color3, Observable, ClipboardInfo } from 'babylonjs';
 import { Container } from "./controls/container";
 import { Control } from "./controls/control";
 import { Style } from "./style";
@@ -21,7 +21,6 @@ export interface IFocusableControl {
      * KeyboardEvent -> handles key events
      * PointerEvent -> handles dbl click event and text highlight.
      * ClipboardInfo -> handles copy, cut, paste events.
-     * @param evt defines the current keyboard event
      */
     processKeyboard(evt: Event): void;
 
@@ -71,12 +70,16 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _blockNextFocusCheck = false;
     private _renderScale = 1;
     private _rootCanvas: Nullable<HTMLCanvasElement>;
-    private _clipboardData: DataTransfer = new DataTransfer();
+    /**
+     * Define type to string to ensure compatibility across browsers
+     * Safari doesn't support DataTransfer constructor
+     */
+    private _clipboardData: string = "";
 
     /**
      * Observable event triggered each time an clipboard event is received from the rendering canvas
      */
-    public onClipboardObserver = new Observable<ClipboardInfo>();
+    public onClipboardObservable = new Observable<ClipboardInfo>();
 
     /**
      * Gets or sets a boolean defining if alpha is stored as premultiplied
@@ -248,10 +251,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /**
      * Gets or set information about clipboardData
      */
-    public get clipboardData(): DataTransfer {
+    public get clipboardData(): string {
         return this._clipboardData;
     }
-    public set clipboardData(value: DataTransfer) {
+    public set clipboardData(value: string) {
         this._clipboardData = value;
     }
 
@@ -399,8 +402,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
 
         this._rootContainer.dispose();
-        this.onClipboardObserver.clear();
-        this._clipboardData.clearData();
+        this.onClipboardObservable.clear();
 
         super.dispose();
     }
@@ -615,7 +617,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 return;
             }
             //check for focused control and call the onClipboardPointerEvents
-            (this._focusedControl) ? ((pi.type === PointerEventTypes.POINTERDOUBLETAP) ? this._focusedControl.processKeyboard(pi.event) : null) : null;
+            if (this._focusedControl) {
+                if (pi.type === PointerEventTypes.POINTERDOUBLETAP) {
+                    this._focusedControl.processKeyboard(pi.event);
+                    return;
+                }
+
+            }
 
             if (pi.type !== PointerEventTypes.POINTERMOVE
                 && pi.type !== PointerEventTypes.POINTERUP
@@ -647,7 +655,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
         });
 
-        this.onClipboardObserver.add((pi, state) => {
+        this.onClipboardObservable.add((pi, state) => {
             if (this.focusedControl) {
                 // call the event's callback
                 this.focusedControl.processKeyboard(pi.event);
@@ -655,6 +663,41 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         });
 
         this._attachToOnPointerOut(scene);
+    }
+
+    /** @hidden */
+    private onClipboardCopy = (evt: ClipboardEvent) => {
+        let ev = new ClipboardInfo(ClipboardEventTypes.COPY, evt);
+        this.onClipboardObservable.notifyObservers(ev);
+        evt.preventDefault();
+    }
+     /** @hidden */
+    private onClipboardCut = (evt: ClipboardEvent) => {
+        let ev = new ClipboardInfo(ClipboardEventTypes.CUT, evt);
+        this.onClipboardObservable.notifyObservers(ev);
+        evt.preventDefault();
+    }
+    /** @hidden */
+    private onClipboardPaste = (evt: ClipboardEvent) => {
+        let ev = new ClipboardInfo(ClipboardEventTypes.PASTE, evt);
+        this.onClipboardObservable.notifyObservers(ev);
+    }
+
+   /**
+     * @hidden
+     */
+    protected registerClipboardEvents(): void {
+        self.addEventListener("copy", this.onClipboardCopy, false);
+        self.addEventListener("cut", this.onClipboardCut, false);
+        self.addEventListener("paste", this.onClipboardPaste, false);
+    }
+    /**
+     * @hidden
+     */
+    protected unRegisterClipboardEvents(): void {
+        self.removeEventListener("copy", this.onClipboardCopy);
+        self.removeEventListener("cut",  this.onClipboardCut);
+        self.removeEventListener("paste", this.onClipboardPaste);
     }
 
     /**
