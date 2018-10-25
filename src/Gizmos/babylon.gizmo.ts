@@ -3,6 +3,9 @@ module BABYLON {
      * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
      */
     export class Gizmo implements IDisposable {
+
+        public onUpdatePosition: () => Vector3;
+
         /**
          * The root mesh of the gizmo
          */
@@ -108,7 +111,11 @@ module BABYLON {
                     this._rootMesh.rotationQuaternion.set(0, 0, 0, 1);
                 }
                 if (this.updateGizmoPositionToMatchAttachedMesh) {
-                    this._rootMesh.position.copyFrom(this.attachedMesh.absolutePosition);
+                    if(!this.onUpdatePosition) {
+                        this._rootMesh.position.copyFrom(this.attachedMesh.absolutePosition);
+                    } else {
+                        this._rootMesh.position.copyFrom(this.onUpdatePosition());
+                    }
                 }
                 if (this._updateScale && this.gizmoLayer.utilityLayerScene.activeCamera && this.attachedMesh) {
                     var cameraPosition = this.gizmoLayer.utilityLayerScene.activeCamera.globalPosition;
