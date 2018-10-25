@@ -875,6 +875,18 @@ module BABYLON {
 
             if (this._scene.activeCamera) {
                 this._position = this._scene.activeCamera.position.clone();
+
+                if (this.vrDeviceOrientationCamera) {
+                    this.vrDeviceOrientationCamera.rotation = BABYLON.Quaternion.FromRotationMatrix(this._scene.activeCamera.getWorldMatrix().getRotationMatrix()).toEulerAngles();
+                }
+                if (this.webVRCamera) {
+                    var currentYRotation = this.webVRCamera.deviceRotationQuaternion.toEulerAngles().y;
+                    var desiredYRotation = BABYLON.Quaternion.FromRotationMatrix(this._scene.activeCamera.getWorldMatrix().getRotationMatrix()).toEulerAngles().y;
+                    var delta = desiredYRotation - currentYRotation;
+                    var currentGlobalRotation = this.webVRCamera.rotationQuaternion.toEulerAngles().y;
+                    this.webVRCamera.rotationQuaternion = Quaternion.FromEulerAngles(0, currentGlobalRotation + delta, 0);
+                }
+
                 // make sure that we return to the last active camera
                 this._existingCamera = this._scene.activeCamera;
             }
