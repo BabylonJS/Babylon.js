@@ -168,11 +168,11 @@ declare module BabylonViewer {
                 * Mainly used for help and errors
                 * @param subScreen the name of the subScreen. Those can be defined in the configuration object
                 */
-            showOverlayScreen(subScreen: string): Promise<string> | Promise<Template>;
+            showOverlayScreen(subScreen: string): Promise<Template> | Promise<string>;
             /**
                 * Hide the overlay screen.
                 */
-            hideOverlayScreen(): Promise<string> | Promise<Template>;
+            hideOverlayScreen(): Promise<Template> | Promise<string>;
             /**
                 * show the viewer (in case it was hidden)
                 *
@@ -189,11 +189,11 @@ declare module BabylonViewer {
                 * Show the loading screen.
                 * The loading screen can be configured using the configuration object
                 */
-            showLoadingScreen(): Promise<string> | Promise<Template>;
+            showLoadingScreen(): Promise<Template> | Promise<string>;
             /**
                 * Hide the loading screen
                 */
-            hideLoadingScreen(): Promise<string> | Promise<Template>;
+            hideLoadingScreen(): Promise<Template> | Promise<string>;
             dispose(): void;
             protected _onConfigurationLoaded(configuration: ViewerConfiguration): void;
     }
@@ -924,7 +924,7 @@ declare module BabylonViewer {
       * @param name the name of the custom optimizer configuration
       * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
       */
-    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): typeof extendedUpgrade;
     export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 declare module BabylonViewer {
@@ -1558,6 +1558,20 @@ declare module BabylonViewer {
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
 }
 declare module BabylonViewer {
+    /**
+        * A custom upgrade-oriented function configuration for the scene optimizer.
+        *
+        * @param viewer the viewer to optimize
+        */
+    export function extendedUpgrade(sceneManager: SceneManager): boolean;
+    /**
+        * A custom degrade-oriented function configuration for the scene optimizer.
+        *
+        * @param viewer the viewer to optimize
+        */
+    export function extendedDegrade(sceneManager: SceneManager): boolean;
+}
+declare module BabylonViewer {
 }
 declare module BabylonViewer {
     export interface IEnvironmentMapConfiguration {
@@ -1665,6 +1679,32 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
+    /**
+        * Defines an animation to be applied to a model (translation, scale or rotation).
+        */
+    export interface IModelAnimationConfiguration {
+            /**
+                * Time of animation, in seconds
+                */
+            time?: number;
+            /**
+                * Scale to apply
+                */
+            scaling?: {
+                    x: number;
+                    y: number;
+                    z: number;
+            };
+            /**
+                * Easing function to apply
+                */
+            easingFunction?: number;
+            /**
+                * An Easing mode to apply to the easing function
+                * See BABYLON.EasingFunction
+                */
+            easingMode?: number;
+    }
 }
 declare module BabylonViewer {
     export class TelemetryLoaderPlugin implements ILoaderPlugin {

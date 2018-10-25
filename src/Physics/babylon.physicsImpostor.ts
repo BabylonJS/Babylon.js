@@ -256,7 +256,7 @@ module BABYLON {
                 return;
             }
 
-            //legacy support for old syntax.
+            // Legacy support for old syntax.
             if (!this._scene && object.getScene) {
                 this._scene = object.getScene();
             }
