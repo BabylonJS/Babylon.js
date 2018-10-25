@@ -33,11 +33,11 @@ module BABYLON {
          * @param gizmoLayer The utility layer the gizmo will be added to
          * @param tessellation Amount of tessellation to be used when creating rotation circles
          */
-        constructor(gizmoLayer: UtilityLayerRenderer= UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32) {
-            super(gizmoLayer);
-            this.xGizmo = new PlaneRotationGizmo(new Vector3(1, 0, 0), BABYLON.Color3.Red().scale(0.5), gizmoLayer, tessellation);
-            this.yGizmo = new PlaneRotationGizmo(new Vector3(0, 1, 0), BABYLON.Color3.Green().scale(0.5), gizmoLayer, tessellation);
-            this.zGizmo = new PlaneRotationGizmo(new Vector3(0, 0, 1), BABYLON.Color3.Blue().scale(0.5), gizmoLayer, tessellation);
+        constructor(gizmoLayer: UtilityLayerRenderer= UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, onUpdatePosition?: () => Vector3) {
+            super(gizmoLayer, onUpdatePosition);
+            this.xGizmo = new PlaneRotationGizmo(new Vector3(1, 0, 0), BABYLON.Color3.Red().scale(0.5), gizmoLayer, tessellation, onUpdatePosition);
+            this.yGizmo = new PlaneRotationGizmo(new Vector3(0, 1, 0), BABYLON.Color3.Green().scale(0.5), gizmoLayer, tessellation, onUpdatePosition);
+            this.zGizmo = new PlaneRotationGizmo(new Vector3(0, 0, 1), BABYLON.Color3.Blue().scale(0.5), gizmoLayer, tessellation, onUpdatePosition);
 
             // Relay drag events
             [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {

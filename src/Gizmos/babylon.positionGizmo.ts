@@ -32,11 +32,11 @@ module BABYLON {
          * Creates a PositionGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
          */
-        constructor(gizmoLayer: UtilityLayerRenderer= UtilityLayerRenderer.DefaultUtilityLayer) {
-            super(gizmoLayer);
-            this.xGizmo = new AxisDragGizmo(new Vector3(1, 0, 0), BABYLON.Color3.Red().scale(0.5), gizmoLayer);
-            this.yGizmo = new AxisDragGizmo(new Vector3(0, 1, 0), BABYLON.Color3.Green().scale(0.5), gizmoLayer);
-            this.zGizmo = new AxisDragGizmo(new Vector3(0, 0, 1), BABYLON.Color3.Blue().scale(0.5), gizmoLayer);
+        constructor(gizmoLayer: UtilityLayerRenderer= UtilityLayerRenderer.DefaultUtilityLayer,  onUpdatePosition?: () => Vector3) {
+            super(gizmoLayer, onUpdatePosition);
+            this.xGizmo = new AxisDragGizmo(new Vector3(1, 0, 0), BABYLON.Color3.Red().scale(0.5), gizmoLayer, onUpdatePosition);
+            this.yGizmo = new AxisDragGizmo(new Vector3(0, 1, 0), BABYLON.Color3.Green().scale(0.5), gizmoLayer, onUpdatePosition);
+            this.zGizmo = new AxisDragGizmo(new Vector3(0, 0, 1), BABYLON.Color3.Blue().scale(0.5), gizmoLayer, onUpdatePosition);
 
             // Relay drag events
             [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {

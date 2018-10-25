@@ -3,9 +3,6 @@ module BABYLON {
      * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
      */
     export class Gizmo implements IDisposable {
-
-        public onUpdatePosition: () => Vector3;
-
         /**
          * The root mesh of the gizmo
          */
@@ -72,7 +69,8 @@ module BABYLON {
          */
         constructor(
             /** The utility layer the gizmo will be added to */
-            public gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
+            public gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer,
+            public onUpdatePosition?: () => Vector3) {
             this._rootMesh = new BABYLON.Mesh("gizmoRootNode", gizmoLayer.utilityLayerScene);
             this._beforeRenderObserver = this.gizmoLayer.utilityLayerScene.onBeforeRenderObservable.add(() => {
                 this._update();
@@ -112,8 +110,10 @@ module BABYLON {
                 }
                 if (this.updateGizmoPositionToMatchAttachedMesh) {
                     if(!this.onUpdatePosition) {
+                        console.log('using absolute position');
                         this._rootMesh.position.copyFrom(this.attachedMesh.absolutePosition);
                     } else {
+                        console.log('using method');
                         this._rootMesh.position.copyFrom(this.onUpdatePosition());
                     }
                 }
