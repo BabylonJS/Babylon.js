@@ -1269,12 +1269,18 @@ export class Control {
 
     /** @hidden */
     public _onPointerOut(target: Control): void {
-        if (!this._isEnabled) {
+        if (!this._isEnabled || target === this) {
             return;
         }
         this._enterCount = 0;
 
-        this.onPointerOutObservable.notifyObservers(this, -1, target, this);
+        var canNotify: boolean = true;
+
+        if (!target.isAscendant(this)) {
+            canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
+        }
+
+        if (canNotify && this.parent != null) { this.parent._onPointerOut(target); }
     }
 
     /** @hidden */
@@ -1337,7 +1343,7 @@ export class Control {
             this._onPointerMove(this, this._dummyVector2);
 
             var previousControlOver = this._host._lastControlOver[pointerId];
-            if (previousControlOver && previousControlOver !== this && !this.isAscendant(previousControlOver)) {
+            if (previousControlOver && previousControlOver !== this) {
                 previousControlOver._onPointerOut(this);
             }
 

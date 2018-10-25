@@ -149,10 +149,6 @@ module BABYLON {
                         bodyConfig.pos.push(center.z);
                         bodyConfig.posShape.push(0, 0, 0);
 
-                        //tmp solution
-                        bodyConfig.rot.push(0);
-                        bodyConfig.rot.push(0);
-                        bodyConfig.rot.push(0);
                         bodyConfig.rotShape.push(0, 0, 0);
                     } else {
                         let localPosition = i.object.getAbsolutePosition().subtract(impostor.object.getAbsolutePosition());
@@ -161,10 +157,6 @@ module BABYLON {
                         bodyConfig.posShape.push(localPosition.z);
                         bodyConfig.pos.push(0, 0, 0);
 
-                        //tmp solution until https://github.com/lo-th/OIMO.js/pull/37 is merged
-                        bodyConfig.rot.push(0);
-                        bodyConfig.rot.push(0);
-                        bodyConfig.rot.push(0);
                         bodyConfig.rotShape.push(rot.x * radToDeg);
                         bodyConfig.rotShape.push(rot.y * radToDeg);
                         bodyConfig.rotShape.push(rot.z * radToDeg);
