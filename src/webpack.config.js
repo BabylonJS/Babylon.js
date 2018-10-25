@@ -21,7 +21,9 @@ module.exports = {
         //devtoolModuleFilenameTemplate: "[absolute-resource-path]"
     },
     resolve: {
-        extensions: [".js", '.ts']
+        modules: ['./'],
+        extensions: ['.ts'],
+        mainFields: []
     },
     externals: {
         babylonjs: {

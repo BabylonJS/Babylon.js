@@ -66,7 +66,7 @@
             "distOutputDirectory": "/",
             "dtsBundle": {
                 "name": "babylonjs",
-                "main": "../../dist/preview release/build/src/index.d.ts",
+                "main": "../../dist/preview release/build/index.d.ts",
                 "out": "../babylon.module.d.ts",
                 "baseDir": "../../dist/preview release/build/",
                 "headerText": "BabylonJS"
