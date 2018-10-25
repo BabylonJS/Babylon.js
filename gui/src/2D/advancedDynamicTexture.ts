@@ -21,6 +21,7 @@ export interface IFocusableControl {
      * KeyboardEvent -> handles key events
      * PointerEvent -> handles dbl click event and text highlight.
      * ClipboardInfo -> handles copy, cut, paste events.
+     * @param evt Defines the base Event object, can be (PointerEvent, KeyboardEvent and ClipboardEvent)
      */
     processKeyboard(evt: Event): void;
 
@@ -684,17 +685,17 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
    /**
-     * @hidden
-     */
-    protected registerClipboardEvents(): void {
+    * Register the clipboard Events onto the canvas
+    */
+    public registerClipboardEvents(): void {
         self.addEventListener("copy", this.onClipboardCopy, false);
         self.addEventListener("cut", this.onClipboardCut, false);
         self.addEventListener("paste", this.onClipboardPaste, false);
     }
     /**
-     * @hidden
+     * Unregister the clipboard Events from the canvas
      */
-    protected unRegisterClipboardEvents(): void {
+    public unRegisterClipboardEvents(): void {
         self.removeEventListener("copy", this.onClipboardCopy);
         self.removeEventListener("cut",  this.onClipboardCut);
         self.removeEventListener("paste", this.onClipboardPaste);

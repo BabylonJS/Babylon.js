@@ -15,6 +15,7 @@
   - WebXRInput manage controllers for the XR experience ([TrevorDev](https://github.com/TrevorDev))
 - GUI:
   - Added new [ImageBasedSlider](http://doc.babylonjs.com/how_to/gui#imagebasedslider) to let users customize sliders using images ([Deltakosh](https://github.com/deltakosh))
+  - Added new Clipboard events [Saket Saurabh](https://github.com/ssaket)
 
 ## Updates
 
@@ -23,6 +24,7 @@
 - Added `button.image` and `button.textBlock` to simplify access to button internal parts ([Deltakosh](https://github.com/deltakosh))
 - Added `sldier.displayThumb` to show/hide slider's thumb ([Deltakosh](https://github.com/deltakosh))
 - Added `grid.rowCount`, `grid.columnCount` and `grid.getChildrenAt()` ([Deltakosh](https://github.com/deltakosh))
+- Added clipboard event `cut`, `copy`, `paste` to AdvanceDynamicTexture ([Saket Saurabh](https://github.com/ssaket]))
 
 ### Core Engine
 

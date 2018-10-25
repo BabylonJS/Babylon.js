@@ -5,7 +5,7 @@ module BABYLON {
      */
     export class ClipboardEventTypes {
         /**
-         * T he clipboard event is fired when a copy command is active (pressed).
+         * The clipboard event is fired when a copy command is active (pressed).
          */
         public static readonly COPY = 0x01; //
         /**
@@ -23,10 +23,6 @@ module BABYLON {
      */
     export class ClipboardInfo {
         /**
-         * Instantiates a new ClipboardInfo info.
-         * @param {number} type Defines the type of event (BABYLON.ClipboardEventTypes)
-         * @param {ClipboardEvent} event Defines the related dom event
-        /**
          *Creates an instance of ClipboardInfo.
          * @param {number} type
          * @param {ClipboardEvent} event
@@ -40,25 +36,6 @@ module BABYLON {
              * Defines the related dom event
              */
             public event: ClipboardEvent) {
-                /**
-                 *  initialize the clipboard data
-                */
-                this._clipboardData = new DataTransfer();
-        }
-        /**
-         * Stores the clipboard data
-         * @type {DataTransfer}
-         */
-        private _clipboardData: DataTransfer;
-
-        /**
-         * Getter, setter for clipboardData
-         */
-        public get clipboardData(): DataTransfer {
-            return this._clipboardData;
-        }
-        public set clipboardData(value: DataTransfer) {
-            this._clipboardData = value;
         }
 
        /**

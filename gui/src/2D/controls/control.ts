@@ -1,7 +1,7 @@
 import { Container } from "./container";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
-import { Nullable, Observer, Vector2, AbstractMesh, Observable, Vector3, Scene, Tools, Matrix, PointerEventTypes, ClipboardInfo, ClipboardEventTypes } from "babylonjs";
+import { Nullable, Observer, Vector2, AbstractMesh, Observable, Vector3, Scene, Tools, Matrix, PointerEventTypes } from "babylonjs";
 import { Measure } from "../measure";
 import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
@@ -1367,41 +1367,6 @@ export class Control {
         }
 
         return false;
-    }
-
-    /** @hidden */
-    private onClipboardCopy = (evt: ClipboardEvent) => {
-        let ev = new ClipboardInfo(ClipboardEventTypes.COPY, evt);
-        this._host.onClipboardObservable.notifyObservers(ev);
-        evt.preventDefault();
-    }
-     /** @hidden */
-    private onClipboardCut = (evt: ClipboardEvent) => {
-        let ev = new ClipboardInfo(ClipboardEventTypes.CUT, evt);
-        this._host.onClipboardObservable.notifyObservers(ev);
-        evt.preventDefault();
-    }
-    /** @hidden */
-    private onClipboardPaste = (evt: ClipboardEvent) => {
-        let ev = new ClipboardInfo(ClipboardEventTypes.PASTE, evt);
-        this._host.onClipboardObservable.notifyObservers(ev);
-    }
-
-   /**
-     * @hidden
-     */
-    protected registerClipboardEvents(): void {
-        self.addEventListener("copy", this.onClipboardCopy, false);
-        self.addEventListener("cut", this.onClipboardCut, false);
-        self.addEventListener("paste", this.onClipboardPaste, false);
-    }
-    /**
-     * @hidden
-     */
-    protected unRegisterClipboardEvents(): void {
-        self.removeEventListener("copy", this.onClipboardCopy);
-        self.removeEventListener("cut",  this.onClipboardCut);
-        self.removeEventListener("paste", this.onClipboardPaste);
     }
 
     private _prepareFont() {
