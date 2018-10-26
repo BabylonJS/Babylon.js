@@ -1361,9 +1361,9 @@ module BABYLON {
          */
         public intersects(ray: Ray, fastCheck?: boolean): PickingInfo {
             var pickingInfo = new PickingInfo();
-            const intersectionTreshold = this.getClassName() === "InstancedLinesMesh" || this.getClassName() === "LinesMesh" ? (this as any).intersectionTreshold : 0;
+            const intersectionThreshold = this.getClassName() === "InstancedLinesMesh" || this.getClassName() === "LinesMesh" ? (this as any).intersectionThreshold : 0;
             const boundingInfo = this._boundingInfo;
-            if (!this.subMeshes || !boundingInfo || !ray.intersectsSphere(boundingInfo.boundingSphere, intersectionTreshold) || !ray.intersectsBox(boundingInfo.boundingBox, intersectionTreshold)) {
+            if (!this.subMeshes || !boundingInfo || !ray.intersectsSphere(boundingInfo.boundingSphere, intersectionThreshold) || !ray.intersectsBox(boundingInfo.boundingBox, intersectionThreshold)) {
                 return pickingInfo;
             }
 
