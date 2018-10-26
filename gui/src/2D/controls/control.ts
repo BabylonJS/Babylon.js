@@ -971,8 +971,6 @@ export class Control {
         }
     }
 
-
-
     /** @hidden */
     protected _applyStates(context: CanvasRenderingContext2D): void {
         if (this._isFontSizeInPercentage) {
