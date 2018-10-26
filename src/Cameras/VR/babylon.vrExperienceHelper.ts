@@ -197,17 +197,18 @@ module BABYLON {
                 });
             };
             makeNotPick(mesh);
-            var childMeshes = mesh.getChildMeshes();
+            var meshChildren = mesh.getChildren(undefined, false);
 
+            let laserParent: TransformNode = mesh;
             this.webVRController._pointingPoseNode = null;
-            for (var i = 0; i < childMeshes.length; i++) {
-                if (childMeshes[i].name && childMeshes[i].name.indexOf(PoseEnabledController.POINTING_POSE) >= 0) {
-                    mesh = childMeshes[i];
-                    this.webVRController._pointingPoseNode = mesh;
+            for (var i = 0; i < meshChildren.length; i++) {
+                if (meshChildren[i].name && meshChildren[i].name.indexOf(PoseEnabledController.POINTING_POSE) >= 0) {
+                    laserParent = <TransformNode>meshChildren[i];
+                    this.webVRController._pointingPoseNode = laserParent;
                     break;
                 }
             }
-            this._laserPointer.parent = mesh;
+            this._laserPointer.parent = laserParent;
         }
 
         public _updatePointerDistance(distance: number = 100) {
