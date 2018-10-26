@@ -159,7 +159,7 @@ module BABYLON {
          * Creates a new InstancedLinesMesh object from the mesh model.
          * @see http://doc.babylonjs.com/how_to/how_to_use_instances
          * @param name defines the name of the new instance
-         * @returns a new InstancedMesh
+         * @returns a new InstancedLinesMesh
          */
         public createInstance(name: string): InstancedLinesMesh {
             return new InstancedLinesMesh(name, this);
