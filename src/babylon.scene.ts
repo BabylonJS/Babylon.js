@@ -2389,7 +2389,7 @@
         private _executeOnceBeforeRender(func: () => void): void {
             let execFunc = () => {
                 func();
-                setTimeout(() => {
+                window.setTimeout(() => {
                     this.unregisterBeforeRender(execFunc);
                 });
             }
@@ -2405,7 +2405,7 @@
          */
         public executeOnceBeforeRender(func: () => void, timeout?: number): void {
             if (timeout !== undefined) {
-                setTimeout(() => {
+                window.setTimeout(() => {
                     this._executeOnceBeforeRender(func);
                 }, timeout);
             } else {
@@ -2458,9 +2458,9 @@
                 return;
             }
 
-            //this._executeWhenReadyTimeoutId = setTimeout(() => {
+            this._executeWhenReadyTimeoutId = window.setTimeout(() => {
                 this._checkIsReady();
-            //}, 150);
+            }, 150);
         }
 
         /**
@@ -2487,7 +2487,7 @@
                 return;
             }
 
-            this._executeWhenReadyTimeoutId = setTimeout(() => {
+            this._executeWhenReadyTimeoutId = window.setTimeout(() => {
                 this._checkIsReady();
             }, 150);
         }
