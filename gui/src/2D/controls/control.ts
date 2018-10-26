@@ -11,6 +11,11 @@ import { Matrix2D, Vector2WithInfo } from "../math2D";
  * @see http://doc.babylonjs.com/how_to/gui#controls
  */
 export class Control {
+    /**
+     * Gets or sets a boolean indicating if alpha must be an inherited value (false by default)
+     */
+    public static AllowAlphaInheritance = false;
+
     private _alpha = 1;
     private _alphaSet = false;
     private _zIndex = 0;
@@ -966,6 +971,8 @@ export class Control {
         }
     }
 
+
+
     /** @hidden */
     protected _applyStates(context: CanvasRenderingContext2D): void {
         if (this._isFontSizeInPercentage) {
@@ -985,7 +992,9 @@ export class Control {
             context.fillStyle = this._color;
         }
 
-        if (this._alphaSet) {
+        if (Control.AllowAlphaInheritance) {
+            context.globalAlpha *= this._alpha;
+        } else if (this._alphaSet) {
             context.globalAlpha = this.parent ? this.parent.alpha * this._alpha : this._alpha;
         }
     }
