@@ -1400,8 +1400,10 @@ module BABYLON {
             if (intersectInfo) {
                 // Get picked point
                 const world = this.getWorldMatrix();
-                const worldOrigin = Vector3.TransformCoordinates(ray.origin, world);
-                const direction = ray.direction.scaleToRef(intersectInfo.distance, Tmp.Vector3[0]);
+                const worldOrigin = Tmp.Vector3[0];
+                const direction = Tmp.Vector3[1];
+                Vector3.TransformCoordinatesToRef(ray.origin, world, worldOrigin);
+                ray.direction.scaleToRef(intersectInfo.distance, direction);
                 const worldDirection = Vector3.TransformNormal(direction, world);
                 const pickedPoint = worldDirection.addInPlace(worldOrigin);
 
@@ -1509,7 +1511,7 @@ module BABYLON {
             });
 
             // SubMeshes
-            if (this.getClassName() !== "InstancedMesh" && this.getClassName() !== "InstancedLinesMesh") {
+            if (this.getClassName() !== "InstancedMesh" || this.getClassName() !== "InstancedLinesMesh") {
                 this.releaseSubMeshes();
             }
 
