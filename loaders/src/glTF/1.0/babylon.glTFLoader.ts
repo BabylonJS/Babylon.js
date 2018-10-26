@@ -1372,7 +1372,7 @@ module BABYLON.GLTF1 {
             var shader: IGLTFShader = gltfRuntime.shaders[id];
 
             if (Tools.IsBase64(shader.uri)) {
-                var shaderString = atob(shader.uri.split(",")[1]);
+                var shaderString = window.atob(shader.uri.split(",")[1]);
                 if (onSuccess) {
                     onSuccess(shaderString);
                 }

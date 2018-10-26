@@ -1206,7 +1206,7 @@ module BABYLON.GLTF2 {
                 glTFTexture.sampler = samplerIndex;
             }
 
-            const binStr = atob(base64Texture.split(',')[1]);
+            const binStr = window.atob(base64Texture.split(',')[1]);
             let arrBuff = new ArrayBuffer(binStr.length);
             const arr = new Uint8Array(arrBuff);
             for (let i = 0, length = binStr.length; i < length; ++i) {
