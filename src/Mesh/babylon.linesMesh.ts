@@ -179,7 +179,7 @@ module BABYLON {
 
         constructor(name: string, source: LinesMesh) {
             super(name, source);
-            this.intersectionThreshold = this.intersectionThreshold;
+            this.intersectionThreshold = source.intersectionThreshold;
         }
 
         /**
