@@ -1361,9 +1361,9 @@ module BABYLON {
          */
         public intersects(ray: Ray, fastCheck?: boolean): PickingInfo {
             var pickingInfo = new PickingInfo();
-            const intersectionTreshold = this.getClassName() === "LinesMesh" ? (<LinesMesh>(this as any)).intersectionThreshold : 0;
+            const intersectionThreshold = this.getClassName() === "InstancedLinesMesh" || this.getClassName() === "LinesMesh" ? (this as any).intersectionThreshold : 0;
             const boundingInfo = this._boundingInfo;
-            if (!this.subMeshes || !boundingInfo || !ray.intersectsSphere(boundingInfo.boundingSphere, intersectionTreshold) || !ray.intersectsBox(boundingInfo.boundingBox, intersectionTreshold)) {
+            if (!this.subMeshes || !boundingInfo || !ray.intersectsSphere(boundingInfo.boundingSphere, intersectionThreshold) || !ray.intersectsBox(boundingInfo.boundingBox, intersectionThreshold)) {
                 return pickingInfo;
             }
 
@@ -1400,8 +1400,10 @@ module BABYLON {
             if (intersectInfo) {
                 // Get picked point
                 const world = this.getWorldMatrix();
-                const worldOrigin = Vector3.TransformCoordinates(ray.origin, world);
-                const direction = ray.direction.scaleToRef(intersectInfo.distance, Tmp.Vector3[0]);
+                const worldOrigin = Tmp.Vector3[0];
+                const direction = Tmp.Vector3[1];
+                Vector3.TransformCoordinatesToRef(ray.origin, world, worldOrigin);
+                ray.direction.scaleToRef(intersectInfo.distance, direction);
                 const worldDirection = Vector3.TransformNormal(direction, world);
                 const pickedPoint = worldDirection.addInPlace(worldOrigin);
 
@@ -1509,7 +1511,7 @@ module BABYLON {
             });
 
             // SubMeshes
-            if (this.getClassName() !== "InstancedMesh") {
+            if (this.getClassName() !== "InstancedMesh" || this.getClassName() !== "InstancedLinesMesh") {
                 this.releaseSubMeshes();
             }
 
