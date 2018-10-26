@@ -344,8 +344,8 @@ module BABYLON {
 
             // LineMesh first as it's also a Mesh...
             if (LinesMesh) {
-                if (this._mesh instanceof LinesMesh || this._mesh instanceof InstancedLinesMesh) {
-                    return this._intersectLines(ray, positions, indices, this._mesh.intersectionThreshold, fastCheck);
+                if (this._mesh.getClassName() === "InstancedLinesMesh" || this._mesh.getClassName() === "LinesMesh") {
+                    return this._intersectLines(ray, positions, indices, (this._mesh as any).intersectionThreshold, fastCheck);
                 }
             }
 
