@@ -114,7 +114,7 @@
             "cameraBehaviors",
             "meshBehaviors",
             "nullEngine",
-            "nativeEngineWrapper",
+            "nativeEngine",
             "instrumentation",
             "backgroundMaterial",
             "environmentHelper",
@@ -335,9 +335,9 @@
                 "core"
             ]
         },
-        "nativeEngineWrapper": {
+        "nativeEngine": {
             "files": [
-                "../../src/Engine/babylon.nativeEngineWrapper.js",
+                "../../src/Engine/babylon.nativeEngine.js",
                 "../../src/Engine/babylon.webgl2.js",
                 "../../src/babylon.mixins.js"
             ],
