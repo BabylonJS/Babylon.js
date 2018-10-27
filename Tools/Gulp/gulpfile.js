@@ -33,6 +33,7 @@ var karmaServer = require('karma').Server;
 var gulpTslint = require("gulp-tslint");
 var tslint = require("tslint");
 const filter = require('gulp-filter');
+var cors = require('cors');
 
 //viewer declaration
 var processDeclaration = require('./processViewerDeclaration');
@@ -843,7 +844,7 @@ gulp.task("webserver", function() {
     var options = {
         port: 1338,
         livereload: false,
-
+        middleware: [cors()]
     };
 
     if (commandLineOptions.public) {

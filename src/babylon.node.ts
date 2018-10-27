@@ -9,7 +9,7 @@ module BABYLON {
      * Node is the basic class for all scene objects (Mesh, Light, Camera.)
      */
     export class Node implements IBehaviorAware<Node> {
-        private static _NodeConstructors: {[key: string]: any} = {};
+        private static _NodeConstructors: { [key: string]: any } = {};
 
         /**
          * Add a new node constructor
@@ -228,15 +228,18 @@ module BABYLON {
          * Creates a new Node
          * @param name the name and id to be given to this node
          * @param scene the scene this node will be added to
+         * @param addToRootNodes the node will be added to scene.rootNodes
          */
-        constructor(name: string, scene: Nullable<Scene> = null) {
+        constructor(name: string, scene: Nullable<Scene> = null, addToRootNodes = true) {
             this.name = name;
             this.id = name;
             this._scene = <Scene>(scene || Engine.LastCreatedScene);
             this.uniqueId = this._scene.getUniqueId();
             this._initCache();
 
-            this.addToSceneRootNodes();
+            if (addToRootNodes) {
+                this.addToSceneRootNodes();
+            }
         }
 
         /**
@@ -547,10 +550,11 @@ module BABYLON {
         /**
          * Get all direct children of this node
          * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered (Default: true)
          * @returns an array of Node
          */
-        public getChildren(predicate?: (node: Node) => boolean): Node[] {
-            return this.getDescendants(true, predicate);
+        public getChildren(predicate?: (node: Node) => boolean, directDescendantsOnly = true): Node[] {
+            return this.getDescendants(directDescendantsOnly, predicate);
         }
 
         /** @hidden */

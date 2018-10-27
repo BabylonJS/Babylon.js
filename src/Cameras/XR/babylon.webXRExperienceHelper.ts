@@ -44,6 +44,8 @@ module BABYLON {
             this.onStateChangedObservable.notifyObservers(this.state);
         }
 
+        private static _TmpVector = new BABYLON.Vector3();
+
         /**
          * Fires when the state of the experience helper has changed
          */
@@ -80,6 +82,7 @@ module BABYLON {
             this.camera = new BABYLON.WebXRCamera("", scene);
             this._sessionManager = new BABYLON.WebXRSessionManager(scene);
             this.container = new AbstractMesh("", scene);
+            this.camera.parent = this.container;
         }
 
         /**
@@ -98,6 +101,9 @@ module BABYLON {
          * @returns promise that resolves after xr mode has entered
          */
         public enterXRAsync(sessionCreationOptions: XRSessionCreationOptions, frameOfReference: string) {
+            if (!this._supported) {
+                throw "XR session not supported by this browser";
+            }
             this._setState(WebXRState.ENTERING_XR);
 
             return this._sessionManager.enterXRAsync(sessionCreationOptions, frameOfReference).then(() => {
@@ -137,6 +143,29 @@ module BABYLON {
          */
         public environmentPointHitTestAsync(ray: BABYLON.Ray): Promise<Nullable<Vector3>> {
             return this._sessionManager.environmentPointHitTestAsync(ray);
+        }
+
+        /**
+         * Updates the global position of the camera by moving the camera's container
+         * This should be used instead of modifying the camera's position as it will be overwritten by an xrSessions's update frame
+         * @param position The desired global position of the camera
+         */
+        public setPositionOfCameraUsingContainer(position: Vector3) {
+            this.camera.globalPosition.subtractToRef(position, WebXRExperienceHelper._TmpVector);
+            this.container.position.subtractInPlace(WebXRExperienceHelper._TmpVector);
+        }
+
+        /**
+         * Rotates the xr camera by rotating the camera's container around the camera's position
+         * This should be used instead of modifying the camera's rotation as it will be overwritten by an xrSessions's update frame
+         * @param rotation the desired quaternion rotation to apply to the camera
+         */
+        public rotateCameraByQuaternionUsingContainer(rotation: Quaternion) {
+            if (!this.container.rotationQuaternion) {
+                this.container.rotationQuaternion = Quaternion.FromEulerVector(this.container.rotation);
+            }
+            this.container.rotationQuaternion.multiplyInPlace(rotation);
+            this.container.position.rotateByQuaternionAroundPointToRef(rotation, this.camera.globalPosition, this.container.position);
         }
 
         /**
