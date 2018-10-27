@@ -507,6 +507,11 @@ module BABYLON {
         public onAfterStepObservable = new Observable<Scene>();
 
         /**
+         * An event triggered when the activeCamera property is updated
+         */
+        public onActiveCameraChanged = new Observable<Scene>();
+
+        /**
          * This Observable will be triggered before rendering each renderingGroup of each rendered camera.
          * The RenderinGroupInfo class contains all the information about the context in which the observable is called
          * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
@@ -776,8 +781,21 @@ module BABYLON {
 
         /** All of the active cameras added to this scene. */
         public activeCameras = new Array<Camera>();
-        /** The current active camera */
-        public activeCamera: Nullable<Camera>;
+
+        private _activeCamera: Nullable<Camera>;
+        /** Gets or sets the current active camera */
+        public get activeCamera(): Nullable<Camera> {
+            return this._activeCamera;
+        }
+
+        public set activeCamera(value: Nullable<Camera>) {
+            if (value === this._activeCamera) {
+                return;
+            }
+
+            this._activeCamera = value;
+            this.onActiveCameraChanged.notifyObservers(this);
+        }
 
         private _defaultMaterial: Material;
 
@@ -2213,7 +2231,7 @@ module BABYLON {
                     return false;
                 }
 
-                let hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh" || engine.getCaps().instancedArrays && (<Mesh>mesh).instances.length > 0;
+                let hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh" || mesh.getClassName() === "InstancedLinesMesh" || engine.getCaps().instancedArrays && (<Mesh>mesh).instances.length > 0;
                 // Is Ready For Mesh
                 for (let step of this._isReadyForMeshStage) {
                     if (!step.action(mesh, hardwareInstancedRendering)) {
@@ -2465,6 +2483,32 @@ module BABYLON {
             animatable.reset();
 
             return animatable;
+        }
+
+        /**
+         * Will start the animation sequence of a given target and its hierarchy
+         * @param target defines the target
+         * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
+         * @param from defines from which frame should animation start
+         * @param to defines until which frame should animation run.
+         * @param loop defines if the animation loops
+         * @param speedRatio defines the speed in which to run the animation (1.0 by default)
+         * @param onAnimationEnd defines the function to be executed when the animation ends
+         * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+         * @param stopCurrent defines if the current animations must be stopped first (true by default)
+         * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
+         * @returns the list of created animatables
+         */
+        public beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true, targetMask?: (target: any) => boolean): Animatable[] {
+            let children = target.getDescendants(directDescendantsOnly);
+
+            let result = [];
+            result.push(this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask));
+            for (var child of children) {
+                result.push(this.beginAnimation(child, from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask));
+            }
+
+            return result;
         }
 
         /**
@@ -3760,27 +3804,32 @@ module BABYLON {
          * @return the found node or null if not found at all
          */
         public getNodeByID(id: string): Nullable<Node> {
-            var mesh = this.getMeshByID(id);
-
+            const mesh = this.getMeshByID(id);
             if (mesh) {
                 return mesh;
             }
 
-            var light = this.getLightByID(id);
+            const transformNode = this.getTransformNodeByID(id);
+            if (transformNode) {
+                return transformNode;
+            }
 
+            const light = this.getLightByID(id);
             if (light) {
                 return light;
             }
 
-            var camera = this.getCameraByID(id);
-
+            const camera = this.getCameraByID(id);
             if (camera) {
                 return camera;
             }
 
-            var bone = this.getBoneByID(id);
+            const bone = this.getBoneByID(id);
+            if (bone) {
+                return bone;
+            }
 
-            return bone;
+            return null;
         }
 
         /**
@@ -3789,27 +3838,32 @@ module BABYLON {
          * @return the found node or null if not found at all.
          */
         public getNodeByName(name: string): Nullable<Node> {
-            var mesh = this.getMeshByName(name);
-
+            const mesh = this.getMeshByName(name);
             if (mesh) {
                 return mesh;
             }
 
-            var light = this.getLightByName(name);
+            const transformNode = this.getTransformNodeByName(name);
+            if (transformNode) {
+                return transformNode;
+            }
 
+            const light = this.getLightByName(name);
             if (light) {
                 return light;
             }
 
-            var camera = this.getCameraByName(name);
-
+            const camera = this.getCameraByName(name);
             if (camera) {
                 return camera;
             }
 
-            var bone = this.getBoneByName(name);
+            const bone = this.getBoneByName(name);
+            if (bone) {
+                return bone;
+            }
 
-            return bone;
+            return null;
         }
 
         /**
@@ -4796,6 +4850,7 @@ module BABYLON {
             this.onPointerObservable.clear();
             this.onPreKeyboardObservable.clear();
             this.onKeyboardObservable.clear();
+            this.onActiveCameraChanged.clear();
 
             this.detachControl();
 

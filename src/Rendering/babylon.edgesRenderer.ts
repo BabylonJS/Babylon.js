@@ -62,25 +62,20 @@ module BABYLON {
         return this;
     };
 
-    export interface InstancedMesh {
+    export interface InstancedLinesMesh {
         /**
          * Enables the edge rendering mode on the mesh.
          * This mode makes the mesh edges visible
          * @param epsilon defines the maximal distance between two angles to detect a face
          * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
-         * @returns the currentInstancedMesh
+         * @returns the current InstancedLinesMesh
          * @see https://www.babylonjs-playground.com/#19O9TU#0
          */
-        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): InstancedMesh;
+        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): InstancedLinesMesh;
     }
 
-    InstancedMesh.prototype.enableEdgesRendering = function(epsilon = 0.95, checkVerticesInsteadOfIndices = false): InstancedMesh {
-        if (this.sourceMesh.getClassName() === 'LinesMesh') {
-            LinesMesh.prototype.enableEdgesRendering.apply(this, arguments);
-        }
-        else {
-            AbstractMesh.prototype.enableEdgesRendering.apply(this, arguments);
-        }
+    InstancedLinesMesh.prototype.enableEdgesRendering = function(epsilon = 0.95, checkVerticesInsteadOfIndices = false): InstancedLinesMesh {
+        LinesMesh.prototype.enableEdgesRendering.apply(this, arguments);
         return this;
     };
 

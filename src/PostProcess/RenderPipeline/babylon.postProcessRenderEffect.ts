@@ -151,12 +151,15 @@ module BABYLON {
             for (var i = 0; i < cams.length; i++) {
                 var camera: Camera = cams[i];
                 var cameraName: string = camera.name;
-                this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess: PostProcess) => {
-                    camera.detachPostProcess(postProcess);
-                });
+                const postProcesses = this._postProcesses[this._singleInstance ? 0 : cameraName];
+
+                if (postProcesses) {
+                    postProcesses.forEach((postProcess: PostProcess) => {
+                        camera.detachPostProcess(postProcess);
+                    });
+                }
 
                 if (this._cameras[cameraName]) {
-                    //this._indicesForCamera.splice(index, 1);
                     this._cameras[cameraName] = null;
                 }
             }

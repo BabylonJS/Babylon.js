@@ -17,24 +17,9 @@ module BABYLON {
          * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
          * This margin is expressed in world space coordinates, so its value may vary.
          * Default value is 0.1
-         * @returns the intersection Threshold value.
          */
-        public get intersectionThreshold(): number {
-            return this._intersectionThreshold;
-        }
+        public intersectionThreshold: number;
 
-        /**
-         * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
-         * This margin is expressed in world space coordinates, so its value may vary.
-         */
-        public set intersectionThreshold(value: number) {
-            if (this._intersectionThreshold === value) {
-                return;
-            }
-            this._intersectionThreshold = value;
-        }
-
-        private _intersectionThreshold: number;
         private _colorShader: ShaderMaterial;
 
         /**
@@ -73,7 +58,7 @@ module BABYLON {
                 this.useVertexAlpha = source.useVertexAlpha;
             }
 
-            this._intersectionThreshold = 0.1;
+            this.intersectionThreshold = 0.1;
 
             var defines: string[] = [];
             var options = {
@@ -168,6 +153,40 @@ module BABYLON {
          */
         public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh {
             return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
+        }
+
+        /**
+         * Creates a new InstancedLinesMesh object from the mesh model.
+         * @see http://doc.babylonjs.com/how_to/how_to_use_instances
+         * @param name defines the name of the new instance
+         * @returns a new InstancedLinesMesh
+         */
+        public createInstance(name: string): InstancedLinesMesh {
+            return new InstancedLinesMesh(name, this);
+        }
+    }
+
+    /**
+     * Creates an instance based on a source LinesMesh
+     */
+    export class InstancedLinesMesh extends InstancedMesh {
+        /**
+         * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
+         * This margin is expressed in world space coordinates, so its value may vary.
+         * Initilized with the intersectionThreshold value of the source LinesMesh
+         */
+        public intersectionThreshold: number;
+
+        constructor(name: string, source: LinesMesh) {
+            super(name, source);
+            this.intersectionThreshold = source.intersectionThreshold;
+        }
+
+        /**
+         * Returns the string "InstancedLinesMesh".
+         */
+        public getClassName(): string {
+            return "InstancedLinesMesh";
         }
     }
 }
