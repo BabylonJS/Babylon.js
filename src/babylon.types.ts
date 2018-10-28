@@ -34,7 +34,7 @@ module BABYLON {
     type Primitive = undefined | null | boolean | string | number | Function;
 
     /**
-     * Type modififier to make all the properties of an object Readonly
+     * Type modifier to make all the properties of an object Readonly
      */
     export type Immutable<T> = T extends Primitive
       ? T
