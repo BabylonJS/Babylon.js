@@ -17,13 +17,10 @@ export interface IFocusableControl {
      */
     onBlur(): void;
     /**
-     * Function called to let the control handle events,
-     * KeyboardEvent -> handles key events
-     * PointerEvent -> handles dbl click event and text highlight.
-     * ClipboardInfo -> handles copy, cut, paste events.
-     * @param evt Defines the base Event object, can be (PointerEvent, KeyboardEvent and ClipboardEvent)
+     * Function called to let control handle key events
+     * @param evt Defines the  KeyboardEvent object
      */
-    processKeyboard(evt: Event): void;
+    processKeyboard(evt: KeyboardEvent): void;
 
     /**
      * Function called to get the list of controls that should not steal the focus from this control
@@ -617,14 +614,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (scene!.isPointerCaptured((<PointerEvent>(pi.event)).pointerId)) {
                 return;
             }
-            //check for focused control and call the onClipboardPointerEvents
-            if (this._focusedControl) {
-                if (pi.type === PointerEventTypes.POINTERDOUBLETAP) {
-                    this._focusedControl.processKeyboard(pi.event);
-                    return;
-                }
-
-            }
 
             if (pi.type !== PointerEventTypes.POINTERMOVE
                 && pi.type !== PointerEventTypes.POINTERUP
@@ -656,13 +645,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
         });
 
-        this.onClipboardObservable.add((pi, state) => {
-            if (this.focusedControl) {
-                // call the event's callback
-                this.focusedControl.processKeyboard(pi.event);
-            }
-        });
-
         this._attachToOnPointerOut(scene);
     }
 
@@ -682,6 +664,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private onClipboardPaste = (evt: ClipboardEvent) => {
         let ev = new ClipboardInfo(ClipboardEventTypes.PASTE, evt);
         this.onClipboardObservable.notifyObservers(ev);
+        evt.preventDefault();
     }
 
    /**
