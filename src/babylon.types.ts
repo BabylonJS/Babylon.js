@@ -44,7 +44,7 @@ module BABYLON {
           DeepImmutable<T>;
 
     /**
-     * Type modififier to make all the properties of an object Readonly recursively
+     * Type modifier to make all the properties of an object Readonly recursively
      */
     export type DeepImmutable<T> = T extends Primitive
       ? T
