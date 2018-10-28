@@ -1,7 +1,7 @@
 import { Control } from "./control";
 import { IFocusableControl } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
-import { Nullable, Observable, Vector2, ClipboardEventTypes, ClipboardInfo } from "babylonjs";
+import { Nullable, Observable, Observer, Vector2, ClipboardEventTypes, ClipboardInfo, PointerInfo } from 'babylonjs';
 import { Measure } from "../measure";
 import { VirtualKeyboard } from "./virtualKeyboard";
 
@@ -34,6 +34,8 @@ export class InputText extends Control implements IFocusableControl {
     private _highlightedText = "";
     private _startHighlightIndex = 0;
     private _endHighlightIndex = 0;
+    private _onClipboardObserver: Nullable<Observer<ClipboardInfo>>;
+    private _onPointerDblTapObserver: Nullable<Observer<PointerInfo>>;
 
     /** @hidden */
     public _connectedVirtualKeyboard: Nullable<VirtualKeyboard>;
@@ -49,6 +51,14 @@ export class InputText extends Control implements IFocusableControl {
     public onFocusObservable = new Observable<InputText>();
     /** Observable raised when the control loses the focus */
     public onBlurObservable = new Observable<InputText>();
+    /**Observable raised when the text is highlighted */
+    public onTextHighlightObservable = new Observable<InputText>();
+    /**Observable raised when copy event is triggered */
+    public onTextCopyObservable = new Observable<InputText>();
+    /** Observable raised when cut event is triggered */
+    public onTextCutObservable = new Observable<InputText>();
+    /** Observable raised when paste event is triggered */
+    public onTextPasteObservable = new Observable<InputText>();
 
     /** Gets or sets the maximum width allowed by the control */
     public get maxWidth(): string | number {
@@ -292,6 +302,13 @@ export class InputText extends Control implements IFocusableControl {
         this.onBlurObservable.notifyObservers(this);
 
         this._host.unRegisterClipboardEvents();
+        if (this._onClipboardObserver) {
+            this._host.onClipboardObservable.remove(this._onClipboardObserver);
+        }
+        let scene = this._host.getScene();
+        if (this._onPointerDblTapObserver && scene) {
+            scene.onPointerObservable.remove(this._onPointerDblTapObserver);
+        }
     }
 
     /** @hidden */
@@ -319,6 +336,38 @@ export class InputText extends Control implements IFocusableControl {
 
         this._host.registerClipboardEvents();
 
+        this._onClipboardObserver = this._host.onClipboardObservable.add((clipboardInfo) => {
+            // process clipboard event, can be configured.
+             switch (clipboardInfo.type){
+                 case ClipboardEventTypes.COPY:
+                         this._onCopyText(clipboardInfo.event);
+                         this.onTextCopyObservable.notifyObservers(this);
+                         break;
+                 case ClipboardEventTypes.CUT:
+                         this._onCutText(clipboardInfo.event);
+                         this.onTextCutObservable.notifyObservers(this);
+                         break;
+                 case ClipboardEventTypes.PASTE:
+                         this._onPasteText(clipboardInfo.event);
+                         this.onTextPasteObservable.notifyObservers(this);
+                         break;
+                 default: return;
+              }
+        });
+
+        let scene = this._host.getScene();
+        if (scene) {
+            //register the pointer double tap event
+            this._onPointerDblTapObserver = scene.onPointerObservable.add((pointerInfo) => {
+                if (!this._isFocused) {
+                    return;
+                }
+                if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOUBLETAP) {
+                    this._processDblClick(pointerInfo);
+                }
+            });
+        }
+
     }
 
     protected _getTypeName(): string {
@@ -339,20 +388,26 @@ export class InputText extends Control implements IFocusableControl {
     /** @hidden */
     public processKey(keyCode: number, key?: string, evt?: KeyboardEvent) {
 
-        //get the clipboard Event from the keycode, returns -1 if not found.
-        let clipboardEventType: ClipboardEventTypes = ClipboardInfo.GetTypeFromCharacter(keyCode);
-        if (evt && (evt.ctrlKey || evt.metaKey) && clipboardEventType !== -1) {
+        //return if clipboard event keys (i.e -ctr/cmd + c,v,x)
+        if (evt && (evt.ctrlKey || evt.metaKey) && (keyCode === 67 || keyCode === 86 || keyCode === 88)) {
             return;
         }
 
         //select all
         if (evt && (evt.ctrlKey || evt.metaKey) && keyCode === 65) {
+
+            this._blinkIsEven = false;
+            this._isTextHighlightOn = true;
+            evt.preventDefault();
+
+            //if already highlighted pass
+            if (this._highlightedText) {
+                return;
+            }
+
             this._startHighlightIndex = 0;
             this._endHighlightIndex = this._text.length;
-            this._isTextHighlightOn = true;
-            this._blinkIsEven = true;
             this._cursorOffset = 0;
-            evt.preventDefault();
             return;
         }
         // Specific cases
@@ -378,7 +433,7 @@ export class InputText extends Control implements IFocusableControl {
                         }
                         return;
                     }
-                    //delete individual character
+                    //delete single character
                     if (this._cursorOffset === 0) {
                         this.text = this._text.substr(0, this._text.length - 1);
                     } else {
@@ -493,7 +548,7 @@ export class InputText extends Control implements IFocusableControl {
         }
     }
     /** @hidden */
-    private _processDblClick(evt: PointerEvent) {
+    private _processDblClick(evt: PointerInfo) {
         //pre-find the start and end index of the word under cursor, speeds up the rendering
         this._startHighlightIndex = this._text.length - this._cursorOffset;
         this._endHighlightIndex = this._startHighlightIndex;
@@ -501,49 +556,35 @@ export class InputText extends Control implements IFocusableControl {
             right = (this._text[this._endHighlightIndex].search(rWord) !== -1) ? ++this._endHighlightIndex : 0;
             left =  (this._text[this._startHighlightIndex - 1 ].search(rWord) !== -1) ? --this._startHighlightIndex : 0;
         }
+        this.onTextHighlightObservable.notifyObservers(this);
         this._isTextHighlightOn = true;
         this._blinkIsEven = false;
     }
 
     /**
-     * Called by the onClipboardObservable of AdvanceDynamicTexture
-     * @param evt Event object
+     * Handles the keyboard event
+     * @param evt Defines the KeyboardEvent
      */
-    public processKeyboard(evt: KeyboardEvent | PointerEvent | ClipboardEvent): void {
-        // check the event type and call its action
-        if (evt instanceof KeyboardEvent) {
-            this.processKey(evt.keyCode, evt.key, evt);
-        }
-        else if (evt instanceof PointerEvent) {
-            this._processDblClick(evt);
-            evt.preventDefault();
-        }
-        else if (evt instanceof ClipboardEvent) {
-            this._processClipboardEvent(evt);
-            evt.preventDefault();
-        }
+    public processKeyboard(evt: KeyboardEvent): void {
+        // process pressed key
+        this.processKey(evt.keyCode, evt.key, evt);
     }
 
-    /**
-     * Callback in case of copy event, can be configured.
-     * @param ev ClipboardEvent
-     */
-    public onCopyText(ev: ClipboardEvent): void {
+    /** @hidden */
+    private _onCopyText(ev: ClipboardEvent): void {
         this._isTextHighlightOn = false;
         //when write permission to clipbaord data is denied
         try {
             ev.clipboardData.setData("text/plain", this._highlightedText);
         }
-        catch {
-            //pass
-        }
+        catch {} //pass
         this._host.clipboardData = this._highlightedText;
     }
-    /**
-     * Callback in case of cut event, can be configured.
-     * @param ev ClipboardEvent
-     */
-    public onCutText(ev: ClipboardEvent): void {
+    /** @hidden */
+    private _onCutText(ev: ClipboardEvent): void {
+        if (!this._highlightedText) {
+            return;
+        }
         this.text = this._text.slice(0, this._startHighlightIndex) + this._text.slice(this._endHighlightIndex);
         this._isTextHighlightOn = false;
         this._cursorOffset = this.text.length - this._startHighlightIndex;
@@ -551,46 +592,23 @@ export class InputText extends Control implements IFocusableControl {
         try {
             ev.clipboardData.setData("text/plain", this._highlightedText);
         }
-        catch {
-            //pass
-        }
+        catch { } //pass
 
         this._host.clipboardData = this._highlightedText;
+        this._highlightedText = "";
     }
-    /**
-     * Callback in case of paste event, can be configured.
-     * @param ev ClipboardEvent
-     */
-    public onPasteText(ev: ClipboardEvent): void {
+    /** @hidden */
+    private _onPasteText(ev: ClipboardEvent): void {
         let data: string = "";
         if (ev.clipboardData && ev.clipboardData.types.indexOf("text/plain") !== -1) {
             data = ev.clipboardData.getData("text/plain");
         }
         else {
+            //get the cached data; returns blank string by default
             data = this._host.clipboardData;
         }
         let insertPosition = this._text.length - this._cursorOffset;
         this.text = this._text.slice(0, insertPosition) + data + this._text.slice(insertPosition);
-    }
-
-    /**
-     * @hidden
-     * Currently placed at control level but can be moved to ADT if required.
-    */
-    private _processClipboardEvent(ev: ClipboardEvent): void {
-        // call the clipboard event's callback, invoked by ADT's onClipboardObserver
-         switch (ev.type){
-            case "copy":
-                    this.onCopyText(ev);
-                    break;
-            case "cut":
-                    this.onCutText(ev);
-                    break;
-            case "paste":
-                    this.onPasteText(ev);
-                    break;
-            default: return;
-         }
     }
 
     public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
@@ -787,5 +805,9 @@ export class InputText extends Control implements IFocusableControl {
         this.onBlurObservable.clear();
         this.onFocusObservable.clear();
         this.onTextChangedObservable.clear();
+        this.onTextCopyObservable.clear();
+        this.onTextCutObservable.clear();
+        this.onTextPasteObservable.clear();
+        this.onTextHighlightObservable.clear();
     }
 }
