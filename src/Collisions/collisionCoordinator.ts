@@ -1,10 +1,17 @@
-import { Tools } from "Tools";
+import { Tools } from "Tools/tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Vector3 } from "Math";
-import { Engine } from "Engine";
-import { Mesh, AbstractMesh, Geometry, InstancedMesh, VertexBuffer, TransformNode } from "Mesh";
-import { Collider, WorkerIncluded } from "Collisions";
+import { Vector3 } from "Math/math";
+import { Engine } from "Engine/engine";
+import { Collider } from "./collider";
+import { WorkerIncluded } from "./collisionWorker";
+import { TransformNode } from "Mesh/transformNode";
+import { Geometry } from "Mesh/geometry";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { InstancedMesh } from "Mesh/instancedMesh";
+import { Mesh } from "Mesh/mesh";
+
     //WebWorker code will be inserted to this variable.
     /** @hidden */
     export var CollisionWorker = "";

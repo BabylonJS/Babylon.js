@@ -1,4 +1,5 @@
-import { serialize, SerializationHelper } from "Tools";
+import { serialize } from "Tools/decorators";
+import { SerializationHelper } from "Tools";
 import { Color4 } from "Math";
 import { Effect } from "Materials";
     /**

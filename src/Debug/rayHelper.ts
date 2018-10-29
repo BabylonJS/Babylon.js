@@ -1,8 +1,10 @@
 import { Nullable } from "types";
-import { Ray } from "index";
-import { Vector3, Color3 } from "Math";
+import { Ray } from "Culling/ray";
+import { Vector3, Color3 } from "Math/math";
 import { Scene } from "scene";
-import { AbstractMesh, LinesMesh, Mesh } from "Mesh";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Mesh } from "Mesh/mesh";
+import { LinesMesh } from "Mesh/linesMesh";
 
     /**
      * As raycast might be hard to debug, the RayHelper can help rendering the different rays

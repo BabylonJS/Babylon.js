@@ -1,7 +1,8 @@
-import { Vector3, Color3 } from "Math";
+import { Vector3, Color3 } from "Math/math";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { LinesMesh, Mesh } from "Mesh";
+import { Mesh } from "Mesh/mesh";
+import { LinesMesh } from "Mesh/linesMesh";
 
 /**
      * The Axes viewer will show 3 axes in a specific point in space

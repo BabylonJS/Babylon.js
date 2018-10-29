@@ -1,11 +1,14 @@
-import { Observable, Tools } from "Tools";
+import { Tools } from "Tools/tools";
+import { Observable } from "Tools/observable";
 import { Nullable } from "types";
-import { Vector3, Color3 } from "Math";
-import { Mesh, AbstractMesh } from "Mesh";
-import { _TimeToken } from "Instrumentation";
+import { Vector3, Color3 } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Mesh } from "Mesh/mesh";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Gizmo, PlaneRotationGizmo } from "Gizmos";
-import { UtilityLayerRenderer } from "Rendering";
+import { Gizmo } from "./gizmo";
+import { PlaneRotationGizmo } from "./planeRotationGizmo";
+import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
     /**
      * Gizmo that enables rotating a mesh along 3 axis
      */

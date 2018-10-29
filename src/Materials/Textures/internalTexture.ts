@@ -1,8 +1,12 @@
-import { Observable } from "Tools";
+import { Observable } from "Tools/observable";
 import { Nullable, int } from "types";
-import { SphericalPolynomial } from "Math";
-import { Engine, RenderTargetCreationOptions } from "Engine";
-import { Texture, BaseTexture, IInternalTextureTracker, RawCubeTexture } from "Materials";
+import { SphericalPolynomial } from "Math/sphericalPolynomial";
+import { Engine, RenderTargetCreationOptions } from "Engine/engine";
+import { IInternalTextureTracker } from "Materials/Textures/internalTextureTracker";
+import { BaseTexture } from "Materials/Textures/baseTexture";
+import { Texture } from "Materials/Textures/texture";
+import { RawCubeTexture } from "Materials/Textures/rawCubeTexture";
+
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**

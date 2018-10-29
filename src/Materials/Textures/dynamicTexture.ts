@@ -1,10 +1,10 @@
 import { Tools } from "Tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { ISize } from "Math";
-import { Engine } from "Engine";
-import { Texture } from "Materials";
-import { _TimeToken } from "Instrumentation";
+import { ISize } from "Math/math";
+import { Engine } from "Engine/engine";
+import { Texture } from "Materials/Textures/texture";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * A class extending Texture allowing drawing on a texture

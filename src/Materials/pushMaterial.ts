@@ -2,7 +2,8 @@ import { Nullable } from "types";
 import { Scene } from "scene";
 import { Matrix } from "Math";
 import { Mesh, AbstractMesh } from "Mesh";
-import { Material, Effect } from "Materials";
+import { Material } from "Materials/material";
+import { Effect } from "Materials/effect";
     /**
      * Base class of materials working in push mode in babylon JS
      * @hidden

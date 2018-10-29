@@ -1,5 +1,7 @@
-import { Quaternion, Vector3, Vector2, Size, Color3, Matrix } from "Math";
-import { Animatable, Animation, AnimationEvent } from "Animations";
+import { Quaternion, Vector3, Vector2, Size, Color3, Matrix } from "Math/math";
+import { Animatable } from "./animatable";
+import { Animation, AnimationEvent } from "./animation";
+
 import { Scene } from "scene";
 
     // Static values to help the garbage collector

@@ -1,13 +1,21 @@
-import { serialize, Tools, SerializationHelper } from "Tools";
+import { serialize, SerializationHelper } from "Tools/decorators";
+import { Tools } from "Tools/tools";
 import { Nullable } from "types";
-import { Camera } from "Cameras";
+import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Vector2, Color4 } from "Math";
-import { Engine } from "Engine";
-import { Mesh, AbstractMesh, VertexBuffer, SubMesh } from "Mesh";
-import { RenderTargetTexture, Material, Texture, Effect } from "Materials";
-import { PostProcess, BlurPostProcess } from "PostProcess";
-import { EffectLayer } from "Layer";
+import { Vector2, Color4 } from "Math/math";
+import { Engine } from "Engine/engine";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { SubMesh } from "Mesh/subMesh";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Mesh } from "Mesh/mesh";
+import { Texture } from "Materials/Textures/texture";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { Effect } from "Materials/effect";
+import { Material } from "Materials/material";
+import { PostProcess } from "PostProcess/postProcess";
+import { BlurPostProcess } from "PostProcess/blurPostProcess";
+import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "abstractScene";
 
 declare module "abstractScene" {

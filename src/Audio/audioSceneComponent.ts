@@ -1,10 +1,12 @@
-import { Engine } from "Engine";
-import { Camera } from "Cameras";
-import { Sound, SoundTrack } from "Audio";
+import { Sound } from "./sound";
+import { SoundTrack } from "./soundTrack";
+
+import { Engine } from "Engine/engine";
+import { Camera } from "Cameras/camera";
 import { Nullable } from "types";
-import { Scene } from "scene";
-import { Matrix, Vector3 } from "Math";
+import { Matrix, Vector3 } from "Math/math";
 import { SceneComponentConstants, ISceneSerializableComponent } from "sceneComponent";
+import { Scene } from "scene";
 import { AbstractScene } from "abstractScene";
 import { AssetContainer } from "assetContainer";
 

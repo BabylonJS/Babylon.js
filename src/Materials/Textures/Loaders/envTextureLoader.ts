@@ -1,8 +1,9 @@
-import { EnvironmentTextureTools } from "Tools";
+import { EnvironmentTextureTools } from "Tools/environmentTextureTools";
 import { Nullable } from "types";
-import { Engine } from "Engine";
-import { IInternalTextureLoader, InternalTexture } from "Materials";
-import { _TimeToken } from "Instrumentation";
+import { Engine } from "Engine/engine";
+import { InternalTexture } from "Materials/Textures/internalTexture";
+import { IInternalTextureLoader } from "Materials/Textures/internalTextureLoader";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Implementation of the ENV Texture Loader.

@@ -1,6 +1,7 @@
 import { Nullable } from "types";
-import { Matrix, Vector3 } from "Math";
-import { Collider, SerializedMesh, SerializedGeometry, SerializedSubMesh, InitPayload, UpdatePayload, CollidePayload, WorkerReply, WorkerReplyType, WorkerTaskType, CollisionReplyPayload, BabylonMessage } from "Collisions";
+import { Matrix, Vector3 } from "Math/math";
+import { Collider } from "Collisions/collider";
+import { SerializedMesh, SerializedGeometry, SerializedSubMesh, InitPayload, UpdatePayload, CollidePayload, WorkerReply, WorkerReplyType, WorkerTaskType, CollisionReplyPayload, BabylonMessage } from "Collisions/collisionCoordinator";
 
 declare function importScripts(...urls: string[]): void;
 

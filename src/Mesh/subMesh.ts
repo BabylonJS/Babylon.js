@@ -459,6 +459,14 @@ import { Material, Effect, MaterialDefines, MultiMaterial } from "Materials";
             this._mesh.subMeshes.splice(index, 1);
         }
 
+        /**
+         * Gets the class name
+         * @returns the string "SubMesh".
+         */
+        public getClassName(): string {
+            return "SubMesh";
+        }
+
         // Statics
         /**
          * Creates a new submesh from indices data

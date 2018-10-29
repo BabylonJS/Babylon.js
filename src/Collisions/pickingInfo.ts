@@ -1,8 +1,9 @@
 import { Nullable, FloatArray } from "types";
-import { Vector3, Vector2, Tmp } from "Math";
-import { AbstractMesh, VertexBuffer } from "Mesh";
-import { Ray } from "Culling";
-import { Sprite } from "Sprites";
+import { Vector3, Vector2, Tmp } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { Ray } from "Culling/ray";
+import { Sprite } from "Sprites/sprite";
     /**
      * @hidden
      */

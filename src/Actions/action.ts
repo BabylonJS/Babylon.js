@@ -1,11 +1,12 @@
-import { Observable } from "Tools";
-import { Vector2, Vector3, Color3, Color4 } from "Math";
+import { Observable } from "Tools/observable";
+import { Vector2, Vector3, Color3, Color4 } from "Math/math";
 import { Scene } from "scene";
-import { Mesh } from "Mesh";
-import { Light } from "Lights";
-import { Camera } from "Cameras";
-import { Node } from "Node";
-import { ActionManager, Condition, ActionEvent } from "Actions";
+import { Mesh } from "Mesh/mesh";
+import { Light } from "Lights/light";
+import { Camera } from "Cameras/camera";
+import { Node } from "node";
+import { ActionManager, ActionEvent } from "./actionManager";
+import { Condition } from "./condition";
     /**
      * The action to be carried out following a trigger
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#available-actions

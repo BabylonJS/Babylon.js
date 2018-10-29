@@ -1,8 +1,8 @@
-import { Tools } from "Tools";
+import { Tools } from "../Tools/tools";
 import { Nullable, FloatArray, float } from "types";
-import { Scalar, ISize } from "Math";
-import { Engine } from "Engine";
-import { Ray } from "Culling";
+import { Scalar } from "Math/math.scalar";
+import { Engine } from "Engine/engine";
+import { Ray } from "Culling/ray";
     /**
      * Constant used to convert a value to gamma space
      * @ignorenaming

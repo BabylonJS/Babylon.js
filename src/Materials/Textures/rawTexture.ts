@@ -1,6 +1,6 @@
 import { Scene } from "scene";
-import { Engine } from "Engine";
-import { Texture } from "Materials";
+import { Engine } from "Engine/engine";
+import { Texture } from "Materials/Textures/texture";
     /**
      * Raw texture can help creating a texture directly from an array of data.
      * This can be super useful if you either get the data from an uncompressed source or

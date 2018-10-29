@@ -1,8 +1,9 @@
-import { Mesh } from "Mesh";
-import { PointerDragBehavior, Behavior } from "Behaviors";
-import { Vector3 } from "Math";
+import { Mesh } from "Mesh/mesh";
+import { Behavior } from "../behavior";
+import { PointerDragBehavior } from "./pointerDragBehavior";
+import { Vector3 } from "Math/math";
 import { Nullable } from "types";
-import { Observer } from "Tools";
+import { Observer } from "Tools/observable";
 import { Scene } from "scene";
 
     /**

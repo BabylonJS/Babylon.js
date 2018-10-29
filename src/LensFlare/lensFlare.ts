@@ -1,10 +1,10 @@
 import { Nullable } from "types";
-import { Color3 } from "Math";
-import { Engine } from "Engine";
-import { Texture } from "Materials";
-import { _TimeToken } from "Instrumentation";
+import { Color3 } from "Math/math";
+import { Engine } from "Engine/engine";
+import { Texture } from "Materials/Textures/texture";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { LensFlareSystem } from "LensFlare";
+import { LensFlareSystem } from "./lensFlareSystem";
     /**
      * This represents one of the lens effect in a `lensFlareSystem`.
      * It controls one of the indiviual texture used in the effect.

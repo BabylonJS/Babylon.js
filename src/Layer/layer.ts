@@ -1,14 +1,16 @@
-import { Observer, Observable } from "Tools";
+import { Observer, Observable } from "Tools/observable";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Vector2, Color4 } from "Math";
-import { Engine } from "Engine";
-import { VertexBuffer } from "Mesh";
-import { Material, Texture, Effect } from "Materials";
+import { Vector2, Color4 } from "Math/math";
+import { Engine } from "Engine/engine";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { Effect } from "Materials/effect";
+import { Material } from "Materials/material";
+import { Texture } from "Materials/Textures/texture";
 import { SceneComponentConstants } from "sceneComponent";
-import { _TimeToken } from "Instrumentation";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { LayerSceneComponent } from "Layer";
+import { LayerSceneComponent } from "./layerSceneComponent";
     /**
      * This represents a full screen 2d layer.
      * This can be usefull to display a picture in the  background of your scene for instance.

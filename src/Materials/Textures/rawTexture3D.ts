@@ -1,6 +1,6 @@
 import { Scene } from "scene";
-import { Engine } from "Engine";
-import { Texture } from "Materials";
+import { Engine } from "Engine/engine";
+import { Texture } from "Materials/Textures/texture";
     /**
      * Class used to store 3D textures containing user data
      */

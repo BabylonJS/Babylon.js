@@ -1,9 +1,14 @@
-import { Path2, Vector3, Quaternion, Vector2, Color3, Size, Scalar, Matrix } from "Math";
-import { IEasingFunction, RuntimeAnimation, EasingFunction, Animatable } from "Animations";
+import { Animatable } from "./animatable";
+import { IEasingFunction, EasingFunction } from "./easing";
+import { RuntimeAnimation } from "./runtimeAnimation";
+
+import { Path2, Vector3, Quaternion, Vector2, Color3, Size, Matrix } from "Math/math";
+import { Scalar } from "Math/math.scalar";
+
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { IAnimatable } from "Tools";
-import { Node } from "Node";
+import { IAnimatable } from "Tools/tools";
+import { Node } from "node";
 
     /**
      * Represents the range of an animation

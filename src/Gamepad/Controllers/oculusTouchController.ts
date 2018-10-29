@@ -1,10 +1,13 @@
-import { Observable } from "Tools";
+import { Observable } from "Tools/observable";
 import { Scene } from "scene";
-import { WebVRController, PoseEnabledControllerType, ExtendedGamepadButton, GamepadButtonChanges } from "Gamepad";
-import { AbstractMesh } from "Mesh";
-import { _TimeToken } from "Instrumentation";
-import { SceneLoader } from "Loading";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { _TimeToken } from "Instrumentation/timeToken";
+import { SceneLoader } from "Loading/sceneLoader";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+
+import { WebVRController } from "./webVRController";
+import { PoseEnabledControllerType, ExtendedGamepadButton } from "./poseEnabledController";
+import { GamepadButtonChanges } from "Gamepad/gamepad";
     /**
      * Oculus Touch Controller
      */

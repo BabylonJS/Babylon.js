@@ -1,9 +1,9 @@
-import { SmartArrayNoDuplicate } from "Tools";
+import { SmartArrayNoDuplicate } from "Tools/smartArray";
 import { Scene } from "scene";
-import { RenderTargetTexture } from "Materials";
-import { ShadowGenerator } from "Lights";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { ShadowGenerator } from "./shadowGenerator";
 import { SceneComponentConstants, ISceneSerializableComponent } from "sceneComponent";
-import { _TimeToken } from "Instrumentation";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { AbstractScene } from "abstractScene";
     // Adds the parser to the scene parsers.

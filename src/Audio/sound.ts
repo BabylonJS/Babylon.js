@@ -1,10 +1,12 @@
-import { Observable, Tools } from "Tools";
-import { Vector3, Tmp } from "Math";
+import { Tools } from "Tools/tools";
+import { Observable } from "Tools/observable";
+import { Vector3, Tmp } from "Math/math";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Engine } from "Engine";
-import { AudioSceneComponent } from "Audio";
-import { TransformNode, AbstractMesh } from "Mesh";
+import { Engine } from "Engine/engine";
+import { AudioSceneComponent } from "Audio/audioSceneComponent";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { TransformNode } from "Mesh/transformNode";
 import { SceneComponentConstants } from "sceneComponent";
 
     /**

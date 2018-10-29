@@ -1,14 +1,21 @@
-import { Observable, Tools } from "Tools";
+import { Tools } from "Tools/tools";
+import { Observable } from "Tools/observable";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Quaternion, Vector3 } from "Math";
-import { WebVRController, PoseEnabledController, StickValues, PoseEnabledControllerType, ExtendedGamepadButton, GamepadButtonChanges, GenericController } from "Gamepad";
-import { Node } from "Node";
-import { Mesh, AbstractMesh, TransformNode } from "Mesh";
-import { Ray } from "Culling";
-import { _TimeToken } from "Instrumentation";
-import { SceneLoader } from "Loading";
+import { Quaternion, Vector3 } from "Math/math";
+import { Node } from "node";
+import { Mesh } from "Mesh/mesh";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { TransformNode } from "Mesh/transformNode";
+import { Ray } from "Culling/ray";
+import { _TimeToken } from "Instrumentation/timeToken";
+import { SceneLoader } from "Loading/sceneLoader";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+
+import { WebVRController } from "./webVRController";
+import { GenericController } from "./genericController";
+import { PoseEnabledController, PoseEnabledControllerType, ExtendedGamepadButton } from "./poseEnabledController";
+import { StickValues, GamepadButtonChanges } from "Gamepad/gamepad";
     /**
      * Defines the LoadedMeshInfo object that describes information about the loaded webVR controller mesh
      */

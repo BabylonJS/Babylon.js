@@ -1,5 +1,7 @@
-import { Action, Condition } from "Actions";
-import { Sound } from "Audio";
+import { Action } from "./action";
+import { Condition } from "./condition";
+
+import { Sound } from "Audio/sound";
 
     /**
      * This defines an action helpful to play a defined sound on a triggered action.

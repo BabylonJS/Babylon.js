@@ -1,12 +1,15 @@
-import { Behavior } from "Behaviors";
-import { ArcRotateCamera, Camera } from "Cameras";
-import { ExponentialEase, EasingFunction } from "Animations";
+import { Behavior } from "Behaviors/behavior";
+import { Camera } from "Cameras/camera";
+import { ArcRotateCamera } from "Cameras/arcRotateCamera";
+import { ExponentialEase, EasingFunction } from "Animations/easing";
 import { Nullable } from "types";
-import { PointerInfoPre, PointerEventTypes } from "Events";
-import { Observer, Tools } from "Tools";
-import { AbstractMesh } from "Mesh";
-import { Vector3, Vector2 } from "Math";
-import { Animation, Animatable } from "Animations";
+import { PointerInfoPre, PointerEventTypes } from "Events/pointerEvents";
+import { Tools } from "Tools/tools";
+import { Observer } from "Tools/observable";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Vector3, Vector2 } from "Math/math";
+import { Animatable } from "Animations/animatable";
+import { Animation } from "Animations/animation";
 
     /**
      * The framing behavior (FramingBehavior) is designed to automatically position an ArcRotateCamera when its target is set to a mesh. It is also useful if you want to prevent the camera to go under a virtual horizontal plane.

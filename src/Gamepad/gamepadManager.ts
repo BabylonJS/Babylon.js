@@ -1,9 +1,13 @@
-﻿import { Observable, Tools } from "Tools";
+﻿import { Tools } from "Tools/tools";
+import { Observable } from "Tools/observable";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Gamepad, Xbox360Pad, PoseEnabledControllerHelper, GenericPad } from "Gamepad";
-import { _TimeToken } from "Instrumentation";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+
+import { PoseEnabledControllerHelper } from "Gamepad/Controllers/poseEnabledController";
+import { Xbox360Pad } from "./xboxGamepad";
+import { Gamepad, GenericPad } from "./gamepad";
     /**
      * Manager for handling gamepads
      */

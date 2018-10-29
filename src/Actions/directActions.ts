@@ -1,6 +1,9 @@
-import { Action, Condition, ActionManager, ActionEvent } from "Actions";
-import { Tools } from "Tools";
-import { Vector3 } from "Math";
+import { Action } from "./action";
+import { Condition } from "./condition";
+import { ActionManager, ActionEvent } from "./actionManager";
+
+import { Tools } from "Tools/tools";
+import { Vector3 } from "Math/math";
 
     /**
      * This defines an action responsible to toggle a boolean once triggered.

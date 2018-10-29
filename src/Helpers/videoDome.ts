@@ -1,8 +1,12 @@
 import { Scene } from "scene";
-import { Mesh, TransformNode } from "Mesh";
-import { Texture, VideoTexture, BackgroundMaterial, VideoTextureSettings } from "Materials";
-import { _TimeToken } from "Instrumentation";
+import { TransformNode } from "Mesh/transformNode";
+import { Mesh } from "Mesh/mesh";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Texture } from "Materials/Textures/texture";
+import { VideoTexture, VideoTextureSettings } from "Materials/Textures/videoTexture";
+import { BackgroundMaterial } from "Materials/Background/backgroundMaterial";
+
     /**
      * Display a 360 degree video on an approximately spherical surface, useful for VR applications or skyboxes.
      * As a subclass of TransformNode, this allow parenting to the camera or multiple videos with different locations in the scene.

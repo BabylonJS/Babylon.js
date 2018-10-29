@@ -1,11 +1,14 @@
-import { serialize, Tools, SerializationHelper } from "Tools";
+import { serialize, SerializationHelper } from "Tools/decorators";
+import { Tools } from "Tools/tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Vector3 } from "Math";
-import { Engine } from "Engine";
-import { Material, Texture, BaseTexture } from "Materials";
-import { Animation } from "Animations";
-import { _TimeToken } from "Instrumentation";
+import { Matrix, Vector3 } from "Math/math";
+import { Engine } from "Engine/engine";
+import { Material } from "Materials/material";
+import { BaseTexture } from "Materials/Textures/baseTexture";
+import { Texture } from "Materials/Textures/texture";
+import { Animation } from "Animations/animation";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Class for creating a cube texture

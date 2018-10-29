@@ -1,11 +1,16 @@
-import { serialize, Observer, Observable, Tools, SerializationHelper, CubeMapToSphericalPolynomialTools } from "Tools";
+import { serialize, SerializationHelper } from "Tools/decorators";
+import { Observer, Observable } from "Tools/observable";
+import { Tools } from "Tools/tools";
+import { CubeMapToSphericalPolynomialTools } from "Tools/HDR/cubemapToSphericalPolynomial";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Size, ISize, SphericalPolynomial } from "Math";
-import { Engine } from "Engine";
-import { Material, Texture, InternalTexture } from "Materials";
-import { Animation } from "Animations";
-import { _TimeToken } from "Instrumentation";
+import { Matrix, Size, ISize } from "Math/math";
+import { SphericalPolynomial } from "Math/sphericalPolynomial";
+import { Engine } from "Engine/engine";
+import { Material } from "Materials/material";
+import { InternalTexture } from "Materials/Textures/internalTexture";
+import { Animation } from "Animations/animation";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Base class of all the textures in babylon.
@@ -71,7 +76,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         public coordinatesIndex = 0;
 
         @serialize("coordinatesMode")
-        private _coordinatesMode = Texture.EXPLICIT_MODE;
+        private _coordinatesMode = Engine.TEXTURE_EXPLICIT_MODE;
 
         /**
         * How a texture is mapped.
@@ -110,7 +115,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         * | 2     | MIRROR_ADDRESSMODE |             |
         */
         @serialize()
-        public wrapU = Texture.WRAP_ADDRESSMODE;
+        public wrapU = Engine.TEXTURE_WRAP_ADDRESSMODE;
 
         /**
         * | Value | Type               | Description |
@@ -120,7 +125,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         * | 2     | MIRROR_ADDRESSMODE |             |
         */
         @serialize()
-        public wrapV = Texture.WRAP_ADDRESSMODE;
+        public wrapV = Engine.TEXTURE_WRAP_ADDRESSMODE;
 
         /**
         * | Value | Type               | Description |
@@ -130,7 +135,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         * | 2     | MIRROR_ADDRESSMODE |             |
         */
         @serialize()
-        public wrapR = Texture.WRAP_ADDRESSMODE;
+        public wrapR = Engine.TEXTURE_WRAP_ADDRESSMODE;
 
         /**
          * With compliant hardware and browser (supporting anisotropic filtering)
@@ -636,7 +641,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
                     }
                 }
                 else {
-                    var onLoadObservable = (texture as any).onLoadObservable as Observable<Texture>;
+                    var onLoadObservable = (texture as any).onLoadObservable as Observable<BaseTexture>;
 
                     let onLoadCallback = () => {
                         onLoadObservable.removeCallback(onLoadCallback);

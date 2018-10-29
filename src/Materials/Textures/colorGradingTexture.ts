@@ -1,8 +1,9 @@
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix } from "Math";
-import { Engine } from "Engine";
-import { Texture, InternalTexture, BaseTexture } from "Materials";
+import { Matrix } from "Math/math";
+import { Engine } from "Engine/engine";
+import { InternalTexture } from "Materials/Textures/internalTexture";
+import { BaseTexture } from "Materials/Textures/baseTexture";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
@@ -51,9 +52,9 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
             this.hasAlpha = false;
             this.isCube = false;
             this.is3D = this._engine.webGLVersion > 1;
-            this.wrapU = Texture.CLAMP_ADDRESSMODE;
-            this.wrapV = Texture.CLAMP_ADDRESSMODE;
-            this.wrapR = Texture.CLAMP_ADDRESSMODE;
+            this.wrapU = Engine.TEXTURE_CLAMP_ADDRESSMODE;
+            this.wrapV = Engine.TEXTURE_CLAMP_ADDRESSMODE;
+            this.wrapR = Engine.TEXTURE_CLAMP_ADDRESSMODE;
 
             this.anisotropicFilteringLevel = 1;
 
@@ -83,10 +84,10 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
             var engine = this._engine;
             var texture: InternalTexture;
             if (engine.webGLVersion === 1) {
-                texture = engine.createRawTexture(null, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.BILINEAR_SAMPLINGMODE);
+                texture = engine.createRawTexture(null, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Engine.TEXTURE_BILINEAR_SAMPLINGMODE);
             }
             else {
-                texture = engine.createRawTexture3D(null, 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.BILINEAR_SAMPLINGMODE);
+                texture = engine.createRawTexture3D(null, 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Engine.TEXTURE_BILINEAR_SAMPLINGMODE);
             }
 
             this._texture = texture;

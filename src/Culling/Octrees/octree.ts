@@ -1,7 +1,9 @@
-import { SmartArray, SmartArrayNoDuplicate } from "Tools";
-import { Vector3, Plane } from "Math";
-import { AbstractMesh, SubMesh } from "Mesh";
-import { Ray, OctreeBlock } from "Culling";
+import { SmartArray, SmartArrayNoDuplicate } from "Tools/smartArray";
+import { Vector3, Plane } from "Math/math";
+import { SubMesh } from "Mesh/subMesh";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Ray } from "Culling/ray";
+import { OctreeBlock } from "./octreeBlock";
     /**
      * Contains an array of blocks representing the octree
      */

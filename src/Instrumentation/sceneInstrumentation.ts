@@ -1,8 +1,9 @@
-import { Observer, Tools, PerfCounter } from "Tools";
+import { Tools, PerfCounter } from "Tools/tools";
+import { Observer } from "Tools/observable";
 import { Nullable } from "types";
-import { Camera } from "Cameras";
+import { Camera } from "Cameras/camera";
 import { Scene, IDisposable } from "scene";
-import { _TimeToken } from "Instrumentation";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * This class can be used to get instrumentation data from a Babylon engine

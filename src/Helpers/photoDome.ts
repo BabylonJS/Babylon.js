@@ -1,9 +1,11 @@
-import { Observable } from "Tools";
+import { Observable } from "Tools/observable";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Mesh, TransformNode } from "Mesh";
-import { Texture, BackgroundMaterial } from "Materials";
-import { _TimeToken } from "Instrumentation";
+import { TransformNode } from "Mesh/transformNode";
+import { Mesh } from "Mesh/mesh";
+import { Texture } from "Materials/Textures/texture";
+import { BackgroundMaterial } from "Materials/Background/backgroundMaterial";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Display a 360 degree photo on an approximately spherical surface, useful for VR applications or skyboxes.

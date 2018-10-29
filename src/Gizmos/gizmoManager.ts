@@ -1,15 +1,21 @@
-import { Observer } from "Tools";
+import { Observer } from "Tools/observable";
 import { Nullable } from "types";
-import { PointerInfo, PointerEventTypes } from "Events";
+import { PointerInfo, PointerEventTypes } from "Events/pointerEvents";
 import { Scene, IDisposable } from "scene";
-import { Node } from "Node";
-import { AbstractMesh } from "Mesh";
-import { _TimeToken } from "Instrumentation";
+import { Node } from "node";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Gizmo, RotationGizmo, PositionGizmo, ScaleGizmo, BoundingBoxGizmo } from "Gizmos";
-import { UtilityLayerRenderer } from "Rendering";
-import { Color3 } from "Math";
-import { SixDofDragBehavior } from "Behaviors";
+import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
+import { Color3 } from "Math/math";
+import { SixDofDragBehavior } from "Behaviors/Mesh/sixDofDragBehavior";
+
+import { Gizmo } from "./gizmo";
+import { RotationGizmo } from "./rotationGizmo";
+import { PositionGizmo } from "./positionGizmo";
+import { ScaleGizmo } from "./scaleGizmo";
+import { BoundingBoxGizmo } from "./boundingBoxGizmo";
+
     /**
      * Helps setup gizmo's in the scene to rotate/scale/position meshes
      */

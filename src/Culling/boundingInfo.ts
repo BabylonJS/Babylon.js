@@ -1,8 +1,11 @@
-import { Tools } from "Tools";
-import { Matrix, Vector3, Plane } from "Math";
-import { AbstractMesh } from "Mesh";
-import { Collider } from "Collisions";
-import { ICullable, BoundingBox, BoundingSphere } from "Culling";
+import { Tools } from "Tools/tools";
+import { Matrix, Vector3, Plane } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Collider } from "Collisions/collider";
+
+import { BoundingBox } from "./boundingBox";
+import { BoundingSphere } from "./boundingSphere";
+
     const _result0 = { min: 0, max: 0};
     const _result1 = { min: 0, max: 0};
     const computeBoxExtents = (axis: Readonly<Vector3>, box: Readonly<BoundingBox>, result: {min: number, max: number}) => {

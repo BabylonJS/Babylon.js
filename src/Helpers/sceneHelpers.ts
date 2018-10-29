@@ -1,12 +1,19 @@
-import { Tools } from "Tools";
+import { Tools } from "Tools/tools";
 import { Nullable } from "types";
-import { FreeCamera, ArcRotateCamera, TargetCamera, WebXRExperienceHelper, VRExperienceHelperOptions, VRExperienceHelper, WebXRManagedOutputCanvas, WebXRInput, WebXREnterExitUI } from "Cameras";
 import { Scene } from "scene";
-import { Vector3 } from "Math";
-import { Mesh } from "Mesh";
+import { Vector3 } from "Math/math";
+import { Mesh } from "Mesh/mesh";
 import { StandardMaterial, Texture, BaseTexture, PBRMaterial } from "Materials";
-import { HemisphericLight } from "Lights";
+import { HemisphericLight } from "Lights/hemisphericLight";
 import { IEnvironmentHelperOptions, EnvironmentHelper } from "./environmentHelper";
+import { FreeCamera } from "Cameras/freeCamera";
+import { ArcRotateCamera } from "Cameras/arcRotateCamera";
+import { TargetCamera } from "Cameras/targetCamera";
+import { WebXRManagedOutputCanvas } from "Cameras/XR/webXRManagedOutputCanvas";
+import { WebXRInput } from "Cameras/XR/webXRInput";
+import { WebXREnterExitUI } from "Cameras/XR/webXREnterExitUI";
+import { WebXRExperienceHelper } from "Cameras/XR/webXRExperienceHelper";
+import { VRExperienceHelperOptions, VRExperienceHelper } from "Cameras/VR/vrExperienceHelper";
 
 declare module "scene" {
     export interface Scene {

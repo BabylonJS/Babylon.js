@@ -1,4 +1,5 @@
-import { ActionManager, Action } from "Actions";
+import { ActionManager } from "./actionManager";
+import { Action } from "./action";
 
     /**
      * A Condition applied to an Action

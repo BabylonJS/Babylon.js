@@ -1,10 +1,12 @@
 import { Nullable } from "types";
-import { FreeCameraGamepadInput, FreeCameraInputsManager, ArcRotateCameraInputsManager, ArcRotateCameraGamepadInput } from "Cameras";
 import { Scene } from "scene";
-import { GamepadManager } from "Gamepad";
 import { SceneComponentConstants, ISceneComponent } from "sceneComponent";
-import { _TimeToken } from "Instrumentation";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+
+import { GamepadManager } from "./gamepadManager";
+
+import { FreeCameraGamepadInput, FreeCameraInputsManager, ArcRotateCameraInputsManager, ArcRotateCameraGamepadInput } from "Cameras";
 
 declare module "scene" {
     export interface Scene {

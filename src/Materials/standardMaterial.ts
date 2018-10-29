@@ -5,6 +5,9 @@ import { Matrix, Color3 } from "Math";
 import { Engine } from "Engine";
 import { Mesh, AbstractMesh, VertexBuffer, SubMesh } from "Mesh";
 import { ImageProcessingConfiguration, RenderTargetTexture, Material, Texture, BaseTexture, CubeTexture, MaterialHelper, IImageProcessingConfigurationDefines, PushMaterial, ColorCurves, EffectFallbacks, EffectCreationOptions, MaterialDefines, FresnelParameters } from "Materials";
+import "Shaders/default.fragment";
+import "Shaders/default.vertex";
+
     /** @hidden */
     export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         public MAINUV1 = false;

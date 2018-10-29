@@ -1,13 +1,14 @@
-import { serialize } from "Tools";
-import { Camera } from "Cameras";
+import { serialize } from "Tools/decorators";
+import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Matrix, Vector3 } from "Math";
-import { Node } from "Node";
-import { AbstractMesh } from "Mesh";
-import { ShadowLight, Light } from "Lights";
-import { _TimeToken } from "Instrumentation";
+import { Matrix, Vector3 } from "Math/math";
+import { Node } from "node";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Light } from "./light";
+import { ShadowLight } from "./shadowLight";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Effect } from "Materials";
+import { Effect } from "Materials/effect";
     Node.AddNodeConstructor("Light_Type_1", (name, scene) => {
         return () => new DirectionalLight(name, Vector3.Zero(), scene);
     });

@@ -1,9 +1,10 @@
-import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "Tools";
+import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "Tools/decorators";
 import { Scene } from "scene";
-import { Color3 } from "Math";
-import { BaseTexture, PBRBaseSimpleMaterial } from "Materials";
-import { _TimeToken } from "Instrumentation";
+import { Color3 } from "Math/math";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { BaseTexture } from "Materials/Textures/baseTexture";
+import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
     /**
      * The PBR material of BJS following the specular glossiness convention.
      *

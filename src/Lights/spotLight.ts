@@ -1,13 +1,16 @@
-import { serialize, serializeAsTexture } from "Tools";
+import { serialize, serializeAsTexture } from "Tools/decorators";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Vector3 } from "Math";
-import { Node } from "Node";
-import { AbstractMesh } from "Mesh";
-import { Effect, BaseTexture } from "Materials";
-import { ShadowLight, Light } from "Lights";
-import { _TimeToken } from "Instrumentation";
+import { Matrix, Vector3 } from "Math/math";
+import { Node } from "node";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Effect } from "Materials/effect";
+import { BaseTexture } from "Materials/Textures/baseTexture";
+import { Light } from "./light";
+import { ShadowLight } from "./shadowLight";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+
     Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
         return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
     });

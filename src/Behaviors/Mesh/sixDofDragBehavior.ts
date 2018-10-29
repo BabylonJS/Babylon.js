@@ -1,13 +1,13 @@
-import { Behavior } from "Behaviors";
-import { Mesh, AbstractMesh } from "Mesh";
+import { Behavior } from "Behaviors/behavior";
+import { Mesh } from "Mesh/mesh";
+import { AbstractMesh } from "Mesh/abstractMesh";
 import { Scene } from "scene";
-import { Nullable, PointerEventTypes } from "index";
-import { Vector3, Quaternion } from "Math";
-import { PointerInfo } from "Events";
-import { Observer, Observable } from "Tools";
-import { BoundingBoxGizmo } from "Gizmos";
-import { Camera } from "Cameras";
-import { Matrix } from "Math";
+import { Nullable } from "types";
+import { PointerInfo, PointerEventTypes } from "Events/pointerEvents";
+import { Vector3, Quaternion, Matrix } from "Math/math";
+import { Observer, Observable } from "Tools/observable";
+import { BoundingBoxGizmo } from "Gizmos/boundingBoxGizmo";
+import { Camera } from "Cameras/camera";
     /**
      * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
      */

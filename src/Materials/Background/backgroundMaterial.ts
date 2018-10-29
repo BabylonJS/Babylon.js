@@ -1,13 +1,20 @@
-import { serialize, Observer, Tools, SmartArray, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture, serializeAsVector3, serializeAsImageProcessingConfiguration } from "Tools";
+import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture, serializeAsVector3, serializeAsImageProcessingConfiguration } from "Tools/decorators";
+import { Observer, Tools, SmartArray, SerializationHelper } from "Tools";
 import { Nullable, int, float } from "types";
 import { Scene } from "scene";
 import { Matrix, Vector3, Color3, Vector4 } from "Math";
 import { Engine } from "Engine";
 import { Mesh, AbstractMesh, VertexBuffer, SubMesh } from "Mesh";
-import { StandardMaterial, ImageProcessingConfiguration, RenderTargetTexture, Texture, Effect, BaseTexture, MaterialHelper, IImageProcessingConfigurationDefines, PushMaterial, ColorCurves, EffectFallbacks, EffectCreationOptions, MaterialDefines } from "Materials";
+import { MaterialDefines } from "../material";
+import { PushMaterial } from "../pushMaterial";
+import { StandardMaterial, ImageProcessingConfiguration, RenderTargetTexture, Texture, Effect, BaseTexture, MaterialHelper, IImageProcessingConfigurationDefines, ColorCurves, EffectFallbacks, EffectCreationOptions } from "Materials";
 import { IShadowLight } from "Lights";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+
+import "Shaders/background.fragment";
+import "Shaders/background.vertex";
+
     /**
      * Background material defines definition.
      * @hidden Mainly internal Use

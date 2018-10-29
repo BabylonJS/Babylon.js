@@ -1,13 +1,36 @@
-import { serialize, Observer, Tools, SmartArray, serializeAsImageProcessingConfiguration, TextureTools, IAnimatable } from "Tools";
+import { serialize, serializeAsImageProcessingConfiguration } from "Tools/decorators";
+import { Observer } from "Tools/observable";
+import { Tools, IAnimatable } from "Tools/tools";
+import { SmartArray } from "Tools/smartArray";
+import { TextureTools } from "Tools/textureTools";
 import { Nullable } from "types";
-import { Camera } from "Cameras";
+import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Matrix, Color3, Vector4 } from "Math";
-import { Engine } from "Engine";
-import { Mesh, AbstractMesh, VertexBuffer, SubMesh } from "Mesh";
-import { StandardMaterial, ImageProcessingConfiguration, RenderTargetTexture, Material, Texture, Effect, BaseTexture, CubeTexture, MaterialHelper, IImageProcessingConfigurationDefines, PushMaterial, EffectFallbacks, EffectCreationOptions, MaterialDefines, PBRMaterial } from "Materials";
-import { _TimeToken } from "Instrumentation";
+import { Matrix, Color3, Vector4, Tmp } from "Math/math";
+import { Engine } from "Engine/engine";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { SubMesh } from "Mesh/subMesh";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Mesh } from "Mesh/mesh";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+
+import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "Materials/imageProcessingConfiguration";
+import { Effect, EffectFallbacks, EffectCreationOptions } from "Materials/effect";
+import { Material, MaterialDefines } from "Materials/material";
+import { PushMaterial } from "Materials/pushMaterial";
+import { MaterialHelper } from "Materials/materialHelper";
+
+import { BaseTexture } from "Materials/Textures/baseTexture";
+import { Texture } from "Materials/Textures/texture";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { CubeTexture } from "Materials/Textures/cubeTexture";
+
+import { StandardMaterial } from "Materials/standardMaterial";
+
+import "Shaders/pbr.fragment";
+import "Shaders/pbr.vertex";
+
     /**
      * Manages the defines for the PBR Material.
      * @hiddenChildren
@@ -181,6 +204,33 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
      */
     export abstract class PBRBaseMaterial extends PushMaterial {
         /**
+         * PBRMaterialTransparencyMode: No transparency mode, Alpha channel is not use.
+         */
+        public static readonly PBRMATERIAL_OPAQUE = 0;
+
+        /**
+         * PBRMaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
+         */
+        public static readonly PBRMATERIAL_ALPHATEST = 1;
+
+        /**
+         * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+         */
+        public static readonly PBRMATERIAL_ALPHABLEND = 2;
+
+        /**
+         * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+         * They are also discarded below the alpha cutoff threshold to improve performances.
+         */
+        public static readonly PBRMATERIAL_ALPHATESTANDBLEND = 3;
+
+        /**
+         * Defines the default value of how much AO map is occluding the analytical lights
+         * (point spot...).
+         */
+        public static DEFAULT_AO_ON_ANALYTICAL_LIGHTS = 1;
+
+        /**
          * PBRMaterialLightFalloff Physical: light is falling off following the inverse squared distance law.
          */
         public static readonly LIGHTFALLOFF_PHYSICAL = 0;
@@ -196,11 +246,6 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * to enhance interoperability with other materials.
          */
         public static readonly LIGHTFALLOFF_STANDARD = 2;
-
-        /**
-         * Stores the reflectivity values based on metallic roughness workflow.
-         */
-        private static _scaledReflectivity = new Color3();
 
         /**
          * Intensity of the direct lights e.g. the four lights available in your scene.
@@ -256,7 +301,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * 1 means it completely occludes it
          * 0 mean it has no impact
          */
-        protected _ambientTextureImpactOnAnalyticalLights: number = PBRMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
+        protected _ambientTextureImpactOnAnalyticalLights: number = PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
 
         /**
          * Stores the alpha values in a texture.
@@ -687,7 +732,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
             this._transparencyMode = value;
 
-            this._forceAlphaTest = (value === PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND);
+            this._forceAlphaTest = (value === PBRBaseMaterial.PBRMATERIAL_ALPHATESTANDBLEND);
 
             this._markAllSubMeshesAsTexturesAndMiscDirty();
         }
@@ -697,8 +742,8 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          */
         private get _disableAlphaBlending(): boolean {
             return (this._linkRefractionWithTransparency ||
-                this._transparencyMode === PBRMaterial.PBRMATERIAL_OPAQUE ||
-                this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHATEST);
+                this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_OPAQUE ||
+                this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_ALPHATEST);
         }
 
         /**
@@ -736,14 +781,14 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
                 return false;
             }
 
-            return this._albedoTexture != null && this._albedoTexture.hasAlpha && (this._transparencyMode == null || this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHATEST);
+            return this._albedoTexture != null && this._albedoTexture.hasAlpha && (this._transparencyMode == null || this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_ALPHATEST);
         }
 
         /**
          * Specifies whether or not the alpha value of the albedo texture should be used for alpha blending.
          */
         protected _shouldUseAlphaFromAlbedoTexture(): boolean {
-            return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== PBRMaterial.PBRMATERIAL_OPAQUE;
+            return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE;
         }
 
         /**
@@ -1331,7 +1376,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane);
 
             // Attribs
-            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== PBRMaterial.PBRMATERIAL_OPAQUE);
+            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE);
         }
 
         /**
@@ -1574,9 +1619,9 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
                     // Colors
                     if (defines.METALLICWORKFLOW) {
-                        PBRMaterial._scaledReflectivity.r = (this._metallic === undefined || this._metallic === null) ? 1 : this._metallic;
-                        PBRMaterial._scaledReflectivity.g = (this._roughness === undefined || this._roughness === null) ? 1 : this._roughness;
-                        this._uniformBuffer.updateColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, 0);
+                        Tmp.Color3[0].r = (this._metallic === undefined || this._metallic === null) ? 1 : this._metallic;
+                        Tmp.Color3[0].g = (this._roughness === undefined || this._roughness === null) ? 1 : this._roughness;
+                        this._uniformBuffer.updateColor4("vReflectivityColor", Tmp.Color3[0], 0);
                     }
                     else {
                         this._uniformBuffer.updateColor4("vReflectivityColor", this._reflectivityColor, this._microSurface);

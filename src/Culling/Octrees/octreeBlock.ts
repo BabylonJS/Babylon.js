@@ -1,6 +1,8 @@
-import { SmartArrayNoDuplicate } from "Tools";
-import { Vector3, Plane } from "Math";
-import { Ray, BoundingBox, Octree } from "Culling";
+import { SmartArrayNoDuplicate } from "Tools/smartArray";
+import { Vector3, Plane } from "Math/math";
+import { Ray } from "Culling/ray";
+import { BoundingBox } from "Culling/boundingBox";
+import { Octree } from "./octree";
     /**
      * Class used to store a cell in an octree
      * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
