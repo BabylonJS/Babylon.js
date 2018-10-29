@@ -29,7 +29,7 @@ module BABYLON {
          * @param intersectionTreshold extra extend to be added to the box in all direction
          * @returns if the box was hit
          */
-        public intersectsBoxMinMax(minimum: Vector3, maximum: Vector3, intersectionTreshold: number = 0): boolean {
+        public intersectsBoxMinMax(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, intersectionTreshold: number = 0): boolean {
             const newMinimum = Ray.TmpVector3[0].copyFromFloats(minimum.x - intersectionTreshold, minimum.y - intersectionTreshold, minimum.z - intersectionTreshold);
             const newMaximum = Ray.TmpVector3[1].copyFromFloats(maximum.x + intersectionTreshold, maximum.y + intersectionTreshold, maximum.z + intersectionTreshold);
             var d = 0.0;
@@ -129,7 +129,7 @@ module BABYLON {
          * @param intersectionTreshold extra extend to be added to the BoundingBox in all direction
          * @returns if the box was hit
          */
-        public intersectsBox(box: BoundingBox, intersectionTreshold: number = 0): boolean {
+        public intersectsBox(box: DeepImmutable<BoundingBox>, intersectionTreshold: number = 0): boolean {
             return this.intersectsBoxMinMax(box.minimum, box.maximum, intersectionTreshold);
         }
 
@@ -139,7 +139,7 @@ module BABYLON {
          * @param intersectionTreshold extra extend to be added to the BoundingSphere in all direction
          * @returns true if it hits the sphere
          */
-        public intersectsSphere(sphere: BoundingSphere, intersectionTreshold: number = 0): boolean {
+        public intersectsSphere(sphere: DeepImmutable<BoundingSphere>, intersectionTreshold: number = 0): boolean {
             var x = sphere.center.x - this.origin.x;
             var y = sphere.center.y - this.origin.y;
             var z = sphere.center.z - this.origin.z;
@@ -168,7 +168,7 @@ module BABYLON {
          * @param vertex2 triangle vertex
          * @returns intersection information if hit
          */
-        public intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo> {
+        public intersectsTriangle(vertex0: DeepImmutable<Vector3>, vertex1: DeepImmutable<Vector3>, vertex2: DeepImmutable<Vector3>): Nullable<IntersectionInfo> {
             const edge1 = Ray.TmpVector3[0];
             const edge2 = Ray.TmpVector3[1];
             const pvec = Ray.TmpVector3[2];
@@ -216,7 +216,7 @@ module BABYLON {
          * @param plane the plane to check
          * @returns the distance away it was hit
          */
-        public intersectsPlane(plane: Plane): Nullable<number> {
+        public intersectsPlane(plane: DeepImmutable<Plane>): Nullable<number> {
             var distance: number;
             var result1 = Vector3.Dot(plane.normal, this.direction);
             if (Math.abs(result1) < 9.99999997475243E-07) {
@@ -243,7 +243,7 @@ module BABYLON {
          * @param fastCheck if only the bounding box should checked
          * @returns picking info of the intersecton
          */
-        public intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo {
+        public intersectsMesh(mesh: DeepImmutable<AbstractMesh>, fastCheck?: boolean): PickingInfo {
 
             var tm = Tmp.Matrix[0];
 
@@ -266,7 +266,7 @@ module BABYLON {
          * @param results array to store result in
          * @returns Array of picking infos
          */
-        public intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo> {
+        public intersectsMeshes(meshes: Array<DeepImmutable<AbstractMesh>>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo> {
 
             if (results) {
                 results.length = 0;
@@ -288,7 +288,7 @@ module BABYLON {
 
         }
 
-        private _comparePickingInfo(pickingInfoA: PickingInfo, pickingInfoB: PickingInfo): number {
+        private _comparePickingInfo(pickingInfoA: DeepImmutable<PickingInfo>, pickingInfoB: DeepImmutable<PickingInfo>): number {
 
             if (pickingInfoA.distance < pickingInfoB.distance) {
                 return -1;
@@ -310,7 +310,7 @@ module BABYLON {
          * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
          * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
          */
-        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number {
+        intersectionSegment(sega: DeepImmutable<Vector3>, segb: DeepImmutable<Vector3>, threshold: number): number {
             const o = this.origin;
             const u =  Tmp.Vector3[0];
             const rsegb  = Tmp.Vector3[1];
@@ -408,7 +408,7 @@ module BABYLON {
          * @param projection projection matrix
          * @returns this ray updated
          */
-        public update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Readonly<Matrix>, view: Readonly<Matrix>, projection: Readonly<Matrix>): Ray {
+        public update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Ray {
             Vector3.UnprojectRayToRef(x, y, viewportWidth, viewportHeight, world, view, projection, this);
             return this;
         }
@@ -433,7 +433,7 @@ module BABYLON {
          * @param projection projection matrix
          * @returns new ray
          */
-        public static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray {
+        public static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Ray {
             let result = Ray.Zero();
 
             return result.update(x, y, viewportWidth, viewportHeight, world, view, projection);
@@ -447,7 +447,7 @@ module BABYLON {
         * @param world a matrix to transform the ray to. Default is the identity matrix.
         * @returns the new ray
         */
-        public static CreateNewFromTo(origin: Vector3, end: Vector3, world: Readonly<Matrix> = Matrix.IdentityReadOnly): Ray {
+        public static CreateNewFromTo(origin: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, world: DeepImmutable<Matrix> = Matrix.IdentityReadOnly): Ray {
             var direction = end.subtract(origin);
             var length = Math.sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
             direction.normalize();
@@ -461,7 +461,7 @@ module BABYLON {
          * @param matrix matrix to apply
          * @returns the resulting new ray
          */
-        public static Transform(ray: Ray, matrix: Readonly<Matrix>): Ray {
+        public static Transform(ray: DeepImmutable<Ray>, matrix: DeepImmutable<Matrix>): Ray {
             var result = new Ray(new Vector3(0, 0, 0), new Vector3(0, 0, 0));
             Ray.TransformToRef(ray, matrix, result);
 
@@ -474,7 +474,7 @@ module BABYLON {
          * @param matrix matrix to apply
          * @param result ray to store result in
          */
-        public static TransformToRef(ray: Ray, matrix: Readonly<Matrix>, result: Ray): void {
+        public static TransformToRef(ray: DeepImmutable<Ray>, matrix: DeepImmutable<Matrix>, result: Ray): void {
             Vector3.TransformCoordinatesToRef(ray.origin, matrix, result.origin);
             Vector3.TransformNormalToRef(ray.direction, matrix, result.direction);
             result.length = ray.length;
