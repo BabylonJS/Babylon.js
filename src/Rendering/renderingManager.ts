@@ -1,11 +1,12 @@
 import { Nullable } from "types";
 import { RenderingGroupInfo, Scene } from "scene";
-import { AbstractMesh, SubMesh } from "Mesh";
-import { RenderingGroup } from "Rendering";
-import { SmartArray } from "Tools";
-import { ISpriteManager } from "Sprites";
-import { IParticleSystem } from "Particles";
-import { Material } from "Materials";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { SubMesh } from "Mesh/subMesh";
+import { SmartArray } from "Tools/smartArray";
+import { ISpriteManager } from "Sprites/spriteManager";
+import { IParticleSystem } from "Particles/IParticleSystem";
+import { Material } from "Materials/material";
+import { RenderingGroup } from "./renderingGroup";
 
     /**
      * Interface describing the different options available in the rendering manager

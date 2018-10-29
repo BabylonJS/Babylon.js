@@ -1,11 +1,16 @@
 import { Scene } from "scene";
-import { AbstractMesh, VertexBuffer, SubMesh, VertexData } from "Mesh";
-import { Color3, Matrix } from "Math";
-import { SmartArray } from "Tools";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { SubMesh } from "Mesh/subMesh";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { VertexData } from "Mesh/mesh.vertexData";
+import { Color3, Matrix } from "Math/math";
+import { SmartArray } from "Tools/smartArray";
 import { Nullable, FloatArray } from "types";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
-import { BoundingBox } from "Culling";
-import { ShaderMaterial, Material, Effect } from "Materials";
+import { BoundingBox } from "Culling/boundingBox";
+import { Effect } from "Materials/effect";
+import { Material } from "Materials/material";
+import { ShaderMaterial } from "Materials/shaderMaterial";
 
 declare module "scene" {
     export interface Scene {

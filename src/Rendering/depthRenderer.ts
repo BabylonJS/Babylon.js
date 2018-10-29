@@ -1,13 +1,17 @@
 import { Nullable } from "types";
-import { Color4 } from "Math";
-import { SubMesh, VertexBuffer } from "Mesh";
-import { SmartArray } from "Tools";
+import { Color4 } from "Math/math";
+import { SubMesh } from "Mesh/subMesh";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { SmartArray } from "Tools/smartArray";
 import { Scene } from "scene";
-import { RenderTargetTexture, Effect, Texture, Material } from "Materials";
-import { Camera } from "Cameras";
+import { Texture } from "Materials/Textures/texture";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { Effect } from "Materials/effect";
+import { Material } from "Materials/material";
+import { Camera } from "Cameras/camera";
 import { Engine } from "Engine";
 import { SceneComponentConstants } from "sceneComponent";
-import { DepthRendererSceneComponent } from "Rendering";
+import { DepthRendererSceneComponent } from "./depthRendererSceneComponent";
 
     /**
      * This represents a depth renderer in Babylon.

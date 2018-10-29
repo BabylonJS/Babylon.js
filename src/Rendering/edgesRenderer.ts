@@ -1,13 +1,17 @@
 import { Nullable } from "types";
-import { AbstractMesh, LinesMesh, InstancedLinesMesh, VertexBuffer } from "Mesh";
-import { Vector3 } from "Math";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { LinesMesh, InstancedLinesMesh } from "Mesh/linesMesh";
+import { Vector3 } from "Math/math";
 import { IDisposable } from "scene";
-import { Observer } from "Tools";
-import { LineEdgesRenderer } from "Rendering";
-import { ShaderMaterial, Effect, Material } from "Materials";
-import { Camera } from "Cameras";
-import { Engine } from "Engine";
+import { Observer } from "Tools/observable";
+import { Effect } from "Materials/effect";
+import { Material } from "Materials/material";
+import { ShaderMaterial } from "Materials/shaderMaterial";
+import { Camera } from "Cameras/camera";
+import { Engine } from "Engine/engine";
 import { Node } from "node";
+import { LineEdgesRenderer } from "./lineEdgesRenderer";
 
 declare module "Mesh/AbstractMesh" {
     export interface AbstractMesh {

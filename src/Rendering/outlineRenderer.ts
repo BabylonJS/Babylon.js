@@ -1,8 +1,12 @@
-import { AbstractMesh, SubMesh, _InstancesBatch, VertexBuffer } from "Mesh";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { SubMesh } from "Mesh/subMesh";
+import { _InstancesBatch } from "Mesh/mesh";
+import { AbstractMesh } from "Mesh/abstractMesh";
 import { Scene } from "scene";
-import { Engine } from "Engine";
+import { Engine } from "Engine/engine";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
-import { Effect, Material } from "Materials";
+import { Effect } from "Materials/effect";
+import { Material } from "Materials/material";
 
 declare module "scene" {
     export interface Scene {

@@ -1,11 +1,11 @@
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { SmartArrayNoDuplicate } from "Tools";
-import { DepthRenderer } from "Rendering";
-import { Camera } from "Cameras";
+import { SmartArrayNoDuplicate } from "Tools/smartArray";
+import { DepthRenderer } from "./depthRenderer";
+import { Camera } from "Cameras/camera";
 import { Engine } from "Engine";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
-import { RenderTargetTexture } from "Materials";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 
 declare module "scene" {
     export interface Scene {
