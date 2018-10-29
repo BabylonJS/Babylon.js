@@ -20,7 +20,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         /**
          * Node of the mesh corrisponding to the direction the ray should be cast from the controller
          */
-        public pointingPoseNode: AbstractMesh;
+        public pointingPoseNode: TransformNode;
         /**
          * Map of the button meshes contained in the controller
          */
@@ -42,7 +42,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         /**
          * The mesh
          */
-        value: AbstractMesh;
+        value: TransformNode;
     }
 
     /**
@@ -52,11 +52,11 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         /**
          * The mesh that should be displayed when pressed
          */
-        pressed: AbstractMesh;
+        pressed: TransformNode;
         /**
          * The mesh that should be displayed when not pressed
          */
-        unpressed: AbstractMesh;
+        unpressed: TransformNode;
     }
 
     /**
@@ -66,11 +66,11 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         /**
          * The mesh that should be set when at its min
          */
-        min: AbstractMesh;
+        min: TransformNode;
         /**
          * The mesh that should be set when at its max
          */
-        max: AbstractMesh;
+        max: TransformNode;
     }
 
     /**
@@ -493,11 +493,11 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
             // Look through all children recursively. This will return null if no mesh exists with the given name.
             function getChildByName(node: Node, name: string) {
-                return node.getChildMeshes(false, (n) => n.name === name)[0];
+                return <TransformNode>node.getChildren((n) => n.name === name, false)[0];
             }
             // Look through only immediate children. This will return null if no mesh exists with the given name.
-            function getImmediateChildByName(node: Node, name: string): AbstractMesh {
-                return node.getChildMeshes(true, (n) => n.name == name)[0];
+            function getImmediateChildByName(node: Node, name: string): TransformNode {
+                return <TransformNode>node.getChildren((n) => n.name == name, true)[0];
             }
         }
 

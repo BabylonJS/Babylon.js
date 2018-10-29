@@ -20,6 +20,12 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         public static DEFAULT_ANISOTROPIC_FILTERING_LEVEL = 4;
 
         /**
+         * Gets or sets the unique id of the texture
+         */
+        @serialize()
+        public uniqueId: number;
+
+        /**
          * Define the name of the texture.
          */
         @serialize()
@@ -284,6 +290,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
             if (this._scene) {
                 this._scene.textures.push(this);
                 this._scene.onNewTextureAddedObservable.notifyObservers(this);
+                this.uniqueId = this._scene.getUniqueId();
             }
             this._uid = null;
         }

@@ -451,10 +451,10 @@ declare module BABYLON.GLTF2.Loader {
         occlusionTexture?: IMaterialOcclusionTextureInfo;
         emissiveTexture?: ITextureInfo;
         /** @hidden */
-        _babylonData?: {
-            [drawMode: number]: {
-                material: Material;
-                meshes: AbstractMesh[];
+        _data?: {
+            [babylonDrawMode: number]: {
+                babylonMaterial: Material;
+                babylonMeshes: AbstractMesh[];
                 promise: Promise<void>;
             };
         };
@@ -469,6 +469,11 @@ declare module BABYLON.GLTF2.Loader {
      * Loader interface with additional members.
      */
     interface IMeshPrimitive extends GLTF2.IMeshPrimitive, IArrayItem {
+        /** @hidden */
+        _instanceData?: {
+            babylonSourceMesh: Mesh;
+            promise: Promise<any>;
+        };
     }
     /**
      * Loader interface with additional members.
@@ -479,9 +484,9 @@ declare module BABYLON.GLTF2.Loader {
          */
         parent?: INode;
         /** @hidden */
-        _babylonMesh?: Mesh;
+        _babylonTransformNode?: TransformNode;
         /** @hidden */
-        _primitiveBabylonMeshes?: Mesh[];
+        _primitiveBabylonMeshes?: AbstractMesh[];
         /** @hidden */
         _babylonBones?: Bone[];
         /** @hidden */
@@ -511,9 +516,10 @@ declare module BABYLON.GLTF2.Loader {
      */
     interface ISkin extends GLTF2.ISkin, IArrayItem {
         /** @hidden */
-        _babylonSkeleton?: Skeleton;
-        /** @hidden */
-        _promise?: Promise<void>;
+        _data?: {
+            babylonSkeleton: Skeleton;
+            promise: Promise<void>;
+        };
     }
     /**
      * Loader interface with additional members.
@@ -647,7 +653,7 @@ declare module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded Babylon mesh when the load is complete
          */
-        loadNodeAsync(context: string, node: Loader.INode, assign?: (babylonMesh: Mesh) => void): Promise<Mesh>;
+        loadNodeAsync(context: string, node: Loader.INode, assign?: (babylonTransformNode: TransformNode) => void): Promise<TransformNode>;
         private _loadMeshAsync;
         private _loadMeshPrimitiveAsync;
         private _loadVertexDataAsync;
@@ -845,9 +851,9 @@ declare module BABYLON.GLTF2 {
          * @param context The context when loading the asset
          * @param node The glTF node property
          * @param assign A function called synchronously after parsing the glTF properties
-         * @returns A promise that resolves with the loaded Babylon mesh when the load is complete or null if not handled
+         * @returns A promise that resolves with the loaded Babylon transform node when the load is complete or null if not handled
          */
-        loadNodeAsync?(context: string, node: Loader.INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
+        loadNodeAsync?(context: string, node: Loader.INode, assign: (babylonMesh: TransformNode) => void): Nullable<Promise<TransformNode>>;
         /**
          * Define this method to modify the default behavior when loading cameras.
          * @param context The context when loading the asset
@@ -957,7 +963,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         onReady(): void;
         /** @hidden */
-        loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
+        loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
         /** @hidden */
         _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
         /** @hidden */
@@ -1018,7 +1024,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>>;
         /** @hidden */
-        loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
+        loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
         /** @hidden */
         loadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>>;
         private _loadClipAsync;
@@ -1110,7 +1116,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         onLoading(): void;
         /** @hidden */
-        loadNodeAsync(context: string, node: INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
+        loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
     }
 }
 

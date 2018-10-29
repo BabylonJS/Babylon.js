@@ -18,6 +18,11 @@ import { Quaternion, Matrix, Vector3, Vector2, Epsilon, Tmp } from "Math";
          * Define the current rotation the camera is rotating to
          */
         public cameraRotation = new Vector2(0, 0);
+        /**
+         * When set, the up vector of the camera will be updated by the rotation of the camera
+         */
+        public updateUpVectorFromRotation = false;
+        private _tmpQuaternion = new Quaternion();
 
         /**
          * Define the current rotation of the camera
@@ -377,7 +382,14 @@ import { Quaternion, Matrix, Vector3, Vector2, Epsilon, Tmp } from "Math";
 
             // Computing target and final matrix
             this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
-
+            if (this.updateUpVectorFromRotation) {
+                if (this.rotationQuaternion) {
+                    Axis.Y.rotateByQuaternionToRef(this.rotationQuaternion, this.upVector);
+                } else {
+                    Quaternion.FromEulerVectorToRef(this.rotation, this._tmpQuaternion);
+                    Axis.Y.rotateByQuaternionToRef(this._tmpQuaternion, this.upVector);
+                }
+            }
             this._computeViewMatrix(this.position, this._currentTarget, this.upVector);
             return this._viewMatrix;
         }

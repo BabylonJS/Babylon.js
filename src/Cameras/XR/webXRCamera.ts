@@ -21,6 +21,7 @@ import { Scene } from "scene";
             this.minZ = 0;
             this.rotationQuaternion = new Quaternion();
             this.cameraRigMode = Camera.RIG_MODE_CUSTOM;
+            this.updateUpVectorFromRotation = true;
             this._updateNumberOfRigCameras(1);
         }
 

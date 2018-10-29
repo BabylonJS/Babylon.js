@@ -11,6 +11,11 @@ import { Matrix2D, Vector2WithInfo } from "../math2D";
  * @see http://doc.babylonjs.com/how_to/gui#controls
  */
 export class Control {
+    /**
+     * Gets or sets a boolean indicating if alpha must be an inherited value (false by default)
+     */
+    public static AllowAlphaInheritance = false;
+
     private _alpha = 1;
     private _alphaSet = false;
     private _zIndex = 0;
@@ -985,7 +990,9 @@ export class Control {
             context.fillStyle = this._color;
         }
 
-        if (this._alphaSet) {
+        if (Control.AllowAlphaInheritance) {
+            context.globalAlpha *= this._alpha;
+        } else if (this._alphaSet) {
             context.globalAlpha = this.parent ? this.parent.alpha * this._alpha : this._alpha;
         }
     }
@@ -1269,12 +1276,18 @@ export class Control {
 
     /** @hidden */
     public _onPointerOut(target: Control): void {
-        if (!this._isEnabled) {
+        if (!this._isEnabled || target === this) {
             return;
         }
         this._enterCount = 0;
 
-        this.onPointerOutObservable.notifyObservers(this, -1, target, this);
+        var canNotify: boolean = true;
+
+        if (!target.isAscendant(this)) {
+            canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
+        }
+
+        if (canNotify && this.parent != null) { this.parent._onPointerOut(target); }
     }
 
     /** @hidden */
@@ -1337,7 +1350,7 @@ export class Control {
             this._onPointerMove(this, this._dummyVector2);
 
             var previousControlOver = this._host._lastControlOver[pointerId];
-            if (previousControlOver && previousControlOver !== this && !this.isAscendant(previousControlOver)) {
+            if (previousControlOver && previousControlOver !== this) {
                 previousControlOver._onPointerOut(this);
             }
 

@@ -107,6 +107,9 @@ import { Ray } from "Culling";
          * @returns promise that resolves after xr mode has entered
          */
         public enterXRAsync(sessionCreationOptions: XRSessionCreationOptions, frameOfReference: string) {
+            if (!this._supported) {
+                throw "XR session not supported by this browser";
+            }
             this._setState(WebXRState.ENTERING_XR);
 
             return this._sessionManager.enterXRAsync(sessionCreationOptions, frameOfReference).then(() => {

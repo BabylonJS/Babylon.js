@@ -3,58 +3,58 @@
 //   ../../../../Tools/Gulp/babylonjs
 
 declare module 'babylonjs-gui' {
-    export * from "babylonjs-gui/src/2D";
-    export * from "babylonjs-gui/src/3D";
+    export * from "babylonjs-gui/2D";
+    export * from "babylonjs-gui/3D";
 }
 
-declare module 'babylonjs-gui/src/2D' {
-    export * from "babylonjs-gui/src/2D/controls";
-    export * from "babylonjs-gui/src/2D/advancedDynamicTexture";
-    export * from "babylonjs-gui/src/2D/math2D";
-    export * from "babylonjs-gui/src/2D/measure";
-    export * from "babylonjs-gui/src/2D/multiLinePoint";
-    export * from "babylonjs-gui/src/2D/style";
-    export * from "babylonjs-gui/src/2D/valueAndUnit";
+declare module 'babylonjs-gui/2D' {
+    export * from "babylonjs-gui/2D/controls";
+    export * from "babylonjs-gui/2D/advancedDynamicTexture";
+    export * from "babylonjs-gui/2D/math2D";
+    export * from "babylonjs-gui/2D/measure";
+    export * from "babylonjs-gui/2D/multiLinePoint";
+    export * from "babylonjs-gui/2D/style";
+    export * from "babylonjs-gui/2D/valueAndUnit";
 }
 
-declare module 'babylonjs-gui/src/3D' {
-    export * from "babylonjs-gui/src/3D/controls";
-    export * from "babylonjs-gui/src/3D/materials";
-    export * from "babylonjs-gui/src/3D/gui3DManager";
-    export * from "babylonjs-gui/src/3D/vector3WithInfo";
+declare module 'babylonjs-gui/3D' {
+    export * from "babylonjs-gui/3D/controls";
+    export * from "babylonjs-gui/3D/materials";
+    export * from "babylonjs-gui/3D/gui3DManager";
+    export * from "babylonjs-gui/3D/vector3WithInfo";
 }
 
-declare module 'babylonjs-gui/src/2D/controls' {
-    export * from "babylonjs-gui/src/2D/controls/button";
-    export * from "babylonjs-gui/src/2D/controls/checkbox";
-    export * from "babylonjs-gui/src/2D/controls/colorpicker";
-    export * from "babylonjs-gui/src/2D/controls/container";
-    export * from "babylonjs-gui/src/2D/controls/control";
-    export * from "babylonjs-gui/src/2D/controls/ellipse";
-    export * from "babylonjs-gui/src/2D/controls/grid";
-    export * from "babylonjs-gui/src/2D/controls/image";
-    export * from "babylonjs-gui/src/2D/controls/inputText";
-    export * from "babylonjs-gui/src/2D/controls/inputPassword";
-    export * from "babylonjs-gui/src/2D/controls/line";
-    export * from "babylonjs-gui/src/2D/controls/multiLine";
-    export * from "babylonjs-gui/src/2D/controls/radioButton";
-    export * from "babylonjs-gui/src/2D/controls/stackPanel";
-    export * from "babylonjs-gui/src/2D/controls/selector";
-    export * from "babylonjs-gui/src/2D/controls/textBlock";
-    export * from "babylonjs-gui/src/2D/controls/virtualKeyboard";
-    export * from "babylonjs-gui/src/2D/controls/rectangle";
-    export * from "babylonjs-gui/src/2D/controls/displayGrid";
-    export * from "babylonjs-gui/src/2D/controls/baseSlider";
-    export * from "babylonjs-gui/src/2D/controls/slider";
-    export * from "babylonjs-gui/src/2D/controls/imageBasedSlider";
-    export * from "babylonjs-gui/src/2D/controls/statics";
+declare module 'babylonjs-gui/2D/controls' {
+    export * from "babylonjs-gui/2D/controls/button";
+    export * from "babylonjs-gui/2D/controls/checkbox";
+    export * from "babylonjs-gui/2D/controls/colorpicker";
+    export * from "babylonjs-gui/2D/controls/container";
+    export * from "babylonjs-gui/2D/controls/control";
+    export * from "babylonjs-gui/2D/controls/ellipse";
+    export * from "babylonjs-gui/2D/controls/grid";
+    export * from "babylonjs-gui/2D/controls/image";
+    export * from "babylonjs-gui/2D/controls/inputText";
+    export * from "babylonjs-gui/2D/controls/inputPassword";
+    export * from "babylonjs-gui/2D/controls/line";
+    export * from "babylonjs-gui/2D/controls/multiLine";
+    export * from "babylonjs-gui/2D/controls/radioButton";
+    export * from "babylonjs-gui/2D/controls/stackPanel";
+    export * from "babylonjs-gui/2D/controls/selector";
+    export * from "babylonjs-gui/2D/controls/textBlock";
+    export * from "babylonjs-gui/2D/controls/virtualKeyboard";
+    export * from "babylonjs-gui/2D/controls/rectangle";
+    export * from "babylonjs-gui/2D/controls/displayGrid";
+    export * from "babylonjs-gui/2D/controls/baseSlider";
+    export * from "babylonjs-gui/2D/controls/slider";
+    export * from "babylonjs-gui/2D/controls/imageBasedSlider";
+    export * from "babylonjs-gui/2D/controls/statics";
 }
 
-declare module 'babylonjs-gui/src/2D/advancedDynamicTexture' {
+declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
     import { DynamicTexture, Nullable, Layer, Viewport, Scene, Vector3, Matrix, Vector2, AbstractMesh } from "babylonjs";
-    import { Container } from "babylonjs-gui/src/2D/controls/container";
-    import { Control } from "babylonjs-gui/src/2D/controls/control";
-    import { Style } from "babylonjs-gui/src/2D/style";
+    import { Container } from "babylonjs-gui/2D/controls/container";
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { Style } from "babylonjs-gui/2D/style";
     /**
         * Interface used to define a control that can receive focus
         */
@@ -252,7 +252,7 @@ declare module 'babylonjs-gui/src/2D/advancedDynamicTexture' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/math2D' {
+declare module 'babylonjs-gui/2D/math2D' {
     import { Vector2, Nullable } from "babylonjs";
     /**
         * Class used to transport Vector2 information for pointer events
@@ -359,7 +359,7 @@ declare module 'babylonjs-gui/src/2D/math2D' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/measure' {
+declare module 'babylonjs-gui/2D/measure' {
     /**
         * Class used to store 2D control sizes
         */
@@ -415,9 +415,9 @@ declare module 'babylonjs-gui/src/2D/measure' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/multiLinePoint' {
-    import { MultiLine } from "babylonjs-gui/src/2D/controls/multiLine";
-    import { Control } from "babylonjs-gui/src/2D/controls/control";
+declare module 'babylonjs-gui/2D/multiLinePoint' {
+    import { MultiLine } from "babylonjs-gui/2D/controls/multiLine";
+    import { Control } from "babylonjs-gui/2D/controls/control";
     import { AbstractMesh, Nullable, Vector2 } from "babylonjs";
     /**
         * Class used to store a point for a MultiLine object.
@@ -451,10 +451,10 @@ declare module 'babylonjs-gui/src/2D/multiLinePoint' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/style' {
+declare module 'babylonjs-gui/2D/style' {
     import { IDisposable, Observable } from "babylonjs";
-    import { AdvancedDynamicTexture } from "babylonjs-gui/src/2D/advancedDynamicTexture";
-    import { ValueAndUnit } from "babylonjs-gui/src/2D/valueAndUnit";
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+    import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
     /**
         * Define a style used by control to automatically setup properties based on a template.
         * Only support font related properties so far
@@ -492,8 +492,8 @@ declare module 'babylonjs-gui/src/2D/style' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/valueAndUnit' {
-    import { AdvancedDynamicTexture } from "babylonjs-gui/src/2D/advancedDynamicTexture";
+declare module 'babylonjs-gui/2D/valueAndUnit' {
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**
         * Class used to specific a value and its associated unit
         */
@@ -556,29 +556,29 @@ declare module 'babylonjs-gui/src/2D/valueAndUnit' {
     }
 }
 
-declare module 'babylonjs-gui/src/3D/controls' {
-    export * from "babylonjs-gui/src/3D/controls/abstractButton3D";
-    export * from "babylonjs-gui/src/3D/controls/button3D";
-    export * from "babylonjs-gui/src/3D/controls/container3D";
-    export * from "babylonjs-gui/src/3D/controls/control3D";
-    export * from "babylonjs-gui/src/3D/controls/cylinderPanel";
-    export * from "babylonjs-gui/src/3D/controls/holographicButton";
-    export * from "babylonjs-gui/src/3D/controls/meshButton3D";
-    export * from "babylonjs-gui/src/3D/controls/planePanel";
-    export * from "babylonjs-gui/src/3D/controls/scatterPanel";
-    export * from "babylonjs-gui/src/3D/controls/spherePanel";
-    export * from "babylonjs-gui/src/3D/controls/stackPanel3D";
-    export * from "babylonjs-gui/src/3D/controls/volumeBasedPanel";
+declare module 'babylonjs-gui/3D/controls' {
+    export * from "babylonjs-gui/3D/controls/abstractButton3D";
+    export * from "babylonjs-gui/3D/controls/button3D";
+    export * from "babylonjs-gui/3D/controls/container3D";
+    export * from "babylonjs-gui/3D/controls/control3D";
+    export * from "babylonjs-gui/3D/controls/cylinderPanel";
+    export * from "babylonjs-gui/3D/controls/holographicButton";
+    export * from "babylonjs-gui/3D/controls/meshButton3D";
+    export * from "babylonjs-gui/3D/controls/planePanel";
+    export * from "babylonjs-gui/3D/controls/scatterPanel";
+    export * from "babylonjs-gui/3D/controls/spherePanel";
+    export * from "babylonjs-gui/3D/controls/stackPanel3D";
+    export * from "babylonjs-gui/3D/controls/volumeBasedPanel";
 }
 
-declare module 'babylonjs-gui/src/3D/materials' {
-    export * from "babylonjs-gui/src/3D/materials/fluentMaterial";
+declare module 'babylonjs-gui/3D/materials' {
+    export * from "babylonjs-gui/3D/materials/fluentMaterial";
 }
 
-declare module 'babylonjs-gui/src/3D/gui3DManager' {
+declare module 'babylonjs-gui/3D/gui3DManager' {
     import { IDisposable, Scene, Nullable, UtilityLayerRenderer, Observable, Vector3, Material } from "babylonjs";
-    import { Container3D } from "babylonjs-gui/src/3D/controls/container3D";
-    import { Control3D } from "babylonjs-gui/src/3D/controls/control3D";
+    import { Container3D } from "babylonjs-gui/3D/controls/container3D";
+    import { Control3D } from "babylonjs-gui/3D/controls/control3D";
     /**
         * Class used to manage 3D user interface
         * @see http://doc.babylonjs.com/how_to/gui3d
@@ -640,7 +640,7 @@ declare module 'babylonjs-gui/src/3D/gui3DManager' {
     }
 }
 
-declare module 'babylonjs-gui/src/3D/vector3WithInfo' {
+declare module 'babylonjs-gui/3D/vector3WithInfo' {
     import { Vector3 } from "babylonjs";
     /**
         * Class used to transport Vector3 information for pointer events
@@ -659,11 +659,11 @@ declare module 'babylonjs-gui/src/3D/vector3WithInfo' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/button' {
-    import { Rectangle } from "babylonjs-gui/src/2D/controls/rectangle";
-    import { Control } from "babylonjs-gui/src/2D/controls/control";
-    import { TextBlock } from "babylonjs-gui/src/2D/controls/textBlock";
-    import { Image } from "babylonjs-gui/src/2D/controls/image";
+declare module 'babylonjs-gui/2D/controls/button' {
+    import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
+    import { Image } from "babylonjs-gui/2D/controls/image";
     import { Vector2, Nullable } from "babylonjs";
     /**
         * Class used to create 2D buttons
@@ -743,11 +743,11 @@ declare module 'babylonjs-gui/src/2D/controls/button' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/checkbox' {
-    import { Control } from "babylonjs-gui/src/2D/controls/control";
-    import { Measure } from "babylonjs-gui/src/2D/measure";
+declare module 'babylonjs-gui/2D/controls/checkbox' {
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { Measure } from "babylonjs-gui/2D/measure";
     import { Observable, Vector2 } from "babylonjs";
-    import { StackPanel } from "babylonjs-gui/src/2D/controls/stackPanel";
+    import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
     /**
         * Class used to represent a 2D checkbox
         */
@@ -785,10 +785,10 @@ declare module 'babylonjs-gui/src/2D/controls/checkbox' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/colorpicker' {
-    import { Control } from "babylonjs-gui/src/2D/controls/control";
+declare module 'babylonjs-gui/2D/controls/colorpicker' {
+    import { Control } from "babylonjs-gui/2D/controls/control";
     import { Color3, Observable, Vector2 } from "babylonjs";
-    import { Measure } from "babylonjs-gui/src/2D/measure";
+    import { Measure } from "babylonjs-gui/2D/measure";
     /** Class used to create color pickers */
     export class ColorPicker extends Control {
             name?: string | undefined;
@@ -818,11 +818,11 @@ declare module 'babylonjs-gui/src/2D/controls/colorpicker' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/container' {
-    import { Control } from "babylonjs-gui/src/2D/controls/control";
-    import { Measure } from "babylonjs-gui/src/2D/measure";
+declare module 'babylonjs-gui/2D/controls/container' {
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { Measure } from "babylonjs-gui/2D/measure";
     import { Nullable } from "babylonjs";
-    import { AdvancedDynamicTexture } from "babylonjs-gui/src/2D/advancedDynamicTexture";
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**
         * Root class for 2D containers
         * @see http://doc.babylonjs.com/how_to/gui#containers
@@ -911,14 +911,14 @@ declare module 'babylonjs-gui/src/2D/controls/container' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/control' {
-    import { Container } from "babylonjs-gui/src/2D/controls/container";
-    import { AdvancedDynamicTexture } from "babylonjs-gui/src/2D/advancedDynamicTexture";
-    import { ValueAndUnit } from "babylonjs-gui/src/2D/valueAndUnit";
+declare module 'babylonjs-gui/2D/controls/control' {
+    import { Container } from "babylonjs-gui/2D/controls/container";
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+    import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
     import { Nullable, Vector2, AbstractMesh, Observable, Vector3, Scene } from "babylonjs";
-    import { Measure } from "babylonjs-gui/src/2D/measure";
-    import { Style } from "babylonjs-gui/src/2D/style";
-    import { Matrix2D, Vector2WithInfo } from "babylonjs-gui/src/2D/math2D";
+    import { Measure } from "babylonjs-gui/2D/measure";
+    import { Style } from "babylonjs-gui/2D/style";
+    import { Matrix2D, Vector2WithInfo } from "babylonjs-gui/2D/math2D";
     /**
         * Root class used for all 2D controls
         * @see http://doc.babylonjs.com/how_to/gui#controls
@@ -926,6 +926,10 @@ declare module 'babylonjs-gui/src/2D/controls/control' {
     export class Control {
             /** defines the name of the control */
             name?: string | undefined;
+            /**
+                * Gets or sets a boolean indicating if alpha must be an inherited value (false by default)
+                */
+            static AllowAlphaInheritance: boolean;
             /** @hidden */
             _root: Nullable<Container>;
             /** @hidden */
@@ -1339,9 +1343,9 @@ declare module 'babylonjs-gui/src/2D/controls/control' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/ellipse' {
-    import { Container } from "babylonjs-gui/src/2D/controls/container";
-    import { Measure } from "babylonjs-gui/src/2D/measure";
+declare module 'babylonjs-gui/2D/controls/ellipse' {
+    import { Container } from "babylonjs-gui/2D/controls/container";
+    import { Measure } from "babylonjs-gui/2D/measure";
     /** Class used to create 2D ellipse containers */
     export class Ellipse extends Container {
             name?: string | undefined;
@@ -1359,10 +1363,10 @@ declare module 'babylonjs-gui/src/2D/controls/ellipse' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/grid' {
-    import { Container } from "babylonjs-gui/src/2D/controls/container";
-    import { Control } from "babylonjs-gui/src/2D/controls/control";
-    import { Measure } from "babylonjs-gui/src/2D/measure";
+declare module 'babylonjs-gui/2D/controls/grid' {
+    import { Container } from "babylonjs-gui/2D/controls/container";
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { Measure } from "babylonjs-gui/2D/measure";
     import { Nullable } from "babylonjs";
     /**
         * Class used to create a 2D grid container
@@ -1454,10 +1458,10 @@ declare module 'babylonjs-gui/src/2D/controls/grid' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/image' {
-    import { Control } from "babylonjs-gui/src/2D/controls/control";
+declare module 'babylonjs-gui/2D/controls/image' {
+    import { Control } from "babylonjs-gui/2D/controls/control";
     import { Nullable, Observable } from "babylonjs";
-    import { Measure } from "babylonjs-gui/src/2D/measure";
+    import { Measure } from "babylonjs-gui/2D/measure";
     /**
         * Class used to create 2D images
         */
@@ -1539,12 +1543,12 @@ declare module 'babylonjs-gui/src/2D/controls/image' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/inputText' {
-    import { Control } from "babylonjs-gui/src/2D/controls/control";
-    import { IFocusableControl } from "babylonjs-gui/src/2D/advancedDynamicTexture";
+declare module 'babylonjs-gui/2D/controls/inputText' {
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { IFocusableControl } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { Nullable, Observable, Vector2 } from "babylonjs";
-    import { Measure } from "babylonjs-gui/src/2D/measure";
-    import { VirtualKeyboard } from "babylonjs-gui/src/2D/controls/virtualKeyboard";
+    import { Measure } from "babylonjs-gui/2D/measure";
+    import { VirtualKeyboard } from "babylonjs-gui/2D/controls/virtualKeyboard";
     /**
         * Class used to create input text control
         */
@@ -1620,8 +1624,8 @@ declare module 'babylonjs-gui/src/2D/controls/inputText' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/inputPassword' {
-    import { InputText } from "babylonjs-gui/src/2D/controls/inputText";
+declare module 'babylonjs-gui/2D/controls/inputPassword' {
+    import { InputText } from "babylonjs-gui/2D/controls/inputText";
     /**
       * Class used to create a password control
       */
@@ -1630,10 +1634,10 @@ declare module 'babylonjs-gui/src/2D/controls/inputPassword' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/line' {
-    import { Control } from "babylonjs-gui/src/2D/controls/control";
+declare module 'babylonjs-gui/2D/controls/line' {
+    import { Control } from "babylonjs-gui/2D/controls/control";
     import { Vector3, Scene } from "babylonjs";
-    import { Measure } from "babylonjs-gui/src/2D/measure";
+    import { Measure } from "babylonjs-gui/2D/measure";
     /** Class used to render 2D lines */
     export class Line extends Control {
             name?: string | undefined;
@@ -1680,11 +1684,11 @@ declare module 'babylonjs-gui/src/2D/controls/line' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/multiLine' {
-    import { Control } from "babylonjs-gui/src/2D/controls/control";
-    import { MultiLinePoint } from "babylonjs-gui/src/2D/multiLinePoint";
+declare module 'babylonjs-gui/2D/controls/multiLine' {
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { MultiLinePoint } from "babylonjs-gui/2D/multiLinePoint";
     import { AbstractMesh } from "babylonjs";
-    import { Measure } from "babylonjs-gui/src/2D/measure";
+    import { Measure } from "babylonjs-gui/2D/measure";
     /**
         * Class used to create multi line control
         */
@@ -1749,11 +1753,11 @@ declare module 'babylonjs-gui/src/2D/controls/multiLine' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/radioButton' {
-    import { Control } from "babylonjs-gui/src/2D/controls/control";
+declare module 'babylonjs-gui/2D/controls/radioButton' {
+    import { Control } from "babylonjs-gui/2D/controls/control";
     import { Observable, Vector2 } from "babylonjs";
-    import { Measure } from "babylonjs-gui/src/2D/measure";
-    import { StackPanel } from "babylonjs-gui/src/2D/controls";
+    import { Measure } from "babylonjs-gui/2D/measure";
+    import { StackPanel } from "babylonjs-gui/2D/controls";
     /**
         * Class used to create radio button controls
         */
@@ -1791,9 +1795,9 @@ declare module 'babylonjs-gui/src/2D/controls/radioButton' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/stackPanel' {
-    import { Container } from "babylonjs-gui/src/2D/controls/container";
-    import { Measure } from "babylonjs-gui/src/2D/measure";
+declare module 'babylonjs-gui/2D/controls/stackPanel' {
+    import { Container } from "babylonjs-gui/2D/controls/container";
+    import { Measure } from "babylonjs-gui/2D/measure";
     /**
         * Class used to create a 2D stack panel container
         */
@@ -1821,9 +1825,9 @@ declare module 'babylonjs-gui/src/2D/controls/stackPanel' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/selector' {
-    import { Rectangle } from "babylonjs-gui/src/2D/controls/rectangle";
-    import { StackPanel } from "babylonjs-gui/src/2D/controls/stackPanel";
+declare module 'babylonjs-gui/2D/controls/selector' {
+    import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
+    import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
     /** Class used to create a RadioGroup
         * which contains groups of radio buttons
      */
@@ -1998,10 +2002,10 @@ declare module 'babylonjs-gui/src/2D/controls/selector' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/textBlock' {
+declare module 'babylonjs-gui/2D/controls/textBlock' {
     import { Observable } from "babylonjs";
-    import { Measure } from "babylonjs-gui/src/2D/measure";
-    import { Control } from "babylonjs-gui/src/2D/controls/control";
+    import { Measure } from "babylonjs-gui/2D/measure";
+    import { Control } from "babylonjs-gui/2D/controls/control";
     /**
         * Enum that determines the text-wrapping mode to use.
         */
@@ -2100,10 +2104,10 @@ declare module 'babylonjs-gui/src/2D/controls/textBlock' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/virtualKeyboard' {
-    import { StackPanel } from "babylonjs-gui/src/2D/controls/stackPanel";
+declare module 'babylonjs-gui/2D/controls/virtualKeyboard' {
+    import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
     import { Observable, Nullable } from "babylonjs";
-    import { InputText } from "babylonjs-gui/src/2D/controls/inputText";
+    import { InputText } from "babylonjs-gui/2D/controls/inputText";
     /**
         * Class used to store key control properties
         */
@@ -2193,9 +2197,9 @@ declare module 'babylonjs-gui/src/2D/controls/virtualKeyboard' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/rectangle' {
-    import { Container } from "babylonjs-gui/src/2D/controls/container";
-    import { Measure } from "babylonjs-gui/src/2D/measure";
+declare module 'babylonjs-gui/2D/controls/rectangle' {
+    import { Container } from "babylonjs-gui/2D/controls/container";
+    import { Measure } from "babylonjs-gui/2D/measure";
     /** Class used to create rectangle container */
     export class Rectangle extends Container {
             name?: string | undefined;
@@ -2215,9 +2219,9 @@ declare module 'babylonjs-gui/src/2D/controls/rectangle' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/displayGrid' {
-    import { Control } from "babylonjs-gui/src/2D/controls";
-    import { Measure } from "babylonjs-gui/src/2D";
+declare module 'babylonjs-gui/2D/controls/displayGrid' {
+    import { Control } from "babylonjs-gui/2D/controls";
+    import { Measure } from "babylonjs-gui/2D";
     /** Class used to render a grid  */
     export class DisplayGrid extends Control {
             name?: string | undefined;
@@ -2251,9 +2255,9 @@ declare module 'babylonjs-gui/src/2D/controls/displayGrid' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/baseSlider' {
-    import { Control } from "babylonjs-gui/src/2D/controls/control";
-    import { ValueAndUnit } from "babylonjs-gui/src/2D/valueAndUnit";
+declare module 'babylonjs-gui/2D/controls/baseSlider' {
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
     import { Observable, Vector2 } from "babylonjs";
     /**
         * Class used to create slider controls
@@ -2308,9 +2312,9 @@ declare module 'babylonjs-gui/src/2D/controls/baseSlider' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/slider' {
-    import { Measure } from "babylonjs-gui/src/2D/measure";
-    import { BaseSlider } from "babylonjs-gui/src/2D/controls/baseSlider";
+declare module 'babylonjs-gui/2D/controls/slider' {
+    import { Measure } from "babylonjs-gui/2D/measure";
+    import { BaseSlider } from "babylonjs-gui/2D/controls/baseSlider";
     /**
         * Class used to create slider controls
         */
@@ -2332,10 +2336,10 @@ declare module 'babylonjs-gui/src/2D/controls/slider' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/imageBasedSlider' {
-    import { BaseSlider } from "babylonjs-gui/src/2D/controls/baseSlider";
-    import { Measure } from "babylonjs-gui/src/2D/measure";
-    import { Image } from "babylonjs-gui/src/2D/controls/image";
+declare module 'babylonjs-gui/2D/controls/imageBasedSlider' {
+    import { BaseSlider } from "babylonjs-gui/2D/controls/baseSlider";
+    import { Measure } from "babylonjs-gui/2D/measure";
+    import { Image } from "babylonjs-gui/2D/controls/image";
     /**
         * Class used to create slider controls based on images
         */
@@ -2364,7 +2368,7 @@ declare module 'babylonjs-gui/src/2D/controls/imageBasedSlider' {
     }
 }
 
-declare module 'babylonjs-gui/src/2D/controls/statics' {
+declare module 'babylonjs-gui/2D/controls/statics' {
     /**
       * Forcing an export so that this code will execute
       * @hidden
@@ -2373,8 +2377,8 @@ declare module 'babylonjs-gui/src/2D/controls/statics' {
     export { name };
 }
 
-declare module 'babylonjs-gui/src/3D/controls/abstractButton3D' {
-    import { Control3D } from "babylonjs-gui/src/3D/controls/control3D";
+declare module 'babylonjs-gui/3D/controls/abstractButton3D' {
+    import { Control3D } from "babylonjs-gui/3D/controls/control3D";
     import { TransformNode, Scene } from "babylonjs";
     /**
         * Class used as a root to all buttons
@@ -2390,11 +2394,11 @@ declare module 'babylonjs-gui/src/3D/controls/abstractButton3D' {
     }
 }
 
-declare module 'babylonjs-gui/src/3D/controls/button3D' {
-    import { AbstractButton3D } from "babylonjs-gui/src/3D/controls/abstractButton3D";
+declare module 'babylonjs-gui/3D/controls/button3D' {
+    import { AbstractButton3D } from "babylonjs-gui/3D/controls/abstractButton3D";
     import { Material, int, Scene, TransformNode, AbstractMesh } from "babylonjs";
-    import { AdvancedDynamicTexture } from "babylonjs-gui/src/2D/advancedDynamicTexture";
-    import { Control } from "babylonjs-gui/src/2D/controls/control";
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+    import { Control } from "babylonjs-gui/2D/controls/control";
     /**
         * Class used to create a button in 3D
         */
@@ -2436,8 +2440,8 @@ declare module 'babylonjs-gui/src/3D/controls/button3D' {
     }
 }
 
-declare module 'babylonjs-gui/src/3D/controls/container3D' {
-    import { Control3D } from "babylonjs-gui/src/3D/controls/control3D";
+declare module 'babylonjs-gui/3D/controls/container3D' {
+    import { Control3D } from "babylonjs-gui/3D/controls/control3D";
     import { Scene, Nullable, TransformNode } from "babylonjs";
     /**
         * Class used to create containers for controls
@@ -2507,11 +2511,11 @@ declare module 'babylonjs-gui/src/3D/controls/container3D' {
     }
 }
 
-declare module 'babylonjs-gui/src/3D/controls/control3D' {
+declare module 'babylonjs-gui/3D/controls/control3D' {
     import { IDisposable, IBehaviorAware, Nullable, TransformNode, Vector3, Observable, Behavior, AbstractMesh, Scene } from "babylonjs";
-    import { GUI3DManager } from "babylonjs-gui/src/3D/gui3DManager";
-    import { Vector3WithInfo } from "babylonjs-gui/src/3D/vector3WithInfo";
-    import { Container3D } from "babylonjs-gui/src/3D/controls/container3D";
+    import { GUI3DManager } from "babylonjs-gui/3D/gui3DManager";
+    import { Vector3WithInfo } from "babylonjs-gui/3D/vector3WithInfo";
+    import { Container3D } from "babylonjs-gui/3D/controls/container3D";
     /**
         * Class used as base class for controls
         */
@@ -2651,10 +2655,10 @@ declare module 'babylonjs-gui/src/3D/controls/control3D' {
     }
 }
 
-declare module 'babylonjs-gui/src/3D/controls/cylinderPanel' {
-    import { VolumeBasedPanel } from "babylonjs-gui/src/3D/controls/volumeBasedPanel";
+declare module 'babylonjs-gui/3D/controls/cylinderPanel' {
+    import { VolumeBasedPanel } from "babylonjs-gui/3D/controls/volumeBasedPanel";
     import { float, Vector3 } from "babylonjs";
-    import { Control3D } from "babylonjs-gui/src/3D/controls/control3D";
+    import { Control3D } from "babylonjs-gui/3D/controls/control3D";
     /**
         * Class used to create a container panel deployed on the surface of a cylinder
         */
@@ -2667,11 +2671,11 @@ declare module 'babylonjs-gui/src/3D/controls/cylinderPanel' {
     }
 }
 
-declare module 'babylonjs-gui/src/3D/controls/holographicButton' {
-    import { Button3D } from "babylonjs-gui/src/3D/controls/button3D";
+declare module 'babylonjs-gui/3D/controls/holographicButton' {
+    import { Button3D } from "babylonjs-gui/3D/controls/button3D";
     import { Mesh, StandardMaterial, Nullable, Scene, TransformNode } from "babylonjs";
-    import { FluentMaterial } from "babylonjs-gui/src/3D/materials/fluentMaterial";
-    import { AdvancedDynamicTexture } from "babylonjs-gui/src/2D/advancedDynamicTexture";
+    import { FluentMaterial } from "babylonjs-gui/3D/materials/fluentMaterial";
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**
         * Class used to create a holographic button in 3D
         */
@@ -2720,9 +2724,9 @@ declare module 'babylonjs-gui/src/3D/controls/holographicButton' {
     }
 }
 
-declare module 'babylonjs-gui/src/3D/controls/meshButton3D' {
+declare module 'babylonjs-gui/3D/controls/meshButton3D' {
     import { Scene, TransformNode, AbstractMesh, Mesh } from "babylonjs";
-    import { Button3D } from "babylonjs-gui/src/3D/controls/button3D";
+    import { Button3D } from "babylonjs-gui/3D/controls/button3D";
     /**
         * Class used to create an interactable object. It's a 3D button using a mesh coming from the current scene
         */
@@ -2741,10 +2745,10 @@ declare module 'babylonjs-gui/src/3D/controls/meshButton3D' {
     }
 }
 
-declare module 'babylonjs-gui/src/3D/controls/planePanel' {
+declare module 'babylonjs-gui/3D/controls/planePanel' {
     import { Vector3 } from "babylonjs";
-    import { Control3D } from "babylonjs-gui/src/3D/controls/control3D";
-    import { VolumeBasedPanel } from "babylonjs-gui/src/3D/controls/volumeBasedPanel";
+    import { Control3D } from "babylonjs-gui/3D/controls/control3D";
+    import { VolumeBasedPanel } from "babylonjs-gui/3D/controls/volumeBasedPanel";
     /**
       * Class used to create a container panel deployed on the surface of a plane
       */
@@ -2753,10 +2757,10 @@ declare module 'babylonjs-gui/src/3D/controls/planePanel' {
     }
 }
 
-declare module 'babylonjs-gui/src/3D/controls/scatterPanel' {
-    import { VolumeBasedPanel } from "babylonjs-gui/src/3D/controls/volumeBasedPanel";
+declare module 'babylonjs-gui/3D/controls/scatterPanel' {
+    import { VolumeBasedPanel } from "babylonjs-gui/3D/controls/volumeBasedPanel";
     import { float, Vector3 } from "babylonjs";
-    import { Control3D } from "babylonjs-gui/src/3D/controls/control3D";
+    import { Control3D } from "babylonjs-gui/3D/controls/control3D";
     /**
         * Class used to create a container panel where items get randomized planar mapping
         */
@@ -2770,10 +2774,10 @@ declare module 'babylonjs-gui/src/3D/controls/scatterPanel' {
     }
 }
 
-declare module 'babylonjs-gui/src/3D/controls/spherePanel' {
-    import { VolumeBasedPanel } from "babylonjs-gui/src/3D/controls/volumeBasedPanel";
+declare module 'babylonjs-gui/3D/controls/spherePanel' {
+    import { VolumeBasedPanel } from "babylonjs-gui/3D/controls/volumeBasedPanel";
     import { float, Vector3 } from "babylonjs";
-    import { Control3D } from "babylonjs-gui/src/3D/controls/control3D";
+    import { Control3D } from "babylonjs-gui/3D/controls/control3D";
     /**
         * Class used to create a container panel deployed on the surface of a sphere
         */
@@ -2786,8 +2790,8 @@ declare module 'babylonjs-gui/src/3D/controls/spherePanel' {
     }
 }
 
-declare module 'babylonjs-gui/src/3D/controls/stackPanel3D' {
-    import { Container3D } from "babylonjs-gui/src/3D/controls/container3D";
+declare module 'babylonjs-gui/3D/controls/stackPanel3D' {
+    import { Container3D } from "babylonjs-gui/3D/controls/container3D";
     /**
         * Class used to create a stack panel in 3D on XY plane
         */
@@ -2809,10 +2813,10 @@ declare module 'babylonjs-gui/src/3D/controls/stackPanel3D' {
     }
 }
 
-declare module 'babylonjs-gui/src/3D/controls/volumeBasedPanel' {
-    import { Container3D } from "babylonjs-gui/src/3D/controls/container3D";
+declare module 'babylonjs-gui/3D/controls/volumeBasedPanel' {
+    import { Container3D } from "babylonjs-gui/3D/controls/container3D";
     import { int, Vector3 } from "babylonjs";
-    import { Control3D } from "babylonjs-gui/src/3D/controls/control3D";
+    import { Control3D } from "babylonjs-gui/3D/controls/control3D";
     /**
         * Abstract class used to create a container panel deployed on the surface of a volume
         */
@@ -2856,10 +2860,8 @@ declare module 'babylonjs-gui/src/3D/controls/volumeBasedPanel' {
     }
 }
 
-declare module 'babylonjs-gui/src/3D/materials/fluentMaterial' {
+declare module 'babylonjs-gui/3D/materials/fluentMaterial' {
     import { MaterialDefines, PushMaterial, Color3, Color4, Vector3, Scene, Nullable, BaseTexture, AbstractMesh, SubMesh, Matrix, Mesh } from "babylonjs";
-    import "./shaders/fluent.vertex";
-    import "./shaders/fluent.fragment";
     /** @hidden */
     export class FluentMaterialDefines extends MaterialDefines {
             INNERGLOW: boolean;
@@ -2947,6 +2949,14 @@ declare module 'babylonjs-gui/src/3D/materials/fluentMaterial' {
 /*BabylonJS GUI*/
 // Dependencies for this module:
 //   ../../../../Tools/Gulp/babylonjs
+declare module BABYLON.GUI {
+}
+declare module BABYLON.GUI {
+}
+declare module BABYLON.GUI {
+}
+declare module BABYLON.GUI {
+}
 declare module BABYLON.GUI {
     /**
         * Interface used to define a control that can receive focus
@@ -3436,6 +3446,10 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
+}
+declare module BABYLON.GUI {
+}
+declare module BABYLON.GUI {
     /**
         * Class used to manage 3D user interface
         * @see http://doc.babylonjs.com/how_to/gui3d
@@ -3753,6 +3767,10 @@ declare module BABYLON.GUI {
     export class Control {
             /** defines the name of the control */
             name?: string | undefined;
+            /**
+                * Gets or sets a boolean indicating if alpha must be an inherited value (false by default)
+                */
+            static AllowAlphaInheritance: boolean;
             /** @hidden */
             _root: BABYLON.Nullable<Container>;
             /** @hidden */

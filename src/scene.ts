@@ -2253,7 +2253,7 @@ import { Node } from "node";
                     return false;
                 }
 
-                let hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh" || engine.getCaps().instancedArrays && (<Mesh>mesh).instances.length > 0;
+                let hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh" || mesh.getClassName() === "InstancedLinesMesh" || engine.getCaps().instancedArrays && (<Mesh>mesh).instances.length > 0;
                 // Is Ready For Mesh
                 for (let step of this._isReadyForMeshStage) {
                     if (!step.action(mesh, hardwareInstancedRendering)) {
@@ -2505,6 +2505,32 @@ import { Node } from "node";
             animatable.reset();
 
             return animatable;
+        }
+
+        /**
+         * Will start the animation sequence of a given target and its hierarchy
+         * @param target defines the target
+         * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
+         * @param from defines from which frame should animation start
+         * @param to defines until which frame should animation run.
+         * @param loop defines if the animation loops
+         * @param speedRatio defines the speed in which to run the animation (1.0 by default)
+         * @param onAnimationEnd defines the function to be executed when the animation ends
+         * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+         * @param stopCurrent defines if the current animations must be stopped first (true by default)
+         * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
+         * @returns the list of created animatables
+         */
+        public beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true, targetMask?: (target: any) => boolean): Animatable[] {
+            let children = target.getDescendants(directDescendantsOnly);
+
+            let result = [];
+            result.push(this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask));
+            for (var child of children) {
+                result.push(this.beginAnimation(child, from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask));
+            }
+
+            return result;
         }
 
         /**

@@ -2,6 +2,14 @@
 // Dependencies for this module:
 //   ../../../../Tools/Gulp/babylonjs
 declare module BABYLON.GUI {
+}
+declare module BABYLON.GUI {
+}
+declare module BABYLON.GUI {
+}
+declare module BABYLON.GUI {
+}
+declare module BABYLON.GUI {
     /**
         * Interface used to define a control that can receive focus
         */
@@ -490,6 +498,10 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
+}
+declare module BABYLON.GUI {
+}
+declare module BABYLON.GUI {
     /**
         * Class used to manage 3D user interface
         * @see http://doc.babylonjs.com/how_to/gui3d
@@ -807,6 +819,10 @@ declare module BABYLON.GUI {
     export class Control {
             /** defines the name of the control */
             name?: string | undefined;
+            /**
+                * Gets or sets a boolean indicating if alpha must be an inherited value (false by default)
+                */
+            static AllowAlphaInheritance: boolean;
             /** @hidden */
             _root: BABYLON.Nullable<Container>;
             /** @hidden */

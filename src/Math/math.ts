@@ -2276,7 +2276,7 @@ import { Ray } from "Culling";
          * @param result defines the Vector3 where to store the result
          */
         public static TransformCoordinatesToRef(vector: Vector3, transformation: Readonly<Matrix>, result: Vector3): void {
-            return Vector3.TransformCoordinatesFromFloatsToRef(vector.x, vector.y, vector.z, transformation, result);
+            Vector3.TransformCoordinatesFromFloatsToRef(vector.x, vector.y, vector.z, transformation, result);
         }
 
         /**
