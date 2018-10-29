@@ -15,10 +15,6 @@ attribute vec3 normal;
 // Uniforms
 #include<instancesDeclaration>
 
-#ifdef POINTSIZE
-uniform float pointSize;
-#endif
-
 // Output
 varying vec3 vPositionW;
 #ifdef NORMAL
