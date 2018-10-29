@@ -1,9 +1,9 @@
 import { Nullable } from "types";
-import { GeometryBufferRenderer } from "Rendering";
 import { Scene } from "scene";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
-import { SmartArrayNoDuplicate } from "Tools";
-import { RenderTargetTexture } from "Materials";
+import { SmartArrayNoDuplicate } from "Tools/smartArray";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { GeometryBufferRenderer } from "./geometryBufferRenderer";
 
 declare module "scene" {
     export interface Scene {

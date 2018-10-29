@@ -1,6 +1,7 @@
-import { EdgesRenderer } from "Rendering";
-import { VertexBuffer, AbstractMesh } from "Mesh";
-import { Tmp, Vector3 } from "Math";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Tmp, Vector3 } from "Math/math";
+import { EdgesRenderer } from "./edgesRenderer";
 
     /**
      * LineEdgesRenderer for LineMeshes to remove unnecessary triangulation
