@@ -2321,7 +2321,6 @@ import { PhysicsImpostor } from "Physics";
 
         /**
          * Creates a new InstancedMesh object from the mesh model.
-         * Warning : this method is not supported for Line mesh and LineSystem
          * @see http://doc.babylonjs.com/how_to/how_to_use_instances
          * @param name defines the name of the new instance
          * @returns a new InstancedMesh

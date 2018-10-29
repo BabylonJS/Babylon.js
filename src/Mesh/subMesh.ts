@@ -351,10 +351,8 @@ import { Material, Effect, MaterialDefines, MultiMaterial } from "Materials";
 
             // LineMesh first as it's also a Mesh...
             if (LinesMesh) {
-                const mesh = this._mesh instanceof InstancedMesh ? (<InstancedMesh>this._mesh).sourceMesh : this._mesh;
-                if (mesh instanceof LinesMesh) {
-                    const linesMesh = <LinesMesh>mesh;
-                    return this._intersectLines(ray, positions, indices, linesMesh.intersectionThreshold, fastCheck);
+                if (this._mesh.getClassName() === "InstancedLinesMesh" || this._mesh.getClassName() === "LinesMesh") {
+                    return this._intersectLines(ray, positions, indices, (this._mesh as any).intersectionThreshold, fastCheck);
                 }
             }
 

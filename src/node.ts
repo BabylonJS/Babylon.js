@@ -557,10 +557,11 @@ import { Observable, Observer, serialize } from "Tools";
         /**
          * Get all direct children of this node
          * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered (Default: true)
          * @returns an array of Node
          */
-        public getChildren(predicate?: (node: Node) => boolean): Node[] {
-            return this.getDescendants(true, predicate);
+        public getChildren(predicate?: (node: Node) => boolean, directDescendantsOnly = true): Node[] {
+            return this.getDescendants(directDescendantsOnly, predicate);
         }
 
         /** @hidden */
