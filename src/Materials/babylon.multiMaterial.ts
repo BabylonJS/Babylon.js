@@ -21,6 +21,14 @@ module BABYLON {
         }
 
         /**
+         * Function used to align with Node.getChildren()
+         * @returns the list of Materials used within the multi material
+         */
+        public getChildren(): Nullable<Material>[] {
+            return this.subMaterials;
+        }
+
+        /**
          * Instantiates a new Multi Material
          * A multi-material is used to apply different materials to different parts of the same object without the need of
          * separate meshes. This can be use to improve performances.
