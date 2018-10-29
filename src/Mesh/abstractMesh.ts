@@ -5,7 +5,7 @@ import { Scene, IDisposable } from "scene";
 import { Quaternion, Matrix, Vector3, Color3, Color4, Plane, Tmp, Epsilon, Axis, Vector2 } from "Math";
 import { Engine } from "Engine";
 import { Node } from "Node";
-import { InstancedMesh, VertexBuffer, TransformNode, SubMesh, LinesMesh, IGetSetVerticesData, VertexData } from "Mesh";
+import { InstancedMesh, VertexBuffer, TransformNode, SubMesh, IGetSetVerticesData, VertexData } from "Mesh";
 import { PickingInfo, Collider, IntersectionInfo } from "Collisions";
 import { Ray, ICullable, BoundingInfo } from "Culling";
 import { Material, MaterialDefines } from "Materials";

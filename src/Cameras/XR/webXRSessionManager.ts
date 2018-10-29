@@ -1,4 +1,4 @@
-import { Observable } from "Tools";
+import { Observable, Tools } from "Tools";
 import { Nullable } from "types";
 import { IDisposable, Scene } from "scene";
 import { Vector3, Matrix } from "Math";

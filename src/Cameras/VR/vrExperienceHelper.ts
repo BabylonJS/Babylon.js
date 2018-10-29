@@ -6,7 +6,7 @@ import { Scene, IDisposable } from "scene";
 import { Quaternion, Matrix, Vector3, Color3, Color4, Axis } from "Math";
 import { Gamepad, WebVRController, PoseEnabledController, Xbox360Pad, Xbox360Button, StickValues, PoseEnabledControllerType } from "Gamepad";
 import { IDisplayChangedEventArgs } from "Engine";
-import { Mesh, AbstractMesh } from "Mesh";
+import { Mesh, AbstractMesh, TransformNode } from "Mesh";
 import { PickingInfo } from "Collisions";
 import { Ray } from "Culling";
 import { StandardMaterial, ImageProcessingConfiguration, DynamicTexture } from "Materials";
@@ -891,11 +891,11 @@ import { Animation, SineEase, EasingFunction, CircleEase } from "Animations";
                 this._position = this._scene.activeCamera.position.clone();
 
                 if (this.vrDeviceOrientationCamera) {
-                    this.vrDeviceOrientationCamera.rotation = BABYLON.Quaternion.FromRotationMatrix(this._scene.activeCamera.getWorldMatrix().getRotationMatrix()).toEulerAngles();
+                    this.vrDeviceOrientationCamera.rotation = Quaternion.FromRotationMatrix(this._scene.activeCamera.getWorldMatrix().getRotationMatrix()).toEulerAngles();
                 }
                 if (this.webVRCamera) {
                     var currentYRotation = this.webVRCamera.deviceRotationQuaternion.toEulerAngles().y;
-                    var desiredYRotation = BABYLON.Quaternion.FromRotationMatrix(this._scene.activeCamera.getWorldMatrix().getRotationMatrix()).toEulerAngles().y;
+                    var desiredYRotation = Quaternion.FromRotationMatrix(this._scene.activeCamera.getWorldMatrix().getRotationMatrix()).toEulerAngles().y;
                     var delta = desiredYRotation - currentYRotation;
                     var currentGlobalRotation = this.webVRCamera.rotationQuaternion.toEulerAngles().y;
                     this.webVRCamera.rotationQuaternion = Quaternion.FromEulerAngles(0, currentGlobalRotation + delta, 0);

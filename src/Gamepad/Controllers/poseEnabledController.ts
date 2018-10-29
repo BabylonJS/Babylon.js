@@ -4,7 +4,7 @@ import { WebVRFreeCamera, TargetCamera, PoseControlled, DevicePose } from "Camer
 import { Quaternion, Matrix, Vector3, Tmp } from "Math";
 import { Gamepad, ExtendedGamepadButton, OculusTouchController, WindowsMotionController, ViveController, GearVRController, DaydreamController, GenericController } from "Gamepad";
 import { Node } from "Node";
-import { AbstractMesh } from "Mesh";
+import { AbstractMesh, TransformNode } from "Mesh";
 import { Ray } from "Culling";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
