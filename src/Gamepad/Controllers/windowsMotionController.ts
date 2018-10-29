@@ -4,7 +4,7 @@ import { Scene } from "scene";
 import { Quaternion, Vector3 } from "Math";
 import { WebVRController, PoseEnabledController, StickValues, PoseEnabledControllerType, ExtendedGamepadButton, GamepadButtonChanges, GenericController } from "Gamepad";
 import { Node } from "Node";
-import { Mesh, AbstractMesh } from "Mesh";
+import { Mesh, AbstractMesh, TransformNode } from "Mesh";
 import { Ray } from "Culling";
 import { _TimeToken } from "Instrumentation";
 import { SceneLoader } from "Loading";

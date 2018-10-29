@@ -2,7 +2,7 @@ import { Tools } from "Tools";
 import { Nullable, IndicesArray } from "types";
 import { Matrix, Vector3, Plane } from "Math";
 import { Engine } from "Engine";
-import { Mesh, AbstractMesh, InstancedMesh, VertexBuffer, LinesMesh } from "Mesh";
+import { Mesh, AbstractMesh, VertexBuffer, LinesMesh } from "Mesh";
 import { Collider, IntersectionInfo } from "Collisions";
 import { Ray, ICullable, BoundingInfo } from "Culling";
 import { Material, Effect, MaterialDefines, MultiMaterial } from "Materials";
