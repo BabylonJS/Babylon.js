@@ -1,5 +1,5 @@
 import { Nullable } from "types";
-import { AbstractMesh, LinesMesh, InstancedMesh, VertexBuffer } from "Mesh";
+import { AbstractMesh, LinesMesh, InstancedLinesMesh, VertexBuffer } from "Mesh";
 import { Vector3 } from "Math";
 import { IDisposable } from "scene";
 import { Observer } from "Tools";
@@ -74,7 +74,7 @@ declare module "Mesh/LinesMesh" {
         return this;
     };
 
-declare module "Mesh/InstancedLinesMesh" {
+declare module "Mesh/LinesMesh" {
     export interface InstancedLinesMesh {
         /**
          * Enables the edge rendering mode on the mesh.
