@@ -28,7 +28,7 @@ module BABYLON {
          */
         public readonly maximum = Vector3.Zero();
 
-        private _worldMatrix: Readonly<Matrix>;
+        private _worldMatrix: DeepImmutable<Matrix>;
         private static readonly TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
 
         /**
@@ -37,7 +37,7 @@ module BABYLON {
          * @param max defines the maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
          */
-        constructor(min: Readonly<Vector3>, max: Readonly<Vector3>, worldMatrix?: Readonly<Matrix>) {
+        constructor(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>) {
             this.reConstruct(min, max, worldMatrix);
         }
 
@@ -47,7 +47,7 @@ module BABYLON {
          * @param max defines the new maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
          */
-        public reConstruct(min: Readonly<Vector3>, max: Readonly<Vector3>, worldMatrix?: Readonly<Matrix>) {
+        public reConstruct(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>) {
             this.minimum.copyFrom(min);
             this.maximum.copyFrom(max);
 
@@ -80,13 +80,13 @@ module BABYLON {
          * Gets the world matrix of the bounding box
          * @returns a matrix
          */
-        public getWorldMatrix(): Readonly<Matrix> {
+        public getWorldMatrix(): DeepImmutable<Matrix> {
             return this._worldMatrix;
         }
 
         // Methods
         /** @hidden */
-        public _update(worldMatrix: Readonly<Matrix>): void {
+        public _update(worldMatrix: DeepImmutable<Matrix>): void {
             if (!worldMatrix.isIdentity()) {
                 Vector3.TransformCoordinatesToRef(this.center, worldMatrix, this.centerWorld);
                 const tempVector = BoundingSphere.TmpVector3[0];
@@ -104,7 +104,7 @@ module BABYLON {
          * @param frustumPlanes defines the frustum planes to test
          * @returns true if there is an intersection
          */
-        public isInFrustum(frustumPlanes: Array<Readonly<Plane>>): boolean {
+        public isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
             for (var i = 0; i < 6; i++) {
                 if (frustumPlanes[i].dotCoordinate(this.centerWorld) <= -this.radiusWorld) {
                     return false;
@@ -119,7 +119,7 @@ module BABYLON {
          * @param point defines the point to test
          * @returns true if the point is inside the bounding sphere
          */
-        public intersectsPoint(point: Readonly<Vector3>): boolean {
+        public intersectsPoint(point: DeepImmutable<Vector3>): boolean {
             const squareDistance = Vector3.DistanceSquared(this.centerWorld, point);
             if (this.radiusWorld * this.radiusWorld < squareDistance) {
                 return false;
@@ -135,7 +135,7 @@ module BABYLON {
          * @param sphere1 sphere 1
          * @returns true if the speres intersect
          */
-        public static Intersects(sphere0: Readonly<BoundingSphere>, sphere1: Readonly<BoundingSphere>): boolean {
+        public static Intersects(sphere0: DeepImmutable<BoundingSphere>, sphere1: DeepImmutable<BoundingSphere>): boolean {
             const squareDistance = Vector3.DistanceSquared(sphere0.centerWorld, sphere1.centerWorld);
             const radiusSum = sphere0.radiusWorld + sphere1.radiusWorld;
 

@@ -3,19 +3,19 @@ module BABYLON {
     // Static values to help the garbage collector
 
     // Quaternion
-    const _staticOffsetValueQuaternion: Readonly<Quaternion> = Object.freeze(new Quaternion(0, 0, 0, 0));
+    const _staticOffsetValueQuaternion: DeepImmutable<Quaternion> = Object.freeze(new Quaternion(0, 0, 0, 0));
 
     // Vector3
-    const _staticOffsetValueVector3: Readonly<Vector3> = Object.freeze(Vector3.Zero());
+    const _staticOffsetValueVector3: DeepImmutable<Vector3> = Object.freeze(Vector3.Zero());
 
     // Vector2
-    const _staticOffsetValueVector2: Readonly<Vector2> = Object.freeze(Vector2.Zero());
+    const _staticOffsetValueVector2: DeepImmutable<Vector2> = Object.freeze(Vector2.Zero());
 
     // Size
-    const _staticOffsetValueSize: Readonly<Size> = Object.freeze(Size.Zero());
+    const _staticOffsetValueSize: DeepImmutable<Size> = Object.freeze(Size.Zero());
 
     // Color3
-    const _staticOffsetValueColor3: Readonly<Color3> = Object.freeze(Color3.Black());
+    const _staticOffsetValueColor3: DeepImmutable<Color3> = Object.freeze(Color3.Black());
 
     /**
      * Defines a runtime animation
