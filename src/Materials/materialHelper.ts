@@ -1,12 +1,18 @@
-import { Tools } from "Tools";
+import { Tools } from "Tools/tools";
 import { Nullable } from "types";
-import { Camera } from "Cameras";
+import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Tmp, Color3 } from "Math";
-import { Engine } from "Engine";
-import { Mesh, AbstractMesh, VertexBuffer } from "Mesh";
-import { UniformBuffer, Effect, BaseTexture, EffectFallbacks, EffectCreationOptions } from "Materials";
-import { Light } from "Lights";
+import { Tmp, Color3 } from "Math/math";
+import { Engine } from "Engine/engine";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Mesh } from "Mesh/mesh";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { Light } from "Lights/light";
+
+import { UniformBuffer } from "./uniformBuffer";
+import { Effect, EffectFallbacks, EffectCreationOptions } from "./effect";
+import { BaseTexture } from "Materials/Textures/baseTexture";
+
     /**
      * "Static Class" containing the most commonly used helper while dealing with material for
      * rendering purpose.

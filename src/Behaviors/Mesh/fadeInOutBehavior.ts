@@ -1,5 +1,6 @@
-import { Behavior } from "index";
-import { Mesh, AbstractMesh } from "Mesh";
+import { Behavior } from "../behavior";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Mesh } from "Mesh/mesh";
 import { Nullable } from "types";
 
     /**

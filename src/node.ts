@@ -1,11 +1,14 @@
-import { Animation, Animatable, AnimationRange, AnimationPropertiesOverride } from "Animations";
+import { Animatable } from "Animations/animatable";
+import { AnimationPropertiesOverride } from "Animations/animationPropertiesOverride";
+import { Animation, AnimationRange } from "Animations/animation";
 import { Scene } from "scene";
 import { Nullable } from "types";
-import { Matrix } from "Math";
-import { Engine } from "Engine";
-import { AbstractMesh, TransformNode } from "Mesh";
-import { IBehaviorAware, Behavior } from "Behaviors";
-import { Observable, Observer, serialize } from "Tools";
+import { Matrix } from "Math/math";
+import { Engine } from "Engine/engine";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { IBehaviorAware, Behavior } from "Behaviors/behavior";
+import { serialize } from "Tools/decorators";
+import { Observable, Observer } from "Tools/observable";
 
     /**
      * Defines how a node can be built from a string name.
@@ -541,20 +544,6 @@ import { Observable, Observer, serialize } from "Tools";
         }
 
         /**
-         * Get all child-transformNodes of this node
-         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
-         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-         * @returns an array of TransformNode
-         */
-        public getChildTransformNodes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): TransformNode[] {
-            var results: Array<TransformNode> = [];
-            this._getDescendants(results, directDescendantsOnly, (node: Node) => {
-                return ((!predicate || predicate(node)) && (node instanceof TransformNode));
-            });
-            return results;
-        }
-
-        /**
          * Get all direct children of this node
          * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
          * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered (Default: true)
@@ -699,12 +688,6 @@ import { Observable, Observer, serialize } from "Tools";
                 const nodes = this.getDescendants(true);
                 for (const node of nodes) {
                     node.dispose(doNotRecurse, disposeMaterialAndTextures);
-                }
-            } else {
-                const transformNodes = this.getChildTransformNodes(true);
-                for (const transformNode of transformNodes) {
-                    transformNode.parent = null;
-                    transformNode.computeWorldMatrix(true);
                 }
             }
 

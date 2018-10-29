@@ -1,9 +1,11 @@
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Engine } from "Engine";
-import { Texture, ProceduralTexture } from "Materials";
-import { _TimeToken } from "Instrumentation";
+import { Engine } from "Engine/engine";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Texture } from "Materials/Textures/texture";
+import { ProceduralTexture } from "./proceduralTexture";
+
     /**
      * Class used to generate noise procedural textures
      */

@@ -1,10 +1,10 @@
-import { Camera } from "Cameras";
+import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Engine } from "Engine";
+import { Engine } from "Engine/engine";
 import { SceneComponentConstants, ISceneComponent } from "sceneComponent";
-import { _TimeToken } from "Instrumentation";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Layer } from "Layer";
+import { Layer } from "./layer";
 
 declare module "abstractScene" {
     export interface AbstractScene {

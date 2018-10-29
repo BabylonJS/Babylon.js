@@ -1,10 +1,10 @@
-import { serialize, serializeAsVector3 } from "Tools";
-import { Camera } from "Cameras";
+import { serialize, serializeAsVector3 } from "Tools/decorators";
+import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Matrix, Vector3, Axis } from "Math";
-import { AbstractMesh } from "Mesh";
-import { IShadowLight, Light } from "Lights";
-import { _TimeToken } from "Instrumentation";
+import { Matrix, Vector3, Axis } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Light } from "./light";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Interface describing all the common properties and methods a shadow light needs to implement.

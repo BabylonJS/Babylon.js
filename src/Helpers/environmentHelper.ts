@@ -1,12 +1,17 @@
-import { Observable } from "Tools";
+import { Observable } from "Tools/observable";
 import { Nullable } from "types";
-import { ArcRotateCamera } from "Cameras";
+import { ArcRotateCamera } from "Cameras/arcRotateCamera";
 import { Scene } from "scene";
-import { Vector3, Color3, Color4, Plane } from "Math";
-import { Engine } from "Engine";
-import { Mesh, AbstractMesh } from "Mesh";
-import { Texture, BaseTexture, BackgroundMaterial, MirrorTexture, CubeTexture } from "Materials";
-import { _TimeToken } from "Instrumentation";
+import { Vector3, Color3, Color4, Plane } from "Math/math";
+import { Engine } from "Engine/engine";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Mesh } from "Mesh/mesh";
+import { BaseTexture } from "Materials/Textures/baseTexture";
+import { Texture } from "Materials/Textures/texture";
+import { MirrorTexture } from "Materials/Textures/mirrorTexture";
+import { CubeTexture } from "Materials/Textures/cubeTexture";
+import { BackgroundMaterial } from "Materials/Background/backgroundMaterial";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Represents the different options available during the creation of

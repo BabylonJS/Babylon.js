@@ -1,11 +1,15 @@
 import { Nullable } from "types";
-import { AbstractMesh } from "Mesh";
-import { Sprite } from "Sprites";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Sprite } from "Sprites/sprite";
 import { Scene } from "scene";
-import { Vector2, Vector3, Vector4, Color3, Color4 } from "Math";
-import { Action, Condition, ValueCondition, DoNothingAction } from "Actions";
-import { Engine } from "Engine";
-import { Tools } from "Tools";
+import { Vector2, Vector3, Vector4, Color3, Color4 } from "Math/math";
+
+import { Condition, ValueCondition } from "./condition";
+import { Action } from "./action";
+import { DoNothingAction } from "./directActions";
+
+import { Engine } from "Engine/engine";
+import { Tools } from "Tools/tools";
 
     /**
      * ActionEvent is the event being sent when an action is triggered.

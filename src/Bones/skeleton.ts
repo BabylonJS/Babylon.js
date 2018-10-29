@@ -1,12 +1,16 @@
-import { IAnimatable, Observable, Tools } from "Tools";
-import { Bone } from "Bones";
-import { Vector3, Matrix, Tmp } from "Math";
+import { Bone } from "./bone";
+
+import { IAnimatable, Tools } from "Tools/tools";
+import { Observable } from "Tools/observable";
+import { Vector3, Matrix, Tmp } from "Math/math";
 import { Scene } from "scene";
 import { Nullable } from "types";
-import { AbstractMesh } from "Mesh";
-import { RawTexture } from "Materials";
-import { AnimationRange, AnimationPropertiesOverride, Animation, Animatable } from "Animations";
-import { Engine } from "Engine";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { RawTexture } from "Materials/Textures/rawTexture";
+import { Animatable } from "Animations/animatable";
+import { AnimationPropertiesOverride } from "Animations/animationPropertiesOverride";
+import { AnimationRange, Animation } from "Animations/animation";
+import { Engine } from "Engine/engine";
 
     /**
      * Class used to handle skinning animations

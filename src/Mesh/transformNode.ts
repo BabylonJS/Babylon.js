@@ -1,10 +1,13 @@
-import { serialize, Observable, SerializationHelper, serializeAsVector3, serializeAsQuaternion, Tags } from "Tools";
+import { serialize, serializeAsVector3, serializeAsQuaternion, SerializationHelper } from "Tools/decorators";
+import { Tags } from "Tools/tags";
+import { Observable } from "Tools/observable";
+
 import { Nullable } from "types";
-import { Camera } from "Cameras";
+import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Quaternion, Matrix, Vector3, Tmp, Space } from "Math";
-import { Node } from "Node";
-import { Bone } from "Bones";
+import { Quaternion, Matrix, Vector3, Tmp, Space } from "Math/math";
+import { Node } from "node";
+import { Bone } from "Bones/bone";
     /**
      * A TransformNode is an object that is not rendered but can be used as a center of transformation. This can decrease memory usage and increase rendering speed compared to using an empty mesh as a parent and is less complicated than using a pivot matrix.
      * @see https://doc.babylonjs.com/how_to/transformnode
@@ -1117,12 +1120,26 @@ import { Bone } from "Bones";
         }
 
         /**
+         * Get all child-transformNodes of this node
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+         * @returns an array of TransformNode
+         */
+        public getChildTransformNodes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): TransformNode[] {
+            var results: Array<TransformNode> = [];
+            this._getDescendants(results, directDescendantsOnly, (node: Node) => {
+                return ((!predicate || predicate(node)) && (node instanceof TransformNode));
+            });
+            return results;
+        }
+
+        /**
          * Releases resources associated with this transform node.
          * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
          * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
          */
         public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
-            // Animations
+           // Animations
             this.getScene().stopAnimation(this);
 
             // Remove from scene
@@ -1130,7 +1147,14 @@ import { Bone } from "Bones";
 
             this.onAfterWorldMatrixUpdateObservable.clear();
 
+            if (doNotRecurse) {
+                const transformNodes = this.getChildTransformNodes(true);
+                for (const transformNode of transformNodes) {
+                    transformNode.parent = null;
+                    transformNode.computeWorldMatrix(true);
+                }
+            }
+
             super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
-
     }

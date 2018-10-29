@@ -1,13 +1,20 @@
-import { serialize, Observable } from "Tools";
+import { serialize } from "Tools/decorators";
+import { Observable } from "Tools/observable";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Vector3, Vector2, Color3, Color4 } from "Math";
-import { Engine } from "Engine";
-import { VertexBuffer } from "Mesh";
-import { RenderTargetTexture, Material, Texture, Effect, ProceduralTextureSceneComponent } from "Materials";
+import { Matrix, Vector3, Vector2, Color3, Color4 } from "Math/math";
+import { Engine } from "Engine/engine";
+import { VertexBuffer } from "Mesh/vertexBuffer";
 import { SceneComponentConstants } from "sceneComponent";
-import { _TimeToken } from "Instrumentation";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+
+import { Material } from "Materials/material";
+import { Effect } from "Materials/effect";
+import { Texture } from "Materials/Textures/texture";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";
+
     /**
      * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.
      * This is the base class of any Procedural texture and contains most of the shareable code.

@@ -1,8 +1,8 @@
-import { AxesViewer } from "Debug";
 import { Nullable } from "types";
-import { Mesh } from "Mesh";
-import { Bone } from "Bones";
-import { Vector3, Axis } from "Math";
+import { AxesViewer } from "Debug/axesViewer";
+import { Vector3, Axis } from "Math/math";
+import { Mesh } from "Mesh/mesh";
+import { Bone } from "Bones/bone";
 import { Scene } from "scene";
 
 /**

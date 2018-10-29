@@ -1,12 +1,14 @@
+import { serializeAsColor3, serializeAsVector3 } from "Tools/decorators";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Vector3, Color3 } from "Math";
-import { Node } from "Node";
-import { Effect } from "Materials";
-import { Light, IShadowGenerator } from "Lights";
-import { _TimeToken } from "Instrumentation";
+import { Matrix, Vector3, Color3 } from "Math/math";
+import { Node } from "node";
+import { Effect } from "Materials/effect";
+import { Light } from "./light";
+import { IShadowGenerator } from "./Shadows/shadowGenerator";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { serializeAsColor3, serializeAsVector3 } from "index";
+
     Node.AddNodeConstructor("Light_Type_3", (name, scene) => {
         return () => new HemisphericLight(name, Vector3.Zero(), scene);
     });

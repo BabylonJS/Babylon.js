@@ -1,4 +1,5 @@
-import { serialize, Observer, Observable, Tools, SmartArray, SerializationHelper, IAnimatable, Tags } from "Tools";
+import { serialize } from "Tools/decorators";
+import { Observer, Observable, Tools, SmartArray, SerializationHelper, IAnimatable, Tags } from "Tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { Plane, Matrix } from "Math";

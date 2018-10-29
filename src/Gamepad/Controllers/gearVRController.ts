@@ -1,11 +1,16 @@
 import { Scene } from "scene";
-import { Vector3 } from "Math";
-import { WebVRController, PoseEnabledControllerType, ExtendedGamepadButton, GamepadButtonChanges } from "Gamepad";
-import { AbstractMesh, Mesh } from "Mesh";
-import { _TimeToken } from "Instrumentation";
-import { SceneLoader } from "Loading";
+import { Vector3 } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Mesh } from "Mesh/mesh";
+import { _TimeToken } from "Instrumentation/timeToken";
+import { SceneLoader } from "Loading/sceneLoader";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-    /**
+
+import { GamepadButtonChanges } from "Gamepad/gamepad";
+import { WebVRController } from "./webVRController";
+import { PoseEnabledControllerType, ExtendedGamepadButton } from "./poseEnabledController";
+
+/**
      * Gear VR Controller
      */
     export class GearVRController extends WebVRController {

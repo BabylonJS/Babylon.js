@@ -1,10 +1,18 @@
-import { serialize, Observable, Tools, SerializationHelper } from "Tools";
+import { serialize, SerializationHelper } from "Tools/decorators";
+import { Observable } from "Tools/observable";
+import { Tools } from "Tools/tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Vector3, Plane } from "Math";
+import { Matrix, Vector3, Plane } from "Math/math";
 import { Engine } from "Engine";
-import { RenderTargetTexture, Material, BaseTexture, MirrorTexture, CubeTexture } from "Materials";
-import { Animation } from "Animations";
+import { Animation } from "Animations/animation";
+import { Material } from "Materials/material";
+import { BaseTexture } from "Materials/Textures/baseTexture";
+
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { MirrorTexture } from "Materials/Textures/mirrorTexture";
+import { CubeTexture } from "Materials/Textures/cubeTexture";
+
     /**
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
      * @see http://doc.babylonjs.com/babylon101/materials#texture

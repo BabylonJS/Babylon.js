@@ -1,8 +1,15 @@
-import { SerializationHelper } from "Tools";
+import { SerializationHelper } from "Tools/decorators";
 import { Scene } from "scene";
-import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "Math";
-import { Mesh, AbstractMesh, VertexBuffer } from "Mesh";
-import { Material, Texture, BaseTexture, MaterialHelper, EffectFallbacks, EffectCreationOptions } from "Materials";
+import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Mesh } from "Mesh/mesh";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { BaseTexture } from "Materials/Textures/baseTexture";
+import { Texture } from "Materials/Textures/texture";
+import { MaterialHelper } from "./materialHelper";
+import { EffectFallbacks, EffectCreationOptions } from "./effect";
+import { Material } from "./material";
+
     /**
      * Defines the options associated with the creation of a shader material.
      */

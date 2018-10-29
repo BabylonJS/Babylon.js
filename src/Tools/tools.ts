@@ -1,7 +1,6 @@
 import { Animation } from "Animations";
 import { Color4, Color3, Scalar, Vector2, Vector3 } from "Math";
 import { Observable, Engine, IOfflineProvider, FilesInput, Camera, RenderTargetTexture, Texture, FxaaPostProcess, TGATools } from "index";
-import { Mesh, SubMesh } from "Mesh";
 import { FloatArray, IndicesArray, Nullable } from "types";
 
     /**
@@ -186,11 +185,11 @@ import { FloatArray, IndicesArray, Nullable } from "types";
             return null;
         }
 
-        if (source instanceof Mesh) {
+        if (source.getClassName && source.getClassName === "Mesh") {
             return null;
         }
 
-        if (source instanceof SubMesh) {
+        if (source.getClassName && source.getClassName === "SubMesh") {
             return source.clone(destinationObject);
         } else if (source.clone) {
             return source.clone();

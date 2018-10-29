@@ -1,10 +1,14 @@
-import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, TextureTools, serializeAsTexture } from "Tools";
+import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "Tools/decorators";
+import { TextureTools } from "Tools/textureTools";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Color3 } from "Math";
-import { ImageProcessingConfiguration, BaseTexture, ColorCurves, PBRBaseMaterial } from "Materials";
-import { _TimeToken } from "Instrumentation";
+import { Color3 } from "Math/math";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { ImageProcessingConfiguration } from "Materials/imageProcessingConfiguration";
+import { ColorCurves } from "Materials/colorCurves";
+import { BaseTexture } from "Materials/Textures/baseTexture";
+import { PBRBaseMaterial } from "./pbrBaseMaterial";
     /**
      * The Physically based material of BJS.
      *
@@ -16,29 +20,29 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         /**
          * PBRMaterialTransparencyMode: No transparency mode, Alpha channel is not use.
          */
-        public static readonly PBRMATERIAL_OPAQUE = 0;
+        public static readonly PBRMATERIAL_OPAQUE = PBRBaseMaterial.PBRMATERIAL_OPAQUE;
 
         /**
          * PBRMaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
          */
-        public static readonly PBRMATERIAL_ALPHATEST = 1;
+        public static readonly PBRMATERIAL_ALPHATEST = PBRBaseMaterial.PBRMATERIAL_ALPHATEST;
 
         /**
          * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
          */
-        public static readonly PBRMATERIAL_ALPHABLEND = 2;
+        public static readonly PBRMATERIAL_ALPHABLEND = PBRBaseMaterial.PBRMATERIAL_ALPHABLEND;
 
         /**
          * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
          * They are also discarded below the alpha cutoff threshold to improve performances.
          */
-        public static readonly PBRMATERIAL_ALPHATESTANDBLEND = 3;
+        public static readonly PBRMATERIAL_ALPHATESTANDBLEND = PBRBaseMaterial.PBRMATERIAL_ALPHATESTANDBLEND;
 
         /**
          * Defines the default value of how much AO map is occluding the analytical lights
          * (point spot...).
          */
-        public static DEFAULT_AO_ON_ANALYTICAL_LIGHTS = 1;
+        public static DEFAULT_AO_ON_ANALYTICAL_LIGHTS = PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
 
         /**
          * Intensity of the direct lights e.g. the four lights available in your scene.

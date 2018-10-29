@@ -1,15 +1,20 @@
-import { Tools } from "Tools";
+import { Tools } from "Tools/tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Vector3, Color3, Viewport, Scalar } from "Math";
-import { Engine } from "Engine";
-import { AbstractMesh, VertexBuffer } from "Mesh";
-import { Ray } from "Culling";
-import { Material, Effect } from "Materials";
+import { Matrix, Vector3, Color3, Viewport } from "Math/math";
+import { Scalar } from "Math/math.scalar";
+import { Engine } from "Engine/engine";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { Ray } from "Culling/ray";
+import { Effect } from "Materials/effect";
+import { Material } from "Materials/material";
 import { SceneComponentConstants } from "sceneComponent";
-import { _TimeToken } from "Instrumentation";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { LensFlare, LensFlareSystemSceneComponent } from "LensFlare";
+import { LensFlare } from "./lensFlare";
+import { LensFlareSystemSceneComponent } from "./lensFlareSystemSceneComponent";
+
     /**
      * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
      * It is usually composed of several `lensFlare`.

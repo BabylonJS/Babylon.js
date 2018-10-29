@@ -1,5 +1,6 @@
-import { Tools } from "Tools";
-import { Matrix, Vector3, Plane } from "Math";
+import { Tools } from "Tools/tools";
+import { Matrix, Vector3, Plane } from "Math/math";
+
     /**
      * Class used to store bounding sphere information
      */

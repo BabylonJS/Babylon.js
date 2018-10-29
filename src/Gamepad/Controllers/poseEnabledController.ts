@@ -1,14 +1,20 @@
-import { Observable } from "Tools";
+import { Observable } from "Tools/observable";
 import { Nullable } from "types";
-import { WebVRFreeCamera, TargetCamera, PoseControlled, DevicePose } from "Cameras";
-import { Quaternion, Matrix, Vector3, Tmp } from "Math";
-import { Gamepad, ExtendedGamepadButton, OculusTouchController, WindowsMotionController, ViveController, GearVRController, DaydreamController, GenericController } from "Gamepad";
-import { Node } from "Node";
-import { AbstractMesh, TransformNode } from "Mesh";
-import { Ray } from "Culling";
-import { _TimeToken } from "Instrumentation";
+import { Quaternion, Matrix, Vector3, Tmp } from "Math/math";
+import { Node } from "node";
+import { TransformNode } from "Mesh/transformNode";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Ray } from "Culling/ray";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Engine } from "Engine";
+import { Engine } from "Engine/engine";
+
+import { Gamepad } from "Gamepad/gamepad";
+import { ExtendedGamepadButton } from "./poseEnabledController";
+
+import { OculusTouchController, WindowsMotionController, ViveController, GearVRController, DaydreamController, GenericController } from "Gamepad";
+
+import { WebVRFreeCamera, TargetCamera, PoseControlled, DevicePose } from "Cameras";
     /**
     * Defines the types of pose enabled controllers that are supported
     */

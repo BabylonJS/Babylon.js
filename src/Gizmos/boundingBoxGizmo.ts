@@ -1,15 +1,18 @@
-import { Observer, Observable, Tools } from "Tools";
+import { Observer, Observable } from "Tools/observable";
+import { Tools } from "Tools/tools";
 import { Nullable } from "types";
-import { PointerInfo } from "Events";
+import { PointerInfo } from "Events/pointerEvents";
 import { Scene } from "scene";
-import { Quaternion, Matrix, Vector3, Color3 } from "Math";
-import { Mesh, AbstractMesh, MeshBuilder } from "Mesh";
-import { PointerDragBehavior } from "Behaviors";
-import { _TimeToken } from "Instrumentation";
+import { Quaternion, Matrix, Vector3, Color3 } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Mesh } from "Mesh/mesh";
+import { MeshBuilder } from "Mesh/meshBuilder";
+import { PointerDragBehavior } from "Behaviors/Mesh/pointerDragBehavior";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Gizmo } from "Gizmos";
-import { UtilityLayerRenderer } from "Rendering";
-import { StandardMaterial } from "Materials";
+import { Gizmo } from "./gizmo";
+import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
+import { StandardMaterial } from "Materials/standardMaterial";
     /**
      * Bounding box gizmo
      */

@@ -1,12 +1,12 @@
-import { Camera } from "Cameras";
+import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Engine } from "Engine";
-import { AbstractMesh } from "Mesh";
-import { RenderTargetTexture } from "Materials";
+import { Engine } from "Engine/engine";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 import { SceneComponentConstants, ISceneSerializableComponent } from "sceneComponent";
-import { _TimeToken } from "Instrumentation";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { EffectLayer } from "Layer";
+import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "abstractScene";
 import { AssetContainer } from "assetContainer";
     // Adds the parser to the scene parsers.

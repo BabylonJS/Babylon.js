@@ -1,12 +1,13 @@
-import { serialize, SerializationHelper, serializeAsColor3, expandToProperty } from "Tools";
+import { serialize, SerializationHelper, serializeAsColor3, expandToProperty } from "Tools/decorators";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Vector3, Color3 } from "Math";
-import { Node } from "Node";
-import { AbstractMesh } from "Mesh";
-import { UniformBuffer, Effect } from "Materials";
-import { Animation } from "Animations";
-import { IShadowGenerator } from "Lights";
+import { Vector3, Color3 } from "Math/math";
+import { Node } from "node";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Effect } from "Materials/effect";
+import { UniformBuffer } from "Materials/uniformBuffer";
+import { Animation } from "Animations/animation";
+import { IShadowGenerator } from "./Shadows/shadowGenerator";
     /**
      * Base class of all the lights in Babylon. It groups all the generic information about lights.
      * Lights are used, as you would expect, to affect how meshes are seen, in terms of both illumination and colour.

@@ -1,9 +1,10 @@
-import { Observable } from "Tools";
+import { Observable } from "Tools/observable";
 import { Scene } from "scene";
-import { PoseEnabledController, StickValues, ExtendedGamepadButton, GamepadButtonChanges, MutableGamepadButton } from "Gamepad";
-import { AbstractMesh } from "Mesh";
-import { _TimeToken } from "Instrumentation";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { PoseEnabledController, ExtendedGamepadButton, MutableGamepadButton } from "./poseEnabledController";
+import { StickValues, GamepadButtonChanges } from "Gamepad/gamepad";
     /**
      * Defines the WebVRController object that represents controllers tracked in 3D space
      */

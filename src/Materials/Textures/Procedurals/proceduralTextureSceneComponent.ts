@@ -1,10 +1,11 @@
-import { Tools } from "Tools";
+import { Tools } from "Tools/tools";
 import { Scene } from "scene";
-import { ProceduralTexture } from "Materials";
 import { SceneComponentConstants, ISceneComponent } from "sceneComponent";
-import { _TimeToken } from "Instrumentation";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Layer } from "Layer";
+import { Layer } from "Layer/layer";
+
+import { ProceduralTexture } from "./proceduralTexture";
 
 declare module "abstractScene" {
     export interface AbstractScene {

@@ -1,10 +1,13 @@
-import { ISmartArrayLike } from "Tools";
+import { ISmartArrayLike } from "Tools/smartArray";
 import { Scene } from "scene";
-import { Vector3 } from "Math";
-import { AbstractMesh, SubMesh } from "Mesh";
-import { Collider } from "Collisions";
-import { Ray, Octree } from "Culling";
+import { Vector3 } from "Math/math";
+import { SubMesh } from "Mesh/subMesh";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Collider } from "Collisions/collider";
+import { Ray } from "Culling/ray";
 import { SceneComponentConstants } from "sceneComponent";
+
+import { Octree } from "./octree";
 
 declare module "scene" {
     export interface Scene {

@@ -1,8 +1,9 @@
-import { Observable, Tools } from "Tools";
+import { Observable } from "Tools/observable";
+import { Tools } from "Tools/tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Engine } from "Engine";
-import { Texture, VideoTextureSettings } from "Materials";
+import { Engine } from "Engine/engine";
+import { Texture } from "Materials/Textures/texture";
     /**
      * Settings for finer control over video usage
      */

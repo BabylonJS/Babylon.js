@@ -1,8 +1,9 @@
-import { Tools } from "Tools";
+import { Tools } from "Tools/tools";
 import { Nullable, FloatArray } from "types";
-import { Matrix, Vector3, Color3, Vector4 } from "Math";
-import { Engine } from "Engine";
-import { Effect, BaseTexture } from "Materials";
+import { Matrix, Vector3, Color3, Vector4 } from "Math/math";
+import { Engine } from "Engine/engine";
+import { Effect } from "./effect";
+import { BaseTexture } from "Materials/Textures/baseTexture";
     /**
      * Uniform buffer objects.
      *

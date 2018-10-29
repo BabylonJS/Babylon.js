@@ -1,7 +1,8 @@
-import { Vector3, Quaternion, Matrix, Space, Axis } from "Math";
-import { Tools } from "Tools";
-import { AbstractMesh } from "Mesh";
-import { Bone } from "Bones";
+import { Bone } from "./bone";
+
+import { Vector3, Quaternion, Matrix, Space, Axis } from "Math/math";
+import { Tools } from "Tools/tools";
+import { AbstractMesh } from "Mesh/abstractMesh";
 import { Nullable } from "types";
 
     /**

@@ -1,16 +1,28 @@
-import { serialize, Observable, Tools, SmartArray, serializeAsColor4, serializeAsCameraReference } from "Tools";
+import { serialize, serializeAsColor4, serializeAsCameraReference } from "Tools/decorators";
+import { Tools } from "Tools/tools";
+import { SmartArray } from "Tools/smartArray";
+import { Observable } from "Tools/observable";
 import { Nullable } from "types";
-import { Camera } from "Cameras";
+import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Color4, ISize } from "Math";
-import { Engine } from "Engine";
-import { Mesh, AbstractMesh, VertexBuffer, SubMesh } from "Mesh";
-import { RenderTargetTexture, Material, Texture, Effect, BaseTexture, MaterialHelper } from "Materials";
-import { PostProcess } from "PostProcess";
+import { Color4, ISize } from "Math/math";
+import { Engine } from "Engine/engine";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { SubMesh } from "Mesh/subMesh";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Mesh } from "Mesh/mesh";
+import { PostProcess } from "PostProcess/postProcess";
 import { SceneComponentConstants } from "sceneComponent";
-import { _TimeToken } from "Instrumentation";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { EffectLayerSceneComponent } from "Layer";
+import { EffectLayerSceneComponent } from "./effectLayerSceneComponent";
+import { BaseTexture } from "Materials/Textures/baseTexture";
+import { Texture } from "Materials/Textures/texture";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { Effect } from "Materials/effect";
+import { Material } from "Materials/material";
+import { MaterialHelper } from "Materials/materialHelper";
+
     /**
      * Effect layer options. This helps customizing the behaviour
      * of the effect layer.
