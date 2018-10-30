@@ -1,7 +1,12 @@
 import { Tags } from ".";
 import { Nullable } from "types";
-import { Color4, Quaternion, Color3, Vector2, Vector3 } from "Math";
-import { ImageProcessingConfiguration, Camera, Scene, Texture, FresnelParameters, ColorCurves } from "index";
+import { Color4, Quaternion, Color3, Vector2, Vector3 } from "Math/math";
+import { ImageProcessingConfiguration } from "Materials/imageProcessingConfiguration";
+import { Camera } from "Cameras/camera";
+import { Scene } from "scene";
+import { Texture } from "Materials/Textures/texture";
+import { FresnelParameters } from "Materials/fresnelParameters";
+import { ColorCurves } from "Materials/colorCurves";
 
     var __decoratorInitialStore = {};
     var __mergedStore = {};

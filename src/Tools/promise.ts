@@ -1,6 +1,5 @@
 import { Nullable } from "types";
-
-import { Tools } from ".";
+import { Tools } from "./tools";
 
     enum PromiseStates {
         Pending,

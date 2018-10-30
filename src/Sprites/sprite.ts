@@ -1,7 +1,7 @@
-import { Vector3, Color4 } from "Math";
+import { Vector3, Color4 } from "Math/math";
 import { Nullable } from "types";
-import { ActionManager } from "Actions";
-import { ISpriteManager } from "Sprites";
+import { ActionManager } from "Actions/actionManager";
+import { ISpriteManager } from "./spriteManager";
 
     /**
      * Class used to represent a sprite

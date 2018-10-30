@@ -1,16 +1,21 @@
 import { Scene } from "scene";
 import { Nullable } from "types";
-import { AbstractMesh, Geometry, TransformNode } from "Mesh";
-import { Skeleton } from "Bones";
-import { MorphTargetManager } from "Morph";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { TransformNode } from "Mesh/transformNode";
+import { Geometry } from "Mesh/geometry";
+import { Skeleton } from "Bones/skeleton";
+import { MorphTargetManager } from "Morph/morphTargetManager";
 import { AssetContainer } from "assetContainer";
-import { IParticleSystem } from "Particles";
-import { AnimationGroup, Animation } from "Animations";
-import { MultiMaterial, Material, BaseTexture } from "Materials";
-import { ActionManager } from "Actions";
-import { Camera } from "Cameras";
-import { Light } from "Lights";
-import { Node } from "Node";
+import { IParticleSystem } from "Particles/IParticleSystem";
+import { Animation } from "Animations/animation";
+import { AnimationGroup } from "Animations/animationGroup";
+import { BaseTexture } from "Materials/Textures/baseTexture";
+import { Material } from "Materials/material";
+import { MultiMaterial } from "Materials/multiMaterial";
+import { ActionManager } from "Actions/actionManager";
+import { Camera } from "Cameras/camera";
+import { Light } from "Lights/light";
+import { Node } from "node";
 
     /**
      * Defines how the parser contract is defined.

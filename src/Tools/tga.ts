@@ -1,6 +1,5 @@
-import { InternalTexture } from "index";
-
-import { Tools } from ".";
+import { InternalTexture } from "Materials/Textures/internalTexture";
+import { Tools } from "./tools";
 
     /**
      * Based on jsTGALoader - Javascript loader for TGA file

@@ -1,6 +1,5 @@
 import { Nullable } from "types";
-
-import { Tools } from ".";
+import { Tools } from "./tools";
 
     /**
 	 * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window

@@ -1,8 +1,10 @@
-import { Vector3, SphericalPolynomial, SphericalHarmonics, Scalar, ToLinearSpace, Color3 } from "Math";
-import { BaseTexture } from "Materials";
+import { Vector3, ToLinearSpace, Color3 } from "Math/math";
+import { Scalar } from "Math/math.scalar";
+import { SphericalPolynomial, SphericalHarmonics } from "Math/sphericalPolynomial";
+import { BaseTexture } from "Materials/Textures/baseTexture";
 import { Nullable } from "types";
-import { Engine } from "Engine";
-import { CubeMapInfo } from "Tools";
+import { Engine } from "Engine/engine";
+import { CubeMapInfo } from "./panoramaToCubemap";
 
     class FileFaceOrientation {
         public name: string;

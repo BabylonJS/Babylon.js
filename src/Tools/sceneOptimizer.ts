@@ -1,10 +1,9 @@
-import { Scene, IDisposable, Engine } from "index";
-
-import { AbstractMesh, Mesh } from "Mesh";
-
+import { Scene, IDisposable } from "scene";
+import { Engine } from "Engine/engine";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Mesh } from "Mesh/Mesh";
 import { Nullable } from "types";
-
-import { Observer, Observable } from ".";
+import { Observer, Observable } from "./observable";
 
     /**
      * Defines the root class used to create scene optimization to use with SceneOptimizer
