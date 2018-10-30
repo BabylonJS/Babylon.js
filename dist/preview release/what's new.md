@@ -28,6 +28,7 @@
 
 ### Core Engine
 
+- Added new `PassCubePostProcess` to render cube map content ([Deltakosh](https://github.com/deltakosh))
 - Added support for utility layer for SkeletonViewer ([Deltakosh](https://github.com/deltakosh))
 - Improved shader precision detection ([Deltakosh](https://github.com/deltakosh))
 - Added support for bone matrix texture. Now skeletons will use a texture instead of uniforms when possible ([Deltakosh](https://github.com/deltakosh))
