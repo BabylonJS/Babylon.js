@@ -156,8 +156,13 @@ export class Control {
     public onDirtyObservable = new Observable<Control>();
 
     /**
-   * An event triggered after the control is drawn
-   */
+     * An event triggered before drawing the control
+     */
+    public onBeforeDrawObservable = new Observable<Control>();
+
+    /**
+     * An event triggered after the control was drawn
+     */
     public onAfterDrawObservable = new Observable<Control>();
 
     /** Gets or set information about font offsets (used to render and align text) */
@@ -1055,6 +1060,10 @@ export class Control {
             context.clip();
         }
 
+        if (this.onBeforeDrawObservable.hasObservers()) {
+            this.onBeforeDrawObservable.notifyObservers(this);
+        }
+
         return true;
     }
 
@@ -1397,6 +1406,7 @@ export class Control {
     /** Releases associated resources */
     public dispose() {
         this.onDirtyObservable.clear();
+        this.onBeforeDrawObservable.clear();
         this.onAfterDrawObservable.clear();
         this.onPointerDownObservable.clear();
         this.onPointerEnterObservable.clear();
