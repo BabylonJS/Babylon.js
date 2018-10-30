@@ -1,7 +1,6 @@
-import { DeepImmutable } from "types";
+import { DeepImmutable, Nullable, FloatArray, float } from "types";
 import { ArrayTools } from "Tools/arrayTools";
-import { Nullable, FloatArray, float } from "types";
-import { Scalar } from "Math/math.scalar";
+import { Scalar } from "./math.scalar";
 import { Engine } from "Engine/engine";
 import { Ray } from "Culling/ray";
     /**

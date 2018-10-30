@@ -10,7 +10,6 @@ import { VertexBuffer } from "Mesh/vertexBuffer";
 import { VertexData, IGetSetVerticesData } from "Mesh/mesh.vertexData";
 import { TransformNode } from "Mesh/transformNode";
 import { SubMesh } from "Mesh/subMesh";
-import { InstancedMesh } from "Mesh/instancedMesh";
 import { PickingInfo, IntersectionInfo } from "Collisions/pickingInfo";
 import { Collider } from "Collisions/collider";
 import { Ray } from "Culling/ray";
@@ -604,7 +603,7 @@ import { SolidParticle } from "Particles/solidParticle";
          * @returns a string representation of the current mesh
          */
         public toString(fullDetails?: boolean): string {
-            var ret = "Name: " + this.name + ", isInstance: " + (this instanceof InstancedMesh ? "YES" : "NO");
+            var ret = "Name: " + this.name + ", isInstance: " + (this.getClassName() !== "InstancedMesh" ? "YES" : "NO");
             ret += ", # of submeshes: " + (this.subMeshes ? this.subMeshes.length : 0);
             if (this._skeleton) {
                 ret += ", skeleton: " + this._skeleton.name;
