@@ -1,4 +1,4 @@
-import { DeepImmutable, Nullable } from "types";
+import { DeepImmutable, Nullable, float } from "types";
 import { ArrayTools } from "Tools/arrayTools";
 import { Matrix, Vector3, Plane, Tmp } from "Math";
 import { AbstractMesh } from "Mesh";
@@ -414,7 +414,7 @@ import { BoundingBox, BoundingSphere } from "Culling";
          * @returns this ray updated
          */
         public update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Ray {
-            Vector3.UnprojectRayToRef(x, y, viewportWidth, viewportHeight, world, view, projection, this);
+            this.unprojectRayToRef(x, y, viewportWidth, viewportHeight, world, view, projection);
             return this;
         }
 
@@ -494,5 +494,35 @@ import { BoundingBox, BoundingSphere } from "Culling";
                 dir.z *= num;
                 result.length *= len;
             }
+        }
+
+       /**
+         * Unproject a ray from screen space to object space
+         * @param sourceX defines the screen space x coordinate to use
+         * @param sourceY defines the screen space y coordinate to use
+         * @param viewportWidth defines the current width of the viewport
+         * @param viewportHeight defines the current height of the viewport
+         * @param world defines the world matrix to use (can be set to Identity to go to world space)
+         * @param view defines the view matrix to use
+         * @param projection defines the projection matrix to use
+         */
+        public unprojectRayToRef(sourceX: float, sourceY: float, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): void {
+            var matrix = Tmp.Matrix[0];
+            world.multiplyToRef(view, matrix);
+            matrix.multiplyToRef(projection, matrix);
+            matrix.invert();
+            var nearScreenSource = Tmp.Vector3[0];
+            nearScreenSource.x = sourceX / viewportWidth * 2 - 1;
+            nearScreenSource.y = -(sourceY / viewportHeight * 2 - 1);
+            nearScreenSource.z = -1.0;
+            var farScreenSource = Tmp.Vector3[1].copyFromFloats(nearScreenSource.x, nearScreenSource.y, 1.0);
+            const nearVec3 = Tmp.Vector3[2];
+            const farVec3 = Tmp.Vector3[3];
+            Vector3._UnprojectFromInvertedMatrixToRef(nearScreenSource, matrix, nearVec3);
+            Vector3._UnprojectFromInvertedMatrixToRef(farScreenSource, matrix, farVec3);
+
+            this.origin.copyFrom(nearVec3);
+            farVec3.subtractToRef(nearVec3, this.direction);
+            this.direction.normalize();
         }
     }
