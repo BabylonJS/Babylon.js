@@ -1,6 +1,9 @@
-import { FreeCamera, WebXRSessionManager, Camera, TargetCamera } from "Cameras";
-import { Vector3, Matrix, Quaternion, Viewport } from "Math";
+import { Vector3, Matrix, Quaternion, Viewport } from "Math/math";
 import { Scene } from "scene";
+import { Camera } from "Cameras/camera";
+import { FreeCamera } from "Cameras/freeCamera";
+import { TargetCamera } from "Cameras/targetCamera";
+import { WebXRSessionManager } from "./webXRSessionManager";
 
     /**
      * WebXR Camera which holds the views for the xrSession

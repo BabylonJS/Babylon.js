@@ -1,9 +1,11 @@
-import { serialize, Observer } from "Tools";
 import { Nullable } from "types";
+import { serialize } from "Tools/decorators";
+import { Observer } from "Tools/observable";
 import { Scene } from "scene";
-import { ICameraInput, ArcRotateCamera, CameraInputTypes } from "Cameras";
+import { ArcRotateCamera } from "Cameras/arcRotateCamera";
+import { ICameraInput, CameraInputTypes } from "Cameras/cameraInputsManager";
 import { Engine } from "Engine";
-import { KeyboardInfo, KeyboardEventTypes } from "Events";
+import { KeyboardInfo, KeyboardEventTypes } from "Events/keyboardEvents";
 
     /**
      * Manage the keyboard inputs to control the movement of an arc rotate camera.

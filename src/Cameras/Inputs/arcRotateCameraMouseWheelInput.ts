@@ -1,7 +1,9 @@
-import { serialize, Observer, EventState } from "Tools";
 import { Nullable } from "types";
-import { ICameraInput, ArcRotateCamera, CameraInputTypes } from "Cameras";
-import { PointerInfo, PointerEventTypes } from "Events";
+import { serialize } from "Tools/decorators";
+import { EventState, Observer } from "Tools/observable";
+import { ArcRotateCamera } from "Cameras/arcRotateCamera";
+import { ICameraInput, CameraInputTypes } from "Cameras/cameraInputsManager";
+import { PointerInfo, PointerEventTypes } from "Events/pointerEvents";
 
     /**
      * Manage the mouse wheel inputs to control an arc rotate camera.

@@ -1,17 +1,32 @@
-import { Observer, Observable, Tools } from "Tools";
+import { Tools } from "Tools/tools";
+import { Observer, Observable } from "Tools/observable";
 import { Nullable } from "types";
-import { FreeCamera, DeviceOrientationCamera, Camera, VRDeviceOrientationFreeCamera, WebVROptions, WebVRFreeCamera, TargetCamera } from "Cameras";
-import { PointerEventTypes } from "Events";
+import { Camera } from "Cameras/camera";
+import { FreeCamera } from "Cameras/freeCamera";
+import { TargetCamera } from "Cameras/targetCamera";
+import { DeviceOrientationCamera } from "Cameras/deviceOrientationCamera";
+import { VRDeviceOrientationFreeCamera } from "Cameras/VR/vrDeviceOrientationFreeCamera";
+import { WebVROptions, WebVRFreeCamera } from "Cameras/VR/webVRCamera";
+import { PointerEventTypes } from "Events/pointerEvents";
 import { Scene, IDisposable } from "scene";
-import { Quaternion, Matrix, Vector3, Color3, Color4, Axis } from "Math";
-import { Gamepad, WebVRController, PoseEnabledController, Xbox360Pad, Xbox360Button, StickValues, PoseEnabledControllerType } from "Gamepad";
-import { IDisplayChangedEventArgs } from "Engine";
-import { Mesh, AbstractMesh, TransformNode } from "Mesh";
-import { PickingInfo } from "Collisions";
-import { Ray } from "Culling";
-import { StandardMaterial, ImageProcessingConfiguration, DynamicTexture } from "Materials";
-import { ImageProcessingPostProcess } from "PostProcess";
-import { Animation, SineEase, EasingFunction, CircleEase } from "Animations";
+import { Quaternion, Matrix, Vector3, Color3, Color4, Axis } from "Math/math";
+import { Gamepad, StickValues } from "Gamepad/gamepad";
+import { PoseEnabledController, PoseEnabledControllerType } from "Gamepad/Controllers/poseEnabledController";
+import { WebVRController } from "Gamepad/Controllers/webVRController";
+import { Xbox360Pad, Xbox360Button } from "Gamepad/xboxGamepad";
+import { IDisplayChangedEventArgs } from "Engine/engine";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { TransformNode } from "Mesh/transformNode";
+import { Mesh } from "Mesh/mesh";
+import { PickingInfo } from "Collisions/pickingInfo";
+import { Ray } from "Culling/ray";
+import { ImageProcessingConfiguration } from "Materials/imageProcessingConfiguration";
+import { StandardMaterial } from "Materials/standardMaterial";
+import { DynamicTexture } from "Materials/Textures/dynamicTexture";
+import { ImageProcessingPostProcess } from "PostProcess/imageProcessingPostProcess";
+import { SineEase, EasingFunction, CircleEase } from "Animations/easing";
+import { Animation } from "Animations/animation";
+
     /**
      * Options to modify the vr teleportation behavior.
      */

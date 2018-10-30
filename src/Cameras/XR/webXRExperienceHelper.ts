@@ -1,10 +1,12 @@
-import { Observable } from "Tools";
 import { Nullable } from "types";
-import { Camera, WebXRSessionManager, WebXRCamera } from "Cameras";
+import { Observable } from "Tools/observable";
 import { IDisposable, Scene } from "scene";
-import { Quaternion, Vector3 } from "Math";
-import { AbstractMesh } from "Mesh";
-import { Ray } from "Culling";
+import { Quaternion, Vector3 } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Ray } from "Culling/ray";
+import { Camera } from "Cameras/camera";
+import { WebXRSessionManager } from "./webXRSessionManager";
+import { WebXRCamera } from "./webXRCamera";
     /**
      * States of the webXR experience
      */

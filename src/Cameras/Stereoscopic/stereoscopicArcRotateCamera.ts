@@ -1,7 +1,8 @@
-import { ArcRotateCamera, Camera } from "Cameras";
+import { Camera } from "Cameras/camera";
+import { ArcRotateCamera } from "Cameras/arcRotateCamera";
 import { Scene } from "scene";
-import { Vector3 } from "Math";
-import { Node } from "Node";
+import { Vector3 } from "Math/math";
+import { Node } from "node";
 
     Node.AddNodeConstructor("StereoscopicArcRotateCamera", (name, scene, options) => {
         return () => new StereoscopicArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), options.interaxial_distance, options.isStereoscopicSideBySide, scene);

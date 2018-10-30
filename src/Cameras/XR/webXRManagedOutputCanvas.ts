@@ -1,6 +1,6 @@
 import { Nullable } from "types";
-import { WebXRExperienceHelper, WebXRState } from "Cameras";
 import { IDisposable } from "scene";
+import { WebXRExperienceHelper, WebXRState } from "./webXRExperienceHelper";
     /**
      * Creates a canvas that is added/removed from the webpage when entering/exiting XR
      */

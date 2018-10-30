@@ -1,10 +1,12 @@
-import { serialize, Observer } from "Tools";
+import { serialize } from "Tools/decorators";
+import { Observer } from "Tools/observable";
 import { Nullable } from "types";
-import { ICameraInput, CameraInputTypes, FreeCamera } from "Cameras";
-import { KeyboardInfo, KeyboardEventTypes } from "Events";
+import { ICameraInput, CameraInputTypes } from "Cameras/cameraInputsManager";
+import { FreeCamera } from "Cameras/freeCamera";
+import { KeyboardInfo, KeyboardEventTypes } from "Events/keyboardEvents";
 import { Scene } from "scene";
-import { Vector3 } from "Math";
-import { Engine } from "Engine";
+import { Vector3 } from "Math/math";
+import { Engine } from "Engine/engine";
     /**
      * Manage the keyboard inputs to control the movement of a free camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
