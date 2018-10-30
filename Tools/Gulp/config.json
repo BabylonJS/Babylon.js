@@ -794,7 +794,8 @@
             ],
             "shaders": [
                 "postprocess.vertex",
-                "pass.fragment"
+                "pass.fragment",
+                "passCube.fragment"
             ]
         },
         "additionalPostProcess_blur": {
