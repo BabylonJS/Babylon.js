@@ -211,6 +211,10 @@ module BABYLON {
 
             this._speedRatio = speedRatio;
 
+            if (from !== undefined && to !== undefined && from > to && this._speedRatio > 0) {
+                this._speedRatio = -speedRatio;
+            }
+
             this._isStarted = true;
 
             return this;

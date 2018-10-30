@@ -916,8 +916,12 @@ declare module BABYLON.GUI {
              */
             onDirtyObservable: BABYLON.Observable<Control>;
             /**
-            * An event triggered after the control is drawn
-            */
+                * An event triggered before drawing the control
+                */
+            onBeforeDrawObservable: BABYLON.Observable<Control>;
+            /**
+                * An event triggered after the control was drawn
+                */
             onAfterDrawObservable: BABYLON.Observable<Control>;
             /** Gets or set information about font offsets (used to render and align text) */
             fontOffset: {
