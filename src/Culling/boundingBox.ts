@@ -1,5 +1,5 @@
 import { DeepImmutable } from "types";
-import { Tools } from "Tools/tools";
+import { ArrayTools } from "Tools/arrayTools";
 import { Matrix, Vector3, Plane, Epsilon } from "Math/math";
 import { BoundingSphere } from "Culling/boundingSphere";
 
@@ -12,7 +12,7 @@ import { ICullable } from "./boundingInfo";
         /**
          * Gets the 8 vectors representing the bounding box in local space
          */
-        public readonly vectors: Vector3[] = Tools.BuildArray(8, Vector3.Zero);
+        public readonly vectors: Vector3[] = ArrayTools.BuildArray(8, Vector3.Zero);
         /**
          * Gets the center of the bounding box in local space
          */
@@ -32,11 +32,11 @@ import { ICullable } from "./boundingInfo";
         /**
          * Gets the OBB (object bounding box) directions
          */
-        public readonly directions: Vector3[] = Tools.BuildArray(3, Vector3.Zero);
+        public readonly directions: Vector3[] = ArrayTools.BuildArray(3, Vector3.Zero);
         /**
          * Gets the 8 vectors representing the bounding box in world space
          */
-        public readonly vectorsWorld: Vector3[] = Tools.BuildArray(8, Vector3.Zero);
+        public readonly vectorsWorld: Vector3[] = ArrayTools.BuildArray(8, Vector3.Zero);
         /**
          * Gets the minimum vector in world space
          */
@@ -55,7 +55,7 @@ import { ICullable } from "./boundingInfo";
         public readonly maximum: Vector3 = Vector3.Zero();
 
         private _worldMatrix: DeepImmutable<Matrix>;
-        private static readonly TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
+        private static readonly TmpVector3 = ArrayTools.BuildArray(3, Vector3.Zero);
 
         /**
          * @hidden

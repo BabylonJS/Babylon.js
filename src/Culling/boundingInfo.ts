@@ -1,5 +1,5 @@
 import { DeepImmutable } from "types";
-import { Tools } from "Tools/tools";
+import { ArrayTools } from "Tools/arrayTools";
 import { Matrix, Vector3, Plane } from "Math/math";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { Collider } from "Collisions/collider";
@@ -62,7 +62,7 @@ import { BoundingSphere } from "./boundingSphere";
 
         private _isLocked = false;
 
-        private static readonly TmpVector3 = Tools.BuildArray(2, Vector3.Zero);
+        private static readonly TmpVector3 = ArrayTools.BuildArray(2, Vector3.Zero);
 
         /**
          * Constructs bounding info

@@ -1,5 +1,6 @@
 import { Nullable, IndicesArray } from "types";
 import { Tools } from "Tools/tools";
+import { ArrayTools } from "Tools/arrayTools";
 import { Vector3, Matrix, Quaternion, Space } from "Math/math";
 import { TransformNode } from "Mesh/transformNode";
 import { AbstractMesh } from "Mesh/abstractMesh";
@@ -175,7 +176,7 @@ import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
 
         private _isDisposed = false;
 
-        private static _tmpVecs: Vector3[] = Tools.BuildArray(3, Vector3.Zero);
+        private static _tmpVecs: Vector3[] = ArrayTools.BuildArray(3, Vector3.Zero);
         private static _tmpQuat: Quaternion = Quaternion.Identity();
 
         /**

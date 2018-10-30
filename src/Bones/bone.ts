@@ -14,9 +14,9 @@ import { Node } from "node";
      */
     export class Bone extends Node {
 
-        private static _tmpVecs: Vector3[] = Tools.BuildArray(2, Vector3.Zero);
+        private static _tmpVecs: Vector3[] = ArrayTools.BuildArray(2, Vector3.Zero);
         private static _tmpQuat = Quaternion.Identity();
-        private static _tmpMats: Matrix[] = Tools.BuildArray(5, Matrix.Identity);
+        private static _tmpMats: Matrix[] = ArrayTools.BuildArray(5, Matrix.Identity);
 
         /**
          * Gets the list of child bones

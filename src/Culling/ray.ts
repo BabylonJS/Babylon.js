@@ -1,5 +1,5 @@
 import { DeepImmutable, Nullable } from "types";
-import { Tools } from "Tools";
+import { ArrayTools } from "Tools/arrayTools";
 import { Matrix, Vector3, Plane, Tmp } from "Math";
 import { AbstractMesh } from "Mesh";
 import { PickingInfo, IntersectionInfo } from "Collisions";
@@ -8,7 +8,7 @@ import { BoundingBox, BoundingSphere } from "Culling";
      * Class representing a ray with position and direction
      */
     export class Ray {
-        private static readonly TmpVector3 = Tools.BuildArray(6, Vector3.Zero);
+        private static readonly TmpVector3 = ArrayTools.BuildArray(6, Vector3.Zero);
         private _tmpRay: Ray;
 
         /**
