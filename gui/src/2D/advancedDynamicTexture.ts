@@ -17,8 +17,8 @@ export interface IFocusableControl {
      */
     onBlur(): void;
     /**
-     * Function called to let control handle key events
-     * @param evt Defines the  KeyboardEvent object
+     * Function called to let the control handle keyboard events
+     * @param evt defines the current keyboard event
      */
     processKeyboard(evt: KeyboardEvent): void;
 
