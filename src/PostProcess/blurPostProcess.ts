@@ -1,9 +1,10 @@
-import { Vector2 } from "Math";
+import { Vector2 } from "Math/math";
 import { Nullable } from "types";
-import { PostProcess, PostProcessOptions } from "PostProcess";
-import { Camera } from "Cameras";
-import { Texture, Effect } from "Materials";
-import { Engine } from "Engine";
+import { PostProcess, PostProcessOptions } from "./postProcess";
+import { Camera } from "Cameras/camera";
+import { Effect } from "Materials/effect";
+import { Texture } from "Materials/Textures/texture";
+import { Engine } from "Engine/engine";
 
     /**
      * The Blur Post Process which blurs an image based on a kernel and direction.

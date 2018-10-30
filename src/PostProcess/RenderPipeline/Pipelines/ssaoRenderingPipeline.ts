@@ -1,9 +1,16 @@
-import { Vector2, Vector3, Tmp } from "Math";
-import { Camera } from "Cameras";
-import { RenderTargetTexture, Effect, Texture, DynamicTexture } from "Materials";
-import { PostProcess, PostProcessRenderPipeline, PassPostProcess, BlurPostProcess, PostProcessRenderEffect } from "PostProcess";
-import { Engine } from "Engine";
-import { serialize } from "Tools";
+import { Vector2, Vector3, Tmp } from "Math/math";
+import { Camera } from "Cameras/camera";
+import { Effect } from "Materials/effect";
+import { Texture } from "Materials/Textures/texture";
+import { DynamicTexture } from "Materials/Textures/dynamicTexture";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { PostProcess } from "PostProcess/postProcess";
+import { PostProcessRenderPipeline } from "PostProcess/RenderPipeline/postProcessRenderPipeline";
+import { PostProcessRenderEffect } from "PostProcess/RenderPipeline/postProcessRenderEffect";
+import { PassPostProcess } from "PostProcess/passPostProcess";
+import { BlurPostProcess } from "PostProcess/blurPostProcess";
+import { Engine } from "Engine/engine";
+import { serialize } from "Tools/decorators";
 import { Scene } from "scene";
 
     /**

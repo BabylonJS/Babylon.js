@@ -1,9 +1,9 @@
 import { Nullable } from "types";
-import { Camera } from "Cameras";
-import { Effect } from "Materials";
-import { PostProcess, PostProcessOptions } from "PostProcess";
-import { Engine } from "Engine";
-import { ToGammaSpace } from "Math";
+import { Camera } from "Cameras/camera";
+import { Effect } from "Materials/effect";
+import { PostProcess, PostProcessOptions } from "./postProcess";
+import { Engine } from "Engine/engine";
+import { ToGammaSpace } from "Math/math";
 
     /**
      * The extract highlights post process sets all pixels to black except pixels above the specified luminance threshold. Used as the first step for a bloom effect.

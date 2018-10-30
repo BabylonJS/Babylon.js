@@ -1,7 +1,8 @@
-import { PostProcess, PostProcessOptions } from "PostProcess";
-import { Texture, Effect } from "Materials";
-import { Engine } from "Engine";
-import { Camera } from "Cameras";
+import { PostProcess, PostProcessOptions } from "./postProcess";
+import { Effect } from "Materials/effect";
+import { Texture } from "Materials/Textures/texture";
+import { Engine } from "Engine/engine";
+import { Camera } from "Cameras/camera";
 
     /**
      *

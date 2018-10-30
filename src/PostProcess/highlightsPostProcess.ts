@@ -1,7 +1,7 @@
 import { Nullable } from "types";
-import { Camera } from "Cameras";
-import { PostProcess, PostProcessOptions } from "PostProcess";
-import { Engine } from "Engine";
+import { Camera } from "Cameras/camera";
+import { PostProcess, PostProcessOptions } from "./postProcess";
+import { Engine } from "Engine/engine";
 
     /**
      * Extracts highlights from the image

@@ -1,9 +1,10 @@
 import { Nullable } from "types";
-import { Engine } from "Engine";
-import { PostProcess, PostProcessOptions } from "PostProcess";
-import { RenderTargetTexture, Effect } from "Materials";
-import { Camera } from "Cameras";
-import { Tools } from "Tools";
+import { Engine } from "Engine/engine";
+import { PostProcess, PostProcessOptions } from "./postProcess";
+import { Effect } from "Materials/effect";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { Camera } from "Cameras/camera";
+import { Tools } from "Tools/tools";
 
     /**
      * The CircleOfConfusionPostProcess computes the circle of confusion value for each pixel given required lens parameters. See https://en.wikipedia.org/wiki/Circle_of_confusion

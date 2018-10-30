@@ -1,11 +1,16 @@
 import { Nullable } from "types";
-import { Observable, Observer, SmartArray, Tools } from "Tools";
-import { Color4, Vector2 } from "Math";
-import { Camera, WebVRFreeCamera } from "Cameras";
-import { Effect, Texture, InternalTexture } from "Materials";
-import { Engine } from "Engine";
+import { Tools } from "Tools/tools";
+import { SmartArray } from "Tools/smartArray";
+import { Observable, Observer } from "Tools/observable";
+import { Color4, Vector2 } from "Math/math";
+import { Camera } from "Cameras/camera";
+//import { WebVRFreeCamera } from "Cameras/VR/webVRCamera";
+import { Effect } from "Materials/effect";
+import { Texture } from "Materials/Textures/texture";
+import { InternalTexture } from "Materials/Textures/internalTexture";
+import { Engine } from "Engine/engine";
 import { Scene } from "scene";
-import { Animation } from "Animations";
+import { Animation } from "Animations/animation";
     /**
      * Size options for a post process
      */
@@ -407,7 +412,7 @@ import { Animation } from "Animations";
             var requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderHeight(true)) * <number>this._options) | 0;
 
             // If rendering to a webvr camera's left or right eye only half the width should be used to avoid resize when rendered to screen
-            var webVRCamera = (<WebVRFreeCamera>camera.parent);
+            var webVRCamera = (<any>camera.parent);
             if (webVRCamera && (webVRCamera.leftCamera == camera || webVRCamera.rightCamera == camera)) {
                 requiredWidth /= 2;
             }

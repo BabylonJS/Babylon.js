@@ -1,9 +1,10 @@
 import { Nullable } from "types";
-import { Material, InternalTexture } from "Materials";
-import { PostProcess } from "PostProcess";
-import { Engine } from "Engine";
+import { Material } from "Materials/material";
+import { InternalTexture } from "Materials/Textures/internalTexture";
+import { PostProcess } from "./postProcess";
+import { Engine } from "Engine/engine";
 import { Scene } from "scene";
-import { VertexBuffer } from "Mesh";
+import { VertexBuffer } from "Mesh/vertexBuffer";
     /**
 	 * PostProcessManager is used to manage one or more post processes or post process pipelines
      * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses

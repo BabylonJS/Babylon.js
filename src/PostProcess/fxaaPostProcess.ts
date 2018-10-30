@@ -1,8 +1,9 @@
 ﻿import { Nullable } from "types";
-import { Camera } from "Cameras";
-import { Effect, Texture } from "Materials";
-import { PostProcess, PostProcessOptions } from "PostProcess";
-import { Engine } from "Engine";
+import { Camera } from "Cameras/camera";
+import { Effect } from "Materials/effect";
+import { Texture } from "Materials/Textures/texture";
+import { PostProcess, PostProcessOptions } from "./postProcess";
+import { Engine } from "Engine/engine";
 
     /**
      * Fxaa post process

@@ -1,13 +1,26 @@
 import { Nullable } from "types";
-import { IAnimatable, Observer, serialize, SerializationHelper, Tools } from "Tools";
-import { Camera } from "Cameras";
-import { ImageProcessingConfiguration, Texture } from "Materials";
-import { PostProcess, PostProcessRenderPipeline, SharpenPostProcess, PostProcessRenderEffect, BloomEffect, DepthOfFieldEffect, FxaaPostProcess, ImageProcessingPostProcess, ChromaticAberrationPostProcess, GrainPostProcess, DepthOfFieldEffectBlurLevel } from "PostProcess";
-import { Engine } from "Engine";
+import { serialize, SerializationHelper } from "Tools/decorators";
+import { Observer } from "Tools/observable";
+import { IAnimatable, Tools } from "Tools/tools";
+import { Camera } from "Cameras/camera";
+import { ImageProcessingConfiguration } from "Materials/imageProcessingConfiguration";
+import { Texture } from "Materials/Textures/texture";
+import { Engine } from "Engine/engine";
 import { IDisposable } from "scene";
-import { GlowLayer } from "Layer";
+import { GlowLayer } from "Layer/glowLayer";
 import { Scene } from "scene";
-import { Animation } from "Animations";
+import { Animation } from "Animations/animation";
+import { PostProcess } from "PostProcess/postProcess";
+import { SharpenPostProcess } from "PostProcess/sharpenPostProcess";
+import { ImageProcessingPostProcess } from "PostProcess/imageProcessingPostProcess";
+import { ChromaticAberrationPostProcess } from "PostProcess/chromaticAberrationPostProcess";
+import { GrainPostProcess } from "PostProcess/grainPostProcess";
+import { FxaaPostProcess } from "PostProcess/fxaaPostProcess";
+import { PostProcessRenderPipeline } from "PostProcess/RenderPipeline/postProcessRenderPipeline";
+import { PostProcessRenderEffect } from "PostProcess/RenderPipeline/postProcessRenderEffect";
+import { DepthOfFieldEffect, DepthOfFieldEffectBlurLevel } from "PostProcess/depthOfFieldEffect";
+import { BloomEffect } from "PostProcess/bloomEffect";
+
     /**
 	 * The default rendering pipeline can be added to a scene to apply common post processing effects such as anti-aliasing or depth of field.
      * See https://doc.babylonjs.com/how_to/using_default_rendering_pipeline

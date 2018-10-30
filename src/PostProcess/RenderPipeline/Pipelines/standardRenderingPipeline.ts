@@ -1,15 +1,23 @@
 import { Nullable } from "types";
-import { IAnimatable, Tools, serialize, serializeAsTexture, SerializationHelper } from "Tools";
-import { Vector2, Vector3, Matrix, Vector4, Scalar } from "Math";
-import { Camera } from "Cameras";
-import { Effect, Texture } from "Materials";
-import { PostProcess, PostProcessRenderPipeline, BlurPostProcess, FxaaPostProcess, PostProcessRenderEffect } from "PostProcess";
-import { Engine } from "Engine";
+import { serialize, serializeAsTexture, SerializationHelper } from "Tools/decorators";
+import { IAnimatable, Tools } from "Tools/tools";
+import { Vector2, Vector3, Matrix, Vector4 } from "Math/math";
+import { Scalar } from "Math/math.scalar";
+import { Camera } from "Cameras/camera";
+import { Effect } from "Materials/effect";
+import { Texture } from "Materials/Textures/texture";
+import { PostProcess } from "PostProcess/postProcess";
+import { PostProcessRenderPipeline } from "PostProcess/RenderPipeline/postProcessRenderPipeline";
+import { PostProcessRenderEffect } from "PostProcess/RenderPipeline/postProcessRenderEffect";
+import { BlurPostProcess } from "PostProcess/blurPostProcess";
+import { FxaaPostProcess } from "PostProcess/fxaaPostProcess";
+import { Engine } from "Engine/engine";
 import { IDisposable } from "scene";
-import { SpotLight, DirectionalLight } from "Lights";
-import { GeometryBufferRenderer } from "Rendering";
+import { SpotLight } from "Lights/spotLight";
+import { DirectionalLight } from "Lights/directionalLight";
+import { GeometryBufferRenderer } from "Rendering/geometryBufferRenderer";
 import { Scene } from "scene";
-import { Animation } from "Animations";
+import { Animation } from "Animations/animation";
 
     /**
      * Standard rendering pipeline
