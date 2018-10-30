@@ -1,5 +1,5 @@
 import { DeepImmutable } from "types";
-import { Tools } from "Tools/tools";
+import { ArrayTools } from "Tools/arrayTools";
 import { Nullable, FloatArray, float } from "types";
 import { Scalar } from "Math/math.scalar";
 import { Engine } from "Engine/engine";
@@ -7342,20 +7342,20 @@ import { Ray } from "Culling/ray";
      */
     export class Tmp {
 
-        public static Color3: Color3[] = Tools.BuildArray(3, Color3.Black);
-        public static Color4: Color4[] = Tools.BuildArray(3, () => new Color4(0, 0, 0, 0));
-        public static Vector2: Vector2[] = Tools.BuildArray(3, Vector2.Zero); // 3 temp Vector2 at once should be enough
-        public static Vector3: Vector3[] = Tools.BuildArray(13, Vector3.Zero); // 13 temp Vector3 at once should be enough
-        public static Vector4: Vector4[] = Tools.BuildArray(3, Vector4.Zero); // 3 temp Vector4 at once should be enough
-        public static Quaternion: Quaternion[] = Tools.BuildArray(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
-        public static Matrix: Matrix[] = Tools.BuildArray(8, Matrix.Identity); // 8 temp Matrices at once should be enough
+        public static Color3: Color3[] = ArrayTools.BuildArray(3, Color3.Black);
+        public static Color4: Color4[] = ArrayTools.BuildArray(3, () => new Color4(0, 0, 0, 0));
+        public static Vector2: Vector2[] = ArrayTools.BuildArray(3, Vector2.Zero); // 3 temp Vector2 at once should be enough
+        public static Vector3: Vector3[] = ArrayTools.BuildArray(13, Vector3.Zero); // 13 temp Vector3 at once should be enough
+        public static Vector4: Vector4[] = ArrayTools.BuildArray(3, Vector4.Zero); // 3 temp Vector4 at once should be enough
+        public static Quaternion: Quaternion[] = ArrayTools.BuildArray(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
+        public static Matrix: Matrix[] = ArrayTools.BuildArray(8, Matrix.Identity); // 8 temp Matrices at once should be enough
     }
     /**
      * @hidden
      * Same as Tmp but not exported to keep it only for math functions to avoid conflicts
      */
     class MathTmp {
-        public static Vector3: Vector3[] = Tools.BuildArray(6, Vector3.Zero);
-        public static Matrix: Matrix[] = Tools.BuildArray(2, Matrix.Identity);
-        public static Quaternion: Quaternion[] = Tools.BuildArray(3, Quaternion.Zero);
+        public static Vector3: Vector3[] = ArrayTools.BuildArray(6, Vector3.Zero);
+        public static Matrix: Matrix[] = ArrayTools.BuildArray(2, Matrix.Identity);
+        public static Quaternion: Quaternion[] = ArrayTools.BuildArray(3, Quaternion.Zero);
     }

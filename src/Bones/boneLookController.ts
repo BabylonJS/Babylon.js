@@ -1,9 +1,8 @@
-import { Bone } from "./bone";
-
-import { Vector3, Quaternion, Matrix, Space, Axis } from "Math/math";
-import { Tools } from "Tools/tools";
-import { AbstractMesh } from "Mesh/abstractMesh";
 import { Nullable } from "types";
+import { ArrayTools } from "Tools/arrayTools";
+import { Vector3, Quaternion, Matrix, Space, Axis } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Bone } from "./bone";
 
     /**
      * Class used to make a bone look toward a point in space
@@ -11,9 +10,9 @@ import { Nullable } from "types";
      */
     export class BoneLookController {
 
-        private static _tmpVecs: Vector3[] = Tools.BuildArray(10, Vector3.Zero);
+        private static _tmpVecs: Vector3[] = ArrayTools.BuildArray(10, Vector3.Zero);
         private static _tmpQuat = Quaternion.Identity();
-        private static _tmpMats: Matrix[] = Tools.BuildArray(5, Matrix.Identity);
+        private static _tmpMats: Matrix[] = ArrayTools.BuildArray(5, Matrix.Identity);
 
         /**
          * The target Vector3 that the bone will look at
