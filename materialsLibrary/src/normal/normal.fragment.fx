@@ -11,6 +11,7 @@ varying vec3 vPositionW;
 varying vec3 vNormalW;
 #endif
 
+#ifdef LIGHTING
 // Helper functions
 #include<helperFunctions>
 
@@ -23,6 +24,7 @@ varying vec3 vNormalW;
 
 #include<lightsFragmentFunctions>
 #include<shadowsFragmentFunctions>
+#endif
 
 // Samplers
 #ifdef DIFFUSE
@@ -73,6 +75,8 @@ void main(void) {
 #endif
 
 	// Lighting
+
+#ifdef LIGHTING
 	vec3 diffuseBase = vec3(0., 0., 0.);
     lightingInfo info;
 	float shadow = 1.;
@@ -82,8 +86,10 @@ void main(void) {
 #include<lightFragment>[1]
 #include<lightFragment>[2]
 #include<lightFragment>[3]
-
 	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor, 0.0, 1.0) * baseColor.rgb;
+#else
+	vec3 finalDiffuse =  baseColor.rgb;
+#endif
 
 	// Composition
 	vec4 color = vec4(finalDiffuse, alpha);
