@@ -1,7 +1,7 @@
-import { FreeCamera } from "Cameras";
+import { FreeCamera } from "./freeCamera";
 import { Scene } from "scene";
-import { Quaternion, Vector3, Axis } from "Math";
-import { Node } from "Node";
+import { Quaternion, Vector3, Axis } from "Math/math";
+import { Node } from "node";
 
     Node.AddNodeConstructor("DeviceOrientationCamera", (name, scene) => {
         return () => new DeviceOrientationCamera(name, Vector3.Zero(), scene);

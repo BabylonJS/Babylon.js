@@ -1,11 +1,14 @@
-﻿import { serialize, serializeAsVector3 } from "Tools";
+﻿import { serialize, serializeAsVector3 } from "Tools/decorators";
 import { Nullable } from "types";
-import { TargetCamera, FlyCameraInputsManager, FlyCameraMouseInput, FlyCameraKeyboardInput } from "Cameras";
 import { Scene } from "scene";
-import { Vector3, Quaternion } from "Math";
-import { Engine } from "Engine";
-import { AbstractMesh } from "Mesh";
-import { Collider } from "Collisions";
+import { Vector3, Quaternion } from "Math/math";
+import { Engine } from "Engine/engine";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Collider } from "Collisions/collider";
+import { TargetCamera } from "./targetCamera";
+import { FlyCameraInputsManager } from "./flyCameraInputsManager";
+import { FlyCameraMouseInput } from "Cameras/Inputs/flyCameraMouseInput";
+import { FlyCameraKeyboardInput } from "Cameras/Inputs/flyCameraKeyboardInput";
     /**
      * This is a flying camera, designed for 3D movement and rotation in all directions,
      * such as in a 3D Space Shooter or a Flight Simulator.

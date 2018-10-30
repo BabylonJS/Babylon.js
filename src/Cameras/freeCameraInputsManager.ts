@@ -1,4 +1,11 @@
-import { FreeCamera, CameraInputsManager, FreeCameraKeyboardMoveInput, FreeCameraMouseInput, FreeCameraDeviceOrientationInput, FreeCameraTouchInput, FreeCameraVirtualJoystickInput } from "Cameras";
+import { FreeCamera } from "./freeCamera";
+import { CameraInputsManager } from "./cameraInputsManager";
+import { FreeCameraKeyboardMoveInput } from "Cameras/Inputs/freeCameraKeyboardMoveInput";
+import { FreeCameraMouseInput } from "Cameras/Inputs/freeCameraMouseInput";
+import { FreeCameraDeviceOrientationInput } from "Cameras/Inputs/freeCameraDeviceOrientationInput";
+import { FreeCameraTouchInput } from "Cameras/Inputs/freeCameraTouchInput";
+import { FreeCameraVirtualJoystickInput } from "Cameras/Inputs/freeCameraVirtualJoystickInput";
+
     /**
      * Default Inputs manager for the FreeCamera.
      * It groups all the default supported inputs for ease of use.

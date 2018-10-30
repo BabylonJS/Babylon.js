@@ -1,6 +1,7 @@
-import { Tools, SerializationHelper } from "Tools";
+import { Tools } from "Tools/tools";
+import { SerializationHelper } from "Tools/decorators";
 import { Nullable } from "types";
-import { ICameraInput, Camera } from "Cameras";
+import { Camera } from "./camera";
     /**
      * @ignore
      * This is a list of all the different input types that are available in the application.

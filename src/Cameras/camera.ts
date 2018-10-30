@@ -1,14 +1,27 @@
-import { serialize, Observable, Tools, SmartArray, SerializationHelper, serializeAsVector3 } from "Tools";
+import { serialize, SerializationHelper, serializeAsVector3 } from "Tools/decorators";
+import { SmartArray } from "Tools/smartArray";
+import { Tools } from "Tools/tools";
+import { Observable } from "Tools/observable";
 import { Nullable } from "types";
-import { FreeCamera, UniversalCamera, VRCameraMetrics, TargetCamera, CameraInputsManager } from "Cameras";
+import { FreeCamera } from "./freeCamera";
+import { UniversalCamera } from "./universalCamera";
+import { VRCameraMetrics } from "Cameras/VR/vrCameraMetrics";
+import { TargetCamera } from "./targetCamera";
+import { CameraInputsManager } from "./cameraInputsManager";
 import { Scene } from "scene";
-import { Matrix, Vector3, Viewport, Plane, Frustum } from "Math";
-import { Node } from "Node";
-import { Mesh, AbstractMesh } from "Mesh";
-import { Ray, ICullable } from "Culling";
-import { RenderTargetTexture } from "Materials";
-import { PostProcess, PassPostProcess, AnaglyphPostProcess, StereoscopicInterlacePostProcess, VRDistortionCorrectionPostProcess } from "PostProcess";
-import { Animation } from "Animations";
+import { Matrix, Vector3, Viewport, Plane, Frustum } from "Math/math";
+import { Node } from "node";
+import { Mesh } from "Mesh/mesh";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Ray } from "Culling/ray";
+import { ICullable } from "Culling/boundingInfo";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { PostProcess } from "PostProcess/postProcess";
+import { PassPostProcess } from "PostProcess/passPostProcess";
+import { AnaglyphPostProcess } from "PostProcess/anaglyphPostProcess";
+import { StereoscopicInterlacePostProcess } from "PostProcess/stereoscopicInterlacePostProcess";
+import { VRDistortionCorrectionPostProcess } from "PostProcess/vrDistortionCorrectionPostProcess";
+import { Animation } from "Animations/animation";
     /**
      * This is the base class of all the camera used in the application.
      * @see http://doc.babylonjs.com/features/cameras

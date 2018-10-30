@@ -1,12 +1,16 @@
-import { TargetCamera, UniversalCamera, FreeCameraInputsManager, FreeCameraMouseInput, FreeCameraKeyboardMoveInput } from "Cameras";
-import { Vector3, Vector2 } from "Math";
-import { Node } from "Node";
-import { AbstractMesh } from "Mesh";
-import { Collider } from "Collisions";
-import { Scene } from "scene";
 import { Nullable } from "types";
-import { Engine } from "Engine";
-import { serializeAsVector3, serialize } from "index";
+import { serializeAsVector3, serialize } from "Tools/decorators";
+import { Vector3, Vector2 } from "Math/math";
+import { Node } from "node";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Collider } from "Collisions/collider";
+import { Scene } from "scene";
+import { Engine } from "Engine/engine";
+import { TargetCamera } from "./targetCamera";
+import { UniversalCamera } from "./universalCamera";
+import { FreeCameraInputsManager } from "./freeCameraInputsManager";
+import { FreeCameraMouseInput } from "Cameras/Inputs/freeCameraMouseInput";
+import { FreeCameraKeyboardMoveInput } from "Cameras/Inputs/freeCameraKeyboardMoveInput";
 
     Node.AddNodeConstructor("FreeCamera", (name, scene) => {
         // Forcing to use the Universal camera
