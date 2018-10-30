@@ -1,8 +1,10 @@
-import { serialize, Observer } from "Tools";
+import { serialize } from "Tools/decorators";
+import { Observer } from "Tools/observable";
 import { Nullable } from "types";
-import { ICameraInput, CameraInputTypes, FreeCamera } from "Cameras";
-import { Matrix, Vector3, Vector2 } from "Math";
-import { Gamepad } from "Gamepad";
+import { ICameraInput, CameraInputTypes } from "Cameras/cameraInputsManager";
+import { FreeCamera } from "Cameras/freeCamera";
+import { Matrix, Vector3, Vector2 } from "Math/math";
+import { Gamepad } from "Gamepad/gamepad";
 
     /**
      * Manage the gamepad inputs to control a free camera.

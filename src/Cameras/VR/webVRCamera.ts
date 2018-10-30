@@ -1,14 +1,18 @@
-import { Observer, Observable } from "Tools";
 import { Nullable } from "types";
-import { FreeCamera, Camera, WebVROptions, TargetCamera } from "Cameras";
+import { Observer, Observable } from "Tools/observable";
+import { FreeCamera } from "Cameras/freeCamera";
+import { TargetCamera } from "Cameras/targetCamera";
+import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Quaternion, Matrix, Vector3 } from "Math";
-import { Gamepad, WebVRController, PoseEnabledControllerType } from "Gamepad";
-import { IDisplayChangedEventArgs } from "Engine";
-import { Node } from "Node";
-import { AbstractMesh } from "Mesh";
-import { Ray } from "Culling";
-import { HemisphericLight } from "Lights";
+import { Quaternion, Matrix, Vector3 } from "Math/math";
+import { Gamepad } from "Gamepad/gamepad";
+import { PoseEnabledControllerType } from "Gamepad/Controllers/poseEnabledController";
+import { WebVRController } from "Gamepad/Controllers/webVRController";
+import { IDisplayChangedEventArgs } from "Engine/engine";
+import { Node } from "node";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Ray } from "Culling/ray";
+import { HemisphericLight } from "Lights/hemisphericLight";
     Node.AddNodeConstructor("WebVRFreeCamera", (name, scene) => {
         return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
     });

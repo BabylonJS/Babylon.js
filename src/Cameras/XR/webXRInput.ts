@@ -1,9 +1,9 @@
-import { Observer } from "Tools";
 import { Nullable } from "types";
-import { WebXRExperienceHelper } from "Cameras";
+import { Observer } from "Tools/observable";
+import { Matrix, Quaternion } from "Math/math";
 import { IDisposable, Scene } from "scene";
-import { AbstractMesh } from "Mesh";
-import { Matrix, Quaternion } from "Math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { WebXRExperienceHelper } from "./webXRExperienceHelper";
     /**
      * Represents an XR input
      */

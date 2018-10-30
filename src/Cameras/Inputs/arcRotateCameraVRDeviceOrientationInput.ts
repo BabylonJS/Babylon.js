@@ -1,5 +1,6 @@
 import { Nullable } from "types";
-import { ICameraInput, ArcRotateCamera, CameraInputTypes } from "Cameras";
+import { ArcRotateCamera } from "Cameras/arcRotateCamera";
+import { ICameraInput, CameraInputTypes } from "Cameras/cameraInputsManager";
 
     /**
      * Manage the device orientation inputs (gyroscope) to control an arc rotate camera.

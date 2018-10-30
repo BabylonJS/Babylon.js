@@ -1,9 +1,11 @@
-import { Observable, Tools } from "Tools";
+import { Tools } from "Tools/tools";
+import { Observable } from "Tools/observable";
 import { Nullable } from "types";
 import { IDisposable, Scene } from "scene";
-import { Vector3, Matrix } from "Math";
-import { RenderTargetTexture, InternalTexture } from "Materials";
-import { Ray } from "Culling";
+import { Vector3, Matrix } from "Math/math";
+import { InternalTexture } from "Materials/Textures/internalTexture";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { Ray } from "Culling/ray";
     /**
      * Manages an XRSession
      * @see https://doc.babylonjs.com/how_to/webxr
