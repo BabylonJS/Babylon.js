@@ -1,11 +1,12 @@
-import { Tools } from "Tools";
+import { Tools } from "Tools/tools";
 import { Nullable, FloatArray, IndicesArray } from "types";
-import { Camera } from "Cameras";
-import { Vector3 } from "Math";
-import { Node } from "Node";
-import { Mesh, AbstractMesh } from "Mesh";
-import { Material } from "Materials";
-import { Skeleton } from "Bones";
+import { Camera } from "Cameras/camera";
+import { Vector3 } from "Math/math";
+import { Node } from "node";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Mesh } from "Mesh/mesh";
+import { Material } from "Materials/material";
+import { Skeleton } from "Bones/skeleton";
 
     /**
      * Creates an instance based on a source mesh.

@@ -1,9 +1,9 @@
-import { RenderTargetTexture } from "Materials";
-import { Matrix, Vector3 } from "Math";
-import { AbstractMesh } from "Mesh";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { Matrix, Vector3 } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Engine } from "Engine";
+import { Engine } from "Engine/engine";
 
 declare module "scene" {
     export interface Scene {

@@ -1,11 +1,17 @@
 import { Nullable } from "types";
-import { Observable, Observer, Tools } from "Tools";
+import { Tools } from "Tools/tools";
+import { Observable, Observer } from "Tools/observable";
 import { Vector3 } from "Math";
-import { Mesh, AbstractMesh } from "Mesh";
+import { Mesh } from "Mesh/mesh";
+import { AbstractMesh } from "Mesh/abstractMesh";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
-import { IPhysicsEngine, IPhysicsEnginePlugin, PhysicsEngine, PhysicsImpostor, PhysicsJoint } from "Physics";
 import { Scene } from "scene";
 import { Node } from "node";
+
+import { IPhysicsEngine, IPhysicsEnginePlugin } from "./IPhysicsEngine";
+import { PhysicsEngine } from "./physicsEngine";
+import { PhysicsImpostor } from "./physicsImpostor";
+import { PhysicsJoint } from "./physicsJoint";
 
 declare module "scene" {
     export interface Scene {

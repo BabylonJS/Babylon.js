@@ -1,7 +1,8 @@
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix } from "Math";
-import { Mesh, AbstractMesh } from "Mesh";
+import { Matrix } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Mesh } from "Mesh/mesh";
 import { Material } from "Materials/material";
 import { Effect } from "Materials/effect";
     /**

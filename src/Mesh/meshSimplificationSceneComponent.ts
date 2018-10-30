@@ -1,5 +1,6 @@
 import { Scene } from "scene";
-import { Mesh, SimplificationQueue, ISimplificationSettings, SimplificationType } from "Mesh";
+import { Mesh } from "./mesh";
+import { SimplificationQueue, ISimplificationSettings, SimplificationType } from "./meshSimplification";
 import { SceneComponentConstants, ISceneComponent } from "sceneComponent";
 
 declare module "scene" {

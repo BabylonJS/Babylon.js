@@ -1,11 +1,13 @@
 import { Nullable, IndicesArray } from "types";
-import { Tools } from "Tools";
-import { Vector3, Matrix, Quaternion, Space } from "Math";
-import { TransformNode, AbstractMesh } from "Mesh";
+import { Tools } from "Tools/tools";
+import { Vector3, Matrix, Quaternion, Space } from "Math/math";
+import { TransformNode } from "Mesh/transformNode";
+import { AbstractMesh } from "Mesh/abstractMesh";
 import { Scene } from "scene";
-import { Bone } from "Bones";
-import { BoundingInfo } from "Culling";
-import { IPhysicsEngine, PhysicsJoint, PhysicsJointData } from "Physics";
+import { Bone } from "Bones/bone";
+import { BoundingInfo } from "Culling/boundingInfo";
+import { IPhysicsEngine } from "./IPhysicsEngine";
+import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
     /**
      * The interface for the physics imposter parameters
      * @see https://doc.babylonjs.com/how_to/using_the_physics_engine

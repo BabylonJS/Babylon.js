@@ -1,7 +1,9 @@
-import { Tools } from "Tools";
+import { Tools } from "Tools/tools";
 import { Scene } from "scene";
-import { Vector3, Vector2, Path2 } from "Math";
-import { Mesh, VertexBuffer } from "Mesh";
+import { Vector3, Vector2, Path2 } from "Math/math";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { Mesh } from "Mesh/mesh";
+
     declare var earcut: any;
     /**
      * Vector2 wth index property

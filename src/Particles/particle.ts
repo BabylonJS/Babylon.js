@@ -1,8 +1,10 @@
 import { Nullable } from "types";
-import { Color4, Vector2, Vector3, Tmp, Vector4, Scalar } from "Math";
-import { AbstractMesh } from "Mesh";
-import { ParticleSystem, SubEmitter } from "Particles";
-import { ColorGradient, FactorGradient } from "Tools";
+import { Color4, Vector2, Vector3, Tmp, Vector4 } from "Math/math";
+import { Scalar } from "Math/math.scalar";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { ParticleSystem } from "./particleSystem";
+import { SubEmitter } from "./subEmitter";
+import { ColorGradient, FactorGradient } from "Tools/tools";
     /**
      * A particle represents one of the element emitted by a particle system.
      * This is mainly define by its coordinates, direction, velocity and age.

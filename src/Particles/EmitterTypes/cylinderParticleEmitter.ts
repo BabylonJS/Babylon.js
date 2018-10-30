@@ -1,7 +1,9 @@
-import { Tools } from "Tools";
-import { Vector3, Matrix, Scalar } from "Math";
-import { Effect } from "Materials";
-import { IParticleEmitterType, Particle } from "Particles";
+import { Tools } from "Tools/tools";
+import { Vector3, Matrix } from "Math/math";
+import { Scalar } from "Math/math.scalar";
+import { Effect } from "Materials/effect";
+import { Particle } from "Particles/particle";
+import { IParticleEmitterType } from "./IParticleEmitterType";
     /**
      * Particle emitter emitting particles from the inside of a cylinder.
      * It emits the particles alongside the cylinder radius. The emission direction might be randomized.

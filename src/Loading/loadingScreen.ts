@@ -1,6 +1,5 @@
 import { Nullable } from "types";
-import { _TimeToken } from "Instrumentation";
-import { ILoadingScreen } from "Loading";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Interface used to present a loading screen while loading a scene

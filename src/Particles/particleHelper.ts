@@ -1,12 +1,14 @@
 import { Nullable } from "types";
-import { Tools } from "Tools";
-import { Vector3, Color4 } from "Math";
-import { AbstractMesh } from "Mesh";
-import { IParticleSystem, GPUParticleSystem, ParticleSystemSet } from "Particles";
-import { Texture } from "Materials";
-import { Engine } from "Engine";
-import { ParticleSystem } from "Particles";
 import { Scene } from "scene";
+import { Tools } from "Tools/tools";
+import { Vector3, Color4 } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Texture } from "Materials/Textures/texture";
+import { Engine } from "Engine/engine";
+import { IParticleSystem } from "./IParticleSystem";
+import { GPUParticleSystem } from "./gpuParticleSystem";
+import { ParticleSystemSet } from "./particleSystemSet";
+import { ParticleSystem } from "./particleSystem";
     /**
      * This class is made for on one-liner static method to help creating particle system set.
      */
