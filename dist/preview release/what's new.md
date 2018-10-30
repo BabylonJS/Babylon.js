@@ -13,26 +13,19 @@
   - webXRExperienceHelper to setup a default XR experience ([TrevorDev](https://github.com/TrevorDev))
   - WebXREnterExitUI and WebXRManagedOutputCanvas classes to configure the XR experience ([TrevorDev](https://github.com/TrevorDev))
   - WebXRInput manage controllers for the XR experience ([TrevorDev](https://github.com/TrevorDev))
-  - WebXR camera rotation using parent container ([TrevorDev](https://github.com/TrevorDev))
 - GUI:
   - Added new [ImageBasedSlider](http://doc.babylonjs.com/how_to/gui#imagebasedslider) to let users customize sliders using images ([Deltakosh](https://github.com/deltakosh))
-  - Added support for clipboard events to let users perform `cut`, `copy` and `paste` events ([Saket Saurabh](https://github.com/ssaket))
 
 ## Updates
 
 ### GUI
 
 - Added `button.image` and `button.textBlock` to simplify access to button internal parts ([Deltakosh](https://github.com/deltakosh))
-- Added support for performing operations like select all, text highlight, delete selected in `inputText` ([Saket Saurabh](https://github.com/ssaket))
-- Added `inputText.onTextCopyObservable`, `inputText.onTextCutObservable` and `inputText.onTextPasteObservable` to inputText ([Saket Saurabh](https://github.com/ssaket))
-- Added `AdvancedDynamicTexture.onClipboardObservable` to observe for clipboard events in AdvancedDynamicTexture([Saket Saurabh](https://github.com/ssaket))
 - Added `sldier.displayThumb` to show/hide slider's thumb ([Deltakosh](https://github.com/deltakosh))
 - Added `grid.rowCount`, `grid.columnCount` and `grid.getChildrenAt()` ([Deltakosh](https://github.com/deltakosh))
-- Added `Control.AllowAlphaInheritance` to let users control the way alpha is used (inherited or not) ([Deltakosh](https://github.com/deltakosh))
 
 ### Core Engine
 
-- Added support for utility layer for SkeletonViewer ([Deltakosh](https://github.com/deltakosh))
 - Improved shader precision detection ([Deltakosh](https://github.com/deltakosh))
 - Added support for bone matrix texture. Now skeletons will use a texture instead of uniforms when possible ([Deltakosh](https://github.com/deltakosh))
 - Refactored of the SolidParticleSystem code for performance and code quality improvement ([barroij](https://github.com/barroij))
@@ -53,12 +46,8 @@
   - Added an `Vector3.UnprojectRayToRef` static function to avoid computing and inverting the projection matrix twice when updating a Ray.
 - Align `BoundingBox` and `BoundingSphere` API and behavior for clarity and simplicity. As a consequence, the `BoundingBox`'s method `setWorldMatrix` has been removed and the underlying world matrix cannot be modified but by calling `reConstruct` or `update`. ([barroij](https://github.com/barroij))
 - Make sure that `Material.markAsDirty` and all the `markXXXDirty` methods early out when `scene.blockMaterialDirtyMechanism` is true. ([barroij](https://github.com/barroij))
-- Add updateUpVectorFromRotation to target camera to allow the up vector to be computed from rotation ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
-
-- Added support for mesh instancing for improved performance when multiple nodes point to the same mesh ([bghgary](https://github.com/bghgary))
-- Create `TransformNode` objects instead of `Mesh` objects for glTF nodes without geometry ([bghgary](https://github.com/bghgary))
 
 ### glTF Serializer
 
@@ -67,19 +56,13 @@
 ### Materials Library
 
 ## Bug fixes
-- Removed bones from rootNodes where they should never have been ([Deltakosh](https://github.com/deltakosh))
 - Refocusing on input gui with pointer events ([TrevorDev](https://github.com/TrevorDev))
-- Gizmo scaling not consistent when camera is parented ([TrevorDev](https://github.com/TrevorDev))
-- Context loss causing unexpected results with dynamic textures ([TrevorDev](https://github.com/TrevorDev))
-- CreateScreenshotUsingRenderTarget stretches mirror textures when setting both width and height ([TrevorDev](https://github.com/TrevorDev))
-- VR helper only updating vr cameras position when entering vr, rotation was missing ([TrevorDev](https://github.com/TrevorDev))
-- Fix VR controllers after gltfLoader transformNode change ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
 - Fixed a bug with pointer up being fire twice ([Deltakosh](https://github.com/deltakosh))
 - Fixed a bug with particle systems being update once per camera instead of once per frame ([Deltakosh](https://github.com/deltakosh))
-- Handle properly the `LinesMesh` `intersectionThreshold` by using its value directly when the intersection against a `Ray` is checked, instead of extending the `BoundingInfo` accordingly + Addded an `InstancesLinesMesh` class used to create instance of `LinesMesh` so that each instance can have its own `intersectionThreshold` value ([barroij](https://github.com/barroij))
+- Handle properly the `LinesMesh` `intersectionThreshold` by using its value directly when the intersection against a `Ray` is checked, instead of extending the `BoundingInfo` accordingly ([barroij](https://github.com/barroij))
 - Fixed the `LineEdgesRenderer` used for edge rendering of `LinesMesh` handle properly LinesMesh made of disconnected lines + Make it work for instance of `LinesMesh` ([barroij](https://github.com/barroij))
 - Fixed `Matrix.toNormalMatrix`function ([barroij](https://github.com/barroij))
 - Add missing effect layer to asset container ([TrevorDev](https://github.com/TrevorDev))
@@ -114,8 +97,3 @@
   - `engine.drawCallsPerfCounter`: use SceneInstrumentation class instead
   - `shadowGenerator.useVarianceShadowMap`: use useExponentialShadowMap instead
   - `shadowGenerator.useBlurVarianceShadowMap`: use useBlurExponentialShadowMap instead
-- The glTF loader now creates `InstancedMesh` objects when two nodes point to the same mesh ([bghgary](https://github.com/bghgary))
-- The glTF loader now creates `TransformNode` objects instead of `Mesh` objects for glTF nodes without geometry ([bghgary](https://github.com/bghgary))
-  - _Note: The root node is still a `Mesh` object and is still the first in the returned list of meshes_
-  - `TransformNode` objects are excluded from the returned list of meshes when importing mesh
-  - `TransformNode` objects do not raise `onMeshLoaded` events
