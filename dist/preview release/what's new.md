@@ -80,6 +80,7 @@
 - Fixed `Matrix.toNormalMatrix`function ([barroij](https://github.com/barroij))
 - Add missing effect layer to asset container ([TrevorDev](https://github.com/TrevorDev))
 - Fixed effect layer compatibility with multi materials ([Sebavan](https://github.com/Sebavan))
+- Added a `DeepImmutable<T>` type to specifiy that a referenced object should be considered recursively immutable, meaning that all its properties are `readonly` and that if a property is a reference to an object, this object is also recursively immutable. ([barroij](https://github.com/barroij))
 
 ### Viewer
 
@@ -90,8 +91,8 @@
 - `Database.IDBStorageEnabled` is now false by default ([Deltakosh](https://github.com/deltakosh))
 - `Database.openAsync` was renamed by `Database.open` ([Deltakosh](https://github.com/deltakosh))
 - `scene.database` was renamed to `scene.offlineProvider` ([Deltakosh](https://github.com/deltakosh))
-- `BoundingBox.setWorldMatrix` was removed. `BoundingBox.getWorldMatrix` now returns a `Readonly<Matrix>` ([barroij](https://github.com/barroij))
-- `Matrix`'s accessor `m` and method `toArray` and `asArray` now returns a `Readonly<Float32Array>` as the matrix underlying array is not supposed to be modified manually from the outside of the class ([barroij](https://github.com/barroij))
+- `BoundingBox.setWorldMatrix` was removed. `BoundingBox.getWorldMatrix` now returns a `DeepImmutable<Matrix>` ([barroij](https://github.com/barroij))
+- `Matrix`'s accessor `m` and method `toArray` and `asArray` now returns a `DeepImmutable<Float32Array>` as the matrix underlying array is not supposed to be modified manually from the outside of the class ([barroij](https://github.com/barroij))
 - Removed some deprecated (flagged since 3.0) properties and functions ([Deltakosh](https://github.com/deltakosh))
   - `scene.getInterFramePerfCounter()`: use SceneInstrumentation class instead
   - `scene.interFramePerfCounter`: use SceneInstrumentation class instead

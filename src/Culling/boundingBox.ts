@@ -53,7 +53,7 @@ import { ICullable } from "./boundingInfo";
          */
         public readonly maximum: Vector3 = Vector3.Zero();
 
-        private _worldMatrix: Readonly<Matrix>;
+        private _worldMatrix: DeepImmutable<Matrix>;
         private static readonly TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
 
         /**
@@ -67,7 +67,7 @@ import { ICullable } from "./boundingInfo";
          * @param max defines the maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
          */
-        constructor(min: Readonly<Vector3>, max: Readonly<Vector3>, worldMatrix?: Readonly<Matrix>) {
+        constructor(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>) {
             this.reConstruct(min, max, worldMatrix);
         }
 
@@ -79,7 +79,7 @@ import { ICullable } from "./boundingInfo";
          * @param max defines the new maximum vector (in local space)
          * @param worldMatrix defines the new world matrix
          */
-        public reConstruct(min: Readonly<Vector3>, max: Readonly<Vector3>, worldMatrix?: Readonly<Matrix>) {
+        public reConstruct(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>) {
             const minX = min.x, minY = min.y, minZ = min.z, maxX = max.x, maxY = max.y, maxZ = max.z;
             const vectors = this.vectors;
 
@@ -126,12 +126,12 @@ import { ICullable } from "./boundingInfo";
          * Gets the world matrix of the bounding box
          * @returns a matrix
          */
-        public getWorldMatrix(): Readonly<Matrix> {
+        public getWorldMatrix(): DeepImmutable<Matrix> {
             return this._worldMatrix;
         }
 
         /** @hidden */
-        public _update(world: Readonly<Matrix>): void {
+        public _update(world: DeepImmutable<Matrix>): void {
             const minWorld = this.minimumWorld;
             const maxWorld = this.maximumWorld;
             const directions = this.directions;
@@ -177,7 +177,7 @@ import { ICullable } from "./boundingInfo";
          * @param frustumPlanes defines the frustum planes to test
          * @returns true if there is an intersection
          */
-        public isInFrustum(frustumPlanes: Array<Readonly<Plane>>): boolean {
+        public isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
             return BoundingBox.IsInFrustum(this.vectorsWorld, frustumPlanes);
         }
 
@@ -186,7 +186,7 @@ import { ICullable } from "./boundingInfo";
          * @param frustumPlanes defines the frustum planes to test
          * @returns true if there is an inclusion
          */
-        public isCompletelyInFrustum(frustumPlanes: Array<Readonly<Plane>>): boolean {
+        public isCompletelyInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
             return BoundingBox.IsCompletelyInFrustum(this.vectorsWorld, frustumPlanes);
         }
 
@@ -195,7 +195,7 @@ import { ICullable } from "./boundingInfo";
          * @param point defines the point to test
          * @returns true if the point is inside the bounding box
          */
-        public intersectsPoint(point: Readonly<Vector3>): boolean {
+        public intersectsPoint(point: DeepImmutable<Vector3>): boolean {
             const min = this.minimumWorld;
             const max = this.maximumWorld;
             const minX = min.x, minY = min.y, minZ = min.z, maxX = max.x, maxY = max.y, maxZ = max.z;
@@ -222,7 +222,7 @@ import { ICullable } from "./boundingInfo";
          * @param sphere defines the sphere to test
          * @returns true if there is an intersection
          */
-        public intersectsSphere(sphere: Readonly<BoundingSphere>): boolean {
+        public intersectsSphere(sphere: DeepImmutable<BoundingSphere>): boolean {
             return BoundingBox.IntersectsSphere(this.minimumWorld, this.maximumWorld, sphere.centerWorld, sphere.radiusWorld);
         }
 
@@ -232,7 +232,7 @@ import { ICullable } from "./boundingInfo";
          * @param max defines the max vector to use
          * @returns true if there is an intersection
          */
-        public intersectsMinMax(min: Readonly<Vector3>, max: Readonly<Vector3>): boolean {
+        public intersectsMinMax(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>): boolean {
             const myMin = this.minimumWorld;
             const myMax = this.maximumWorld;
             const myMinX = myMin.x, myMinY = myMin.y, myMinZ = myMin.z, myMaxX = myMax.x, myMaxY = myMax.y, myMaxZ = myMax.z;
@@ -260,7 +260,7 @@ import { ICullable } from "./boundingInfo";
          * @param box1 defines the second box to test
          * @returns true if there is an intersection
          */
-        public static Intersects(box0: BoundingBox, box1: BoundingBox): boolean {
+        public static Intersects(box0: DeepImmutable<BoundingBox>, box1: DeepImmutable<BoundingBox>): boolean {
             return box0.intersectsMinMax(box1.minimumWorld, box1.maximumWorld);
         }
 
@@ -272,7 +272,7 @@ import { ICullable } from "./boundingInfo";
          * @param sphereRadius defines the sphere radius
          * @returns true if there is an intersection
          */
-        public static IntersectsSphere(minPoint: Readonly<Vector3>, maxPoint: Readonly<Vector3>, sphereCenter: Readonly<Vector3>, sphereRadius: number): boolean {
+        public static IntersectsSphere(minPoint: DeepImmutable<Vector3>, maxPoint: DeepImmutable<Vector3>, sphereCenter: DeepImmutable<Vector3>, sphereRadius: number): boolean {
             const vector = BoundingBox.TmpVector3[0];
             Vector3.ClampToRef(sphereCenter, minPoint, maxPoint, vector);
             var num = Vector3.DistanceSquared(sphereCenter, vector);
@@ -285,7 +285,7 @@ import { ICullable } from "./boundingInfo";
          * @param frustumPlanes defines the frustum planes to test
          * @return true if there is an inclusion
          */
-        public static IsCompletelyInFrustum(boundingVectors: Array<Readonly<Vector3>>, frustumPlanes: Array<Readonly<Plane>>): boolean {
+        public static IsCompletelyInFrustum(boundingVectors: Array<DeepImmutable<Vector3>>, frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
             for (var p = 0; p < 6; ++p) {
                 const frustumPlane = frustumPlanes[p];
                 for (var i = 0; i < 8; ++i) {
@@ -303,7 +303,7 @@ import { ICullable } from "./boundingInfo";
          * @param frustumPlanes defines the frustum planes to test
          * @return true if there is an intersection
          */
-        public static IsInFrustum(boundingVectors: Array<Readonly<Vector3>>, frustumPlanes: Array<Readonly<Plane>>): boolean {
+        public static IsInFrustum(boundingVectors: Array<DeepImmutable<Vector3>>, frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
             for (var p = 0; p < 6; ++p) {
                 let canReturnFalse = true;
                 const frustumPlane = frustumPlanes[p];

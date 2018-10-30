@@ -120,7 +120,7 @@ import { Ray } from "Culling/ray";
          * @param otherColor defines the second operand
          * @returns the new Color3 object
          */
-        public multiply(otherColor: Color3): Color3 {
+        public multiply(otherColor: DeepImmutable<Color3>): Color3 {
             return new Color3(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
         }
 
@@ -130,7 +130,7 @@ import { Ray } from "Culling/ray";
          * @param result defines the Color3 object where to store the result
          * @returns the current Color3
          */
-        public multiplyToRef(otherColor: Color3, result: Color3): Color3 {
+        public multiplyToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3 {
             result.r = this.r * otherColor.r;
             result.g = this.g * otherColor.g;
             result.b = this.b * otherColor.b;
@@ -142,7 +142,7 @@ import { Ray } from "Culling/ray";
          * @param otherColor defines the second operand
          * @returns true if the rgb values are equal to the given ones
          */
-        public equals(otherColor: Color3): boolean {
+        public equals(otherColor: DeepImmutable<Color3>): boolean {
             return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b;
         }
 
@@ -211,7 +211,7 @@ import { Ray } from "Culling/ray";
          * @param otherColor defines the second operand
          * @returns the new Color3
          */
-        public add(otherColor: Color3): Color3 {
+        public add(otherColor: DeepImmutable<Color3>): Color3 {
             return new Color3(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b);
         }
 
@@ -221,7 +221,7 @@ import { Ray } from "Culling/ray";
          * @param result defines Color3 object to store the result into
          * @returns the unmodified current Color3
          */
-        public addToRef(otherColor: Color3, result: Color3): Color3 {
+        public addToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3 {
             result.r = this.r + otherColor.r;
             result.g = this.g + otherColor.g;
             result.b = this.b + otherColor.b;
@@ -233,7 +233,7 @@ import { Ray } from "Culling/ray";
          * @param otherColor defines the second operand
          * @returns the new Color3
          */
-        public subtract(otherColor: Color3): Color3 {
+        public subtract(otherColor: DeepImmutable<Color3>): Color3 {
             return new Color3(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b);
         }
 
@@ -243,7 +243,7 @@ import { Ray } from "Culling/ray";
          * @param result defines Color3 object to store the result into
          * @returns the unmodified current Color3
          */
-        public subtractToRef(otherColor: Color3, result: Color3): Color3 {
+        public subtractToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3 {
             result.r = this.r - otherColor.r;
             result.g = this.g - otherColor.g;
             result.b = this.b - otherColor.b;
@@ -263,7 +263,7 @@ import { Ray } from "Culling/ray";
          * @param source defines the source Color3 object
          * @returns the updated Color3 object
          */
-        public copyFrom(source: Color3): Color3 {
+        public copyFrom(source: DeepImmutable<Color3>): Color3 {
             this.r = source.r;
             this.g = source.g;
             this.b = source.b;
@@ -375,7 +375,7 @@ import { Ray } from "Culling/ray";
          * @param offset defines an offset in the source array
          * @returns a new Color3 object
          */
-        public static FromArray(array: ArrayLike<number>, offset: number = 0): Color3 {
+        public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Color3 {
             return new Color3(array[offset], array[offset + 1], array[offset + 2]);
         }
 
@@ -397,7 +397,7 @@ import { Ray } from "Culling/ray";
          * @param amount defines the gradient value between start and end
          * @returns a new Color3 object
          */
-        public static Lerp(start: Color3, end: Color3, amount: number): Color3 {
+        public static Lerp(start: DeepImmutable<Color3>, end: DeepImmutable<Color3>, amount: number): Color3 {
             var result = new Color3(0.0, 0.0, 0.0);
             Color3.LerpToRef(start, end, amount, result);
             return result;
@@ -410,7 +410,7 @@ import { Ray } from "Culling/ray";
          * @param amount defines the gradient factor
          * @param result defines the Color3 object where to store the result
          */
-        public static LerpToRef(left: Color3, right: Color3, amount: number, result: Color3): void {
+        public static LerpToRef(left: DeepImmutable<Color3>, right: DeepImmutable<Color3>, amount: number, result: Color3): void {
             result.r = left.r + ((right.r - left.r) * amount);
             result.g = left.g + ((right.g - left.g) * amount);
             result.b = left.b + ((right.b - left.b) * amount);
@@ -510,7 +510,7 @@ import { Ray } from "Culling/ray";
          * @param right defines the second operand
          * @returns the current updated Color4 object
          */
-        public addInPlace(right: Color4): Color4 {
+        public addInPlace(right: DeepImmutable<Color4>): Color4 {
             this.r += right.r;
             this.g += right.g;
             this.b += right.b;
@@ -547,7 +547,7 @@ import { Ray } from "Culling/ray";
          * @param right defines the second operand
          * @returns a new Color4 object
          */
-        public add(right: Color4): Color4 {
+        public add(right: DeepImmutable<Color4>): Color4 {
             return new Color4(this.r + right.r, this.g + right.g, this.b + right.b, this.a + right.a);
         }
 
@@ -556,7 +556,7 @@ import { Ray } from "Culling/ray";
          * @param right defines the second operand
          * @returns a new Color4 object
          */
-        public subtract(right: Color4): Color4 {
+        public subtract(right: DeepImmutable<Color4>): Color4 {
             return new Color4(this.r - right.r, this.g - right.g, this.b - right.b, this.a - right.a);
         }
 
@@ -566,7 +566,7 @@ import { Ray } from "Culling/ray";
          * @param result defines the Color4 object where to store the result
          * @returns the current Color4 object
          */
-        public subtractToRef(right: Color4, result: Color4): Color4 {
+        public subtractToRef(right: DeepImmutable<Color4>, result: Color4): Color4 {
             result.r = this.r - right.r;
             result.g = this.g - right.g;
             result.b = this.b - right.b;
@@ -811,7 +811,7 @@ import { Ray } from "Culling/ray";
          * @param amount defines the gradient factor
          * @returns a new Color4 object
          */
-        public static Lerp(left: Color4, right: Color4, amount: number): Color4 {
+        public static Lerp(left: DeepImmutable<Color4>, right: DeepImmutable<Color4>, amount: number): Color4 {
             var result = new Color4(0.0, 0.0, 0.0, 0.0);
             Color4.LerpToRef(left, right, amount, result);
             return result;
@@ -824,7 +824,7 @@ import { Ray } from "Culling/ray";
          * @param amount defines the gradient factor
          * @param result defines the Color4 object where to store data
          */
-        public static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void {
+        public static LerpToRef(left: DeepImmutable<Color4>, right: DeepImmutable<Color4>, amount: number, result: Color4): void {
             result.r = left.r + (right.r - left.r) * amount;
             result.g = left.g + (right.g - left.g) * amount;
             result.b = left.b + (right.b - left.b) * amount;
@@ -837,7 +837,7 @@ import { Ray } from "Culling/ray";
          * @param alpha defines the alpha component (1.0 by default)
          * @returns a new Color4 object
          */
-        public static FromColor3(color3: Color3, alpha: number = 1.0): Color4 {
+        public static FromColor3(color3: DeepImmutable<Color3>, alpha: number = 1.0): Color4 {
             return new Color4(color3.r, color3.g, color3.b, alpha);
         }
 
@@ -847,7 +847,7 @@ import { Ray } from "Culling/ray";
          * @param offset defines the offset in the source array
          * @returns a new Color4 object
          */
-        public static FromArray(array: ArrayLike<number>, offset: number = 0): Color4 {
+        public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Color4 {
             return new Color4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
         }
 
@@ -960,7 +960,7 @@ import { Ray } from "Culling/ray";
          * @param source defines the source Vector2
          * @returns the current updated Vector2
          */
-        public copyFrom(source: Vector2): Vector2 {
+        public copyFrom(source: DeepImmutable<Vector2>): Vector2 {
             this.x = source.x;
             this.y = source.y;
             return this;
@@ -992,7 +992,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector defines the other vector
          * @returns a new Vector2 set with the addition of the current Vector2 and the given one coordinates
          */
-        public add(otherVector: Vector2): Vector2 {
+        public add(otherVector: DeepImmutable<Vector2>): Vector2 {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         }
 
@@ -1002,7 +1002,7 @@ import { Ray } from "Culling/ray";
          * @param result defines the target vector
          * @returns the unmodified current Vector2
          */
-        public addToRef(otherVector: Vector2, result: Vector2): Vector2 {
+        public addToRef(otherVector: DeepImmutable<Vector2>, result: Vector2): Vector2 {
             result.x = this.x + otherVector.x;
             result.y = this.y + otherVector.y;
             return this;
@@ -1013,7 +1013,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector defines the other vector
          * @returns the current updated Vector2
          */
-        public addInPlace(otherVector: Vector2): Vector2 {
+        public addInPlace(otherVector: DeepImmutable<Vector2>): Vector2 {
             this.x += otherVector.x;
             this.y += otherVector.y;
             return this;
@@ -1043,7 +1043,7 @@ import { Ray } from "Culling/ray";
          * @param result defines the target vector
          * @returns the unmodified current Vector2
          */
-        public subtractToRef(otherVector: Vector2, result: Vector2): Vector2 {
+        public subtractToRef(otherVector: DeepImmutable<Vector2>, result: Vector2): Vector2 {
             result.x = this.x - otherVector.x;
             result.y = this.y - otherVector.y;
             return this;
@@ -1053,7 +1053,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector defines the other vector
          * @returns the current updated Vector2
          */
-        public subtractInPlace(otherVector: Vector2): Vector2 {
+        public subtractInPlace(otherVector: DeepImmutable<Vector2>): Vector2 {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
             return this;
@@ -1064,7 +1064,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector defines the other vector
          * @returns the current updated Vector2
          */
-        public multiplyInPlace(otherVector: Vector2): Vector2 {
+        public multiplyInPlace(otherVector: DeepImmutable<Vector2>): Vector2 {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
             return this;
@@ -1075,7 +1075,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector defines the other vector
          * @returns a new Vector2
          */
-        public multiply(otherVector: Vector2): Vector2 {
+        public multiply(otherVector: DeepImmutable<Vector2>): Vector2 {
             return new Vector2(this.x * otherVector.x, this.y * otherVector.y);
         }
 
@@ -1085,7 +1085,7 @@ import { Ray } from "Culling/ray";
          * @param result defines the target vector
          * @returns the unmodified current Vector2
          */
-        public multiplyToRef(otherVector: Vector2, result: Vector2): Vector2 {
+        public multiplyToRef(otherVector: DeepImmutable<Vector2>, result: Vector2): Vector2 {
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
             return this;
@@ -1116,7 +1116,7 @@ import { Ray } from "Culling/ray";
          * @param result defines the target vector
          * @returns the unmodified current Vector2
          */
-        public divideToRef(otherVector: Vector2, result: Vector2): Vector2 {
+        public divideToRef(otherVector: DeepImmutable<Vector2>, result: Vector2): Vector2 {
             result.x = this.x / otherVector.x;
             result.y = this.y / otherVector.y;
             return this;
@@ -1127,7 +1127,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector defines the other vector
          * @returns the current updated Vector2
          */
-        public divideInPlace(otherVector: Vector2): Vector2 {
+        public divideInPlace(otherVector: DeepImmutable<Vector2>): Vector2 {
             return this.divideToRef(otherVector, this);
         }
 
@@ -1190,7 +1190,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector defines the other vector
          * @returns true if the given vector coordinates strictly equal the current Vector2 ones
          */
-        public equals(otherVector: Vector2): boolean {
+        public equals(otherVector: DeepImmutable<Vector2>): boolean {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y;
         }
 
@@ -1200,7 +1200,7 @@ import { Ray } from "Culling/ray";
          * @param epsilon defines the minimal distance to consider equality
          * @returns true if the given vector coordinates are close to the current ones by a distance of epsilon.
          */
-        public equalsWithEpsilon(otherVector: Vector2, epsilon: number = Epsilon): boolean {
+        public equalsWithEpsilon(otherVector: DeepImmutable<Vector2>, epsilon: number = Epsilon): boolean {
             return otherVector && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon);
         }
 
@@ -1291,7 +1291,7 @@ import { Ray } from "Culling/ray";
          * @param offset defines the offset in the data source
          * @returns a new Vector2
          */
-        public static FromArray(array: ArrayLike<number>, offset: number = 0): Vector2 {
+        public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Vector2 {
             return new Vector2(array[offset], array[offset + 1]);
         }
 
@@ -1301,7 +1301,7 @@ import { Ray } from "Culling/ray";
          * @param offset defines the offset in the data source
          * @param result defines the target vector
          */
-        public static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector2): void {
+        public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Vector2): void {
             result.x = array[offset];
             result.y = array[offset + 1];
         }
@@ -1315,7 +1315,7 @@ import { Ray } from "Culling/ray";
          * @param amount defines the interpolation factor
          * @returns a new Vector2
          */
-        public static CatmullRom(value1: Vector2, value2: Vector2, value3: Vector2, value4: Vector2, amount: number): Vector2 {
+        public static CatmullRom(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, value3: DeepImmutable<Vector2>, value4: DeepImmutable<Vector2>, amount: number): Vector2 {
             var squared = amount * amount;
             var cubed = amount * squared;
 
@@ -1339,7 +1339,7 @@ import { Ray } from "Culling/ray";
          * @param max defines the upper limit
          * @returns a new Vector2
          */
-        public static Clamp(value: Vector2, min: Vector2, max: Vector2): Vector2 {
+        public static Clamp(value: DeepImmutable<Vector2>, min: DeepImmutable<Vector2>, max: DeepImmutable<Vector2>): Vector2 {
             var x = value.x;
             x = (x > max.x) ? max.x : x;
             x = (x < min.x) ? min.x : x;
@@ -1360,7 +1360,7 @@ import { Ray } from "Culling/ray";
          * @param amount defines the interpolation factor
          * @returns a new Vector2
          */
-        public static Hermite(value1: Vector2, tangent1: Vector2, value2: Vector2, tangent2: Vector2, amount: number): Vector2 {
+        public static Hermite(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, amount: number): Vector2 {
             var squared = amount * amount;
             var cubed = amount * squared;
             var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
@@ -1381,7 +1381,7 @@ import { Ray } from "Culling/ray";
          * @param amount defines the interpolation factor
          * @returns a new Vector2
          */
-        public static Lerp(start: Vector2, end: Vector2, amount: number): Vector2 {
+        public static Lerp(start: DeepImmutable<Vector2>, end: DeepImmutable<Vector2>, amount: number): Vector2 {
             var x = start.x + ((end.x - start.x) * amount);
             var y = start.y + ((end.y - start.y) * amount);
             return new Vector2(x, y);
@@ -1393,7 +1393,7 @@ import { Ray } from "Culling/ray";
          * @param right defines second vector
          * @returns the dot product (float)
          */
-        public static Dot(left: Vector2, right: Vector2): number {
+        public static Dot(left: DeepImmutable<Vector2>, right: DeepImmutable<Vector2>): number {
             return left.x * right.x + left.y * right.y;
         }
 
@@ -1402,7 +1402,7 @@ import { Ray } from "Culling/ray";
          * @param vector defines the vector to normalize
          * @returns a new Vector2
          */
-        public static Normalize(vector: Vector2): Vector2 {
+        public static Normalize(vector: DeepImmutable<Vector2>): Vector2 {
             var newVector = vector.clone();
             newVector.normalize();
             return newVector;
@@ -1414,7 +1414,7 @@ import { Ray } from "Culling/ray";
          * @param right defines 2nd vector
          * @returns a new Vector2
          */
-        public static Minimize(left: Vector2, right: Vector2): Vector2 {
+        public static Minimize(left: DeepImmutable<Vector2>, right: DeepImmutable<Vector2>): Vector2 {
             var x = (left.x < right.x) ? left.x : right.x;
             var y = (left.y < right.y) ? left.y : right.y;
             return new Vector2(x, y);
@@ -1426,7 +1426,7 @@ import { Ray } from "Culling/ray";
          * @param right defines 2nd vector
          * @returns a new Vector2
          */
-        public static Maximize(left: Vector2, right: Vector2): Vector2 {
+        public static Maximize(left: DeepImmutable<Vector2>, right: DeepImmutable<Vector2>): Vector2 {
             var x = (left.x > right.x) ? left.x : right.x;
             var y = (left.y > right.y) ? left.y : right.y;
             return new Vector2(x, y);
@@ -1438,7 +1438,7 @@ import { Ray } from "Culling/ray";
          * @param transformation defines the matrix to apply
          * @returns a new Vector2
          */
-        public static Transform(vector: Vector2, transformation: Matrix): Vector2 {
+        public static Transform(vector: DeepImmutable<Vector2>, transformation: DeepImmutable<Matrix>): Vector2 {
             let r = Vector2.Zero();
             Vector2.TransformToRef(vector, transformation, r);
             return r;
@@ -1450,7 +1450,7 @@ import { Ray } from "Culling/ray";
          * @param transformation defines the matrix to apply
          * @param result defines the target vector
          */
-        public static TransformToRef(vector: Vector2, transformation: Matrix, result: Vector2) {
+        public static TransformToRef(vector: DeepImmutable<Vector2>, transformation: DeepImmutable<Matrix>, result: Vector2) {
             const m = transformation.m;
             var x = (vector.x * m[0]) + (vector.y * m[4]) + m[12];
             var y = (vector.x * m[1]) + (vector.y * m[5]) + m[13];
@@ -1466,7 +1466,7 @@ import { Ray } from "Culling/ray";
          * @param p2 defines 3rd triangle point
          * @returns true if the point "p" is in the triangle defined by the vertors "p0", "p1", "p2"
          */
-        public static PointInTriangle(p: Vector2, p0: Vector2, p1: Vector2, p2: Vector2) {
+        public static PointInTriangle(p: DeepImmutable<Vector2>, p0: DeepImmutable<Vector2>, p1: DeepImmutable<Vector2>, p2: DeepImmutable<Vector2>) {
             let a = 1 / 2 * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
             let sign = a < 0 ? -1 : 1;
             let s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * p.x + (p0.x - p2.x) * p.y) * sign;
@@ -1481,7 +1481,7 @@ import { Ray } from "Culling/ray";
          * @param value2 defines second vector
          * @returns the distance between vectors
          */
-        public static Distance(value1: Vector2, value2: Vector2): number {
+        public static Distance(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): number {
             return Math.sqrt(Vector2.DistanceSquared(value1, value2));
         }
 
@@ -1491,7 +1491,7 @@ import { Ray } from "Culling/ray";
          * @param value2 defines second vector
          * @returns the squared distance between vectors
          */
-        public static DistanceSquared(value1: Vector2, value2: Vector2): number {
+        public static DistanceSquared(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): number {
             var x = value1.x - value2.x;
             var y = value1.y - value2.y;
             return (x * x) + (y * y);
@@ -1503,7 +1503,7 @@ import { Ray } from "Culling/ray";
          * @param value2 defines second vector
          * @returns a new Vector2
          */
-        public static Center(value1: Vector2, value2: Vector2): Vector2 {
+        public static Center(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): Vector2 {
             var center = value1.add(value2);
             center.scaleInPlace(0.5);
             return center;
@@ -1516,7 +1516,7 @@ import { Ray } from "Culling/ray";
          * @param segB defines the other point of the segment
          * @returns the shortest distance
          */
-        public static DistanceOfPointFromSegment(p: Vector2, segA: Vector2, segB: Vector2): number {
+        public static DistanceOfPointFromSegment(p: DeepImmutable<Vector2>, segA: DeepImmutable<Vector2>, segB: DeepImmutable<Vector2>): number {
             let l2 = Vector2.DistanceSquared(segA, segB);
             if (l2 === 0.0) {
                 return Vector2.Distance(p, segA);
@@ -1622,7 +1622,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector defines the second operand
          * @returns the current updated Vector3
          */
-        public addInPlace(otherVector: Vector3): Vector3 {
+        public addInPlace(otherVector: DeepImmutable<Vector3>): Vector3 {
             return this.addInPlaceFromFloats(otherVector.x, otherVector.y, otherVector.z);
         }
 
@@ -1645,7 +1645,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector defines the second operand
          * @returns the resulting Vector3
          */
-        public add(otherVector: Vector3): Vector3 {
+        public add(otherVector: DeepImmutable<Vector3>): Vector3 {
             return new Vector3(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z);
         }
 
@@ -1655,7 +1655,7 @@ import { Ray } from "Culling/ray";
          * @param result defines the Vector3 object where to store the result
          * @returns the current Vector3
          */
-        public addToRef(otherVector: Vector3, result: Vector3): Vector3 {
+        public addToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
             return result.copyFromFloats(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z);
         }
 
@@ -1664,7 +1664,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector defines the second operand
          * @returns the current updated Vector3
          */
-        public subtractInPlace(otherVector: Vector3): Vector3 {
+        public subtractInPlace(otherVector: DeepImmutable<Vector3>): Vector3 {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
             this.z -= otherVector.z;
@@ -1676,7 +1676,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector defines the second operand
          * @returns the resulting Vector3
          */
-        public subtract(otherVector: Vector3): Vector3 {
+        public subtract(otherVector: DeepImmutable<Vector3>): Vector3 {
             return new Vector3(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z);
         }
 
@@ -1686,7 +1686,7 @@ import { Ray } from "Culling/ray";
          * @param result defines the Vector3 object where to store the result
          * @returns the current Vector3
          */
-        public subtractToRef(otherVector: Vector3, result: Vector3): Vector3 {
+        public subtractToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
             return this.subtractFromFloatsToRef(otherVector.x, otherVector.y, otherVector.z, result);
         }
 
@@ -1767,7 +1767,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector defines the second operand
          * @returns true if both vectors are equals
          */
-        public equals(otherVector: Vector3): boolean {
+        public equals(otherVector: DeepImmutable<Vector3>): boolean {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
         }
 
@@ -1777,7 +1777,7 @@ import { Ray } from "Culling/ray";
          * @param epsilon defines the minimal distance to define values as equals
          * @returns true if both vectors are distant less than epsilon
          */
-        public equalsWithEpsilon(otherVector: Vector3, epsilon: number = Epsilon): boolean {
+        public equalsWithEpsilon(otherVector: DeepImmutable<Vector3>, epsilon: number = Epsilon): boolean {
             return otherVector && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon) && Scalar.WithinEpsilon(this.z, otherVector.z, epsilon);
         }
 
@@ -1797,7 +1797,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector defines the second operand
          * @returns the current updated Vector3
          */
-        public multiplyInPlace(otherVector: Vector3): Vector3 {
+        public multiplyInPlace(otherVector: DeepImmutable<Vector3>): Vector3 {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
             this.z *= otherVector.z;
@@ -1809,7 +1809,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector defines the second operand
          * @returns the new Vector3
          */
-        public multiply(otherVector: Vector3): Vector3 {
+        public multiply(otherVector: DeepImmutable<Vector3>): Vector3 {
             return this.multiplyByFloats(otherVector.x, otherVector.y, otherVector.z);
         }
 
@@ -1819,7 +1819,7 @@ import { Ray } from "Culling/ray";
          * @param result defines the Vector3 object where to store the result
          * @returns the current Vector3
          */
-        public multiplyToRef(otherVector: Vector3, result: Vector3): Vector3 {
+        public multiplyToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
             return result.copyFromFloats(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z);
         }
 
@@ -1839,7 +1839,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector defines the second operand
          * @returns the new Vector3
          */
-        public divide(otherVector: Vector3): Vector3 {
+        public divide(otherVector: DeepImmutable<Vector3>): Vector3 {
             return new Vector3(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z);
         }
 
@@ -1849,7 +1849,7 @@ import { Ray } from "Culling/ray";
          * @param result defines the Vector3 object where to store the result
          * @returns the current Vector3
          */
-        public divideToRef(otherVector: Vector3, result: Vector3): Vector3 {
+        public divideToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
             return result.copyFromFloats(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z);
         }
 
@@ -1867,7 +1867,7 @@ import { Ray } from "Culling/ray";
          * @param other defines the second operand
          * @returns the current updated Vector3
          */
-        public minimizeInPlace(other: Vector3): Vector3 {
+        public minimizeInPlace(other: DeepImmutable<Vector3>): Vector3 {
             return this.minimizeInPlaceFromFloats(other.x, other.y, other.z);
         }
 
@@ -1876,7 +1876,7 @@ import { Ray } from "Culling/ray";
          * @param other defines the second operand
          * @returns the current updated Vector3
          */
-        public maximizeInPlace(other: Vector3): Vector3 {
+        public maximizeInPlace(other: DeepImmutable<Vector3>): Vector3 {
             return this.maximizeInPlaceFromFloats(other.x, other.y, other.z);
         }
 
@@ -2044,7 +2044,7 @@ import { Ray } from "Culling/ray";
          * @param reference define the Vector3 to update
          * @returns the updated Vector3
          */
-        public normalizeToRef(reference: Vector3): Vector3 {
+        public normalizeToRef(reference: DeepImmutable<Vector3>): Vector3 {
             var len = this.length();
             if (len === 0 || len === 1.0) {
                 return reference.copyFromFloats(this.x, this.y, this.z);
@@ -2066,7 +2066,7 @@ import { Ray } from "Culling/ray";
          * @param source defines the source Vector3
          * @returns the current updated Vector3
          */
-        public copyFrom(source: Vector3): Vector3 {
+        public copyFrom(source: DeepImmutable<Vector3>): Vector3 {
             return this.copyFromFloats(source.x, source.y, source.z);
         }
 
@@ -2115,7 +2115,7 @@ import { Ray } from "Culling/ray";
          * @param size defines the size along the axis
          * @returns the clip factor
          */
-        public static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: number) {
+        public static GetClipFactor(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, axis: DeepImmutable<Vector3>, size: number) {
             var d0 = Vector3.Dot(vector0, axis) - size;
             var d1 = Vector3.Dot(vector1, axis) - size;
 
@@ -2131,7 +2131,7 @@ import { Ray } from "Culling/ray";
          * @param normal direction of the normal
          * @return the angle between vector0 and vector1
          */
-        public static GetAngleBetweenVectors(vector0: Vector3, vector1: Vector3, normal: Vector3): number {
+        public static GetAngleBetweenVectors(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): number {
             const v0: Vector3 = vector0.normalizeToRef(MathTmp.Vector3[1]);
             const v1: Vector3 = vector1.normalizeToRef(MathTmp.Vector3[2]);
             const dot: number = Vector3.Dot(v0, v1);
@@ -2149,7 +2149,7 @@ import { Ray } from "Culling/ray";
          * @param offset defines the offset in the source array
          * @returns the new Vector3
          */
-        public static FromArray(array: ArrayLike<number>, offset: number = 0): Vector3 {
+        public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Vector3 {
             return new Vector3(array[offset], array[offset + 1], array[offset + 2]);
         }
 
@@ -2160,7 +2160,7 @@ import { Ray } from "Culling/ray";
          * @param offset defines the offset in the source array
          * @returns the new Vector3
          */
-        public static FromFloatArray(array: Float32Array, offset?: number): Vector3 {
+        public static FromFloatArray(array: DeepImmutable<Float32Array>, offset?: number): Vector3 {
             return Vector3.FromArray(array, offset);
         }
 
@@ -2170,7 +2170,7 @@ import { Ray } from "Culling/ray";
          * @param offset defines the offset in the source array
          * @param result defines the Vector3 where to store the result
          */
-        public static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector3): void {
+        public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Vector3): void {
             result.x = array[offset];
             result.y = array[offset + 1];
             result.z = array[offset + 2];
@@ -2183,7 +2183,7 @@ import { Ray } from "Culling/ray";
          * @param offset defines the offset in the source array
          * @param result defines the Vector3 where to store the result
          */
-        public static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void {
+        public static FromFloatArrayToRef(array: DeepImmutable<Float32Array>, offset: number, result: Vector3): void {
             return Vector3.FromArrayToRef(array, offset, result);
         }
 
@@ -2262,7 +2262,7 @@ import { Ray } from "Culling/ray";
          * @param transformation defines the transformation matrix
          * @returns the transformed Vector3
          */
-        public static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3 {
+        public static TransformCoordinates(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector3 {
             var result = Vector3.Zero();
             Vector3.TransformCoordinatesToRef(vector, transformation, result);
             return result;
@@ -2275,7 +2275,7 @@ import { Ray } from "Culling/ray";
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        public static TransformCoordinatesToRef(vector: Vector3, transformation: Readonly<Matrix>, result: Vector3): void {
+        public static TransformCoordinatesToRef(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>, result: Vector3): void {
             Vector3.TransformCoordinatesFromFloatsToRef(vector.x, vector.y, vector.z, transformation, result);
         }
 
@@ -2288,7 +2288,7 @@ import { Ray } from "Culling/ray";
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Readonly<Matrix>, result: Vector3): void {
+        public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: DeepImmutable<Matrix>, result: Vector3): void {
             const m = transformation.m;
             var rx = x * m[0] + y * m[4] + z * m[8] + m[12];
             var ry = x * m[1] + y * m[5] + z * m[9] + m[13];
@@ -2307,7 +2307,7 @@ import { Ray } from "Culling/ray";
          * @param transformation defines the transformation matrix
          * @returns the new Vector3
          */
-        public static TransformNormal(vector: Vector3, transformation: Matrix): Vector3 {
+        public static TransformNormal(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector3 {
             var result = Vector3.Zero();
             Vector3.TransformNormalToRef(vector, transformation, result);
             return result;
@@ -2320,7 +2320,7 @@ import { Ray } from "Culling/ray";
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        public static TransformNormalToRef(vector: Vector3, transformation: Readonly<Matrix>, result: Vector3): void {
+        public static TransformNormalToRef(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>, result: Vector3): void {
             this.TransformNormalFromFloatsToRef(vector.x, vector.y, vector.z, transformation, result);
         }
 
@@ -2333,7 +2333,7 @@ import { Ray } from "Culling/ray";
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Readonly<Matrix>, result: Vector3): void {
+        public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: DeepImmutable<Matrix>, result: Vector3): void {
             const m = transformation.m;
             result.x = x * m[0] + y * m[4] + z * m[8];
             result.y = x * m[1] + y * m[5] + z * m[9];
@@ -2349,7 +2349,7 @@ import { Ray } from "Culling/ray";
          * @param amount defines the amount on the spline to use
          * @returns the new Vector3
          */
-        public static CatmullRom(value1: Vector3, value2: Vector3, value3: Vector3, value4: Vector3, amount: number): Vector3 {
+        public static CatmullRom(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, value3: DeepImmutable<Vector3>, value4: DeepImmutable<Vector3>, amount: number): Vector3 {
             var squared = amount * amount;
             var cubed = amount * squared;
 
@@ -2377,7 +2377,7 @@ import { Ray } from "Culling/ray";
          * @param max defines the upper range value
          * @returns the new Vector3
          */
-        public static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3 {
+        public static Clamp(value: DeepImmutable<Vector3>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>): Vector3 {
             const v = new Vector3();
             Vector3.ClampToRef(value, min, max, v);
             return v;
@@ -2391,7 +2391,7 @@ import { Ray } from "Culling/ray";
          * @param max defines the upper range value
          * @param result defines the Vector3 where to store the result
          */
-        public static ClampToRef(value: Vector3, min: Vector3, max: Vector3, result: Vector3): void {
+        public static ClampToRef(value: DeepImmutable<Vector3>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, result: Vector3): void {
             var x = value.x;
             x = (x > max.x) ? max.x : x;
             x = (x < min.x) ? min.x : x;
@@ -2416,7 +2416,7 @@ import { Ray } from "Culling/ray";
          * @param amount defines the amount on the interpolation spline (between 0 and 1)
          * @returns the new Vector3
          */
-        public static Hermite(value1: Vector3, tangent1: Vector3, value2: Vector3, tangent2: Vector3, amount: number): Vector3 {
+        public static Hermite(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, amount: number): Vector3 {
             var squared = amount * amount;
             var cubed = amount * squared;
             var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
@@ -2437,7 +2437,7 @@ import { Ray } from "Culling/ray";
          * @param amount max defines amount between both (between 0 and 1)
          * @returns the new Vector3
          */
-        public static Lerp(start: Vector3, end: Vector3, amount: number): Vector3 {
+        public static Lerp(start: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, amount: number): Vector3 {
             var result = new Vector3(0, 0, 0);
             Vector3.LerpToRef(start, end, amount, result);
             return result;
@@ -2450,7 +2450,7 @@ import { Ray } from "Culling/ray";
          * @param amount max defines amount between both (between 0 and 1)
          * @param result defines the Vector3 where to store the result
          */
-        public static LerpToRef(start: Vector3, end: Vector3, amount: number, result: Vector3): void {
+        public static LerpToRef(start: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, amount: number, result: Vector3): void {
             result.x = start.x + ((end.x - start.x) * amount);
             result.y = start.y + ((end.y - start.y) * amount);
             result.z = start.z + ((end.z - start.z) * amount);
@@ -2462,7 +2462,7 @@ import { Ray } from "Culling/ray";
          * @param right defines the right operand
          * @returns the dot product
          */
-        public static Dot(left: Vector3, right: Vector3): number {
+        public static Dot(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): number {
             return (left.x * right.x + left.y * right.y + left.z * right.z);
         }
 
@@ -2473,7 +2473,7 @@ import { Ray } from "Culling/ray";
          * @param right defines the right operand
          * @returns the cross product
          */
-        public static Cross(left: Vector3, right: Vector3): Vector3 {
+        public static Cross(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3 {
             var result = Vector3.Zero();
             Vector3.CrossToRef(left, right, result);
             return result;
@@ -2498,7 +2498,7 @@ import { Ray } from "Culling/ray";
          * @param vector defines the Vector3 to normalize
          * @returns the new Vector3
          */
-        public static Normalize(vector: Vector3): Vector3 {
+        public static Normalize(vector: DeepImmutable<Vector3>): Vector3 {
             var result = Vector3.Zero();
             Vector3.NormalizeToRef(vector, result);
             return result;
@@ -2509,7 +2509,7 @@ import { Ray } from "Culling/ray";
          * @param vector defines the Vector3 to normalize
          * @param result defines the Vector3 where to store the result
          */
-        public static NormalizeToRef(vector: Vector3, result: Vector3): void {
+        public static NormalizeToRef(vector: DeepImmutable<Vector3>, result: Vector3): void {
             vector.normalizeToRef(result);
         }
 
@@ -2521,7 +2521,7 @@ import { Ray } from "Culling/ray";
          * @param viewport defines the screen viewport to use
          * @returns the new Vector3
          */
-        public static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3 {
+        public static Project(vector: DeepImmutable<Vector3>, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>, viewport: DeepImmutable<Viewport>): Vector3 {
             var cw = viewport.width;
             var ch = viewport.height;
             var cx = viewport.x;
@@ -2543,7 +2543,7 @@ import { Ray } from "Culling/ray";
         }
 
         /** @hidden */
-        private static UnprojectFromInvertedMatrixToRef(source: Vector3, matrix: Readonly<Matrix>, result: Vector3) {
+        private static UnprojectFromInvertedMatrixToRef(source: DeepImmutable<Vector3>, matrix: DeepImmutable<Matrix>, result: Vector3) {
             Vector3.TransformCoordinatesToRef(source, matrix, result);
             const m = matrix.m;
             var num = source.x * m[3] + source.y * m[7] + source.z * m[11] + m[15];
@@ -2561,7 +2561,7 @@ import { Ray } from "Culling/ray";
          * @param transform defines the transform (view x projection) matrix to use
          * @returns the new Vector3
          */
-        public static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3 {
+        public static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>): Vector3 {
             var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(transform, matrix);
             matrix.invert();
@@ -2582,7 +2582,7 @@ import { Ray } from "Culling/ray";
          * @param projection defines the projection matrix to use
          * @returns the new Vector3
          */
-        public static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3 {
+        public static Unproject(source: DeepImmutable<Vector3>, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Vector3 {
             let result = Vector3.Zero();
 
             Vector3.UnprojectToRef(source, viewportWidth, viewportHeight, world, view, projection, result);
@@ -2600,7 +2600,7 @@ import { Ray } from "Culling/ray";
          * @param projection defines the projection matrix to use
          * @param result defines the Vector3 where to store the result
          */
-        public static UnprojectToRef(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix, result: Vector3): void {
+        public static UnprojectToRef(source: DeepImmutable<Vector3>, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, result: Vector3): void {
             Vector3.UnprojectFloatsToRef(source.x, source.y, source.z, viewportWidth, viewportHeight, world, view, projection, result);
         }
 
@@ -2616,7 +2616,7 @@ import { Ray } from "Culling/ray";
          * @param projection defines the projection matrix to use
          * @param result defines the Vector3 where to store the result
          */
-        public static UnprojectFloatsToRef(sourceX: float, sourceY: float, sourceZ: float, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix, result: Vector3): void {
+        public static UnprojectFloatsToRef(sourceX: float, sourceY: float, sourceZ: float, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, result: Vector3): void {
             var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(view, matrix);
             matrix.multiplyToRef(projection, matrix);
@@ -2639,7 +2639,7 @@ import { Ray } from "Culling/ray";
          * @param projection defines the projection matrix to use
          * @param ray defines the Ray where to store the result
          */
-        public static UnprojectRayToRef(sourceX: float, sourceY: float, viewportWidth: number, viewportHeight: number, world: Readonly<Matrix>, view: Readonly<Matrix>, projection: Readonly<Matrix>, ray: Ray): void {
+        public static UnprojectRayToRef(sourceX: float, sourceY: float, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, ray: Ray): void {
             var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(view, matrix);
             matrix.multiplyToRef(projection, matrix);
@@ -2665,7 +2665,7 @@ import { Ray } from "Culling/ray";
          * @param right defines the second operand
          * @returns the new Vector3
          */
-        public static Minimize(left: Vector3, right: Vector3): Vector3 {
+        public static Minimize(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3 {
             var min = left.clone();
             min.minimizeInPlace(right);
             return min;
@@ -2677,7 +2677,7 @@ import { Ray } from "Culling/ray";
          * @param right defines the second operand
          * @returns the new Vector3
          */
-        public static Maximize(left: Vector3, right: Vector3): Vector3 {
+        public static Maximize(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3 {
             var max = left.clone();
             max.maximizeInPlace(right);
             return max;
@@ -2689,7 +2689,7 @@ import { Ray } from "Culling/ray";
          * @param value2 defines the second operand
          * @returns the distance
          */
-        public static Distance(value1: Vector3, value2: Vector3): number {
+        public static Distance(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): number {
             return Math.sqrt(Vector3.DistanceSquared(value1, value2));
         }
 
@@ -2699,7 +2699,7 @@ import { Ray } from "Culling/ray";
          * @param value2 defines the second operand
          * @returns the squared distance
          */
-        public static DistanceSquared(value1: Vector3, value2: Vector3): number {
+        public static DistanceSquared(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): number {
             var x = value1.x - value2.x;
             var y = value1.y - value2.y;
             var z = value1.z - value2.z;
@@ -2713,7 +2713,7 @@ import { Ray } from "Culling/ray";
          * @param value2 defines the second operand
          * @returns the new Vector3
          */
-        public static Center(value1: Vector3, value2: Vector3): Vector3 {
+        public static Center(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): Vector3 {
             var center = value1.add(value2);
             center.scaleInPlace(0.5);
             return center;
@@ -2729,7 +2729,7 @@ import { Ray } from "Culling/ray";
          * @param axis3 defines the third axis
          * @returns a new Vector3
          */
-        public static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3 {
+        public static RotationFromAxis(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): Vector3 {
             var rotation = Vector3.Zero();
             Vector3.RotationFromAxisToRef(axis1, axis2, axis3, rotation);
             return rotation;
@@ -2742,7 +2742,7 @@ import { Ray } from "Culling/ray";
          * @param axis3 defines the third axis
          * @param ref defines the Vector3 where to store the result
          */
-        public static RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3): void {
+        public static RotationFromAxisToRef(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: Vector3): void {
             var quat = MathTmp.Quaternion[0];
             Quaternion.RotationQuaternionFromAxisToRef(axis1, axis2, axis3, quat);
             quat.toEulerAnglesToRef(ref);
@@ -2834,7 +2834,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector the vector to add
          * @returns the updated Vector4.
          */
-        public addInPlace(otherVector: Vector4): Vector4 {
+        public addInPlace(otherVector: DeepImmutable<Vector4>): Vector4 {
             this.x += otherVector.x;
             this.y += otherVector.y;
             this.z += otherVector.z;
@@ -2847,7 +2847,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector the vector to add
          * @returns the resulting vector
          */
-        public add(otherVector: Vector4): Vector4 {
+        public add(otherVector: DeepImmutable<Vector4>): Vector4 {
             return new Vector4(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z, this.w + otherVector.w);
         }
 
@@ -2857,7 +2857,7 @@ import { Ray } from "Culling/ray";
          * @param result the vector to store the result
          * @returns the current Vector4.
          */
-        public addToRef(otherVector: Vector4, result: Vector4): Vector4 {
+        public addToRef(otherVector: DeepImmutable<Vector4>, result: Vector4): Vector4 {
             result.x = this.x + otherVector.x;
             result.y = this.y + otherVector.y;
             result.z = this.z + otherVector.z;
@@ -2870,7 +2870,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector the vector to subtract
          * @returns the updated Vector4.
          */
-        public subtractInPlace(otherVector: Vector4): Vector4 {
+        public subtractInPlace(otherVector: DeepImmutable<Vector4>): Vector4 {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
             this.z -= otherVector.z;
@@ -2883,7 +2883,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector the vector to add
          * @returns the new vector with the result
          */
-        public subtract(otherVector: Vector4): Vector4 {
+        public subtract(otherVector: DeepImmutable<Vector4>): Vector4 {
             return new Vector4(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w);
         }
 
@@ -2893,7 +2893,7 @@ import { Ray } from "Culling/ray";
          * @param result the vector to store the result
          * @returns the current Vector4.
          */
-        public subtractToRef(otherVector: Vector4, result: Vector4): Vector4 {
+        public subtractToRef(otherVector: DeepImmutable<Vector4>, result: Vector4): Vector4 {
             result.x = this.x - otherVector.x;
             result.y = this.y - otherVector.y;
             result.z = this.z - otherVector.z;
@@ -2996,7 +2996,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector the vector to compare against
          * @returns true if they are equal
          */
-        public equals(otherVector: Vector4): boolean {
+        public equals(otherVector: DeepImmutable<Vector4>): boolean {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z && this.w === otherVector.w;
         }
 
@@ -3006,7 +3006,7 @@ import { Ray } from "Culling/ray";
          * @param epsilon (Default: very small number)
          * @returns true if they are equal
          */
-        public equalsWithEpsilon(otherVector: Vector4, epsilon: number = Epsilon): boolean {
+        public equalsWithEpsilon(otherVector: DeepImmutable<Vector4>, epsilon: number = Epsilon): boolean {
             return otherVector
                 && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon)
                 && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon)
@@ -3044,7 +3044,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector vector to multiple with
          * @returns resulting new vector
          */
-        public multiply(otherVector: Vector4): Vector4 {
+        public multiply(otherVector: DeepImmutable<Vector4>): Vector4 {
             return new Vector4(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w);
         }
         /**
@@ -3053,7 +3053,7 @@ import { Ray } from "Culling/ray";
          * @param result vector to store the result
          * @returns the current Vector4.
          */
-        public multiplyToRef(otherVector: Vector4, result: Vector4): Vector4 {
+        public multiplyToRef(otherVector: DeepImmutable<Vector4>, result: Vector4): Vector4 {
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
             result.z = this.z * otherVector.z;
@@ -3076,7 +3076,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector vector to devide with
          * @returns resulting new vector
          */
-        public divide(otherVector: Vector4): Vector4 {
+        public divide(otherVector: DeepImmutable<Vector4>): Vector4 {
             return new Vector4(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z, this.w / otherVector.w);
         }
         /**
@@ -3085,7 +3085,7 @@ import { Ray } from "Culling/ray";
          * @param result vector to store the result
          * @returns the current Vector4.
          */
-        public divideToRef(otherVector: Vector4, result: Vector4): Vector4 {
+        public divideToRef(otherVector: DeepImmutable<Vector4>, result: Vector4): Vector4 {
             result.x = this.x / otherVector.x;
             result.y = this.y / otherVector.y;
             result.z = this.z / otherVector.z;
@@ -3098,7 +3098,7 @@ import { Ray } from "Culling/ray";
          * @param otherVector vector to devide with
          * @returns the updated Vector3.
          */
-        public divideInPlace(otherVector: Vector4): Vector4 {
+        public divideInPlace(otherVector: DeepImmutable<Vector4>): Vector4 {
             return this.divideToRef(otherVector, this);
         }
 
@@ -3107,7 +3107,7 @@ import { Ray } from "Culling/ray";
          * @param other defines the second operand
          * @returns the current updated Vector4
          */
-        public minimizeInPlace(other: Vector4): Vector4 {
+        public minimizeInPlace(other: DeepImmutable<Vector4>): Vector4 {
             if (other.x < this.x) { this.x = other.x; }
             if (other.y < this.y) { this.y = other.y; }
             if (other.z < this.z) { this.z = other.z; }
@@ -3119,7 +3119,7 @@ import { Ray } from "Culling/ray";
          * @param other defines the second operand
          * @returns the current updated Vector4
          */
-        public maximizeInPlace(other: Vector4): Vector4 {
+        public maximizeInPlace(other: DeepImmutable<Vector4>): Vector4 {
             if (other.x > this.x) { this.x = other.x; }
             if (other.y > this.y) { this.y = other.y; }
             if (other.z > this.z) { this.z = other.z; }
@@ -3193,7 +3193,7 @@ import { Ray } from "Culling/ray";
          * @param source the source vector to copy from
          * @returns the updated Vector4.
          */
-        public copyFrom(source: Vector4): Vector4 {
+        public copyFrom(source: DeepImmutable<Vector4>): Vector4 {
             this.x = source.x;
             this.y = source.y;
             this.z = source.z;
@@ -3244,7 +3244,7 @@ import { Ray } from "Culling/ray";
          * @param offset the offset into the array to start at
          * @returns the new vector
          */
-        public static FromArray(array: ArrayLike<number>, offset?: number): Vector4 {
+        public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset?: number): Vector4 {
             if (!offset) {
                 offset = 0;
             }
@@ -3256,7 +3256,7 @@ import { Ray } from "Culling/ray";
          * @param offset the offset into the array to start at
          * @param result the vector to store the result in
          */
-        public static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector4): void {
+        public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Vector4): void {
             result.x = array[offset];
             result.y = array[offset + 1];
             result.z = array[offset + 2];
@@ -3268,7 +3268,7 @@ import { Ray } from "Culling/ray";
          * @param offset the offset into the array to start at
          * @param result the vector to store the result in
          */
-        public static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector4): void {
+        public static FromFloatArrayToRef(array: DeepImmutable<Float32Array>, offset: number, result: Vector4): void {
             Vector4.FromArrayToRef(array, offset, result);
         }
         /**
@@ -3304,7 +3304,7 @@ import { Ray } from "Culling/ray";
          * @param vector the vector to normalize
          * @returns the vector
          */
-        public static Normalize(vector: Vector4): Vector4 {
+        public static Normalize(vector: DeepImmutable<Vector4>): Vector4 {
             var result = Vector4.Zero();
             Vector4.NormalizeToRef(vector, result);
             return result;
@@ -3314,7 +3314,7 @@ import { Ray } from "Culling/ray";
          * @param vector the vector to normalize
          * @param result the vector to store the result in
          */
-        public static NormalizeToRef(vector: Vector4, result: Vector4): void {
+        public static NormalizeToRef(vector: DeepImmutable<Vector4>, result: Vector4): void {
             result.copyFrom(vector);
             result.normalize();
         }
@@ -3325,7 +3325,7 @@ import { Ray } from "Culling/ray";
          * @param right right vector to minimize
          * @returns a new vector with the minimum of the left and right vector values
          */
-        public static Minimize(left: Vector4, right: Vector4): Vector4 {
+        public static Minimize(left: DeepImmutable<Vector4>, right: DeepImmutable<Vector4>): Vector4 {
             var min = left.clone();
             min.minimizeInPlace(right);
             return min;
@@ -3337,7 +3337,7 @@ import { Ray } from "Culling/ray";
          * @param right right vector to maximize
          * @returns a new vector with the maximum of the left and right vector values
          */
-        public static Maximize(left: Vector4, right: Vector4): Vector4 {
+        public static Maximize(left: DeepImmutable<Vector4>, right: DeepImmutable<Vector4>): Vector4 {
             var max = left.clone();
             max.maximizeInPlace(right);
             return max;
@@ -3348,7 +3348,7 @@ import { Ray } from "Culling/ray";
          * @param value2 value to calulate the distance between
          * @return the distance between the two vectors
          */
-        public static Distance(value1: Vector4, value2: Vector4): number {
+        public static Distance(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): number {
             return Math.sqrt(Vector4.DistanceSquared(value1, value2));
         }
         /**
@@ -3357,7 +3357,7 @@ import { Ray } from "Culling/ray";
          * @param value2 value to calulate the distance between
          * @return the distance between the two vectors squared
          */
-        public static DistanceSquared(value1: Vector4, value2: Vector4): number {
+        public static DistanceSquared(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): number {
             var x = value1.x - value2.x;
             var y = value1.y - value2.y;
             var z = value1.z - value2.z;
@@ -3371,7 +3371,7 @@ import { Ray } from "Culling/ray";
          * @param value2 value to calulate the center between
          * @return the center between the two vectors
          */
-        public static Center(value1: Vector4, value2: Vector4): Vector4 {
+        public static Center(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): Vector4 {
             var center = value1.add(value2);
             center.scaleInPlace(0.5);
             return center;
@@ -3384,7 +3384,7 @@ import { Ray } from "Culling/ray";
          * @param transformation the transformation matrix to apply
          * @returns the new vector
          */
-        public static TransformNormal(vector: Vector4, transformation: Matrix): Vector4 {
+        public static TransformNormal(vector: DeepImmutable<Vector4>, transformation: DeepImmutable<Matrix>): Vector4 {
             var result = Vector4.Zero();
             Vector4.TransformNormalToRef(vector, transformation, result);
             return result;
@@ -3397,7 +3397,7 @@ import { Ray } from "Culling/ray";
          * @param transformation the transformation matrix to apply
          * @param result the vector to store the result in
          */
-        public static TransformNormalToRef(vector: Vector4, transformation: Matrix, result: Vector4): void {
+        public static TransformNormalToRef(vector: DeepImmutable<Vector4>, transformation: DeepImmutable<Matrix>, result: Vector4): void {
             const m = transformation.m;
             var x = (vector.x * m[0]) + (vector.y * m[4]) + (vector.z * m[8]);
             var y = (vector.x * m[1]) + (vector.y * m[5]) + (vector.z * m[9]);
@@ -3418,7 +3418,7 @@ import { Ray } from "Culling/ray";
          * @param transformation the transformation matrix to apply
          * @param result the vector to store the results in
          */
-        public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: Matrix, result: Vector4): void {
+        public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: DeepImmutable<Matrix>, result: Vector4): void {
             const m = transformation.m;
             result.x = (x * m[0]) + (y * m[4]) + (z * m[8]);
             result.y = (x * m[1]) + (y * m[5]) + (z * m[9]);
@@ -3654,7 +3654,7 @@ import { Ray } from "Culling/ray";
          * @param otherQuaternion defines the second operand
          * @return true if the current quaternion and the given one coordinates are strictly equals
          */
-        public equals(otherQuaternion: Quaternion): boolean {
+        public equals(otherQuaternion: DeepImmutable<Quaternion>): boolean {
             return otherQuaternion && this.x === otherQuaternion.x && this.y === otherQuaternion.y && this.z === otherQuaternion.z && this.w === otherQuaternion.w;
         }
 
@@ -3671,7 +3671,7 @@ import { Ray } from "Culling/ray";
          * @param other defines the other quaternion
          * @returns the updated current quaternion
          */
-        public copyFrom(other: Quaternion): Quaternion {
+        public copyFrom(other: DeepImmutable<Quaternion>): Quaternion {
             this.x = other.x;
             this.y = other.y;
             this.z = other.z;
@@ -3712,7 +3712,7 @@ import { Ray } from "Culling/ray";
          * @param other defines the second operand
          * @returns a new quaternion as the addition result of the given one and the current quaternion
          */
-        public add(other: Quaternion): Quaternion {
+        public add(other: DeepImmutable<Quaternion>): Quaternion {
             return new Quaternion(this.x + other.x, this.y + other.y, this.z + other.z, this.w + other.w);
         }
 
@@ -3721,7 +3721,7 @@ import { Ray } from "Culling/ray";
          * @param other defines the quaternion to add
          * @returns the current quaternion
          */
-        public addInPlace(other: Quaternion): Quaternion {
+        public addInPlace(other: DeepImmutable<Quaternion>): Quaternion {
             this.x += other.x;
             this.y += other.y;
             this.z += other.z;
@@ -3793,7 +3793,7 @@ import { Ray } from "Culling/ray";
          * @param q1 defines the second operand
          * @returns a new quaternion set as the multiplication result of the current one with the given one "q1"
          */
-        public multiply(q1: Quaternion): Quaternion {
+        public multiply(q1: DeepImmutable<Quaternion>): Quaternion {
             var result = new Quaternion(0, 0, 0, 1.0);
             this.multiplyToRef(q1, result);
             return result;
@@ -3804,7 +3804,7 @@ import { Ray } from "Culling/ray";
          * @param result defines the target quaternion
          * @returns the current quaternion
          */
-        public multiplyToRef(q1: Quaternion, result: Quaternion): Quaternion {
+        public multiplyToRef(q1: DeepImmutable<Quaternion>, result: Quaternion): Quaternion {
             var x = this.x * q1.w + this.y * q1.z - this.z * q1.y + this.w * q1.x;
             var y = -this.x * q1.z + this.y * q1.w + this.z * q1.x + this.w * q1.y;
             var z = this.x * q1.y - this.y * q1.x + this.z * q1.w + this.w * q1.z;
@@ -3818,7 +3818,7 @@ import { Ray } from "Culling/ray";
          * @param q1 defines the second operand
          * @returns the currentupdated quaternion
          */
-        public multiplyInPlace(q1: Quaternion): Quaternion {
+        public multiplyInPlace(q1: DeepImmutable<Quaternion>): Quaternion {
             this.multiplyToRef(q1, this);
             return this;
         }
@@ -3939,7 +3939,7 @@ import { Ray } from "Culling/ray";
          * @param matrix defines the source matrix
          * @returns the current updated quaternion
          */
-        public fromRotationMatrix(matrix: Matrix): Quaternion {
+        public fromRotationMatrix(matrix: DeepImmutable<Matrix>): Quaternion {
             Quaternion.FromRotationMatrixToRef(matrix, this);
             return this;
         }
@@ -3951,7 +3951,7 @@ import { Ray } from "Culling/ray";
          * @param matrix defines the source matrix
          * @returns a new quaternion created from the given rotation matrix values
          */
-        public static FromRotationMatrix(matrix: Matrix): Quaternion {
+        public static FromRotationMatrix(matrix: DeepImmutable<Matrix>): Quaternion {
             var result = new Quaternion();
             Quaternion.FromRotationMatrixToRef(matrix, result);
             return result;
@@ -3962,7 +3962,7 @@ import { Ray } from "Culling/ray";
          * @param matrix defines the source matrix
          * @param result defines the target quaternion
          */
-        public static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion): void {
+        public static FromRotationMatrixToRef(matrix: DeepImmutable<Matrix>, result: Quaternion): void {
             var data = matrix.m;
             var m11 = data[0], m12 = data[4], m13 = data[8];
             var m21 = data[1], m22 = data[5], m23 = data[9];
@@ -4011,7 +4011,7 @@ import { Ray } from "Culling/ray";
          * @param right defines the right operand
          * @returns the dot product
          */
-        public static Dot(left: Quaternion, right: Quaternion): number {
+        public static Dot(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>): number {
             return (left.x * right.x + left.y * right.y + left.z * right.z + left.w * right.w);
         }
 
@@ -4021,7 +4021,7 @@ import { Ray } from "Culling/ray";
          * @param quat1 defines the second quaternion to check
          * @returns true if the two quaternions are close to each other
          */
-        public static AreClose(quat0: Quaternion, quat1: Quaternion): boolean {
+        public static AreClose(quat0: DeepImmutable<Quaternion>, quat1: DeepImmutable<Quaternion>): boolean {
             let dot = Quaternion.Dot(quat0, quat1);
 
             return dot >= 0;
@@ -4040,7 +4040,7 @@ import { Ray } from "Culling/ray";
          * @param q defines the source quaternion
          * @returns a new quaternion as the inverted current quaternion
          */
-        public static Inverse(q: Quaternion): Quaternion {
+        public static Inverse(q: DeepImmutable<Quaternion>): Quaternion {
             return new Quaternion(-q.x, -q.y, -q.z, q.w);
         }
 
@@ -4068,7 +4068,7 @@ import { Ray } from "Culling/ray";
          * @param quaternion defines the quaternion to check
          * @returns true if the quaternion is identity
          */
-        public static IsIdentity(quaternion: Quaternion): boolean {
+        public static IsIdentity(quaternion: DeepImmutable<Quaternion>): boolean {
             return quaternion && quaternion.x === 0 && quaternion.y === 0 && quaternion.z === 0 && quaternion.w === 1;
         }
 
@@ -4078,7 +4078,7 @@ import { Ray } from "Culling/ray";
          * @param angle defines the angle to use
          * @returns a new quaternion created from the given axis (Vector3) and angle in radians (float)
          */
-        public static RotationAxis(axis: Vector3, angle: number): Quaternion {
+        public static RotationAxis(axis: DeepImmutable<Vector3>, angle: number): Quaternion {
             return Quaternion.RotationAxisToRef(axis, angle, new Quaternion());
         }
 
@@ -4089,7 +4089,7 @@ import { Ray } from "Culling/ray";
          * @param result defines the target quaternion
          * @returns the target quaternion
          */
-        public static RotationAxisToRef(axis: Vector3, angle: number, result: Quaternion): Quaternion {
+        public static RotationAxisToRef(axis: DeepImmutable<Vector3>, angle: number, result: Quaternion): Quaternion {
             var sin = Math.sin(angle / 2);
             axis.normalize();
             result.w = Math.cos(angle / 2);
@@ -4105,7 +4105,7 @@ import { Ray } from "Culling/ray";
          * @param offset defines the offset in the source array where the data starts
          * @returns a new quaternion
          */
-        public static FromArray(array: ArrayLike<number>, offset?: number): Quaternion {
+        public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset?: number): Quaternion {
             if (!offset) {
                 offset = 0;
             }
@@ -4143,7 +4143,7 @@ import { Ray } from "Culling/ray";
          * @param vec the Euler vector (x Pitch, y Yaw, z Roll)
          * @returns the new Quaternion
          */
-        public static FromEulerVector(vec: Vector3): Quaternion {
+        public static FromEulerVector(vec: DeepImmutable<Vector3>): Quaternion {
             var q = new Quaternion();
             Quaternion.RotationYawPitchRollToRef(vec.y, vec.x, vec.z, q);
             return q;
@@ -4155,7 +4155,7 @@ import { Ray } from "Culling/ray";
          * @param result the quaternion to store the result
          * @returns the updated quaternion
          */
-        public static FromEulerVectorToRef(vec: Vector3, result: Quaternion): Quaternion {
+        public static FromEulerVectorToRef(vec: DeepImmutable<Vector3>, result: Quaternion): Quaternion {
             Quaternion.RotationYawPitchRollToRef(vec.y, vec.x, vec.z, result);
             return result;
         }
@@ -4238,7 +4238,7 @@ import { Ray } from "Culling/ray";
          * @param axis3 defines the third axis
          * @returns the new quaternion
          */
-        public static RotationQuaternionFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Quaternion {
+        public static RotationQuaternionFromAxis(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): Quaternion {
             var quat = new Quaternion(0.0, 0.0, 0.0, 0.0);
             Quaternion.RotationQuaternionFromAxisToRef(axis1, axis2, axis3, quat);
             return quat;
@@ -4251,7 +4251,7 @@ import { Ray } from "Culling/ray";
          * @param axis3 defines the third axis
          * @param ref defines the target quaternion
          */
-        public static RotationQuaternionFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): void {
+        public static RotationQuaternionFromAxisToRef(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: Quaternion): void {
             var rotMat = MathTmp.Matrix[0];
             Matrix.FromXYZAxesToRef(axis1.normalize(), axis2.normalize(), axis3.normalize(), rotMat);
             Quaternion.FromRotationMatrixToRef(rotMat, ref);
@@ -4264,7 +4264,7 @@ import { Ray } from "Culling/ray";
          * @param amount defines the gradient to use
          * @returns the new interpolated quaternion
          */
-        public static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion {
+        public static Slerp(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>, amount: number): Quaternion {
             var result = Quaternion.Identity();
 
             Quaternion.SlerpToRef(left, right, amount, result);
@@ -4279,7 +4279,7 @@ import { Ray } from "Culling/ray";
          * @param amount defines the gradient to use
          * @param result defines the target quaternion
          */
-        public static SlerpToRef(left: Quaternion, right: Quaternion, amount: number, result: Quaternion): void {
+        public static SlerpToRef(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>, amount: number, result: Quaternion): void {
             var num2;
             var num3;
             var num4 = (((left.x * right.x) + (left.y * right.y)) + (left.z * right.z)) + (left.w * right.w);
@@ -4316,7 +4316,7 @@ import { Ray } from "Culling/ray";
          * @param amount defines the target quaternion
          * @returns the new interpolated quaternion
          */
-        public static Hermite(value1: Quaternion, tangent1: Quaternion, value2: Quaternion, tangent2: Quaternion, amount: number): Quaternion {
+        public static Hermite(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, amount: number): Quaternion {
             var squared = amount * amount;
             var cubed = amount * squared;
             var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
@@ -4337,7 +4337,7 @@ import { Ray } from "Culling/ray";
      */
     export class Matrix {
         private static _updateFlagSeed = 0;
-        private static _identityReadOnly = Matrix.Identity();
+        private static _identityReadOnly = Matrix.Identity() as DeepImmutable<Matrix>;
 
         private _isIdentity = false;
         private _isIdentityDirty = true;
@@ -4355,7 +4355,7 @@ import { Ray } from "Culling/ray";
         /**
          * Gets the internal data of the matrix
          */
-        public get m(): Readonly<Float32Array> { return this._m; }
+        public get m(): DeepImmutable<Float32Array> { return this._m; }
 
         /** @hidden */
         public _markAsUpdated() {
@@ -4468,14 +4468,14 @@ import { Ray } from "Culling/ray";
          * Returns the matrix as a Float32Array
          * @returns the matrix underlying array
          */
-        public toArray(): Readonly<Float32Array> {
+        public toArray(): DeepImmutable<Float32Array> {
             return this._m;
         }
         /**
          * Returns the matrix as a Float32Array
         * @returns the matrix underlying array.
         */
-        public asArray(): Readonly<Float32Array> {
+        public asArray(): DeepImmutable<Float32Array> {
             return this._m;
         }
 
@@ -4508,7 +4508,7 @@ import { Ray } from "Culling/ray";
          * @param other defines the matrix to add
          * @returns a new matrix as the addition of the current matrix and the given one
          */
-        public add(other: Matrix): Matrix {
+        public add(other: DeepImmutable<Matrix>): Matrix {
             var result = new Matrix();
             this.addToRef(other, result);
             return result;
@@ -4520,9 +4520,12 @@ import { Ray } from "Culling/ray";
          * @param result defines the target matrix
          * @returns the current matrix
          */
-        public addToRef(other: Matrix, result: Matrix): Matrix {
+        public addToRef(other: DeepImmutable<Matrix>, result: Matrix): Matrix {
+            const m = this._m;
+            const resultM = result._m;
+            const otherM = other.m;
             for (var index = 0; index < 16; index++) {
-                result._m[index] = this._m[index] + other._m[index];
+                resultM[index] = m[index] + otherM[index];
             }
             result._markAsUpdated();
             return this;
@@ -4533,9 +4536,11 @@ import { Ray } from "Culling/ray";
          * @param other defines the second operand
          * @returns the current updated matrix
          */
-        public addToSelf(other: Matrix): Matrix {
+        public addToSelf(other: DeepImmutable<Matrix>): Matrix {
+            const m = this._m;
+            const otherM = other.m;
             for (var index = 0; index < 16; index++) {
-                this._m[index] += other._m[index];
+                m[index] += otherM[index];
             }
             this._markAsUpdated();
             return this;
@@ -4663,7 +4668,7 @@ import { Ray } from "Culling/ray";
          * @param vector3 defines the translation to insert
          * @returns the current updated matrix
          */
-        public setTranslation(vector3: Vector3): Matrix {
+        public setTranslation(vector3: DeepImmutable<Vector3>): Matrix {
             return this.setTranslationFromFloats(vector3.x, vector3.y, vector3.z);
         }
 
@@ -4709,7 +4714,7 @@ import { Ray } from "Culling/ray";
          * @param other defines the second operand
          * @returns a new matrix set with the multiplication result of the current Matrix and the given one
          */
-        public multiply(other: Readonly<Matrix>): Matrix {
+        public multiply(other: DeepImmutable<Matrix>): Matrix {
             var result = new Matrix();
             this.multiplyToRef(other, result);
             return result;
@@ -4720,7 +4725,7 @@ import { Ray } from "Culling/ray";
          * @param other defines the source matrix
          * @returns the current updated matrix
          */
-        public copyFrom(other: Readonly<Matrix>): Matrix {
+        public copyFrom(other: DeepImmutable<Matrix>): Matrix {
             other.copyToArray(this._m);
             const o = (other as Matrix);
             this._updateIdentityStatus(o._isIdentity, o._isIdentityDirty, o._isIdentity3x2, o._isIdentity3x2Dirty);
@@ -4746,7 +4751,7 @@ import { Ray } from "Culling/ray";
          * @param result defines the matrix where to store the multiplication
          * @returns the current matrix
          */
-        public multiplyToRef(other: Readonly<Matrix>, result: Matrix): Matrix {
+        public multiplyToRef(other: DeepImmutable<Matrix>, result: Matrix): Matrix {
             if (this._isIdentity) {
                 result.copyFrom(other);
                 return this;
@@ -4768,7 +4773,7 @@ import { Ray } from "Culling/ray";
          * @param offset defines the offset in the target array where to start storing values
          * @returns the current matrix
          */
-        public multiplyToArray(other: Readonly<Matrix>, result: Float32Array, offset: number): Matrix {
+        public multiplyToArray(other: DeepImmutable<Matrix>, result: Float32Array, offset: number): Matrix {
             const m = this._m;
             const otherM = other.m;
             var tm0 = m[0], tm1 = m[1], tm2 = m[2], tm3 = m[3];
@@ -4808,7 +4813,7 @@ import { Ray } from "Culling/ray";
          * @param value defines the second matrix to compare
          * @returns true is the current matrix and the given one values are strictly equal
          */
-        public equals(value: Matrix): boolean {
+        public equals(value: DeepImmutable<Matrix>): boolean {
             const other = (value as Matrix);
             if (!other) {
                 return false;
@@ -5105,7 +5110,7 @@ import { Ray } from "Culling/ray";
          * @param offset defines an offset in the source array
          * @returns a new Matrix set from the starting index of the given array
          */
-        public static FromArray(array: ArrayLike<number>, offset: number = 0): Matrix {
+        public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Matrix {
             var result = new Matrix();
             Matrix.FromArrayToRef(array, offset, result);
             return result;
@@ -5117,7 +5122,7 @@ import { Ray } from "Culling/ray";
          * @param offset defines an offset in the source array
          * @param result defines the target matrix
          */
-        public static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Matrix) {
+        public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Matrix) {
             for (var index = 0; index < 16; index++) {
                 result._m[index] = array[index + offset];
             }
@@ -5131,7 +5136,7 @@ import { Ray } from "Culling/ray";
          * @param scale defines the scaling factor
          * @param result defines the target matrix
          */
-        public static FromFloat32ArrayToRefScaled(array: Float32Array, offset: number, scale: number, result: Matrix) {
+        public static FromFloat32ArrayToRefScaled(array: DeepImmutable<Float32Array>, offset: number, scale: number, result: Matrix) {
             for (var index = 0; index < 16; index++) {
                 result._m[index] = array[index + offset] * scale;
             }
@@ -5141,7 +5146,7 @@ import { Ray } from "Culling/ray";
         /**
          * Gets an identity matrix that must not be updated
          */
-        public static get IdentityReadOnly(): Readonly<Matrix> {
+        public static get IdentityReadOnly(): DeepImmutable<Matrix> {
             return Matrix._identityReadOnly;
         }
 
@@ -5221,7 +5226,7 @@ import { Ray } from "Culling/ray";
          * @param translation defines the translation vector3
          * @returns a new matrix
          */
-        public static Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix {
+        public static Compose(scale: DeepImmutable<Vector3>, rotation: DeepImmutable<Quaternion>, translation: DeepImmutable<Vector3>): Matrix {
             var result = new Matrix();
             Matrix.ComposeToRef(scale, rotation, translation, result);
             return result;
@@ -5234,7 +5239,7 @@ import { Ray } from "Culling/ray";
          * @param translation defines the translation vector3
          * @param result defines the target matrix
          */
-        public static ComposeToRef(scale: Vector3, rotation: Quaternion, translation: Vector3, result: Matrix): void {
+        public static ComposeToRef(scale: DeepImmutable<Vector3>, rotation: DeepImmutable<Quaternion>, translation: DeepImmutable<Vector3>, result: Matrix): void {
             Matrix.ScalingToRef(scale.x, scale.y, scale.z, MathTmp.Matrix[1]);
             rotation.toRotationMatrix(MathTmp.Matrix[0]);
             MathTmp.Matrix[1].multiplyToRef(MathTmp.Matrix[0], result);
@@ -5301,7 +5306,7 @@ import { Ray } from "Culling/ray";
          * @param source defines the source matrix
          * @returns the new matrix
          */
-        public static Invert(source: Matrix): Matrix {
+        public static Invert(source: DeepImmutable<Matrix>): Matrix {
             var result = new Matrix();
             source.invertToRef(result);
             return result;
@@ -5392,7 +5397,7 @@ import { Ray } from "Culling/ray";
          * @param angle defines the angle (in radians) to use
          * @return the new matrix
          */
-        public static RotationAxis(axis: Vector3, angle: number): Matrix {
+        public static RotationAxis(axis: DeepImmutable<Vector3>, angle: number): Matrix {
             var result = new Matrix();
             Matrix.RotationAxisToRef(axis, angle, result);
             return result;
@@ -5404,7 +5409,7 @@ import { Ray } from "Culling/ray";
          * @param angle defines the angle (in radians) to use
          * @param result defines the target matrix
          */
-        public static RotationAxisToRef(axis: Vector3, angle: number, result: Matrix): void {
+        public static RotationAxisToRef(axis: DeepImmutable<Vector3>, angle: number, result: Matrix): void {
             var s = Math.sin(-angle);
             var c = Math.cos(-angle);
             var c1 = 1 - c;
@@ -5529,7 +5534,7 @@ import { Ray } from "Culling/ray";
          * @param gradient defines the gradient factor
          * @returns the new matrix
          */
-        public static Lerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
+        public static Lerp(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number): Matrix {
             var result = new Matrix();
             Matrix.LerpToRef(startValue, endValue, gradient, result);
             return result;
@@ -5542,9 +5547,12 @@ import { Ray } from "Culling/ray";
          * @param gradient defines the gradient factor
          * @param result defines the Matrix object where to store data
          */
-        public static LerpToRef(startValue: Matrix, endValue: Matrix, gradient: number, result: Matrix): void {
+        public static LerpToRef(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number, result: Matrix): void {
+            const resultM = result._m;
+            const startM = startValue.m;
+            const endM = endValue.m;
             for (var index = 0; index < 16; index++) {
-                result._m[index] = startValue._m[index] * (1.0 - gradient) + endValue._m[index] * gradient;
+                resultM[index] = startM[index] * (1.0 - gradient) + endM[index] * gradient;
             }
             result._markAsUpdated();
         }
@@ -5559,7 +5567,7 @@ import { Ray } from "Culling/ray";
          * @param gradient defines the gradient between the two matrices
          * @returns the new matrix
          */
-        public static DecomposeLerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
+        public static DecomposeLerp(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number): Matrix {
             var result = new Matrix();
             Matrix.DecomposeLerpToRef(startValue, endValue, gradient, result);
             return result;
@@ -5575,7 +5583,7 @@ import { Ray } from "Culling/ray";
          * @param gradient defines the gradient between the two matrices
          * @param result defines the target matrix
          */
-        public static DecomposeLerpToRef(startValue: Matrix, endValue: Matrix, gradient: number, result: Matrix) {
+        public static DecomposeLerpToRef(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number, result: Matrix) {
             var startScale = MathTmp.Vector3[0];
             var startRotation = MathTmp.Quaternion[0];
             var startTranslation = MathTmp.Vector3[1];
@@ -5605,7 +5613,7 @@ import { Ray } from "Culling/ray";
          * @param up defines the up vector for the entity
          * @returns the new matrix
          */
-        public static LookAtLH(eye: Vector3, target: Vector3, up: Vector3): Matrix {
+        public static LookAtLH(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix {
             var result = new Matrix();
             Matrix.LookAtLHToRef(eye, target, up, result);
             return result;
@@ -5619,7 +5627,7 @@ import { Ray } from "Culling/ray";
          * @param up defines the up vector for the entity
          * @param result defines the target matrix
          */
-        public static LookAtLHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void {
+        public static LookAtLHToRef(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void {
             const xAxis = MathTmp.Vector3[0];
             const yAxis = MathTmp.Vector3[1];
             const zAxis = MathTmp.Vector3[2];
@@ -5664,7 +5672,7 @@ import { Ray } from "Culling/ray";
          * @param up defines the up vector for the entity
          * @returns the new matrix
          */
-        public static LookAtRH(eye: Vector3, target: Vector3, up: Vector3): Matrix {
+        public static LookAtRH(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix {
             var result = new Matrix();
             Matrix.LookAtRHToRef(eye, target, up, result);
             return result;
@@ -5678,7 +5686,7 @@ import { Ray } from "Culling/ray";
          * @param up defines the up vector for the entity
          * @param result defines the target matrix
          */
-        public static LookAtRHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void {
+        public static LookAtRHToRef(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void {
             const xAxis = MathTmp.Vector3[0];
             const yAxis = MathTmp.Vector3[1];
             const zAxis = MathTmp.Vector3[2];
@@ -6002,7 +6010,7 @@ import { Ray } from "Culling/ray";
          * @param zmax defines the far clip plane
          * @returns the transformation matrix
          */
-        public static GetFinalMatrix(viewport: Viewport, world: Matrix, view: Matrix, projection: Matrix, zmin: number, zmax: number): Matrix {
+        public static GetFinalMatrix(viewport: DeepImmutable<Viewport>, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, zmin: number, zmax: number): Matrix {
             var cw = viewport.width;
             var ch = viewport.height;
             var cx = viewport.x;
@@ -6025,22 +6033,21 @@ import { Ray } from "Culling/ray";
          * @param matrix defines the matrix to use
          * @returns a new Float32Array array with 4 elements : the 2x2 matrix extracted from the given matrix
          */
-        public static GetAsMatrix2x2(matrix: Matrix): Float32Array {
-            return new Float32Array([
-                matrix._m[0], matrix._m[1],
-                matrix._m[4], matrix._m[5]
-            ]);
+        public static GetAsMatrix2x2(matrix: DeepImmutable<Matrix>): Float32Array {
+            const m = matrix.m;
+            return new Float32Array([m[0], m[1], m[4], m[5]]);
         }
         /**
          * Extracts a 3x3 matrix from a given matrix and store the result in a Float32Array
          * @param matrix defines the matrix to use
          * @returns a new Float32Array array with 9 elements : the 3x3 matrix extracted from the given matrix
          */
-        public static GetAsMatrix3x3(matrix: Matrix): Float32Array {
+        public static GetAsMatrix3x3(matrix: DeepImmutable<Matrix>): Float32Array {
+            const m = matrix.m;
             return new Float32Array([
-                matrix._m[0], matrix._m[1], matrix._m[2],
-                matrix._m[4], matrix._m[5], matrix._m[6],
-                matrix._m[8], matrix._m[9], matrix._m[10]
+                m[0], m[1], m[2],
+                m[4], m[5], m[6],
+                m[8], m[9], m[10]
             ]);
         }
 
@@ -6049,7 +6056,7 @@ import { Ray } from "Culling/ray";
          * @param matrix defines the matrix to transpose
          * @returns the new matrix
          */
-        public static Transpose(matrix: Matrix): Matrix {
+        public static Transpose(matrix: DeepImmutable<Matrix>): Matrix {
             var result = new Matrix();
             Matrix.TransposeToRef(matrix, result);
             return result;
@@ -6060,9 +6067,9 @@ import { Ray } from "Culling/ray";
          * @param matrix defines the matrix to transpose
          * @param result defines the target matrix
          */
-        public static TransposeToRef(matrix: Matrix, result: Matrix): void {
+        public static TransposeToRef(matrix: DeepImmutable<Matrix>, result: Matrix): void {
             const rm = result._m;
-            const mm = matrix._m;
+            const mm = matrix.m;
             rm[0] = mm[0];
             rm[1] = mm[4];
             rm[2] = mm[8];
@@ -6083,7 +6090,7 @@ import { Ray } from "Culling/ray";
             rm[14] = mm[11];
             rm[15] = mm[15];
             // identity-ness does not change when transposing
-            result._updateIdentityStatus(matrix._isIdentity, matrix._isIdentityDirty);
+            result._updateIdentityStatus((matrix as Matrix)._isIdentity, (matrix as Matrix)._isIdentityDirty);
         }
 
         /**
@@ -6091,7 +6098,7 @@ import { Ray } from "Culling/ray";
          * @param plane defines the reflection plane
          * @returns a new matrix
          */
-        public static Reflection(plane: Plane): Matrix {
+        public static Reflection(plane: DeepImmutable<Plane>): Matrix {
             var matrix = new Matrix();
             Matrix.ReflectionToRef(plane, matrix);
             return matrix;
@@ -6102,7 +6109,7 @@ import { Ray } from "Culling/ray";
          * @param plane defines the reflection plane
          * @param result defines the target matrix
          */
-        public static ReflectionToRef(plane: Plane, result: Matrix): void {
+        public static ReflectionToRef(plane: DeepImmutable<Plane>, result: Matrix): void {
             plane.normalize();
             var x = plane.normal.x;
             var y = plane.normal.y;
@@ -6126,7 +6133,7 @@ import { Ray } from "Culling/ray";
          * @param zaxis defines the value of the 3rd axis
          * @param result defines the target matrix
          */
-        public static FromXYZAxesToRef(xaxis: Vector3, yaxis: Vector3, zaxis: Vector3, result: Matrix) {
+        public static FromXYZAxesToRef(xaxis: DeepImmutable<Vector3>, yaxis: DeepImmutable<Vector3>, zaxis: DeepImmutable<Vector3>, result: Matrix) {
             Matrix.FromValuesToRef(
                 xaxis.x, xaxis.y, xaxis.z, 0.0,
                 yaxis.x, yaxis.y, yaxis.z, 0.0,
@@ -6141,7 +6148,7 @@ import { Ray } from "Culling/ray";
          * @param quat defines the quaternion to use
          * @param result defines the target matrix
          */
-        public static FromQuaternionToRef(quat: Quaternion, result: Matrix) {
+        public static FromQuaternionToRef(quat: DeepImmutable<Quaternion>, result: Matrix) {
             var xx = quat.x * quat.x;
             var yy = quat.y * quat.y;
             var zz = quat.z * quat.z;
@@ -6250,7 +6257,7 @@ import { Ray } from "Culling/ray";
          * @param transformation the transformation matrix to be applied to the plane
          * @returns a new Plane as the result of the transformation of the current Plane by the given matrix.
          */
-        public transform(transformation: Matrix): Plane {
+        public transform(transformation: DeepImmutable<Matrix>): Plane {
             const transposedMatrix = MathTmp.Matrix[0];
             Matrix.TransposeToRef(transformation, transposedMatrix);
             const m = transposedMatrix.m;
@@ -6272,7 +6279,7 @@ import { Ray } from "Culling/ray";
          * @param point point to calculate the dot product with
          * @returns the dot product (float) of the point coordinates and the plane normal.
          */
-        public dotCoordinate(point: Vector3): number {
+        public dotCoordinate(point: DeepImmutable<Vector3>): number {
             return ((((this.normal.x * point.x) + (this.normal.y * point.y)) + (this.normal.z * point.z)) + this.d);
         }
 
@@ -6283,7 +6290,7 @@ import { Ray } from "Culling/ray";
          * @param point3 one of the points used to contruct the plane
          * @returns the updated Plane.
          */
-        public copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane {
+        public copyFromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane {
             var x1 = point2.x - point1.x;
             var y1 = point2.y - point1.y;
             var z1 = point2.z - point1.z;
@@ -6317,7 +6324,7 @@ import { Ray } from "Culling/ray";
          * @param epsilon value the dot product is compared against (returns true if dot <= epsilon)
          * @returns True is the vector "direction"  is the same side than the plane normal.
          */
-        public isFrontFacingTo(direction: Vector3, epsilon: number): boolean {
+        public isFrontFacingTo(direction: DeepImmutable<Vector3>, epsilon: number): boolean {
             var dot = Vector3.Dot(this.normal, direction);
             return (dot <= epsilon);
         }
@@ -6327,7 +6334,7 @@ import { Ray } from "Culling/ray";
          * @param point point to calculate distance to
          * @returns the signed distance (float) from the given point to the Plane.
          */
-        public signedDistanceTo(point: Vector3): number {
+        public signedDistanceTo(point: DeepImmutable<Vector3>): number {
             return Vector3.Dot(point, this.normal) + this.d;
         }
 
@@ -6337,7 +6344,7 @@ import { Ray } from "Culling/ray";
          * @param array the array to create a plane from
          * @returns a new Plane from the given array.
          */
-        static FromArray(array: ArrayLike<number>): Plane {
+        static FromArray(array: DeepImmutable<ArrayLike<number>>): Plane {
             return new Plane(array[0], array[1], array[2], array[3]);
         }
         /**
@@ -6347,7 +6354,7 @@ import { Ray } from "Culling/ray";
          * @param point3 point used to create the plane
          * @returns a new Plane defined by the three given points.
          */
-        static FromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane {
+        static FromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane {
             var result = new Plane(0.0, 0.0, 0.0, 0.0);
             result.copyFromPoints(point1, point2, point3);
             return result;
@@ -6359,7 +6366,7 @@ import { Ray } from "Culling/ray";
          * @returns a new Plane the normal vector to this plane at the given origin point.
          * Note : the vector "normal" is updated because normalized.
          */
-        static FromPositionAndNormal(origin: Vector3, normal: Vector3): Plane {
+        static FromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Plane {
             var result = new Plane(0.0, 0.0, 0.0, 0.0);
             normal.normalize();
             result.normal = normal;
@@ -6374,7 +6381,7 @@ import { Ray } from "Culling/ray";
          * @param point point to calculate distance to
          * @returns the signed distance between the plane defined by the normal vector at the "origin"" point and the given other point.
          */
-        static SignedDistanceToPlaneFromPositionAndNormal(origin: Vector3, normal: Vector3, point: Vector3): number {
+        static SignedDistanceToPlaneFromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, point: DeepImmutable<Vector3>): number {
             var d = -(normal.x * origin.x + normal.y * origin.y + normal.z * origin.z);
             return Vector3.Dot(point, normal) + d;
         }
@@ -6435,7 +6442,7 @@ import { Ray } from "Culling/ray";
          * @param transform matrix to be applied to the returned planes
          * @returns a new array of 6 Frustum planes computed by the given transformation matrix.
          */
-        public static GetPlanes(transform: Matrix): Plane[] {
+        public static GetPlanes(transform: DeepImmutable<Matrix>): Plane[] {
             var frustumPlanes = [];
             for (var index = 0; index < 6; index++) {
                 frustumPlanes.push(new Plane(0.0, 0.0, 0.0, 0.0));
@@ -6449,7 +6456,7 @@ import { Ray } from "Culling/ray";
          * @param transform transformation matrix to be applied to the resulting frustum plane
          * @param frustumPlane the resuling frustum plane
          */
-        public static GetNearPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+        public static GetNearPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void {
             const m = transform.m;
             frustumPlane.normal.x = m[3] + m[2];
             frustumPlane.normal.y = m[7] + m[6];
@@ -6463,7 +6470,7 @@ import { Ray } from "Culling/ray";
          * @param transform transformation matrix to be applied to the resulting frustum plane
          * @param frustumPlane the resuling frustum plane
          */
-        public static GetFarPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+        public static GetFarPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void {
             const m = transform.m;
             frustumPlane.normal.x = m[3] - m[2];
             frustumPlane.normal.y = m[7] - m[6];
@@ -6477,7 +6484,7 @@ import { Ray } from "Culling/ray";
          * @param transform transformation matrix to be applied to the resulting frustum plane
          * @param frustumPlane the resuling frustum plane
          */
-        public static GetLeftPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+        public static GetLeftPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void {
             const m = transform.m;
             frustumPlane.normal.x = m[3] + m[0];
             frustumPlane.normal.y = m[7] + m[4];
@@ -6491,7 +6498,7 @@ import { Ray } from "Culling/ray";
          * @param transform transformation matrix to be applied to the resulting frustum plane
          * @param frustumPlane the resuling frustum plane
          */
-        public static GetRightPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+        public static GetRightPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void {
             const m = transform.m;
             frustumPlane.normal.x = m[3] - m[0];
             frustumPlane.normal.y = m[7] - m[4];
@@ -6505,7 +6512,7 @@ import { Ray } from "Culling/ray";
          * @param transform transformation matrix to be applied to the resulting frustum plane
          * @param frustumPlane the resuling frustum plane
          */
-        public static GetTopPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+        public static GetTopPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void {
             const m = transform.m;
             frustumPlane.normal.x = m[3] - m[1];
             frustumPlane.normal.y = m[7] - m[5];
@@ -6519,7 +6526,7 @@ import { Ray } from "Culling/ray";
          * @param transform transformation matrix to be applied to the resulting frustum plane
          * @param frustumPlane the resuling frustum plane
          */
-        public static GetBottomPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+        public static GetBottomPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void {
             const m = transform.m;
             frustumPlane.normal.x = m[3] + m[1];
             frustumPlane.normal.y = m[7] + m[5];
@@ -6533,7 +6540,7 @@ import { Ray } from "Culling/ray";
          * @param transform transformation matrix to be applied to the resulting frustum planes
          * @param frustumPlanes the resuling frustum planes
          */
-        public static GetPlanesToRef(transform: Matrix, frustumPlanes: Plane[]): void {
+        public static GetPlanesToRef(transform: DeepImmutable<Matrix>, frustumPlanes: Plane[]): void {
             // Near
             Frustum.GetNearPlaneToRef(transform, frustumPlanes[0]);
 
@@ -6659,7 +6666,7 @@ import { Ray } from "Culling/ray";
          * @param b defines second vector
          * @returns a new Angle
          */
-        public static BetweenTwoPoints(a: Vector2, b: Vector2): Angle {
+        public static BetweenTwoPoints(a: DeepImmutable<Vector2>, b: DeepImmutable<Vector2>): Angle {
             var delta = b.subtract(a);
             var theta = Math.atan2(delta.y, delta.x);
             return new Angle(theta);
@@ -7123,7 +7130,7 @@ import { Ray } from "Culling/ray";
          * @param nbPoints (integer) the wanted number of points in the curve
          * @returns the created Curve3
          */
-        public static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3 {
+        public static CreateQuadraticBezier(v0: DeepImmutable<Vector3>, v1: DeepImmutable<Vector3>, v2: DeepImmutable<Vector3>, nbPoints: number): Curve3 {
             nbPoints = nbPoints > 2 ? nbPoints : 3;
             var bez = new Array<Vector3>();
             var equation = (t: number, val0: number, val1: number, val2: number) => {
@@ -7145,7 +7152,7 @@ import { Ray } from "Culling/ray";
          * @param nbPoints (integer) the wanted number of points in the curve
          * @returns the created Curve3
          */
-        public static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3 {
+        public static CreateCubicBezier(v0: DeepImmutable<Vector3>, v1: DeepImmutable<Vector3>, v2: DeepImmutable<Vector3>, v3: DeepImmutable<Vector3>, nbPoints: number): Curve3 {
             nbPoints = nbPoints > 3 ? nbPoints : 4;
             var bez = new Array<Vector3>();
             var equation = (t: number, val0: number, val1: number, val2: number, val3: number) => {
@@ -7167,7 +7174,7 @@ import { Ray } from "Culling/ray";
          * @param nbPoints (integer) the wanted number of points in the curve
          * @returns the created Curve3
          */
-        public static CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: number): Curve3 {
+        public static CreateHermiteSpline(p1: DeepImmutable<Vector3>, t1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, t2: DeepImmutable<Vector3>, nbPoints: number): Curve3 {
             var hermite = new Array<Vector3>();
             var step = 1.0 / nbPoints;
             for (var i = 0; i <= nbPoints; i++) {
@@ -7183,7 +7190,7 @@ import { Ray } from "Culling/ray";
          * @param closed (boolean) optional with default false, when true forms a closed loop from the points
          * @returns the created Curve3
          */
-        public static CreateCatmullRomSpline(points: Vector3[], nbPoints: number, closed?: boolean): Curve3 {
+        public static CreateCatmullRomSpline(points: DeepImmutable<Vector3[]>, nbPoints: number, closed?: boolean): Curve3 {
             var catmullRom = new Array<Vector3>();
             var step = 1.0 / nbPoints;
             var amount = 0.0;
@@ -7248,7 +7255,7 @@ import { Ray } from "Culling/ray";
          * @param curve the curve to continue from this curve
          * @returns the newly constructed curve
          */
-        public continue(curve: Curve3): Curve3 {
+        public continue(curve: DeepImmutable<Curve3>): Curve3 {
             var lastPoint = this._points[this._points.length - 1];
             var continuedPoints = this._points.slice();
             var curvePoints = curve.getPoints();
@@ -7259,7 +7266,7 @@ import { Ray } from "Culling/ray";
             return continuedCurve;
         }
 
-        private _computeLength(path: Vector3[]): number {
+        private _computeLength(path: DeepImmutable<Vector3[]>): number {
             var l = 0;
             for (var i = 1; i < path.length; i++) {
                 l += (path[i].subtract(path[i - 1])).length();
