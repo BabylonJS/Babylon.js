@@ -1,6 +1,5 @@
-import { Tools } from ".";
-
-import { InternalTexture } from "index";
+import { Tools } from "./tools";
+import { InternalTexture } from "Materials/Textures/internalTexture";
 
     /**
      * for description see https://www.khronos.org/opengles/sdk/tools/KTX/

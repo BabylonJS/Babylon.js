@@ -1,6 +1,6 @@
 import { AbstractScene } from "abstractScene";
 import { Scene } from "scene";
-import { Mesh } from "Mesh";
+import { Mesh } from "Mesh/mesh";
 
     /**
      * Set of assets to keep when moving a scene into an asset container.

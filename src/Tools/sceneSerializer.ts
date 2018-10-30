@@ -1,10 +1,12 @@
-import { Geometry, BoxGeometry, SphereGeometry, CylinderGeometry, TorusGeometry, GroundGeometry, TorusKnotGeometry, _PrimitiveGeometry, Mesh } from "Mesh";
-
-import { Plane } from "Math";
-
-import { Engine, MultiMaterial, Material, Scene, Light } from "index";
-
-import { Animation } from "Animations";
+import { Geometry, BoxGeometry, SphereGeometry, CylinderGeometry, TorusGeometry, GroundGeometry, TorusKnotGeometry, _PrimitiveGeometry } from "Mesh/geometry";
+import { Mesh } from "Mesh/mesh";
+import { Plane } from "Math/math";
+import { Animation } from "Animations/animation";
+import { Engine } from "Engine/engine";
+import { MultiMaterial } from "Materials/multiMaterial";
+import { Material } from "Materials/material";
+import { Scene } from "scene";
+import { Light } from "Lights/light";
 
     var serializedGeometries: Geometry[] = [];
     var serializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {

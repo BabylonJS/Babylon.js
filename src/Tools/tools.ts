@@ -1,7 +1,16 @@
-import { Animation } from "Animations";
-import { Color4, Color3, Scalar, Vector2, Vector3 } from "Math";
-import { Observable, Engine, IOfflineProvider, FilesInput, Camera, RenderTargetTexture, Texture, FxaaPostProcess, TGATools } from "index";
 import { FloatArray, IndicesArray, Nullable } from "types";
+import { Animation } from "Animations/animation";
+import { Color4, Color3, Vector2, Vector3 } from "Math/math";
+import { Scalar } from "Math/math.scalar";
+import { Engine } from "Engine/engine";
+import { IOfflineProvider } from "Offline/IOfflineProvider";
+import { Camera } from "Cameras/camera";
+import { Texture } from "Materials/Textures/texture";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { FxaaPostProcess } from "PostProcess/fxaaPostProcess";
+import { Observable } from "./observable";
+import { FilesInput } from "./filesInput";
+import { TGATools } from "./tga";
 
     /**
      * Interface for any object that can request an animation frame

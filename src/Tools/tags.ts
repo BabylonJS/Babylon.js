@@ -1,4 +1,5 @@
-import { Tools, AndOrNotEvaluator } from ".";
+import { Tools } from "./tools";
+import { AndOrNotEvaluator } from "./andOrNotEvaluator";
 
     /**
      * Class used to store custom tags

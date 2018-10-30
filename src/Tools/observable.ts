@@ -1,6 +1,5 @@
 import { Nullable } from "types";
-
-import { Tools } from ".";
+import { Tools } from "./tools";
 
     /**
      * A class serves as a medium between the observable and its observers

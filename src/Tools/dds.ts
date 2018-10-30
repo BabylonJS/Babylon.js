@@ -1,10 +1,10 @@
-import { SphericalPolynomial, Scalar } from "Math";
-
-import { Engine, InternalTexture } from "index";
-
+import { Scalar } from "Math/math.scalar";
+import { SphericalPolynomial } from "Math/sphericalPolynomial";
+import { Engine } from "Engine/engine";
+import { InternalTexture } from "Materials/Textures/internalTexture";
 import { Nullable } from "types";
-
-import { Tools, CubeMapToSphericalPolynomialTools } from ".";
+import { Tools } from "./tools";
+import { CubeMapToSphericalPolynomialTools } from "Tools/HDR/cubemapToSphericalPolynomial";
 
     // Based on demo done by Brandon Jones - http://media.tojicode.com/webgl-samples/dds.html
     // All values and structures referenced from:

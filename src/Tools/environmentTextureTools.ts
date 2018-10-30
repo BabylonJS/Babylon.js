@@ -1,10 +1,15 @@
 import { Nullable } from "types";
-
-import { Tools } from ".";
-
-import { CubeTexture, Engine, Scene, Texture, PostProcess, InternalTexture, BaseTexture } from "index";
-
-import { Scalar, SphericalPolynomial, Vector3 } from "Math";
+import { Tools } from "./tools";
+import { Vector3 } from "Math/math";
+import { Scalar } from "Math/math.scalar";
+import { SphericalPolynomial } from "Math/sphericalPolynomial";
+import { InternalTexture } from "Materials/Textures/internalTexture";
+import { BaseTexture } from "Materials/Textures/baseTexture";
+//import { Texture } from "Materials/Textures/texture";
+import { CubeTexture } from "Materials/Textures/cubeTexture";
+import { Engine } from "Engine/engine";
+import { Scene } from "scene";
+import { PostProcess } from "PostProcess/postProcess";
 
     /**
      * Raw texture data and descriptor sufficient for WebGL texture upload
@@ -181,10 +186,10 @@ import { Scalar, SphericalPolynomial, Vector3 } from "Math";
                     let data = texture.readPixels(face, i);
 
                     // Creates a temp texture with the face data.
-                    let tempTexture = engine.createRawTexture(data, faceWidth, faceWidth, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.NEAREST_SAMPLINGMODE, null, textureType);
+                    let tempTexture = engine.createRawTexture(data, faceWidth, faceWidth, Engine.TEXTUREFORMAT_RGBA, false, false, Engine.TEXTURE_NEAREST_SAMPLINGMODE, null, textureType);
                     // And rgbdEncode them.
                     let promise = new Promise<void>((resolve, reject) => {
-                        let rgbdPostProcess = new PostProcess("rgbdEncode", "rgbdEncode", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, Engine.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
+                        let rgbdPostProcess = new PostProcess("rgbdEncode", "rgbdEncode", null, null, 1, null, Engine.TEXTURE_NEAREST_SAMPLINGMODE, engine, false, undefined, Engine.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
                         rgbdPostProcess.getEffect().executeWhenCompiled(() => {
                             rgbdPostProcess.onApply = (effect) => {
                                 effect._bindTexture("textureSampler", tempTexture);
@@ -376,7 +381,7 @@ import { Scalar, SphericalPolynomial, Vector3 } from "Math";
             texture.format = Engine.TEXTUREFORMAT_RGBA;
             texture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
             texture.generateMipMaps = true;
-            engine.updateTextureSamplingMode(Texture.TRILINEAR_SAMPLINGMODE, texture);
+            engine.updateTextureSamplingMode(Engine.TEXTURE_TRILINEAR_SAMPLINGMODE, texture);
 
             // Add extra process if texture lod is not supported
             if (!caps.textureLOD) {
@@ -402,7 +407,7 @@ import { Scalar, SphericalPolynomial, Vector3 } from "Math";
             // Expand the texture if possible
             if (expandTexture) {
                 // Simply run through the decode PP
-                rgbdPostProcess = new PostProcess("rgbdDecode", "rgbdDecode", null, null, 1, null, Texture.TRILINEAR_SAMPLINGMODE, engine, false, undefined, texture.type, undefined, null, false);
+                rgbdPostProcess = new PostProcess("rgbdDecode", "rgbdDecode", null, null, 1, null, Engine.TEXTURE_TRILINEAR_SAMPLINGMODE, engine, false, undefined, texture.type, undefined, null, false);
 
                 texture._isRGBD = false;
                 texture.invertY = false;
@@ -410,7 +415,7 @@ import { Scalar, SphericalPolynomial, Vector3 } from "Math";
                     generateDepthBuffer: false,
                     generateMipMaps: true,
                     generateStencilBuffer: false,
-                    samplingMode: Texture.TRILINEAR_SAMPLINGMODE,
+                    samplingMode: Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
                     type: texture.type,
                     format: Engine.TEXTUREFORMAT_RGBA
                 });
@@ -440,7 +445,7 @@ import { Scalar, SphericalPolynomial, Vector3 } from "Math";
                         glTextureFromLod.isCube = true;
                         glTextureFromLod.invertY = true;
                         glTextureFromLod.generateMipMaps = false;
-                        engine.updateTextureSamplingMode(Texture.LINEAR_LINEAR, glTextureFromLod);
+                        engine.updateTextureSamplingMode(Engine.TEXTURE_LINEAR_LINEAR, glTextureFromLod);
 
                         // Wrap in a base texture for easy binding.
                         let lodTexture = new BaseTexture(null);
@@ -479,7 +484,7 @@ import { Scalar, SphericalPolynomial, Vector3 } from "Math";
                     let promise = new Promise<void>((resolve, reject) => {
                         image.onload = () => {
                             if (expandTexture) {
-                                let tempTexture = engine.createTexture(null, true, true, null, Texture.NEAREST_SAMPLINGMODE, null,
+                                let tempTexture = engine.createTexture(null, true, true, null, Engine.TEXTURE_NEAREST_SAMPLINGMODE, null,
                                     (message) => {
                                         reject(message);
                                     },

@@ -1,9 +1,14 @@
-import { Engine } from "Engine";
-
     /**
      * @hidden
      **/
     export class _StencilState {
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
+        public static readonly ALWAYS = 0x0207;
+        /** Passed to stencilOperation to specify that stencil value must be kept */
+        public static readonly KEEP = 0x1E00;
+        /** Passed to stencilOperation to specify that stencil value must be replaced */
+        public static readonly REPLACE = 0x1E01;
+
         private _isStencilTestDirty = false;
         private _isStencilMaskDirty = false;
         private _isStencilFuncDirty = false;
@@ -137,13 +142,13 @@ import { Engine } from "Engine";
             this._stencilTest = false;
             this._stencilMask = 0xFF;
 
-            this._stencilFunc = Engine.ALWAYS;
+            this._stencilFunc = _StencilState.ALWAYS;
             this._stencilFuncRef = 1;
             this._stencilFuncMask = 0xFF;
 
-            this._stencilOpStencilFail = Engine.KEEP;
-            this._stencilOpDepthFail = Engine.KEEP;
-            this._stencilOpStencilDepthPass = Engine.REPLACE;
+            this._stencilOpStencilFail = _StencilState.KEEP;
+            this._stencilOpDepthFail = _StencilState.KEEP;
+            this._stencilOpStencilDepthPass = _StencilState.REPLACE;
 
             this._isStencilTestDirty = true;
             this._isStencilMaskDirty = true;

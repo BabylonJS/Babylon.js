@@ -1,11 +1,13 @@
-import { Tools } from "Tools";
+import { Tools } from "Tools/tools";
 import { Nullable, FloatArray, IndicesArray } from "types";
 import { Scene } from "scene";
-import { Matrix, Color3, Color4, Viewport } from "Math";
-import { Engine, EngineCapabilities, RenderTargetCreationOptions } from "Engine";
-import { VertexBuffer } from "Mesh";
-import { Texture, InternalTexture, Effect } from "Materials";
-import { _TimeToken } from "Instrumentation";
+import { Matrix, Color3, Color4, Viewport } from "Math/math";
+import { Engine, EngineCapabilities, RenderTargetCreationOptions } from "Engine/engine";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { InternalTexture } from "Materials/Textures/internalTexture";
+import { Texture } from "Materials/Textures/texture";
+import { Effect } from "Materials/effect";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Options to create the null engine

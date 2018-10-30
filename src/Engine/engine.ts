@@ -1,16 +1,29 @@
 import { Observer, Observable, Tools, ICustomAnimationFrameRequester, PerfCounter, PerformanceMonitor, StringDictionary, IFileRequest, PromisePolyfill, DDSTools, DDSInfo } from "Tools";
 import { Nullable, FloatArray, DataArray, IndicesArray } from "types";
-import { Camera } from "Cameras";
+import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Matrix, Color3, Color4, Viewport, Size, Scalar, Vector4, SphericalPolynomial } from "Math";
-import { IDisplayChangedEventArgs } from "Engine";
-import { VertexBuffer } from "Mesh";
-import { RenderTargetTexture, Material, IInternalTextureLoader, Texture, UniformBuffer, InternalTexture, Effect, DummyInternalTextureTracker, IMultiRenderTargetOptions, BaseTexture, IInternalTextureTracker, VideoTexture, EffectCreationOptions, EffectFallbacks } from "Materials";
-import { PostProcess, PassPostProcess } from "PostProcess";
-import { _TimeToken } from "Instrumentation";
-import { IAudioEngine } from "Audio";
-import { IOfflineProvider } from "Offline";
-import { ILoadingScreen, DefaultLoadingScreen } from "Loading";
+import { Matrix, Color3, Color4, Viewport, Size, Vector4 } from "Math/math";
+import { Scalar } from "Math/math.scalar";
+import { SphericalPolynomial } from "Math/sphericalPolynomial";
+import { IDisplayChangedEventArgs } from "Engine/engine";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { UniformBuffer } from "Materials/uniformBuffer";
+import { Effect, EffectCreationOptions, EffectFallbacks } from "Materials/effect";
+import { Material } from "Materials/material";
+import { IInternalTextureTracker, DummyInternalTextureTracker } from "Materials/Textures/internalTextureTracker";
+import { IInternalTextureLoader } from "Materials/Textures/internalTextureLoader";
+import { InternalTexture } from "Materials/Textures/internalTexture";
+import { BaseTexture } from "Materials/Textures/baseTexture";
+import { Texture } from "Materials/Textures/texture";
+import { VideoTexture } from "Materials/Textures/videoTexture";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { IMultiRenderTargetOptions } from "Materials/Textures/multiRenderTarget";
+import { PostProcess } from "PostProcess/postProcess";
+import { PassPostProcess } from "PostProcess/passPostProcess";
+import { _TimeToken } from "Instrumentation/timeToken";
+import { IAudioEngine } from "Audio/audioEngine";
+import { IOfflineProvider } from "Offline/IOfflineProvider";
+import { ILoadingScreen, DefaultLoadingScreen } from "Loading/loadingScreen";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Keeps track of all the buffer info used in engine.
@@ -331,7 +344,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
         public static readonly NEVER = 0x0200;
         /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
-        public static readonly ALWAYS = 0x0207;
+        public static readonly ALWAYS = _StencilState.ALWAYS;
         /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value */
         public static readonly LESS = 0x0201;
         /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value */
@@ -347,9 +360,9 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
         // Stencil Actions Constants.
         /** Passed to stencilOperation to specify that stencil value must be kept */
-        public static readonly KEEP = 0x1E00;
+        public static readonly KEEP = _StencilState.KEEP;
         /** Passed to stencilOperation to specify that stencil value must be replaced */
-        public static readonly REPLACE = 0x1E01;
+        public static readonly REPLACE = _StencilState.REPLACE;
         /** Passed to stencilOperation to specify that stencil value must be incremented */
         public static readonly INCR = 0x1E02;
         /** Passed to stencilOperation to specify that stencil value must be decremented */

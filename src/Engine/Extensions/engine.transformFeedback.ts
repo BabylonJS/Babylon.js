@@ -1,6 +1,6 @@
 import { Nullable } from "types";
-import { Engine } from "Engine";
-import { _TimeToken } from "Instrumentation";
+import { Engine } from "Engine/engine";
+import { _TimeToken } from "Instrumentation/timeToken";
 
 declare module "Engine/Engine" {
     export interface Engine {

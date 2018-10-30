@@ -1,4 +1,10 @@
-import { Texture, Scene, RenderTargetTexture, InternalTexture, PassPostProcess, Engine, BaseTexture } from "index";
+import { InternalTexture } from "Materials/Textures/internalTexture";
+import { BaseTexture } from "Materials/Textures/baseTexture";
+import { Texture } from "Materials/Textures/texture";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { PassPostProcess } from "PostProcess/passPostProcess";
+import { Engine } from "Engine/engine";
+import { Scene } from "scene";
 
     /**
      * Class used to host texture specific utilities
