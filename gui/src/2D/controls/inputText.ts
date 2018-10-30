@@ -80,7 +80,7 @@ export class InputText extends Control implements IFocusableControl {
         }
     }
 
-    /** Gets and sets the text highlighter transparancy; default: 0.4 */
+    /** Gets and sets the text highlighter transparency; default: 0.4 */
     public get highligherOpacity(): number {
         return this._highligherOpacity;
     }
