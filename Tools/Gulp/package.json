@@ -29,6 +29,7 @@
         "gulp-typescript": "4.0.2",
         "gulp-uglify": "^3.0.1",
         "gulp-webserver": "^0.9.1",
+        "cors": "^2.8.4",
         "karma": "^2.0.5",
         "karma-browserstack-launcher": "^1.3.0",
         "karma-chai": "^0.1.0",

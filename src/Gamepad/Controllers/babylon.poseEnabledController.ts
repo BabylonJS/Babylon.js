@@ -178,7 +178,7 @@ module BABYLON {
          * Node to be used when casting a ray from the controller
          * @hidden
          */
-        public _pointingPoseNode: Nullable<AbstractMesh> = null;
+        public _pointingPoseNode: Nullable<TransformNode> = null;
         /**
          * Name of the child mesh that can be used to cast a ray from the controller
          */

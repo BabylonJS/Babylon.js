@@ -39,7 +39,8 @@ module BABYLON {
          * @returns Promise which resolves after it is initialized
          */
         public initializeAsync(): Promise<void> {
-             // Check if the browser supports webXR
+            Tools.Warn("The WebXR APIs are still under development and are subject to change in the future.");
+            // Check if the browser supports webXR
             this._xrNavigator = navigator;
             if (!this._xrNavigator.xr) {
                 return Promise.reject("webXR not supported by this browser");
