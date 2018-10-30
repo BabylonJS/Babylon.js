@@ -264,6 +264,11 @@ export class Container extends Control {
         this._applyStates(context);
 
         if (this._processMeasures(parentMeasure, context)) {
+
+            if (this.onBeforeDrawObservable.hasObservers()) {
+                this.onBeforeDrawObservable.notifyObservers(this);
+            }
+
             this._localDraw(context);
 
             if (this.clipChildren) {
@@ -276,6 +281,7 @@ export class Container extends Control {
             for (var child of this._children) {
                 if (child.isVisible && !child.notRenderable) {
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
+
                     child._draw(this._measureForChildren, context);
 
                     if (child.onAfterDrawObservable.hasObservers()) {
