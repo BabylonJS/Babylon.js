@@ -1,4 +1,8 @@
-import { FlyCamera, CameraInputsManager, FlyCameraMouseInput, FlyCameraKeyboardInput } from "Cameras";
+import { FlyCamera } from "./flyCamera";
+import { CameraInputsManager } from "./cameraInputsManager";
+import { FlyCameraMouseInput } from "Cameras/Inputs/flyCameraMouseInput";
+import { FlyCameraKeyboardInput } from "Cameras/Inputs/flyCameraKeyboardInput";
+
     /**
      * Default Inputs manager for the FlyCamera.
      * It groups all the default supported inputs for ease of use.

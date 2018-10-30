@@ -1,10 +1,11 @@
-import { serialize, Tools, serializeAsMeshReference } from "Tools";
 import { Nullable } from "types";
-import { TargetCamera } from "Cameras";
+import { serialize, serializeAsMeshReference } from "Tools/decorators";
+import { Tools } from "Tools/tools";
+import { TargetCamera } from "./targetCamera";
 import { Scene } from "scene";
-import { Matrix, Vector3 } from "Math";
-import { Node } from "Node";
-import { AbstractMesh } from "Mesh";
+import { Matrix, Vector3 } from "Math/math";
+import { Node } from "node";
+import { AbstractMesh } from "Mesh/abstractMesh";
     Node.AddNodeConstructor("FollowCamera", (name, scene) => {
         return () => new FollowCamera(name, Vector3.Zero(), scene);
     });
