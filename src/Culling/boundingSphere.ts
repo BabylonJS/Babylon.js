@@ -1,3 +1,4 @@
+import { DeepImmutable } from "types";
 import { Tools } from "Tools/tools";
 import { Matrix, Vector3, Plane } from "Math/math";
 
