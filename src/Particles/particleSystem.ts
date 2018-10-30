@@ -1,12 +1,27 @@
 import { Nullable } from "types";
-import { IAnimatable, Observable, Observer, Tools, FactorGradient, ColorGradient, Color3Gradient } from "Tools";
-import { Color4, Color3, Vector3, Matrix, Tmp, ISize, Scalar, Vector4 } from "Math";
-import { AbstractMesh, VertexBuffer, Buffer } from "Mesh";
-import { IParticleSystem, BaseParticleSystem, Particle, SubEmitter, SubEmitterType, BoxParticleEmitter, IParticleEmitterType, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter } from "Particles";
-import { Material, ImageProcessingConfiguration, Effect, Texture, RawTexture, ProceduralTexture, MaterialHelper } from "Materials";
-import { Engine } from "Engine";
+import { IAnimatable, Tools, FactorGradient, ColorGradient, Color3Gradient } from "Tools/tools";
+import { Observable, Observer } from "Tools/observable";
+import { Color4, Color3, Vector3, Matrix, Tmp, ISize, Vector4 } from "Math/math";
+import { Scalar } from "Math/math.scalar";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { Buffer } from "Mesh/buffer";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Material } from "Materials/material";
+import { MaterialHelper } from "Materials/materialHelper";
+import { Effect } from "Materials/effect";
+import { ImageProcessingConfiguration } from "Materials/imageProcessingConfiguration";
+import { Texture } from "Materials/Textures/texture";
+import { RawTexture } from "Materials/Textures/rawTexture";
+import { ProceduralTexture } from "Materials/Textures/Procedurals/proceduralTexture";
+import { Engine } from "Engine/engine";
 import { Scene, IDisposable } from "scene";
-import { Animation } from "Animations";
+import { Animation } from "Animations/animation";
+import { BoxParticleEmitter, IParticleEmitterType, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter } from "Particles/EmitterTypes";
+import { IParticleSystem } from "./IParticleSystem";
+import { BaseParticleSystem } from "./baseParticleSystem";
+import { Particle } from "./particle";
+import { SubEmitter, SubEmitterType } from "./subEmitter";
+
     /**
      * This represents a particle system in Babylon.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.

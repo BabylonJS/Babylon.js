@@ -1,11 +1,18 @@
-import { Tools } from "Tools";
+import { Tools } from "Tools/tools";
 import { Nullable, IndicesArray } from "types";
-import { Matrix, Vector3, Plane } from "Math";
-import { Engine } from "Engine";
-import { Mesh, AbstractMesh, VertexBuffer, LinesMesh } from "Mesh";
-import { Collider, IntersectionInfo } from "Collisions";
-import { Ray, ICullable, BoundingInfo } from "Culling";
-import { Material, Effect, MaterialDefines, MultiMaterial } from "Materials";
+import { Matrix, Vector3, Plane } from "Math/math";
+import { Engine } from "Engine/engine";
+import { Mesh } from "./mesh";
+import { AbstractMesh } from "./abstractMesh";
+import { LinesMesh } from "./linesMesh";
+import { VertexBuffer } from "./vertexBuffer";
+import { Collider } from "Collisions/collider";
+import { IntersectionInfo } from "Collisions/pickingInfo";
+import { Ray } from "Culling/ray";
+import { ICullable, BoundingInfo } from "Culling/boundingInfo";
+import { Effect } from "Materials/effect";
+import { Material, MaterialDefines } from "Materials/material";
+import { MultiMaterial } from "Materials/multiMaterial";
     /**
      * Base class for submeshes
      */

@@ -1,12 +1,16 @@
     import { Tools, Tags } from "Tools";
     import { Nullable, FloatArray, DataArray, IndicesArray } from "types";
     import { Scene } from "scene";
-    import { Vector3, Vector2, Color4 } from "Math";
-    import { Engine } from "Engine";
-    import { Mesh, AbstractMesh, VertexBuffer, SubMesh, IGetSetVerticesData, VertexData } from "Mesh";
-    import { Effect } from "Materials";
-    import { SceneLoader } from "Loading";
-    import { BoundingInfo } from "index";
+    import { Vector3, Vector2, Color4 } from "Math/math";
+    import { Engine } from "Engine/engine";
+    import { IGetSetVerticesData, VertexData } from "Mesh/mesh.vertexData";
+    import { VertexBuffer } from "Mesh/vertexBuffer";
+    import { SubMesh } from "Mesh/subMesh";
+    import { AbstractMesh } from "Mesh/abstractMesh";
+    import { Mesh } from "Mesh/mesh";
+    import { Effect } from "Materials/effect";
+    import { SceneLoader } from "Loading/sceneLoader";
+    import { BoundingInfo } from "Culling/boundingInfo";
     /**
      * Class used to store geometry data (vertex buffers + index buffer)
      */

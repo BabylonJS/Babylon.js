@@ -1,7 +1,8 @@
 import { Nullable } from "types";
-import { Vector3, Quaternion } from "Math";
-import { AbstractMesh } from "Mesh";
-import { PhysicsImpostor, PhysicsJoint, IMotorEnabledJoint, IPhysicsEnabledObject } from "Physics";
+import { Vector3, Quaternion } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
+import { PhysicsJoint, IMotorEnabledJoint } from "./physicsJoint";
     /**
      * Interface used to describe a physics joint
      */
@@ -157,4 +158,3 @@ import { PhysicsImpostor, PhysicsJoint, IMotorEnabledJoint, IPhysicsEnabledObjec
          */
         _step(delta: number): void;
     }
-

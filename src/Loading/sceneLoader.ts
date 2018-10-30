@@ -1,15 +1,17 @@
-import { Observable, Tools, IFileRequest, FilesInput } from "Tools";
+import { IFileRequest, Tools } from "Tools/tools";
+import { Observable } from "Tools/observable";
+import { FilesInput } from "Tools/filesInput";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Engine } from "Engine";
-import { AbstractMesh } from "Mesh";
-import { AnimationGroup } from "Animations";
-import { _TimeToken } from "Instrumentation";
-import { IOfflineProvider } from "Offline";
+import { Engine } from "Engine/engine";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { AnimationGroup } from "Animations/animationGroup";
+import { _TimeToken } from "Instrumentation/timeToken";
+import { IOfflineProvider } from "Offline/IOfflineProvider";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { AssetContainer } from "assetContainer";
-import { IParticleSystem } from "Particles";
-import { Skeleton } from "Bones";
+import { IParticleSystem } from "Particles/IParticleSystem";
+import { Skeleton } from "Bones/skeleton";
     /**
      * Class used to represent data loading progression
      */

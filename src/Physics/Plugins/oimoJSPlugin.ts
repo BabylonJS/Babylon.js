@@ -1,8 +1,8 @@
 import { IPhysicsEnginePlugin, PhysicsImpostor, IPhysicsEnabledObject, PhysicsEngine, PhysicsImpostorJoint, PhysicsJoint, SpringJointData, DistanceJointData, IMotorEnabledJoint } from "Physics";
-import { AbstractMesh } from "Mesh";
-import { Vector3, Quaternion } from "Math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Vector3, Quaternion } from "Math/math";
 import { Nullable } from "types";
-import { Tools } from "Tools";
+import { Tools } from "Tools/tools";
 
     declare var OIMO: any;
 

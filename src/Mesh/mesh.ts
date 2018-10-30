@@ -1,18 +1,34 @@
-import { Observer, Observable, Tools, IAnimatable, Tags, AsyncLoop } from "Tools";
+import { Observer, Observable } from "Tools/observable";
+import { Tools, IAnimatable, AsyncLoop } from "Tools/tools";
+import { Tags } from "Tools/tags";
 import { Nullable, FloatArray, IndicesArray } from "types";
-import { Camera } from "Cameras";
+import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Quaternion, Matrix, Vector3, Vector2, Color3, Color4, Plane, Vector4, Path3D } from "Math";
-import { Engine } from "Engine";
-import { Node } from "Node";
-import { AbstractMesh, Geometry, InstancedMesh, VertexBuffer, SubMesh, LinesMesh, IGetSetVerticesData, MeshLODLevel, VertexData, GroundMesh, MeshBuilder, Buffer } from "Mesh";
-import { BoundingSphere, BoundingInfo } from "Culling";
-import { Material, Effect } from "Materials";
-import { Animation } from "Animations";
-import { SceneLoader } from "Loading";
-import { Skeleton } from "Bones";
-import { MorphTargetManager } from "Morph";
-import { PhysicsImpostor } from "Physics";
+import { Quaternion, Matrix, Vector3, Vector2, Color3, Color4, Plane, Vector4, Path3D } from "Math/math";
+import { Engine } from "Engine/engine";
+import { Node } from "node";
+
+import { VertexBuffer } from "./vertexBuffer";
+import { VertexData, IGetSetVerticesData } from "./mesh.vertexData";
+import { Buffer } from "./buffer";
+import { Geometry } from "./geometry";
+import { AbstractMesh } from "./abstractMesh";
+import { SubMesh } from "./subMesh";
+import { InstancedMesh } from "./instancedMesh";
+import { LinesMesh } from "./linesMesh";
+import { GroundMesh } from "./groundMesh";
+import { MeshBuilder } from "./meshBuilder";
+import { MeshLODLevel } from "./meshLODLevel";
+
+import { BoundingInfo } from "Culling/boundingInfo";
+import { BoundingSphere } from "Culling/boundingSphere";
+import { Effect } from "Materials/effect";
+import { Material } from "Materials/material";
+import { Animation } from "Animations/animation";
+import { SceneLoader } from "Loading/sceneLoader";
+import { Skeleton } from "Bones/skeleton";
+import { MorphTargetManager } from "Morph/morphTargetManager";
+import { PhysicsImpostor } from "Physics/physicsImpostor";
     /**
      * @hidden
      **/

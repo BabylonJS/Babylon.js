@@ -1,6 +1,7 @@
 import { Scene } from "scene";
-import { Vector3, Vector2, Tmp, Vector4 } from "Math";
-import { Mesh, VertexBuffer } from "Mesh";
+import { Vector3, Vector2, Tmp, Vector4 } from "Math/math";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { Mesh } from "Mesh/mesh";
     /**
      * Mesh representing the gorund
      */

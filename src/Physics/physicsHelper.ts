@@ -1,10 +1,14 @@
 import { Nullable } from "types";
-import { Tools } from "Tools";
-import { Vector3 } from "Math";
-import { Mesh, AbstractMesh, MeshBuilder } from "Mesh";
-import { Ray } from "Culling";
+import { Tools } from "Tools/tools";
+import { Vector3 } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Mesh } from "Mesh/mesh";
+import { MeshBuilder } from "Mesh/meshBuilder";
+import { Ray } from "Culling/ray";
 import { Scene } from "scene";
-import { IPhysicsEngine, PhysicsImpostor, PhysicsEngine } from "Physics";
+import { IPhysicsEngine } from "./IPhysicsEngine";
+import { PhysicsEngine } from "./physicsEngine";
+import { PhysicsImpostor } from "./physicsImpostor";
     /**
      * A helper for physics simulations
      * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
@@ -769,4 +773,3 @@ import { IPhysicsEngine, PhysicsImpostor, PhysicsEngine } from "Physics";
          */
         cylinder: Mesh;
     }
-

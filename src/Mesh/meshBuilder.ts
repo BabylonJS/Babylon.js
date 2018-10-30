@@ -1,10 +1,16 @@
-import { Tools } from "Tools";
+import { Tools } from "Tools/tools";
 import { Nullable, FloatArray, IndicesArray } from "types";
-import { Camera } from "Cameras";
+import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Matrix, Vector3, Vector2, Color3, Color4, Plane, Tmp, Epsilon, Vector4, Axis, Path3D, PositionNormalVertex } from "Math";
-import { Mesh, AbstractMesh, VertexBuffer, LinesMesh, VertexData, _CreationDataStorage, GroundMesh, PolygonMeshBuilder } from "Mesh";
-import { BoundingInfo } from "Culling";
+import { Matrix, Vector3, Vector2, Color3, Color4, Plane, Tmp, Epsilon, Vector4, Axis, Path3D, PositionNormalVertex } from "Math/math";
+import { Mesh, _CreationDataStorage } from "./mesh";
+import { AbstractMesh } from "./abstractMesh";
+import { VertexBuffer } from "./VertexBuffer";
+import { LinesMesh } from "./linesMesh";
+import { VertexData } from "./mesh.vertexData";
+import { GroundMesh } from "./groundMesh";
+import { PolygonMeshBuilder } from "./polygonMesh";
+import { BoundingInfo } from "Culling/boundingInfo";
 
     /**
      * Class containing static functions to help procedurally build meshes

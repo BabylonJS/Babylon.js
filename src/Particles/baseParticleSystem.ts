@@ -1,11 +1,15 @@
 import { Nullable } from "types";
-import { Color4, Vector2, Vector3 } from "Math";
-import { AbstractMesh } from "Mesh";
-import { ImageProcessingConfiguration, Texture, ProceduralTexture, ImageProcessingConfigurationDefines, RawTexture } from "Materials";
+import { Color4, Vector2, Vector3 } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { ImageProcessingConfiguration, ImageProcessingConfigurationDefines } from "Materials/imageProcessingConfiguration";
+import { Texture } from "Materials/Textures/texture";
+import { ProceduralTexture } from "Materials/Textures/Procedurals/proceduralTexture";
+import { RawTexture } from "Materials/Textures/rawTexture";
 import { Scene } from "scene";
-import { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "Tools";
-import { BoxParticleEmitter, IParticleEmitterType, ParticleSystem, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, CylinderDirectedParticleEmitter, ConeParticleEmitter } from "Particles";
-import { Animation } from "Animations";
+import { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "Tools/tools";
+import { Animation } from "Animations/animation";
+import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, CylinderDirectedParticleEmitter, ConeParticleEmitter } from "Particles/EmitterTypes";
+import { ParticleSystem } from "./particleSystem";
 
     /**
      * This represents the base class for particle system in Babylon.

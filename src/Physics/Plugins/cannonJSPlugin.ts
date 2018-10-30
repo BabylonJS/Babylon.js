@@ -1,8 +1,10 @@
 import { Nullable, FloatArray } from "types";
-import { Tools } from "Tools";
-import { Vector3, Matrix, Quaternion } from "Math";
-import { AbstractMesh, VertexBuffer } from "Mesh";
+import { Tools } from "Tools/tools";
+import { Vector3, Matrix, Quaternion } from "Math/math";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { AbstractMesh } from "Mesh/abstractMesh";
 import { IPhysicsEnginePlugin, PhysicsImpostor, PhysicsImpostorJoint, PhysicsJoint, DistanceJointData, SpringJointData, PhysicsEngine, IPhysicsEnabledObject, IMotorEnabledJoint } from "Physics";
+
     //declare var require: any;
     declare var CANNON: any;
 

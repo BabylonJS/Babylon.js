@@ -1,10 +1,26 @@
 import { serialize, Observer, SmartArray, SerializationHelper, serializeAsColor3, expandToProperty, IAnimatable, serializeAsTexture, serializeAsFresnelParameters } from "Tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Color3 } from "Math";
-import { Engine } from "Engine";
-import { Mesh, AbstractMesh, VertexBuffer, SubMesh } from "Mesh";
-import { ImageProcessingConfiguration, RenderTargetTexture, Material, Texture, BaseTexture, CubeTexture, MaterialHelper, IImageProcessingConfigurationDefines, PushMaterial, ColorCurves, EffectFallbacks, EffectCreationOptions, MaterialDefines, FresnelParameters } from "Materials";
+import { Matrix, Color3 } from "Math/math";
+import { Engine } from "Engine/engine";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { SubMesh } from "Mesh/subMesh";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Mesh } from "Mesh/mesh";
+
+import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration";
+import { ColorCurves } from "./colorCurves";
+import { FresnelParameters } from "./fresnelParameters";
+import { EffectFallbacks, EffectCreationOptions } from "./effect";
+import { Material, MaterialDefines } from "./material";
+import { PushMaterial } from "./pushMaterial";
+import { MaterialHelper } from "./materialHelper";
+
+import { BaseTexture } from "Materials/Textures/baseTexture";
+import { Texture } from "Materials/Textures/texture";
+import { CubeTexture } from "Materials/Textures/cubeTexture";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+
 import "Shaders/default.fragment";
 import "Shaders/default.vertex";
 

@@ -1,7 +1,9 @@
 import { IndicesArray } from "types";
-import { Vector3, Epsilon } from "Math";
-import { Mesh, VertexBuffer, SubMesh } from "Mesh";
-import { AsyncLoop } from "index";
+import { Vector3, Epsilon } from "Math/math";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { SubMesh } from "Mesh/subMesh";
+import { Mesh } from "Mesh/mesh";
+import { AsyncLoop } from "Tools/tools";
     /**
      * A simplifier interface for future simplification implementations
      * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification

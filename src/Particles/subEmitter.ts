@@ -1,6 +1,7 @@
-import { Vector3 } from "Math";
-import { Mesh, AbstractMesh } from "Mesh";
-import { ParticleSystem } from "Particles";
+import { Vector3 } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { Mesh } from "Mesh/mesh";
+import { ParticleSystem } from "Particles/particleSystem";
 import { Scene } from "scene";
     /**
      * Type of sub emitter

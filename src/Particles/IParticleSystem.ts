@@ -1,12 +1,12 @@
 import { Nullable } from "types";
-import { Color4, Color3, Vector2, Vector3 } from "Math";
-import { AbstractMesh } from "Mesh";
-import { IParticleSystem } from "Particles";
-import { BaseTexture, Texture } from "Materials";
-import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter } from "Particles";
+import { Color4, Color3, Vector2, Vector3 } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { BaseTexture } from "Materials/Textures/baseTexture";
+import { Texture } from "Materials/Textures/texture";
+import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter } from "Particles/EmitterTypes";
 import { Scene } from "scene";
-import { ColorGradient, FactorGradient, Color3Gradient } from "Tools";
-import { Animation } from "Animations";
+import { ColorGradient, FactorGradient, Color3Gradient } from "Tools/tools";
+import { Animation } from "Animations/animation";
 
     /**
      * Interface representing a particle system in Babylon.js.

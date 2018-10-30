@@ -1,19 +1,26 @@
-import { Observer, Observable, Tools } from "Tools";
+import { Tools } from "Tools/tools";
+import { Observer, Observable } from "Tools/observable";
 import { Nullable, FloatArray, IndicesArray } from "types";
-import { Camera } from "Cameras";
+import { Camera } from "Cameras/camera";
 import { Scene, IDisposable } from "scene";
-import { Quaternion, Matrix, Vector3, Color3, Color4, Plane, Tmp, Epsilon, Axis, Vector2 } from "Math";
-import { Engine } from "Engine";
-import { Node } from "Node";
-import { InstancedMesh, VertexBuffer, TransformNode, SubMesh, IGetSetVerticesData, VertexData } from "Mesh";
-import { PickingInfo, Collider, IntersectionInfo } from "Collisions";
-import { Ray, ICullable, BoundingInfo } from "Culling";
-import { Material, MaterialDefines } from "Materials";
-import { Light } from "Lights";
-import { ActionManager } from "Actions";
-import { Skeleton } from "Bones";
-import { IEdgesRenderer } from "Rendering";
-import { SolidParticle } from "Particles";
+import { Quaternion, Matrix, Vector3, Color3, Color4, Plane, Tmp, Epsilon, Axis, Vector2 } from "Math/math";
+import { Engine } from "Engine/engine";
+import { Node } from "node";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexData, IGetSetVerticesData } from "Mesh/mesh.vertexData";
+import { TransformNode } from "Mesh/transformNode";
+import { SubMesh } from "Mesh/subMesh";
+import { InstancedMesh } from "Mesh/instancedMesh";
+import { PickingInfo, IntersectionInfo } from "Collisions/pickingInfo";
+import { Collider } from "Collisions/collider";
+import { Ray } from "Culling/ray";
+import { ICullable, BoundingInfo } from "Culling/boundingInfo";
+import { Material, MaterialDefines } from "Materials/material";
+import { Light } from "Lights/light";
+import { ActionManager } from "Actions/actionManager";
+import { Skeleton } from "Bones/skeleton";
+import { IEdgesRenderer } from "Rendering/edgesRenderer";
+import { SolidParticle } from "Particles/solidParticle";
 
     /** @hidden */
     class _FacetDataStorage {

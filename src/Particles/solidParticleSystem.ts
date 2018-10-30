@@ -1,11 +1,14 @@
 import { Nullable, IndicesArray, FloatArray } from "types";
-import { Color4, Vector3, Matrix, Tmp, Quaternion, Axis } from "Math";
-import { Mesh, MeshBuilder, VertexData, VertexBuffer } from "Mesh";
-import { Engine } from "Engine";
+import { Color4, Vector3, Matrix, Tmp, Quaternion, Axis } from "Math/math";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexData } from "Mesh/mesh.vertexData";
+import { Mesh } from "Mesh/mesh";
+import { MeshBuilder } from "Mesh/meshBuilder";
+import { Engine } from "Engine/engine";
 import { Scene, IDisposable } from "scene";
-import { DepthSortedParticle, SolidParticle, ModelShape } from "Particles";
-import { TargetCamera } from "Cameras";
-import { BoundingInfo } from "Culling";
+import { DepthSortedParticle, SolidParticle, ModelShape } from "./solidParticle";
+import { TargetCamera } from "Cameras/targetCamera";
+import { BoundingInfo } from "Culling/boundingInfo";
     const depthSortFunction = (p1: DepthSortedParticle, p2: DepthSortedParticle) => p2.sqDistance - p1.sqDistance;
 
     /**

@@ -1,9 +1,14 @@
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Color3 } from "Math";
-import { Node } from "Node";
-import { Mesh, InstancedMesh, VertexBuffer, SubMesh } from "Mesh";
-import { Material, Effect, ShaderMaterial } from "Materials";
+import { Color3 } from "Math/math";
+import { Node } from "node";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { SubMesh } from "Mesh/subMesh";
+import { Mesh } from "Mesh/mesh";
+import { InstancedMesh } from "Mesh/instancedMesh";
+import { Effect } from "Materials/effect";
+import { Material } from "Materials/material";
+import { ShaderMaterial } from "Materials/shaderMaterial";
     /**
      * Line mesh
      * @see https://doc.babylonjs.com/babylon101/parametric_shapes
