@@ -315,7 +315,7 @@ import { Bone } from "Bones/bone";
          * @param postMultiplyPivotMatrix defines if the pivot matrix must be cancelled in the world matrix. When this parameter is set to true (default), the inverse of the pivot matrix is also applied at the end to cancel the transformation effect
          * @returns the current TransformNode
         */
-        public setPivotMatrix(matrix: Readonly<Matrix>, postMultiplyPivotMatrix = true): TransformNode {
+        public setPivotMatrix(matrix: DeepImmutable<Matrix>, postMultiplyPivotMatrix = true): TransformNode {
             this._pivotMatrix.copyFrom(matrix);
             this._cache.pivotMatrixUpdated = true;
             this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
