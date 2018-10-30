@@ -51,6 +51,7 @@
 - Align `BoundingBox` and `BoundingSphere` API and behavior for clarity and simplicity. As a consequence, the `BoundingBox`'s method `setWorldMatrix` has been removed and the underlying world matrix cannot be modified but by calling `reConstruct` or `update`. ([barroij](https://github.com/barroij))
 - Make sure that `Material.markAsDirty` and all the `markXXXDirty` methods early out when `scene.blockMaterialDirtyMechanism` is true. ([barroij](https://github.com/barroij))
 - Add updateUpVectorFromRotation to target camera to allow the up vector to be computed from rotation ([TrevorDev](https://github.com/TrevorDev))
+- Added opacity texture support to `GridMaterial` ([Deltakosh](https://github.com/deltakosh))
 
 ### glTF Loader
 
@@ -71,6 +72,7 @@
 - CreateScreenshotUsingRenderTarget stretches mirror textures when setting both width and height ([TrevorDev](https://github.com/TrevorDev))
 - VR helper only updating vr cameras position when entering vr, rotation was missing ([TrevorDev](https://github.com/TrevorDev))
 - Fix VR controllers after gltfLoader transformNode change ([TrevorDev](https://github.com/TrevorDev))
+- VR helper would rotate non vr camera while in VR ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
