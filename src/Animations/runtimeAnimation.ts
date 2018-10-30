@@ -1,3 +1,4 @@
+import { DeepImmutable } from "types";
 import { Quaternion, Vector3, Vector2, Size, Color3, Matrix } from "Math/math";
 import { Animatable } from "./animatable";
 import { Animation, AnimationEvent } from "./animation";

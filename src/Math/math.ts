@@ -1,3 +1,4 @@
+import { DeepImmutable } from "types";
 import { Tools } from "Tools/tools";
 import { Nullable, FloatArray, float } from "types";
 import { Scalar } from "Math/math.scalar";

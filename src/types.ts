@@ -58,4 +58,3 @@
     /* interface DeepImmutableMap<K, V> extends ReadonlyMap<DeepImmutable<K>, DeepImmutable<V>> {} // es2015+ only */
     /** @hidden */
     type DeepImmutableObject<T> = { readonly [K in keyof T]: DeepImmutable<T[K]> };
-}

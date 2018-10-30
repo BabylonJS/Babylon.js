@@ -1,3 +1,4 @@
+import { DeepImmutable } from "types";
 import { serialize, serializeAsVector3, serializeAsQuaternion, SerializationHelper } from "Tools/decorators";
 import { Tags } from "Tools/tags";
 import { Observable } from "Tools/observable";
