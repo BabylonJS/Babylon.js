@@ -1,5 +1,5 @@
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
-import { PostProcessRenderPipelineManager } from "PostProcess";
+import { PostProcessRenderPipelineManager } from "./postProcessRenderPipelineManager";
 import { Scene } from "scene";
 
 declare module "scene" {

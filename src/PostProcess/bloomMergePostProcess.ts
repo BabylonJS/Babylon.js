@@ -1,8 +1,8 @@
-import { PostProcess, PostProcessOptions } from "PostProcess";
+import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Nullable } from "types";
-import { Engine } from "Engine";
-import { Effect } from "Materials";
-import { Camera } from "Cameras";
+import { Engine } from "Engine/engine";
+import { Effect } from "Materials/effect";
+import { Camera } from "Cameras/camera";
 
     /**
      * The BloomMergePostProcess merges blurred images with the original based on the values of the circle of confusion.

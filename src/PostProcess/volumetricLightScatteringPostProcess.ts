@@ -1,10 +1,19 @@
-import { SmartArray, Tools, serializeAsVector3, serialize, serializeAsMeshReference } from "Tools";
-import { Color4, Color3, Vector2, Vector3, Matrix, Viewport } from "Math";
-import { Mesh, SubMesh, AbstractMesh, VertexBuffer } from "Mesh";
-import { Camera } from "Cameras";
-import { Material, StandardMaterial, RenderTargetTexture, Effect, Texture } from "Materials";
-import { PostProcess } from "PostProcess";
-import { Engine } from "Engine";
+import { serializeAsVector3, serialize, serializeAsMeshReference } from "Tools/decorators";
+import { SmartArray } from "Tools/smartArray";
+import { Tools } from "Tools/tools";
+import { Color4, Color3, Vector2, Vector3, Matrix, Viewport } from "Math/math";
+import { VertexBuffer } from "Mesh/vertexBuffer";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { SubMesh } from "Mesh/subMesh";
+import { Mesh } from "Mesh/mesh";
+import { Camera } from "Cameras/camera";
+import { Effect } from "Materials/effect";
+import { Material } from "Materials/material";
+import { StandardMaterial } from "Materials/standardMaterial";
+import { Texture } from "Materials/Textures/texture";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { PostProcess } from "./postProcess";
+import { Engine } from "Engine/engine";
 import { Scene } from "scene";
 
     /**

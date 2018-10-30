@@ -1,9 +1,9 @@
 import { Nullable } from "types";
-import { Matrix } from "Math";
-import { Camera } from "Cameras";
-import { Effect } from "Materials";
-import { PostProcess, PostProcessOptions } from "PostProcess";
-import { Engine } from "Engine";
+import { Matrix } from "Math/math";
+import { Camera } from "Cameras/camera";
+import { Effect } from "Materials/effect";
+import { PostProcess, PostProcessOptions } from "./postProcess";
+import { Engine } from "Engine/engine";
 
     /**
      * Applies a kernel filter to the image

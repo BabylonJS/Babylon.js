@@ -1,9 +1,9 @@
-import { Vector2 } from "Math";
+import { Vector2 } from "Math/math";
 import { Nullable } from "types";
-import { PostProcess, PostProcessOptions } from "PostProcess";
-import { Effect } from "Materials";
-import { Camera } from "Cameras";
-import { Engine } from "Engine";
+import { PostProcess, PostProcessOptions } from "./postProcess";
+import { Effect } from "Materials/effect";
+import { Camera } from "Cameras/camera";
+import { Engine } from "Engine/engine";
 
     /**
      * The ChromaticAberrationPostProcess separates the rgb channels in an image to produce chromatic distortion around the edges of the screen

@@ -1,9 +1,9 @@
 import { Nullable } from "types";
-import { Vector2 } from "Math";
-import { Camera } from "Cameras";
-import { Effect } from "Materials";
-import { PostProcess } from "PostProcess";
-import { Engine } from "Engine";
+import { Vector2 } from "Math/math";
+import { Camera } from "Cameras/camera";
+import { Effect } from "Materials/effect";
+import { PostProcess } from "./postProcess";
+import { Engine } from "Engine/engine";
     /**
      * StereoscopicInterlacePostProcess used to render stereo views from a rigged camera
      */

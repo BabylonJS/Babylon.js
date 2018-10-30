@@ -1,8 +1,8 @@
 import { Nullable } from "types";
-import { Engine } from "Engine";
-import { PostProcess, PostProcessOptions } from "PostProcess";
-import { Camera } from "Cameras";
-import { Effect } from "Materials";
+import { Engine } from "Engine/engine";
+import { PostProcess, PostProcessOptions } from "./postProcess";
+import { Camera } from "Cameras/camera";
+import { Effect } from "Materials/effect";
 
     /**
      * Postprocess used to generate anaglyphic rendering

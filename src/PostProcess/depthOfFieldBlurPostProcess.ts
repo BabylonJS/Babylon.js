@@ -1,9 +1,11 @@
 import { Nullable } from "types";
-import { Vector2 } from "Math";
-import { Camera } from "Cameras";
-import { Effect, Texture } from "Materials";
-import { PostProcess, BlurPostProcess, PostProcessOptions } from "PostProcess";
-import { Engine } from "Engine";
+import { Vector2 } from "Math/math";
+import { Camera } from "Cameras/camera";
+import { Effect } from "Materials/effect";
+import { Texture } from "Materials/Textures";
+import { PostProcess, PostProcessOptions } from "./postProcess";
+import { BlurPostProcess } from "./blurPostProcess";
+import { Engine } from "Engine/engine";
 import { Scene } from "scene";
 
     /**

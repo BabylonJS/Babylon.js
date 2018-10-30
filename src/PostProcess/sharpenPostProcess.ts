@@ -1,8 +1,8 @@
 import { Nullable } from "types";
-import { Camera } from "Cameras";
-import { Effect } from "Materials";
-import { PostProcess, PostProcessOptions } from "PostProcess";
-import { Engine } from "Engine";
+import { Camera } from "Cameras/camera";
+import { Effect } from "Materials/effect";
+import { PostProcess, PostProcessOptions } from "./postProcess";
+import { Engine } from "Engine/engine";
     /**
      * The SharpenPostProcess applies a sharpen kernel to every pixel
      * See http://en.wikipedia.org/wiki/Kernel_(image_processing)

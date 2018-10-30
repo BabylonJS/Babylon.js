@@ -1,7 +1,11 @@
-import { PostProcessRenderEffect, PostProcess, ExtractHighlightsPostProcess, BlurPostProcess, BloomMergePostProcess } from "PostProcess";
-import { Vector2 } from "Math";
-import { Camera } from "Cameras";
-import { Texture } from "Materials";
+import { PostProcessRenderEffect } from "PostProcess/RenderPipeline/postProcessRenderEffect";
+import { PostProcess } from "./postProcess";
+import { ExtractHighlightsPostProcess } from "./extractHighlightsPostProcess";
+import { BlurPostProcess } from "./blurPostProcess";
+import { BloomMergePostProcess } from "./bloomMergePostProcess";
+import { Vector2 } from "Math/math";
+import { Camera } from "Cameras/camera";
+import { Texture } from "Materials/Textures/texture";
 import { Scene } from "scene";
 
     /**

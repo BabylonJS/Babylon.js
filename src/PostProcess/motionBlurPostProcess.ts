@@ -1,11 +1,11 @@
 import { Nullable } from "types";
-import { Tools } from "Tools";
-import { Vector2 } from "Math";
-import { Camera } from "Cameras";
-import { Effect } from "Materials";
-import { PostProcess, PostProcessOptions } from "PostProcess";
-import { Engine } from "Engine";
-import { GeometryBufferRenderer } from "Rendering";
+import { Tools } from "Tools/tools";
+import { Vector2 } from "Math/math";
+import { Camera } from "Cameras/camera";
+import { Effect } from "Materials/effect";
+import { PostProcess, PostProcessOptions } from "./postProcess";
+import { Engine } from "Engine/engine";
+import { GeometryBufferRenderer } from "Rendering/geometryBufferRenderer";
 import { Scene } from "scene";
 
     /**

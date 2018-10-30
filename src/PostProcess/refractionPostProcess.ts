@@ -1,8 +1,9 @@
-import { Color3 } from "Math";
-import { Camera } from "Cameras";
-import { Effect, Texture } from "Materials";
-import { PostProcess, PostProcessOptions } from "PostProcess";
-import { Engine } from "Engine";
+import { Color3 } from "Math/math";
+import { Camera } from "Cameras/camera";
+import { Effect } from "Materials/effect";
+import { Texture } from "Materials/Textures/texture";
+import { PostProcess, PostProcessOptions } from "./postProcess";
+import { Engine } from "Engine/engine";
     /**
      * Post process which applies a refractin texture
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#refraction

@@ -1,8 +1,13 @@
 import { Nullable } from "types";
-import { Vector2 } from "Math";
-import { Camera } from "Cameras";
-import { RenderTargetTexture, Texture } from "Materials";
-import { PostProcess, PostProcessRenderEffect, CircleOfConfusionPostProcess, DepthOfFieldBlurPostProcess, DepthOfFieldMergePostProcess } from "PostProcess";
+import { Vector2 } from "Math/math";
+import { Camera } from "Cameras/camera";
+import { Texture } from "Materials/Textures/texture";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { PostProcess } from "./postProcess";
+import { PostProcessRenderEffect } from "PostProcess/RenderPipeline/postProcessRenderEffect";
+import { CircleOfConfusionPostProcess } from "./circleOfConfusionPostProcess";
+import { DepthOfFieldBlurPostProcess } from "./depthOfFieldBlurPostProcess";
+import { DepthOfFieldMergePostProcess } from "./depthOfFieldMergePostProcess";
 import { Scene } from "scene";
 
     /**

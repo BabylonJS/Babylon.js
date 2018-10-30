@@ -1,8 +1,9 @@
 import { Nullable } from "types";
-import { Tools, serialize } from "Tools";
-import { Camera } from "Cameras";
-import { Engine } from "Engine";
-import { PostProcessRenderEffect } from "PostProcess";
+import { Tools } from "Tools/tools";
+import { serialize } from "Tools/decorators";
+import { Camera } from "Cameras/camera";
+import { Engine } from "Engine/engine";
+import { PostProcessRenderEffect } from "./postProcessRenderEffect";
     /**
      * PostProcessRenderPipeline
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline

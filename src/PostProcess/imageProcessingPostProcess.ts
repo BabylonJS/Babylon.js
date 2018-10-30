@@ -1,10 +1,14 @@
 import { Nullable } from "types";
-import { Observer, serialize } from "Tools";
-import { Color4 } from "Math";
-import { Camera } from "Cameras";
-import { BaseTexture, ImageProcessingConfiguration, Effect, ColorCurves, IImageProcessingConfigurationDefines } from "Materials";
-import { PostProcess, PostProcessOptions } from "PostProcess";
-import { Engine } from "Engine";
+import { Observer } from "Tools/observable";
+import { serialize } from "Tools/decorators";
+import { Color4 } from "Math/math";
+import { Camera } from "Cameras/camera";
+import { BaseTexture } from "Materials/Textures/baseTexture";
+import { Effect } from "Materials/effect";
+import { ColorCurves } from "Materials/colorCurves";
+import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "Materials/imageProcessingConfiguration";
+import { PostProcess, PostProcessOptions } from "./postProcess";
+import { Engine } from "Engine/engine";
 import { Scene } from "scene";
 
     /**

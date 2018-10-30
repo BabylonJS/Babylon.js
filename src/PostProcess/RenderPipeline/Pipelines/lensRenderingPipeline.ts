@@ -1,7 +1,12 @@
 
 import { Camera } from "Cameras";
-import { RenderTargetTexture, Effect, Texture, DynamicTexture } from "Materials";
-import { PostProcess, PostProcessRenderPipeline, PostProcessRenderEffect } from "PostProcess";
+import { Effect } from "Materials/effect";
+import { Texture } from "Materials/Textures/texture";
+import { DynamicTexture } from "Materials/Textures/dynamicTexture";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { PostProcess } from "PostProcess/postProcess";
+import { PostProcessRenderPipeline } from "PostProcess/RenderPipeline/postProcessRenderPipeline";
+import { PostProcessRenderEffect } from "PostProcess/RenderPipeline/postProcessRenderEffect";
 import { Scene } from "scene";
 
     /**
