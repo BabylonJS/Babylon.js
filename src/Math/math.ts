@@ -1,8 +1,6 @@
 import { DeepImmutable, Nullable, FloatArray, float } from "types";
 import { ArrayTools } from "Tools/arrayTools";
 import { Scalar } from "./math.scalar";
-import { Engine } from "Engine/engine";
-import { Ray } from "Culling/ray";
     /**
      * Constant used to convert a value to gamma space
      * @ignorenaming
@@ -2543,7 +2541,7 @@ import { Ray } from "Culling/ray";
         }
 
         /** @hidden */
-        private static UnprojectFromInvertedMatrixToRef(source: DeepImmutable<Vector3>, matrix: DeepImmutable<Matrix>, result: Vector3) {
+        public static _UnprojectFromInvertedMatrixToRef(source: DeepImmutable<Vector3>, matrix: DeepImmutable<Matrix>, result: Vector3) {
             Vector3.TransformCoordinatesToRef(source, matrix, result);
             const m = matrix.m;
             var num = source.x * m[3] + source.y * m[7] + source.z * m[11] + m[15];
@@ -2568,7 +2566,7 @@ import { Ray } from "Culling/ray";
             source.x = source.x / viewportWidth * 2 - 1;
             source.y = -(source.y / viewportHeight * 2 - 1);
             const vector = new Vector3();
-            Vector3.UnprojectFromInvertedMatrixToRef(source, matrix, vector);
+            Vector3._UnprojectFromInvertedMatrixToRef(source, matrix, vector);
             return vector;
         }
 
@@ -2625,38 +2623,7 @@ import { Ray } from "Culling/ray";
             screenSource.x = sourceX / viewportWidth * 2 - 1;
             screenSource.y = -(sourceY / viewportHeight * 2 - 1);
             screenSource.z = 2 * sourceZ - 1.0;
-            Vector3.UnprojectFromInvertedMatrixToRef(screenSource, matrix, result);
-        }
-
-       /**
-         * Unproject a ray from screen space to object space
-         * @param sourceX defines the screen space x coordinate to use
-         * @param sourceY defines the screen space y coordinate to use
-         * @param viewportWidth defines the current width of the viewport
-         * @param viewportHeight defines the current height of the viewport
-         * @param world defines the world matrix to use (can be set to Identity to go to world space)
-         * @param view defines the view matrix to use
-         * @param projection defines the projection matrix to use
-         * @param ray defines the Ray where to store the result
-         */
-        public static UnprojectRayToRef(sourceX: float, sourceY: float, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, ray: Ray): void {
-            var matrix = MathTmp.Matrix[0];
-            world.multiplyToRef(view, matrix);
-            matrix.multiplyToRef(projection, matrix);
-            matrix.invert();
-            var nearScreenSource = MathTmp.Vector3[0];
-            nearScreenSource.x = sourceX / viewportWidth * 2 - 1;
-            nearScreenSource.y = -(sourceY / viewportHeight * 2 - 1);
-            nearScreenSource.z = -1.0;
-            var farScreenSource = MathTmp.Vector3[1].copyFromFloats(nearScreenSource.x, nearScreenSource.y, 1.0);
-            const nearVec3 = MathTmp.Vector3[2];
-            const farVec3 = MathTmp.Vector3[3];
-            Vector3.UnprojectFromInvertedMatrixToRef(nearScreenSource, matrix, nearVec3);
-            Vector3.UnprojectFromInvertedMatrixToRef(farScreenSource, matrix, farVec3);
-
-            ray.origin.copyFrom(nearVec3);
-            farVec3.subtractToRef(nearVec3, ray.direction);
-            ray.direction.normalize();
+            Vector3._UnprojectFromInvertedMatrixToRef(screenSource, matrix, result);
         }
 
         /**
@@ -6411,16 +6378,11 @@ import { Ray } from "Culling/ray";
 
         /**
          * Creates a new viewport using absolute sizing (from 0-> width, 0-> height instead of 0->1)
-         * @param renderWidthOrEngine defines either an engine or the rendering width
+         * @param renderWidth defines the rendering width
          * @param renderHeight defines the rendering height
          * @returns a new Viewport
          */
-        public toGlobal(renderWidthOrEngine: number | Engine, renderHeight: number): Viewport {
-            if ((<Engine>renderWidthOrEngine).getRenderWidth) {
-                var engine = (<Engine>renderWidthOrEngine);
-                return this.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
-            }
-            let renderWidth = <number>renderWidthOrEngine;
+        public toGlobal(renderWidth: number, renderHeight: number): Viewport {
             return new Viewport(this.x * renderWidth, this.y * renderHeight, this.width * renderWidth, this.height * renderHeight);
         }
 
