@@ -55,8 +55,6 @@ module BABYLON {
         public NORMAL = false;
         public UV1 = false;
         public UV2 = false;
-        public VERTEXCOLOR = false;
-        public VERTEXALPHA = false;
         public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
         public INSTANCES = false;
@@ -94,6 +92,10 @@ module BABYLON {
 
         public needAlphaBlending(): boolean {
             return (this.alpha < 1.0);
+        }
+
+        public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
+            return this.needAlphaBlending() || (mesh.visibility < 1.0);
         }
 
         public needAlphaTesting(): boolean {
@@ -185,10 +187,6 @@ module BABYLON {
 
                 if (defines.UV2) {
                     attribs.push(VertexBuffer.UV2Kind);
-                }
-
-                if (defines.VERTEXCOLOR) {
-                    attribs.push(VertexBuffer.ColorKind);
                 }
 
                 MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
