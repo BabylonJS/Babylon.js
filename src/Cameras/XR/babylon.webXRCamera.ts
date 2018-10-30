@@ -18,6 +18,7 @@ module BABYLON {
             this.minZ = 0;
             this.rotationQuaternion = new BABYLON.Quaternion();
             this.cameraRigMode = BABYLON.Camera.RIG_MODE_CUSTOM;
+            this.updateUpVectorFromRotation = true;
             this._updateNumberOfRigCameras(1);
         }
 
@@ -26,6 +27,7 @@ module BABYLON {
                 var newCamera = new BABYLON.TargetCamera("view: " + this.rigCameras.length, BABYLON.Vector3.Zero(), this.getScene());
                 newCamera.minZ = 0;
                 newCamera.parent = this;
+                newCamera.rotationQuaternion = new BABYLON.Quaternion();
                 this.rigCameras.push(newCamera);
             }
             while (this.rigCameras.length > viewCount) {

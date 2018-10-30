@@ -89,7 +89,7 @@ module BABYLON {
         private _absolutePosition = Vector3.Zero();
         private _pivotMatrix = Matrix.Identity();
         private _pivotMatrixInverse: Matrix;
-        private _postMultiplyPivotMatrix = false;
+        protected _postMultiplyPivotMatrix = false;
 
         protected _isWorldMatrixFrozen = false;
 
@@ -120,7 +120,7 @@ module BABYLON {
         /**
           * Gets or set the node position (default is (0.0, 0.0, 0.0))
           */
-         public get position(): Vector3 {
+        public get position(): Vector3 {
             return this._position;
         }
 
@@ -269,11 +269,11 @@ module BABYLON {
             this._cache.billboardMode = -1;
         }
 
-         /**
-         * Flag the transform node as dirty (Forcing it to update everything)
-         * @param property if set to "rotation" the objects rotationQuaternion will be set to null
-         * @returns this transform node
-         */
+        /**
+        * Flag the transform node as dirty (Forcing it to update everything)
+        * @param property if set to "rotation" the objects rotationQuaternion will be set to null
+        * @returns this transform node
+        */
         public markAsDirty(property: string): TransformNode {
             if (property === "rotation") {
                 this.rotationQuaternion = null;
@@ -306,7 +306,7 @@ module BABYLON {
          * @param postMultiplyPivotMatrix defines if the pivot matrix must be cancelled in the world matrix. When this parameter is set to true (default), the inverse of the pivot matrix is also applied at the end to cancel the transformation effect
          * @returns the current TransformNode
         */
-        public setPivotMatrix(matrix: Readonly<Matrix>, postMultiplyPivotMatrix = true): TransformNode {
+        public setPivotMatrix(matrix: DeepImmutable<Matrix>, postMultiplyPivotMatrix = true): TransformNode {
             this._pivotMatrix.copyFrom(matrix);
             this._cache.pivotMatrixUpdated = true;
             this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
@@ -990,6 +990,31 @@ module BABYLON {
         public unregisterAfterWorldMatrixUpdate(func: (mesh: TransformNode) => void): TransformNode {
             this.onAfterWorldMatrixUpdateObservable.removeCallback(func);
             return this;
+        }
+
+        /**
+         * Gets the position of the current mesh in camera space
+         * @param camera defines the camera to use
+         * @returns a position
+         */
+        public getPositionInCameraSpace(camera: Nullable<Camera> = null): Vector3 {
+            if (!camera) {
+                camera = (<Camera>this.getScene().activeCamera);
+            }
+
+            return Vector3.TransformCoordinates(this.absolutePosition, camera.getViewMatrix());
+        }
+
+        /**
+         * Returns the distance from the mesh to the active camera
+         * @param camera defines the camera to use
+         * @returns the distance
+         */
+        public getDistanceToCamera(camera: Nullable<Camera> = null): number {
+            if (!camera) {
+                camera = (<Camera>this.getScene().activeCamera);
+            }
+            return this.absolutePosition.subtract(camera.position).length();
         }
 
         /**

@@ -28,9 +28,9 @@ module BABYLON.GLTF2 {
          * @param context The context when loading the asset
          * @param node The glTF node property
          * @param assign A function called synchronously after parsing the glTF properties
-         * @returns A promise that resolves with the loaded Babylon mesh when the load is complete or null if not handled
+         * @returns A promise that resolves with the loaded Babylon transform node when the load is complete or null if not handled
          */
-        loadNodeAsync?(context: string, node: Loader.INode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
+        loadNodeAsync?(context: string, node: Loader.INode, assign: (babylonMesh: TransformNode) => void): Nullable<Promise<TransformNode>>;
 
         /**
          * Define this method to modify the default behavior when loading cameras.

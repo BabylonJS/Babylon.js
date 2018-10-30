@@ -574,9 +574,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (type === PointerEventTypes.POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
                     this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
+                    delete this._lastControlOver[pointerId];
                 }
-
-                delete this._lastControlOver[pointerId];
             }
         }
 

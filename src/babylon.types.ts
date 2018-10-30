@@ -26,4 +26,37 @@ module BABYLON {
      * Alias for types that can be used by a Buffer or VertexBuffer.
      */
     export type DataArray = number[] | ArrayBuffer | ArrayBufferView;
+
+    /**
+     * Alias type for primitive types
+     * @ignorenaming
+     */
+    type Primitive = undefined | null | boolean | string | number | Function;
+
+    /**
+     * Type modifier to make all the properties of an object Readonly
+     */
+    export type Immutable<T> = T extends Primitive
+      ? T
+      : T extends Array<infer U>
+        ? ReadonlyArray<U>
+        : /* T extends Map<infer K, infer V> ? ReadonlyMap<K, V> : // es2015+ only */
+          DeepImmutable<T>;
+
+    /**
+     * Type modifier to make all the properties of an object Readonly recursively
+     */
+    export type DeepImmutable<T> = T extends Primitive
+      ? T
+      : T extends Array<infer U>
+        ? DeepImmutableArray<U>
+        : /* T extends Map<infer K, infer V> ? DeepImmutableMap<K, V> : // es2015+ only */
+          DeepImmutableObject<T>;
+
+    /** @hidden */
+    interface DeepImmutableArray<T> extends ReadonlyArray<DeepImmutable<T>> {}
+    /** @hidden */
+    /* interface DeepImmutableMap<K, V> extends ReadonlyMap<DeepImmutable<K>, DeepImmutable<V>> {} // es2015+ only */
+    /** @hidden */
+    type DeepImmutableObject<T> = { readonly [K in keyof T]: DeepImmutable<T[K]> };
 }

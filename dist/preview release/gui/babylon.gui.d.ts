@@ -819,6 +819,10 @@ declare module BABYLON.GUI {
     export class Control {
             /** defines the name of the control */
             name?: string | undefined;
+            /**
+                * Gets or sets a boolean indicating if alpha must be an inherited value (false by default)
+                */
+            static AllowAlphaInheritance: boolean;
             /** @hidden */
             _root: BABYLON.Nullable<Container>;
             /** @hidden */
@@ -1484,7 +1488,7 @@ declare module BABYLON.GUI {
                 */
             keepsFocusWith(): BABYLON.Nullable<Control[]>;
             /** @hidden */
-            processKey(keyCode: number, key?: string): void;
+            processKey(keyCode: number, key?: string, evt?: KeyboardEvent): void;
             /** @hidden */
             processKeyboard(evt: KeyboardEvent): void;
             _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;

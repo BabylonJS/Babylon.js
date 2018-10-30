@@ -417,18 +417,14 @@ describe('Babylon Scene Loader', function () {
         it('Load MultiPrimitive', () => {
             const scene = new BABYLON.Scene(subject);
             return BABYLON.SceneLoader.ImportMeshAsync(null, "http://models.babylonjs.com/Tests/MultiPrimitive/", "MultiPrimitive.gltf", scene).then(result => {
-                expect(result.meshes, "meshes").to.have.lengthOf(4);
+                expect(result.meshes, "meshes").to.have.lengthOf(3);
 
-                const node = scene.getMeshByName("node");
+                const node = scene.getNodeByName("node");
                 expect(node, "node").to.exist;
-                expect(node, "node").to.be.an.instanceof(BABYLON.Mesh);
+                expect(node, "node").to.be.an.instanceof(BABYLON.TransformNode);
 
-                const mesh = node as BABYLON.Mesh;
-                expect(mesh.geometry).to.not.exist;
-                expect(mesh.material).to.not.exist;
-
-                expect(mesh.getChildren(), "mesh children").to.have.lengthOf(2);
-                for (const childNode of mesh.getChildren()) {
+                expect(node.getChildren(), "node children").to.have.lengthOf(2);
+                for (const childNode of node.getChildren()) {
                     expect(childNode, "child node").to.be.an.instanceof(BABYLON.Mesh);
                     const childMesh = childNode as BABYLON.Mesh;
                     expect(childMesh.geometry).to.exist;
@@ -442,7 +438,10 @@ describe('Babylon Scene Loader', function () {
             return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/BrainStem/", "BrainStem.gltf", scene).then(result => {
                 expect(result.skeletons, "skeletons").to.have.lengthOf(1);
 
-                const node1 = scene.getMeshByName("node1");
+                const node1 = scene.getNodeByName("node1");
+                expect(node1, "node1").to.exist;
+                expect(node1, "node1").to.be.an.instanceof(BABYLON.TransformNode);
+
                 for (const childMesh of node1.getChildMeshes()) {
                     expect(childMesh.skeleton, "mesh skeleton").to.exist;
                     expect(childMesh.skeleton.name, "mesh skeleton name").to.equal(result.skeletons[0].name);
