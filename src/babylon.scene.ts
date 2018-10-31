@@ -3803,7 +3803,7 @@ module BABYLON {
          * @param id defines the id to search for
          * @return the found node or null if not found at all
          */
-        public getNodeByID(id: string): Nullable<Node | MorphTarget> {
+        public getNodeByID(id: string): Nullable<Node> {
             const mesh = this.getMeshByID(id);
             if (mesh) {
                 return mesh;
@@ -3827,11 +3827,6 @@ module BABYLON {
             const bone = this.getBoneByID(id);
             if (bone) {
                 return bone;
-            }
-
-            const morphTarget = this.getMorphTargetByID(id);
-            if (morphTarget) {
-                return morphTarget;
             }
 
             return null;
