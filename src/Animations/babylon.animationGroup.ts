@@ -405,10 +405,18 @@ module BABYLON {
                 var targetedAnimation = parsedAnimationGroup.targetedAnimations[i];
                 var animation = Animation.Parse(targetedAnimation.animation);
                 var id = targetedAnimation.targetId;
-                var targetNode = scene.getNodeByID(id);
+                if (targetedAnimation.animation.property === "influence") { // morph target animation
+                    let morphTarget = scene.getMorphTargetById(id);
+                    if (morphTarget) {
+                        animationGroup.addTargetedAnimation(animation, morphTarget);
+                    }
+                }
+                else {
+                    var targetNode = scene.getNodeByID(id);
 
-                if (targetNode != null) {
-                    animationGroup.addTargetedAnimation(animation, targetNode);
+                    if (targetNode != null) {
+                        animationGroup.addTargetedAnimation(animation, targetNode);
+                    }
                 }
             }
 
