@@ -33,6 +33,7 @@
 
 ### Core Engine
 
+- Added `Engine.onNewSceneAddedObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added new `PassCubePostProcess` to render cube map content ([Deltakosh](https://github.com/deltakosh))
 - Added support for utility layer for SkeletonViewer ([Deltakosh](https://github.com/deltakosh))
 - Improved shader precision detection ([Deltakosh](https://github.com/deltakosh))
