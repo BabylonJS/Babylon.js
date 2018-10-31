@@ -19,6 +19,13 @@ varying vec3 vNormal;
 
 #include<fogFragmentDeclaration>
 
+// Samplers
+#ifdef OPACITY
+varying vec2 vOpacityUV;
+uniform sampler2D opacitySampler;
+uniform vec2 vOpacityInfos;
+#endif
+
 float getVisibility(float position) {
     // Major grid line every Frequency defined in material.
     float majorGridFrequency = gridControl.y;
@@ -94,19 +101,25 @@ void main(void) {
     #include<fogFragment>
 #endif
 
+    float opacity = 1.0;
 #ifdef TRANSPARENT
     float distanceToFragment = length(vCameraSpacePosition.xyz);
     float cameraPassThrough = clamp(distanceToFragment - 0.25, 0.0, 1.0);
 
-    float opacity = clamp(grid, 0.08, cameraPassThrough * gridControl.w * grid);
+    opacity = clamp(grid, 0.08, cameraPassThrough * gridControl.w * grid);
+#endif    
 
+#ifdef OPACITY
+	opacity *= texture2D(opacitySampler, vOpacityUV).a;
+#endif    
+
+    // Apply the color.
     gl_FragColor = vec4(color.rgb, opacity);
 
+#ifdef TRANSPARENT
     #ifdef PREMULTIPLYALPHA
         gl_FragColor.rgb *= opacity;
     #endif
-#else
-    // Apply the color.
-    gl_FragColor = vec4(color.rgb, 1.0);
+#else    
 #endif
 }
