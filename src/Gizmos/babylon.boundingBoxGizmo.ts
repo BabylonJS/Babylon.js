@@ -312,7 +312,7 @@ module BABYLON {
                 // Only update the bouding box if scaling has changed
                 if (this.attachedMesh && !this._existingMeshScale.equals(this.attachedMesh.scaling)) {
                     this.updateBoundingBox();
-                }else if(this.fixedDragMeshScreenSize){
+                }else if (this.fixedDragMeshScreenSize) {
                     this._updateRotationSpheres();
                     this._updateScaleBoxes();
                 }
@@ -377,17 +377,17 @@ module BABYLON {
                 this.attachedMesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
                 this.attachedMesh.position.copyFrom(this._tmpVector);
             }
-            
+
             this._updateRotationSpheres();
             this._updateScaleBoxes();
-            
+
             if (this.attachedMesh) {
                 this._existingMeshScale.copyFrom(this.attachedMesh.scaling);
                 BoundingBoxGizmo._RestorePivotPoint(this.attachedMesh);
             }
         }
 
-        private _updateRotationSpheres(){
+        private _updateRotationSpheres() {
             var rotateSpheres = this._rotateSpheresParent.getChildMeshes();
             for (var i = 0; i < 3; i++) {
                 for (var j = 0; j < 2; j++) {
@@ -423,7 +423,7 @@ module BABYLON {
             }
         }
 
-        private _updateScaleBoxes(){
+        private _updateScaleBoxes() {
             var scaleBoxes = this._scaleBoxesParent.getChildMeshes();
             for (var i = 0; i < 2; i++) {
                 for (var j = 0; j < 2; j++) {
