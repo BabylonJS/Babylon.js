@@ -58,6 +58,7 @@
 - Make sure that `Material.markAsDirty` and all the `markXXXDirty` methods early out when `scene.blockMaterialDirtyMechanism` is true. ([barroij](https://github.com/barroij))
 - Add updateUpVectorFromRotation to target camera to allow the up vector to be computed from rotation ([TrevorDev](https://github.com/TrevorDev))
 - Added opacity texture support to `GridMaterial` ([Deltakosh](https://github.com/deltakosh))
+- Added support for deserializing morph target animations in animation groups
 
 ### glTF Loader
 

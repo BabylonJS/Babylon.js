@@ -3959,6 +3959,24 @@ module BABYLON {
         }
 
         /**
+         * Gets a morph target using a given id (if many are found, this function will pick the first one)
+         * @param id defines the id to search for
+         * @return the found morph target or null if not found at all.
+         */
+        public getMorphTargetById(id: string): Nullable<MorphTarget> {
+            for (let managerIndex = 0; managerIndex < this.morphTargetManagers.length; ++managerIndex) {
+                const morphTargetManager = this.morphTargetManagers[managerIndex];
+                for (let index = 0; index < morphTargetManager.numTargets; ++index) {
+                    const target = morphTargetManager.getTarget(index);
+                    if (target.id === id) {
+                        return target;
+                    }
+                }
+            }
+            return null;
+        }
+
+        /**
          * Gets a boolean indicating if the given mesh is active
          * @param mesh defines the mesh to look for
          * @returns true if the mesh is in the active list
