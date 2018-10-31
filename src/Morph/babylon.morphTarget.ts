@@ -211,7 +211,7 @@ module BABYLON {
 
             result.setPositions(serializationObject.positions);
 
-            if (serializationObject.id) {
+            if (serializationObject.id != null) {
                 result.id = serializationObject.id;
             }
             if (serializationObject.normals) {
