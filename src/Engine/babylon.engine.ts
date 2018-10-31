@@ -561,6 +561,11 @@ module BABYLON {
         public scenes = new Array<Scene>();
 
         /**
+         * Event raised when a new scene is created
+         */
+        public onNewSceneAddedObservable = new Observable<Scene>();
+
+        /**
          * Gets the list of created postprocesses
          */
         public postProcesses = new Array<PostProcess>();
@@ -6845,6 +6850,8 @@ module BABYLON {
             this.hideLoadingUI();
 
             this.stopRenderLoop();
+
+            this.onNewSceneAddedObservable.clear();
 
             // Release postProcesses
             while (this.postProcesses.length) {
