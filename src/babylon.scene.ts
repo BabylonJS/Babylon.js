@@ -1261,6 +1261,8 @@ module BABYLON {
 
             this.useMaterialMeshMap = options && options.useGeometryIdsMap || false;
             this.useClonedMeshhMap = options && options.useClonedMeshhMap || false;
+
+            this._engine.onNewSceneAddedObservable.notifyObservers(this);
         }
 
         private _defaultMeshCandidates: ISmartArrayLike<AbstractMesh> = {
