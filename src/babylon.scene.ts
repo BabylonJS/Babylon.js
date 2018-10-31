@@ -3803,7 +3803,7 @@ module BABYLON {
          * @param id defines the id to search for
          * @return the found node or null if not found at all
          */
-        public getNodeByID(id: string): Nullable<Node> {
+        public getNodeByID(id: string): Nullable<Node | MorphTarget> {
             const mesh = this.getMeshByID(id);
             if (mesh) {
                 return mesh;
@@ -3827,6 +3827,11 @@ module BABYLON {
             const bone = this.getBoneByID(id);
             if (bone) {
                 return bone;
+            }
+
+            const morphTarget = this.getMorphTargetByID(id);
+            if (morphTarget) {
+                return morphTarget;
             }
 
             return null;
@@ -3953,6 +3958,24 @@ module BABYLON {
                 }
             }
 
+            return null;
+        }
+
+        /**
+         * Gets a morph target using a given id (if many are found, this function will pick the last one)
+         * @param id defines the id to search for
+         * @return the found morph target or null if not found at all.
+         */
+        public getMorphTargetByID(id: string): Nullable<MorphTarget> {
+            for (let managerIndex = 0; managerIndex < this.morphTargetManagers.length; ++managerIndex) {
+                const morphTargetManager = this.morphTargetManagers[managerIndex];
+                for (let index = 0; index < morphTargetManager.numTargets; ++index) {
+                    const target = morphTargetManager.getTarget(index);
+                    if (target.id === id) {
+                        return target;
+                    }
+                }
+            }
             return null;
         }
 
