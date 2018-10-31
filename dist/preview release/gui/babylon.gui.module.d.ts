@@ -51,7 +51,7 @@ declare module 'babylonjs-gui/2D/controls' {
 }
 
 declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
-    import { DynamicTexture, Nullable, Layer, Viewport, Scene, Vector3, Matrix, Vector2, AbstractMesh } from "babylonjs";
+    import { DynamicTexture, Nullable, Layer, Viewport, Scene, Vector3, Matrix, Vector2, AbstractMesh, Observable, ClipboardInfo } from 'babylonjs';
     import { Container } from "babylonjs-gui/2D/controls/container";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Style } from "babylonjs-gui/2D/style";
@@ -106,6 +106,10 @@ declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
             /** @hidden */
             _linkedControls: Control[];
             /**
+                * Observable event triggered each time an clipboard event is received from the rendering canvas
+                */
+            onClipboardObservable: Observable<ClipboardInfo>;
+            /**
                 * Gets or sets a boolean defining if alpha is stored as premultiplied
                 */
             premulAlpha: boolean;
@@ -155,14 +159,18 @@ declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
                 */
             isForeground: boolean;
             /**
-                * Creates a new AdvancedDynamicTexture
-                * @param name defines the name of the texture
-                * @param width defines the width of the texture
-                * @param height defines the height of the texture
-                * @param scene defines the hosting scene
-                * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
-                * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+                * Gets or set information about clipboardData
                 */
+            clipboardData: string;
+            /**
+             * Creates a new AdvancedDynamicTexture
+             * @param name defines the name of the texture
+             * @param width defines the width of the texture
+             * @param height defines the height of the texture
+             * @param scene defines the hosting scene
+             * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
+             * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+             */
             constructor(name: string, width: number | undefined, height: number | undefined, scene: Nullable<Scene>, generateMipMaps?: boolean, samplingMode?: number);
             /**
                 * Function used to execute a function on all controls
@@ -215,6 +223,14 @@ declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
             _cleanControlAfterRemoval(control: Control): void;
             /** Attach to all scene events required to support pointer events */
             attach(): void;
+            /**
+                * Register the clipboard Events onto the canvas
+                */
+            registerClipboardEvents(): void;
+            /**
+                * Unregister the clipboard Events from the canvas
+                */
+            unRegisterClipboardEvents(): void;
             /**
                 * Connect the texture to a hosting mesh to enable interactions
                 * @param mesh defines the mesh to attach to
@@ -1550,7 +1566,7 @@ declare module 'babylonjs-gui/2D/controls/image' {
 declare module 'babylonjs-gui/2D/controls/inputText' {
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { IFocusableControl } from "babylonjs-gui/2D/advancedDynamicTexture";
-    import { Nullable, Observable, Vector2 } from "babylonjs";
+    import { Nullable, Observable, Vector2 } from 'babylonjs';
     import { Measure } from "babylonjs-gui/2D/measure";
     import { VirtualKeyboard } from "babylonjs-gui/2D/controls/virtualKeyboard";
     /**
@@ -1570,10 +1586,22 @@ declare module 'babylonjs-gui/2D/controls/inputText' {
             onFocusObservable: Observable<InputText>;
             /** Observable raised when the control loses the focus */
             onBlurObservable: Observable<InputText>;
+            /**Observable raised when the text is highlighted */
+            onTextHighlightObservable: Observable<InputText>;
+            /**Observable raised when copy event is triggered */
+            onTextCopyObservable: Observable<InputText>;
+            /** Observable raised when cut event is triggered */
+            onTextCutObservable: Observable<InputText>;
+            /** Observable raised when paste event is triggered */
+            onTextPasteObservable: Observable<InputText>;
             /** Gets or sets the maximum width allowed by the control */
             maxWidth: string | number;
             /** Gets the maximum width allowed by the control in pixels */
             readonly maxWidthInPixels: number;
+            /** Gets and sets the text highlighter transparency; default: 0.4 */
+            highligherOpacity: number;
+            /** Gets and sets the text hightlight color */
+            textHighlightColor: string;
             /** Gets or sets control margin */
             margin: string;
             /** Gets control margin in pixels */
@@ -1592,6 +1620,8 @@ declare module 'babylonjs-gui/2D/controls/inputText' {
             placeholderText: string;
             /** Gets or sets the dead key flag */
             deadKey: boolean;
+            /** Gets or sets the highlight text */
+            highlightedText: string;
             /** Gets or sets if the current key should be added */
             addKey: boolean;
             /** Gets or sets the value of the current key being entered */
@@ -1618,7 +1648,10 @@ declare module 'babylonjs-gui/2D/controls/inputText' {
             keepsFocusWith(): Nullable<Control[]>;
             /** @hidden */
             processKey(keyCode: number, key?: string, evt?: KeyboardEvent): void;
-            /** @hidden */
+            /**
+                * Handles the keyboard event
+                * @param evt Defines the KeyboardEvent
+                */
             processKeyboard(evt: KeyboardEvent): void;
             _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
@@ -3013,6 +3046,10 @@ declare module BABYLON.GUI {
             /** @hidden */
             _linkedControls: Control[];
             /**
+                * BABYLON.Observable event triggered each time an clipboard event is received from the rendering canvas
+                */
+            onClipboardObservable: BABYLON.Observable<BABYLON.ClipboardInfo>;
+            /**
                 * Gets or sets a boolean defining if alpha is stored as premultiplied
                 */
             premulAlpha: boolean;
@@ -3062,14 +3099,18 @@ declare module BABYLON.GUI {
                 */
             isForeground: boolean;
             /**
-                * Creates a new AdvancedDynamicTexture
-                * @param name defines the name of the texture
-                * @param width defines the width of the texture
-                * @param height defines the height of the texture
-                * @param scene defines the hosting scene
-                * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
-                * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+                * Gets or set information about clipboardData
                 */
+            clipboardData: string;
+            /**
+             * Creates a new AdvancedDynamicTexture
+             * @param name defines the name of the texture
+             * @param width defines the width of the texture
+             * @param height defines the height of the texture
+             * @param scene defines the hosting scene
+             * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
+             * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+             */
             constructor(name: string, width: number | undefined, height: number | undefined, scene: BABYLON.Nullable<BABYLON.Scene>, generateMipMaps?: boolean, samplingMode?: number);
             /**
                 * Function used to execute a function on all controls
@@ -3122,6 +3163,14 @@ declare module BABYLON.GUI {
             _cleanControlAfterRemoval(control: Control): void;
             /** Attach to all scene events required to support pointer events */
             attach(): void;
+            /**
+                * Register the clipboard Events onto the canvas
+                */
+            registerClipboardEvents(): void;
+            /**
+                * Unregister the clipboard Events from the canvas
+                */
+            unRegisterClipboardEvents(): void;
             /**
                 * Connect the texture to a hosting mesh to enable interactions
                 * @param mesh defines the mesh to attach to
@@ -4397,10 +4446,22 @@ declare module BABYLON.GUI {
             onFocusObservable: BABYLON.Observable<InputText>;
             /** BABYLON.Observable raised when the control loses the focus */
             onBlurObservable: BABYLON.Observable<InputText>;
+            /**Observable raised when the text is highlighted */
+            onTextHighlightObservable: BABYLON.Observable<InputText>;
+            /**Observable raised when copy event is triggered */
+            onTextCopyObservable: BABYLON.Observable<InputText>;
+            /** BABYLON.Observable raised when cut event is triggered */
+            onTextCutObservable: BABYLON.Observable<InputText>;
+            /** BABYLON.Observable raised when paste event is triggered */
+            onTextPasteObservable: BABYLON.Observable<InputText>;
             /** Gets or sets the maximum width allowed by the control */
             maxWidth: string | number;
             /** Gets the maximum width allowed by the control in pixels */
             readonly maxWidthInPixels: number;
+            /** Gets and sets the text highlighter transparency; default: 0.4 */
+            highligherOpacity: number;
+            /** Gets and sets the text hightlight color */
+            textHighlightColor: string;
             /** Gets or sets control margin */
             margin: string;
             /** Gets control margin in pixels */
@@ -4419,6 +4480,8 @@ declare module BABYLON.GUI {
             placeholderText: string;
             /** Gets or sets the dead key flag */
             deadKey: boolean;
+            /** Gets or sets the highlight text */
+            highlightedText: string;
             /** Gets or sets if the current key should be added */
             addKey: boolean;
             /** Gets or sets the value of the current key being entered */
@@ -4445,7 +4508,10 @@ declare module BABYLON.GUI {
             keepsFocusWith(): BABYLON.Nullable<Control[]>;
             /** @hidden */
             processKey(keyCode: number, key?: string, evt?: KeyboardEvent): void;
-            /** @hidden */
+            /**
+                * Handles the keyboard event
+                * @param evt Defines the KeyboardEvent
+                */
             processKeyboard(evt: KeyboardEvent): void;
             _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
