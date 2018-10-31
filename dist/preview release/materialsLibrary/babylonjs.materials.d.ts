@@ -61,6 +61,7 @@ declare module BABYLON {
         private _renderId;
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
+        needAlphaBlendingForMesh(mesh: AbstractMesh): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): Nullable<BaseTexture>;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
@@ -541,6 +542,8 @@ declare module BABYLON {
          * Determine RBG output is premultiplied by alpha value.
          */
         preMultiplyAlpha: boolean;
+        private _opacityTexture;
+        opacityTexture: BaseTexture;
         private _gridControl;
         private _renderId;
         /**

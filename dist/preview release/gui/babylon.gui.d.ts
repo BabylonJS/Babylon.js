@@ -61,6 +61,10 @@ declare module BABYLON.GUI {
             /** @hidden */
             _linkedControls: Control[];
             /**
+                * BABYLON.Observable event triggered each time an clipboard event is received from the rendering canvas
+                */
+            onClipboardObservable: BABYLON.Observable<BABYLON.ClipboardInfo>;
+            /**
                 * Gets or sets a boolean defining if alpha is stored as premultiplied
                 */
             premulAlpha: boolean;
@@ -110,14 +114,18 @@ declare module BABYLON.GUI {
                 */
             isForeground: boolean;
             /**
-                * Creates a new AdvancedDynamicTexture
-                * @param name defines the name of the texture
-                * @param width defines the width of the texture
-                * @param height defines the height of the texture
-                * @param scene defines the hosting scene
-                * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
-                * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+                * Gets or set information about clipboardData
                 */
+            clipboardData: string;
+            /**
+             * Creates a new AdvancedDynamicTexture
+             * @param name defines the name of the texture
+             * @param width defines the width of the texture
+             * @param height defines the height of the texture
+             * @param scene defines the hosting scene
+             * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
+             * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+             */
             constructor(name: string, width: number | undefined, height: number | undefined, scene: BABYLON.Nullable<BABYLON.Scene>, generateMipMaps?: boolean, samplingMode?: number);
             /**
                 * Function used to execute a function on all controls
@@ -170,6 +178,14 @@ declare module BABYLON.GUI {
             _cleanControlAfterRemoval(control: Control): void;
             /** Attach to all scene events required to support pointer events */
             attach(): void;
+            /**
+                * Register the clipboard Events onto the canvas
+                */
+            registerClipboardEvents(): void;
+            /**
+                * Unregister the clipboard Events from the canvas
+                */
+            unRegisterClipboardEvents(): void;
             /**
                 * Connect the texture to a hosting mesh to enable interactions
                 * @param mesh defines the mesh to attach to
@@ -916,8 +932,12 @@ declare module BABYLON.GUI {
              */
             onDirtyObservable: BABYLON.Observable<Control>;
             /**
-            * An event triggered after the control is drawn
-            */
+                * An event triggered before drawing the control
+                */
+            onBeforeDrawObservable: BABYLON.Observable<Control>;
+            /**
+                * An event triggered after the control was drawn
+                */
             onAfterDrawObservable: BABYLON.Observable<Control>;
             /** Gets or set information about font offsets (used to render and align text) */
             fontOffset: {
@@ -1441,10 +1461,22 @@ declare module BABYLON.GUI {
             onFocusObservable: BABYLON.Observable<InputText>;
             /** BABYLON.Observable raised when the control loses the focus */
             onBlurObservable: BABYLON.Observable<InputText>;
+            /**Observable raised when the text is highlighted */
+            onTextHighlightObservable: BABYLON.Observable<InputText>;
+            /**Observable raised when copy event is triggered */
+            onTextCopyObservable: BABYLON.Observable<InputText>;
+            /** BABYLON.Observable raised when cut event is triggered */
+            onTextCutObservable: BABYLON.Observable<InputText>;
+            /** BABYLON.Observable raised when paste event is triggered */
+            onTextPasteObservable: BABYLON.Observable<InputText>;
             /** Gets or sets the maximum width allowed by the control */
             maxWidth: string | number;
             /** Gets the maximum width allowed by the control in pixels */
             readonly maxWidthInPixels: number;
+            /** Gets and sets the text highlighter transparency; default: 0.4 */
+            highligherOpacity: number;
+            /** Gets and sets the text hightlight color */
+            textHighlightColor: string;
             /** Gets or sets control margin */
             margin: string;
             /** Gets control margin in pixels */
@@ -1463,6 +1495,8 @@ declare module BABYLON.GUI {
             placeholderText: string;
             /** Gets or sets the dead key flag */
             deadKey: boolean;
+            /** Gets or sets the highlight text */
+            highlightedText: string;
             /** Gets or sets if the current key should be added */
             addKey: boolean;
             /** Gets or sets the value of the current key being entered */
@@ -1489,7 +1523,10 @@ declare module BABYLON.GUI {
             keepsFocusWith(): BABYLON.Nullable<Control[]>;
             /** @hidden */
             processKey(keyCode: number, key?: string, evt?: KeyboardEvent): void;
-            /** @hidden */
+            /**
+                * Handles the keyboard event
+                * @param evt Defines the KeyboardEvent
+                */
             processKeyboard(evt: KeyboardEvent): void;
             _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;

@@ -55,11 +55,10 @@ module BABYLON {
         public NORMAL = false;
         public UV1 = false;
         public UV2 = false;
-        public VERTEXCOLOR = false;
-        public VERTEXALPHA = false;
         public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
         public INSTANCES = false;
+        public LIGHTING = false;
 
         constructor() {
             super();
@@ -94,6 +93,10 @@ module BABYLON {
 
         public needAlphaBlending(): boolean {
             return (this.alpha < 1.0);
+        }
+
+        public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
+            return this.needAlphaBlending() || (mesh.visibility < 1.0);
         }
 
         public needAlphaTesting(): boolean {
@@ -146,10 +149,13 @@ module BABYLON {
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
             // Lights
-            defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
+            defines._needNormals = true;
+            MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
             // Values that need to be evaluated on every frame
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+
+            defines.LIGHTING = !this._disableLighting;
 
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
@@ -185,10 +191,6 @@ module BABYLON {
 
                 if (defines.UV2) {
                     attribs.push(VertexBuffer.UV2Kind);
-                }
-
-                if (defines.VERTEXCOLOR) {
-                    attribs.push(VertexBuffer.ColorKind);
                 }
 
                 MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
