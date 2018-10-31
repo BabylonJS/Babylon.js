@@ -1,4 +1,4 @@
-import { DynamicTexture, Nullable, Observer, Camera, Engine, KeyboardInfoPre, PointerInfoPre, PointerInfo, Layer, Viewport, Scene, Texture, KeyboardEventTypes, Vector3, Matrix, Vector2, Tools, PointerEventTypes, AbstractMesh, StandardMaterial, Color3 } from "babylonjs";
+import { DynamicTexture, Nullable, Observer, Camera, Engine, KeyboardInfoPre, PointerInfoPre, PointerInfo, ClipboardEventTypes, Layer, Viewport, Scene, Texture, KeyboardEventTypes, Vector3, Matrix, Vector2, Tools, PointerEventTypes, AbstractMesh, StandardMaterial, Color3, Observable, ClipboardInfo } from 'babylonjs';
 import { Container } from "./controls/container";
 import { Control } from "./controls/control";
 import { Style } from "./style";
@@ -68,6 +68,16 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _blockNextFocusCheck = false;
     private _renderScale = 1;
     private _rootCanvas: Nullable<HTMLCanvasElement>;
+    /**
+     * Define type to string to ensure compatibility across browsers
+     * Safari doesn't support DataTransfer constructor
+     */
+    private _clipboardData: string = "";
+
+    /**
+     * Observable event triggered each time an clipboard event is received from the rendering canvas
+     */
+    public onClipboardObservable = new Observable<ClipboardInfo>();
 
     /**
      * Gets or sets a boolean defining if alpha is stored as premultiplied
@@ -237,6 +247,16 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
+     * Gets or set information about clipboardData
+     */
+    public get clipboardData(): string {
+        return this._clipboardData;
+    }
+    public set clipboardData(value: string) {
+        this._clipboardData = value;
+    }
+
+     /**
      * Creates a new AdvancedDynamicTexture
      * @param name defines the name of the texture
      * @param width defines the width of the texture
@@ -380,6 +400,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
 
         this._rootContainer.dispose();
+        this.onClipboardObservable.clear();
 
         super.dispose();
     }
@@ -596,7 +617,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (pi.type !== PointerEventTypes.POINTERMOVE
                 && pi.type !== PointerEventTypes.POINTERUP
                 && pi.type !== PointerEventTypes.POINTERDOWN) {
-                return;
+                    return;
             }
 
             if (!scene) {
@@ -624,6 +645,42 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         });
 
         this._attachToOnPointerOut(scene);
+    }
+
+    /** @hidden */
+    private onClipboardCopy = (evt: ClipboardEvent) => {
+        let ev = new ClipboardInfo(ClipboardEventTypes.COPY, evt);
+        this.onClipboardObservable.notifyObservers(ev);
+        evt.preventDefault();
+    }
+     /** @hidden */
+    private onClipboardCut = (evt: ClipboardEvent) => {
+        let ev = new ClipboardInfo(ClipboardEventTypes.CUT, evt);
+        this.onClipboardObservable.notifyObservers(ev);
+        evt.preventDefault();
+    }
+    /** @hidden */
+    private onClipboardPaste = (evt: ClipboardEvent) => {
+        let ev = new ClipboardInfo(ClipboardEventTypes.PASTE, evt);
+        this.onClipboardObservable.notifyObservers(ev);
+        evt.preventDefault();
+    }
+
+   /**
+    * Register the clipboard Events onto the canvas
+    */
+    public registerClipboardEvents(): void {
+        self.addEventListener("copy", this.onClipboardCopy, false);
+        self.addEventListener("cut", this.onClipboardCut, false);
+        self.addEventListener("paste", this.onClipboardPaste, false);
+    }
+    /**
+     * Unregister the clipboard Events from the canvas
+     */
+    public unRegisterClipboardEvents(): void {
+        self.removeEventListener("copy", this.onClipboardCopy);
+        self.removeEventListener("cut",  this.onClipboardCut);
+        self.removeEventListener("paste", this.onClipboardPaste);
     }
 
     /**
