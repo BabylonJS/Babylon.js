@@ -387,7 +387,7 @@ module BABYLON {
             v.scaleToRef(tc, qtc);
             const qsc = Tmp.Vector3[5];
             u.scaleToRef(sc, qsc);
-            qsc.addInPlace(w)
+            qsc.addInPlace(w);
             const dP = Tmp.Vector3[6];
             qsc.subtractToRef(qtc, dP); // = S1(sc) - S2(tc)
 
