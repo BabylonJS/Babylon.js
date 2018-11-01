@@ -743,6 +743,14 @@ module BABYLON {
         }
 
         /**
+         * Returns a positive integer : the total number of indices in this mesh geometry.
+         * @returns the numner of indices or zero if the mesh has no geometry.
+         */
+        public getTotalIndices(): number {
+            return 0;
+        }
+
+        /**
          * Returns null by default. Implemented by child classes
          * @returns null
          */
