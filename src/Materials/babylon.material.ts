@@ -377,6 +377,11 @@ module BABYLON {
         public name: string;
 
         /**
+         * Gets or sets user defined metadata
+         */
+        public metadata: any = null;
+
+        /**
          * Specifies if the ready state should be checked on each call
          */
         @serialize()
@@ -769,7 +774,7 @@ module BABYLON {
         public _indexInSceneMaterialArray = -1;
 
         /** @hidden */
-        public meshMap: Nullable<{[id: string]: AbstractMesh | undefined}>;
+        public meshMap: Nullable<{ [id: string]: AbstractMesh | undefined }>;
 
         /**
          * Creates a material instance
@@ -1362,7 +1367,7 @@ module BABYLON {
         }
 
         /** @hidden */
-        private  releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {
+        private releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {
             if ((<Mesh>mesh).geometry) {
                 var geometry = <Geometry>((<Mesh>mesh).geometry);
                 const scene = this.getScene();

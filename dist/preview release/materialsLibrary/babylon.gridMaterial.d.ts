@@ -37,6 +37,8 @@ declare module BABYLON {
          * Determine RBG output is premultiplied by alpha value.
          */
         preMultiplyAlpha: boolean;
+        private _opacityTexture;
+        opacityTexture: BaseTexture;
         private _gridControl;
         private _renderId;
         /**

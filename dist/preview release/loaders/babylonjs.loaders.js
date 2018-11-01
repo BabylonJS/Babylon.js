@@ -4543,7 +4543,7 @@ var BABYLON;
                 var name = node.name || "node" + node.index;
                 if (primitives.length === 1) {
                     var primitive = mesh.primitives[0];
-                    promises.push(this._loadMeshPrimitiveAsync(context + "/primitives/" + primitive.index + "}", name, node, mesh, primitive, function (babylonMesh) {
+                    promises.push(this._loadMeshPrimitiveAsync(context + "/primitives/" + primitive.index, name, node, mesh, primitive, function (babylonMesh) {
                         node._babylonTransformNode = babylonMesh;
                     }));
                 }
@@ -4552,7 +4552,7 @@ var BABYLON;
                     node._babylonTransformNode = babylonTransformNode_1;
                     for (var _i = 0, primitives_1 = primitives; _i < primitives_1.length; _i++) {
                         var primitive = primitives_1[_i];
-                        promises.push(this._loadMeshPrimitiveAsync(context + "/primitives/" + primitive.index + "}", name + "_primitive" + primitive.index, node, mesh, primitive, function (babylonMesh) {
+                        promises.push(this._loadMeshPrimitiveAsync(context + "/primitives/" + primitive.index, name + "_primitive" + primitive.index, node, mesh, primitive, function (babylonMesh) {
                             babylonMesh.parent = babylonTransformNode_1;
                             node._primitiveBabylonMeshes = node._primitiveBabylonMeshes || [];
                             node._primitiveBabylonMeshes.push(babylonMesh);
