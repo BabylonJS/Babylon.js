@@ -176,7 +176,7 @@ module BABYLON {
                         var dragAxis = worldDragDirection.subtract(toSub).normalizeToNew();
 
                         // project drag delta on to the resulting drag axis and rotate based on that
-                        var projectDist = -Vector3.Dot(dragAxis, event.delta);
+                        var projectDist = Vector3.Dot(dragAxis, event.delta) < 0 ? Math.abs(event.delta.length()) : -Math.abs(event.delta.length());
 
                         // Make rotation relative to size of mesh.
                         projectDist = (projectDist / this._boundingDimensions.length()) * this._anchorMesh.scaling.length();
