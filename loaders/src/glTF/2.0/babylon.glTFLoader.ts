@@ -613,7 +613,7 @@ module BABYLON.GLTF2 {
 
             if (primitives.length === 1) {
                 const primitive = mesh.primitives[0];
-                promises.push(this._loadMeshPrimitiveAsync(`${context}/primitives/${primitive.index}}`, name, node, mesh, primitive, (babylonMesh) => {
+                promises.push(this._loadMeshPrimitiveAsync(`${context}/primitives/${primitive.index}`, name, node, mesh, primitive, (babylonMesh) => {
                     node._babylonTransformNode = babylonMesh;
                 }));
             }
@@ -621,7 +621,7 @@ module BABYLON.GLTF2 {
                 const babylonTransformNode = new TransformNode(name, this.babylonScene);
                 node._babylonTransformNode = babylonTransformNode;
                 for (const primitive of primitives) {
-                    promises.push(this._loadMeshPrimitiveAsync(`${context}/primitives/${primitive.index}}`, `${name}_primitive${primitive.index}`, node, mesh, primitive, (babylonMesh) => {
+                    promises.push(this._loadMeshPrimitiveAsync(`${context}/primitives/${primitive.index}`, `${name}_primitive${primitive.index}`, node, mesh, primitive, (babylonMesh) => {
                         babylonMesh.parent = babylonTransformNode;
                         node._primitiveBabylonMeshes = node._primitiveBabylonMeshes || [];
                         node._primitiveBabylonMeshes.push(babylonMesh);

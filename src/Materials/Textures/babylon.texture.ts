@@ -205,6 +205,13 @@ module BABYLON {
         }
 
         /**
+         * Gets a boolean indicating if the texture needs to be inverted on the y axis during loading
+         */
+        public get invertY(): boolean {
+            return this._invertY;
+        }
+
+        /**
          * Instantiates a new texture.
          * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
          * @see http://doc.babylonjs.com/babylon101/materials#texture
@@ -434,7 +441,7 @@ module BABYLON {
                 this._t1.x, this._t1.y, this._t1.z, 0.0,
                 this._t2.x, this._t2.y, this._t2.z, 0.0,
                 this._t0.x, this._t0.y, this._t0.z, 0.0,
-                       0.0,        0.0,        0.0, 1.0,
+                0.0, 0.0, 0.0, 1.0,
                 this._cachedTextureMatrix
             );
 
@@ -501,10 +508,10 @@ module BABYLON {
                     break;
                 case Texture.PROJECTION_MODE:
                     Matrix.FromValuesToRef(
-                        0.5,  0.0, 0.0, 0.0,
+                        0.5, 0.0, 0.0, 0.0,
                         0.0, -0.5, 0.0, 0.0,
-                        0.0,  0.0, 0.0, 0.0,
-                        0.5,  0.5, 1.0, 1.0,
+                        0.0, 0.0, 0.0, 0.0,
+                        0.5, 0.5, 1.0, 1.0,
                         this._projectionModeMatrix
                     );
 

@@ -11,10 +11,7 @@ varying vec3 vPositionW;
 varying vec3 vNormalW;
 #endif
 
-#ifdef VERTEXCOLOR
-varying vec4 vColor;
-#endif
-
+#ifdef LIGHTING
 // Helper functions
 #include<helperFunctions>
 
@@ -27,6 +24,7 @@ varying vec4 vColor;
 
 #include<lightsFragmentFunctions>
 #include<shadowsFragmentFunctions>
+#endif
 
 // Samplers
 #ifdef DIFFUSE
@@ -69,10 +67,6 @@ void main(void) {
     baseColor = mix(baseColor, vec4(vNormalW, 1.0), 0.5);
 #endif
 
-#ifdef VERTEXCOLOR
-	baseColor.rgb *= vColor.rgb;
-#endif
-
 	// Normal
 #ifdef NORMAL
 	vec3 normalW = normalize(vNormalW);
@@ -81,6 +75,8 @@ void main(void) {
 #endif
 
 	// Lighting
+
+#ifdef LIGHTING
 	vec3 diffuseBase = vec3(0., 0., 0.);
     lightingInfo info;
 	float shadow = 1.;
@@ -90,13 +86,10 @@ void main(void) {
 #include<lightFragment>[1]
 #include<lightFragment>[2]
 #include<lightFragment>[3]
-
-
-#ifdef VERTEXALPHA
-	alpha *= vColor.a;
-#endif
-
 	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor, 0.0, 1.0) * baseColor.rgb;
+#else
+	vec3 finalDiffuse =  baseColor.rgb;
+#endif
 
 	// Composition
 	vec4 color = vec4(finalDiffuse, alpha);

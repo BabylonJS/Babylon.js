@@ -385,14 +385,16 @@ module BABYLON {
             // get the difference of the two closest points
             const qtc = Tmp.Vector3[4];
             v.scaleToRef(tc, qtc);
-            const dP = Tmp.Vector3[5];
-            u.scaleToRef(sc, dP);
-            dP.addInPlace(w).subtractInPlace(qtc);  // = S1(sc) - S2(tc)
+            const qsc = Tmp.Vector3[5];
+            u.scaleToRef(sc, qsc);
+            qsc.addInPlace(w);
+            const dP = Tmp.Vector3[6];
+            qsc.subtractToRef(qtc, dP); // = S1(sc) - S2(tc)
 
             var isIntersected = (tc > 0) && (tc <= this.length) && (dP.lengthSquared() < (threshold * threshold));   // return intersection result
 
             if (isIntersected) {
-                return qtc.length();
+                return qsc.length();
             }
             return -1;
         }
