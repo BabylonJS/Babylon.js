@@ -4,6 +4,7 @@ import Resizable from "re-resizable";
 import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent";
 import { ActionTabsComponent } from "../actionTabs/actionTabsComponent";
 import { Scene, Observable } from "babylonjs";
+import Split from 'react-split';
 
 require("./embedHost.scss");
 
@@ -23,8 +24,25 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
     }
 
     renderContent() {
+        if (this.props.popupMode) {
+            return (
+                <div id="split" className="popup">
+                    <div id="topPart">
+                        <SceneExplorerComponent scene={this.props.scene}
+                            popupMode={true}
+                            onSelectionChangeObservable={this.props.onSelectionChangeObservable} noHeader={true} />
+                    </div>
+                    <div id="bottomPart" style={{ marginTop: "4px", overflow: "hidden" }}>
+                        <ActionTabsComponent scene={this.props.scene}
+                            popupMode={true}
+                            onSelectionChangeObservable={this.props.onSelectionChangeObservable} noHeader={true} />
+                    </div>
+                </div>
+            )
+        }
+
         return (
-            <div id="split">
+            <Split id="split" direction="vertical" gutterSize={5} cursor="grab" minSize={[300, 300]}>
                 <div id="topPart">
                     <SceneExplorerComponent scene={this.props.scene}
                         popupMode={true}
@@ -35,7 +53,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
                         popupMode={true}
                         onSelectionChangeObservable={this.props.onSelectionChangeObservable} noHeader={true} />
                 </div>
-            </div>
+            </Split>
         )
     }
 

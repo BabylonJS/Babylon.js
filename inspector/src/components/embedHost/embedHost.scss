@@ -78,9 +78,12 @@
 
     #split {
         grid-row: 2;
-        display: grid;
-        grid-template-rows: 40% 60%;
         overflow: hidden;
+
+        .popup {
+            display: grid;
+            grid-template-rows: 40% 60%;
+        }
 
         #topPart {
             grid-row: 1;
@@ -94,5 +97,11 @@
             grid-row: 2;
             height: 100%;
         }        
+
+        .gutter.gutter-vertical {
+            background-image: none;
+            background: #444444;
+            cursor: row-resize;
+        }
     }
 }

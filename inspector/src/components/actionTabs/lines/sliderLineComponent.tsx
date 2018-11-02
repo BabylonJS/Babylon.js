@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Observable } from "babylonjs";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
+import { Slider } from 'office-ui-fabric-react/lib/Slider';
 
 interface ISliderLineComponentProps {
     label: string,
@@ -31,9 +32,8 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
         return false;
     }
 
-    onChange(newValueString: any) {
+    onChange(newValue: any) {
         this._localChange = true;
-        const newValue = parseFloat(newValueString);
 
         if (this.props.onPropertyChangedObservable) {
             this.props.onPropertyChangedObservable.notifyObservers({
@@ -55,9 +55,20 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                 <div className="label">
                     {this.props.label}
                 </div>
-                <div className="slider">
-                    {this.state.value.toFixed(2)}&nbsp;<input className="range" type="range" step={this.props.step} min={this.props.minimum} max={this.props.maximum} value={this.state.value} onChange={evt => this.onChange(evt.target.value)} />
+
+                <div className="slider-value">
+                    {this.state.value.toFixed(2)}
                 </div>
+                <Slider
+                    className="slider"
+                    label=""
+                    min={this.props.minimum}
+                    max={this.props.maximum}
+                    step={this.props.step}
+                    defaultValue={this.state.value}
+                    showValue={false}
+                    onChange={(value: any) => this.onChange(value)}
+                />
             </div>
         );
     }

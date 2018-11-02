@@ -393,7 +393,7 @@
                     padding-left: 5px;
                     height: 30px;
                     display: grid;
-                    grid-template-columns: 1fr auto;
+                    grid-template-columns: 1fr 50px;
 
 
                     .label {
@@ -403,53 +403,7 @@
                     }
 
                     .checkBox {
-                        grid-column: 2;
-                        
-                        display: flex;
-                        align-items: center;
-
-                        .lbl {
-                            position: relative;
-                            display: block;
-                            height: 14px;
-                            width: 34px;
-                            margin-right: 10px;
-                            background: #898989;
-                            border-radius: 100px;
-                            cursor: pointer;
-                            transition: all 0.3s ease;
-                        }
-
-                        .lbl:after {
-                            position: absolute;
-                            left: -2px;
-                            top: -3px;
-                            display: block;
-                            width: 20px;
-                            height: 20px;
-                            border-radius: 100px;
-                            background: #fff;
-                            box-shadow: 0px 3px 3px rgba(0,0,0,0.05);
-                            content: '';
-                            transition: all 0.3s ease;
-                        }
-
-                        .lbl:active:after { 
-                            transform: scale(1.15, 0.85); 
-                        }
-
-                        .cbx:checked ~ label { 
-                            background: rgb(51, 122, 183);
-                        }
-
-                        .cbx:checked ~ label:after {
-                            left: 20px;
-                            background: rgb(22, 73, 117);
-                        }
-
-                        .hidden { 
-                            display: none; 
-                        }               
+                        grid-column: 2;                                          
                     }                    
                 }
 
@@ -566,7 +520,7 @@
                     padding-left: 5px;
                     height: 30px;
                     display: grid;
-                    grid-template-columns: 1fr auto;
+                    grid-template-columns: 1fr auto 100px;
 
 
                     .label {
@@ -575,45 +529,15 @@
                         align-items: center;
                     }
 
-                    .slider {
+                    .slider-value {
                         grid-column: 2;
-                        
                         display: flex;
                         align-items: center;
+                        margin-right: 5px;
+                    }                    
 
-                        .range {
-                            -webkit-appearance: none;
-                            width: 120px;
-                            height: 8px;
-                            background: #d3d3d3;
-                            border-radius: 5px;
-                            outline: none;
-                            opacity: 0.7;
-                            -webkit-transition: .2s;
-                            transition: opacity .2s;
-                        }
-                        
-                        .range:hover {
-                            opacity: 1;
-                        }
-                        
-                        .range::-webkit-slider-thumb {
-                            -webkit-appearance: none;
-                            appearance: none;
-                            width: 20px;
-                            height: 20px;
-                            border-radius: 50%;
-                            background: rgb(51, 122, 183);
-                            cursor: pointer;
-                        }
-                        
-                        .range::-moz-range-thumb {
-                            width: 20px;
-                            height: 20px;
-                            border-radius: 50%;
-                            background: rgb(51, 122, 183);
-                            cursor: pointer;
-                        }
+                    .slider {
+                        grid-column: 3;
                     }                    
                 }    
                 
