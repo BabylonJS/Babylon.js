@@ -676,9 +676,6 @@ var buildExternalLibrary = function(library, settings, watch) {
 
                 let wpBuild = webpackStream(require(library.webpack), webpack);
 
-
-                console.log(outputDirectory);
-
                 let buildEvent = wpBuild
                     .pipe(gulp.dest(outputDirectory))
                     //back-compat
@@ -689,7 +686,6 @@ var buildExternalLibrary = function(library, settings, watch) {
                         cb();
                     }))
                     .pipe(rename(function(path) {
-                        console.log(path.basename);
                         //path.extname === ".js"
                         path.basename = path.basename.replace(".min", "")
                     })).pipe(gulp.dest(outputDirectory));
