@@ -95,23 +95,4 @@
             height: 100%;
         }        
     }
-    
-    .splitter-layout.splitter-layout-vertical {
-        grid-row: 2;
-
-        .layout-pane {            
-            overflow: hidden;
-        }
-
-        #topPart {
-            overflow: hidden;
-            display: grid;
-            grid-auto-rows: 100%;
-        }
-
-        #bottomPart {
-            overflow: hidden;
-            height: 100%;
-        }
-    }
 }

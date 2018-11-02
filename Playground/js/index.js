@@ -504,20 +504,6 @@ function showError(errorMessage, errorEvent) {
                 jsEditor.updateOptions({ readOnly: false });
 
                 if (document.getElementsByClassName('insp-wrapper').length > 0) {
-                    for (var i = 0; i < engine.scenes.length; i++) {
-                        if (engine.scenes[i]._debugLayer) {
-                            //TODO: once inspector is updated on netlify, use getActiveTabIndex instead of the following loop
-                            //initialTabIndex = engine.scenes[i]._debugLayer._inspector.getActiveTabIndex();
-                            var tabs = engine.scenes[i]._debugLayer._inspector._tabbar._tabs;
-                            for (var j = 0; j < tabs.length; j++) {
-                                if (tabs[j].isActive()) {
-                                    initialTabIndex = j;
-                                    break;
-                                }
-                            }
-                            break;
-                        }
-                    }
                     showInspector = true;
                 } else if (document.getElementById('DebugLayer')) {
                     showDebugLayer = true;
@@ -643,13 +629,8 @@ function showError(errorMessage, errorEvent) {
                     }
 
                     if (scene) {
-                        if (showInspector) {
-                            scene.debugLayer.show({ initialTab: initialTabIndex });
-                            scene.executeWhenReady(function() {
-                                scene.debugLayer._inspector.refresh();
-                            })
-                        } else if (showDebugLayer) {
-                            scene.debugLayer.show();
+                        if (showInspector || showDebugLayer) {
+                            scene.debugLayer.show({ embedMode: true });
                         }
                     }
                 });
@@ -906,7 +887,7 @@ function showError(errorMessage, errorEvent) {
 
             if (scene.debugLayer.isVisible()) {
                 scene.debugLayer.hide();  // Because when you close it with the cross, it doesn't call hide(), so you have to do it in code
-                scene.debugLayer.show();
+                scene.debugLayer.show({ embedMode: true });
             }
         }
 
@@ -974,7 +955,7 @@ function showError(errorMessage, errorEvent) {
             }
             else {
                 scene.debugLayer.hide(); // Because when you close it with the cross, it doesn't call hide(), so you have to do it in code
-                scene.debugLayer.show();
+                scene.debugLayer.show({ embedMode: true });
             }
         }
 

@@ -99,7 +99,7 @@ export class Inspector {
                 this._SceneExplorerHost = parentControlExplorer.ownerDocument!.createElement("div");
 
                 this._SceneExplorerHost.id = "scene-explorer-host";
-                this._SceneExplorerHost.style.width = options.explorerWidth || "300px";
+                this._SceneExplorerHost.style.width = options.explorerWidth || "auto";
 
                 parentControlExplorer.appendChild(this._SceneExplorerHost);
 
@@ -160,7 +160,7 @@ export class Inspector {
                 const host = parentControlActions.ownerDocument!.createElement("div");
 
                 host.id = "inspector-host";
-                host.style.width = options.inspectorWidth || "300px";
+                host.style.width = options.inspectorWidth || "auto";
 
                 parentControlActions.appendChild(host);
 
@@ -214,8 +214,7 @@ export class Inspector {
 
     private static _CreateEmbedHost(scene: Scene, options: IInternalInspectorOptions, parentControl: Nullable<HTMLElement>, onSelectionChangeObservable: Observable<string>) {
 
-
-        if (!options.embedHostRoot) {
+        if (!options.embedHostRoot || options.popup) {
             // Prepare the inspector host
             if (parentControl) {
                 const host = parentControl.ownerDocument!.createElement("div");
@@ -226,6 +225,15 @@ export class Inspector {
                 parentControl.appendChild(host);
 
                 this._EmbedHost = host;
+
+                if (!options.overlay) {
+                    this._EmbedHost.style.gridColumn = "2";
+                    this._EmbedHost.style.position = "relative";
+
+                    if (!options.popup) {
+                        options.embedHostRoot = this._EmbedHost;
+                    }
+                }
             }
         } else {
             this._EmbedHost = options.embedHostRoot;
@@ -301,6 +309,10 @@ export class Inspector {
         return parentControl;
     }
 
+    public static get IsVisible(): boolean {
+        return this._OpenedPane > 0;
+    }
+
     public static Show(scene: Scene, userOptions: Partial<IInspectorOptions>) {
 
         const options: IInternalInspectorOptions = {
@@ -331,7 +343,37 @@ export class Inspector {
                 this._CreateEmbedHost(scene, options, this._CreatePopup("INSPECTOR", "_EmbedHostWindow"), Inspector.OnSelectionChangeObservable);
             }
             else {
-                let parentControl = options.embedHostRoot ? options.embedHostRoot.parentElement : canvas!.parentElement;
+                let parentControl = (options.embedHostRoot ? options.embedHostRoot.parentElement : canvas!.parentElement) as HTMLElement;
+
+                if (!options.overlay && !this._NewCanvasContainer) {
+
+                    // Create a container for previous elements
+                    parentControl.style.display = "grid";
+                    parentControl.style.gridTemplateColumns = "1fr auto";
+                    parentControl.style.gridTemplateRows = "100%";
+
+                    this._NewCanvasContainer = parentControl.ownerDocument!.createElement("div");
+
+                    while (parentControl.childElementCount > 0) {
+                        var child = parentControl.childNodes[0];
+                        parentControl.removeChild(child);
+                        this._NewCanvasContainer.appendChild(child);
+                    }
+
+                    parentControl.appendChild(this._NewCanvasContainer);
+
+                    this._NewCanvasContainer.style.gridRow = "1";
+                    this._NewCanvasContainer.style.gridColumn = "1";
+                    this._NewCanvasContainer.style.width = "100%";
+                    this._NewCanvasContainer.style.height = "100%";
+
+                    if (options.handleResize && scene) {
+                        this._OnBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
+                            scene.getEngine().resize();
+                        });
+                    }
+                }
+
                 this._CreateEmbedHost(scene, options, parentControl, Inspector.OnSelectionChangeObservable);
             }
         }
