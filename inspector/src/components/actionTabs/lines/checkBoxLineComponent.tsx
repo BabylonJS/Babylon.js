@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Observable } from "babylonjs";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
+import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
 
 export interface ICheckBoxLineComponentProps {
     label: string,
@@ -12,13 +13,9 @@ export interface ICheckBoxLineComponentProps {
 }
 
 export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, { isSelected: boolean }> {
-    private static _UniqueIdSeed = 0;
-    private _uniqueId: number;
     private _localChange = false;
     constructor(props: ICheckBoxLineComponentProps) {
         super(props);
-
-        this._uniqueId = CheckBoxLineComponent._UniqueIdSeed++;
 
         if (this.props.isSelected) {
             this.state = { isSelected: this.props.isSelected() };
@@ -67,10 +64,14 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
                 <div className="label">
                     {this.props.label}
                 </div>
-                <div className="checkBox">
-                    <input type="checkbox" id={"checkbox" + this._uniqueId} className="cbx hidden" checked={this.state.isSelected} onChange={() => this.onChange()} />
-                    <label htmlFor={"checkbox" + this._uniqueId} className="lbl"></label>
-                </div>
+                <Toggle
+                    className="checkBox"
+                    defaultChecked={this.state.isSelected}
+                    label=""
+                    onText="On"
+                    offText="Off"
+                    onChange={() => this.onChange()}
+                />
             </div>
         );
     }
