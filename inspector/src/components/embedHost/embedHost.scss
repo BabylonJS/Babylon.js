@@ -1,0 +1,117 @@
+#embed-host {
+    position: absolute;
+    right: 0px;
+    top:0px;
+    bottom: 0px;
+}
+
+#embed {
+    background: #333333;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-rows: 30px 1fr;
+    font: 14px "Arial";
+    overflow: hidden;
+
+    #header {
+        font-size: 16px;
+        color: white;
+        background: #222222;
+        grid-row: 1;
+        text-align: center;
+        display: grid;
+        grid-template-columns: 30px 1fr 50px;        
+        -webkit-user-select: none; 
+        -moz-user-select: none;   
+        -ms-user-select: none;    
+        user-select: none;                
+
+        #logo {
+            grid-column: 1; 
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-self: center;   
+            justify-self: center;
+        }      
+        
+        #back {
+            grid-column: 1; 
+            display: grid;
+            align-self: center;   
+            justify-self: center;
+            cursor: pointer;
+        }    
+
+        #title {
+            grid-column: 2; 
+            display: grid;
+            align-items: center;   
+            text-align: center;
+        }
+
+        #commands {
+            grid-column: 3; 
+            display: grid;
+            align-items: center;  
+            grid-template-columns: 1fr 1fr;   
+            
+            .expand {
+                grid-column: 1;
+                display: grid;
+                align-items: center;   
+                justify-items: center;
+                cursor: pointer;     
+            }
+
+            .close {
+                grid-column: 2;
+                display: grid;
+                align-items: center;   
+                justify-items: center;
+                cursor: pointer;     
+            }            
+        }
+    }
+
+    #split {
+        grid-row: 2;
+        display: grid;
+        grid-template-rows: 40% 60%;
+        overflow: hidden;
+
+        #topPart {
+            grid-row: 1;
+            overflow: hidden;
+            display: grid;
+            grid-auto-rows: 100%;
+        }
+
+        #bottomPart {
+            overflow: hidden;
+            grid-row: 2;
+            height: 100%;
+        }        
+    }
+    
+    .splitter-layout.splitter-layout-vertical {
+        grid-row: 2;
+
+        .layout-pane {            
+            overflow: hidden;
+        }
+
+        #topPart {
+            overflow: hidden;
+            display: grid;
+            grid-auto-rows: 100%;
+        }
+
+        #bottomPart {
+            overflow: hidden;
+            height: 100%;
+        }
+    }
+}

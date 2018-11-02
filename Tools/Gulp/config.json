@@ -1963,7 +1963,7 @@
                 "main": "../../dist/preview release/gui/build/index.d.ts",
                 "out": "../babylon.gui.module.d.ts",
                 "baseDir": "../../dist/preview release/gui/build/",
-                "headerText": "BabylonJS GUI"
+                "headerText": "Babylon.js GUI"
             },
             "processDeclaration": {
                 "filename": "babylon.gui.module.d.ts",
@@ -1987,6 +1987,7 @@
                 "webpack": "../../inspector/webpack.config.js",
                 "bundle": "true",
                 "extendsRoot": true,
+                "babylonIncluded": false,
                 "useOutputForDebugging": true
             }
         ],
@@ -1998,7 +1999,7 @@
                 "main": "../../dist/preview release/inspector/build/index.d.ts",
                 "out": "../babylon.inspector.module.d.ts",
                 "baseDir": "../../dist/preview release/inspector/build/",
-                "headerText": "BabylonJS Inspector"
+                "headerText": "Babylon.js Inspector"
             },
             "processDeclaration": {
                 "filename": "babylon.inspector.module.d.ts",

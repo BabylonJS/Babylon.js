@@ -1,7 +1,7 @@
 Babylon.js inspector module
 =====================
 
-For usage documentation please visit http://doc.babylonjs.com/how_to/debug_layer and search "inspector".
+For usage documentation please visit http://doc.babylonjs.com/how_to/debug_layer.
 
 # Installation instructions
 
