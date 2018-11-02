@@ -1992,6 +1992,7 @@
             }
         ],
         "build": {
+            "ignoreInTestMode": true,
             "srcOutputDirectory": "../../inspector/src/",
             "distOutputDirectory": "/inspector/",
             "dtsBundle": {

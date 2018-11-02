@@ -2,7 +2,7 @@ import { AbstractMesh, Mesh } from "babylonjs";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCube } from '@fortawesome/free-solid-svg-icons';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
-import { faVectorSquare } from '@fortawesome/free-solid-svg-icons';
+import { faArrowsAlt } from '@fortawesome/free-solid-svg-icons';
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { IExtensibilityGroup } from "../../../inspector";
 import { ExtensionsComponent } from "../extensionsComponent";
@@ -83,8 +83,8 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
         return (
             <div className="meshTools">
                 <TreeItemLabelComponent label={mesh.name} onClick={() => this.props.onClick()} icon={faCube} color="dodgerblue" />
-                <div className={this.state.isGizmoEnabled ? "gizmo selected icon" : "gizmo icon"} onClick={() => this.showGizmos()} title="Show/Hide gizmos">
-                    <FontAwesomeIcon icon={faVectorSquare} />
+                <div className={this.state.isGizmoEnabled ? "gizmo selected icon" : "gizmo icon"} onClick={() => this.showGizmos()} title="Show/Hide position gizmo">
+                    <FontAwesomeIcon icon={faArrowsAlt} />
                 </div>
                 <div className="visibility  icon" onClick={() => this.switchVisibility()} title="Show/Hide mesh">
                     {visibilityElement}

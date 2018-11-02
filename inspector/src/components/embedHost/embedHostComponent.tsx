@@ -5,7 +5,6 @@ import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent"
 import { ActionTabsComponent } from "../actionTabs/actionTabsComponent";
 import { Scene, Observable } from "babylonjs";
 
-let SplitterLayout = require('react-splitter-layout');
 require("./embedHost.scss");
 
 interface IEmbedHostComponentProps {
@@ -23,26 +22,9 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
         super(props);
     }
 
-    renderContent(splitEnabled: boolean) {
-        if (!splitEnabled) {
-            return (
-                <div id="split">
-                    <div id="topPart">
-                        <SceneExplorerComponent scene={this.props.scene}
-                            popupMode={true}
-                            onSelectionChangeObservable={this.props.onSelectionChangeObservable} noHeader={true} />
-                    </div>
-                    <div id="bottomPart" style={{ marginTop: "4px", overflow: "hidden" }}>
-                        <ActionTabsComponent scene={this.props.scene}
-                            popupMode={true}
-                            onSelectionChangeObservable={this.props.onSelectionChangeObservable} noHeader={true} />
-                    </div>
-                </div>
-            )
-        }
-
+    renderContent() {
         return (
-            <SplitterLayout vertical={true} primaryMinSize={200} secondaryMinSize={300}>
+            <div id="split">
                 <div id="topPart">
                     <SceneExplorerComponent scene={this.props.scene}
                         popupMode={true}
@@ -53,7 +35,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
                         popupMode={true}
                         onSelectionChangeObservable={this.props.onSelectionChangeObservable} noHeader={true} />
                 </div>
-            </SplitterLayout>
+            </div>
         )
     }
 
@@ -62,7 +44,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
             return (
                 <div id="embed">
                     <HeaderComponent title="INSPECTOR" handleBack={true} onClose={() => this.props.onClose()} onPopup={() => this.props.onPopup()} onSelectionChangeObservable={this.props.onSelectionChangeObservable} />
-                    {this.renderContent(false)}
+                    {this.renderContent()}
                 </div>
             );
         }
@@ -78,7 +60,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
         return (
             <Resizable id="embed" minWidth={300} maxWidth={600} size={{ height: "100%" }} minHeight="100%" enable={{ top: false, right: false, bottom: false, left: true, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }}>
                 <HeaderComponent title="INSPECTOR" handleBack={true} onClose={() => this.props.onClose()} onPopup={() => this.props.onPopup()} onSelectionChangeObservable={this.props.onSelectionChangeObservable} />
-                {this.renderContent(true)}
+                {this.renderContent()}
             </Resizable>
         );
     }

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Observable, Observer, Scene, Nullable } from "babylonjs";
 import { TabsComponent } from "./tabsComponent";
-import { faFileAlt, faWrench, faBug, faChartPie } from '@fortawesome/free-solid-svg-icons';
+import { faFileAlt, faWrench, faBug, faChartBar } from '@fortawesome/free-solid-svg-icons';
 import { StatisticsTabComponent } from "./tabs/statisticsTabComponent";
 import { DebugTabComponent } from "./tabs/debugTabComponent";
 import Resizable from "re-resizable";
@@ -54,7 +54,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
                     onSelectionChangeObservable={this.props.onSelectionChangeObservable}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <DebugTabComponent title="Debug" icon={faBug} scene={this.props.scene} />
-                <StatisticsTabComponent title="Statistics" icon={faChartPie} scene={this.props.scene} />
+                <StatisticsTabComponent title="Statistics" icon={faChartBar} scene={this.props.scene} />
                 <ToolsTabComponent title="Tools" icon={faWrench} scene={this.props.scene} />
             </TabsComponent>
         )

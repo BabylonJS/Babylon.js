@@ -128,7 +128,10 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                 </LineContainerComponent>
                 <LineContainerComponent title="DEBUG" closed={true}>
                     <CheckBoxLineComponent label="Show bounding box" target={mesh} propertyName="showBoundingBox" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Paint normals" isSelected={() => paintNormals} onSelect={() => this.paintNormals()} />
+                    {
+                        mesh.material &&
+                        <CheckBoxLineComponent label="Paint normals" isSelected={() => paintNormals} onSelect={() => this.paintNormals()} />
+                    }
                 </LineContainerComponent>
             </div>
         );

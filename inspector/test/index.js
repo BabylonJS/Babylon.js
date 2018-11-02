@@ -14,6 +14,7 @@ var Test = (function() {
     Test.prototype._run = function() {
         var _this = this;
         this._initScene();
+        this.scene.debugLayer.show();
         this.scene.executeWhenReady(function() {
             _this.engine.runRenderLoop(function() {
                 _this.scene.render();

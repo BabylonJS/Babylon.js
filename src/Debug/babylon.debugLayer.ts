@@ -43,8 +43,6 @@ module BABYLON {
         public static InspectorURL = 'https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js';
 
         private _scene: Scene;
-        // The inspector instance
-        private _inspector: any;
 
         private BJSINSPECTOR = typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
 
@@ -73,26 +71,34 @@ module BABYLON {
         /** Creates the inspector window. */
         private _createInspector(config: {
             popup?: boolean,
-            initialTab?: number | string,
+            embedMode?: boolean,
             parentElement?: HTMLElement,
-            newColors?: {
-                backgroundColor?: string,
-                backgroundColorLighter?: string,
-                backgroundColorLighter2?: string,
-                backgroundColorLighter3?: string,
-                color?: string,
-                colorTop?: string,
-                colorBot?: string
-            }
+            overlay?: boolean;
+            handleResize?: boolean;
+            enablePopup?: boolean;
         } = {}) {
-            let popup = config.popup || false;
-            let initialTab = config.initialTab || 0;
-            let parentElement = config.parentElement || null;
-            if (!this._inspector) {
-                this.BJSINSPECTOR = this.BJSINSPECTOR || typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
+            if (this.isVisible()) {
+                return;
+            }
 
-                this._inspector = new this.BJSINSPECTOR.Inspector(this._scene, popup, initialTab, parentElement, config.newColors);
-            } // else nothing to do as instance is already created
+            let popup = config.popup || false;
+            let parentElement = config.parentElement || null;
+            this.BJSINSPECTOR = this.BJSINSPECTOR || typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
+
+            let options: any = {
+                popup: popup,
+                embedMode: config.embedMode != null ? config.embedMode : parentElement ? true : false,
+                embedHostRoot: null,
+                overlay: config.overlay,
+                handleResize: config.handleResize,
+                enablePopup: config.enablePopup
+            };
+
+            if (parentElement) {
+                options.embedHostRoot = parentElement;
+            }
+
+            this.BJSINSPECTOR.Inspector.Show(this._scene, options);
         }
 
         /**
@@ -100,25 +106,14 @@ module BABYLON {
          * @returns true if visible otherwise, false
          */
         public isVisible(): boolean {
-            if (!this._inspector) {
-                return false;
-            }
-            return true;
+            return this.BJSINSPECTOR.Inspector.IsVisible;
         }
 
         /**
          * Hide the inspector and close its window.
          */
         public hide() {
-            if (this._inspector) {
-                try {
-                    this._inspector.dispose();
-                } catch (e) {
-                    // If the inspector has been removed directly from the inspector tool
-                }
-                this.onPropertyChangedObservable.clear();
-                this._inspector = null;
-            }
+            this.BJSINSPECTOR.Inspector.Hide();
         }
 
         /**
@@ -145,17 +140,11 @@ module BABYLON {
         */
         public show(config: {
             popup?: boolean,
-            initialTab?: number | string,
             parentElement?: HTMLElement,
-            newColors?: {
-                backgroundColor?: string,
-                backgroundColorLighter?: string,
-                backgroundColorLighter2?: string,
-                backgroundColorLighter3?: string,
-                color?: string,
-                colorTop?: string,
-                colorBot?: string
-            }
+            overlay?: boolean;
+            handleResize?: boolean;
+            embedMode?: boolean,
+            enablePopup?: boolean;
         } = {}): void {
             if (typeof this.BJSINSPECTOR == 'undefined') {
                 // Load inspector and add it to the DOM
@@ -164,14 +153,6 @@ module BABYLON {
                 // Otherwise creates the inspector
                 this._createInspector(config);
             }
-        }
-
-        /**
-         * Gets the active tab
-         * @return the index of the active tab or -1 if the inspector is hidden
-         */
-        public getActiveTab(): number {
-            return this._inspector ? this._inspector.getActiveTabIndex() : -1;
         }
     }
 }
