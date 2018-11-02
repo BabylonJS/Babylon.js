@@ -360,15 +360,18 @@ export class Inspector {
 
                 this._NewCanvasContainer = parentControl.ownerDocument!.createElement("div");
 
+                while (parentControl.childElementCount > 0) {
+                    var child = parentControl.childNodes[0];
+                    parentControl.removeChild(child);
+                    this._NewCanvasContainer.appendChild(child);
+                }
+
                 parentControl.appendChild(this._NewCanvasContainer);
-                parentControl.removeChild(canvas!);
-                this._NewCanvasContainer.appendChild(canvas!);
 
                 this._NewCanvasContainer.style.gridRow = "1";
                 this._NewCanvasContainer.style.gridColumn = "2";
                 this._NewCanvasContainer.style.width = "100%";
                 this._NewCanvasContainer.style.height = "100%";
-                this._NewCanvasContainer.style.display = "grid";
 
                 if (options.handleResize && scene) {
                     this._OnBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
