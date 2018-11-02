@@ -1,441 +1,426 @@
-import { AbstractMesh, Nullable, Scene, Tools, Observable } from "babylonjs";
-import "../sass/main.scss";
-import { Helpers } from "./helpers/Helpers";
-import { loadGUIProperties } from "./properties_gui";
-import { Scheduler } from "./scheduler/Scheduler";
-import { TabBar } from "./tabs/TabBar";
 
-import * as Split from "Split";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import { ActionTabsComponent } from "./components/actionTabs/actionTabsComponent";
+import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
+import { Scene, Observable, Observer, Nullable } from "babylonjs";
+import { EmbedHostComponent } from "./components/embedHost/embedHostComponent";
+import { PropertyChangedEvent } from "./components/propertyChangedEvent";
+
+export interface IExtensibilityOption {
+    label: string;
+    action: (entity: any) => void;
+}
+
+export interface IExtensibilityGroup {
+    predicate: (entity: any) => boolean;
+    entries: IExtensibilityOption[];
+}
+
+export interface IInspectorOptions {
+    overlay?: boolean;
+    sceneExplorerRoot?: HTMLElement;
+    actionTabsRoot?: HTMLElement;
+    embedHostRoot?: HTMLElement;
+    showExplorer?: boolean;
+    showInspector?: boolean;
+    explorerWidth?: string;
+    inspectorWidth?: string;
+    embedHostWidth?: string;
+    embedMode?: boolean;
+    handleResize?: boolean;
+    enablePopup?: boolean;
+    explorerExtensibility?: IExtensibilityGroup[];
+}
+
+interface IInternalInspectorOptions extends IInspectorOptions {
+    popup: boolean;
+    original: boolean;
+}
 
 export class Inspector {
+    private static _SceneExplorerHost: Nullable<HTMLElement>;
+    private static _ActionTabsHost: Nullable<HTMLElement>;
+    private static _EmbedHost: Nullable<HTMLElement>;
+    private static _NewCanvasContainer: HTMLElement;
 
-    private _c2diwrapper: HTMLElement;
-    // private _detailsPanel: DetailPanel;
-    /** The panel displayed at the top of the inspector */
-    private _topPanel: HTMLElement;
-    /** The div containing the content of the active tab */
-    private _tabPanel: HTMLElement;
-    /** The panel containing the list if items */
-    // private _treePanel   : HTMLElement;
-    private _tabbar: TabBar;
-    private _scene: Scene;
-    /** The HTML document relative to this inspector (the window or the popup depending on its mode) */
-    public static DOCUMENT: HTMLDocument;
-    /** The HTML window. In popup mode, it's the popup itself. Otherwise, it's the current tab */
-    public static WINDOW: Window;
-    /** True if the inspector is built as a popup tab */
-    private _popupMode: boolean = false;
-    /** The original canvas style, before applying the inspector*/
-    private _canvasStyle: any;
+    private static _SceneExplorerWindow: Window;
+    private static _ActionTabsWindow: Window;
+    private static _EmbedHostWindow: Window;
 
-    private _initialTab: number | string;
+    private static _Scene: Scene;
+    private static _OpenedPane = 0;
+    private static _OnBeforeRenderObserver: Nullable<Observer<Scene>>;
 
-    private _parentElement: Nullable<HTMLElement>;
+    public static OnSelectionChangeObservable = new BABYLON.Observable<string>();
+    public static OnPropertyChangedObservable = new BABYLON.Observable<PropertyChangedEvent>();
 
-    public onGUILoaded: Observable<any>;
+    private static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
+        for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
+            var styleSheet: any = sourceDoc.styleSheets[index];
+            if (styleSheet.cssRules) { // for <style> elements
+                const newStyleEl = sourceDoc.createElement('style');
 
-    public static GUIObject: any; // should be typeof "babylonjs-gui";
+                for (var cssRule of styleSheet.cssRules) {
+                    // write the text of each rule into the body of the style element
+                    newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
+                }
 
-    /** The inspector is created with the given engine.
-     * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
-     * If the parameter 'popup' is true, the inspector is created in another popup.
-     */
-    constructor(scene: Scene, popup?: boolean, initialTab: number | string = 0, parentElement: Nullable<HTMLElement> = null, newColors?: {
-        backgroundColor?: string,
-        backgroundColorLighter?: string,
-        backgroundColorLighter2?: string,
-        backgroundColorLighter3?: string,
-        color?: string,
-        colorTop?: string,
-        colorBot?: string
-    }) {
+                targetDoc.head!.appendChild(newStyleEl);
+            } else if (styleSheet.href) { // for <link> elements loading CSS from a URL
+                const newLinkEl = sourceDoc.createElement('link');
 
-        this.onGUILoaded = new Observable();
-
-        import("babylonjs-gui").then((GUI) => {
-            // Load GUI library if not already done
-            if (!GUI || (typeof GUI !== "undefined" && Object.keys(GUI).indexOf("default") !== -1)) {
-                Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.min.js", () => {
-                    Inspector.GUIObject = (<any>BABYLON).GUI;
-                    this.onGUILoaded.notifyObservers(Inspector.GUIObject);
-                    //Load properties of GUI objects now as GUI has to be declared before
-                    loadGUIProperties(Inspector.GUIObject);
-                }, () => {
-                    console.warn('Error : loading "babylon.gui.min.js". Please add script https://preview.babylonjs.com/gui/babylon.min.gui.js to the HTML file.');
-                });
+                newLinkEl.rel = 'stylesheet';
+                newLinkEl.href = styleSheet.href;
+                targetDoc.head!.appendChild(newLinkEl);
             }
-            else {
-                Inspector.GUIObject = GUI;
-                this.onGUILoaded.notifyObservers(Inspector.GUIObject);
-                //Load properties of GUI objects now as GUI has to be declared before
-                loadGUIProperties(Inspector.GUIObject);
-            }
-        });
-        //get Tabbar initialTab
-        this._initialTab = initialTab;
+        }
+    }
 
-        //get parentElement of our Inspector
-        this._parentElement = parentElement;
-
-        // get canvas parent only if needed.
-        this._scene = scene;
-
-        // Save HTML document and window
-        Inspector.DOCUMENT = window.document;
-        Inspector.WINDOW = window;
-
-        // POPUP MODE
-        if (popup) {
-            // Build the inspector in the given parent
-            this.openPopup(true); // set to true in order to NOT dispose the inspector (done in openPopup), as it's not existing yet
-        } else {
-            // Get canvas and its DOM parent
-            let canvas = <HTMLElement>this._scene.getEngine().getRenderingCanvas();
-            let canvasParent = canvas.parentElement;
-
-            // get canvas style
-            let canvasComputedStyle = Inspector.WINDOW.getComputedStyle(canvas);
-
-            this._canvasStyle = {
-                width: Helpers.Css(canvas, 'width'),
-                height: Helpers.Css(canvas, 'height'),
-
-                position: canvasComputedStyle.position,
-                top: canvasComputedStyle.top,
-                bottom: canvasComputedStyle.bottom,
-                left: canvasComputedStyle.left,
-                right: canvasComputedStyle.right,
-
-                padding: canvasComputedStyle.padding,
-                paddingBottom: canvasComputedStyle.paddingBottom,
-                paddingLeft: canvasComputedStyle.paddingLeft,
-                paddingTop: canvasComputedStyle.paddingTop,
-                paddingRight: canvasComputedStyle.paddingRight,
-
-                margin: canvasComputedStyle.margin,
-                marginBottom: canvasComputedStyle.marginBottom,
-                marginLeft: canvasComputedStyle.marginLeft,
-                marginTop: canvasComputedStyle.marginTop,
-                marginRight: canvasComputedStyle.marginRight
-
+    private static _CreateSceneExplorer(scene: Scene, options: IInternalInspectorOptions, parentControlExplorer: Nullable<HTMLElement>, onSelectionChangeObservable: Observable<string>) {
+        // Duplicating the options as they can be different for each pane
+        if (options.original) {
+            options = {
+                original: false,
+                popup: options.popup,
+                overlay: options.overlay,
+                showExplorer: options.showExplorer,
+                showInspector: options.showInspector,
+                embedMode: options.embedMode,
+                handleResize: options.handleResize,
+                enablePopup: options.enablePopup,
+                explorerExtensibility: options.explorerExtensibility
             };
+        }
 
-            if (this._parentElement) {
-                // Build the inspector wrapper
-                this._c2diwrapper = Helpers.CreateDiv('insp-wrapper', this._parentElement);
-                this._c2diwrapper.style.width = '100%';
-                this._c2diwrapper.style.height = '100%';
-                this._c2diwrapper.style.paddingLeft = '5px';
+        if (!options.sceneExplorerRoot || options.popup) {
+            // Prepare the scene explorer host
+            if (parentControlExplorer) {
+                this._SceneExplorerHost = parentControlExplorer.ownerDocument!.createElement("div");
 
-                // add inspector
-                let inspector = Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
-                inspector.style.width = '100%';
-                inspector.style.height = '100%';
-                // and build it in the popup
-                this._buildInspector(inspector);
-            } else {
-                // Create c2di wrapper
-                this._c2diwrapper = Helpers.CreateDiv('insp-wrapper');
+                this._SceneExplorerHost.id = "scene-explorer-host";
+                this._SceneExplorerHost.style.width = options.explorerWidth || "300px";
 
-                // copy style from canvas to wrapper
-                for (let prop in this._canvasStyle) {
-                    (<any>this._c2diwrapper.style)[prop] = this._canvasStyle[prop];
-                }
+                parentControlExplorer.appendChild(this._SceneExplorerHost);
 
-                if (!canvasComputedStyle.width || !canvasComputedStyle.height || !canvasComputedStyle.left) {
-                    return;
-                }
+                if (!options.overlay) {
+                    this._SceneExplorerHost.style.gridColumn = "1";
+                    this._SceneExplorerHost.style.position = "relative";
 
-                // Convert wrapper size in % (because getComputedStyle returns px only)
-                let widthPx = parseFloat(canvasComputedStyle.width.substr(0, canvasComputedStyle.width.length - 2)) || 0;
-                let heightPx = parseFloat(canvasComputedStyle.height.substr(0, canvasComputedStyle.height.length - 2)) || 0;
-
-                // If the canvas position is absolute, restrain the wrapper width to the window width + left positionning
-                if (canvasComputedStyle.position === "absolute" || canvasComputedStyle.position === "relative") {
-                    // compute only left as it takes predominance if right is also specified (and it will be for the wrapper)
-                    let leftPx = parseFloat(canvasComputedStyle.left.substr(0, canvasComputedStyle.left.length - 2)) || 0;
-                    if (widthPx + leftPx >= Inspector.WINDOW.innerWidth) {
-                        this._c2diwrapper.style.maxWidth = `${widthPx - leftPx}px`;
+                    if (!options.popup) {
+                        options.sceneExplorerRoot = this._SceneExplorerHost;
                     }
                 }
+            }
+        } else {
+            this._SceneExplorerHost = options.sceneExplorerRoot;
+        }
 
-                // Check if the parent of the canvas is the body page. If yes, the size ratio is computed
-                let parent = this._getRelativeParent(canvas);
+        // Scene
+        if (this._SceneExplorerHost) {
+            Inspector._OpenedPane++;
+            const sceneExplorerElement = React.createElement(SceneExplorerComponent, {
+                scene, onSelectionChangeObservable: onSelectionChangeObservable,
+                extensibilityGroups: options.explorerExtensibility,
+                noExpand: !options.enablePopup, popupMode: options.popup, onPopup: () => {
+                    ReactDOM.unmountComponentAtNode(this._SceneExplorerHost!);
 
-                let parentWidthPx = parent.clientWidth;
-                let parentHeightPx = parent.clientHeight;
+                    if (options.popup) {
+                        this._SceneExplorerWindow.close();
+                    }
 
-                let pWidth = widthPx / parentWidthPx * 100;
-                let pheight = heightPx / parentHeightPx * 100;
+                    options.popup = !options.popup;
+                    options.showExplorer = true;
+                    options.showInspector = false;
+                    options.explorerWidth = options.popup ? "100%" : "300px";
+                    Inspector.Show(scene, options);
+                }, onClose: () => {
+                    ReactDOM.unmountComponentAtNode(this._SceneExplorerHost!);
+                    Inspector._OpenedPane--;
+                    this._Cleanup();
 
-                this._c2diwrapper.style.width = pWidth + "%";
-                this._c2diwrapper.style.height = pheight + "%";
-
-                // reset canvas style
-                canvas.style.position = "static";
-                canvas.style.width = "100%";
-                canvas.style.height = "100%";
-                canvas.style.paddingBottom = "0";
-                canvas.style.paddingLeft = "0";
-                canvas.style.paddingTop = "0";
-                canvas.style.paddingRight = "0";
-
-                canvas.style.margin = "0";
-                canvas.style.marginBottom = "0";
-                canvas.style.marginLeft = "0";
-                canvas.style.marginTop = "0";
-                canvas.style.marginRight = "0";
-
-                // Replace canvas with the wrapper...
-                if (canvasParent) {
-                    canvasParent.replaceChild(this._c2diwrapper, canvas);
-                }
-                // ... and add canvas to the wrapper
-                this._c2diwrapper.appendChild(canvas);
-
-                // add inspector
-                let inspector = Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
-
-                // Add split bar
-                if (!this._parentElement) {
-                    Split([canvas, inspector], {
-                        direction: 'horizontal',
-                        sizes: [75, 25],
-                        onDrag: () => {
-                            Helpers.SEND_EVENT('resize');
-                            if (this._tabbar) {
-                                this._tabbar.updateWidth();
-                            }
+                    if (options.popup) {
+                        this._SceneExplorerWindow.close();
+                    } else if (!options.overlay) {
+                        if (this._SceneExplorerHost) {
+                            this._SceneExplorerHost.style.width = "0";
                         }
+                    }
+                }
+            });
+            ReactDOM.render(sceneExplorerElement, this._SceneExplorerHost);
+        }
+    }
+
+    private static _CreateActionTabs(scene: Scene, options: IInternalInspectorOptions, parentControlActions: Nullable<HTMLElement>, onSelectionChangeObservable: Observable<string>) {
+
+        if (!options.actionTabsRoot || options.popup) {
+            // Prepare the inspector host
+            if (parentControlActions) {
+                const host = parentControlActions.ownerDocument!.createElement("div");
+
+                host.id = "inspector-host";
+                host.style.width = options.inspectorWidth || "300px";
+
+                parentControlActions.appendChild(host);
+
+                this._ActionTabsHost = host;
+
+                if (!options.overlay) {
+                    this._ActionTabsHost.style.gridColumn = "3";
+                    this._ActionTabsHost.style.position = "relative";
+
+                    if (!options.popup) {
+                        options.actionTabsRoot = this._ActionTabsHost;
+                    }
+                }
+            }
+        } else {
+            this._ActionTabsHost = options.actionTabsRoot;
+        }
+
+        if (this._ActionTabsHost) {
+            Inspector._OpenedPane++;
+            const actionTabsElement = React.createElement(ActionTabsComponent, {
+                onSelectionChangeObservable: onSelectionChangeObservable, scene: scene, noExpand: !options.enablePopup, popupMode: options.popup, onPopup: () => {
+                    ReactDOM.unmountComponentAtNode(this._ActionTabsHost!);
+
+                    if (options.popup) {
+                        this._ActionTabsWindow.close();
+                    }
+
+                    options.popup = !options.popup;
+                    options.showExplorer = false;
+                    options.showInspector = true;
+                    options.inspectorWidth = options.popup ? "100%" : "300px";
+                    Inspector.Show(scene, options);
+                }, onClose: () => {
+                    ReactDOM.unmountComponentAtNode(this._ActionTabsHost!);
+                    Inspector._OpenedPane--;
+                    this._Cleanup();
+                    if (options.popup) {
+                        this._ActionTabsWindow.close();
+                    } else if (!options.overlay) {
+                        if (this._ActionTabsHost) {
+                            this._ActionTabsHost.style.width = "0";
+                        }
+                    }
+
+                }, onPropertyChangedObservable: Inspector.OnPropertyChangedObservable
+            });
+            ReactDOM.render(actionTabsElement, this._ActionTabsHost);
+        }
+    }
+
+    private static _CreateEmbedHost(scene: Scene, options: IInternalInspectorOptions, parentControl: Nullable<HTMLElement>, onSelectionChangeObservable: Observable<string>) {
+
+
+        if (!options.embedHostRoot) {
+            // Prepare the inspector host
+            if (parentControl) {
+                const host = parentControl.ownerDocument!.createElement("div");
+
+                host.id = "embed-host";
+                host.style.width = options.embedHostWidth || "300px";
+
+                parentControl.appendChild(host);
+
+                this._EmbedHost = host;
+            }
+        } else {
+            this._EmbedHost = options.embedHostRoot;
+        }
+
+        if (this._EmbedHost) {
+            const embedHostElement = React.createElement(EmbedHostComponent, {
+                onSelectionChangeObservable: onSelectionChangeObservable, scene: scene, popupMode: options.popup, onPopup: () => {
+                    ReactDOM.unmountComponentAtNode(this._EmbedHost!);
+
+                    if (options.popup) {
+                        this._EmbedHostWindow.close();
+                    }
+
+                    options.popup = !options.popup;
+                    options.embedMode = true;
+                    options.showExplorer = true;
+                    options.showInspector = true;
+                    options.embedHostWidth = options.popup ? "100%" : "auto";
+                    Inspector.Show(scene, options);
+                }, onClose: () => {
+                    ReactDOM.unmountComponentAtNode(this._EmbedHost!);
+
+                    this._OpenedPane = 0;
+                    this._Cleanup();
+                    if (options.popup) {
+                        this._EmbedHostWindow.close();
+                    }
+                }
+            });
+            ReactDOM.render(embedHostElement, this._EmbedHost);
+        }
+    }
+    private static _CreatePopup(title: string, windowVariableName: string) {
+        const windowCreationOptionsList = {
+            width: 300,
+            height: 800,
+            top: (window.innerHeight - 800) / 2 + window.screenY,
+            left: (window.innerWidth - 300) / 2 + window.screenX
+        };
+
+        var windowCreationOptions = Object.keys(windowCreationOptionsList)
+            .map(
+                (key) => key + '=' + (windowCreationOptionsList as any)[key]
+            )
+            .join(',');
+
+        const popupWindow = window.open("", title, windowCreationOptions);
+        if (!popupWindow) {
+            return null;
+        }
+
+        const parentDocument = popupWindow.document;
+
+        parentDocument.title = title;
+        parentDocument.body.style.width = "100%";
+        parentDocument.body.style.height = "100%";
+        parentDocument.body.style.margin = "0";
+        parentDocument.body.style.padding = "0";
+
+        let parentControl = parentDocument.createElement("div");
+        parentControl.style.width = "100%";
+        parentControl.style.height = "100%";
+        parentControl.style.margin = "0";
+        parentControl.style.padding = "0";
+
+        popupWindow.document.body.appendChild(parentControl);
+
+        this._CopyStyles(window.document, parentDocument);
+
+        (this as any)[windowVariableName] = popupWindow;
+
+        return parentControl;
+    }
+
+    public static Show(scene: Scene, userOptions: Partial<IInspectorOptions>) {
+
+        const options: IInternalInspectorOptions = {
+            original: true,
+            popup: false,
+            overlay: false,
+            showExplorer: true,
+            showInspector: true,
+            embedMode: false,
+            handleResize: true,
+            enablePopup: true,
+            inspectorWidth: "auto",
+            explorerWidth: "auto",
+            embedHostWidth: "auto",
+            ...userOptions
+        };
+
+        if (!scene) {
+            scene = BABYLON.Engine.LastCreatedScene!;
+        }
+
+        this._Scene = scene;
+
+        var canvas = scene ? scene.getEngine().getRenderingCanvas() : BABYLON.Engine.LastCreatedEngine!.getRenderingCanvas();
+
+        if (options.embedMode && options.showExplorer && options.showInspector) {
+            if (options.popup) {
+                this._CreateEmbedHost(scene, options, this._CreatePopup("INSPECTOR", "_EmbedHostWindow"), Inspector.OnSelectionChangeObservable);
+            }
+            else {
+                let parentControl = options.embedHostRoot ? options.embedHostRoot.parentElement : canvas!.parentElement;
+                this._CreateEmbedHost(scene, options, parentControl, Inspector.OnSelectionChangeObservable);
+            }
+        }
+        else if (options.popup) {
+            if (options.showExplorer) {
+                if (this._SceneExplorerHost) {
+                    this._SceneExplorerHost.style.width = "0";
+                }
+                this._CreateSceneExplorer(scene, options, this._CreatePopup("SCENE EXPLORER", "_SceneExplorerWindow"), Inspector.OnSelectionChangeObservable);
+            }
+            if (options.showInspector) {
+                if (this._ActionTabsHost) {
+                    this._ActionTabsHost.style.width = "0";
+                }
+                this._CreateActionTabs(scene, options, this._CreatePopup("INSPECTOR", "_ActionTabsWindow"), Inspector.OnSelectionChangeObservable);
+            }
+        } else {
+            let parentControl = (options.actionTabsRoot ? options.actionTabsRoot.parentElement : canvas!.parentElement) as HTMLElement;
+
+            if (!options.overlay && !this._NewCanvasContainer) {
+
+                // Create a container for previous elements
+                parentControl.style.display = "grid";
+                parentControl.style.gridTemplateColumns = "auto 1fr auto";
+                parentControl.style.gridTemplateRows = "100%";
+
+                this._NewCanvasContainer = parentControl.ownerDocument!.createElement("div");
+
+                parentControl.appendChild(this._NewCanvasContainer);
+                parentControl.removeChild(canvas!);
+                this._NewCanvasContainer.appendChild(canvas!);
+
+                this._NewCanvasContainer.style.gridRow = "1";
+                this._NewCanvasContainer.style.gridColumn = "2";
+                this._NewCanvasContainer.style.width = "100%";
+                this._NewCanvasContainer.style.height = "100%";
+                this._NewCanvasContainer.style.display = "grid";
+
+                if (options.handleResize && scene) {
+                    this._OnBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
+                        scene.getEngine().resize();
                     });
                 }
-
-                // Build the inspector
-                this._buildInspector(inspector);
             }
-            // Send resize event to the window
-            Helpers.SEND_EVENT('resize');
-            this._tabbar.updateWidth();
-        }
 
-        /*
-        * Refresh the inspector if the browser is not edge
-        *   Why not ?! Condition commented on 180525
-        *   To be tested
-        */
-        // if (!Helpers.IsBrowserEdge()) {
-        this.refresh();
-        // }
-
-        // Check custom css colors
-        if (newColors) {
-
-            let bColor = newColors.backgroundColor || '#242424';
-            let bColorl1 = newColors.backgroundColorLighter || '#2c2c2c';
-            let bColorl2 = newColors.backgroundColorLighter2 || '#383838';
-            let bColorl3 = newColors.backgroundColorLighter3 || '#454545';
-
-            let color = newColors.color || '#ccc';
-            let colorTop = newColors.colorTop || '#f29766';
-            let colorBot = newColors.colorBot || '#5db0d7';
-
-            let styles = Inspector.DOCUMENT.querySelectorAll('style');
-            for (let s = 0; s < styles.length; s++) {
-                let style = styles[s];
-
-                if (style.innerHTML.indexOf('insp-wrapper') != -1) {
-
-                    styles[s].innerHTML = styles[s].innerHTML
-                        .replace(/#242424/g, bColor) // background color
-                        .replace(/#2c2c2c/g, bColorl1) // background-lighter
-                        .replace(/#383838/g, bColorl2) // background-lighter2
-                        .replace(/#454545/g, bColorl3) // background-lighter3
-                        .replace(/#ccc/g, color) // color
-                        .replace(/#f29766/g, colorTop) // color-top
-                        .replace(/#5db0d7/g, colorBot); // color-bot
+            if (options.showExplorer) {
+                if (options.sceneExplorerRoot && !options.overlay) {
+                    options.sceneExplorerRoot.style.width = "auto";
                 }
-            }
-        }
-    }
 
-    /**
-     * If the given element has a position 'asbolute' or 'relative',
-     * returns the first parent of the given element that has a position 'relative' or 'absolute'.
-     * If the given element has no position, returns the first parent
-     *
-     */
-    private _getRelativeParent(elem: HTMLElement, lookForAbsoluteOrRelative?: boolean): HTMLElement {
-        // If the elem has no parent, returns himself
-        if (!elem.parentElement) {
-            return elem;
-        }
-        let computedStyle = Inspector.WINDOW.getComputedStyle(elem);
-        // looking for the first element absolute or relative
-        if (lookForAbsoluteOrRelative) {
-            // if found, return this one
-            if (computedStyle.position === "relative" || computedStyle.position === "absolute") {
-                return elem;
-            } else {
-                // otherwise keep looking
-                return this._getRelativeParent(elem.parentElement, true);
-            }
-        }
-        // looking for the relative parent of the element
-        else {
-            if (computedStyle.position == "static") {
-                return elem.parentElement;
-            } else {
-                // the elem has a position relative or absolute, look for the closest relative/absolute parent
-                return this._getRelativeParent(elem.parentElement, true);
-            }
-        }
-    }
-
-    /** Build the inspector panel in the given HTML element */
-    private _buildInspector(parent: HTMLElement) {
-        // tabbar
-        this._tabbar = new TabBar(this, this._initialTab);
-
-        // Top panel
-        this._topPanel = Helpers.CreateDiv('top-panel', parent);
-        // Add tabbar
-        this._topPanel.appendChild(this._tabbar.toHtml());
-        this._tabbar.updateWidth();
-
-        // Tab panel
-        this._tabPanel = Helpers.CreateDiv('tab-panel-content', this._topPanel);
-
-    }
-
-    public get scene(): Scene {
-        return this._scene;
-    }
-    public get popupMode(): boolean {
-        return this._popupMode;
-    }
-
-    /**
-     * Filter the list of item present in the tree.
-     * All item returned should have the given filter contained in the item id.
-    */
-    public filterItem(filter: string) {
-        let tab = this._tabbar.getActiveTab();
-
-        if (tab) {
-            tab.filter(filter);
-        }
-    }
-
-    /** Display the mesh tab on the given object */
-    public displayObjectDetails(mesh: AbstractMesh) {
-        this._tabbar.switchMeshTab(mesh);
-    }
-
-    /** Clean the whole tree of item and rebuilds it */
-    public refresh() {
-        // Clean top panel
-        Helpers.CleanDiv(this._tabPanel);
-
-        // Get the active tab and its items
-        let activeTab = this._tabbar.getActiveTab();
-
-        if (!activeTab) {
-            return;
-        }
-        activeTab.update();
-        this._tabPanel.appendChild(activeTab.getPanel());
-        Helpers.SEND_EVENT('resize');
-
-    }
-
-    /** Remove the inspector panel when it's built as a right panel:
-     * remove the right panel and remove the wrapper
-     */
-    public dispose() {
-        if (!this._popupMode) {
-            let activeTab = this._tabbar.getActiveTab();
-            if (activeTab) {
-                activeTab.dispose();
+                this._CreateSceneExplorer(scene, options, parentControl, Inspector.OnSelectionChangeObservable);
             }
 
-            // Get canvas
-            let canvas = <HTMLElement>this._scene.getEngine().getRenderingCanvas();
-
-            // restore canvas style
-            for (let prop in this._canvasStyle) {
-                (<any>canvas.style)[prop] = this._canvasStyle[prop];
-            }
-            // Get parent of the wrapper
-            if (canvas.parentElement) {
-                let canvasParent = canvas.parentElement.parentElement;
-
-                if (canvasParent) {
-                    canvasParent.insertBefore(canvas, this._c2diwrapper);
-                    // Remove wrapper
-                    Helpers.CleanDiv(this._c2diwrapper);
-                    this._c2diwrapper.remove();
-                    // Send resize event to the window
-                    Helpers.SEND_EVENT('resize');
+            if (options.showInspector) {
+                if (options.actionTabsRoot && !options.overlay) {
+                    options.actionTabsRoot.style.width = "auto";
                 }
+
+                this._CreateActionTabs(scene, options, parentControl, Inspector.OnSelectionChangeObservable);
             }
         }
-        Scheduler.getInstance().dispose();
     }
 
-    /** Open the inspector in a new popup
-     * Set 'firstTime' to true if there is no inspector created beforehands
-     */
-    public openPopup(firstTime?: boolean) {
+    private static _Cleanup() {
+        if (Inspector._OpenedPane === 0 && this._OnBeforeRenderObserver && this._Scene) {
+            this._Scene.onBeforeRenderObservable.remove(this._OnBeforeRenderObserver);
+            this._OnBeforeRenderObserver = null;
 
-        // Create popup
-        let popup = window.open('', 'js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');
-        if (!popup) {
-            alert("Please update your browser to open the js inspector in an external view.");
-            return;
+            this._Scene.getEngine().resize();
         }
-        popup.document.title = "js INSPECTOR";
-        // Get the inspector style
-        let styles = Inspector.DOCUMENT.querySelectorAll('style');
-        for (let s = 0; s < styles.length; s++) {
-            popup.document.body.appendChild(styles[s].cloneNode(true));
-        }
-        let links = document.querySelectorAll('link');
-        for (let l = 0; l < links.length; l++) {
-            let link = popup.document.createElement("link");
-            link.rel = "stylesheet";
-            link.href = (links[l] as HTMLLinkElement).href;
-
-            if (popup.document.head) {
-                popup.document.head.appendChild(link);
-            }
-        }
-        // Dispose the right panel if existing
-        if (!firstTime) {
-            this.dispose();
-        }
-        // set the mode as popup
-        this._popupMode = true;
-        // Save the HTML document
-        Inspector.DOCUMENT = popup.document;
-        Inspector.WINDOW = popup;
-        // Build the inspector wrapper
-        this._c2diwrapper = Helpers.CreateDiv('insp-wrapper', popup.document.body);
-        // add inspector
-        let inspector = Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
-        inspector.classList.add('popupmode');
-        // and build it in the popup
-        this._buildInspector(inspector);
-        // Rebuild it
-        this.refresh();
-
-        popup.addEventListener('resize', () => {
-            if (this._tabbar) {
-                this._tabbar.updateWidth();
-            }
-        });
     }
 
-    public getActiveTabIndex(): number {
-        return this._tabbar.getActiveTabIndex();
+    public static Hide() {
+        if (this._ActionTabsHost) {
+            ReactDOM.unmountComponentAtNode(this._ActionTabsHost);
+            this._ActionTabsHost = null;
+        }
+
+        if (this._SceneExplorerHost) {
+            ReactDOM.unmountComponentAtNode(this._SceneExplorerHost);
+            this._SceneExplorerHost = null;
+        }
+
+        if (this._EmbedHost) {
+            ReactDOM.unmountComponentAtNode(this._EmbedHost);
+            this._EmbedHost = null;
+        }
+
+        Inspector._OpenedPane = 0;
+        this._Cleanup();
     }
 }
