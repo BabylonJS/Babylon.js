@@ -67,7 +67,7 @@ export class StatisticsTabComponent extends PaneComponent {
 
         return (
             <div className="pane">
-                <TextLineComponent label="Version" value={BABYLON.Engine.Version} color="rgb(51, 122, 255)" />
+                <TextLineComponent label="Version" value={BABYLON.Engine.Version} color="rgb(113, 159, 255)" />
                 <ValueLineComponent label="FPS" value={engine.getFps()} fractionDigits={0} />
                 <LineContainerComponent title="COUNT">
                     <TextLineComponent label="Total meshes" value={scene.meshes.length.toString()} />

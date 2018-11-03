@@ -76,13 +76,24 @@
         }
     }
 
+    .noPopup {
+        .panes {
+            margin-bottom: 5px;
+        }
+    }
+
     #split {
         grid-row: 2;
         overflow: hidden;
 
-        .popup {
+        
+        &.splitPopup {
             display: grid;
-            grid-template-rows: 40% 60%;
+            grid-template-rows: 300px 2px 1fr;
+
+            .panes {
+                margin-bottom: 1px;
+            }
         }
 
         #topPart {
@@ -91,11 +102,18 @@
             display: grid;
             grid-auto-rows: 100%;
         }
+        
+        #separator {
+            grid-row: 2;
+            background: white;
+            opacity: 0.1;
+        }
 
         #bottomPart {
             overflow: hidden;
-            grid-row: 2;
-            height: 100%;
+            grid-row: 3;
+            display: grid;
+            grid-auto-rows: 100%;
         }        
 
         .gutter.gutter-vertical {
@@ -104,4 +122,5 @@
             cursor: row-resize;
         }
     }
+
 }

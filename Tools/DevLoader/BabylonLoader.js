@@ -275,10 +275,6 @@ var BABYLONDEVTOOLS;
             }
             getJson('/Tools/Gulp/config.json',
                 function(data) {
-                    if (!min) {
-                        self.loadScript('/dist/preview release/split.js');
-                    }
-
                     self.loadBJSScripts(data);
                     if (dependencies) {
                         self.loadScripts(dependencies);
