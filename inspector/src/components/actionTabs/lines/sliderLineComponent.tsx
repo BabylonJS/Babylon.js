@@ -56,7 +56,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                     {this.props.label}
                 </div>
                 <div className="slider">
-                    {this.state.value.toFixed(2)}&nbsp;<input className="range" type="range" step={this.props.step} min={this.props.minimum} max={this.props.maximum} value={this.state.value} onChange={evt => this.onChange(evt.target.value)} />
+                    {this.state.value ? this.state.value.toFixed(2) : "0"}&nbsp;<input className="range" type="range" step={this.props.step} min={this.props.minimum} max={this.props.maximum} value={this.state.value} onChange={evt => this.onChange(evt.target.value)} />
                 </div>
             </div>
         );

@@ -13,7 +13,7 @@
 }
 
 #renderCanvas {
-    position: absolute;
+    position: relative;
     overflow: hidden;
     width: 100%;
     height: calc(100% - 56px);
@@ -22,7 +22,8 @@
     right: 0;
     left: 0;
     touch-action: none;
-    -ms-touch-action: none;
+    -ms-touch-action: none;    
+    margin-bottom: -4px
 }
 
 a {
@@ -35,7 +36,7 @@ a {
 
 
 .footer {
-    position: absolute;
+    position: relative;
     width: 100%;
     height: 56px;
     bottom: 0;
@@ -99,11 +100,14 @@ a {
 }
 
 #logo {
+    position: absolute;
+    top:0;
     width: 100%;
     height: 100%;
     background: url('./Assets/Logo_Fullscreen.svg') no-repeat 0 0;
     background-position: center;
     background-size: 50%;
+    pointer-events: none;
 }
 
 #droptext {

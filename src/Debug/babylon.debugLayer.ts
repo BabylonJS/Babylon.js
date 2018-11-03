@@ -90,8 +90,8 @@ module BABYLON {
                 embedMode: config.embedMode != null ? config.embedMode : parentElement ? true : false,
                 embedHostRoot: null,
                 overlay: config.overlay,
-                handleResize: config.handleResize,
-                enablePopup: config.enablePopup
+                handleResize: config.handleResize || true,
+                enablePopup: config.enablePopup || true
             };
 
             if (parentElement) {
