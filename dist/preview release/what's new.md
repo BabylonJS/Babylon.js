@@ -59,6 +59,7 @@
 - Add updateUpVectorFromRotation to target camera to allow the up vector to be computed from rotation ([TrevorDev](https://github.com/TrevorDev))
 - Added opacity texture support to `GridMaterial` ([Deltakosh](https://github.com/deltakosh))
 - Added support for deserializing morph target animations in animation groups
+- AssetContainer dispose method ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
