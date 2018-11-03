@@ -137,14 +137,15 @@ export class Inspector {
                 }, onClose: () => {
                     ReactDOM.unmountComponentAtNode(this._SceneExplorerHost!);
                     Inspector._OpenedPane--;
+
+                    if (this._SceneExplorerHost && this._SceneExplorerHost.parentElement) {
+                        this._SceneExplorerHost.parentElement.removeChild(this._SceneExplorerHost);
+                    }
+
                     this._Cleanup();
 
                     if (options.popup) {
                         this._SceneExplorerWindow.close();
-                    } else if (!options.overlay) {
-                        if (this._SceneExplorerHost) {
-                            this._SceneExplorerHost.style.width = "0";
-                        }
                     }
                 }
             });
@@ -198,12 +199,13 @@ export class Inspector {
                     ReactDOM.unmountComponentAtNode(this._ActionTabsHost!);
                     Inspector._OpenedPane--;
                     this._Cleanup();
+
+                    if (this._ActionTabsHost && this._ActionTabsHost.parentElement) {
+                        this._ActionTabsHost.parentElement.removeChild(this._ActionTabsHost);
+                    }                    
+
                     if (options.popup) {
                         this._ActionTabsWindow.close();
-                    } else if (!options.overlay) {
-                        if (this._ActionTabsHost) {
-                            this._ActionTabsHost.style.width = "0";
-                        }
                     }
 
                 }, onPropertyChangedObservable: Inspector.OnPropertyChangedObservable
@@ -259,6 +261,11 @@ export class Inspector {
 
                     this._OpenedPane = 0;
                     this._Cleanup();
+
+                    if (this._EmbedHost && this._EmbedHost.parentElement) {
+                        this._EmbedHost.parentElement.removeChild(this._EmbedHost);
+                    }    
+
                     if (options.popup) {
                         this._EmbedHostWindow.close();
                     }
@@ -419,6 +426,13 @@ export class Inspector {
                 this._NewCanvasContainer.style.width = "100%";
                 this._NewCanvasContainer.style.height = "100%";
 
+            } else if (!options.overlay && this._NewCanvasContainer && this._NewCanvasContainer.parentElement) {
+                // the root is now the parent of the canvas container
+                parentControl = this._NewCanvasContainer.parentElement;
+            }
+
+            if (this._NewCanvasContainer) {
+                // If we move things around, let's control the resize
                 if (options.handleResize && scene) {
                     this._OnBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
                         scene.getEngine().resize();
@@ -456,16 +470,30 @@ export class Inspector {
     public static Hide() {
         if (this._ActionTabsHost) {
             ReactDOM.unmountComponentAtNode(this._ActionTabsHost);
+
+            if (this._ActionTabsHost.parentElement) {
+                this._ActionTabsHost.parentElement.removeChild(this._ActionTabsHost);
+            }
+
             this._ActionTabsHost = null;
         }
 
         if (this._SceneExplorerHost) {
             ReactDOM.unmountComponentAtNode(this._SceneExplorerHost);
+
+            if (this._SceneExplorerHost.parentElement) {
+                this._SceneExplorerHost.parentElement.removeChild(this._SceneExplorerHost);
+            }
+            
             this._SceneExplorerHost = null;
         }
 
         if (this._EmbedHost) {
             ReactDOM.unmountComponentAtNode(this._EmbedHost);
+
+            if (this._EmbedHost.parentElement) {
+                this._EmbedHost.parentElement.removeChild(this._EmbedHost);
+            }            
             this._EmbedHost = null;
         }
 
