@@ -14,7 +14,6 @@ var Test = (function() {
     Test.prototype._run = function() {
         var _this = this;
         this._initScene();
-        this.scene.debugLayer.show();
         this.scene.executeWhenReady(function() {
             _this.engine.runRenderLoop(function() {
                 _this.scene.render();
@@ -76,7 +75,9 @@ var Test = (function() {
 
         scene.createDefaultCameraOrLight(true);
         scene.activeCamera.attachControl(canvas);
-        scene.debugLayer.show();
+        
+        scene.debugLayer.show({embedMode: true});
+        //scene.debugLayer.show();
         scene.debugLayer.onPropertyChangedObservable.add((result) => {
             console.log(result.object);
             console.log("Property : " + result.property);

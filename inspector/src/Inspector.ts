@@ -330,6 +330,10 @@ export class Inspector {
             ...userOptions
         };
 
+        if (this.IsVisible && options.original) {
+            this.Hide();
+        }
+
         if (!scene) {
             scene = BABYLON.Engine.LastCreatedScene!;
         }

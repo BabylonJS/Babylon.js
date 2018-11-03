@@ -38,7 +38,6 @@
         "gulp-webserver": "~0.9.1",
         "mini-css-extract-plugin": "~0.4.4",
         "node-sass": "~4.9.4",
-        "office-ui-fabric-react": "^6.98.1",
         "re-resizable": "~4.9.1",
         "react": "~16.5.2",
         "react-dom": "~16.5.2",

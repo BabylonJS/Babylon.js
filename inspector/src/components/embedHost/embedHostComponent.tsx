@@ -5,7 +5,8 @@ import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent"
 import { ActionTabsComponent } from "../actionTabs/actionTabsComponent";
 import { Scene, Observable } from "babylonjs";
 
-let Split = require('react-split');
+const Split = require("react-split"); 
+
 require("./embedHost.scss");
 
 interface IEmbedHostComponentProps {
@@ -26,12 +27,13 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
     renderContent() {
         if (this.props.popupMode) {
             return (
-                <div id="split" className="popup">
+                <div id="split" className="splitPopup">
                     <div id="topPart">
                         <SceneExplorerComponent scene={this.props.scene}
                             popupMode={true}
                             onSelectionChangeObservable={this.props.onSelectionChangeObservable} noHeader={true} />
                     </div>
+                    <div id="separator" />
                     <div id="bottomPart" style={{ marginTop: "4px", overflow: "hidden" }}>
                         <ActionTabsComponent scene={this.props.scene}
                             popupMode={true}
@@ -42,7 +44,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
         }
 
         return (
-            <Split id="split" direction="vertical" gutterSize={5} cursor="grab" minSize={[300, 300]}>
+            <Split id="split" className="noPopup" direction="vertical" gutterSize={4} minSize={[200, 200]}>
                 <div id="topPart">
                     <SceneExplorerComponent scene={this.props.scene}
                         popupMode={true}

@@ -50,7 +50,7 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
                 {
                     this.renderHeader()
                 }
-                <div>
+                <div className="paneList">
                     {this.props.children}
                 </div >
             </div>
