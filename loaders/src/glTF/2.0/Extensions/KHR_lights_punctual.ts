@@ -97,6 +97,8 @@ module BABYLON.GLTF2.Loader.Extensions {
                     babylonLight.range = light.range == undefined ? Number.MAX_VALUE : light.range;
                     babylonLight.parent = babylonMesh;
 
+                    GLTFLoader.AddPointerMetadata(babylonLight, extensionContext);
+
                     assign(babylonMesh);
                 });
             });
