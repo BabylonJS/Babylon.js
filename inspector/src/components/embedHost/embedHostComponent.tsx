@@ -4,8 +4,8 @@ import Resizable from "re-resizable";
 import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent";
 import { ActionTabsComponent } from "../actionTabs/actionTabsComponent";
 import { Scene, Observable } from "babylonjs";
-import Split from 'react-split';
 
+let Split = require('react-split');
 require("./embedHost.scss");
 
 interface IEmbedHostComponentProps {
