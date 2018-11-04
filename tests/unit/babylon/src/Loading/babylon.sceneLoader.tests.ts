@@ -87,7 +87,7 @@ describe('Babylon Scene Loader', function () {
             let parsedCount = 0;
             let meshCount = 0;
             let materialCount = 0;
-            let textureCounts: { [name: string]: number } = {};
+            let textureCount = 0;
             let ready = false;
 
             const promises = new Array<Promise<void>>();
@@ -104,8 +104,7 @@ describe('Babylon Scene Loader', function () {
                     materialCount++;
                 };
                 loader.onTextureLoaded = texture => {
-                    textureCounts[texture.name] = textureCounts[texture.name] || 0;
-                    textureCounts[texture.name]++;
+                    textureCount++;
                 };
 
                 promises.push(loader.whenCompleteAsync().then(() => {
@@ -121,16 +120,8 @@ describe('Babylon Scene Loader', function () {
                 expect(meshCount, "meshCount").to.equal(scene.meshes.length);
                 expect(materialCount, "materialCount").to.equal(scene.materials.length);
 
-                const expectedTextureLoadCounts = {
-                    "baseColor": 1,
-                    "occlusionRoughnessMetallic": 2,
-                    "normal": 1,
-                    "emissive": 1
-                };
-                expect(Object.keys(textureCounts), "Object.keys(textureCounts)").to.have.lengthOf(Object.keys(expectedTextureLoadCounts).length);
-                for (const textureName in expectedTextureLoadCounts) {
-                    expect(textureCounts, "textureCounts").to.have.property(textureName, expectedTextureLoadCounts[textureName]);
-                }
+                const filteredTextures = scene.textures.filter((texture) => texture !== scene._environmentBRDFTexture);
+                expect(textureCount, "textureCount").to.equal(filteredTextures.length);
             }));
 
             return Promise.all(promises);
