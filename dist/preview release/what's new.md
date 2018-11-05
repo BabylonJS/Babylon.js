@@ -29,7 +29,7 @@
 - Added support for performing operations like select all, text highlight, delete selected in `inputText` ([Saket Saurabh](https://github.com/ssaket))
 - Added `inputText.onTextCopyObservable`, `inputText.onTextCutObservable` and `inputText.onTextPasteObservable` to inputText ([Saket Saurabh](https://github.com/ssaket))
 - Added `AdvancedDynamicTexture.onClipboardObservable` to observe for clipboard events in AdvancedDynamicTexture([Saket Saurabh](https://github.com/ssaket))
-
+- Added `inputText.onFocusSelectAll` to allow complete selection of text on focus event.([Saket Saurabh](https://github.com/ssaket))
 
 ### Core Engine
 
@@ -59,11 +59,13 @@
 - Add updateUpVectorFromRotation to target camera to allow the up vector to be computed from rotation ([TrevorDev](https://github.com/TrevorDev))
 - Added opacity texture support to `GridMaterial` ([Deltakosh](https://github.com/deltakosh))
 - Added support for deserializing morph target animations in animation groups
+- AssetContainer dispose method ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
 - Added support for mesh instancing for improved performance when multiple nodes point to the same mesh ([bghgary](https://github.com/bghgary))
 - Create `TransformNode` objects instead of `Mesh` objects for glTF nodes without geometry ([bghgary](https://github.com/bghgary))
+- Added glTF JSON pointers to metadata of nodes, materials, and textures ([bghgary](https://github.com/bghgary))
 
 ### glTF Serializer
 
@@ -79,7 +81,7 @@
 - CreateScreenshotUsingRenderTarget stretches mirror textures when setting both width and height ([TrevorDev](https://github.com/TrevorDev))
 - VR helper only updating vr cameras position when entering vr, rotation was missing ([TrevorDev](https://github.com/TrevorDev))
 - Fix VR controllers after gltfLoader transformNode change ([TrevorDev](https://github.com/TrevorDev))
-- Bounding Box fixedDragMeshScreenSize stopped working ([TrevorDev](https://github.com/TrevorDev))
+- Bounding Box fixedDragMeshScreenSize stopped working and allow rotating through bounding box ([TrevorDev](https://github.com/TrevorDev))
 - VR helper would rotate non vr camera while in VR ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine

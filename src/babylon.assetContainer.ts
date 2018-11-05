@@ -125,6 +125,49 @@ module BABYLON {
             }
         }
 
+        /**
+         * Disposes all the assets in the container
+         */
+        public dispose() {
+            this.cameras.forEach((o) => {
+                o.dispose();
+            });
+            this.lights.forEach((o) => {
+                o.dispose();
+            });
+            this.meshes.forEach((o) => {
+                o.dispose();
+            });
+            this.skeletons.forEach((o) => {
+                o.dispose();
+            });
+            this.animationGroups.forEach((o) => {
+                o.dispose();
+            });
+            this.multiMaterials.forEach((o) => {
+                o.dispose();
+            });
+            this.materials.forEach((o) => {
+                o.dispose();
+            });
+            this.geometries.forEach((o) => {
+                o.dispose();
+            });
+            this.transformNodes.forEach((o) => {
+                o.dispose();
+            });
+            this.actionManagers.forEach((o) => {
+                o.dispose();
+            });
+            this.textures.forEach((o) => {
+                o.dispose();
+            });
+
+            for (let component of this.scene._serializableComponents) {
+                component.dispose();
+            }
+        }
+
         private _moveAssets<T>(sourceAssets: T[], targetAssets: T[], keepAssets: T[]): void {
             if (!sourceAssets) {
                 return;
