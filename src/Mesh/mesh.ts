@@ -7,19 +7,12 @@ import { Scene } from "scene";
 import { Quaternion, Matrix, Vector3, Vector2, Color3, Color4, Plane, Vector4, Path3D } from "Math/math";
 import { Engine } from "Engine/engine";
 import { Node } from "node";
-
-import { VertexBuffer } from "./vertexBuffer";
+import { VertexBuffer } from "./buffer";
 import { VertexData, IGetSetVerticesData } from "./mesh.vertexData";
 import { Buffer } from "./buffer";
 import { Geometry } from "./geometry";
 import { AbstractMesh } from "./abstractMesh";
 import { SubMesh } from "./subMesh";
-import { InstancedMesh } from "./instancedMesh";
-import { LinesMesh } from "./linesMesh";
-import { GroundMesh } from "./groundMesh";
-import { MeshBuilder } from "./meshBuilder";
-import { MeshLODLevel } from "./meshLODLevel";
-
 import { BoundingInfo } from "Culling/boundingInfo";
 import { BoundingSphere } from "Culling/boundingSphere";
 import { Effect } from "Materials/effect";
@@ -29,6 +22,29 @@ import { SceneLoader } from "Loading/sceneLoader";
 import { Skeleton } from "Bones/skeleton";
 import { MorphTargetManager } from "Morph/morphTargetManager";
 import { PhysicsImpostor } from "Physics/physicsImpostor";
+
+declare type LinesMesh = import("./linesMesh").LinesMesh;
+declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
+declare type GroundMesh = import("./groundMesh").GroundMesh;
+
+    /**
+     * Class used to represent a specific level of detail of a mesh
+     * @see http://doc.babylonjs.com/how_to/how_to_use_lod
+     */
+    export class MeshLODLevel {
+        /**
+         * Creates a new LOD level
+         * @param distance defines the distance where this level should star being displayed
+         * @param mesh defines the mesh to use to render this level
+         */
+        constructor(
+            /** Defines the distance where this level should star being displayed */
+            public distance: number,
+            /** Defines the mesh to use to render this level */
+            public mesh: Nullable<Mesh>) {
+        }
+    }
+
     /**
      * @hidden
      **/
@@ -77,20 +93,20 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
         /**
          * Mesh side orientation : usually the external or front surface
          */
-        public static readonly FRONTSIDE = 0;
+        public static readonly FRONTSIDE = VertexData.FRONTSIDE;
 
         /**
          * Mesh side orientation : usually the internal or back surface
          */
-        public static readonly BACKSIDE = 1;
+        public static readonly BACKSIDE = VertexData.BACKSIDE;
         /**
          * Mesh side orientation : both internal and external or front and back surfaces
          */
-        public static readonly DOUBLESIDE = 2;
+        public static readonly DOUBLESIDE = VertexData.DOUBLESIDE;
         /**
          * Mesh side orientation : by default, `FRONTSIDE`
          */
-        public static readonly DEFAULTSIDE = 0;
+        public static readonly DEFAULTSIDE = VertexData.DEFAULTSIDE;
         /**
          * Mesh cap setting : no cap
          */
@@ -2334,6 +2350,10 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
         }
 
         // Instances
+        /** @hidden */
+        public static _instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
+            throw "Import InstancedMesh before creating instances.";
+        }
 
         /**
          * Creates a new InstancedMesh object from the mesh model.
@@ -2342,7 +2362,7 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @returns a new InstancedMesh
          */
         public createInstance(name: string): InstancedMesh {
-            return new InstancedMesh(name, this);
+            return Mesh._instancedMeshFactory(name, this);
         }
 
         /**
@@ -2620,6 +2640,10 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
         }
 
         // Statics
+        /** @hidden */
+        public static _GroundMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+            throw "Import GroundMesh before trying to parse it.";
+        }
 
         /**
          * Returns a new Mesh object parsed from the source provided.
@@ -2632,7 +2656,7 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
             var mesh: Mesh;
 
             if (parsedMesh.type && parsedMesh.type === "GroundMesh") {
-                mesh = GroundMesh.Parse(parsedMesh, scene);
+                mesh = Mesh._GroundMeshParser(parsedMesh, scene);
             } else {
                 mesh = new Mesh(parsedMesh.name, scene);
             }
@@ -2925,16 +2949,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @param instance defines an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter (http://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#ribbon)
          * @returns a new Mesh
          */
-        public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean = false, closePath: boolean, offset: number, scene?: Scene, updatable: boolean = false, sideOrientation?: number, instance?: Mesh): Mesh {
-            return MeshBuilder.CreateRibbon(name, {
-                pathArray: pathArray,
-                closeArray: closeArray,
-                closePath: closePath,
-                offset: offset,
-                updatable: updatable,
-                sideOrientation: sideOrientation,
-                instance: instance
-            }, scene);
+        public static CreateRibbon = (name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene?: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -2947,15 +2963,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
           * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
           * @returns a new Mesh
           */
-        public static CreateDisc(name: string, radius: number, tessellation: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh {
-            var options = {
-                radius: radius,
-                tessellation: tessellation,
-                sideOrientation: sideOrientation,
-                updatable: updatable
-            };
-
-            return MeshBuilder.CreateDisc(name, options, scene);
+        public static CreateDisc = (name: string, radius: number, tessellation: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -2967,14 +2976,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
          * @returns a new Mesh
          */
-        public static CreateBox(name: string, size: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh {
-            var options = {
-                size: size,
-                sideOrientation: sideOrientation,
-                updatable: updatable
-            };
-
-            return MeshBuilder.CreateBox(name, options, scene);
+        public static CreateBox = (name: string, size: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -2987,17 +2990,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
           * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
           * @returns a new Mesh
           */
-        public static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
-            var options = {
-                segments: segments,
-                diameterX: diameter,
-                diameterY: diameter,
-                diameterZ: diameter,
-                sideOrientation: sideOrientation,
-                updatable: updatable
-            };
-
-            return MeshBuilder.CreateSphere(name, options, scene);
+        public static CreateSphere = (name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -3013,27 +3007,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
          * @returns a new Mesh
          */
-        public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene?: Scene, updatable?: any, sideOrientation?: number): Mesh {
-            if (scene === undefined || !(scene instanceof Scene)) {
-                if (scene !== undefined) {
-                    sideOrientation = updatable || Mesh.DEFAULTSIDE;
-                    updatable = scene;
-                }
-                scene = <Scene>subdivisions;
-                subdivisions = 1;
-            }
-
-            var options = {
-                height: height,
-                diameterTop: diameterTop,
-                diameterBottom: diameterBottom,
-                tessellation: tessellation,
-                subdivisions: subdivisions,
-                sideOrientation: sideOrientation,
-                updatable: updatable
-            };
-
-            return MeshBuilder.CreateCylinder(name, options, scene);
+        public static CreateCylinder = (name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene?: Scene, updatable?: any, sideOrientation?: number): Mesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         // Torus  (Code from SharpDX.org)
@@ -3048,16 +3023,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
          * @returns a new Mesh
          */
-        public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
-            var options = {
-                diameter: diameter,
-                thickness: thickness,
-                tessellation: tessellation,
-                sideOrientation: sideOrientation,
-                updatable: updatable
-            };
-
-            return MeshBuilder.CreateTorus(name, options, scene);
+        public static CreateTorus = (name: string, diameter: number, thickness: number, tessellation: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -3074,19 +3041,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
          * @returns a new Mesh
          */
-        public static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
-            var options = {
-                radius: radius,
-                tube: tube,
-                radialSegments: radialSegments,
-                tubularSegments: tubularSegments,
-                p: p,
-                q: q,
-                sideOrientation: sideOrientation,
-                updatable: updatable
-            };
-
-            return MeshBuilder.CreateTorusKnot(name, options, scene);
+        public static CreateTorusKnot = (name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -3098,13 +3054,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (http://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines).
          * @returns a new Mesh
          */
-        public static CreateLines(name: string, points: Vector3[], scene: Nullable<Scene> = null, updatable: boolean = false, instance: Nullable<LinesMesh> = null): LinesMesh {
-            var options = {
-                points: points,
-                updatable: updatable,
-                instance: instance
-            };
-            return MeshBuilder.CreateLines(name, options, scene);
+        public static CreateLines = (name: string, points: Vector3[], scene: Nullable<Scene> = null, updatable: boolean = false, instance: Nullable<LinesMesh> = null): LinesMesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -3119,30 +3070,17 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (http://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines)
          * @returns a new Mesh
          */
-        public static CreateDashedLines(name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Nullable<Scene> = null, updatable?: boolean, instance?: LinesMesh): LinesMesh {
-            var options = {
-                points: points,
-                dashSize: dashSize,
-                gapSize: gapSize,
-                dashNb: dashNb,
-                updatable: updatable,
-                instance: instance
-            };
-            return MeshBuilder.CreateDashedLines(name, options, scene);
+        public static CreateDashedLines = (name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Nullable<Scene> = null, updatable?: boolean, instance?: LinesMesh): LinesMesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
-         * Creates a polygon mesh.
-         * Please consider using the same method from the MeshBuilder class instead.
+         * Creates a polygon mesh.Please consider using the same method from the MeshBuilder class instead
          * The polygon's shape will depend on the input parameters and is constructed parallel to a ground mesh.
          * The parameter `shape` is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors.
          * You can set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          * Remember you can only change the shape positions, not their number when updating a polygon.
-         */
-
-        /**
-         * Creates a polygon mesh.Please consider using the same method from the MeshBuilder class instead
          * @see http://doc.babylonjs.com/how_to/parametric_shapes#non-regular-polygon
          * @param name defines the name of the mesh to create
          * @param shape is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors
@@ -3152,14 +3090,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
          * @returns a new Mesh
          */
-        public static CreatePolygon(name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh {
-            var options = {
-                shape: shape,
-                holes: holes,
-                updatable: updatable,
-                sideOrientation: sideOrientation
-            };
-            return MeshBuilder.CreatePolygon(name, options, scene);
+        public static CreatePolygon = (name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -3174,15 +3106,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
          * @returns a new Mesh
          */
-        public static ExtrudePolygon(name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh {
-            var options = {
-                shape: shape,
-                holes: holes,
-                depth: depth,
-                updatable: updatable,
-                sideOrientation: sideOrientation
-            };
-            return MeshBuilder.ExtrudePolygon(name, options, scene);
+        public static ExtrudePolygon = (name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -3202,19 +3127,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (http://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#extruded-shape)
          * @returns a new Mesh
          */
-        public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
-            var options = {
-                shape: shape,
-                path: path,
-                scale: scale,
-                rotation: rotation,
-                cap: (cap === 0) ? 0 : cap || Mesh.NO_CAP,
-                sideOrientation: sideOrientation,
-                instance: instance,
-                updatable: updatable
-            };
-
-            return MeshBuilder.ExtrudeShape(name, options, scene);
+        public static ExtrudeShape = (name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -3237,21 +3151,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (http://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape)
          * @returns a new Mesh
          */
-        public static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction: Function, rotationFunction: Function, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
-            var options = {
-                shape: shape,
-                path: path,
-                scaleFunction: scaleFunction,
-                rotationFunction: rotationFunction,
-                ribbonCloseArray: ribbonCloseArray,
-                ribbonClosePath: ribbonClosePath,
-                cap: (cap === 0) ? 0 : cap || Mesh.NO_CAP,
-                sideOrientation: sideOrientation,
-                instance: instance,
-                updatable: updatable
-            };
-
-            return MeshBuilder.ExtrudeShapeCustom(name, options, scene);
+        public static ExtrudeShapeCustom = (name: string, shape: Vector3[], path: Vector3[], scaleFunction: Function, rotationFunction: Function, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -3267,16 +3168,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
          * @returns a new Mesh
          */
-        public static CreateLathe(name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
-            var options = {
-                shape: shape,
-                radius: radius,
-                tessellation: tessellation,
-                sideOrientation: sideOrientation,
-                updatable: updatable
-            };
-
-            return MeshBuilder.CreateLathe(name, options, scene);
+        public static CreateLathe = (name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -3288,16 +3181,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
          * @returns a new Mesh
          */
-        public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
-            var options = {
-                size: size,
-                width: size,
-                height: size,
-                sideOrientation: sideOrientation,
-                updatable: updatable
-            };
-
-            return MeshBuilder.CreatePlane(name, options, scene);
+        public static CreatePlane = (name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -3312,14 +3197,7 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @returns a new Mesh
          */
         public static CreateGround(name: string, width: number, height: number, subdivisions: number, scene?: Scene, updatable?: boolean): Mesh {
-            var options = {
-                width: width,
-                height: height,
-                subdivisions: subdivisions,
-                updatable: updatable
-            };
-
-            return MeshBuilder.CreateGround(name, options, scene);
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -3337,17 +3215,7 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @returns a new Mesh
          */
         public static CreateTiledGround(name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: { w: number; h: number; }, precision: { w: number; h: number; }, scene: Scene, updatable?: boolean): Mesh {
-            var options = {
-                xmin: xmin,
-                zmin: zmin,
-                xmax: xmax,
-                zmax: zmax,
-                subdivisions: subdivisions,
-                precision: precision,
-                updatable: updatable
-            };
-
-            return MeshBuilder.CreateTiledGround(name, options, scene);
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -3367,19 +3235,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @param alphaFilter will filter any data where the alpha channel is below this value, defaults 0 (all data visible)
          * @returns a new Mesh
          */
-        public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void, alphaFilter?: number): GroundMesh {
-            var options = {
-                width: width,
-                height: height,
-                subdivisions: subdivisions,
-                minHeight: minHeight,
-                maxHeight: maxHeight,
-                updatable: updatable,
-                onReady: onReady,
-                alphaFilter: alphaFilter
-            };
-
-            return MeshBuilder.CreateGroundFromHeightMap(name, url, options, scene);
+        public static CreateGroundFromHeightMap = (name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void, alphaFilter?: number): GroundMesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -3401,18 +3258,7 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @returns a new Mesh
          */
         public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
-            var options = {
-                path: path,
-                radius: radius,
-                tessellation: tessellation,
-                radiusFunction: radiusFunction,
-                arc: 1,
-                cap: cap,
-                updatable: updatable,
-                sideOrientation: sideOrientation,
-                instance: instance
-            };
-            return MeshBuilder.CreateTube(name, options, scene);
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -3434,8 +3280,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
           * @param scene defines the hosting scene
           * @returns a new Mesh
           */
-        public static CreatePolyhedron(name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh {
-            return MeshBuilder.CreatePolyhedron(name, options, scene);
+        public static CreatePolyhedron = (name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -3453,8 +3299,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @returns a new Mesh
          * @see http://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere
          */
-        public static CreateIcoSphere(name: string, options: { radius?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh {
-            return MeshBuilder.CreateIcoSphere(name, options, scene);
+        public static CreateIcoSphere = (name: string, options: { radius?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         /**
@@ -3469,15 +3315,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          * @param angle sets the angle to rotate the decal
          * @returns a new Mesh
          */
-        public static CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): Mesh {
-            var options = {
-                position: position,
-                normal: normal,
-                size: size,
-                angle: angle
-            };
-
-            return MeshBuilder.CreateDecal(name, sourceMesh, options);
+        public static CreateDecal = (name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): Mesh => {
+            throw "Import MeshBuilder before creating meshes.";
         }
 
         // Skeletons
@@ -3797,3 +3636,5 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
             }
         }
     }
+
+//import { MeshBuilder } from "./meshBuilder";

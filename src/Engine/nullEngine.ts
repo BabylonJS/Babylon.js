@@ -3,9 +3,8 @@ import { Nullable, FloatArray, IndicesArray } from "types";
 import { Scene } from "scene";
 import { Matrix, Color3, Color4, Viewport } from "Math/math";
 import { Engine, EngineCapabilities, RenderTargetCreationOptions } from "Engine/engine";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { InternalTexture } from "Materials/Textures/internalTexture";
-import { Texture } from "Materials/Textures/texture";
 import { Effect } from "Materials/effect";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
@@ -336,7 +335,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         public _releaseTexture(texture: InternalTexture): void {
         }
 
-        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null, buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack?: InternalTexture, format?: number): InternalTexture {
+        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null, buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack?: InternalTexture, format?: number): InternalTexture {
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_URL);
             var url = String(urlArg);
 
@@ -371,13 +370,13 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
                 fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
                 fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
                 fullOptions.type = options.type === undefined ? Engine.TEXTURETYPE_UNSIGNED_INT : options.type;
-                fullOptions.samplingMode = options.samplingMode === undefined ? Texture.TRILINEAR_SAMPLINGMODE : options.samplingMode;
+                fullOptions.samplingMode = options.samplingMode === undefined ? Engine.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
             } else {
                 fullOptions.generateMipMaps = <boolean>options;
                 fullOptions.generateDepthBuffer = true;
                 fullOptions.generateStencilBuffer = false;
                 fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
-                fullOptions.samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+                fullOptions.samplingMode = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE;
             }
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
 

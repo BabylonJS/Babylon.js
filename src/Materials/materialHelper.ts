@@ -6,7 +6,7 @@ import { Tmp, Color3 } from "Math/math";
 import { Engine } from "Engine/engine";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { Mesh } from "Mesh/mesh";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { Light } from "Lights/light";
 
 import { UniformBuffer } from "./uniformBuffer";

@@ -2,7 +2,7 @@ import { serializeAsVector3, serialize, serializeAsMeshReference } from "Tools/d
 import { SmartArray } from "Tools/smartArray";
 import { Tools } from "Tools/tools";
 import { Color4, Color3, Vector2, Vector3, Matrix, Viewport } from "Math/math";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { SubMesh } from "Mesh/subMesh";
 import { Mesh } from "Mesh/mesh";

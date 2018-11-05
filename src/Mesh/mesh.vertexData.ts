@@ -1,8 +1,10 @@
 import { Nullable, FloatArray, IndicesArray } from "types";
 import { Matrix, Vector3, Vector2, Color3, Color4, Vector4, Axis, Epsilon } from "Math/math";
-import { VertexBuffer } from "Mesh/vertexBuffer";
-import { Geometry } from "Mesh/geometry";
-import { Mesh } from "Mesh/mesh";
+import { VertexBuffer } from "Mesh/buffer";
+
+declare type Geometry = import("Mesh/geometry").Geometry;
+declare type Mesh = import("Mesh/mesh").Mesh;
+
     /**
      * Define an interface for all classes that will get and set the data on vertices
      */
@@ -69,6 +71,22 @@ import { Mesh } from "Mesh/mesh";
      * This class contains the various kinds of data on every vertex of a mesh used in determining its shape and appearance
      */
     export class VertexData {
+        /**
+         * Mesh side orientation : usually the external or front surface
+         */
+        public static readonly FRONTSIDE = 0;
+        /**
+         * Mesh side orientation : usually the internal or back surface
+         */
+        public static readonly BACKSIDE = 1;
+        /**
+         * Mesh side orientation : both internal and external or front and back surfaces
+         */
+        public static readonly DOUBLESIDE = 2;
+        /**
+         * Mesh side orientation : by default, `FRONTSIDE`
+         */
+        public static readonly DEFAULTSIDE = 0;
 
         /**
          * An array of the x, y, z position of each vertex  [...., x, y, z, .....]
@@ -758,7 +776,7 @@ import { Mesh } from "Mesh/mesh";
             var defaultOffset: number = Math.floor(pathArray[0].length / 2);
             var offset: number = options.offset || defaultOffset;
             offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
-            var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
             var customUV = options.uvs;
             var customColors = options.colors;
 
@@ -1012,7 +1030,7 @@ import { Mesh } from "Mesh/mesh";
             var width = options.width || options.size || 1;
             var height = options.height || options.size || 1;
             var depth = options.depth || options.size || 1;
-            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(6);
             var faceColors = options.faceColors;
             var colors = [];
@@ -1093,7 +1111,7 @@ import { Mesh } from "Mesh/mesh";
             vertexData.uvs = uvs;
 
             if (faceColors) {
-                var totalColors = (sideOrientation === Mesh.DOUBLESIDE) ? colors.concat(colors) : colors;
+                var totalColors = (sideOrientation === VertexData.DOUBLESIDE) ? colors.concat(colors) : colors;
                 vertexData.colors = totalColors;
             }
 
@@ -1122,7 +1140,7 @@ import { Mesh } from "Mesh/mesh";
             var diameterZ: number = options.diameterZ || options.diameter || 1;
             var arc: number = options.arc && (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var slice: number = options.slice && (options.slice <= 0) ? 1.0 : options.slice || 1.0;
-            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
             var radius = new Vector3(diameterX / 2, diameterY / 2, diameterZ / 2);
 
@@ -1212,7 +1230,7 @@ import { Mesh } from "Mesh/mesh";
             var hasRings: boolean = options.hasRings ? true : false;
             var enclose: boolean = options.enclose ? true : false;
             var arc: number = options.arc && (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
-            var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(3);
             var faceColors = options.faceColors;
             // default face colors and UV if undefined
@@ -1474,7 +1492,7 @@ import { Mesh } from "Mesh/mesh";
             var diameter = options.diameter || 1;
             var thickness = options.thickness || 0.5;
             var tessellation = options.tessellation || 16;
-            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
             var stride = tessellation + 1;
 
@@ -1893,7 +1911,7 @@ import { Mesh } from "Mesh/mesh";
 
             var width: number = options.width || options.size || 1;
             var height: number = options.height || options.size || 1;
-            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
             // Vertices
             var halfWidth = width / 2.0;
@@ -1958,7 +1976,7 @@ import { Mesh } from "Mesh/mesh";
             var radius = options.radius || 0.5;
             var tessellation = options.tessellation || 64;
             var arc: number = options.arc && (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
-            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
             // positions and uvs
             positions.push(0, 0, 0);    // disc center first
@@ -2065,7 +2083,7 @@ import { Mesh } from "Mesh/mesh";
             vertexData.uvs = uvs;
 
             if (faceColors) {
-                var totalColors = (sideOrientation === Mesh.DOUBLESIDE) ? colors.concat(colors) : colors;
+                var totalColors = (sideOrientation === VertexData.DOUBLESIDE) ? colors.concat(colors) : colors;
                 vertexData.colors = totalColors;
             }
 
@@ -2088,7 +2106,7 @@ import { Mesh } from "Mesh/mesh";
          * @returns the VertexData of the IcoSphere
          */
         public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
-            var sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE;
+            var sideOrientation = options.sideOrientation || VertexData.DEFAULTSIDE;
             var radius = options.radius || 1;
             var flat = (options.flat === undefined) ? true : options.flat;
             var subdivisions = options.subdivisions || 4;
@@ -2408,7 +2426,7 @@ import { Mesh } from "Mesh/mesh";
             var faceUV = options.faceUV || new Array(nbfaces);
             var faceColors = options.faceColors;
             var flat = (options.flat === undefined) ? true : options.flat;
-            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
             var positions = new Array<number>();
             var indices = new Array<number>();
@@ -2522,7 +2540,7 @@ import { Mesh } from "Mesh/mesh";
             var tubularSegments = options.tubularSegments || 32;
             var p = options.p || 2;
             var q = options.q || 3;
-            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
             // Helper
             var getPos = (angle: number) => {
@@ -2834,15 +2852,15 @@ import { Mesh } from "Mesh/mesh";
             var ln: number = normals.length;
             var i: number;
             var n: number;
-            sideOrientation = sideOrientation || Mesh.DEFAULTSIDE;
+            sideOrientation = sideOrientation || VertexData.DEFAULTSIDE;
 
             switch (sideOrientation) {
 
-                case Mesh.FRONTSIDE:
+                case VertexData.FRONTSIDE:
                     // nothing changed
                     break;
 
-                case Mesh.BACKSIDE:
+                case VertexData.BACKSIDE:
                     var tmp: number;
                     // indices
                     for (i = 0; i < li; i += 3) {
@@ -2856,7 +2874,7 @@ import { Mesh } from "Mesh/mesh";
                     }
                     break;
 
-                case Mesh.DOUBLESIDE:
+                case VertexData.DOUBLESIDE:
                     // positions
                     var lp: number = positions.length;
                     var l: number = lp / 3;

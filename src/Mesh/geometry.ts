@@ -4,7 +4,7 @@
     import { Vector3, Vector2, Color4 } from "Math/math";
     import { Engine } from "Engine/engine";
     import { IGetSetVerticesData, VertexData } from "Mesh/mesh.vertexData";
-    import { VertexBuffer } from "Mesh/vertexBuffer";
+    import { VertexBuffer } from "Mesh/buffer";
     import { SubMesh } from "Mesh/subMesh";
     import { AbstractMesh } from "Mesh/abstractMesh";
     import { Mesh } from "Mesh/mesh";

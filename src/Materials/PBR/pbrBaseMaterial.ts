@@ -8,7 +8,7 @@ import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
 import { Matrix, Color3, Vector4, Tmp } from "Math/math";
 import { Engine } from "Engine/engine";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { SubMesh } from "Mesh/subMesh";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { Mesh } from "Mesh/mesh";
@@ -17,7 +17,8 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "Materials/imageProcessingConfiguration";
 import { Effect, EffectFallbacks, EffectCreationOptions } from "Materials/effect";
-import { Material, MaterialDefines } from "Materials/material";
+import { Material } from "Materials/material";
+import { MaterialDefines } from "Materials/materialDefines";
 import { PushMaterial } from "Materials/pushMaterial";
 import { MaterialHelper } from "Materials/materialHelper";
 

@@ -3,7 +3,7 @@ import { Nullable } from "types";
 import { Scene } from "scene";
 import { Matrix, Color3 } from "Math/math";
 import { Engine } from "Engine/engine";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { SubMesh } from "Mesh/subMesh";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { Mesh } from "Mesh/mesh";
@@ -12,7 +12,8 @@ import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } fr
 import { ColorCurves } from "./colorCurves";
 import { FresnelParameters } from "./fresnelParameters";
 import { EffectFallbacks, EffectCreationOptions } from "./effect";
-import { Material, MaterialDefines } from "./material";
+import { Material } from "./material";
+import { MaterialDefines } from "Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
 import { MaterialHelper } from "./materialHelper";
 

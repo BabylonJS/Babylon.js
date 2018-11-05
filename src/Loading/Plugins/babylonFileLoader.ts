@@ -8,6 +8,7 @@ import { AbstractMesh } from "Mesh/abstractMesh";
 import { Geometry, BoxGeometry, SphereGeometry, CylinderGeometry, TorusGeometry, GroundGeometry, PlaneGeometry, TorusKnotGeometry } from "Mesh/geometry";
 import { TransformNode } from "Mesh/transformNode";
 import { Material } from "Materials/material";
+import { MultiMaterial } from "Materials/multiMaterial";
 import { CubeTexture } from "Materials/Textures/cubeTexture";
 import { HDRCubeTexture } from "Materials/Textures/hdrCubeTexture";
 import { Animation } from "Animations/animation";
@@ -106,7 +107,7 @@ import { CannonJSPlugin, OimoJSPlugin } from "Physics";
             if (parsedData.multiMaterials !== undefined && parsedData.multiMaterials !== null) {
                 for (index = 0, cache = parsedData.multiMaterials.length; index < cache; index++) {
                     var parsedMultiMaterial = parsedData.multiMaterials[index];
-                    var mmat = Material.ParseMultiMaterial(parsedMultiMaterial, scene);
+                    var mmat = MultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
                     container.multiMaterials.push(mmat);
                     log += (index === 0 ? "\n\tMultiMaterials:" : "");
                     log += "\n\t\t" + mmat.toString(fullDetails);
@@ -471,7 +472,7 @@ import { CannonJSPlugin, OimoJSPlugin } from "Physics";
                                                 }
                                             }
                                             loadedMaterialsIds.push(parsedMultiMaterial.id);
-                                            var mmat = Material.ParseMultiMaterial(parsedMultiMaterial, scene);
+                                            var mmat = MultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
                                             if (mmat) {
                                                 materialFound = true;
                                                 log += "\n\tMulti-Material " + mmat.toString(fullDetails);

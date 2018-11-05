@@ -203,4 +203,32 @@ import { Tags } from "Tools/tags";
 
             super.dispose(forceDisposeEffect, forceDisposeTextures);
         }
+
+        /**
+         * Creates a MultiMaterial from parsed MultiMaterial data.
+         * @param parsedMultiMaterial defines parsed MultiMaterial data.
+         * @param scene defines the hosting scene
+         * @returns a new MultiMaterial
+         */
+        public static ParseMultiMaterial(parsedMultiMaterial: any, scene: Scene): MultiMaterial {
+            var multiMaterial = new MultiMaterial(parsedMultiMaterial.name, scene);
+
+            multiMaterial.id = parsedMultiMaterial.id;
+
+            if (Tags) {
+                Tags.AddTagsTo(multiMaterial, parsedMultiMaterial.tags);
+            }
+
+            for (var matIndex = 0; matIndex < parsedMultiMaterial.materials.length; matIndex++) {
+                var subMatId = parsedMultiMaterial.materials[matIndex];
+
+                if (subMatId) {
+                    multiMaterial.subMaterials.push(scene.getMaterialByID(subMatId));
+                } else {
+                    multiMaterial.subMaterials.push(null);
+                }
+            }
+
+            return multiMaterial;
+        }
     }

@@ -1,12 +1,14 @@
-import { Tags } from ".";
+import { Tags } from "Tools/tags";
 import { Nullable } from "types";
 import { Color4, Quaternion, Color3, Vector2, Vector3 } from "Math/math";
-import { ImageProcessingConfiguration } from "Materials/imageProcessingConfiguration";
-import { Camera } from "Cameras/camera";
-import { Scene } from "scene";
-import { Texture } from "Materials/Textures/texture";
-import { FresnelParameters } from "Materials/fresnelParameters";
-import { ColorCurves } from "Materials/colorCurves";
+
+declare type Scene = import("scene").Scene;
+declare type Camera = import("Cameras/camera").Camera;
+
+declare type ImageProcessingConfiguration = import("Materials/imageProcessingConfiguration").ImageProcessingConfiguration;
+declare type FresnelParameters = import("Materials/fresnelParameters").FresnelParameters;
+declare type ColorCurves = import("Materials/colorCurves").ColorCurves;
+declare type BaseTexture = import("Materials/Textures/baseTexture").BaseTexture;
 
     var __decoratorInitialStore = {};
     var __mergedStore = {};
@@ -204,6 +206,25 @@ import { ColorCurves } from "Materials/colorCurves";
      * Class used to help serialization objects
      */
     export class SerializationHelper {
+        /** hidden */
+        public static _ImageProcessingConfigurationParser = (sourceProperty: any): ImageProcessingConfiguration => {
+            throw "ImageProcessingConfiguration needs to be imported before being deserialized.";
+        }
+
+        /** hidden */
+        public static _FresnelParametersParser = (sourceProperty: any): FresnelParameters => {
+            throw "FresnelParameters needs to be imported before being deserialized.";
+        }
+
+        /** hidden */
+        public static _ColorCurvesParser = (sourceProperty: any): ColorCurves => {
+            throw "ColorCurves needs to be imported before being deserialized.";
+        }
+
+        /** hidden */
+        public static _TextureParser = (sourceProperty: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> => {
+            throw "Texture needs to be imported before being deserialized.";
+        }
 
         /**
          * Static function used to serialized a specific entity
@@ -311,14 +332,14 @@ import { ColorCurves } from "Materials/colorCurves";
                             break;
                         case 1:     // Texture
                             if (scene) {
-                                dest[property] = Texture.Parse(sourceProperty, scene, rootUrl);
+                                dest[property] = SerializationHelper._TextureParser(sourceProperty, scene, rootUrl);
                             }
                             break;
                         case 2:     // Color3
                             dest[property] = Color3.FromArray(sourceProperty);
                             break;
                         case 3:     // FresnelParameters
-                            dest[property] = FresnelParameters.Parse(sourceProperty);
+                            dest[property] = SerializationHelper._FresnelParametersParser(sourceProperty);
                             break;
                         case 4:     // Vector2
                             dest[property] = Vector2.FromArray(sourceProperty);
@@ -332,13 +353,13 @@ import { ColorCurves } from "Materials/colorCurves";
                             }
                             break;
                         case 7:     // Color Curves
-                            dest[property] = ColorCurves.Parse(sourceProperty);
+                            dest[property] = SerializationHelper._ColorCurvesParser(sourceProperty);
                             break;
                         case 8:     // Color 4
                             dest[property] = Color4.FromArray(sourceProperty);
                             break;
                         case 9:     // Image Processing
-                            dest[property] = ImageProcessingConfiguration.Parse(sourceProperty);
+                            dest[property] = SerializationHelper._ImageProcessingConfigurationParser(sourceProperty);
                             break;
                         case 10:    // Quaternion
                             dest[property] = Quaternion.FromArray(sourceProperty);

@@ -1,7 +1,7 @@
 import { Nullable } from "types";
 import { Color4 } from "Math/math";
 import { SubMesh } from "Mesh/subMesh";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { SmartArray } from "Tools/smartArray";
 import { Scene } from "scene";
 import { Texture } from "Materials/Textures/texture";

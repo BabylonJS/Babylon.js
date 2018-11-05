@@ -7,7 +7,7 @@ import { Collider } from "./collider";
 import { WorkerIncluded } from "./collisionWorker";
 import { TransformNode } from "Mesh/transformNode";
 import { Geometry } from "Mesh/geometry";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { InstancedMesh } from "Mesh/instancedMesh";
 import { Mesh } from "Mesh/mesh";

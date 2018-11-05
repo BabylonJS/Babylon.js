@@ -1,4 +1,4 @@
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { SubMesh } from "Mesh/subMesh";
 import { _InstancesBatch } from "Mesh/mesh";
 import { AbstractMesh } from "Mesh/abstractMesh";

@@ -1,6 +1,6 @@
 import { Nullable, IndicesArray, FloatArray } from "types";
 import { Color4, Vector3, Matrix, Tmp, Quaternion, Axis } from "Math/math";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { VertexData } from "Mesh/mesh.vertexData";
 import { Mesh } from "Mesh/mesh";
 import { MeshBuilder } from "Mesh/meshBuilder";
