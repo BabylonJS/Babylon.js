@@ -46665,6 +46665,8 @@ declare module BABYLON {
          * @param callback Define the callback triggered once the entire list will be ready
          */
         static WhenAllReady(textures: BaseTexture[], callback: () => void): void;
+
+        metadata: any;
     }
 }
 
