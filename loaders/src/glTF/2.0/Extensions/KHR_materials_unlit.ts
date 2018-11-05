@@ -40,7 +40,6 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
         }
 
         const promises = new Array<Promise<any>>();
-
         babylonMaterial.unlit = true;
 
         const properties = material.pbrMetallicRoughness;
@@ -55,8 +54,8 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
 
             if (properties.baseColorTexture) {
                 promises.push(this._loader.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, (texture) => {
+                    texture.name = `${babylonMaterial.name} (Base Color)`;
                     babylonMaterial.albedoTexture = texture;
-                    return Promise.resolve();
                 }));
             }
         }

@@ -51,6 +51,12 @@ import { AnimationPropertiesOverride } from "Animations/animationPropertiesOverr
             }
         }
 
+        /**
+         * Gets or sets the id of the morph Target
+         */
+        @serialize()
+        public id: string;
+
         private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
         /**
@@ -177,6 +183,9 @@ import { AnimationPropertiesOverride } from "Animations/animationPropertiesOverr
             serializationObject.influence = this.influence;
 
             serializationObject.positions = Array.prototype.slice.call(this.getPositions());
+            if (this.id != null) {
+                serializationObject.id = this.id;
+            }
             if (this.hasNormals) {
                 serializationObject.normals = Array.prototype.slice.call(this.getNormals());
             }
@@ -188,6 +197,14 @@ import { AnimationPropertiesOverride } from "Animations/animationPropertiesOverr
             Animation.AppendSerializedAnimations(this, serializationObject);
 
             return serializationObject;
+        }
+
+        /**
+         * Returns the string "MorphTarget"
+         * @returns "MorphTarget"
+         */
+        public getClassName(): string {
+            return "MorphTarget";
         }
 
         // Statics
@@ -202,6 +219,9 @@ import { AnimationPropertiesOverride } from "Animations/animationPropertiesOverr
 
             result.setPositions(serializationObject.positions);
 
+            if (serializationObject.id != null) {
+                result.id = serializationObject.id;
+            }
             if (serializationObject.normals) {
                 result.setNormals(serializationObject.normals);
             }

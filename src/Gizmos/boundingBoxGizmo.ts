@@ -190,7 +190,7 @@ import { StandardMaterial } from "Materials/standardMaterial";
                         var dragAxis = worldDragDirection.subtract(toSub).normalizeToNew();
 
                         // project drag delta on to the resulting drag axis and rotate based on that
-                        var projectDist = -Vector3.Dot(dragAxis, event.delta);
+                        var projectDist = Vector3.Dot(dragAxis, event.delta) < 0 ? Math.abs(event.delta.length()) : -Math.abs(event.delta.length());
 
                         // Make rotation relative to size of mesh.
                         projectDist = (projectDist / this._boundingDimensions.length()) * this._anchorMesh.scaling.length();
@@ -326,6 +326,9 @@ import { StandardMaterial } from "Materials/standardMaterial";
                 // Only update the bouding box if scaling has changed
                 if (this.attachedMesh && !this._existingMeshScale.equals(this.attachedMesh.scaling)) {
                     this.updateBoundingBox();
+                }else if (this.fixedDragMeshScreenSize) {
+                    this._updateRotationSpheres();
+                    this._updateScaleBoxes();
                 }
             });
             this.updateBoundingBox();
@@ -389,7 +392,16 @@ import { StandardMaterial } from "Materials/standardMaterial";
                 this.attachedMesh.position.copyFrom(this._tmpVector);
             }
 
-            // Update rotation sphere locations
+            this._updateRotationSpheres();
+            this._updateScaleBoxes();
+
+            if (this.attachedMesh) {
+                this._existingMeshScale.copyFrom(this.attachedMesh.scaling);
+                BoundingBoxGizmo._RestorePivotPoint(this.attachedMesh);
+            }
+        }
+
+        private _updateRotationSpheres() {
             var rotateSpheres = this._rotateSpheresParent.getChildMeshes();
             for (var i = 0; i < 3; i++) {
                 for (var j = 0; j < 2; j++) {
@@ -411,9 +423,6 @@ import { StandardMaterial } from "Materials/standardMaterial";
                             rotateSpheres[index].lookAt(Vector3.Cross(Vector3.Forward(), rotateSpheres[index].position.normalizeToNew()).normalizeToNew().add(rotateSpheres[index].position));
                         }
                         if (this.fixedDragMeshScreenSize) {
-                            this._rootMesh.computeWorldMatrix();
-                            this._rotateSpheresParent.computeWorldMatrix();
-                            rotateSpheres[index].computeWorldMatrix();
                             rotateSpheres[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera!.position, this._tmpVector);
                             var distanceFromCamera = this.rotationSphereSize * this._tmpVector.length() / this.fixedDragMeshScreenSizeDistanceFactor;
                             rotateSpheres[index].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
@@ -423,8 +432,9 @@ import { StandardMaterial } from "Materials/standardMaterial";
                     }
                 }
             }
+        }
 
-            // Update scale box locations
+        private _updateScaleBoxes() {
             var scaleBoxes = this._scaleBoxesParent.getChildMeshes();
             for (var i = 0; i < 2; i++) {
                 for (var j = 0; j < 2; j++) {
@@ -434,9 +444,6 @@ import { StandardMaterial } from "Materials/standardMaterial";
                             scaleBoxes[index].position.set(this._boundingDimensions.x * i, this._boundingDimensions.y * j, this._boundingDimensions.z * k);
                             scaleBoxes[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
                             if (this.fixedDragMeshScreenSize) {
-                                this._rootMesh.computeWorldMatrix();
-                                this._scaleBoxesParent.computeWorldMatrix();
-                                scaleBoxes[index].computeWorldMatrix();
                                 scaleBoxes[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera!.position, this._tmpVector);
                                 var distanceFromCamera = this.scaleBoxSize * this._tmpVector.length() / this.fixedDragMeshScreenSizeDistanceFactor;
                                 scaleBoxes[index].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
@@ -446,10 +453,6 @@ import { StandardMaterial } from "Materials/standardMaterial";
                         }
                     }
                 }
-            }
-            if (this.attachedMesh) {
-                this._existingMeshScale.copyFrom(this.attachedMesh.scaling);
-                BoundingBoxGizmo._RestorePivotPoint(this.attachedMesh);
             }
         }
 

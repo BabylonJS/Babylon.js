@@ -1307,6 +1307,8 @@ import { Node } from "node";
 
             this.useMaterialMeshMap = options && options.useGeometryIdsMap || false;
             this.useClonedMeshhMap = options && options.useClonedMeshhMap || false;
+
+            this._engine.onNewSceneAddedObservable.notifyObservers(this);
         }
 
         private _defaultMeshCandidates: ISmartArrayLike<AbstractMesh> = {
@@ -3999,6 +4001,24 @@ import { Node } from "node";
                 }
             }
 
+            return null;
+        }
+
+        /**
+         * Gets a morph target using a given id (if many are found, this function will pick the first one)
+         * @param id defines the id to search for
+         * @return the found morph target or null if not found at all.
+         */
+        public getMorphTargetById(id: string): Nullable<MorphTarget> {
+            for (let managerIndex = 0; managerIndex < this.morphTargetManagers.length; ++managerIndex) {
+                const morphTargetManager = this.morphTargetManagers[managerIndex];
+                for (let index = 0; index < morphTargetManager.numTargets; ++index) {
+                    const target = morphTargetManager.getTarget(index);
+                    if (target.id === id) {
+                        return target;
+                    }
+                }
+            }
             return null;
         }
 
