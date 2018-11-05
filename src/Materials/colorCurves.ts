@@ -2,6 +2,11 @@ import { serialize } from "Tools/decorators";
 import { SerializationHelper } from "Tools";
 import { Color4 } from "Math";
 import { Effect } from "Materials";
+
+SerializationHelper._ColorCurvesParser = (sourceProperty: any): ColorCurves => {
+    return ColorCurves.Parse(sourceProperty);
+};
+
     /**
      * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
      * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.

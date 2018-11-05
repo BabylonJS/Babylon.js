@@ -5,7 +5,7 @@ import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
 import { Vector2, Color4 } from "Math/math";
 import { Engine } from "Engine/engine";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { SubMesh } from "Mesh/subMesh";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { Mesh } from "Mesh/mesh";

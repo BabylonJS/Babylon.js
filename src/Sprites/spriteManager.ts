@@ -2,7 +2,7 @@ import { IDisposable, Scene } from "scene";
 import { Nullable } from "types";
 import { Observable, Observer } from "Tools/observable";
 import { Buffer } from "Mesh/buffer";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { Vector3 } from "Math/math";
 import { Sprite } from "./sprite";
 import { SpriteSceneComponent } from "./spriteSceneComponent";

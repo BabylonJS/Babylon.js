@@ -2,17 +2,19 @@ import { Tools } from "Tools/tools";
 import { Nullable, IndicesArray } from "types";
 import { Matrix, Vector3, Plane } from "Math/math";
 import { Engine } from "Engine/engine";
-import { Mesh } from "./mesh";
-import { AbstractMesh } from "./abstractMesh";
-import { LinesMesh } from "./linesMesh";
-import { VertexBuffer } from "./vertexBuffer";
+import { VertexBuffer } from "./buffer";
 import { Collider } from "Collisions/collider";
 import { IntersectionInfo } from "Collisions/pickingInfo";
 import { Ray } from "Culling/ray";
 import { ICullable, BoundingInfo } from "Culling/boundingInfo";
 import { Effect } from "Materials/effect";
-import { Material, MaterialDefines } from "Materials/material";
+import { Material } from "Materials/material";
+import { MaterialDefines } from "Materials/materialDefines";
 import { MultiMaterial } from "Materials/multiMaterial";
+
+declare type AbstractMesh = import("./abstractMesh").AbstractMesh;
+declare type Mesh = import("./mesh").Mesh;
+
     /**
      * Base class for submeshes
      */
@@ -357,10 +359,8 @@ import { MultiMaterial } from "Materials/multiMaterial";
             }
 
             // LineMesh first as it's also a Mesh...
-            if (LinesMesh) {
-                if (this._mesh.getClassName() === "InstancedLinesMesh" || this._mesh.getClassName() === "LinesMesh") {
-                    return this._intersectLines(ray, positions, indices, (this._mesh as any).intersectionThreshold, fastCheck);
-                }
+            if (this._mesh.getClassName() === "InstancedLinesMesh" || this._mesh.getClassName() === "LinesMesh") {
+                return this._intersectLines(ray, positions, indices, (this._mesh as any).intersectionThreshold, fastCheck);
             }
 
             return this._intersectTriangles(ray, positions, indices, fastCheck);
@@ -488,8 +488,8 @@ import { MultiMaterial } from "Materials/multiMaterial";
             var minVertexIndex = Number.MAX_VALUE;
             var maxVertexIndex = -Number.MAX_VALUE;
 
-            renderingMesh = (<Mesh>(renderingMesh || <Mesh>mesh));
-            var indices = <IndicesArray>renderingMesh.getIndices();
+            const whatWillRender = (renderingMesh || mesh);
+            var indices = whatWillRender!.getIndices()!;
 
             for (var index = startIndex; index < startIndex + indexCount; index++) {
                 var vertexIndex = indices[index];

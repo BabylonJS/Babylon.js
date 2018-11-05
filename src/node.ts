@@ -5,10 +5,11 @@ import { Scene } from "scene";
 import { Nullable } from "types";
 import { Matrix } from "Math/math";
 import { Engine } from "Engine/engine";
-import { AbstractMesh } from "Mesh/abstractMesh";
 import { IBehaviorAware, Behavior } from "Behaviors/behavior";
 import { serialize } from "Tools/decorators";
 import { Observable, Observer } from "Tools/observable";
+
+declare type AbstractMesh = import("Mesh/abstractMesh").AbstractMesh;
 
     /**
      * Defines how a node can be built from a string name.
@@ -538,7 +539,7 @@ import { Observable, Observer } from "Tools/observable";
         public getChildMeshes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): AbstractMesh[] {
             var results: Array<AbstractMesh> = [];
             this._getDescendants(results, directDescendantsOnly, (node: Node) => {
-                return ((!predicate || predicate(node)) && (node instanceof AbstractMesh));
+                return ((!predicate || predicate(node)) && ((<AbstractMesh>node).cullingStrategy !== undefined));
             });
             return results;
         }

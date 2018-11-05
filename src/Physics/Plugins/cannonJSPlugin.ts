@@ -1,7 +1,7 @@
 import { Nullable, FloatArray } from "types";
 import { Tools } from "Tools/tools";
 import { Vector3, Matrix, Quaternion } from "Math/math";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { IPhysicsEnginePlugin, PhysicsImpostor, PhysicsImpostorJoint, PhysicsJoint, DistanceJointData, SpringJointData, PhysicsEngine, IPhysicsEnabledObject, IMotorEnabledJoint } from "Physics";
 

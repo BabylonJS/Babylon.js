@@ -5,7 +5,7 @@ import { Matrix, Vector3, Color3, Viewport } from "Math/math";
 import { Scalar } from "Math/math.scalar";
 import { Engine } from "Engine/engine";
 import { AbstractMesh } from "Mesh/abstractMesh";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { Ray } from "Culling/ray";
 import { Effect } from "Materials/effect";
 import { Material } from "Materials/material";

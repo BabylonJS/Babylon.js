@@ -4,7 +4,7 @@ import { Nullable } from "types";
 import { Scene } from "scene";
 import { Matrix, Vector3, Vector2, Color3, Color4 } from "Math/math";
 import { Engine } from "Engine/engine";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { SceneComponentConstants } from "sceneComponent";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";

@@ -1,7 +1,7 @@
 import { Tools } from "Tools/tools";
 import { Scene } from "scene";
 import { Vector3, Vector2, Path2 } from "Math/math";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { Mesh } from "Mesh/mesh";
 
     declare var earcut: any;

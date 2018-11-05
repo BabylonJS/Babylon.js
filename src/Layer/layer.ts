@@ -3,7 +3,7 @@ import { Nullable } from "types";
 import { Scene } from "scene";
 import { Vector2, Color4 } from "Math/math";
 import { Engine } from "Engine/engine";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { Effect } from "Materials/effect";
 import { Material } from "Materials/material";
 import { Texture } from "Materials/Textures/texture";

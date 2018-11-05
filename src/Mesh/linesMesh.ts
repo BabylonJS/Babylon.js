@@ -2,7 +2,7 @@ import { Nullable } from "types";
 import { Scene } from "scene";
 import { Color3 } from "Math/math";
 import { Node } from "node";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { SubMesh } from "Mesh/subMesh";
 import { Mesh } from "Mesh/mesh";
 import { InstancedMesh } from "Mesh/instancedMesh";

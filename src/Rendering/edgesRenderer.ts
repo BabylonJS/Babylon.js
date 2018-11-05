@@ -1,5 +1,5 @@
 import { Nullable } from "types";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { LinesMesh, InstancedLinesMesh } from "Mesh/linesMesh";
 import { Vector3 } from "Math/math";

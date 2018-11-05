@@ -3,10 +3,15 @@ import { Observable } from "Tools/observable";
 import { Tools } from "Tools/tools";
 import { Nullable } from "types";
 import { Color4 } from "Math/math";
-import { MaterialDefines } from "Materials/material";
+import { MaterialDefines } from "Materials/materialDefines";
 import { Effect } from "Materials/effect";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 import { ColorCurves } from "Materials/colorCurves";
+
+SerializationHelper._ImageProcessingConfigurationParser = (sourceProperty: any) => {
+    return ImageProcessingConfiguration.Parse(sourceProperty);
+};
+
     /**
      * Interface to follow in your material defines to integrate easily the
      * Image proccessing functions.

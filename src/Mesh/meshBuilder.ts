@@ -5,12 +5,280 @@ import { Scene } from "scene";
 import { Matrix, Vector3, Vector2, Color3, Color4, Plane, Tmp, Epsilon, Vector4, Axis, Path3D, PositionNormalVertex } from "Math/math";
 import { Mesh, _CreationDataStorage } from "./mesh";
 import { AbstractMesh } from "./abstractMesh";
-import { VertexBuffer } from "./VertexBuffer";
+import { VertexBuffer } from "./buffer";
 import { LinesMesh } from "./linesMesh";
 import { VertexData } from "./mesh.vertexData";
 import { GroundMesh } from "./groundMesh";
 import { PolygonMeshBuilder } from "./polygonMesh";
 import { BoundingInfo } from "Culling/boundingInfo";
+
+Mesh.CreateRibbon = (name: string, pathArray: Vector3[][], closeArray: boolean = false, closePath: boolean, offset: number, scene?: Scene, updatable: boolean = false, sideOrientation?: number, instance?: Mesh) => {
+    return MeshBuilder.CreateRibbon(name, {
+        pathArray: pathArray,
+        closeArray: closeArray,
+        closePath: closePath,
+        offset: offset,
+        updatable: updatable,
+        sideOrientation: sideOrientation,
+        instance: instance
+    }, scene);
+};
+
+Mesh.CreateDisc = (name: string, radius: number, tessellation: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
+    var options = {
+        radius: radius,
+        tessellation: tessellation,
+        sideOrientation: sideOrientation,
+        updatable: updatable
+    };
+
+    return MeshBuilder.CreateDisc(name, options, scene);
+};
+
+Mesh.CreateBox = (name: string, size: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
+    var options = {
+        size: size,
+        sideOrientation: sideOrientation,
+        updatable: updatable
+    };
+
+    return MeshBuilder.CreateBox(name, options, scene);
+};
+
+Mesh.CreateSphere = (name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+    var options = {
+        segments: segments,
+        diameterX: diameter,
+        diameterY: diameter,
+        diameterZ: diameter,
+        sideOrientation: sideOrientation,
+        updatable: updatable
+    };
+
+    return MeshBuilder.CreateSphere(name, options, scene);
+};
+
+Mesh.CreateCylinder = (name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene?: Scene, updatable?: any, sideOrientation?: number): Mesh => {
+    if (scene === undefined || !(scene instanceof Scene)) {
+        if (scene !== undefined) {
+            sideOrientation = updatable || Mesh.DEFAULTSIDE;
+            updatable = scene;
+        }
+        scene = <Scene>subdivisions;
+        subdivisions = 1;
+    }
+
+    var options = {
+        height: height,
+        diameterTop: diameterTop,
+        diameterBottom: diameterBottom,
+        tessellation: tessellation,
+        subdivisions: subdivisions,
+        sideOrientation: sideOrientation,
+        updatable: updatable
+    };
+
+    return MeshBuilder.CreateCylinder(name, options, scene);
+};
+
+Mesh.CreateTorus = (name: string, diameter: number, thickness: number, tessellation: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+    var options = {
+        diameter: diameter,
+        thickness: thickness,
+        tessellation: tessellation,
+        sideOrientation: sideOrientation,
+        updatable: updatable
+    };
+
+    return MeshBuilder.CreateTorus(name, options, scene);
+};
+
+Mesh.CreateTorusKnot = (name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+    var options = {
+        radius: radius,
+        tube: tube,
+        radialSegments: radialSegments,
+        tubularSegments: tubularSegments,
+        p: p,
+        q: q,
+        sideOrientation: sideOrientation,
+        updatable: updatable
+    };
+
+    return MeshBuilder.CreateTorusKnot(name, options, scene);
+};
+
+Mesh.CreateLines = (name: string, points: Vector3[], scene: Nullable<Scene> = null, updatable: boolean = false, instance: Nullable<LinesMesh> = null): LinesMesh => {
+    var options = {
+        points: points,
+        updatable: updatable,
+        instance: instance
+    };
+    return MeshBuilder.CreateLines(name, options, scene);
+};
+
+Mesh.CreateDashedLines = (name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Nullable<Scene> = null, updatable?: boolean, instance?: LinesMesh): LinesMesh => {
+    var options = {
+        points: points,
+        dashSize: dashSize,
+        gapSize: gapSize,
+        dashNb: dashNb,
+        updatable: updatable,
+        instance: instance
+    };
+    return MeshBuilder.CreateDashedLines(name, options, scene);
+};
+
+Mesh.CreatePolygon = (name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh => {
+    var options = {
+        shape: shape,
+        holes: holes,
+        updatable: updatable,
+        sideOrientation: sideOrientation
+    };
+    return MeshBuilder.CreatePolygon(name, options, scene);
+};
+
+Mesh.ExtrudePolygon = (name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh => {
+    var options = {
+        shape: shape,
+        holes: holes,
+        depth: depth,
+        updatable: updatable,
+        sideOrientation: sideOrientation
+    };
+    return MeshBuilder.ExtrudePolygon(name, options, scene);
+};
+
+Mesh.ExtrudeShape = (name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh => {
+    var options = {
+        shape: shape,
+        path: path,
+        scale: scale,
+        rotation: rotation,
+        cap: (cap === 0) ? 0 : cap || Mesh.NO_CAP,
+        sideOrientation: sideOrientation,
+        instance: instance,
+        updatable: updatable
+    };
+
+    return MeshBuilder.ExtrudeShape(name, options, scene);
+};
+
+Mesh.ExtrudeShapeCustom = (name: string, shape: Vector3[], path: Vector3[], scaleFunction: Function, rotationFunction: Function, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh => {
+    var options = {
+        shape: shape,
+        path: path,
+        scaleFunction: scaleFunction,
+        rotationFunction: rotationFunction,
+        ribbonCloseArray: ribbonCloseArray,
+        ribbonClosePath: ribbonClosePath,
+        cap: (cap === 0) ? 0 : cap || Mesh.NO_CAP,
+        sideOrientation: sideOrientation,
+        instance: instance,
+        updatable: updatable
+    };
+
+    return MeshBuilder.ExtrudeShapeCustom(name, options, scene);
+};
+
+Mesh.CreateLathe = (name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+    var options = {
+        shape: shape,
+        radius: radius,
+        tessellation: tessellation,
+        sideOrientation: sideOrientation,
+        updatable: updatable
+    };
+
+    return MeshBuilder.CreateLathe(name, options, scene);
+};
+
+Mesh.CreatePlane = (name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+    var options = {
+        size: size,
+        width: size,
+        height: size,
+        sideOrientation: sideOrientation,
+        updatable: updatable
+    };
+
+    return MeshBuilder.CreatePlane(name, options, scene);
+};
+
+Mesh.CreateGround = (name: string, width: number, height: number, subdivisions: number, scene?: Scene, updatable?: boolean): Mesh => {
+    var options = {
+        width: width,
+        height: height,
+        subdivisions: subdivisions,
+        updatable: updatable
+    };
+
+    return MeshBuilder.CreateGround(name, options, scene);
+};
+
+Mesh.CreateTiledGround = (name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: { w: number; h: number; }, precision: { w: number; h: number; }, scene: Scene, updatable?: boolean): Mesh => {
+    var options = {
+        xmin: xmin,
+        zmin: zmin,
+        xmax: xmax,
+        zmax: zmax,
+        subdivisions: subdivisions,
+        precision: precision,
+        updatable: updatable
+    };
+
+    return MeshBuilder.CreateTiledGround(name, options, scene);
+};
+
+Mesh.CreateGroundFromHeightMap = (name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void, alphaFilter?: number): GroundMesh => {
+    var options = {
+        width: width,
+        height: height,
+        subdivisions: subdivisions,
+        minHeight: minHeight,
+        maxHeight: maxHeight,
+        updatable: updatable,
+        onReady: onReady,
+        alphaFilter: alphaFilter
+    };
+
+    return MeshBuilder.CreateGroundFromHeightMap(name, url, options, scene);
+};
+
+Mesh.CreateTube = (name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh => {
+    var options = {
+        path: path,
+        radius: radius,
+        tessellation: tessellation,
+        radiusFunction: radiusFunction,
+        arc: 1,
+        cap: cap,
+        updatable: updatable,
+        sideOrientation: sideOrientation,
+        instance: instance
+    };
+    return MeshBuilder.CreateTube(name, options, scene);
+};
+
+Mesh.CreatePolyhedron = (name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh => {
+    return MeshBuilder.CreatePolyhedron(name, options, scene);
+};
+
+Mesh.CreateIcoSphere = (name: string, options: { radius?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh => {
+    return MeshBuilder.CreateIcoSphere(name, options, scene);
+};
+
+Mesh.CreateDecal = (name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): Mesh => {
+    var options = {
+        position: position,
+        normal: normal,
+        size: size,
+        angle: angle
+    };
+
+    return MeshBuilder.CreateDecal(name, sourceMesh, options);
+};
 
     /**
      * Class containing static functions to help procedurally build meshes

@@ -3,7 +3,7 @@ import { IAnimatable, Tools, IValueGradient, ColorGradient, FactorGradient, Colo
 import { Observable } from "Tools/observable";
 import { Color4, Color3, Vector3, Matrix, Tmp } from "Math/math";
 import { Scalar } from "Math/math.scalar";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { Buffer } from "Mesh/buffer";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { IParticleSystem } from "./IParticleSystem";

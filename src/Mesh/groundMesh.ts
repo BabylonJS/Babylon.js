@@ -1,7 +1,12 @@
 import { Scene } from "scene";
 import { Vector3, Vector2, Tmp, Vector4 } from "Math/math";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { Mesh } from "Mesh/mesh";
+
+Mesh._GroundMeshParser =  (parsedMesh: any, scene: Scene): Mesh => {
+    return GroundMesh.Parse(parsedMesh, scene);
+};
+
     /**
      * Mesh representing the gorund
      */

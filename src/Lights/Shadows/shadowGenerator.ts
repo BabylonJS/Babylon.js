@@ -3,7 +3,7 @@ import { Nullable } from "types";
 import { Scene } from "scene";
 import { Matrix, Vector3, Vector2, Color4 } from "Math/math";
 import { Engine } from "Engine/engine";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { SubMesh } from "Mesh/subMesh";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { Mesh } from "Mesh/mesh";
@@ -12,7 +12,8 @@ import { IShadowLight } from "Lights/shadowLight";
 import { Light } from "Lights/light";
 import { ShadowGeneratorSceneComponent } from "./shadowGeneratorSceneComponent";
 
-import { Material, MaterialDefines } from "Materials/material";
+import { Material } from "Materials/material";
+import { MaterialDefines } from "Materials/materialDefines";
 import { MaterialHelper } from "Materials/materialHelper";
 import { Effect } from "Materials/effect";
 import { Texture } from "Materials/Textures/texture";

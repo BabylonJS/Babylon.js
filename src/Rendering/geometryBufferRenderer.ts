@@ -1,5 +1,5 @@
 import { Matrix, Color4 } from "Math/math";
-import { VertexBuffer } from "Mesh/vertexBuffer";
+import { VertexBuffer } from "Mesh/buffer";
 import { SubMesh } from "Mesh/subMesh";
 import { Mesh } from "Mesh/mesh";
 import { Engine } from "Engine/engine";

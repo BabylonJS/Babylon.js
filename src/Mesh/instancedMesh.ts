@@ -8,6 +8,10 @@ import { Mesh } from "Mesh/mesh";
 import { Material } from "Materials/material";
 import { Skeleton } from "Bones/skeleton";
 
+Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
+    return new InstancedMesh(name, mesh);
+};
+
     /**
      * Creates an instance based on a source mesh.
      */

@@ -3,15 +3,19 @@ import { Observable } from "Tools/observable";
 import { Tools } from "Tools/tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Vector3, Plane } from "Math/math";
-import { Engine } from "Engine";
-import { Animation } from "Animations/animation";
+import { Matrix, Vector3 } from "Math/math";
+import { Engine } from "Engine/engine";
 import { Material } from "Materials/material";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
-import { MirrorTexture } from "Materials/Textures/mirrorTexture";
-import { CubeTexture } from "Materials/Textures/cubeTexture";
+// import { Animation } from "Animations/animation";
+// import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+// import { MirrorTexture } from "Materials/Textures/mirrorTexture";
+// import { CubeTexture } from "Materials/Textures/cubeTexture";
+
+SerializationHelper._TextureParser = (sourceProperty: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> => {
+    return Texture.Parse(sourceProperty, scene, rootUrl);
+};
 
     /**
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
@@ -594,77 +598,81 @@ import { CubeTexture } from "Materials/Textures/cubeTexture";
          * @returns The parsed texture if successful
          */
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> {
-            if (parsedTexture.customType) {
-                var customTexture = Tools.Instantiate(parsedTexture.customType);
-                // Update Sampling Mode
-                var parsedCustomTexture: any = customTexture.Parse(parsedTexture, scene, rootUrl);
-                if (parsedTexture.samplingMode && parsedCustomTexture.updateSamplingMode && parsedCustomTexture._samplingMode) {
-                    if (parsedCustomTexture._samplingMode !== parsedTexture.samplingMode) {
-                        parsedCustomTexture.updateSamplingMode(parsedTexture.samplingMode);
-                    }
-                }
-                return parsedCustomTexture;
-            }
+            // if (parsedTexture.customType) {
+            //     var customTexture = Tools.Instantiate(parsedTexture.customType);
+            //     // Update Sampling Mode
+            //     var parsedCustomTexture: any = customTexture.Parse(parsedTexture, scene, rootUrl);
+            //     if (parsedTexture.samplingMode && parsedCustomTexture.updateSamplingMode && parsedCustomTexture._samplingMode) {
+            //         if (parsedCustomTexture._samplingMode !== parsedTexture.samplingMode) {
+            //             parsedCustomTexture.updateSamplingMode(parsedTexture.samplingMode);
+            //         }
+            //     }
+            //     return parsedCustomTexture;
+            // }
 
-            if (parsedTexture.isCube) {
-                return CubeTexture.Parse(parsedTexture, scene, rootUrl);
-            }
+            // if (parsedTexture.isCube) {
+            //     //return CubeTexture.Parse(parsedTexture, scene, rootUrl);
+            //     return <any> 0;
+            // }
 
-            if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
-                return null;
-            }
+            // if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
+            //     return null;
+            // }
 
-            var texture = SerializationHelper.Parse(() => {
-                var generateMipMaps: boolean = true;
-                if (parsedTexture.noMipmap) {
-                    generateMipMaps = false;
-                }
-                if (parsedTexture.mirrorPlane) {
-                    var mirrorTexture = new MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
-                    mirrorTexture._waitingRenderList = parsedTexture.renderList;
-                    mirrorTexture.mirrorPlane = Plane.FromArray(parsedTexture.mirrorPlane);
+            // var texture = SerializationHelper.Parse(() => {
+            //     var generateMipMaps: boolean = true;
+            //     if (parsedTexture.noMipmap) {
+            //         generateMipMaps = false;
+            //     }
+            //     if (parsedTexture.mirrorPlane) {
+            //         // var mirrorTexture = new MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
+            //         // mirrorTexture._waitingRenderList = parsedTexture.renderList;
+            //         // mirrorTexture.mirrorPlane = Plane.FromArray(parsedTexture.mirrorPlane);
 
-                    return mirrorTexture;
-                } else if (parsedTexture.isRenderTarget) {
-                    var renderTargetTexture = new RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
-                    renderTargetTexture._waitingRenderList = parsedTexture.renderList;
+            //         // return mirrorTexture;
+            //         return;
+            //     } else if (parsedTexture.isRenderTarget) {
+            //         // var renderTargetTexture = new RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
+            //         // renderTargetTexture._waitingRenderList = parsedTexture.renderList;
 
-                    return renderTargetTexture;
-                } else {
-                    var texture: Texture;
-                    if (parsedTexture.base64String) {
-                        texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps);
-                    } else {
-                        let url = rootUrl + parsedTexture.name;
+            //         // return renderTargetTexture;
+            //         return;
+            //     } else {
+            //         var texture: Texture;
+            //         if (parsedTexture.base64String) {
+            //             texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps);
+            //         } else {
+            //             let url = rootUrl + parsedTexture.name;
 
-                        if (Texture.UseSerializedUrlIfAny && parsedTexture.url) {
-                            url = parsedTexture.url;
-                        }
-                        texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY);
-                    }
+            //             if (Texture.UseSerializedUrlIfAny && parsedTexture.url) {
+            //                 url = parsedTexture.url;
+            //             }
+            //             texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY);
+            //         }
 
-                    return texture;
-                }
-            }, parsedTexture, scene);
+            //         return texture;
+            //     }
+            // }, parsedTexture, scene);
 
-            // Update Sampling Mode
-            if (parsedTexture.samplingMode) {
-                var sampling: number = parsedTexture.samplingMode;
-                if (texture._samplingMode !== sampling) {
-                    texture.updateSamplingMode(sampling);
-                }
-            }
+            // // Update Sampling Mode
+            // if (parsedTexture.samplingMode) {
+            //     var sampling: number = parsedTexture.samplingMode;
+            //     if (texture._samplingMode !== sampling) {
+            //         texture.updateSamplingMode(sampling);
+            //     }
+            // }
 
-            // Animations
-            if (parsedTexture.animations) {
-                for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
-                    var parsedAnimation = parsedTexture.animations[animationIndex];
+            // // Animations
+            // if (parsedTexture.animations) {
+            //     for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
+            //         var parsedAnimation = parsedTexture.animations[animationIndex];
 
-                    texture.animations.push(Animation.Parse(parsedAnimation));
-                }
-            }
+            //         texture.animations.push(Animation.Parse(parsedAnimation));
+            //     }
+            // }
 
-            return texture;
+            // return texture;
+            return <any>0;
         }
 
         /**
