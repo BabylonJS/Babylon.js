@@ -23,6 +23,12 @@ module BABYLON {
         @serialize()
         public name: string;
 
+        /**
+         * Gets or sets an object used to store user defined information.
+         */
+        @serialize()
+        public metadata: any = null;
+
         @serialize("hasAlpha")
         private _hasAlpha = false;
         /**

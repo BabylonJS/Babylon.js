@@ -53,8 +53,8 @@ module BABYLON.GLTF2.Loader.Extensions {
 
                 if (properties.baseColorTexture) {
                     promises.push(this._loader.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, (texture) => {
+                        texture.name = `${babylonMaterial.name} (Base Color)`;
                         babylonMaterial.albedoTexture = texture;
-                        return Promise.resolve();
                     }));
                 }
             }

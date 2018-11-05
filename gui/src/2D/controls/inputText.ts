@@ -34,6 +34,7 @@ export class InputText extends Control implements IFocusableControl {
     private _highlightedText = "";
     private _startHighlightIndex = 0;
     private _endHighlightIndex = 0;
+    private _onFocusSelectAll = false;
     private _onClipboardObserver: Nullable<Observer<ClipboardInfo>>;
     private _onPointerDblTapObserver: Nullable<Observer<PointerInfo>>;
 
@@ -80,7 +81,7 @@ export class InputText extends Control implements IFocusableControl {
         }
     }
 
-    /** Gets and sets the text highlighter transparency; default: 0.4 */
+    /** Gets or sets the text highlighter transparency; default: 0.4 */
     public get highligherOpacity(): number {
         return this._highligherOpacity;
     }
@@ -92,8 +93,21 @@ export class InputText extends Control implements IFocusableControl {
         this._highligherOpacity = value;
         this._markAsDirty();
     }
+    /** Gets or sets a boolean indicating whether to select complete text by default on input focus */
+    public get onFocusSelectAll(): boolean {
+        return this._onFocusSelectAll;
+    }
 
-    /** Gets and sets the text hightlight color */
+    public set onFocusSelectAll(value: boolean) {
+        if (this._onFocusSelectAll === value) {
+            return;
+        }
+
+        this._onFocusSelectAll = value;
+        this._markAsDirty();
+    }
+
+    /** Gets or sets the text hightlight color */
     public get textHighlightColor(): string {
         return this._textHighlightColor;
     }
@@ -368,6 +382,10 @@ export class InputText extends Control implements IFocusableControl {
             });
         }
 
+        if (this._onFocusSelectAll) {
+            this._selectAllText();
+        }
+
     }
 
     protected _getTypeName(): string {
@@ -395,19 +413,8 @@ export class InputText extends Control implements IFocusableControl {
 
         //select all
         if (evt && (evt.ctrlKey || evt.metaKey) && keyCode === 65) {
-
-            this._blinkIsEven = false;
-            this._isTextHighlightOn = true;
+            this._selectAllText();
             evt.preventDefault();
-
-            //if already highlighted pass
-            if (this._highlightedText) {
-                return;
-            }
-
-            this._startHighlightIndex = 0;
-            this._endHighlightIndex = this._text.length;
-            this._cursorOffset = 0;
             return;
         }
         // Specific cases
@@ -559,6 +566,20 @@ export class InputText extends Control implements IFocusableControl {
         this.onTextHighlightObservable.notifyObservers(this);
         this._isTextHighlightOn = true;
         this._blinkIsEven = false;
+    }
+    /** @hidden */
+    private _selectAllText() {
+        this._blinkIsEven = false;
+        this._isTextHighlightOn = true;
+
+        //if already highlighted pass
+        if (this._highlightedText) {
+            return;
+        }
+
+        this._startHighlightIndex = 0;
+        this._endHighlightIndex = this._text.length;
+        this._cursorOffset = 0;
     }
 
     /**
