@@ -24,9 +24,6 @@ export interface IInspectorOptions {
     embedHostRoot?: HTMLElement;
     showExplorer?: boolean;
     showInspector?: boolean;
-    explorerWidth?: string;
-    inspectorWidth?: string;
-    embedHostWidth?: string;
     embedMode?: boolean;
     handleResize?: boolean;
     enablePopup?: boolean;
@@ -36,6 +33,9 @@ export interface IInspectorOptions {
 interface IInternalInspectorOptions extends IInspectorOptions {
     popup: boolean;
     original: boolean;
+    explorerWidth?: string;
+    inspectorWidth?: string;
+    embedHostWidth?: string;
 }
 
 export class Inspector {
@@ -99,7 +99,7 @@ export class Inspector {
                 this._SceneExplorerHost = parentControlExplorer.ownerDocument!.createElement("div");
 
                 this._SceneExplorerHost.id = "scene-explorer-host";
-                this._SceneExplorerHost.style.width = options.explorerWidth || "auto";
+                this._SceneExplorerHost.style.width = options.explorerWidth || "300px";
 
                 parentControlExplorer.appendChild(this._SceneExplorerHost);
 
@@ -160,7 +160,7 @@ export class Inspector {
                 const host = parentControlActions.ownerDocument!.createElement("div");
 
                 host.id = "inspector-host";
-                host.style.width = options.inspectorWidth || "auto";
+                host.style.width = options.inspectorWidth || "300px";
 
                 parentControlActions.appendChild(host);
 
@@ -324,9 +324,6 @@ export class Inspector {
             embedMode: false,
             handleResize: true,
             enablePopup: true,
-            inspectorWidth: "auto",
-            explorerWidth: "auto",
-            embedHostWidth: "auto",
             ...userOptions
         };
 
