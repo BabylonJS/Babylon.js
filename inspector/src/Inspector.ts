@@ -6,6 +6,7 @@ import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorer
 import { Scene, Observable, Observer, Nullable } from "babylonjs";
 import { EmbedHostComponent } from "./components/embedHost/embedHostComponent";
 import { PropertyChangedEvent } from "./components/propertyChangedEvent";
+import { GlobalState } from "./components/globalState";
 
 export interface IExtensibilityOption {
     label: string;
@@ -54,6 +55,7 @@ export class Inspector {
 
     public static OnSelectionChangeObservable = new BABYLON.Observable<string>();
     public static OnPropertyChangedObservable = new BABYLON.Observable<PropertyChangedEvent>();
+    private static _GlobalState = new GlobalState();
 
     private static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
         for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
@@ -77,7 +79,7 @@ export class Inspector {
         }
     }
 
-    private static _CreateSceneExplorer(scene: Scene, options: IInternalInspectorOptions, parentControlExplorer: Nullable<HTMLElement>, onSelectionChangeObservable: Observable<string>) {
+    private static _CreateSceneExplorer(scene: Scene, options: IInternalInspectorOptions, parentControlExplorer: Nullable<HTMLElement>) {
         // Duplicating the options as they can be different for each pane
         if (options.original) {
             options = {
@@ -99,7 +101,7 @@ export class Inspector {
                 this._SceneExplorerHost = parentControlExplorer.ownerDocument!.createElement("div");
 
                 this._SceneExplorerHost.id = "scene-explorer-host";
-                this._SceneExplorerHost.style.width = options.explorerWidth || "300px";
+                this._SceneExplorerHost.style.width = options.explorerWidth || "auto";
 
                 parentControlExplorer.appendChild(this._SceneExplorerHost);
 
@@ -120,7 +122,7 @@ export class Inspector {
         if (this._SceneExplorerHost) {
             Inspector._OpenedPane++;
             const sceneExplorerElement = React.createElement(SceneExplorerComponent, {
-                scene, onSelectionChangeObservable: onSelectionChangeObservable,
+                scene, globalState: this._GlobalState,
                 extensibilityGroups: options.explorerExtensibility,
                 noExpand: !options.enablePopup, popupMode: options.popup, onPopup: () => {
                     ReactDOM.unmountComponentAtNode(this._SceneExplorerHost!);
@@ -153,7 +155,7 @@ export class Inspector {
         }
     }
 
-    private static _CreateActionTabs(scene: Scene, options: IInternalInspectorOptions, parentControlActions: Nullable<HTMLElement>, onSelectionChangeObservable: Observable<string>) {
+    private static _CreateActionTabs(scene: Scene, options: IInternalInspectorOptions, parentControlActions: Nullable<HTMLElement>) {
 
         if (!options.actionTabsRoot || options.popup) {
             // Prepare the inspector host
@@ -161,7 +163,7 @@ export class Inspector {
                 const host = parentControlActions.ownerDocument!.createElement("div");
 
                 host.id = "inspector-host";
-                host.style.width = options.inspectorWidth || "300px";
+                host.style.width = options.inspectorWidth || "auto";
 
                 parentControlActions.appendChild(host);
 
@@ -183,7 +185,7 @@ export class Inspector {
         if (this._ActionTabsHost) {
             Inspector._OpenedPane++;
             const actionTabsElement = React.createElement(ActionTabsComponent, {
-                onSelectionChangeObservable: onSelectionChangeObservable, scene: scene, noExpand: !options.enablePopup, popupMode: options.popup, onPopup: () => {
+                globalState: this._GlobalState, scene: scene, noExpand: !options.enablePopup, popupMode: options.popup, onPopup: () => {
                     ReactDOM.unmountComponentAtNode(this._ActionTabsHost!);
 
                     if (options.popup) {
@@ -202,13 +204,13 @@ export class Inspector {
 
                     if (this._ActionTabsHost && this._ActionTabsHost.parentElement) {
                         this._ActionTabsHost.parentElement.removeChild(this._ActionTabsHost);
-                    }                    
+                    }
 
                     if (options.popup) {
                         this._ActionTabsWindow.close();
                     }
 
-                }, onPropertyChangedObservable: Inspector.OnPropertyChangedObservable
+                }
             });
             ReactDOM.render(actionTabsElement, this._ActionTabsHost);
         }
@@ -243,7 +245,7 @@ export class Inspector {
 
         if (this._EmbedHost) {
             const embedHostElement = React.createElement(EmbedHostComponent, {
-                onSelectionChangeObservable: onSelectionChangeObservable, scene: scene, popupMode: options.popup, onPopup: () => {
+                globalState: this._GlobalState, scene: scene, popupMode: options.popup, onPopup: () => {
                     ReactDOM.unmountComponentAtNode(this._EmbedHost!);
 
                     if (options.popup) {
@@ -264,7 +266,7 @@ export class Inspector {
 
                     if (this._EmbedHost && this._EmbedHost.parentElement) {
                         this._EmbedHost.parentElement.removeChild(this._EmbedHost);
-                    }    
+                    }
 
                     if (options.popup) {
                         this._EmbedHostWindow.close();
@@ -321,7 +323,6 @@ export class Inspector {
     }
 
     public static Show(scene: Scene, userOptions: Partial<IInspectorOptions>) {
-
         const options: IInternalInspectorOptions = {
             original: true,
             popup: false,
@@ -334,6 +335,15 @@ export class Inspector {
             ...userOptions
         };
 
+        // Prepare state
+        if (!this._GlobalState.onPropertyChangedObservable) {
+            this._GlobalState.onPropertyChangedObservable = this.OnPropertyChangedObservable;
+        }
+        if (!this._GlobalState.onSelectionChangeObservable) {
+            this._GlobalState.onSelectionChangeObservable = this.OnSelectionChangeObservable;
+        }
+
+        // Make sure it is not already opened
         if (this.IsVisible && options.original) {
             this.Hide();
         }
@@ -390,13 +400,13 @@ export class Inspector {
                 if (this._SceneExplorerHost) {
                     this._SceneExplorerHost.style.width = "0";
                 }
-                this._CreateSceneExplorer(scene, options, this._CreatePopup("SCENE EXPLORER", "_SceneExplorerWindow"), Inspector.OnSelectionChangeObservable);
+                this._CreateSceneExplorer(scene, options, this._CreatePopup("SCENE EXPLORER", "_SceneExplorerWindow"));
             }
             if (options.showInspector) {
                 if (this._ActionTabsHost) {
                     this._ActionTabsHost.style.width = "0";
                 }
-                this._CreateActionTabs(scene, options, this._CreatePopup("INSPECTOR", "_ActionTabsWindow"), Inspector.OnSelectionChangeObservable);
+                this._CreateActionTabs(scene, options, this._CreatePopup("INSPECTOR", "_ActionTabsWindow"));
             }
         } else {
             let parentControl = (options.actionTabsRoot ? options.actionTabsRoot.parentElement : canvas!.parentElement) as HTMLElement;
@@ -442,7 +452,7 @@ export class Inspector {
                     options.sceneExplorerRoot.style.width = "auto";
                 }
 
-                this._CreateSceneExplorer(scene, options, parentControl, Inspector.OnSelectionChangeObservable);
+                this._CreateSceneExplorer(scene, options, parentControl);
             }
 
             if (options.showInspector) {
@@ -450,7 +460,7 @@ export class Inspector {
                     options.actionTabsRoot.style.width = "auto";
                 }
 
-                this._CreateActionTabs(scene, options, parentControl, Inspector.OnSelectionChangeObservable);
+                this._CreateActionTabs(scene, options, parentControl);
             }
         }
     }
@@ -481,7 +491,7 @@ export class Inspector {
             if (this._SceneExplorerHost.parentElement) {
                 this._SceneExplorerHost.parentElement.removeChild(this._SceneExplorerHost);
             }
-            
+
             this._SceneExplorerHost = null;
         }
 
@@ -490,7 +500,7 @@ export class Inspector {
 
             if (this._EmbedHost.parentElement) {
                 this._EmbedHost.parentElement.removeChild(this._EmbedHost);
-            }            
+            }
             this._EmbedHost = null;
         }
 

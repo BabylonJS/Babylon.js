@@ -286,8 +286,7 @@ module BABYLON {
         constructor(scene: Nullable<Scene>) {
             this._scene = scene || Engine.LastCreatedScene;
             if (this._scene) {
-                this._scene.textures.push(this);
-                this._scene.onNewTextureAddedObservable.notifyObservers(this);
+                this._scene.addTexture(this);
                 this.uniqueId = this._scene.getUniqueId();
             }
             this._uid = null;

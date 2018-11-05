@@ -3,15 +3,16 @@ import { HeaderComponent } from "../headerComponent";
 import Resizable from "re-resizable";
 import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent";
 import { ActionTabsComponent } from "../actionTabs/actionTabsComponent";
-import { Scene, Observable } from "babylonjs";
+import { Scene } from "babylonjs";
+import { GlobalState } from "components/globalState";
 
-const Split = require("react-split"); 
+const Split = require("react-split");
 
 require("./embedHost.scss");
 
 interface IEmbedHostComponentProps {
     scene: Scene,
-    onSelectionChangeObservable: Observable<any>,
+    globalState: GlobalState,
     popupMode: boolean,
     onClose: () => void,
     onPopup: () => void
@@ -31,13 +32,13 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
                     <div id="topPart">
                         <SceneExplorerComponent scene={this.props.scene}
                             popupMode={true}
-                            onSelectionChangeObservable={this.props.onSelectionChangeObservable} noHeader={true} />
+                            globalState={this.props.globalState} noHeader={true} />
                     </div>
                     <div id="separator" />
                     <div id="bottomPart" style={{ marginTop: "4px", overflow: "hidden" }}>
                         <ActionTabsComponent scene={this.props.scene}
                             popupMode={true}
-                            onSelectionChangeObservable={this.props.onSelectionChangeObservable} noHeader={true} />
+                            globalState={this.props.globalState} noHeader={true} />
                     </div>
                 </div>
             )
@@ -47,13 +48,15 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
             <Split id="split" className="noPopup" direction="vertical" gutterSize={4} minSize={[200, 200]}>
                 <div id="topPart">
                     <SceneExplorerComponent scene={this.props.scene}
+                        globalState={this.props.globalState}
                         popupMode={true}
-                        onSelectionChangeObservable={this.props.onSelectionChangeObservable} noHeader={true} />
+                        noHeader={true} />
                 </div>
                 <div id="bottomPart" style={{ marginTop: "4px", overflow: "hidden" }}>
                     <ActionTabsComponent scene={this.props.scene}
+                        globalState={this.props.globalState}
                         popupMode={true}
-                        onSelectionChangeObservable={this.props.onSelectionChangeObservable} noHeader={true} />
+                        noHeader={true} />
                 </div>
             </Split>
         )
@@ -63,7 +66,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
         if (this.props.popupMode) {
             return (
                 <div id="embed">
-                    <HeaderComponent title="INSPECTOR" handleBack={true} onClose={() => this.props.onClose()} onPopup={() => this.props.onPopup()} onSelectionChangeObservable={this.props.onSelectionChangeObservable} />
+                    <HeaderComponent title="INSPECTOR" handleBack={true} onClose={() => this.props.onClose()} onPopup={() => this.props.onPopup()} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} />
                     {this.renderContent()}
                 </div>
             );
@@ -79,7 +82,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
 
         return (
             <Resizable id="embed" minWidth={300} maxWidth={600} size={{ height: "100%" }} minHeight="100%" enable={{ top: false, right: false, bottom: false, left: true, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }}>
-                <HeaderComponent title="INSPECTOR" handleBack={true} onClose={() => this.props.onClose()} onPopup={() => this.props.onPopup()} onSelectionChangeObservable={this.props.onSelectionChangeObservable} />
+                <HeaderComponent title="INSPECTOR" handleBack={true} onClose={() => this.props.onClose()} onPopup={() => this.props.onPopup()} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} />
                 {this.renderContent()}
             </Resizable>
         );
