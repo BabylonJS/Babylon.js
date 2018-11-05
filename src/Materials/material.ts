@@ -171,6 +171,11 @@ declare var BABYLON: any;
         public name: string;
 
         /**
+         * Gets or sets user defined metadata
+         */
+        public metadata: any = null;
+
+        /**
          * Specifies if the ready state should be checked on each call
          */
         @serialize()
@@ -563,7 +568,7 @@ declare var BABYLON: any;
         public _indexInSceneMaterialArray = -1;
 
         /** @hidden */
-        public meshMap: Nullable<{[id: string]: AbstractMesh | undefined}>;
+        public meshMap: Nullable<{ [id: string]: AbstractMesh | undefined }>;
 
         /**
          * Creates a material instance
@@ -1156,7 +1161,7 @@ declare var BABYLON: any;
         }
 
         /** @hidden */
-        private  releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {
+        private releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {
             if ((<Mesh>mesh).geometry) {
                 var geometry = <Geometry>((<Mesh>mesh).geometry);
                 const scene = this.getScene();

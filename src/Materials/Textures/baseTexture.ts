@@ -36,6 +36,12 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         @serialize()
         public name: string;
 
+        /**
+         * Gets or sets an object used to store user defined information.
+         */
+        @serialize()
+        public metadata: any = null;
+
         @serialize("hasAlpha")
         private _hasAlpha = false;
         /**

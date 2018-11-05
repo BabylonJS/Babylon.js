@@ -105,6 +105,14 @@ Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
         }
 
         /**
+         * Returns a positive integer : the total number of indices in this mesh geometry.
+         * @returns the numner of indices or zero if the mesh has no geometry.
+         */
+        public getTotalIndices(): number {
+            return this._sourceMesh.getTotalIndices();
+        }
+
+        /**
          * The source mesh of the instance
          */
         public get sourceMesh(): Mesh {

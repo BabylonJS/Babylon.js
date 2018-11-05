@@ -14,6 +14,11 @@ import { AbstractMesh } from "Mesh/abstractMesh";
         private _lastPointerEvents: { [pointerId: number]: boolean } = {};
         private static _DefaultUtilityLayer: Nullable<UtilityLayerRenderer> = null;
         private static _DefaultKeepDepthUtilityLayer: Nullable<UtilityLayerRenderer> = null;
+
+        /**
+         * If the picking should be done on the utility layer prior to the actual scene (Default: true)
+         */
+        public pickUtilitySceneFirst = true;
         /**
          * A shared utility layer that can be used to overlay objects into a scene (Depth map of the previous scene is cleared before drawing on top of it)
          */
@@ -120,7 +125,7 @@ import { AbstractMesh } from "Mesh/abstractMesh";
                     return;
                 }
 
-                if (this.utilityLayerScene.autoClearDepthAndStencil) {
+                if (this.utilityLayerScene.autoClearDepthAndStencil || this.pickUtilitySceneFirst) {
                     // If this layer is an overlay, check if this layer was hit and if so, skip pointer events for the main scene
                     if (utilityScenePick && utilityScenePick.hit) {
 

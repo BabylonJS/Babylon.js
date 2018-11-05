@@ -592,6 +592,11 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         public scenes = new Array<Scene>();
 
         /**
+         * Event raised when a new scene is created
+         */
+        public onNewSceneAddedObservable = new Observable<Scene>();
+
+        /**
          * Gets the list of created postprocesses
          */
         public postProcesses = new Array<PostProcess>();
@@ -6869,6 +6874,8 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
             this.hideLoadingUI();
 
             this.stopRenderLoop();
+
+            this.onNewSceneAddedObservable.clear();
 
             // Release postProcesses
             while (this.postProcesses.length) {

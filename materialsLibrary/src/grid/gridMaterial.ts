@@ -1,12 +1,15 @@
-import { MaterialDefines, serializeAsColor3, Color3, serialize, Vector3, Vector4, Scene, AbstractMesh, SubMesh, MaterialHelper, VertexBuffer, Matrix, Mesh, SerializationHelper } from "babylonjs";
+import { MaterialDefines, serializeAsColor3, serializeAsTexture, expandToProperty, Color3, serialize, Vector3, Vector4, Scene, AbstractMesh, SubMesh, MaterialHelper, VertexBuffer, Matrix, Mesh, SerializationHelper, BaseTexture, StandardMaterial } from "babylonjs";
 
 import "./grid.fragment";
 import "./grid.vertex";
 
 class GridMaterialDefines extends MaterialDefines {
+    public OPACITY = false;
     public TRANSPARENT = false;
     public FOG = false;
     public PREMULTIPLYALPHA = false;
+    public UV1 = false;
+    public UV2 = false;
 
     constructor() {
         super();
@@ -68,6 +71,11 @@ export class GridMaterial extends BABYLON.PushMaterial {
     @serialize()
     public preMultiplyAlpha = false;
 
+    @serializeAsTexture("opacityTexture")
+    private _opacityTexture: BaseTexture;
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public opacityTexture: BaseTexture;
+
     private _gridControl: Vector4 = new Vector4(this.gridRatio, this.majorUnitFrequency, this.minorUnitVisibility, this.opacity);
 
     private _renderId: number;
@@ -85,7 +93,7 @@ export class GridMaterial extends BABYLON.PushMaterial {
      * Returns wehter or not the grid requires alpha blending.
      */
     public needAlphaBlending(): boolean {
-        return this.opacity < 1.0;
+        return this.opacity < 1.0 || this._opacityTexture && this._opacityTexture.isReady();
     }
 
     public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
@@ -122,6 +130,21 @@ export class GridMaterial extends BABYLON.PushMaterial {
             defines.markAsUnprocessed();
         }
 
+        // Textures
+        if (defines._areTexturesDirty) {
+            defines._needUVs = false;
+            if (scene.texturesEnabled) {
+                if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
+                    if (!this._opacityTexture.isReady()) {
+                        return false;
+                    } else {
+                        defines._needUVs = true;
+                        defines.OPACITY = true;
+                    }
+                }
+            }
+        }
+
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, false, this.fogEnabled, false, defines);
 
         // Get correct effect
@@ -130,14 +153,23 @@ export class GridMaterial extends BABYLON.PushMaterial {
             scene.resetCachedMaterial();
 
             // Attributes
+            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, false);
             var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
+
+            if (defines.UV1) {
+                attribs.push(VertexBuffer.UVKind);
+            }
+             if (defines.UV2) {
+                attribs.push(VertexBuffer.UV2Kind);
+            }
 
             // Defines
             var join = defines.toString();
             subMesh.setEffect(scene.getEngine().createEffect("grid",
                 attribs,
-                ["projection", "worldView", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view"],
-                [],
+                ["projection", "worldView", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view",
+                "opacityMatrix", "vOpacityInfos"],
+                ["opacitySampler"],
                 join,
                 undefined,
                 this.onCompiled,
@@ -186,6 +218,12 @@ export class GridMaterial extends BABYLON.PushMaterial {
             this._gridControl.z = this.minorUnitVisibility;
             this._gridControl.w = this.opacity;
             this._activeEffect.setVector4("gridControl", this._gridControl);
+
+            if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
+                this._activeEffect.setTexture("opacitySampler", this._opacityTexture);
+                 this._activeEffect.setFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
+                this._activeEffect.setMatrix("opacityMatrix", this._opacityTexture.getTextureMatrix());
+            }
         }
         // Fog
         MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
