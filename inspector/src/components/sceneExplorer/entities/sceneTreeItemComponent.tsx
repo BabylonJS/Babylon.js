@@ -1,6 +1,6 @@
 import { Scene, Observable, PointerInfo, Observer, Nullable } from "babylonjs";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSyncAlt, faImage, faCrosshairs } from '@fortawesome/free-solid-svg-icons';
+import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt } from '@fortawesome/free-solid-svg-icons';
 import { IExtensibilityGroup } from "../../../inspector";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
@@ -13,13 +13,13 @@ interface ISceneTreeItemComponentProps {
     onSelectionChangeObservable?: Observable<any>
 }
 
-export class SceneTreeItemComponent extends React.Component<ISceneTreeItemComponentProps, { isSelected: boolean, isInPickingMode: boolean }> {
+export class SceneTreeItemComponent extends React.Component<ISceneTreeItemComponentProps, { isSelected: boolean, isInPickingMode: boolean, gizmoMode: number }> {
     private _onPointerObserver: Nullable<Observer<PointerInfo>>;
 
     constructor(props: ISceneTreeItemComponentProps) {
         super(props);
 
-        this.state = { isSelected: false, isInPickingMode: false };
+        this.state = { isSelected: false, isInPickingMode: false, gizmoMode: 0 };
     }
 
     shouldComponentUpdate(nextProps: ISceneTreeItemComponentProps, nextState: { isSelected: boolean, isInPickingMode: boolean }) {
@@ -74,7 +74,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         this.setState({ isInPickingMode: !this.state.isInPickingMode });
     }
 
-    showExtensions() {
+    setGizmoMode(mode: number) {
+        this.setState({ gizmoMode: mode });
     }
 
     render() {
@@ -84,6 +85,16 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                     <div className="sceneTitle" onClick={() => this.onSelect()} >
                         <FontAwesomeIcon icon={faImage} />&nbsp;Scene
                     </div>
+                    <div className={this.state.gizmoMode === 1 ? "translation selected icon" : "translation icon"} onClick={() => this.setGizmoMode(1)} title="Enable/Disable position mode">
+                        <FontAwesomeIcon icon={faArrowsAlt} />
+                    </div>
+                    <div className={this.state.gizmoMode === 2 ? "rotation selected icon" : "rotation icon"} onClick={() => this.setGizmoMode(2)} title="Enable/Disable rotation mode">
+                        <FontAwesomeIcon icon={faRedoAlt} />
+                    </div>
+                    <div className={this.state.gizmoMode === 3 ? "scaling selected icon" : "scaling icon"} onClick={() => this.setGizmoMode(3)} title="Enable/Disable scaling mode">
+                        <FontAwesomeIcon icon={faCompress} />
+                    </div>
+                    <div className="separator" />
                     <div className={this.state.isInPickingMode ? "pickingMode selected icon" : "pickingMode icon"} onClick={() => this.onPickingMode()} title="Turn picking mode on/off">
                         <FontAwesomeIcon icon={faCrosshairs} />
                     </div>
