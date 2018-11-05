@@ -316,7 +316,7 @@ if (BABYLON.Engine.isSupported()) {
         if (event.keyCode === 32 && event.target.nodeName !== "INPUT") {
             if (footer.style.display === "none") {
                 footer.style.display = "block";
-                canvas.style.height = "calc(100% - 56px)";                
+                canvas.style.height = "calc(100% - 56px)";
                 engine.resize();
             }
             else {

@@ -1,11 +1,12 @@
 import * as React from "react";
-import { Scene, Observable, Observer, Nullable } from "babylonjs";
+import { Scene, Observer, Nullable } from "babylonjs";
 import { TreeItemComponent } from "./treeItemComponent";
 import Resizable from "re-resizable";
 import { HeaderComponent } from "../headerComponent";
 import { SceneTreeItemComponent } from "./entities/sceneTreeItemComponent";
 import { Tools } from "../../tools";
 import { IExtensibilityGroup } from "../../inspector";
+import { GlobalState } from "components/globalState";
 
 require("./sceneExplorer.scss");
 
@@ -34,8 +35,10 @@ interface ISceneExplorerComponentProps {
     noHeader?: boolean,
     noExpand?: boolean,
     extensibilityGroups?: IExtensibilityGroup[],
-    onSelectionChangeObservable: Observable<any>, popupMode?: boolean,
-    onPopup?: () => void, onClose?: () => void
+    globalState: GlobalState,
+    popupMode?: boolean,
+    onPopup?: () => void,
+    onClose?: () => void
 }
 
 export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>, selectedEntity: any, scene: Scene }> {
@@ -50,7 +53,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     }
 
     componentWillMount() {
-        this._onSelectionChangeObserver = this.props.onSelectionChangeObservable.add((entity) => {
+        this._onSelectionChangeObserver = this.props.globalState.onSelectionChangeObservable.add((entity) => {
             if (this.state.selectedEntity !== entity) {
                 this.setState({ selectedEntity: entity });
             }
@@ -59,7 +62,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
     componentWillUnmount() {
         if (this._onSelectionChangeObserver) {
-            this.props.onSelectionChangeObservable.remove(this._onSelectionChangeObserver);
+            this.props.globalState.onSelectionChangeObservable.remove(this._onSelectionChangeObserver);
         }
 
         if (this._onNewSceneAddedObserver) {
@@ -84,13 +87,13 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 data.found = true;
                 if (!goNext) {
                     if (data.previousOne) {
-                        this.props.onSelectionChangeObservable.notifyObservers(data.previousOne);
+                        this.props.globalState.onSelectionChangeObservable.notifyObservers(data.previousOne);
                     }
                     return true;
                 }
             } else {
                 if (data.found) {
-                    this.props.onSelectionChangeObservable.notifyObservers(item);
+                    this.props.globalState.onSelectionChangeObservable.notifyObservers(item);
                     return true;
                 }
                 data.previousOne = item;
@@ -163,10 +166,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         return (
             <div id="tree">
                 <SceneExplorerFilterComponent onFilter={(filter) => this.filterContent(filter)} />
-                <SceneTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} scene={scene} onRefresh={() => this.forceUpdate()} onSelectionChangeObservable={this.props.onSelectionChangeObservable} />
-                <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.rootNodes} label="Nodes" offset={1} onSelectionChangeObservable={this.props.onSelectionChangeObservable} filter={this.state.filter} />
-                <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.materials} label="Materials" offset={1} onSelectionChangeObservable={this.props.onSelectionChangeObservable} filter={this.state.filter} />
-                <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.textures} label="Textures" offset={1} onSelectionChangeObservable={this.props.onSelectionChangeObservable} filter={this.state.filter} />
+                <SceneTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} scene={scene} onRefresh={() => this.forceUpdate()} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} />
+                <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.rootNodes} label="Nodes" offset={1} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} filter={this.state.filter} />
+                <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.materials} label="Materials" offset={1} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} filter={this.state.filter} />
+                <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.textures} label="Textures" offset={1} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} filter={this.state.filter} />
             </div>
         )
     }
