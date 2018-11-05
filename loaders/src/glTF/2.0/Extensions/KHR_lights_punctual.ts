@@ -1,6 +1,9 @@
-/// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
+import { TransformNode, Nullable, Light, DirectionalLight, Vector3, PointLight, SpotLight, Color3 } from "babylonjs";
+import { IChildRootProperty } from "babylonjs-gltf2interface";
+import { INode } from "../glTFLoaderInterfaces";
+import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
-module BABYLON.GLTF2.Loader.Extensions {
     const NAME = "KHR_lights_punctual";
 
     enum LightType {
@@ -106,4 +109,3 @@ module BABYLON.GLTF2.Loader.Extensions {
     }
 
     GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_lights(loader));
-}
