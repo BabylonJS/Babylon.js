@@ -508,11 +508,11 @@ void main(void) {
             }
         #endif
 
-        #ifdef GAMMAREFRACTION
+        #ifdef RGBDREFRACTION
             environmentRefraction.rgb = fromRGBD(environmentRefraction);
         #endif
 
-        #ifdef RGBDREFRACTION
+        #ifdef GAMMAREFRACTION
             environmentRefraction.rgb = toLinearSpace(environmentRefraction.rgb);
         #endif
 
