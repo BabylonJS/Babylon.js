@@ -1,9 +1,10 @@
 import { DeepImmutable, Nullable, float } from "types";
 import { ArrayTools } from "Tools/arrayTools";
-import { Matrix, Vector3, Plane, Tmp } from "Math";
-import { AbstractMesh } from "Mesh";
-import { PickingInfo, IntersectionInfo } from "Collisions";
-import { BoundingBox, BoundingSphere } from "Culling";
+import { Matrix, Vector3, Plane, Tmp } from "Math/math";
+import { AbstractMesh } from "Mesh/abstractMesh";
+import { PickingInfo, IntersectionInfo } from "Collisions/pickingInfo";
+import { BoundingBox } from "./boundingBox";
+import { BoundingSphere } from "./boundingSphere";
     /**
      * Class representing a ray with position and direction
      */
