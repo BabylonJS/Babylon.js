@@ -82,7 +82,7 @@ module BABYLON {
         }
 
         private _drawCameraPredicate(layer: Layer, isBackground: boolean, cameraLayerMask: number): boolean {
-            return layer.renderInScene &&
+            return !layer.renderOnlyInRenderTargetTextures &&
                 layer.isBackground === isBackground &&
                 ((layer.layerMask & cameraLayerMask) !== 0);
         }
@@ -100,10 +100,10 @@ module BABYLON {
         }
 
         private _drawRenderTargetPredicate(layer: Layer, isBackground: boolean, cameraLayerMask: number, renderTargetTexture: RenderTargetTexture): boolean {
-            return layer.renderInRenderTargets &&
+            return (layer.renderTargetTextures.length > 0) &&
                 layer.isBackground === isBackground &&
-                ((layer.layerMask & cameraLayerMask) !== 0) &&
-                (layer.renderTargetTextures.indexOf(renderTargetTexture) > -1);
+                (layer.renderTargetTextures.indexOf(renderTargetTexture) > -1) &&
+                ((layer.layerMask & cameraLayerMask) !== 0);
         }
 
         private _drawRenderTargetBackground(renderTarget: RenderTargetTexture): void {
