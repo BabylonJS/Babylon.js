@@ -276,3 +276,7 @@ import { Constants } from "Engine/constants";
             this.scene.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigChangeObserver);
         }
     }
+
+    Texture._CreateMirror = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean): MirrorTexture => {
+        return new MirrorTexture(name, renderTargetSize, scene, generateMipMaps);
+    };

@@ -30,7 +30,7 @@ declare type TargetCamera = import("./targetCamera").TargetCamera;
     export class Camera extends Node {
         /** @hidden */
         public static _createDefaultParsedCamera = (name: string, scene: Scene): Camera => {
-            throw "UniversalCamera needs to be imported before being deserialization can create a default camera.";
+            throw "UniversalCamera needs to be imported before deserialization can create a default camera.";
         }
 
         /**

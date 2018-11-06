@@ -964,3 +964,7 @@ import { Constants } from "Engine/constants";
             }
         }
     }
+
+    Texture._CreateRenderTargetTexture = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean): MirrorTexture => {
+        return new RenderTargetTexture(name, renderTargetSize, scene, generateMipMaps);
+    };

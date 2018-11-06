@@ -293,3 +293,5 @@ import { Constants } from "Engine/constants";
             }, this);
         }
     }
+
+    Texture._CubeTextureParser = CubeTexture.Parse;

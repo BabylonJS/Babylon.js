@@ -9,6 +9,7 @@ import { Nullable } from "types";
 import { Scene } from "scene";
 import { IAnimatable } from "Tools/tools";
 import { Node } from "node";
+import { Texture } from "Materials/Textures/texture";
 
     /**
      * Represents the range of an animation
@@ -1242,3 +1243,5 @@ import { Node } from "node";
             }
         }
     }
+
+    Texture._AnimationParser = Animation.Parse;
