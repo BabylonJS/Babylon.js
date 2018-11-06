@@ -1734,14 +1734,13 @@ module BABYLON {
                         this.onPointerObservable.notifyObservers(pi, type);
                     }
                 }
-                if (pickResult.pickedMesh.actionManager) {
-                    if (clickInfo.ignore) {
-                        pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                    }
-                    if (!clickInfo.hasSwiped && !clickInfo.ignore && clickInfo.singleClick) {
+                if (pickResult.pickedMesh.actionManager && !clickInfo.ignore) {
+                    pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+
+                    if (!clickInfo.hasSwiped && clickInfo.singleClick) {
                         pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                     }
-                    if (clickInfo.doubleClick && !clickInfo.ignore && pickResult.pickedMesh.actionManager.hasSpecificTrigger(ActionManager.OnDoublePickTrigger)) {
+                    if (clickInfo.doubleClick && pickResult.pickedMesh.actionManager.hasSpecificTrigger(ActionManager.OnDoublePickTrigger)) {
                         pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnDoublePickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                     }
                 }
