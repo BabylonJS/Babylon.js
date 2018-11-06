@@ -5,6 +5,8 @@ module BABYLON {
      * @see http://doc.babylonjs.com/features/cameras
      */
     export class TargetCamera extends Camera {
+        private static _RigCamTransformMatrix = new Matrix();
+        private static _TargetTransformMatrix = new Matrix();
 
         /**
          * Define the current direction the camera is moving to
@@ -59,7 +61,6 @@ module BABYLON {
         public _cameraTransformMatrix = Matrix.Zero();
         /** @hidden */
         public _cameraRotationMatrix = Matrix.Zero();
-        private _rigCamTransformMatrix: Matrix;
 
         /** @hidden */
         public _referencePoint = new Vector3(0, 0, 1);
@@ -435,6 +436,8 @@ module BABYLON {
             var camLeft = <TargetCamera>this._rigCameras[0];
             var camRight = <TargetCamera>this._rigCameras[1];
 
+            this.computeWorldMatrix();
+
             switch (this.cameraRigMode) {
                 case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
@@ -467,15 +470,14 @@ module BABYLON {
         }
 
         private _getRigCamPosition(halfSpace: number, result: Vector3) {
-            if (!this._rigCamTransformMatrix) {
-                this._rigCamTransformMatrix = new Matrix();
-            }
             var target = this.getTarget();
-            Matrix.Translation(-target.x, -target.y, -target.z).multiplyToRef(Matrix.RotationY(halfSpace), this._rigCamTransformMatrix);
+            Matrix.TranslationToRef(-target.x, -target.y, -target.z, TargetCamera._TargetTransformMatrix);
+            TargetCamera._TargetTransformMatrix.multiplyToRef(Matrix.RotationY(halfSpace), TargetCamera._RigCamTransformMatrix);
+            Matrix.TranslationToRef(target.x, target.y, target.z, TargetCamera._TargetTransformMatrix);
 
-            this._rigCamTransformMatrix = this._rigCamTransformMatrix.multiply(Matrix.Translation(target.x, target.y, target.z));
+            TargetCamera._RigCamTransformMatrix.multiplyToRef(TargetCamera._TargetTransformMatrix, TargetCamera._RigCamTransformMatrix);
 
-            Vector3.TransformCoordinatesToRef(this.position, this._rigCamTransformMatrix, result);
+            Vector3.TransformCoordinatesToRef(this.position, TargetCamera._RigCamTransformMatrix, result);
         }
 
         /**
