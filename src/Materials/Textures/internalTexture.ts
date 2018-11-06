@@ -3,17 +3,21 @@ import { Nullable, int } from "types";
 import { SphericalPolynomial } from "Math/sphericalPolynomial";
 import { Engine, RenderTargetCreationOptions } from "Engine/engine";
 import { IInternalTextureTracker } from "Materials/Textures/internalTextureTracker";
-import { BaseTexture } from "Materials/Textures/baseTexture";
-import { Texture } from "Materials/Textures/texture";
-import { RawCubeTexture } from "Materials/Textures/rawCubeTexture";
-
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+
+declare type BaseTexture = import("Materials/Textures/baseTexture").BaseTexture;
+
     /**
      * Class used to store data associated with WebGL texture data for the engine
      * This class should not be used directly
      */
     export class InternalTexture implements IInternalTextureTracker {
+
+        /** hidden */
+        public static _UpdateRGBDAsync = (internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> => {
+            throw "environmentTextureTools needs to be imported before rebuilding RGBD textures.";
+        }
 
         /**
          * The source of the texture data is unknown
@@ -350,7 +354,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
                     return;
                 case InternalTexture.DATASOURCE_DEPTHTEXTURE:
                     let depthTextureOptions = {
-                        bilinearFiltering: this.samplingMode !== Texture.BILINEAR_SAMPLINGMODE,
+                        bilinearFiltering: this.samplingMode !== Engine.TEXTURE_BILINEAR_SAMPLINGMODE,
                         comparisonFunction: this._comparisonFunction,
                         generateStencil: this._generateStencilBuffer,
                         isCube: this.isCube
@@ -377,7 +381,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
                 case InternalTexture.DATASOURCE_CUBERAW_RGBD:
                     proxy = this._engine.createRawCubeTexture(null, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
-                    RawCubeTexture._UpdateRGBDAsync(proxy, this._bufferViewArrayArray!, this._sphericalPolynomial, this._lodGenerationScale, this._lodGenerationOffset).then(() => {
+                    InternalTexture._UpdateRGBDAsync(proxy, this._bufferViewArrayArray!, this._sphericalPolynomial, this._lodGenerationScale, this._lodGenerationOffset).then(() => {
                         this.isReady = true;
                     });
                     proxy._swapAndDie(this);

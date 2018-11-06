@@ -5,7 +5,6 @@ import { Scalar } from "Math/math.scalar";
 import { SphericalPolynomial } from "Math/sphericalPolynomial";
 import { InternalTexture } from "Materials/Textures/internalTexture";
 import { BaseTexture } from "Materials/Textures/baseTexture";
-//import { Texture } from "Materials/Textures/texture";
 import { CubeTexture } from "Materials/Textures/cubeTexture";
 import { Engine } from "Engine/engine";
 import { Scene } from "scene";
@@ -606,4 +605,20 @@ import { PostProcess } from "PostProcess/postProcess";
             Vector3.FromArrayToRef(irradianceInfo.xy, 0, sp.xy);
             texture._sphericalPolynomial = sp;
         }
+
+        /** @hidden */
+        public static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> {
+            internalTexture._dataSource = InternalTexture.DATASOURCE_CUBERAW_RGBD;
+            internalTexture._bufferViewArrayArray = data;
+            internalTexture._lodGenerationScale = lodScale;
+            internalTexture._lodGenerationOffset = lodOffset;
+            internalTexture._sphericalPolynomial = sphericalPolynomial;
+
+            return EnvironmentTextureTools.UploadLevelsAsync(internalTexture, data).then(() => {
+                internalTexture.isReady = true;
+            });
+        }
     }
+
+    // References the dependencies.
+    InternalTexture._UpdateRGBDAsync = EnvironmentTextureTools._UpdateRGBDAsync;
