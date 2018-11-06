@@ -4,6 +4,29 @@ module BABYLON {
     declare var INSPECTOR: any;
     // load the inspector using require, if not present in the global namespace.
 
+    export interface IExplorerExtensibilityOption {
+        label: string;
+        action: (entity: any) => void;
+    }
+
+    export interface IExplorerExtensibilityGroup {
+        predicate: (entity: any) => boolean;
+        entries: IExplorerExtensibilityOption[];
+    }
+
+    export interface IInspectorOptions {
+        overlay?: boolean;
+        sceneExplorerRoot?: HTMLElement;
+        actionTabsRoot?: HTMLElement;
+        embedHostRoot?: HTMLElement;
+        showExplorer?: boolean;
+        showInspector?: boolean;
+        embedMode?: boolean;
+        handleResize?: boolean;
+        enablePopup?: boolean;
+        explorerExtensibility?: IExplorerExtensibilityGroup[];
+    }
+
     export interface Scene {
         /**
          * @hidden
@@ -69,36 +92,24 @@ module BABYLON {
         }
 
         /** Creates the inspector window. */
-        private _createInspector(config: {
-            popup?: boolean,
-            embedMode?: boolean,
-            parentElement?: HTMLElement,
-            overlay?: boolean;
-            handleResize?: boolean;
-            enablePopup?: boolean;
-        } = {}) {
+        private _createInspector(config: Partial<IInspectorOptions>) {
             if (this.isVisible()) {
                 return;
             }
 
-            let popup = config.popup || false;
-            let parentElement = config.parentElement || null;
-            this.BJSINSPECTOR = this.BJSINSPECTOR || typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
-
-            let options: any = {
-                popup: popup,
-                embedMode: config.embedMode != null ? config.embedMode : parentElement ? true : false,
-                embedHostRoot: null,
-                overlay: config.overlay,
-                handleResize: config.handleResize || true,
-                enablePopup: config.enablePopup || true
+            const userOptions: IInspectorOptions = {
+                overlay: false,
+                showExplorer: true,
+                showInspector: true,
+                embedMode: false,
+                handleResize: true,
+                enablePopup: true,
+                ...config
             };
 
-            if (parentElement) {
-                options.embedHostRoot = parentElement;
-            }
+            this.BJSINSPECTOR = this.BJSINSPECTOR || typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
 
-            this.BJSINSPECTOR.Inspector.Show(this._scene, options);
+            this.BJSINSPECTOR.Inspector.Show(this._scene, userOptions);
         }
 
         /**
@@ -117,35 +128,11 @@ module BABYLON {
         }
 
         /**
-        *
-        * Launch the debugLayer.
-        *
-        * initialTab:
-        * | Value | Tab Name |
-        * | --- | --- |
-        * | 0 | Scene |
-        * | 1 | Console |
-        * | 2 | Stats |
-        * | 3 | Textures |
-        * | 4 | Mesh |
-        * | 5 | Light |
-        * | 6 | Material |
-        * | 7 | GLTF |
-        * | 8 | GUI |
-        * | 9 | Physics |
-        * | 10 | Camera |
-        * | 11 | Audio |
-        *
-        * @param config Define the configuration of the inspector
-        */
-        public show(config: {
-            popup?: boolean,
-            parentElement?: HTMLElement,
-            overlay?: boolean;
-            handleResize?: boolean;
-            embedMode?: boolean,
-            enablePopup?: boolean;
-        } = {}): void {
+          * Launch the debugLayer.
+          * @param config Define the configuration of the inspector
+          */
+        public show(config: IInspectorOptions): void {
+
             if (typeof this.BJSINSPECTOR == 'undefined') {
                 // Load inspector and add it to the DOM
                 Tools.LoadScript(DebugLayer.InspectorURL, this._createInspector.bind(this, config));
