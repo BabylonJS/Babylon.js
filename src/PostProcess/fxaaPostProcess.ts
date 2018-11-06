@@ -4,6 +4,7 @@ import { Effect } from "Materials/effect";
 import { Texture } from "Materials/Textures/texture";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 
     /**
      * Fxaa post process
@@ -15,7 +16,7 @@ import { Engine } from "Engine/engine";
         /** @hidden */
         public texelHeight: number;
 
-        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
             super(name, "fxaa", ["texelSize"], null, options, camera, samplingMode || Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "fxaa", undefined, true);
 
             const defines = this._getDefines();

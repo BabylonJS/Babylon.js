@@ -6,6 +6,7 @@ import { Engine } from "Engine/engine";
 import { Texture } from "Materials/Textures/texture";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Constants } from "Engine/constants";
     /**
      * A class extending Texture allowing drawing on a texture
      * @see http://doc.babylonjs.com/how_to/dynamictexture
@@ -26,7 +27,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
          */
 
-        constructor(name: string, options: any, scene: Nullable<Scene> = null, generateMipMaps: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, format: number = Engine.TEXTUREFORMAT_RGBA) {
+        constructor(name: string, options: any, scene: Nullable<Scene> = null, generateMipMaps: boolean, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, format: number = Constants.TEXTUREFORMAT_RGBA) {
             super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
 
             this.name = name;

@@ -11,6 +11,7 @@ import { Animatable } from "Animations/animatable";
 import { AnimationPropertiesOverride } from "Animations/animationPropertiesOverride";
 import { AnimationRange, Animation } from "Animations/animation";
 import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 
     /**
      * Class used to handle skinning animations
@@ -423,7 +424,7 @@ import { Engine } from "Engine/engine";
                             this._transformMatrixTexture.dispose();
                         }
 
-                        this._transformMatrixTexture = RawTexture.CreateRGBATexture(this._transformMatrices, (this.bones.length + 1) * 4, 1, this._scene, false, false, Engine.TEXTURE_NEAREST_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT);
+                        this._transformMatrixTexture = RawTexture.CreateRGBATexture(this._transformMatrices, (this.bones.length + 1) * 4, 1, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
                     }
                 }
 

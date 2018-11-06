@@ -21,6 +21,7 @@ import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "abstractScene";
+import { Constants } from "Engine/constants";
 
 declare module "abstractScene" {
     export interface AbstractScene {
@@ -272,7 +273,7 @@ declare module "abstractScene" {
                 blurTextureSizeRatio: 0.5,
                 blurHorizontalSize: 1.0,
                 blurVerticalSize: 1.0,
-                alphaBlendingMode: Engine.ALPHA_COMBINE,
+                alphaBlendingMode: Constants.ALPHA_COMBINE,
                 camera: null,
                 renderingGroupId: -1,
                 ...options,
@@ -324,10 +325,10 @@ declare module "abstractScene" {
 
             var textureType = 0;
             if (this._engine.getCaps().textureHalfFloatRender) {
-                textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+                textureType = Constants.TEXTURETYPE_HALF_FLOAT;
             }
             else {
-                textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+                textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
             }
 
             this._blurTexture = new RenderTargetTexture("HighlightLayerBlurRTT",
@@ -348,7 +349,7 @@ declare module "abstractScene" {
 
             this._textures = [this._blurTexture];
 
-            if (this._options.alphaBlendingMode === Engine.ALPHA_COMBINE) {
+            if (this._options.alphaBlendingMode === Constants.ALPHA_COMBINE) {
                 this._downSamplePostprocess = new PassPostProcess("HighlightLayerPPP", this._options.blurTextureSizeRatio,
                     null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
                 this._downSamplePostprocess.onApplyObservable.add((effect) => {
@@ -458,9 +459,9 @@ declare module "abstractScene" {
             var previousStencilReference = engine.getStencilFunctionReference();
 
             // Stencil operations
-            engine.setStencilOperationPass(Engine.REPLACE);
-            engine.setStencilOperationFail(Engine.KEEP);
-            engine.setStencilOperationDepthFail(Engine.KEEP);
+            engine.setStencilOperationPass(Constants.REPLACE);
+            engine.setStencilOperationFail(Constants.KEEP);
+            engine.setStencilOperationDepthFail(Constants.KEEP);
 
             // Draw order
             engine.setStencilMask(0x00);
@@ -470,12 +471,12 @@ declare module "abstractScene" {
             // 2 passes inner outer
             if (this.outerGlow) {
                 effect.setFloat("offset", 0);
-                engine.setStencilFunction(Engine.NOTEQUAL);
+                engine.setStencilFunction(Constants.NOTEQUAL);
                 engine.drawElementsType(Material.TriangleFillMode, 0, 6);
             }
             if (this.innerGlow) {
                 effect.setFloat("offset", 1);
-                engine.setStencilFunction(Engine.EQUAL);
+                engine.setStencilFunction(Constants.EQUAL);
                 engine.drawElementsType(Material.TriangleFillMode, 0, 6);
             }
 

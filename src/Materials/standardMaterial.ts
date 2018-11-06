@@ -24,6 +24,7 @@ import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 
 import "Shaders/default.fragment";
 import "Shaders/default.vertex";
+import { Constants } from "Engine/constants";
 
     /** @hidden */
     export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
@@ -957,7 +958,7 @@ import "Shaders/default.vertex";
 
                 defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
 
-                defines.PREMULTIPLYALPHA = (this.alphaMode === Engine.ALPHA_PREMULTIPLIED || this.alphaMode === Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
+                defines.PREMULTIPLYALPHA = (this.alphaMode === Constants.ALPHA_PREMULTIPLIED || this.alphaMode === Constants.ALPHA_PREMULTIPLIED_PORTERDUFF);
             }
 
             if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {

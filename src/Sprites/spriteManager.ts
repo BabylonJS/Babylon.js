@@ -13,7 +13,7 @@ import { Texture } from "Materials/Textures/texture";
 import { Effect } from "Materials/effect";
 import { Material } from "Materials/material";
 import { SceneComponentConstants } from "sceneComponent";
-import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 
     /**
      * Defines the minimum interface to fullfil in order to be a sprite manager.
@@ -361,9 +361,9 @@ import { Engine } from "Engine/engine";
             engine.setColorWrite(true);
             effect.setBool("alphaTest", false);
 
-            engine.setAlphaMode(Engine.ALPHA_COMBINE);
+            engine.setAlphaMode(Constants.ALPHA_COMBINE);
             engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
-            engine.setAlphaMode(Engine.ALPHA_DISABLE);
+            engine.setAlphaMode(Constants.ALPHA_DISABLE);
         }
 
         /**

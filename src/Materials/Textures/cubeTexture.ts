@@ -3,13 +3,13 @@ import { Tools } from "Tools/tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { Matrix, Vector3 } from "Math/math";
-import { Engine } from "Engine/engine";
 import { Material } from "Materials/material";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 import { Texture } from "Materials/Textures/texture";
 import { Animation } from "Animations/animation";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Constants } from "Engine/constants";
     /**
      * Class for creating a cube texture
      */
@@ -125,7 +125,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * @return the cube texture
          */
         constructor(rootUrl: string, scene: Scene, extensions: Nullable<string[]> = null, noMipmap: boolean = false, files: Nullable<string[]> = null,
-            onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format: number = Engine.TEXTUREFORMAT_RGBA, prefiltered = false,
+            onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format: number = Constants.TEXTUREFORMAT_RGBA, prefiltered = false,
             forcedExtension: any = null, createPolynomials: boolean = false,
             lodScale: number = 0.8, lodOffset: number = 0) {
             super(scene);
@@ -189,7 +189,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
                         this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format, forcedExtension, false, lodScale, lodOffset);
                     }
                 } else {
-                    this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+                    this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
                 }
             } else if (onLoad) {
                 if (this._texture.isReady) {
@@ -204,7 +204,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * Delays loading of the cube texture
          */
         public delayLoad(): void {
-            if (this.delayLoadState !== Engine.DELAYLOADSTATE_NOTLOADED) {
+            if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
                 return;
             }
 
@@ -213,7 +213,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
             if (!scene) {
                 return;
             }
-            this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
+            this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap);
 
             if (!this._texture) {

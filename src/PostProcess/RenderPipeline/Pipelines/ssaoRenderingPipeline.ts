@@ -9,7 +9,7 @@ import { PostProcessRenderPipeline } from "PostProcess/RenderPipeline/postProces
 import { PostProcessRenderEffect } from "PostProcess/RenderPipeline/postProcessRenderEffect";
 import { PassPostProcess } from "PostProcess/passPostProcess";
 import { BlurPostProcess } from "PostProcess/blurPostProcess";
-import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 import { serialize } from "Tools/decorators";
 import { Scene } from "scene";
 
@@ -162,8 +162,8 @@ import { Scene } from "scene";
         private _createBlurPostProcess(ratio: number): void {
             var size = 16;
 
-            this._blurHPostProcess = new BlurPostProcess("BlurH", new Vector2(1, 0), size, ratio, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
-            this._blurVPostProcess = new BlurPostProcess("BlurV", new Vector2(0, 1), size, ratio, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            this._blurHPostProcess = new BlurPostProcess("BlurH", new Vector2(1, 0), size, ratio, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, Constants.TEXTURETYPE_UNSIGNED_INT);
+            this._blurVPostProcess = new BlurPostProcess("BlurV", new Vector2(0, 1), size, ratio, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, Constants.TEXTURETYPE_UNSIGNED_INT);
 
             this._blurHPostProcess.onActivateObservable.add(() => {
                 let dw = this._blurHPostProcess.width / this._scene.getEngine().getRenderWidth();

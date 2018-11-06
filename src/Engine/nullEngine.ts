@@ -8,6 +8,7 @@ import { InternalTexture } from "Materials/Textures/internalTexture";
 import { Effect } from "Materials/effect";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Constants } from "./constants";
     /**
      * Options to create the null engine
      */
@@ -286,10 +287,10 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
                 return;
             }
 
-            this._alphaState.alphaBlend = (mode !== Engine.ALPHA_DISABLE);
+            this._alphaState.alphaBlend = (mode !== Constants.ALPHA_DISABLE);
 
             if (!noDepthWriteChange) {
-                this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
+                this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
             }
             this._alphaMode = mode;
         }
@@ -335,7 +336,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         public _releaseTexture(texture: InternalTexture): void {
         }
 
-        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null, buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack?: InternalTexture, format?: number): InternalTexture {
+        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null, buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack?: InternalTexture, format?: number): InternalTexture {
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_URL);
             var url = String(urlArg);
 
@@ -369,14 +370,14 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
                 fullOptions.generateMipMaps = options.generateMipMaps;
                 fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
                 fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
-                fullOptions.type = options.type === undefined ? Engine.TEXTURETYPE_UNSIGNED_INT : options.type;
-                fullOptions.samplingMode = options.samplingMode === undefined ? Engine.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
+                fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
+                fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
             } else {
                 fullOptions.generateMipMaps = <boolean>options;
                 fullOptions.generateDepthBuffer = true;
                 fullOptions.generateStencilBuffer = false;
-                fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
-                fullOptions.samplingMode = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE;
+                fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+                fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
             }
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
 

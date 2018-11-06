@@ -5,6 +5,7 @@ import { Camera } from "Cameras/camera";
 import { Effect } from "Materials/effect";
 import { Texture } from "Materials/Textures/texture";
 import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 
     /**
      * The Blur Post Process which blurs an image based on a kernel and direction.
@@ -74,7 +75,7 @@ import { Engine } from "Engine/engine";
         constructor(name: string,
             /** The direction in which to blur the image. */
             public direction: Vector2,
-            kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, defines = "", private blockCompilation = false) {
+            kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, defines = "", private blockCompilation = false) {
             super(name, "kernelBlur", ["delta", "direction", "cameraMinMaxZ"], ["circleOfConfusionSampler"], options, camera, samplingMode, engine, reusable, null, textureType, "kernelBlur", {varyingCount: 0, depCount: 0}, true);
             this._staticDefines = defines;
             this.onApplyObservable.add((effect: Effect) => {

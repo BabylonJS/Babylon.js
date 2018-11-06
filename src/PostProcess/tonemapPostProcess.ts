@@ -1,8 +1,10 @@
 import { Camera } from "Cameras/camera";
 import { Effect } from "Materials/effect";
-import { Texture } from "Materials/Textures/texture";
 import { PostProcess } from "./postProcess";
-import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
+
+declare type Engine = import("Engine/engine").Engine;
+
     /** Defines operator used for tonemapping */
     export enum TonemappingOperator {
         /** Hable */
@@ -32,7 +34,7 @@ import { Engine } from "Engine/engine";
          */
         constructor(name: string, private _operator: TonemappingOperator,
             /** Defines the required exposure adjustement */
-            public exposureAdjustment: number, camera: Camera, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, textureFormat = Engine.TEXTURETYPE_UNSIGNED_INT) {
+            public exposureAdjustment: number, camera: Camera, samplingMode: number = Constants.TEXTURE_BILINEAR_SAMPLINGMODE, engine?: Engine, textureFormat = Constants.TEXTURETYPE_UNSIGNED_INT) {
             super(name, "tonemap", ["_ExposureAdjustment"], null, 1.0, camera, samplingMode, engine, true, null, textureFormat);
 
             var defines = "#define ";

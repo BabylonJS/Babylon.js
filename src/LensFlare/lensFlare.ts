@@ -1,10 +1,10 @@
 import { Nullable } from "types";
 import { Color3 } from "Math/math";
-import { Engine } from "Engine/engine";
 import { Texture } from "Materials/Textures/texture";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { LensFlareSystem } from "./lensFlareSystem";
+import { Constants } from "Engine/constants";
     /**
      * This represents one of the lens effect in a `lensFlareSystem`.
      * It controls one of the indiviual texture used in the effect.
@@ -24,7 +24,7 @@ import { LensFlareSystem } from "./lensFlareSystem";
         /**
          * Define the alpha mode to render this particular lens.
          */
-        public alphaMode: number = Engine.ALPHA_ONEONE;
+        public alphaMode: number = Constants.ALPHA_ONEONE;
 
         private _system: LensFlareSystem;
 

@@ -3,7 +3,7 @@ import { Scene } from "scene";
 import { SmartArrayNoDuplicate } from "Tools/smartArray";
 import { DepthRenderer } from "./depthRenderer";
 import { Camera } from "Cameras/camera";
-import { Engine } from "Engine";
+import { Constants } from "Engine/constants";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
 import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 
@@ -38,10 +38,10 @@ declare module "scene" {
         if (!this._depthRenderer[camera.id]) {
             var textureType = 0;
             if (this.getEngine().getCaps().textureHalfFloatRender) {
-                textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+                textureType = Constants.TEXTURETYPE_HALF_FLOAT;
             }
             else if (this.getEngine().getCaps().textureFloatRender) {
-                textureType = Engine.TEXTURETYPE_FLOAT;
+                textureType = Constants.TEXTURETYPE_FLOAT;
             } else {
                 throw "Depth renderer does not support int texture type";
             }

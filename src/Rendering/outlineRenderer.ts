@@ -4,6 +4,7 @@ import { _InstancesBatch } from "Mesh/mesh";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { Scene } from "scene";
 import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
 import { Effect } from "Materials/effect";
 import { Material } from "Materials/material";
@@ -291,7 +292,7 @@ declare module "Mesh/AbstractMesh" {
             // Overlay
             if (mesh.renderOverlay) {
                 var currentMode = this._engine.getAlphaMode();
-                this._engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                this._engine.setAlphaMode(Constants.ALPHA_COMBINE);
                 this.render(subMesh, batch, true);
                 this._engine.setAlphaMode(currentMode);
             }

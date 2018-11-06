@@ -4,9 +4,10 @@ import { Tools } from "Tools/tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { Matrix, Vector3 } from "Math/math";
-import { Engine } from "Engine/engine";
+//import { Engine } from "Engine/engine";
 import { Material } from "Materials/material";
 import { BaseTexture } from "Materials/Textures/baseTexture";
+import { Constants } from "Engine/constants";
 
 // import { Animation } from "Animations/animation";
 // import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
@@ -19,66 +20,66 @@ import { BaseTexture } from "Materials/Textures/baseTexture";
      */
     export class Texture extends BaseTexture {
         /** nearest is mag = nearest and min = nearest and mip = linear */
-        public static readonly NEAREST_SAMPLINGMODE = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+        public static readonly NEAREST_SAMPLINGMODE = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         /** nearest is mag = nearest and min = nearest and mip = linear */
-        public static readonly NEAREST_NEAREST_MIPLINEAR = Engine.TEXTURE_NEAREST_NEAREST_MIPLINEAR; // nearest is mag = nearest and min = nearest and mip = linear
+        public static readonly NEAREST_NEAREST_MIPLINEAR = Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR; // nearest is mag = nearest and min = nearest and mip = linear
 
         /** Bilinear is mag = linear and min = linear and mip = nearest */
-        public static readonly BILINEAR_SAMPLINGMODE = Engine.TEXTURE_BILINEAR_SAMPLINGMODE;
+        public static readonly BILINEAR_SAMPLINGMODE = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
         /** Bilinear is mag = linear and min = linear and mip = nearest */
-        public static readonly LINEAR_LINEAR_MIPNEAREST = Engine.TEXTURE_LINEAR_LINEAR_MIPNEAREST; // Bilinear is mag = linear and min = linear and mip = nearest
+        public static readonly LINEAR_LINEAR_MIPNEAREST = Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST; // Bilinear is mag = linear and min = linear and mip = nearest
 
         /** Trilinear is mag = linear and min = linear and mip = linear */
-        public static readonly TRILINEAR_SAMPLINGMODE = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE;
+        public static readonly TRILINEAR_SAMPLINGMODE = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
         /** Trilinear is mag = linear and min = linear and mip = linear */
-        public static readonly LINEAR_LINEAR_MIPLINEAR = Engine.TEXTURE_LINEAR_LINEAR_MIPLINEAR; // Trilinear is mag = linear and min = linear and mip = linear
+        public static readonly LINEAR_LINEAR_MIPLINEAR = Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR; // Trilinear is mag = linear and min = linear and mip = linear
 
         /** mag = nearest and min = nearest and mip = nearest */
-        public static readonly NEAREST_NEAREST_MIPNEAREST = Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST;
+        public static readonly NEAREST_NEAREST_MIPNEAREST = Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST;
         /** mag = nearest and min = linear and mip = nearest */
-        public static readonly NEAREST_LINEAR_MIPNEAREST = Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST;
+        public static readonly NEAREST_LINEAR_MIPNEAREST = Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST;
         /** mag = nearest and min = linear and mip = linear */
-        public static readonly NEAREST_LINEAR_MIPLINEAR = Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR;
+        public static readonly NEAREST_LINEAR_MIPLINEAR = Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR;
         /** mag = nearest and min = linear and mip = none */
-        public static readonly NEAREST_LINEAR = Engine.TEXTURE_NEAREST_LINEAR;
+        public static readonly NEAREST_LINEAR = Constants.TEXTURE_NEAREST_LINEAR;
         /** mag = nearest and min = nearest and mip = none */
-        public static readonly NEAREST_NEAREST = Engine.TEXTURE_NEAREST_NEAREST;
+        public static readonly NEAREST_NEAREST = Constants.TEXTURE_NEAREST_NEAREST;
         /** mag = linear and min = nearest and mip = nearest */
-        public static readonly LINEAR_NEAREST_MIPNEAREST = Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST;
+        public static readonly LINEAR_NEAREST_MIPNEAREST = Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST;
         /** mag = linear and min = nearest and mip = linear */
-        public static readonly LINEAR_NEAREST_MIPLINEAR = Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
+        public static readonly LINEAR_NEAREST_MIPLINEAR = Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
         /** mag = linear and min = linear and mip = none */
-        public static readonly LINEAR_LINEAR = Engine.TEXTURE_LINEAR_LINEAR;
+        public static readonly LINEAR_LINEAR = Constants.TEXTURE_LINEAR_LINEAR;
         /** mag = linear and min = nearest and mip = none */
-        public static readonly LINEAR_NEAREST = Engine.TEXTURE_LINEAR_NEAREST;
+        public static readonly LINEAR_NEAREST = Constants.TEXTURE_LINEAR_NEAREST;
 
         /** Explicit coordinates mode */
-        public static readonly EXPLICIT_MODE = Engine.TEXTURE_EXPLICIT_MODE;
+        public static readonly EXPLICIT_MODE = Constants.TEXTURE_EXPLICIT_MODE;
         /** Spherical coordinates mode */
-        public static readonly SPHERICAL_MODE = Engine.TEXTURE_SPHERICAL_MODE;
+        public static readonly SPHERICAL_MODE = Constants.TEXTURE_SPHERICAL_MODE;
         /** Planar coordinates mode */
-        public static readonly PLANAR_MODE = Engine.TEXTURE_PLANAR_MODE;
+        public static readonly PLANAR_MODE = Constants.TEXTURE_PLANAR_MODE;
         /** Cubic coordinates mode */
-        public static readonly CUBIC_MODE = Engine.TEXTURE_CUBIC_MODE;
+        public static readonly CUBIC_MODE = Constants.TEXTURE_CUBIC_MODE;
         /** Projection coordinates mode */
-        public static readonly PROJECTION_MODE = Engine.TEXTURE_PROJECTION_MODE;
+        public static readonly PROJECTION_MODE = Constants.TEXTURE_PROJECTION_MODE;
         /** Inverse Cubic coordinates mode */
-        public static readonly SKYBOX_MODE = Engine.TEXTURE_SKYBOX_MODE;
+        public static readonly SKYBOX_MODE = Constants.TEXTURE_SKYBOX_MODE;
         /** Inverse Cubic coordinates mode */
-        public static readonly INVCUBIC_MODE = Engine.TEXTURE_INVCUBIC_MODE;
+        public static readonly INVCUBIC_MODE = Constants.TEXTURE_INVCUBIC_MODE;
         /** Equirectangular coordinates mode */
-        public static readonly EQUIRECTANGULAR_MODE = Engine.TEXTURE_EQUIRECTANGULAR_MODE;
+        public static readonly EQUIRECTANGULAR_MODE = Constants.TEXTURE_EQUIRECTANGULAR_MODE;
         /** Equirectangular Fixed coordinates mode */
-        public static readonly FIXED_EQUIRECTANGULAR_MODE = Engine.TEXTURE_FIXED_EQUIRECTANGULAR_MODE;
+        public static readonly FIXED_EQUIRECTANGULAR_MODE = Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MODE;
         /** Equirectangular Fixed Mirrored coordinates mode */
-        public static readonly FIXED_EQUIRECTANGULAR_MIRRORED_MODE = Engine.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE;
+        public static readonly FIXED_EQUIRECTANGULAR_MIRRORED_MODE = Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE;
 
         /** Texture is not repeating outside of 0..1 UVs */
-        public static readonly CLAMP_ADDRESSMODE = Engine.TEXTURE_CLAMP_ADDRESSMODE;
+        public static readonly CLAMP_ADDRESSMODE = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         /** Texture is repeating outside of 0..1 UVs */
-        public static readonly WRAP_ADDRESSMODE = Engine.TEXTURE_WRAP_ADDRESSMODE;
+        public static readonly WRAP_ADDRESSMODE = Constants.TEXTURE_WRAP_ADDRESSMODE;
         /** Texture is repeating and mirrored */
-        public static readonly MIRROR_ADDRESSMODE = Engine.TEXTURE_MIRROR_ADDRESSMODE;
+        public static readonly MIRROR_ADDRESSMODE = Constants.TEXTURE_MIRROR_ADDRESSMODE;
 
         /**
          * Gets or sets a boolean which defines if the texture url must be build from the serialized URL instead of just using the name and loading them side by side with the scene file
@@ -289,7 +290,7 @@ import { BaseTexture } from "Materials/Textures/baseTexture";
                         delete this._buffer;
                     }
                 } else {
-                    this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+                    this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
 
                     this._delayedOnLoad = load;
                     this._delayedOnError = onError;
@@ -315,7 +316,7 @@ import { BaseTexture } from "Materials/Textures/baseTexture";
 
             this.url = url;
             this._buffer = buffer;
-            this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+            this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             this.delayLoad();
         }
 
@@ -324,7 +325,7 @@ import { BaseTexture } from "Materials/Textures/baseTexture";
          * @hidden
          */
         public delayLoad(): void {
-            if (this.delayLoadState !== Engine.DELAYLOADSTATE_NOTLOADED) {
+            if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
                 return;
             }
 
@@ -334,7 +335,7 @@ import { BaseTexture } from "Materials/Textures/baseTexture";
                 return;
             }
 
-            this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
+            this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
 
             if (!this._texture) {
@@ -692,7 +693,7 @@ import { BaseTexture } from "Materials/Textures/baseTexture";
          * @returns the created texture
          */
         public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-            onLoad: Nullable<() => void> = null, onError: Nullable<() => void> = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
+            onLoad: Nullable<() => void> = null, onError: Nullable<() => void> = null, format: number = Constants.TEXTUREFORMAT_RGBA): Texture {
             return new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data, false, format);
         }
 
@@ -712,7 +713,7 @@ import { BaseTexture } from "Materials/Textures/baseTexture";
          * @returns the created texture
          */
         public static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer: boolean = false, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-            onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
+            onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format: number = Constants.TEXTUREFORMAT_RGBA): Texture {
             if (name.substr(0, 5) !== "data:") {
                 name = "data:" + name;
             }

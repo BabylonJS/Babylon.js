@@ -3,11 +3,11 @@ import { Nullable } from "types";
 import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
 import { Matrix, Vector3, Vector2, Plane } from "Math/math";
-import { Engine } from "Engine/engine";
 import { Texture } from "Materials/Textures/texture";
 import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 import { ImageProcessingConfiguration } from "Materials/imageProcessingConfiguration";
 import { BlurPostProcess } from "PostProcess/blurPostProcess";
+import { Constants } from "Engine/constants";
     /**
      * Mirror texture can be used to simulate the view from a mirror in a scene.
      * It will dynamically be rendered every frame to adapt to the camera point of view.
@@ -145,7 +145,7 @@ import { BlurPostProcess } from "PostProcess/blurPostProcess";
          * @param samplingMode
          * @param generateDepthBuffer
          */
-        constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, private scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
+        constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, private scene: Scene, generateMipMaps?: boolean, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
             super(name, size, scene, generateMipMaps, true, type, false, samplingMode, generateDepthBuffer);
 
             this.ignoreCameraViewport = true;
@@ -185,7 +185,7 @@ import { BlurPostProcess } from "PostProcess/blurPostProcess";
             if (this._blurKernelX && this._blurKernelY) {
                 var engine = (<Scene>this.getScene()).getEngine();
 
-                var textureType = engine.getCaps().textureFloatRender ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_HALF_FLOAT;
+                var textureType = engine.getCaps().textureFloatRender ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_HALF_FLOAT;
 
                 this._blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), this._blurKernelX, this._blurRatio, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
                 this._blurX.autoClear = false;

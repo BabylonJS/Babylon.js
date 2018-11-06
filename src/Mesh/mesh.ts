@@ -22,6 +22,7 @@ import { SceneLoader } from "Loading/sceneLoader";
 import { Skeleton } from "Bones/skeleton";
 import { MorphTargetManager } from "Morph/morphTargetManager";
 import { PhysicsImpostor } from "Physics/physicsImpostor";
+import { Constants } from "Engine/constants";
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -180,7 +181,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * Gets the delay loading state of the mesh (when delay loading is turned on)
          * @see http://doc.babylonjs.com/how_to/using_the_incremental_loading_system
          */
-        public delayLoadState = Engine.DELAYLOADSTATE_NONE;
+        public delayLoadState = Constants.DELAYLOADSTATE_NONE;
 
         /**
          * Gets the list of instances created from this mesh
@@ -790,7 +791,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @returns true if all associated assets are ready (material, textures, shaders)
          */
         public isReady(completeCheck = false, forceInstanceSupport = false): boolean {
-            if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
+            if (this.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
                 return false;
             }
 
@@ -1773,8 +1774,8 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
             if (this._geometry) {
                 this._geometry.load(scene);
             }
-            else if (this.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
-                this.delayLoadState = Engine.DELAYLOADSTATE_LOADING;
+            else if (this.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
+                this.delayLoadState = Constants.DELAYLOADSTATE_LOADING;
 
                 this._queueLoad(scene);
             }
@@ -1799,7 +1800,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
                     instance._syncSubMeshes();
                 });
 
-                this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
+                this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
                 scene._removePendingData(this);
 
             }, () => { }, scene.offlineProvider, getBinaryData);
@@ -1813,7 +1814,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @returns true if the mesh is in the frustum planes
          */
         public isInFrustum(frustumPlanes: Plane[]): boolean {
-            if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
+            if (this.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
                 return false;
             }
 
@@ -2754,7 +2755,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
             mesh.hasVertexAlpha = parsedMesh.hasVertexAlpha;
 
             if (parsedMesh.delayLoadingFile) {
-                mesh.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+                mesh.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
                 mesh.delayLoadingFile = rootUrl + parsedMesh.delayLoadingFile;
                 mesh._boundingInfo = new BoundingInfo(Vector3.FromArray(parsedMesh.boundingBoxMinimum), Vector3.FromArray(parsedMesh.boundingBoxMaximum));
 

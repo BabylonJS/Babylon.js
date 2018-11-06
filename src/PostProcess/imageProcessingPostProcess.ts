@@ -10,6 +10,7 @@ import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } fr
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "Engine/engine";
 import { Scene } from "scene";
+import { Constants } from "Engine/constants";
 
     /**
      * ImageProcessingPostProcess
@@ -331,7 +332,7 @@ import { Scene } from "scene";
             EXPOSURE: false,
         };
 
-        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, imageProcessingConfiguration?: ImageProcessingConfiguration) {
+        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, imageProcessingConfiguration?: ImageProcessingConfiguration) {
             super(name, "imageProcessing", [], [], options, camera, samplingMode, engine, reusable,
                 null, textureType, "postprocess", null, true);
 

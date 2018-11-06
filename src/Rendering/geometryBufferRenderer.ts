@@ -2,7 +2,7 @@ import { Matrix, Color4 } from "Math/math";
 import { VertexBuffer } from "Mesh/buffer";
 import { SubMesh } from "Mesh/subMesh";
 import { Mesh } from "Mesh/mesh";
-import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 import { SmartArray } from "Tools/smartArray";
 import { Texture } from "Materials/Textures/texture";
 import { MultiRenderTarget } from "Materials/Textures/multiRenderTarget";
@@ -270,7 +270,7 @@ import { SceneComponentConstants } from "sceneComponent";
 
             this._multiRenderTarget = new MultiRenderTarget("gBuffer",
                 { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene,
-                { generateMipMaps: false, generateDepthTexture: true, defaultType: Engine.TEXTURETYPE_FLOAT });
+                { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_FLOAT });
             if (!this.isSupported) {
                 return;
             }
@@ -281,7 +281,7 @@ import { SceneComponentConstants } from "sceneComponent";
             this._multiRenderTarget.renderList = null;
 
             // set default depth value to 1.0 (far away)
-            this._multiRenderTarget.onClearObservable.add((engine: Engine) => {
+            this._multiRenderTarget.onClearObservable.add((engine) => {
                 engine.clear(new Color4(0.0, 0.0, 0.0, 1.0), true, true, true);
             });
 

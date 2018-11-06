@@ -6,7 +6,7 @@ import { SphericalPolynomial } from "Math/sphericalPolynomial";
 import { InternalTexture } from "Materials/Textures/internalTexture";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 import { CubeTexture } from "Materials/Textures/cubeTexture";
-import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 import { Scene } from "scene";
 import { PostProcess } from "PostProcess/postProcess";
 
@@ -152,7 +152,7 @@ import { PostProcess } from "PostProcess/postProcess";
                 return Promise.reject("Env texture can only be created when the engine is created with the premultipliedAlpha option set to false.");
             }
 
-            if (texture.textureType === Engine.TEXTURETYPE_UNSIGNED_INT) {
+            if (texture.textureType === Constants.TEXTURETYPE_UNSIGNED_INT) {
                 return Promise.reject("The cube texture should allow HDR (Full Float or Half Float).");
             }
 
@@ -161,9 +161,9 @@ import { PostProcess } from "PostProcess/postProcess";
                 return Promise.reject("Env texture can only be created when the engine is associated to a canvas.");
             }
 
-            let textureType = Engine.TEXTURETYPE_FLOAT;
+            let textureType = Constants.TEXTURETYPE_FLOAT;
             if (!engine.getCaps().textureFloatRender) {
-                textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+                textureType = Constants.TEXTURETYPE_HALF_FLOAT;
                 if (!engine.getCaps().textureHalfFloatRender) {
                     return Promise.reject("Env texture can only be created when the browser supports half float or full float rendering.");
                 }
@@ -185,10 +185,10 @@ import { PostProcess } from "PostProcess/postProcess";
                     let data = texture.readPixels(face, i);
 
                     // Creates a temp texture with the face data.
-                    let tempTexture = engine.createRawTexture(data, faceWidth, faceWidth, Engine.TEXTUREFORMAT_RGBA, false, false, Engine.TEXTURE_NEAREST_SAMPLINGMODE, null, textureType);
+                    let tempTexture = engine.createRawTexture(data, faceWidth, faceWidth, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, null, textureType);
                     // And rgbdEncode them.
                     let promise = new Promise<void>((resolve, reject) => {
-                        let rgbdPostProcess = new PostProcess("rgbdEncode", "rgbdEncode", null, null, 1, null, Engine.TEXTURE_NEAREST_SAMPLINGMODE, engine, false, undefined, Engine.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
+                        let rgbdPostProcess = new PostProcess("rgbdEncode", "rgbdEncode", null, null, 1, null, Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine, false, undefined, Constants.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
                         rgbdPostProcess.getEffect().executeWhenCompiled(() => {
                             rgbdPostProcess.onApply = (effect) => {
                                 effect._bindTexture("textureSampler", tempTexture);
@@ -377,10 +377,10 @@ import { PostProcess } from "PostProcess/postProcess";
             let lodTextures: Nullable<{ [lod: number]: BaseTexture }> = null;
             let caps = engine.getCaps();
 
-            texture.format = Engine.TEXTUREFORMAT_RGBA;
-            texture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+            texture.format = Constants.TEXTUREFORMAT_RGBA;
+            texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
             texture.generateMipMaps = true;
-            engine.updateTextureSamplingMode(Engine.TEXTURE_TRILINEAR_SAMPLINGMODE, texture);
+            engine.updateTextureSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, texture);
 
             // Add extra process if texture lod is not supported
             if (!caps.textureLOD) {
@@ -395,18 +395,18 @@ import { PostProcess } from "PostProcess/postProcess";
             // If half float available we can uncompress the texture
             else if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
                 expandTexture = true;
-                texture.type = Engine.TEXTURETYPE_HALF_FLOAT;
+                texture.type = Constants.TEXTURETYPE_HALF_FLOAT;
             }
             // If full float available we can uncompress the texture
             else if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
                 expandTexture = true;
-                texture.type = Engine.TEXTURETYPE_FLOAT;
+                texture.type = Constants.TEXTURETYPE_FLOAT;
             }
 
             // Expand the texture if possible
             if (expandTexture) {
                 // Simply run through the decode PP
-                rgbdPostProcess = new PostProcess("rgbdDecode", "rgbdDecode", null, null, 1, null, Engine.TEXTURE_TRILINEAR_SAMPLINGMODE, engine, false, undefined, texture.type, undefined, null, false);
+                rgbdPostProcess = new PostProcess("rgbdDecode", "rgbdDecode", null, null, 1, null, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, engine, false, undefined, texture.type, undefined, null, false);
 
                 texture._isRGBD = false;
                 texture.invertY = false;
@@ -414,9 +414,9 @@ import { PostProcess } from "PostProcess/postProcess";
                     generateDepthBuffer: false,
                     generateMipMaps: true,
                     generateStencilBuffer: false,
-                    samplingMode: Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
+                    samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
                     type: texture.type,
-                    format: Engine.TEXTUREFORMAT_RGBA
+                    format: Constants.TEXTUREFORMAT_RGBA
                 });
             }
             else {
@@ -444,7 +444,7 @@ import { PostProcess } from "PostProcess/postProcess";
                         glTextureFromLod.isCube = true;
                         glTextureFromLod.invertY = true;
                         glTextureFromLod.generateMipMaps = false;
-                        engine.updateTextureSamplingMode(Engine.TEXTURE_LINEAR_LINEAR, glTextureFromLod);
+                        engine.updateTextureSamplingMode(Constants.TEXTURE_LINEAR_LINEAR, glTextureFromLod);
 
                         // Wrap in a base texture for easy binding.
                         let lodTexture = new BaseTexture(null);
@@ -483,7 +483,7 @@ import { PostProcess } from "PostProcess/postProcess";
                     let promise = new Promise<void>((resolve, reject) => {
                         image.onload = () => {
                             if (expandTexture) {
-                                let tempTexture = engine.createTexture(null, true, true, null, Engine.TEXTURE_NEAREST_SAMPLINGMODE, null,
+                                let tempTexture = engine.createTexture(null, true, true, null, Constants.TEXTURE_NEAREST_SAMPLINGMODE, null,
                                     (message) => {
                                         reject(message);
                                     },
@@ -532,15 +532,15 @@ import { PostProcess } from "PostProcess/postProcess";
                 const size = Math.pow(2, mipmapsCount - 1 - imageData.length);
                 const dataLength = size * size * 4;
                 switch (texture.type) {
-                    case Engine.TEXTURETYPE_UNSIGNED_INT: {
+                    case Constants.TEXTURETYPE_UNSIGNED_INT: {
                         data = new Uint8Array(dataLength);
                         break;
                     }
-                    case Engine.TEXTURETYPE_HALF_FLOAT: {
+                    case Constants.TEXTURETYPE_HALF_FLOAT: {
                         data = new Uint16Array(dataLength);
                         break;
                     }
-                    case Engine.TEXTURETYPE_FLOAT: {
+                    case Constants.TEXTURETYPE_FLOAT: {
                         data = new Float32Array(dataLength);
                         break;
                     }

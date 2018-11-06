@@ -4,6 +4,7 @@ import { Effect } from "Materials/effect";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "Engine/engine";
 import { ToGammaSpace } from "Math/math";
+import { Constants } from "Engine/constants";
 
     /**
      * The extract highlights post process sets all pixels to black except pixels above the specified luminance threshold. Used as the first step for a bloom effect.
@@ -21,7 +22,7 @@ import { ToGammaSpace } from "Math/math";
          * @hidden
          */
         public _inputPostProcess: Nullable<PostProcess> = null;
-        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
             super(name, "extractHighlights", ["threshold", "exposure"], null, options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, blockCompilation);
             this.onApplyObservable.add((effect: Effect) => {
                 if (this._inputPostProcess) {

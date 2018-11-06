@@ -3,6 +3,7 @@ import { Engine } from "Engine/engine";
 import { InternalTexture } from "Materials/Textures/internalTexture";
 import { Texture } from "Materials/Textures/texture";
 import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { Constants } from "Engine/constants";
 
     /**
      * Creation options of the multi render target texture.
@@ -136,7 +137,7 @@ import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
                 if (options && options.types && options.types[i] !== undefined) {
                     types.push(options.types[i]);
                 } else {
-                    types.push(options && options.defaultType ? options.defaultType : Engine.TEXTURETYPE_UNSIGNED_INT);
+                    types.push(options && options.defaultType ? options.defaultType : Constants.TEXTURETYPE_UNSIGNED_INT);
                 }
 
                 if (options && options.samplingModes && options.samplingModes[i] !== undefined) {

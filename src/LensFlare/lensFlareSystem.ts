@@ -14,6 +14,7 @@ import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { LensFlare } from "./lensFlare";
 import { LensFlareSystemSceneComponent } from "./lensFlareSystemSceneComponent";
+import { Constants } from "Engine/constants";
 
     /**
      * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
@@ -335,7 +336,7 @@ import { LensFlareSystemSceneComponent } from "./lensFlareSystemSceneComponent";
             }
 
             engine.setDepthBuffer(true);
-            engine.setAlphaMode(Engine.ALPHA_DISABLE);
+            engine.setAlphaMode(Constants.ALPHA_DISABLE);
             return true;
         }
 

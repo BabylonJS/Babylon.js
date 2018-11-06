@@ -3,6 +3,7 @@ import { Camera } from "Cameras/camera";
 import { Effect } from "Materials/effect";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 
     /**
      * The GrainPostProcess adds noise to the image at mid luminance levels
@@ -28,7 +29,7 @@ import { Engine } from "Engine/engine";
          * @param textureType Type of textures used when performing the post process. (default: 0)
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
             super(name, "grain", ["intensity", "animatedSeed"], [], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, blockCompilation);
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setFloat('intensity', this.intensity);

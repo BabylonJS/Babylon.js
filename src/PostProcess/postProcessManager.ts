@@ -2,9 +2,9 @@ import { Nullable } from "types";
 import { Material } from "Materials/material";
 import { InternalTexture } from "Materials/Textures/internalTexture";
 import { PostProcess } from "./postProcess";
-import { Engine } from "Engine/engine";
 import { Scene } from "scene";
 import { VertexBuffer } from "Mesh/buffer";
+import { Constants } from "Engine/constants";
     /**
 	 * PostProcessManager is used to manage one or more post processes or post process pipelines
      * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
@@ -195,7 +195,7 @@ import { VertexBuffer } from "Mesh/buffer";
             // Restore states
             engine.setDepthBuffer(true);
             engine.setDepthWrite(true);
-            engine.setAlphaMode(Engine.ALPHA_DISABLE);
+            engine.setAlphaMode(Constants.ALPHA_DISABLE);
         }
 
         /**

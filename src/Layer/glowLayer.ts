@@ -4,7 +4,6 @@ import { Nullable } from "types";
 import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
 import { Vector2, Color4 } from "Math/math";
-import { Engine } from "Engine/engine";
 import { VertexBuffer } from "Mesh/buffer";
 import { SubMesh } from "Mesh/subMesh";
 import { AbstractMesh } from "Mesh/abstractMesh";
@@ -17,6 +16,7 @@ import { PostProcess } from "PostProcess/postProcess";
 import { BlurPostProcess } from "PostProcess/blurPostProcess";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "abstractScene";
+import { Constants } from "Engine/constants";
 
 declare module "abstractScene" {
     export interface AbstractScene {
@@ -181,7 +181,7 @@ declare module "abstractScene" {
 
             // Initialize the layer
             this._init({
-                alphaBlendingMode: Engine.ALPHA_ADD,
+                alphaBlendingMode: Constants.ALPHA_ADD,
                 camera: this._options.camera,
                 mainTextureFixedSize: this._options.mainTextureFixedSize,
                 mainTextureRatio: this._options.mainTextureRatio,
@@ -222,10 +222,10 @@ declare module "abstractScene" {
 
             var textureType = 0;
             if (this._engine.getCaps().textureHalfFloatRender) {
-                textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+                textureType = Constants.TEXTURETYPE_HALF_FLOAT;
             }
             else {
-                textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+                textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
             }
 
             this._blurTexture1 = new RenderTargetTexture("GlowLayerBlurRTT",

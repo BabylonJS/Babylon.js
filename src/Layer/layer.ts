@@ -11,6 +11,7 @@ import { SceneComponentConstants } from "sceneComponent";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { LayerSceneComponent } from "./layerSceneComponent";
+import { Constants } from "Engine/constants";
     /**
      * This represents a full screen 2d layer.
      * This can be usefull to display a picture in the  background of your scene for instance.
@@ -45,7 +46,7 @@ import { LayerSceneComponent } from "./layerSceneComponent";
         /**
          * Define the alpha blending mode used in the layer in case the texture or color has an alpha.
          */
-        public alphaBlendingMode = Engine.ALPHA_COMBINE;
+        public alphaBlendingMode = Constants.ALPHA_COMBINE;
 
         /**
          * Define if the layer should alpha test or alpha blend with the rest of the scene.
@@ -238,7 +239,7 @@ import { LayerSceneComponent } from "./layerSceneComponent";
             if (!this.alphaTest) {
                 engine.setAlphaMode(this.alphaBlendingMode);
                 engine.drawElementsType(Material.TriangleFillMode, 0, 6);
-                engine.setAlphaMode(Engine.ALPHA_DISABLE);
+                engine.setAlphaMode(Constants.ALPHA_DISABLE);
             }
             else {
                 engine.drawElementsType(Material.TriangleFillMode, 0, 6);

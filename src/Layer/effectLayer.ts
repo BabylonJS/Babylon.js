@@ -22,6 +22,7 @@ import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 import { Effect } from "Materials/effect";
 import { Material } from "Materials/material";
 import { MaterialHelper } from "Materials/materialHelper";
+import { Constants } from "Engine/constants";
 
     /**
      * Effect layer options. This helps customizing the behaviour
@@ -232,7 +233,7 @@ import { MaterialHelper } from "Materials/materialHelper";
             // Adapt options
             this._effectLayerOptions = {
                 mainTextureRatio: 0.5,
-                alphaBlendingMode: Engine.ALPHA_COMBINE,
+                alphaBlendingMode: Constants.ALPHA_COMBINE,
                 camera: null,
                 renderingGroupId: -1,
                 ...options,
@@ -309,7 +310,7 @@ import { MaterialHelper } from "Materials/materialHelper";
                 this._scene,
                 false,
                 true,
-                Engine.TEXTURETYPE_UNSIGNED_INT);
+                Constants.TEXTURETYPE_UNSIGNED_INT);
             this._mainTexture.activeCamera = this._effectLayerOptions.camera;
             this._mainTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._mainTexture.wrapV = Texture.CLAMP_ADDRESSMODE;

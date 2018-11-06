@@ -2,7 +2,7 @@ import { Geometry, BoxGeometry, SphereGeometry, CylinderGeometry, TorusGeometry,
 import { Mesh } from "Mesh/mesh";
 import { Plane } from "Math/math";
 import { Animation } from "Animations/animation";
-import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 import { MultiMaterial } from "Materials/multiMaterial";
 import { Material } from "Materials/material";
 import { Scene } from "scene";
@@ -71,7 +71,7 @@ import { Light } from "Lights/light";
 
     var finalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
         //only works if the mesh is already loaded
-        if (mesh.delayLoadState === Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Engine.DELAYLOADSTATE_NONE) {
+        if (mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Constants.DELAYLOADSTATE_NONE) {
             //serialize material
             if (mesh.material) {
                 if (mesh.material instanceof MultiMaterial) {
@@ -286,7 +286,7 @@ import { Light } from "Lights/light";
                 if (abstractMesh instanceof Mesh) {
                     var mesh = abstractMesh;
                     if (!mesh.doNotSerialize) {
-                        if (mesh.delayLoadState === Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Engine.DELAYLOADSTATE_NONE) {
+                        if (mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Constants.DELAYLOADSTATE_NONE) {
                             serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
                         }
                     }

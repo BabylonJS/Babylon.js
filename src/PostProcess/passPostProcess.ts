@@ -1,7 +1,10 @@
 import { Nullable } from "types";
+import { Constants } from "Engine/constants";
 import { Camera } from "Cameras/camera";
 import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Engine } from "Engine/engine";
+
+declare type Engine = import("Engine/engine").Engine;
+
     /**
      * PassPostProcess which produces an output the same as it's input
      */
@@ -17,7 +20,7 @@ import { Engine } from "Engine/engine";
          * @param textureType The type of texture to be used when performing the post processing.
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
             super(name, "pass", null, null, options, camera, samplingMode, engine, reusable, undefined, textureType, undefined, null, blockCompilation);
         }
     }
@@ -80,7 +83,7 @@ import { Engine } from "Engine/engine";
          * @param textureType The type of texture to be used when performing the post processing.
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
             super(name, "passCube", null, null, options, camera, samplingMode, engine, reusable, "#define POSITIVEX", textureType, undefined, null, blockCompilation);
         }
     }
