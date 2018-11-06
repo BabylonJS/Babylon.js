@@ -599,7 +599,7 @@ module BABYLON {
                 return parsedCustomTexture;
             }
 
-            if (parsedTexture.isCube) {
+            if (parsedTexture.isCube && !parsedTexture.isRenderTarget) {
                 return CubeTexture.Parse(parsedTexture, scene, rootUrl);
             }
 
@@ -619,8 +619,17 @@ module BABYLON {
 
                     return mirrorTexture;
                 } else if (parsedTexture.isRenderTarget) {
-                    var renderTargetTexture = new RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
-                    renderTargetTexture._waitingRenderList = parsedTexture.renderList;
+                    let renderTargetTexture: Nullable<RenderTargetTexture> = null;
+                    if (parsedTexture.isCube) {
+                        const probe = ReflectionProbe.Parse(parsedTexture, scene, rootUrl);
+
+                        if (probe) {
+                            renderTargetTexture = probe.cubeTexture;
+                        }
+                    } else {
+                        renderTargetTexture = new RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
+                        renderTargetTexture._waitingRenderList = parsedTexture.renderList;
+                    }
 
                     return renderTargetTexture;
                 } else {
@@ -643,13 +652,13 @@ module BABYLON {
             // Update Sampling Mode
             if (parsedTexture.samplingMode) {
                 var sampling: number = parsedTexture.samplingMode;
-                if (texture._samplingMode !== sampling) {
+                if (texture && texture._samplingMode !== sampling) {
                     texture.updateSamplingMode(sampling);
                 }
             }
 
             // Animations
-            if (parsedTexture.animations) {
+            if (texture && parsedTexture.animations) {
                 for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
                     var parsedAnimation = parsedTexture.animations[animationIndex];
 
