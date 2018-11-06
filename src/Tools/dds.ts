@@ -1,10 +1,12 @@
 import { Scalar } from "Math/math.scalar";
 import { SphericalPolynomial } from "Math/sphericalPolynomial";
-import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 import { InternalTexture } from "Materials/Textures/internalTexture";
 import { Nullable } from "types";
 import { Tools } from "./tools";
 import { CubeMapToSphericalPolynomialTools } from "Tools/HDR/cubemapToSphericalPolynomial";
+
+declare type Engine = import("Engine/engine").Engine;
 
     // Based on demo done by Brandon Jones - http://media.tojicode.com/webgl-samples/dds.html
     // All values and structures referenced from:
@@ -173,18 +175,18 @@ import { CubeMapToSphericalPolynomialTools } from "Tools/HDR/cubemapToSphericalP
 
             var fourCC = header[off_pfFourCC];
             var dxgiFormat = (fourCC === FOURCC_DX10) ? extendedHeader[off_dxgiFormat] : 0;
-            var textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+            var textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
 
             switch (fourCC) {
                 case FOURCC_D3DFMT_R16G16B16A16F:
-                    textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+                    textureType = Constants.TEXTURETYPE_HALF_FLOAT;
                     break;
                 case FOURCC_D3DFMT_R32G32B32A32F:
-                    textureType = Engine.TEXTURETYPE_FLOAT;
+                    textureType = Constants.TEXTURETYPE_FLOAT;
                     break;
                 case FOURCC_DX10:
                     if (dxgiFormat === DXGI_FORMAT_R16G16B16A16_FLOAT) {
-                        textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+                        textureType = Constants.TEXTURETYPE_HALF_FLOAT;
                         break;
                     }
             }
@@ -540,7 +542,7 @@ import { CubeMapToSphericalPolynomialTools } from "Tools/HDR/cubemapToSphericalP
                         const i = (lodIndex === -1) ? mip : 0;
 
                         if (!info.isCompressed && info.isFourCC) {
-                            texture.format = Engine.TEXTUREFORMAT_RGBA;
+                            texture.format = Constants.TEXTUREFORMAT_RGBA;
                             dataLength = width * height * 4;
                             var floatArray: Nullable<ArrayBufferView> = null;
 
@@ -558,23 +560,23 @@ import { CubeMapToSphericalPolynomialTools } from "Tools/HDR/cubemapToSphericalP
                                     }
                                 }
 
-                                texture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                                texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
                             }
                             else {
                                 if (bpp === 128) {
-                                    texture.type = Engine.TEXTURETYPE_FLOAT;
+                                    texture.type = Constants.TEXTURETYPE_FLOAT;
                                     floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                     if (sphericalPolynomialFaces && i == 0) {
                                         sphericalPolynomialFaces.push(floatArray);
                                     }
                                 } else if (bpp === 64 && !engine.getCaps().textureHalfFloat) {
-                                    texture.type = Engine.TEXTURETYPE_FLOAT;
+                                    texture.type = Constants.TEXTURETYPE_FLOAT;
                                     floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                     if (sphericalPolynomialFaces && i == 0) {
                                         sphericalPolynomialFaces.push(floatArray);
                                     }
                                 } else { // 64
-                                    texture.type = Engine.TEXTURETYPE_HALF_FLOAT;
+                                    texture.type = Constants.TEXTURETYPE_HALF_FLOAT;
                                     floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                     if (sphericalPolynomialFaces && i == 0) {
                                         sphericalPolynomialFaces.push(DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i));
@@ -586,14 +588,14 @@ import { CubeMapToSphericalPolynomialTools } from "Tools/HDR/cubemapToSphericalP
                                 engine._uploadDataToTextureDirectly(texture, floatArray, face, i);
                             }
                         } else if (info.isRGB) {
-                            texture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                            texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
                             if (bpp === 24) {
-                                texture.format = Engine.TEXTUREFORMAT_RGB;
+                                texture.format = Constants.TEXTUREFORMAT_RGB;
                                 dataLength = width * height * 3;
                                 byteArray = DDSTools._GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, rOffset, gOffset, bOffset);
                                 engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
                             } else { // 32
-                                texture.format = Engine.TEXTUREFORMAT_RGBA;
+                                texture.format = Constants.TEXTUREFORMAT_RGBA;
                                 dataLength = width * height * 4;
                                 byteArray = DDSTools._GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, rOffset, gOffset, bOffset, aOffset);
                                 engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
@@ -605,15 +607,15 @@ import { CubeMapToSphericalPolynomialTools } from "Tools/HDR/cubemapToSphericalP
                             dataLength = paddedRowSize * (height - 1) + unpaddedRowSize;
 
                             byteArray = DDSTools._GetLuminanceArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
-                            texture.format = Engine.TEXTUREFORMAT_LUMINANCE;
-                            texture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                            texture.format = Constants.TEXTUREFORMAT_LUMINANCE;
+                            texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
 
                             engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
                         } else {
                             dataLength = Math.max(4, width) / 4 * Math.max(4, height) / 4 * blockBytes;
                             byteArray = new Uint8Array(arrayBuffer, dataOffset, dataLength);
 
-                            texture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                            texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
                             engine._uploadCompressedDataToTextureDirectly(texture, internalCompressedFormat, width, height, byteArray, face, i);
                         }
                     }
@@ -639,8 +641,8 @@ import { CubeMapToSphericalPolynomialTools } from "Tools/HDR/cubemapToSphericalP
                     down: sphericalPolynomialFaces[3],
                     front: sphericalPolynomialFaces[4],
                     back: sphericalPolynomialFaces[5],
-                    format: Engine.TEXTUREFORMAT_RGBA,
-                    type: Engine.TEXTURETYPE_FLOAT,
+                    format: Constants.TEXTUREFORMAT_RGBA,
+                    type: Constants.TEXTURETYPE_FLOAT,
                     gammaSpace: false,
                 });
             } else {

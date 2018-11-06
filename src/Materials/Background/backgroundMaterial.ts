@@ -5,7 +5,6 @@ import { Tools } from "Tools/tools";
 import { Nullable, int, float } from "types";
 import { Scene } from "scene";
 import { Matrix, Vector3, Color3, Vector4 } from "Math/math";
-import { Engine } from "Engine/engine";
 import { VertexBuffer } from "Mesh/buffer";
 import { SubMesh } from "Mesh/subMesh";
 import { AbstractMesh } from "Mesh/abstractMesh";
@@ -26,6 +25,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
 import "Shaders/background.fragment";
 import "Shaders/background.vertex";
+import { Constants } from "Engine/constants";
 
     /**
      * Background material defines definition.
@@ -788,7 +788,7 @@ import "Shaders/background.vertex";
                     }
                 }
 
-                defines.PREMULTIPLYALPHA = (this.alphaMode === Engine.ALPHA_PREMULTIPLIED || this.alphaMode === Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
+                defines.PREMULTIPLYALPHA = (this.alphaMode === Constants.ALPHA_PREMULTIPLIED || this.alphaMode === Constants.ALPHA_PREMULTIPLIED_PORTERDUFF);
                 defines.USERGBCOLOR = this._useRGBColor;
                 defines.NOISE = this._enableNoise;
             }

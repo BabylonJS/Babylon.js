@@ -9,7 +9,7 @@ import { Effect } from "Materials/effect";
 import { Material } from "Materials/material";
 import { ShaderMaterial } from "Materials/shaderMaterial";
 import { Camera } from "Cameras/camera";
-import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 import { Node } from "node";
 import { LineEdgesRenderer } from "./lineEdgesRenderer";
 
@@ -475,9 +475,9 @@ declare module "Mesh/LinesMesh" {
             this._lineShader._preBind();
 
             if (this._source.edgesColor.a !== 1) {
-                engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                engine.setAlphaMode(Constants.ALPHA_COMBINE);
             } else {
-                engine.setAlphaMode(Engine.ALPHA_DISABLE);
+                engine.setAlphaMode(Constants.ALPHA_DISABLE);
             }
 
             // VBOs

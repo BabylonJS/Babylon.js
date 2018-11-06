@@ -4,9 +4,11 @@ import { Vector2 } from "Math/math";
 import { Camera } from "Cameras/camera";
 import { Effect } from "Materials/effect";
 import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 import { GeometryBufferRenderer } from "Rendering/geometryBufferRenderer";
 import { Scene } from "scene";
+
+declare type Engine = import("Engine/engine").Engine;
 
     /**
      * The Motion Blur Post Process which blurs an image based on the objects velocity in scene.
@@ -59,7 +61,7 @@ import { Scene } from "scene";
          * @param textureType Type of textures used when performing the post process. (default: 0)
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+        constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
             super(name, "motionBlur", ["motionStrength", "motionScale", "screenSize"], ["velocitySampler"], options, camera, samplingMode, engine, reusable, "#define GEOMETRY_SUPPORTED\n#define SAMPLES 64.0", textureType, undefined, null, blockCompilation);
 
             this._geometryBufferRenderer = scene.enableGeometryBufferRenderer();

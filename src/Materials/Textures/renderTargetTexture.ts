@@ -14,6 +14,7 @@ import { Texture } from "Materials/Textures/texture";
 import { PostProcessManager } from "PostProcess/postProcessManager";
 import { PostProcess } from "PostProcess/postProcess";
 import { RenderingManager } from "Rendering/renderingManager";
+import { Constants } from "Engine/constants";
     /**
      * This Helps creating a texture that will be created from a camera in your scene.
      * It is basically a dynamic texture that could be used to create special effects for instance.
@@ -277,7 +278,7 @@ import { RenderingManager } from "Rendering/renderingManager";
          * @param format The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...)
          * @param delayAllocation if the texture allocation should be delayed (default: false)
          */
-        constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Engine.TEXTUREFORMAT_RGBA, delayAllocation = false) {
+        constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Constants.TEXTUREFORMAT_RGBA, delayAllocation = false) {
             super(null, scene, !generateMipMaps);
             scene = this.getScene();
 

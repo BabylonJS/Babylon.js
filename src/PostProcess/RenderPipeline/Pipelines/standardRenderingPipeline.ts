@@ -11,14 +11,13 @@ import { PostProcessRenderPipeline } from "PostProcess/RenderPipeline/postProces
 import { PostProcessRenderEffect } from "PostProcess/RenderPipeline/postProcessRenderEffect";
 import { BlurPostProcess } from "PostProcess/blurPostProcess";
 import { FxaaPostProcess } from "PostProcess/fxaaPostProcess";
-import { Engine } from "Engine/engine";
 import { IDisposable } from "scene";
 import { SpotLight } from "Lights/spotLight";
 import { DirectionalLight } from "Lights/directionalLight";
 import { GeometryBufferRenderer } from "Rendering/geometryBufferRenderer";
 import { Scene } from "scene";
 import { Animation } from "Animations/animation";
-
+import { Constants } from "Engine/constants";
     /**
      * Standard rendering pipeline
      * Default pipeline should be used going forward but the standard pipeline will be kept for backwards compatibility.
@@ -482,7 +481,7 @@ import { Animation } from "Animations/animation";
             this._ratio = ratio;
 
             // Misc
-            this._floatTextureType = scene.getEngine().getCaps().textureFloatRender ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_HALF_FLOAT;
+            this._floatTextureType = scene.getEngine().getCaps().textureFloatRender ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_HALF_FLOAT;
 
             // Finish
             scene.postProcessRenderPipelineManager.addPipeline(this);
@@ -498,7 +497,7 @@ import { Animation } from "Animations/animation";
 
             // Create pass post-process
             if (!this._basePostProcess) {
-                this.originalPostProcess = new PostProcess("HDRPass", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", this._floatTextureType);
+                this.originalPostProcess = new PostProcess("HDRPass", "standard", [], [], ratio, null, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", this._floatTextureType);
                 this.originalPostProcess.onApply = () => {
                     this._currentDepthOfFieldSource = this.originalPostProcess;
                 };
@@ -527,7 +526,7 @@ import { Animation } from "Animations/animation";
                 this._createTextureAdderPostProcess(scene, ratio);
 
                 // Create depth-of-field source post-process
-                this.textureAdderFinalPostProcess = new PostProcess("HDRDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
+                this.textureAdderFinalPostProcess = new PostProcess("HDRDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Constants.TEXTURETYPE_UNSIGNED_INT);
                 this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRBaseDepthOfFieldSource", () => { return this.textureAdderFinalPostProcess; }, true));
             }
 
@@ -536,7 +535,7 @@ import { Animation } from "Animations/animation";
                 this._createVolumetricLightPostProcess(scene, ratio);
 
                 // Create volumetric light final post-process
-                this.volumetricLightFinalPostProcess = new PostProcess("HDRVLSFinal", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
+                this.volumetricLightFinalPostProcess = new PostProcess("HDRVLSFinal", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Constants.TEXTURETYPE_UNSIGNED_INT);
                 this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLSFinal", () => { return this.volumetricLightFinalPostProcess; }, true));
             }
 
@@ -545,7 +544,7 @@ import { Animation } from "Animations/animation";
                 this._createLensFlarePostProcess(scene, ratio);
 
                 // Create depth-of-field source post-process post lens-flare and disable it now
-                this.lensFlareFinalPostProcess = new PostProcess("HDRPostLensFlareDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
+                this.lensFlareFinalPostProcess = new PostProcess("HDRPostLensFlareDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Constants.TEXTURETYPE_UNSIGNED_INT);
                 this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRPostLensFlareDepthOfFieldSource", () => { return this.lensFlareFinalPostProcess; }, true));
             }
 
@@ -557,7 +556,7 @@ import { Animation } from "Animations/animation";
                 this._createHdrPostProcess(scene, ratio);
 
                 // Create depth-of-field source post-process post hdr and disable it now
-                this.hdrFinalPostProcess = new PostProcess("HDRPostHDReDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
+                this.hdrFinalPostProcess = new PostProcess("HDRPostHDReDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Constants.TEXTURETYPE_UNSIGNED_INT);
                 this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRPostHDReDepthOfFieldSource", () => { return this.hdrFinalPostProcess; }, true));
             }
 
@@ -576,7 +575,7 @@ import { Animation } from "Animations/animation";
 
             if (this._fxaaEnabled) {
                 // Create fxaa post-process
-                this.fxaaPostProcess = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
+                this.fxaaPostProcess = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Constants.TEXTURETYPE_UNSIGNED_INT);
                 this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRFxaa", () => { return this.fxaaPostProcess; }, true));
             }
 
@@ -592,7 +591,7 @@ import { Animation } from "Animations/animation";
         // Down Sample X4 Post-Processs
         private _createDownSampleX4PostProcess(scene: Scene, ratio: number): void {
             var downSampleX4Offsets = new Array<number>(32);
-            this.downSampleX4PostProcess = new PostProcess("HDRDownSampleX4", "standard", ["dsOffsets"], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define DOWN_SAMPLE_X4", Engine.TEXTURETYPE_UNSIGNED_INT);
+            this.downSampleX4PostProcess = new PostProcess("HDRDownSampleX4", "standard", ["dsOffsets"], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define DOWN_SAMPLE_X4", Constants.TEXTURETYPE_UNSIGNED_INT);
 
             this.downSampleX4PostProcess.onApply = (effect: Effect) => {
                 var id = 0;
@@ -617,7 +616,7 @@ import { Animation } from "Animations/animation";
         // Brightpass Post-Process
         private _createBrightPassPostProcess(scene: Scene, ratio: number): void {
             var brightOffsets = new Array<number>(8);
-            this.brightPassPostProcess = new PostProcess("HDRBrightPass", "standard", ["dsOffsets", "brightThreshold"], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define BRIGHT_PASS", Engine.TEXTURETYPE_UNSIGNED_INT);
+            this.brightPassPostProcess = new PostProcess("HDRBrightPass", "standard", ["dsOffsets", "brightThreshold"], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define BRIGHT_PASS", Constants.TEXTURETYPE_UNSIGNED_INT);
 
             this.brightPassPostProcess.onApply = (effect: Effect) => {
                 var sU = (1.0 / (<PostProcess>this.brightPassPostProcess).width);
@@ -644,8 +643,8 @@ import { Animation } from "Animations/animation";
         private _createBlurPostProcesses(scene: Scene, ratio: number, indice: number, blurWidthKey: string = "blurWidth"): void {
             var engine = scene.getEngine();
 
-            var blurX = new BlurPostProcess("HDRBlurH" + "_" + indice, new Vector2(1, 0), (<any>this)[blurWidthKey], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
-            var blurY = new BlurPostProcess("HDRBlurV" + "_" + indice, new Vector2(0, 1), (<any>this)[blurWidthKey], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            var blurX = new BlurPostProcess("HDRBlurH" + "_" + indice, new Vector2(1, 0), (<any>this)[blurWidthKey], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Constants.TEXTURETYPE_UNSIGNED_INT);
+            var blurY = new BlurPostProcess("HDRBlurV" + "_" + indice, new Vector2(0, 1), (<any>this)[blurWidthKey], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Constants.TEXTURETYPE_UNSIGNED_INT);
 
             blurX.onActivateObservable.add(() => {
                 let dw = blurX.width / engine.getRenderWidth();
@@ -666,7 +665,7 @@ import { Animation } from "Animations/animation";
 
         // Create texture adder post-process
         private _createTextureAdderPostProcess(scene: Scene, ratio: number): void {
-            this.textureAdderPostProcess = new PostProcess("HDRTextureAdder", "standard", ["exposure"], ["otherSampler", "lensSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define TEXTURE_ADDER", Engine.TEXTURETYPE_UNSIGNED_INT);
+            this.textureAdderPostProcess = new PostProcess("HDRTextureAdder", "standard", ["exposure"], ["otherSampler", "lensSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define TEXTURE_ADDER", Constants.TEXTURETYPE_UNSIGNED_INT);
             this.textureAdderPostProcess.onApply = (effect: Effect) => {
                 effect.setTextureFromPostProcess("otherSampler", this._vlsEnabled ? this._currentDepthOfFieldSource : this.originalPostProcess);
                 effect.setTexture("lensSampler", this.lensTexture);
@@ -820,7 +819,7 @@ import { Animation } from "Animations/animation";
 
         // Create HDR post-process
         private _createHdrPostProcess(scene: Scene, ratio: number): void {
-            this.hdrPostProcess = new PostProcess("HDR", "standard", ["averageLuminance"], ["textureAdderSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define HDR", Engine.TEXTURETYPE_UNSIGNED_INT);
+            this.hdrPostProcess = new PostProcess("HDR", "standard", ["averageLuminance"], ["textureAdderSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define HDR", Constants.TEXTURETYPE_UNSIGNED_INT);
 
             var outputLiminance = 1;
             var time = 0;
@@ -861,12 +860,12 @@ import { Animation } from "Animations/animation";
 
         // Create lens flare post-process
         private _createLensFlarePostProcess(scene: Scene, ratio: number): void {
-            this.lensFlarePostProcess = new PostProcess("HDRLensFlare", "standard", ["strength", "ghostDispersal", "haloWidth", "resolution", "distortionStrength"], ["lensColorSampler"], ratio / 2, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LENS_FLARE", Engine.TEXTURETYPE_UNSIGNED_INT);
+            this.lensFlarePostProcess = new PostProcess("HDRLensFlare", "standard", ["strength", "ghostDispersal", "haloWidth", "resolution", "distortionStrength"], ["lensColorSampler"], ratio / 2, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LENS_FLARE", Constants.TEXTURETYPE_UNSIGNED_INT);
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLensFlare", () => { return this.lensFlarePostProcess; }, true));
 
             this._createBlurPostProcesses(scene, ratio / 4, 2);
 
-            this.lensFlareComposePostProcess = new PostProcess("HDRLensFlareCompose", "standard", ["lensStarMatrix"], ["otherSampler", "lensDirtSampler", "lensStarSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LENS_FLARE_COMPOSE", Engine.TEXTURETYPE_UNSIGNED_INT);
+            this.lensFlareComposePostProcess = new PostProcess("HDRLensFlareCompose", "standard", ["lensStarMatrix"], ["otherSampler", "lensDirtSampler", "lensStarSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LENS_FLARE_COMPOSE", Constants.TEXTURETYPE_UNSIGNED_INT);
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLensFlareCompose", () => { return this.lensFlareComposePostProcess; }, true));
 
             var resolution = new Vector2(0, 0);
@@ -934,7 +933,7 @@ import { Animation } from "Animations/animation";
 
         // Create depth-of-field post-process
         private _createDepthOfFieldPostProcess(scene: Scene, ratio: number): void {
-            this.depthOfFieldPostProcess = new PostProcess("HDRDepthOfField", "standard", ["distance"], ["otherSampler", "depthSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define DEPTH_OF_FIELD", Engine.TEXTURETYPE_UNSIGNED_INT);
+            this.depthOfFieldPostProcess = new PostProcess("HDRDepthOfField", "standard", ["distance"], ["otherSampler", "depthSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define DEPTH_OF_FIELD", Constants.TEXTURETYPE_UNSIGNED_INT);
             this.depthOfFieldPostProcess.onApply = (effect: Effect) => {
                 effect.setTextureFromPostProcess("otherSampler", this._currentDepthOfFieldSource);
                 effect.setTexture("depthSampler", this._getDepthTexture());
@@ -951,7 +950,7 @@ import { Animation } from "Animations/animation";
             this.motionBlurPostProcess = new PostProcess("HDRMotionBlur", "standard",
                 ["inverseViewProjection", "prevViewProjection", "screenSize", "motionScale", "motionStrength"],
                 ["depthSampler"],
-                ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + this.motionBlurSamples.toFixed(1), Engine.TEXTURETYPE_UNSIGNED_INT);
+                ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + this.motionBlurSamples.toFixed(1), Constants.TEXTURETYPE_UNSIGNED_INT);
 
             var motionScale: number = 0;
             var prevViewProjection = Matrix.Identity();

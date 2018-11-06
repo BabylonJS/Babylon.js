@@ -18,6 +18,7 @@ import { MaterialHelper } from "Materials/MaterialHelper";
 import { ImageProcessingConfiguration } from "Materials/imageProcessingConfiguration";
 import { Texture } from "Materials/Textures/texture";
 import { RawTexture } from "Materials/Textures/rawTexture";
+import { Constants } from "Engine/constants";
 
     /**
      * This represents a GPU particle system in Babylon
@@ -670,7 +671,7 @@ import { RawTexture } from "Materials/Textures/rawTexture";
                 d.push(Math.random());
                 d.push(Math.random());
             }
-            this._randomTexture = new RawTexture(new Float32Array(d), maxTextureSize, 1, Engine.TEXTUREFORMAT_RGBA, this._scene, false, false, Texture.NEAREST_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT);
+            this._randomTexture = new RawTexture(new Float32Array(d), maxTextureSize, 1, Constants.TEXTUREFORMAT_RGBA, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
             this._randomTexture.wrapU = Texture.WRAP_ADDRESSMODE;
             this._randomTexture.wrapV = Texture.WRAP_ADDRESSMODE;
 
@@ -681,7 +682,7 @@ import { RawTexture } from "Materials/Textures/rawTexture";
                 d.push(Math.random());
                 d.push(Math.random());
             }
-            this._randomTexture2 = new RawTexture(new Float32Array(d), maxTextureSize, 1, Engine.TEXTUREFORMAT_RGBA, this._scene, false, false, Texture.NEAREST_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT);
+            this._randomTexture2 = new RawTexture(new Float32Array(d), maxTextureSize, 1, Constants.TEXTUREFORMAT_RGBA, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
             this._randomTexture2.wrapU = Texture.WRAP_ADDRESSMODE;
             this._randomTexture2.wrapV = Texture.WRAP_ADDRESSMODE;
 
@@ -1319,16 +1320,16 @@ import { RawTexture } from "Materials/Textures/rawTexture";
                 // Draw order
                 switch (this.blendMode) {
                     case ParticleSystem.BLENDMODE_ADD:
-                        this._engine.setAlphaMode(Engine.ALPHA_ADD);
+                        this._engine.setAlphaMode(Constants.ALPHA_ADD);
                         break;
                     case ParticleSystem.BLENDMODE_ONEONE:
-                        this._engine.setAlphaMode(Engine.ALPHA_ONEONE);
+                        this._engine.setAlphaMode(Constants.ALPHA_ONEONE);
                         break;
                     case ParticleSystem.BLENDMODE_STANDARD:
-                        this._engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                        this._engine.setAlphaMode(Constants.ALPHA_COMBINE);
                         break;
                     case ParticleSystem.BLENDMODE_MULTIPLY:
-                        this._engine.setAlphaMode(Engine.ALPHA_MULTIPLY);
+                        this._engine.setAlphaMode(Constants.ALPHA_MULTIPLY);
                         break;
                 }
 
@@ -1341,7 +1342,7 @@ import { RawTexture } from "Materials/Textures/rawTexture";
 
                 // Render
                 this._engine.drawArraysType(Material.TriangleFanDrawMode, 0, 4, this._currentActiveCount);
-                this._engine.setAlphaMode(Engine.ALPHA_DISABLE);
+                this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
             }
             // Switch VAOs
             this._targetIndex++;

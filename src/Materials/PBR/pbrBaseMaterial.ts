@@ -7,7 +7,6 @@ import { Nullable } from "types";
 import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
 import { Matrix, Color3, Vector4, Tmp } from "Math/math";
-import { Engine } from "Engine/engine";
 import { VertexBuffer } from "Mesh/buffer";
 import { SubMesh } from "Mesh/subMesh";
 import { AbstractMesh } from "Mesh/abstractMesh";
@@ -31,6 +30,7 @@ import { StandardMaterial } from "Materials/standardMaterial";
 
 import "Shaders/pbr.fragment";
 import "Shaders/pbr.vertex";
+import { Constants } from "Engine/constants";
 
     /**
      * Manages the defines for the PBR Material.
@@ -1349,7 +1349,7 @@ import "Shaders/pbr.vertex";
                 }
 
                 defines.ALPHATESTVALUE = `${this._alphaCutOff}${this._alphaCutOff % 1 === 0 ? "." : ""}`;
-                defines.PREMULTIPLYALPHA = (this.alphaMode === Engine.ALPHA_PREMULTIPLIED || this.alphaMode === Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
+                defines.PREMULTIPLYALPHA = (this.alphaMode === Constants.ALPHA_PREMULTIPLIED || this.alphaMode === Constants.ALPHA_PREMULTIPLIED_PORTERDUFF);
                 defines.ALPHABLEND = this.needAlphaBlendingForMesh(mesh);
                 defines.ALPHAFRESNEL = this._useAlphaFresnel || this._useLinearAlphaFresnel;
                 defines.LINEARALPHAFRESNEL = this._useLinearAlphaFresnel;

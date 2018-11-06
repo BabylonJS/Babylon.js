@@ -3,7 +3,7 @@ import { BaseTexture } from "Materials/Textures/baseTexture";
 import { Texture } from "Materials/Textures/texture";
 import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 import { PassPostProcess } from "PostProcess/passPostProcess";
-import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 import { Scene } from "scene";
 
     /**
@@ -52,7 +52,7 @@ import { Scene } from "scene";
             texture.wrapU = Texture.CLAMP_ADDRESSMODE;
             texture.wrapV = Texture.CLAMP_ADDRESSMODE;
 
-            let passPostProcess = new PassPostProcess("pass", 1, null, useBilinearMode ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE, engine, false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            let passPostProcess = new PassPostProcess("pass", 1, null, useBilinearMode ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
             passPostProcess.getEffect().executeWhenCompiled(() => {
                 passPostProcess.onApply = function(effect) {
                     effect.setTexture("textureSampler", texture);

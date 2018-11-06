@@ -5,6 +5,7 @@ import { Engine, RenderTargetCreationOptions } from "Engine/engine";
 import { IInternalTextureTracker } from "Materials/Textures/internalTextureTracker";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Constants } from "Engine/constants";
 
 declare type BaseTexture = import("Materials/Textures/baseTexture").BaseTexture;
 
@@ -354,7 +355,7 @@ declare type BaseTexture = import("Materials/Textures/baseTexture").BaseTexture;
                     return;
                 case InternalTexture.DATASOURCE_DEPTHTEXTURE:
                     let depthTextureOptions = {
-                        bilinearFiltering: this.samplingMode !== Engine.TEXTURE_BILINEAR_SAMPLINGMODE,
+                        bilinearFiltering: this.samplingMode !== Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
                         comparisonFunction: this._comparisonFunction,
                         generateStencil: this._generateStencilBuffer,
                         isCube: this.isCube

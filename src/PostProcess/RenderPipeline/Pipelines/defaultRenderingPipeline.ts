@@ -6,6 +6,7 @@ import { Camera } from "Cameras/camera";
 import { ImageProcessingConfiguration } from "Materials/imageProcessingConfiguration";
 import { Texture } from "Materials/Textures/texture";
 import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 import { IDisposable } from "scene";
 import { GlowLayer } from "Layer/glowLayer";
 import { Scene } from "scene";
@@ -404,13 +405,13 @@ import { BloomEffect } from "PostProcess/bloomEffect";
             // Misc
             if (this._hdr) {
                 if (caps.textureHalfFloatRender) {
-                    this._defaultPipelineTextureType = Engine.TEXTURETYPE_HALF_FLOAT;
+                    this._defaultPipelineTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
                 }
                 else if (caps.textureFloatRender) {
-                    this._defaultPipelineTextureType = Engine.TEXTURETYPE_FLOAT;
+                    this._defaultPipelineTextureType = Constants.TEXTURETYPE_FLOAT;
                 }
             } else {
-                this._defaultPipelineTextureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+                this._defaultPipelineTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
             }
 
             // Attach

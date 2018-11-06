@@ -6,6 +6,7 @@ import { InternalTexture } from "Materials/Textures/internalTexture";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Constants } from "Engine/constants";
     /**
      * This represents a color grading texture. This acts as a lookup table LUT, useful during post process
      * It can help converting any input color in a desired output one. This can then be used to create effects
@@ -52,9 +53,9 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
             this.hasAlpha = false;
             this.isCube = false;
             this.is3D = this._engine.webGLVersion > 1;
-            this.wrapU = Engine.TEXTURE_CLAMP_ADDRESSMODE;
-            this.wrapV = Engine.TEXTURE_CLAMP_ADDRESSMODE;
-            this.wrapR = Engine.TEXTURE_CLAMP_ADDRESSMODE;
+            this.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+            this.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+            this.wrapR = Constants.TEXTURE_CLAMP_ADDRESSMODE;
 
             this.anisotropicFilteringLevel = 1;
 
@@ -64,7 +65,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
                 if (!scene.useDelayedTextureLoading) {
                     this.loadTexture();
                 } else {
-                    this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+                    this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
                 }
             }
         }
@@ -84,10 +85,10 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
             var engine = this._engine;
             var texture: InternalTexture;
             if (engine.webGLVersion === 1) {
-                texture = engine.createRawTexture(null, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Engine.TEXTURE_BILINEAR_SAMPLINGMODE);
+                texture = engine.createRawTexture(null, 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
             }
             else {
-                texture = engine.createRawTexture3D(null, 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Engine.TEXTURE_BILINEAR_SAMPLINGMODE);
+                texture = engine.createRawTexture3D(null, 1, 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
             }
 
             this._texture = texture;
@@ -180,11 +181,11 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
                 if (texture.is3D) {
                     texture.updateSize(size, size, size);
-                    engine.updateRawTexture3D(texture, data, Engine.TEXTUREFORMAT_RGBA, false);
+                    engine.updateRawTexture3D(texture, data, Constants.TEXTUREFORMAT_RGBA, false);
                 }
                 else {
                     texture.updateSize(size * size, size);
-                    engine.updateRawTexture(texture, data, Engine.TEXTUREFORMAT_RGBA, false);
+                    engine.updateRawTexture(texture, data, Constants.TEXTUREFORMAT_RGBA, false);
                 }
             };
 
@@ -224,11 +225,11 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * Called during delayed load for textures.
          */
         public delayLoad(): void {
-            if (this.delayLoadState !== Engine.DELAYLOADSTATE_NOTLOADED) {
+            if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
                 return;
             }
 
-            this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
+            this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, true);
 
             if (!this._texture) {

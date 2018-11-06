@@ -2,7 +2,6 @@ import { SmartArray } from "Tools/smartArray";
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { Matrix, Vector3, Vector2, Color4 } from "Math/math";
-import { Engine } from "Engine/engine";
 import { VertexBuffer } from "Mesh/buffer";
 import { SubMesh } from "Mesh/subMesh";
 import { AbstractMesh } from "Mesh/abstractMesh";
@@ -24,6 +23,7 @@ import { BlurPostProcess } from "PostProcess/blurPostProcess";
 import { SceneComponentConstants } from "sceneComponent";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Constants } from "Engine/constants";
     /**
      * Interface to implement to create a shadow generator compatible with BJS.
      */
@@ -691,23 +691,23 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
             if (!useFullFloatFirst) {
                 if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
-                    this._textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+                    this._textureType = Constants.TEXTURETYPE_HALF_FLOAT;
                 }
                 else if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
-                    this._textureType = Engine.TEXTURETYPE_FLOAT;
+                    this._textureType = Constants.TEXTURETYPE_FLOAT;
                 }
                 else {
-                    this._textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+                    this._textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
                 }
             } else {
                 if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
-                    this._textureType = Engine.TEXTURETYPE_FLOAT;
+                    this._textureType = Constants.TEXTURETYPE_FLOAT;
                 }
                 else if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
-                    this._textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+                    this._textureType = Constants.TEXTURETYPE_HALF_FLOAT;
                 }
                 else {
-                    this._textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+                    this._textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
                 }
             }
 
@@ -725,7 +725,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
             let engine = this._scene.getEngine();
             if (engine.webGLVersion > 1) {
                 this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube(), undefined, false, false);
-                this._shadowMap.createDepthStencilTexture(Engine.LESS, true);
+                this._shadowMap.createDepthStencilTexture(Constants.LESS, true);
             }
             else {
                 this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube());
@@ -766,7 +766,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
             // Clear according to the chosen filter.
             var clearZero = new Color4(0, 0, 0, 0);
             var clearOne = new Color4(1.0, 1.0, 1.0, 1.0);
-            this._shadowMap.onClearObservable.add((engine: Engine) => {
+            this._shadowMap.onClearObservable.add((engine) => {
                 if (this._filter === ShadowGenerator.FILTER_PCF) {
                     engine.clear(clearOne, false, true, false);
                 }
@@ -803,7 +803,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
                 this._kernelBlurXPostprocess.autoClear = false;
                 this._kernelBlurYPostprocess.autoClear = false;
 
-                if (this._textureType === Engine.TEXTURETYPE_UNSIGNED_INT) {
+                if (this._textureType === Constants.TEXTURETYPE_UNSIGNED_INT) {
                     (<BlurPostProcess>this._kernelBlurXPostprocess).packedFloat = true;
                     (<BlurPostProcess>this._kernelBlurYPostprocess).packedFloat = true;
                 }
@@ -1031,7 +1031,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var defines = [];
 
-            if (this._textureType !== Engine.TEXTURETYPE_UNSIGNED_INT) {
+            if (this._textureType !== Constants.TEXTURETYPE_UNSIGNED_INT) {
                 defines.push("#define FLOAT");
             }
 

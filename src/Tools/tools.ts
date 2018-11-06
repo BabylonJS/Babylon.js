@@ -2,7 +2,6 @@ import { FloatArray, IndicesArray, Nullable } from "types";
 import { Animation } from "Animations/animation";
 import { Color4, Color3, Vector2, Vector3 } from "Math/math";
 import { Scalar } from "Math/math.scalar";
-import { Engine } from "Engine/engine";
 import { IOfflineProvider } from "Offline/IOfflineProvider";
 import { Camera } from "Cameras/camera";
 import { Texture } from "Materials/Textures/texture";
@@ -11,6 +10,9 @@ import { FxaaPostProcess } from "PostProcess/fxaaPostProcess";
 import { Observable } from "./observable";
 import { FilesInput } from "./filesInput";
 import { TGATools } from "./tga";
+import { Constants } from "Engine/constants";
+
+declare type Engine = import("Engine/engine").Engine;
 
     /**
      * Interface for any object that can request an animation frame
@@ -406,17 +408,17 @@ import { TGATools } from "./tga";
          * @param mode defines how to define the closest value
          * @returns closest exponent of two of the given value
          */
-        public static GetExponentOfTwo(value: number, max: number, mode = Engine.SCALEMODE_NEAREST): number {
+        public static GetExponentOfTwo(value: number, max: number, mode = Constants.SCALEMODE_NEAREST): number {
             let pot;
 
             switch (mode) {
-                case Engine.SCALEMODE_FLOOR:
+                case Constants.SCALEMODE_FLOOR:
                     pot = Tools.FloorPOT(value);
                     break;
-                case Engine.SCALEMODE_NEAREST:
+                case Constants.SCALEMODE_NEAREST:
                     pot = Tools.NearestPOT(value);
                     break;
-                case Engine.SCALEMODE_CEILING:
+                case Constants.SCALEMODE_CEILING:
                 default:
                     pot = Tools.CeilingPOT(value);
                     break;
@@ -1527,7 +1529,7 @@ import { TGATools } from "./tga";
             scene.render();
 
             // At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
-            var texture = new RenderTargetTexture("screenShot", size, scene, false, false, Engine.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
+            var texture = new RenderTargetTexture("screenShot", size, scene, false, false, Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
             texture.renderList = null;
             texture.samples = samples;
             if (antialiasing) {

@@ -7,6 +7,7 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { BlurPostProcess } from "./blurPostProcess";
 import { Engine } from "Engine/engine";
 import { Scene } from "scene";
+import { Constants } from "Engine/constants";
 
     /**
      * The DepthOfFieldBlurPostProcess applied a blur in a give direction.
@@ -31,8 +32,8 @@ import { Scene } from "scene";
          * @param textureType Type of textures used when performing the post process. (default: 0)
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(name: string, scene: Scene, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, circleOfConfusion: PostProcess, imageToBlur: Nullable<PostProcess> = null, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
-            super(name, direction, kernel, options, camera, samplingMode = Texture.BILINEAR_SAMPLINGMODE, engine, reusable, textureType = Engine.TEXTURETYPE_UNSIGNED_INT, `#define DOF 1\r\n`, blockCompilation);
+        constructor(name: string, scene: Scene, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, circleOfConfusion: PostProcess, imageToBlur: Nullable<PostProcess> = null, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+            super(name, direction, kernel, options, camera, samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE, engine, reusable, textureType = Constants.TEXTURETYPE_UNSIGNED_INT, `#define DOF 1\r\n`, blockCompilation);
 
             this.onApplyObservable.add((effect: Effect) => {
                 if (imageToBlur != null) {

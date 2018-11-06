@@ -1,6 +1,7 @@
 import { Scene } from "scene";
 import { Engine } from "Engine/engine";
 import { Texture } from "Materials/Textures/texture";
+import { Constants } from "Engine/constants";
     /**
      * Class used to store 3D textures containing user data
      */
@@ -26,7 +27,7 @@ import { Texture } from "Materials/Textures/texture";
                     generateMipMaps: boolean = true,
                     invertY: boolean = false,
                     samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-                    textureType = Engine.TEXTURETYPE_UNSIGNED_INT) {
+                    textureType = Constants.TEXTURETYPE_UNSIGNED_INT) {
             super(null, scene, !generateMipMaps, invertY);
             this._engine = scene.getEngine();
 

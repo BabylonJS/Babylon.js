@@ -2,6 +2,7 @@ import { Nullable } from "types";
 import { Camera } from "Cameras/camera";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 
     /**
      * Extracts highlights from the image
@@ -19,7 +20,7 @@ import { Engine } from "Engine/engine";
          * @param reusable If the post process can be reused on the same frame. (default: false)
          * @param textureType Type of texture for the post process (default: Engine.TEXTURETYPE_UNSIGNED_INT)
          */
-        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
             super(name, "highlights", null, null, options, camera, samplingMode, engine, reusable, null, textureType);
         }
     }

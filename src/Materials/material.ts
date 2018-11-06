@@ -16,6 +16,7 @@ import { BaseTexture } from "Materials/Textures/baseTexture";
 import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 import { Animation } from "Animations/animation";
 import { MaterialDefines } from "./materialDefines";
+import { Constants } from "Engine/constants";
 
 declare var BABYLON: any;
 
@@ -348,7 +349,7 @@ declare var BABYLON: any;
          * Stores the value of the alpha mode
          */
         @serialize("alphaMode")
-        private _alphaMode: number = Engine.ALPHA_COMBINE;
+        private _alphaMode: number = Constants.ALPHA_COMBINE;
 
         /**
          * Sets the value of the alpha mode.

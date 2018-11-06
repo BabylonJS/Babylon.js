@@ -4,13 +4,15 @@ import { SmartArray } from "Tools/smartArray";
 import { Observable, Observer } from "Tools/observable";
 import { Color4, Vector2 } from "Math/math";
 import { Camera } from "Cameras/camera";
-//import { WebVRFreeCamera } from "Cameras/VR/webVRCamera";
 import { Effect } from "Materials/effect";
-import { Texture } from "Materials/Textures/texture";
-import { InternalTexture } from "Materials/Textures/internalTexture";
-import { Engine } from "Engine/engine";
 import { Scene } from "scene";
 import { Animation } from "Animations/animation";
+import { Constants } from "Engine/constants";
+
+declare type InternalTexture  = import("Materials/Textures/internalTexture").InternalTexture;
+declare type WebVRFreeCamera = import("Cameras/VR/webVRCamera").WebVRFreeCamera;
+declare type Engine = import("Engine/engine").Engine;
+
     /**
      * Size options for a post process
      */
@@ -52,7 +54,7 @@ import { Animation } from "Animations/animation";
         /**
         * Type of alpha mode to use when performing the post process (default: Engine.ALPHA_DISABLE)
         */
-        public alphaMode = Engine.ALPHA_DISABLE;
+        public alphaMode = Constants.ALPHA_DISABLE;
         /**
         * Sets the setAlphaBlendConstants of the babylon engine
         */
@@ -83,7 +85,7 @@ import { Animation } from "Animations/animation";
         * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
 	*
         */
-        public scaleMode = Engine.SCALEMODE_FLOOR;
+        public scaleMode = Constants.SCALEMODE_FLOOR;
         /**
         * Force textures to be a power of two (default: false)
         */
@@ -281,7 +283,7 @@ import { Animation } from "Animations/animation";
             /** Name of the PostProcess. */
             public name: string,
             fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>,
-            samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess", indexParameters?: any, blockCompilation = false) {
+            samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess", indexParameters?: any, blockCompilation = false) {
             if (camera != null) {
                 this._camera = camera;
                 this._scene = camera.getScene();
@@ -296,7 +298,7 @@ import { Animation } from "Animations/animation";
             }
 
             this._options = options;
-            this.renderTargetSamplingMode = samplingMode ? samplingMode : Texture.NEAREST_SAMPLINGMODE;
+            this.renderTargetSamplingMode = samplingMode ? samplingMode : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
             this._reusable = reusable || false;
             this._textureType = textureType;
 
@@ -412,7 +414,7 @@ import { Animation } from "Animations/animation";
             var requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderHeight(true)) * <number>this._options) | 0;
 
             // If rendering to a webvr camera's left or right eye only half the width should be used to avoid resize when rendered to screen
-            var webVRCamera = (<any>camera.parent);
+            var webVRCamera = (<WebVRFreeCamera>camera.parent);
             if (webVRCamera && (webVRCamera.leftCamera == camera || webVRCamera.rightCamera == camera)) {
                 requiredWidth /= 2;
             }
@@ -431,7 +433,7 @@ import { Animation } from "Animations/animation";
                     }
                 }
 
-                if (this.renderTargetSamplingMode === Texture.TRILINEAR_SAMPLINGMODE || this.alwaysForcePOT) {
+                if (this.renderTargetSamplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE || this.alwaysForcePOT) {
                     if (!(<PostProcessOptions>this._options).width) {
                         desiredWidth = engine.needPOTTextures ? Tools.GetExponentOfTwo(desiredWidth, maxSize, this.scaleMode) : desiredWidth;
                     }
@@ -504,7 +506,7 @@ import { Animation } from "Animations/animation";
             this.onActivateObservable.notifyObservers(camera);
 
             // Clear
-            if (this.autoClear && this.alphaMode === Engine.ALPHA_DISABLE) {
+            if (this.autoClear && this.alphaMode === Constants.ALPHA_DISABLE) {
                 this._engine.clear(this.clearColor ? this.clearColor : scene.clearColor, scene._allowPostProcessClearColor, true, true);
             }
 

@@ -3,10 +3,9 @@ import { EnvironmentTextureTools } from "Tools/environmentTextureTools";
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { SphericalPolynomial } from "Math/sphericalPolynomial";
-import { Engine } from "Engine/engine";
 import { InternalTexture } from "Materials/Textures/internalTexture";
-import { Texture } from "Materials/Textures/texture";
 import { CubeTexture } from "Materials/Textures/cubeTexture";
+import { Constants } from "Engine/constants";
     /**
      * Raw cube texture where the raw buffers are passed in
      */
@@ -24,8 +23,8 @@ import { CubeTexture } from "Materials/Textures/cubeTexture";
          * @param compression defines the compression used (null by default)
          */
         constructor(scene: Scene, data: Nullable<ArrayBufferView[]>, size: number,
-                    format: number = Engine.TEXTUREFORMAT_RGBA, type: number = Engine.TEXTURETYPE_UNSIGNED_INT,
-                    generateMipMaps: boolean = false, invertY: boolean = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+                    format: number = Constants.TEXTUREFORMAT_RGBA, type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+                    generateMipMaps: boolean = false, invertY: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
                     compression: Nullable<string> = null) {
             super("", scene);
 

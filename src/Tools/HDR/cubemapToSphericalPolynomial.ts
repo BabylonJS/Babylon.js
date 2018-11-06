@@ -3,7 +3,7 @@ import { Scalar } from "Math/math.scalar";
 import { SphericalPolynomial, SphericalHarmonics } from "Math/sphericalPolynomial";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 import { Nullable } from "types";
-import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 import { CubeMapInfo } from "./panoramaToCubemap";
 
     class FileFaceOrientation {
@@ -68,10 +68,10 @@ import { CubeMapInfo } from "./panoramaToCubemap";
 
             var gammaSpace = texture.gammaSpace;
             // Always read as RGBA.
-            var format = Engine.TEXTUREFORMAT_RGBA;
-            var type = Engine.TEXTURETYPE_UNSIGNED_INT;
-            if (texture.textureType && texture.textureType !== Engine.TEXTURETYPE_UNSIGNED_INT) {
-                type = Engine.TEXTURETYPE_FLOAT;
+            var format = Constants.TEXTUREFORMAT_RGBA;
+            var type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            if (texture.textureType && texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_INT) {
+                type = Constants.TEXTURETYPE_FLOAT;
             }
 
             var cubeInfo: CubeMapInfo = {
@@ -116,7 +116,7 @@ import { CubeMapInfo } from "./panoramaToCubemap";
                 // TODO: we could perform the summation directly into a SphericalPolynomial (SP), which is more efficient than SphericalHarmonic (SH).
                 // This is possible because during the summation we do not need the SH-specific properties, e.g. orthogonality.
                 // Because SP is still linear, so summation is fine in that basis.
-                const stride = cubeInfo.format === Engine.TEXTUREFORMAT_RGBA ? 4 : 3;
+                const stride = cubeInfo.format === Constants.TEXTUREFORMAT_RGBA ? 4 : 3;
                 for (var y = 0; y < cubeInfo.size; y++) {
                     var u = minUV;
 
@@ -135,7 +135,7 @@ import { CubeMapInfo } from "./panoramaToCubemap";
                         var b = dataArray[(y * cubeInfo.size * stride) + (x * stride) + 2];
 
                         // Handle Integer types.
-                        if (cubeInfo.type === Engine.TEXTURETYPE_UNSIGNED_INT) {
+                        if (cubeInfo.type === Constants.TEXTURETYPE_UNSIGNED_INT) {
                             r /= 255;
                             g /= 255;
                             b /= 255;

@@ -1,6 +1,6 @@
 import { Nullable } from "types";
 import { Vector3 } from "Math/math";
-import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 
     /**
      * CubeMap information grouping all the data for each faces as well as the cubemap size.
@@ -144,8 +144,8 @@ import { Engine } from "Engine/engine";
                 up: textureUp,
                 down: textureDown,
                 size: size,
-                type: Engine.TEXTURETYPE_FLOAT,
-                format: Engine.TEXTUREFORMAT_RGB,
+                type: Constants.TEXTURETYPE_FLOAT,
+                format: Constants.TEXTUREFORMAT_RGB,
                 gammaSpace: false,
             };
         }

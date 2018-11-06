@@ -21,6 +21,7 @@ import { IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";
 import { Particle } from "./particle";
 import { SubEmitter, SubEmitterType } from "./subEmitter";
+import { Constants } from "Engine/constants";
 
     /**
      * This represents a particle system in Babylon.
@@ -1765,16 +1766,16 @@ import { SubEmitter, SubEmitterType } from "./subEmitter";
             // Draw order
             switch (blendMode) {
                 case ParticleSystem.BLENDMODE_ADD:
-                    engine.setAlphaMode(Engine.ALPHA_ADD);
+                    engine.setAlphaMode(Constants.ALPHA_ADD);
                     break;
                 case ParticleSystem.BLENDMODE_ONEONE:
-                    engine.setAlphaMode(Engine.ALPHA_ONEONE);
+                    engine.setAlphaMode(Constants.ALPHA_ONEONE);
                     break;
                 case ParticleSystem.BLENDMODE_STANDARD:
-                    engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                    engine.setAlphaMode(Constants.ALPHA_COMBINE);
                     break;
                 case ParticleSystem.BLENDMODE_MULTIPLY:
-                    engine.setAlphaMode(Engine.ALPHA_MULTIPLY);
+                    engine.setAlphaMode(Constants.ALPHA_MULTIPLY);
                     break;
             }
 
@@ -1812,7 +1813,7 @@ import { SubEmitter, SubEmitterType } from "./subEmitter";
             outparticles = this._render(this.blendMode);
 
             engine.unbindInstanceAttributes();
-            engine.setAlphaMode(Engine.ALPHA_DISABLE);
+            engine.setAlphaMode(Constants.ALPHA_DISABLE);
 
             return outparticles;
         }

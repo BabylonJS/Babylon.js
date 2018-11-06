@@ -45,6 +45,7 @@ import { Engine } from "Engine/engine";
 import { Ray } from "Culling/ray";
 import { Node } from "node";
 import { MorphTarget } from "Morph/morphTarget";
+import { Constants } from "Engine/constants";
 
     /**
      * Define an interface for all classes that will hold resources
@@ -2293,7 +2294,7 @@ import { MorphTarget } from "Morph/morphTarget";
             for (index = 0; index < this.geometries.length; index++) {
                 var geometry = this.geometries[index];
 
-                if (geometry.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
+                if (geometry.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
                     return false;
                 }
             }

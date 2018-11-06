@@ -3,7 +3,7 @@ import { Matrix, Vector3 } from "Math/math";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 
 declare module "scene" {
     export interface Scene {
@@ -53,7 +53,7 @@ declare module "scene" {
             }
             this._scene.reflectionProbes.push(this);
 
-            this._renderTargetTexture = new RenderTargetTexture(name, size, scene, generateMipMaps, true, useFloat ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_UNSIGNED_INT, true);
+            this._renderTargetTexture = new RenderTargetTexture(name, size, scene, generateMipMaps, true, useFloat ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT, true);
 
             this._renderTargetTexture.onBeforeRenderObservable.add((faceIndex: number) => {
                 switch (faceIndex) {

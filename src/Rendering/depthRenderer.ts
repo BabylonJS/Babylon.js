@@ -9,7 +9,7 @@ import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 import { Effect } from "Materials/effect";
 import { Material } from "Materials/material";
 import { Camera } from "Cameras/camera";
-import { Engine } from "Engine";
+import { Constants } from "Engine/constants";
 import { SceneComponentConstants } from "sceneComponent";
 import { DepthRendererSceneComponent } from "./depthRendererSceneComponent";
 
@@ -38,7 +38,7 @@ import { DepthRendererSceneComponent } from "./depthRendererSceneComponent";
          * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
          * @param camera The camera to be used to render the depth map (default: scene's active camera)
          */
-        constructor(scene: Scene, type: number = Engine.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null) {
+        constructor(scene: Scene, type: number = Constants.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null) {
             this._scene = scene;
             // Register the G Buffer component to the scene.
             let component = scene._getComponent(SceneComponentConstants.NAME_DEPTHRENDERER) as DepthRendererSceneComponent;
@@ -64,7 +64,7 @@ import { DepthRendererSceneComponent } from "./depthRendererSceneComponent";
             this._depthMap.useCameraPostProcesses = false;
 
             // set default depth value to 1.0 (far away)
-            this._depthMap.onClearObservable.add((engine: Engine) => {
+            this._depthMap.onClearObservable.add((engine) => {
                 engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
             });
 

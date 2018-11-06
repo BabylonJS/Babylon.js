@@ -11,6 +11,7 @@
     import { Effect } from "Materials/effect";
     import { SceneLoader } from "Loading/sceneLoader";
     import { BoundingInfo } from "Culling/boundingInfo";
+    import { Constants } from "Engine/constants";
     /**
      * Class used to store geometry data (vertex buffers + index buffer)
      */
@@ -23,7 +24,7 @@
         /**
          * Gets the delay loading state of the geometry (none by default which means not delayed)
          */
-        public delayLoadState = Engine.DELAYLOADSTATE_NONE;
+        public delayLoadState = Constants.DELAYLOADSTATE_NONE;
         /**
          * Gets the file containing the data to load when running in delay load state
          */
@@ -162,7 +163,7 @@
          * @returns true if the geometry is ready to be used
          */
         public isReady(): boolean {
-            return this.delayLoadState === Engine.DELAYLOADSTATE_LOADED || this.delayLoadState === Engine.DELAYLOADSTATE_NONE;
+            return this.delayLoadState === Constants.DELAYLOADSTATE_LOADED || this.delayLoadState === Constants.DELAYLOADSTATE_NONE;
         }
 
         /**
@@ -734,7 +735,7 @@
          * @param onLoaded defines a callback called when the geometry is loaded
          */
         public load(scene: Scene, onLoaded?: () => void): void {
-            if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
+            if (this.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
                 return;
             }
 
@@ -745,7 +746,7 @@
                 return;
             }
 
-            this.delayLoadState = Engine.DELAYLOADSTATE_LOADING;
+            this.delayLoadState = Constants.DELAYLOADSTATE_LOADING;
 
             this._queueLoad(scene, onLoaded);
         }
@@ -763,7 +764,7 @@
 
                 this._delayLoadingFunction(JSON.parse(data as string), this);
 
-                this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
+                this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
                 this._delayInfo = [];
 
                 scene._removePendingData(this);
@@ -885,7 +886,7 @@
             this._indexBuffer = null;
             this._indices = [];
 
-            this.delayLoadState = Engine.DELAYLOADSTATE_NONE;
+            this.delayLoadState = Constants.DELAYLOADSTATE_NONE;
             this.delayLoadingFile = null;
             this._delayLoadingFunction = null;
             this._delayInfo = [];
@@ -1407,7 +1408,7 @@
             }
 
             if (parsedVertexData.delayLoadingFile) {
-                geometry.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+                geometry.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
                 geometry.delayLoadingFile = rootUrl + parsedVertexData.delayLoadingFile;
                 geometry._boundingInfo = new BoundingInfo(Vector3.FromArray(parsedVertexData.boundingBoxMinimum), Vector3.FromArray(parsedVertexData.boundingBoxMaximum));
 

@@ -1,13 +1,14 @@
+import { Constants } from "Engine/constants";
     /**
      * @hidden
      **/
     export class _StencilState {
         /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
-        public static readonly ALWAYS = 0x0207;
+        public static readonly ALWAYS = Constants.ALWAYS;
         /** Passed to stencilOperation to specify that stencil value must be kept */
-        public static readonly KEEP = 0x1E00;
+        public static readonly KEEP = Constants.KEEP;
         /** Passed to stencilOperation to specify that stencil value must be replaced */
-        public static readonly REPLACE = 0x1E01;
+        public static readonly REPLACE = Constants.REPLACE;
 
         private _isStencilTestDirty = false;
         private _isStencilMaskDirty = false;

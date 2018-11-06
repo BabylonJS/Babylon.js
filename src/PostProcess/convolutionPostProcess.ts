@@ -3,6 +3,7 @@ import { Nullable } from "types";
 import { Camera } from "Cameras/camera";
 import { Engine } from "Engine/engine";
 import { Effect } from "Materials/effect";
+import { Constants } from "Engine/constants";
 
     /**
      * The ConvolutionPostProcess applies a 3x3 kernel to every pixel of the
@@ -24,7 +25,7 @@ import { Effect } from "Materials/effect";
         constructor(name: string,
             /** Array of 9 values corrisponding to the 3x3 kernel to be applied */
             public kernel: number[],
-            options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+            options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
             super(name, "convolution", ["kernel", "screenSize"], null, options, camera, samplingMode, engine, reusable, null, textureType);
 
             this.onApply = (effect: Effect) => {

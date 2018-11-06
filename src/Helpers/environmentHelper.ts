@@ -3,7 +3,6 @@ import { Nullable } from "types";
 import { ArcRotateCamera } from "Cameras/arcRotateCamera";
 import { Scene } from "scene";
 import { Vector3, Color3, Color4, Plane } from "Math/math";
-import { Engine } from "Engine/engine";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { Mesh } from "Mesh/mesh";
 import { BaseTexture } from "Materials/Textures/baseTexture";
@@ -13,6 +12,7 @@ import { CubeTexture } from "Materials/Textures/cubeTexture";
 import { BackgroundMaterial } from "Materials/Background/backgroundMaterial";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Constants } from "Engine/constants";
     /**
      * Represents the different options available during the creation of
      * a Environment helper.
@@ -221,7 +221,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
                 groundMirrorAmount: 1,
                 groundMirrorFresnelWeight: 1,
                 groundMirrorFallOffDistance: 0,
-                groundMirrorTextureType: Engine.TEXTURETYPE_UNSIGNED_INT,
+                groundMirrorTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
 
                 groundYBias: 0.00001,
 
@@ -547,7 +547,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
                 this._groundMaterial = new BackgroundMaterial("BackgroundPlaneMaterial", this._scene);
             }
             this._groundMaterial.alpha = this._options.groundOpacity;
-            this._groundMaterial.alphaMode = Engine.ALPHA_PREMULTIPLIED_PORTERDUFF;
+            this._groundMaterial.alphaMode = Constants.ALPHA_PREMULTIPLIED_PORTERDUFF;
             this._groundMaterial.shadowLevel = this._options.groundShadowLevel;
             this._groundMaterial.primaryColor = this._options.groundColor;
             this._groundMaterial.useRGBColor = false;

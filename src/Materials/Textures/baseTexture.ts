@@ -12,6 +12,7 @@ import { InternalTexture } from "Materials/Textures/internalTexture";
 import { Animation } from "Animations/animation";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Constants } from "Engine/constants";
     /**
      * Base class of all the textures in babylon.
      * It groups all the common properties the materials, post process, lights... might need
@@ -82,7 +83,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         public coordinatesIndex = 0;
 
         @serialize("coordinatesMode")
-        private _coordinatesMode = Engine.TEXTURE_EXPLICIT_MODE;
+        private _coordinatesMode = Constants.TEXTURE_EXPLICIT_MODE;
 
         /**
         * How a texture is mapped.
@@ -121,7 +122,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         * | 2     | MIRROR_ADDRESSMODE |             |
         */
         @serialize()
-        public wrapU = Engine.TEXTURE_WRAP_ADDRESSMODE;
+        public wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
 
         /**
         * | Value | Type               | Description |
@@ -131,7 +132,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         * | 2     | MIRROR_ADDRESSMODE |             |
         */
         @serialize()
-        public wrapV = Engine.TEXTURE_WRAP_ADDRESSMODE;
+        public wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
 
         /**
         * | Value | Type               | Description |
@@ -141,7 +142,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         * | 2     | MIRROR_ADDRESSMODE |             |
         */
         @serialize()
-        public wrapR = Engine.TEXTURE_WRAP_ADDRESSMODE;
+        public wrapR = Constants.TEXTURE_WRAP_ADDRESSMODE;
 
         /**
          * With compliant hardware and browser (supporting anisotropic filtering)
@@ -273,7 +274,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
         /**
          * Define the current state of the loading sequence when in delayed load mode.
          */
-        public delayLoadState = Engine.DELAYLOADSTATE_NONE;
+        public delayLoadState = Constants.DELAYLOADSTATE_NONE;
 
         private _scene: Nullable<Scene>;
 
@@ -351,7 +352,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * @returns true if fully ready
          */
         public isReady(): boolean {
-            if (this.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
+            if (this.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
                 this.delayLoad();
                 return false;
             }
@@ -462,10 +463,10 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          */
         public get textureType(): number {
             if (!this._texture) {
-                return Engine.TEXTURETYPE_UNSIGNED_INT;
+                return Constants.TEXTURETYPE_UNSIGNED_INT;
             }
 
-            return (this._texture.type !== undefined) ? this._texture.type : Engine.TEXTURETYPE_UNSIGNED_INT;
+            return (this._texture.type !== undefined) ? this._texture.type : Constants.TEXTURETYPE_UNSIGNED_INT;
         }
 
         /**
@@ -473,10 +474,10 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          */
         public get textureFormat(): number {
             if (!this._texture) {
-                return Engine.TEXTUREFORMAT_RGBA;
+                return Constants.TEXTUREFORMAT_RGBA;
             }
 
-            return (this._texture.format !== undefined) ? this._texture.format : Engine.TEXTUREFORMAT_RGBA;
+            return (this._texture.format !== undefined) ? this._texture.format : Constants.TEXTUREFORMAT_RGBA;
         }
 
         /**

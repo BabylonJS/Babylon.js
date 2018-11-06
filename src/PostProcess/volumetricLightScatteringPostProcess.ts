@@ -13,8 +13,10 @@ import { StandardMaterial } from "Materials/standardMaterial";
 import { Texture } from "Materials/Textures/texture";
 import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 import { PostProcess } from "./postProcess";
-import { Engine } from "Engine/engine";
+import { Constants } from "Engine/constants";
 import { Scene } from "scene";
+
+declare type Engine = import("Engine/engine").Engine;
 
     /**
      *  Inspired by http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html
@@ -262,7 +264,7 @@ import { Scene } from "scene";
         private _createPass(scene: Scene, ratio: number): void {
             var engine = scene.getEngine();
 
-            this._volumetricLightScatteringRTT = new RenderTargetTexture("volumetricLightScatteringMap", { width: engine.getRenderWidth() * ratio, height: engine.getRenderHeight() * ratio }, scene, false, true, Engine.TEXTURETYPE_UNSIGNED_INT);
+            this._volumetricLightScatteringRTT = new RenderTargetTexture("volumetricLightScatteringMap", { width: engine.getRenderWidth() * ratio, height: engine.getRenderHeight() * ratio }, scene, false, true, Constants.TEXTURETYPE_UNSIGNED_INT);
             this._volumetricLightScatteringRTT.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._volumetricLightScatteringRTT.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._volumetricLightScatteringRTT.renderList = null;
@@ -413,11 +415,11 @@ import { Scene } from "scene";
                     });
 
                     // Render sub meshes
-                    engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                    engine.setAlphaMode(Constants.ALPHA_COMBINE);
                     for (index = 0; index < sortedArray.length; index++) {
                         renderSubMesh(sortedArray[index]);
                     }
-                    engine.setAlphaMode(Engine.ALPHA_DISABLE);
+                    engine.setAlphaMode(Constants.ALPHA_DISABLE);
                 }
             };
         }
