@@ -60,6 +60,7 @@
 - Added opacity texture support to `GridMaterial` ([Deltakosh](https://github.com/deltakosh))
 - Added support for deserializing morph target animations in animation groups
 - AssetContainer dispose method ([TrevorDev](https://github.com/TrevorDev))
+- `Layer` are now supported in `RenderTargetTexture` ([Sebavan](https://github.com/Sebavan))
 
 ### glTF Loader
 
