@@ -8,7 +8,6 @@ import { Matrix, Vector3, Color4 } from "Math/math";
 import { Engine, RenderTargetCreationOptions } from "Engine/engine";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { SubMesh } from "Mesh/subMesh";
-import { Material } from "Materials/material";
 import { InternalTexture } from "Materials/Textures/internalTexture";
 import { Texture } from "Materials/Textures/texture";
 import { PostProcessManager } from "PostProcess/postProcessManager";
@@ -247,7 +246,7 @@ import { Constants } from "Engine/constants";
             this._boundingBoxSize = value;
             let scene = this.getScene();
             if (scene) {
-                scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+                scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
             }
         }
         public get boundingBoxSize(): Vector3 {

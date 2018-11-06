@@ -1724,7 +1724,7 @@ import { Constants } from "Engine/constants";
             }
 
             StandardMaterial._DiffuseTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
         private static _AmbientTextureEnabled = true;
@@ -1740,7 +1740,7 @@ import { Constants } from "Engine/constants";
             }
 
             StandardMaterial._AmbientTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
         private static _OpacityTextureEnabled = true;
@@ -1756,7 +1756,7 @@ import { Constants } from "Engine/constants";
             }
 
             StandardMaterial._OpacityTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
         private static _ReflectionTextureEnabled = true;
@@ -1772,7 +1772,7 @@ import { Constants } from "Engine/constants";
             }
 
             StandardMaterial._ReflectionTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
         private static _EmissiveTextureEnabled = true;
@@ -1788,7 +1788,7 @@ import { Constants } from "Engine/constants";
             }
 
             StandardMaterial._EmissiveTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
         private static _SpecularTextureEnabled = true;
@@ -1804,7 +1804,7 @@ import { Constants } from "Engine/constants";
             }
 
             StandardMaterial._SpecularTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
         private static _BumpTextureEnabled = true;
@@ -1820,7 +1820,7 @@ import { Constants } from "Engine/constants";
             }
 
             StandardMaterial._BumpTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
         private static _LightmapTextureEnabled = true;
@@ -1836,7 +1836,7 @@ import { Constants } from "Engine/constants";
             }
 
             StandardMaterial._LightmapTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
         private static _RefractionTextureEnabled = true;
@@ -1852,7 +1852,7 @@ import { Constants } from "Engine/constants";
             }
 
             StandardMaterial._RefractionTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
         private static _ColorGradingTextureEnabled = true;
@@ -1868,7 +1868,7 @@ import { Constants } from "Engine/constants";
             }
 
             StandardMaterial._ColorGradingTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
         private static _FresnelEnabled = true;
@@ -1884,6 +1884,6 @@ import { Constants } from "Engine/constants";
             }
 
             StandardMaterial._FresnelEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Material.FresnelDirtyFlag);
+            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_FresnelDirtyFlag);
         }
     }

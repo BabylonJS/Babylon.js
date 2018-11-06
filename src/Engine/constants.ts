@@ -200,4 +200,34 @@ export class Constants {
     public static readonly SCALEMODE_NEAREST = 2;
     /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
     public static readonly SCALEMODE_CEILING = 3;
+
+    /**
+     * The dirty texture flag value
+     */
+    public static readonly MATERIAL_TextureDirtyFlag = 1;
+
+    /**
+     * The dirty light flag value
+     */
+    public static readonly MATERIAL_LightDirtyFlag = 2;
+
+    /**
+     * The dirty fresnel flag value
+     */
+    public static readonly MATERIAL_FresnelDirtyFlag = 4;
+
+    /**
+     * The dirty attribute flag value
+     */
+    public static readonly MATERIAL_AttributesDirtyFlag = 8;
+
+    /**
+     * The dirty misc flag value
+     */
+    public static readonly MATERIAL_MiscDirtyFlag = 16;
+
+    /**
+     * The all dirty flag value
+     */
+    public static readonly MATERIAL_AllDirtyFlag = 31;
 }

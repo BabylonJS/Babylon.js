@@ -21,6 +21,7 @@ import { ActionManager } from "Actions/actionManager";
 import { Skeleton } from "Bones/skeleton";
 import { IEdgesRenderer } from "Rendering/edgesRenderer";
 import { SolidParticle } from "Particles/solidParticle";
+import { Constants } from "Engine/constants";
 
     /** @hidden */
     class _FacetDataStorage {
@@ -721,7 +722,7 @@ import { SolidParticle } from "Particles/solidParticle";
             for (var subMesh of this.subMeshes) {
                 var material = subMesh.getMaterial();
                 if (material) {
-                    material.markAsDirty(Material.MiscDirtyFlag);
+                    material.markAsDirty(Constants.MATERIAL_MiscDirtyFlag);
                 }
             }
         }

@@ -4,7 +4,6 @@ import { Tools } from "Tools/tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { Matrix, Vector3, Plane } from "Math/math";
-import { Material } from "Materials/material";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 import { Constants } from "Engine/constants";
 import { _AlphaState } from "States";
@@ -483,7 +482,7 @@ declare type RenderTargetTexture = import ("Materials/Textures/renderTargetTextu
                 return this._cachedTextureMatrix;
             }
 
-            scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag, (mat) => {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this);
             });
 
@@ -556,7 +555,7 @@ declare type RenderTargetTexture = import ("Materials/Textures/renderTargetTextu
                     break;
             }
 
-            scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag, (mat) => {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
                 return (mat.getActiveTextures().indexOf(this) !== -1);
             });
 

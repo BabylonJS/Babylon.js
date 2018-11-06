@@ -126,32 +126,32 @@ declare var BABYLON: any;
         /**
          * The dirty texture flag value
          */
-        public static readonly TextureDirtyFlag = 1;
+        public static readonly TextureDirtyFlag = Constants.MATERIAL_TextureDirtyFlag;
 
         /**
          * The dirty light flag value
          */
-        public static readonly LightDirtyFlag = 2;
+        public static readonly LightDirtyFlag = Constants.MATERIAL_LightDirtyFlag;
 
         /**
          * The dirty fresnel flag value
          */
-        public static readonly FresnelDirtyFlag = 4;
+        public static readonly FresnelDirtyFlag = Constants.MATERIAL_FresnelDirtyFlag;
 
         /**
          * The dirty attribute flag value
          */
-        public static readonly AttributesDirtyFlag = 8;
+        public static readonly AttributesDirtyFlag = Constants.MATERIAL_AttributesDirtyFlag;
 
         /**
          * The dirty misc flag value
          */
-        public static readonly MiscDirtyFlag = 16;
+        public static readonly MiscDirtyFlag = Constants.MATERIAL_MiscDirtyFlag;
 
         /**
          * The all dirty flag value
          */
-        public static readonly AllDirtyFlag = 31;
+        public static readonly AllDirtyFlag = Constants.MATERIAL_AllDirtyFlag;
 
         /**
          * The ID of the material
