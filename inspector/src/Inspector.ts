@@ -3,33 +3,11 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { ActionTabsComponent } from "./components/actionTabs/actionTabsComponent";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
-import { Scene, Observable, Observer, Nullable } from "babylonjs";
+import { Scene, Observable, Observer, Nullable, IInspectorOptions } from "babylonjs";
 import { EmbedHostComponent } from "./components/embedHost/embedHostComponent";
 import { PropertyChangedEvent } from "./components/propertyChangedEvent";
 import { GlobalState } from "./components/globalState";
 
-export interface IExtensibilityOption {
-    label: string;
-    action: (entity: any) => void;
-}
-
-export interface IExtensibilityGroup {
-    predicate: (entity: any) => boolean;
-    entries: IExtensibilityOption[];
-}
-
-export interface IInspectorOptions {
-    overlay?: boolean;
-    sceneExplorerRoot?: HTMLElement;
-    actionTabsRoot?: HTMLElement;
-    embedHostRoot?: HTMLElement;
-    showExplorer?: boolean;
-    showInspector?: boolean;
-    embedMode?: boolean;
-    handleResize?: boolean;
-    enablePopup?: boolean;
-    explorerExtensibility?: IExtensibilityGroup[];
-}
 
 interface IInternalInspectorOptions extends IInspectorOptions {
     popup: boolean;
@@ -156,6 +134,7 @@ export class Inspector {
     }
 
     private static _CreateActionTabs(scene: Scene, options: IInternalInspectorOptions, parentControlActions: Nullable<HTMLElement>) {
+        options.original = false;
 
         if (!options.actionTabsRoot || options.popup) {
             // Prepare the inspector host

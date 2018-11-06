@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Scene, AbstractMesh } from "babylonjs";
+import { Scene, AbstractMesh, Nullable } from "babylonjs";
 import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
 
 interface IGridPropertyGridComponentProps {
@@ -7,7 +7,7 @@ interface IGridPropertyGridComponentProps {
 }
 
 export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps, { isEnabled: boolean }> {
-    private _gridMesh: AbstractMesh;
+    private _gridMesh: Nullable<AbstractMesh>;
 
     constructor(props: IGridPropertyGridComponentProps) {
         super(props);
@@ -42,20 +42,22 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
 
         if (!this._gridMesh) {
             var extend = this.props.scene.getWorldExtends();
-            var width = extend.max.x - extend.min.x;
-            var depth = extend.max.z - extend.min.z;
+            var width = (extend.max.x - extend.min.x) * 5.0;
+            var depth = (extend.max.z - extend.min.z) * 5.0;
 
-            this._gridMesh = BABYLON.Mesh.CreateGround("grid", width, depth, 1, scene);
+            this._gridMesh = BABYLON.Mesh.CreateGround("grid", 1.0, 1.0, 1, scene);
             if (!this._gridMesh.metadata) {
-                this._gridMesh.metadata = {}
+                this._gridMesh.metadata = {};
             }
+            this._gridMesh.scaling.x = width;
+            this._gridMesh.scaling.z = depth;
             this._gridMesh.metadata.isInspectorGrid = true;
             this._gridMesh.isPickable = false;
 
             var groundMaterial = new (BABYLON as any).GridMaterial("GridMaterial", scene);
-            groundMaterial.majorUnitFrequency = width / 10;
+            groundMaterial.majorUnitFrequency = 10;
             groundMaterial.minorUnitVisibility = 0.3;
-            groundMaterial.gridRatio = 1;
+            groundMaterial.gridRatio = 0.01;
             groundMaterial.backFaceCulling = false;
             groundMaterial.mainColor = new BABYLON.Color3(1, 1, 1);
             groundMaterial.lineColor = new BABYLON.Color3(1.0, 1.0, 1.0);
@@ -70,7 +72,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         }
 
         this.setState({ isEnabled: !this.state.isEnabled });
-        this._gridMesh.setEnabled(!this._gridMesh.isEnabled());
+        this._gridMesh.dispose(true, true);
+        this._gridMesh = null;
     }
 
     render() {

@@ -13,14 +13,14 @@ interface IMeshPropertyGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
-export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGridComponentProps, { paintNormals: boolean }> {
+export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGridComponentProps, { displayNormals: boolean }> {
     constructor(props: IMeshPropertyGridComponentProps) {
         super(props);
 
-        this.state = { paintNormals: false }
+        this.state = { displayNormals: false }
     }
 
-    paintNormals() {
+    displayNormals() {
         const mesh = this.props.mesh;
         const scene = mesh.getScene();
         if (!mesh.material) {
@@ -32,13 +32,13 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
 
             mesh.material = mesh.metadata.originalMaterial;
             mesh.metadata.originalMaterial = null;
-            this.setState({ paintNormals: false });
+            this.setState({ displayNormals: false });
         } else {
 
             if (!(BABYLON as any).NormalMaterial) {
-                this.setState({ paintNormals: true });
+                this.setState({ displayNormals: true });
                 BABYLON.Tools.LoadScript("https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.js", () => {
-                    this.paintNormals();
+                    this.displayNormals();
                 });
                 return;
             }
@@ -53,7 +53,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
             normalMaterial.sideOrientation = mesh.material.sideOrientation;
             normalMaterial.metadata = { hidden: true };
             mesh.material = normalMaterial;
-            this.setState({ paintNormals: true });
+            this.setState({ displayNormals: true });
         }
     }
 
@@ -70,7 +70,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         const mesh = this.props.mesh;
         const scene = mesh.getScene();
 
-        const paintNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
+        const displayNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
 
         return (
             <div className="pane">
@@ -130,7 +130,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <CheckBoxLineComponent label="Show bounding box" target={mesh} propertyName="showBoundingBox" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         mesh.material &&
-                        <CheckBoxLineComponent label="Paint normals" isSelected={() => paintNormals} onSelect={() => this.paintNormals()} />
+                        <CheckBoxLineComponent label="Display normals" isSelected={() => displayNormals} onSelect={() => this.displayNormals()} />
                     }
                 </LineContainerComponent>
             </div>
