@@ -54,7 +54,7 @@ module BABYLON {
         public renderTargetTextures: RenderTargetTexture[] = [];
 
         /**
-         * Define if the layer is only used in renderTarget or if it also 
+         * Define if the layer is only used in renderTarget or if it also
          * renders in the main frame buffer of the canvas.
          */
         public renderOnlyInRenderTargetTextures = false;
