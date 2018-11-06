@@ -3613,6 +3613,16 @@ module BABYLON {
             return null;
         }
 
+        private _getGeometryByUniqueID(id: number): Nullable<Geometry> {
+            for (var index = 0; index < this.geometries.length; index++) {
+                if (this.geometries[index].uniqueId === id) {
+                    return this.geometries[index];
+                }
+            }
+
+            return null;
+        }
+
         /**
          * Add a new geometry to this scene
          * @param geometry defines the geometry to be added to the scene.
@@ -3620,7 +3630,7 @@ module BABYLON {
          * @return a boolean defining if the geometry was added or not
          */
         public pushGeometry(geometry: Geometry, force?: boolean): boolean {
-            if (!force && this.getGeometryByID(geometry.id)) {
+            if (!force && this._getGeometryByUniqueID(geometry.uniqueId)) {
                 return false;
             }
 
