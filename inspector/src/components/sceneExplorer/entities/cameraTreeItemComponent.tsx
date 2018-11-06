@@ -1,14 +1,13 @@
-import { Camera, Observer, Scene, Nullable } from "babylonjs";
+import { Camera, Observer, Scene, Nullable, IExplorerExtensibilityGroup } from "babylonjs";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faVideo, faCamera } from '@fortawesome/free-solid-svg-icons';
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
-import { IExtensibilityGroup } from "../../../inspector";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
 interface ICameraTreeItemComponentProps {
     camera: Camera,
-    extensibilityGroups?: IExtensibilityGroup[],
+    extensibilityGroups?: IExplorerExtensibilityGroup[],
     onClick: () => void
 }
 

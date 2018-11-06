@@ -1,10 +1,9 @@
 import * as React from "react";
-import { Nullable, Observable } from "babylonjs";
+import { Nullable, Observable, IExplorerExtensibilityGroup } from "babylonjs";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus, faBan } from '@fortawesome/free-solid-svg-icons';
 import { TreeItemSelectableComponent } from "./treeItemSelectableComponent";
 import { Tools } from "../../tools";
-import { IExtensibilityGroup } from "../../inspector";
 
 interface ITreeItemExpandableHeaderComponentProps {
     isExpanded: boolean,
@@ -58,7 +57,7 @@ export interface ITreeItemComponentProps {
     onSelectionChangeObservable?: Observable<any>,
     entity?: any,
     selectedEntity: any,
-    extensibilityGroups?: IExtensibilityGroup[]
+    extensibilityGroups?: IExplorerExtensibilityGroup[]
 }
 
 

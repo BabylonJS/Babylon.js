@@ -1,13 +1,12 @@
-import { TransformNode } from "babylonjs";
+import { TransformNode, IExplorerExtensibilityGroup } from "babylonjs";
 import { faCube } from '@fortawesome/free-solid-svg-icons';
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
-import { IExtensibilityGroup } from "../../../inspector";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
 interface ITransformNodeItemComponentProps {
     transformNode: TransformNode,
-    extensibilityGroups?: IExtensibilityGroup[],
+    extensibilityGroups?: IExplorerExtensibilityGroup[],
     onClick: () => void
 }
 

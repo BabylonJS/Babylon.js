@@ -8,7 +8,6 @@ import { EmbedHostComponent } from "./components/embedHost/embedHostComponent";
 import { PropertyChangedEvent } from "./components/propertyChangedEvent";
 import { GlobalState } from "./components/globalState";
 
-
 interface IInternalInspectorOptions extends IInspectorOptions {
     popup: boolean;
     original: boolean;

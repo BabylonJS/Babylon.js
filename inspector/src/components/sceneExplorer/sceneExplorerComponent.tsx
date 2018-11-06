@@ -1,11 +1,10 @@
 import * as React from "react";
-import { Scene, Observer, Nullable } from "babylonjs";
+import { Scene, Observer, Nullable, IExplorerExtensibilityGroup } from "babylonjs";
 import { TreeItemComponent } from "./treeItemComponent";
 import Resizable from "re-resizable";
 import { HeaderComponent } from "../headerComponent";
 import { SceneTreeItemComponent } from "./entities/sceneTreeItemComponent";
 import { Tools } from "../../tools";
-import { IExtensibilityGroup } from "../../inspector";
 import { GlobalState } from "components/globalState";
 
 require("./sceneExplorer.scss");
@@ -34,7 +33,7 @@ interface ISceneExplorerComponentProps {
     noCommands?: boolean,
     noHeader?: boolean,
     noExpand?: boolean,
-    extensibilityGroups?: IExtensibilityGroup[],
+    extensibilityGroups?: IExplorerExtensibilityGroup[],
     globalState: GlobalState,
     popupMode?: boolean,
     onPopup?: () => void,

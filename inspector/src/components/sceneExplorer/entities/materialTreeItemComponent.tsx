@@ -1,13 +1,12 @@
 import { faBrush } from '@fortawesome/free-solid-svg-icons';
-import { Material } from "babylonjs";
+import { Material, IExplorerExtensibilityGroup } from "babylonjs";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
-import { IExtensibilityGroup } from "../../../inspector";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from 'react';
 
 interface IMaterialTreeItemComponentProps {
     material: Material,
-    extensibilityGroups?: IExtensibilityGroup[],
+    extensibilityGroups?: IExplorerExtensibilityGroup[],
     onClick: () => void
 }
 
