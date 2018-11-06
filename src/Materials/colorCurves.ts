@@ -1,7 +1,6 @@
-import { serialize } from "Tools/decorators";
-import { SerializationHelper } from "Tools";
-import { Color4 } from "Math";
-import { Effect } from "Materials";
+import { SerializationHelper, serialize } from "Tools/decorators";
+import { Color4 } from "Math/math";
+import { Effect } from "Materials/effect";
 
     /**
      * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).

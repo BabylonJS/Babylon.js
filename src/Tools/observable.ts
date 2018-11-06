@@ -1,5 +1,4 @@
 import { Nullable } from "types";
-import { Tools } from "./tools";
 
     /**
      * A class serves as a medium between the observable and its observers
@@ -246,9 +245,9 @@ import { Tools } from "./tools";
         private _deferUnregister(observer: Observer<T>): void {
             observer.unregisterOnNextCall = false;
             observer._willBeUnregistered = true;
-            Tools.SetImmediate(() => {
+            setTimeout(() => {
                 this._remove(observer);
-            });
+            }, 0);
         }
 
         // This should only be called when not iterating over _observers to avoid callback skipping.
