@@ -1,8 +1,8 @@
 import { Tools } from "Tools/tools";
 import { Color3 } from "Math/math";
 import { Engine } from "Engine/engine";
-import { Material } from "Materials/material";
 import { SerializationHelper } from "Tools/decorators";
+import { Constants } from "Engine/constants";
 
     /**
      * This represents all the required information to add a fresnel effect on a material:
@@ -22,7 +22,7 @@ import { SerializationHelper } from "Tools/decorators";
             }
 
             this._isEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Material.FresnelDirtyFlag | Material.MiscDirtyFlag);
+            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_FresnelDirtyFlag | Constants.MATERIAL_MiscDirtyFlag);
         }
 
         /**

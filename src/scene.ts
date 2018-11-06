@@ -203,7 +203,7 @@ import { Constants } from "Engine/constants";
             }
 
             this._environmentTexture = value;
-            this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
         /** @hidden */
@@ -229,7 +229,7 @@ import { Constants } from "Engine/constants";
                 return;
             }
             this._forceWireframe = value;
-            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+            this.markAllMaterialsAsDirty(Constants.MATERIAL_MiscDirtyFlag);
         }
         public get forceWireframe(): boolean {
             return this._forceWireframe;
@@ -244,7 +244,7 @@ import { Constants } from "Engine/constants";
                 return;
             }
             this._forcePointsCloud = value;
-            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+            this.markAllMaterialsAsDirty(Constants.MATERIAL_MiscDirtyFlag);
         }
         public get forcePointsCloud(): boolean {
             return this._forcePointsCloud;
@@ -696,7 +696,7 @@ import { Constants } from "Engine/constants";
                 return;
             }
             this._useRightHandedSystem = value;
-            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+            this.markAllMaterialsAsDirty(Constants.MATERIAL_MiscDirtyFlag);
         }
         public get useRightHandedSystem(): boolean {
             return this._useRightHandedSystem;
@@ -742,7 +742,7 @@ import { Constants } from "Engine/constants";
                 return;
             }
             this._fogEnabled = value;
-            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+            this.markAllMaterialsAsDirty(Constants.MATERIAL_MiscDirtyFlag);
         }
         public get fogEnabled(): boolean {
             return this._fogEnabled;
@@ -764,7 +764,7 @@ import { Constants } from "Engine/constants";
                 return;
             }
             this._fogMode = value;
-            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+            this.markAllMaterialsAsDirty(Constants.MATERIAL_MiscDirtyFlag);
         }
         public get fogMode(): number {
             return this._fogMode;
@@ -805,7 +805,7 @@ import { Constants } from "Engine/constants";
                 return;
             }
             this._shadowsEnabled = value;
-            this.markAllMaterialsAsDirty(Material.LightDirtyFlag);
+            this.markAllMaterialsAsDirty(Constants.MATERIAL_LightDirtyFlag);
         }
         public get shadowsEnabled(): boolean {
             return this._shadowsEnabled;
@@ -820,7 +820,7 @@ import { Constants } from "Engine/constants";
                 return;
             }
             this._lightsEnabled = value;
-            this.markAllMaterialsAsDirty(Material.LightDirtyFlag);
+            this.markAllMaterialsAsDirty(Constants.MATERIAL_LightDirtyFlag);
         }
 
         public get lightsEnabled(): boolean {
@@ -871,7 +871,7 @@ import { Constants } from "Engine/constants";
                 return;
             }
             this._texturesEnabled = value;
-            this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
         public get texturesEnabled(): boolean {
@@ -900,7 +900,7 @@ import { Constants } from "Engine/constants";
                 return;
             }
             this._skeletonsEnabled = value;
-            this.markAllMaterialsAsDirty(Material.AttributesDirtyFlag);
+            this.markAllMaterialsAsDirty(Constants.MATERIAL_AttributesDirtyFlag);
         }
 
         public get skeletonsEnabled(): boolean {
@@ -5391,7 +5391,7 @@ import { Constants } from "Engine/constants";
                 texture._rebuild();
             }
 
-            this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
         // Tags
@@ -5515,7 +5515,7 @@ import { Constants } from "Engine/constants";
             this._blockMaterialDirtyMechanism = value;
 
             if (!value) { // Do a complete update
-                this.markAllMaterialsAsDirty(Material.AllDirtyFlag);
+                this.markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
             }
         }
 

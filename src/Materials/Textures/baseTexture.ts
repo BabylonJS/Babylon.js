@@ -7,7 +7,6 @@ import { Scene } from "scene";
 import { Matrix, Size, ISize } from "Math/math";
 import { SphericalPolynomial } from "Math/sphericalPolynomial";
 import { Engine } from "Engine/engine";
-import { Material } from "Materials/material";
 import { InternalTexture } from "Materials/Textures/internalTexture";
 import { Animation } from "Animations/animation";
 import { _TimeToken } from "Instrumentation/timeToken";
@@ -54,7 +53,7 @@ import { Constants } from "Engine/constants";
             }
             this._hasAlpha = value;
             if (this._scene) {
-                this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag | Material.MiscDirtyFlag);
+                this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag | Constants.MATERIAL_MiscDirtyFlag);
             }
         }
         public get hasAlpha(): boolean {
@@ -107,7 +106,7 @@ import { Constants } from "Engine/constants";
             }
             this._coordinatesMode = value;
             if (this._scene) {
-                this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+                this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
             }
         }
         public get coordinatesMode(): number {

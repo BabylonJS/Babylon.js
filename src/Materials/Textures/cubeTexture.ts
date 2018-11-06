@@ -3,7 +3,6 @@ import { Tools } from "Tools/tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { Matrix, Vector3 } from "Math/math";
-import { Material } from "Materials/material";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 import { Texture } from "Materials/Textures/texture";
 import { Animation } from "Animations/animation";
@@ -41,7 +40,7 @@ import { Constants } from "Engine/constants";
             this._boundingBoxSize = value;
             let scene = this.getScene();
             if (scene) {
-                scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+                scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
             }
         }
         /**

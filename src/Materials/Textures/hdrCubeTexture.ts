@@ -4,7 +4,7 @@ import { Matrix, Vector3, ToGammaSpace } from "Math/math";
 import { Engine } from "Engine/engine";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 import { Texture } from "Materials/Textures/texture";
-import { Material } from "Materials/material";
+import { Constants } from "Engine/constants";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { HDRTools } from "Tools/Hdr/hdr";
@@ -93,7 +93,7 @@ import { CubeMapToSphericalPolynomialTools } from "Tools/hdr/cubemapToSphericalP
             this._boundingBoxSize = value;
             let scene = this.getScene();
             if (scene) {
-                scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+                scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
             }
         }
         public get boundingBoxSize(): Vector3 {

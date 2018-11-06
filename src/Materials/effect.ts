@@ -9,7 +9,7 @@ import { PostProcess } from "PostProcess/postProcess";
 import { InternalTexture } from "Materials/Textures/internalTexture";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
-import { Material } from "Materials/material";
+import { Constants } from "Engine/constants";
 
     /**
      * EffectFallbacks can be used to add fallbacks (properties to disable) to certain properties when desired to improve performance.
@@ -771,7 +771,7 @@ import { Material } from "Materials/material";
             this.onCompiled = () => {
                 var scenes = this.getEngine().scenes;
                 for (var i = 0; i < scenes.length; i++) {
-                    scenes[i].markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+                    scenes[i].markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
                 }
 
                 if (onCompiled) {
