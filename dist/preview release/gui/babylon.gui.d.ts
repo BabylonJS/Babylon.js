@@ -1473,9 +1473,11 @@ declare module BABYLON.GUI {
             maxWidth: string | number;
             /** Gets the maximum width allowed by the control in pixels */
             readonly maxWidthInPixels: number;
-            /** Gets and sets the text highlighter transparency; default: 0.4 */
+            /** Gets or sets the text highlighter transparency; default: 0.4 */
             highligherOpacity: number;
-            /** Gets and sets the text hightlight color */
+            /** Gets or sets a boolean indicating whether to select complete text by default on input focus */
+            onFocusSelectAll: boolean;
+            /** Gets or sets the text hightlight color */
             textHighlightColor: string;
             /** Gets or sets control margin */
             margin: string;

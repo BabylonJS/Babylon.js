@@ -37,8 +37,11 @@ module BABYLON {
          * Registers the component in a given scene
          */
         public register(): void {
-            this.scene._beforeCameraDrawStage.registerStep(SceneComponentConstants.STEP_BEFORECAMERADRAW_LAYER, this, this._drawBackground);
-            this.scene._afterCameraDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_LAYER, this, this._drawForeground);
+            this.scene._beforeCameraDrawStage.registerStep(SceneComponentConstants.STEP_BEFORECAMERADRAW_LAYER, this, this._drawCameraBackground);
+            this.scene._afterCameraDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_LAYER, this, this._drawCameraForeground);
+
+            this.scene._beforeRenderTargetDrawStage.registerStep(SceneComponentConstants.STEP_BEFORERENDERTARGETDRAW_LAYER, this, this._drawRenderTargetBackground);
+            this.scene._afterRenderTargetDrawStage.registerStep(SceneComponentConstants.STEP_AFTERRENDERTARGETDRAW_LAYER, this, this._drawRenderTargetForeground);
         }
 
         /**
@@ -64,14 +67,13 @@ module BABYLON {
             }
         }
 
-        private _draw(camera: Camera, isBackground: boolean): void {
+        private _draw(predicate: (layer: Layer) => boolean): void {
             let layers = this.scene.layers;
 
             if (layers.length) {
                 this._engine.setDepthBuffer(false);
-                const cameraLayerMask = camera.layerMask;
                 for (let layer of layers) {
-                    if (layer.isBackground === isBackground && ((layer.layerMask & cameraLayerMask) !== 0)) {
+                    if (predicate(layer)) {
                         layer.render();
                     }
                 }
@@ -79,12 +81,41 @@ module BABYLON {
             }
         }
 
-        private _drawBackground(camera: Camera): void {
-            this._draw(camera, true);
+        private _drawCameraPredicate(layer: Layer, isBackground: boolean, cameraLayerMask: number): boolean {
+            return !layer.renderOnlyInRenderTargetTextures &&
+                layer.isBackground === isBackground &&
+                ((layer.layerMask & cameraLayerMask) !== 0);
         }
 
-        private _drawForeground(camera: Camera): void {
-            this._draw(camera, false);
+        private _drawCameraBackground(camera: Camera): void {
+            this._draw((layer: Layer) => {
+                return this._drawCameraPredicate(layer, true, camera.layerMask);
+            });
+        }
+
+        private _drawCameraForeground(camera: Camera): void {
+            this._draw((layer: Layer) => {
+                return this._drawCameraPredicate(layer, false, camera.layerMask);
+            });
+        }
+
+        private _drawRenderTargetPredicate(layer: Layer, isBackground: boolean, cameraLayerMask: number, renderTargetTexture: RenderTargetTexture): boolean {
+            return (layer.renderTargetTextures.length > 0) &&
+                layer.isBackground === isBackground &&
+                (layer.renderTargetTextures.indexOf(renderTargetTexture) > -1) &&
+                ((layer.layerMask & cameraLayerMask) !== 0);
+        }
+
+        private _drawRenderTargetBackground(renderTarget: RenderTargetTexture): void {
+            this._draw((layer: Layer) => {
+                return this._drawRenderTargetPredicate(layer, true, this.scene.activeCamera!.layerMask, renderTarget);
+            });
+        }
+
+        private _drawRenderTargetForeground(renderTarget: RenderTargetTexture): void {
+            this._draw((layer: Layer) => {
+                return this._drawRenderTargetPredicate(layer, false, this.scene.activeCamera!.layerMask, renderTarget);
+            });
         }
     }
 }
