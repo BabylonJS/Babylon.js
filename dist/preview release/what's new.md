@@ -84,6 +84,7 @@
 - Fix VR controllers after gltfLoader transformNode change ([TrevorDev](https://github.com/TrevorDev))
 - Bounding Box fixedDragMeshScreenSize stopped working and allow rotating through bounding box ([TrevorDev](https://github.com/TrevorDev))
 - VR helper would rotate non vr camera while in VR ([TrevorDev](https://github.com/TrevorDev))
+- PointerDragBahavior using Mesh as base type, causing type-checking problems with AbstractMesh ([Poolminer](https://github.com/Poolminer/))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
