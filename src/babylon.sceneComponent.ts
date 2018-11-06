@@ -35,6 +35,8 @@ module BABYLON {
         public static readonly STEP_BEFORECAMERADRAW_EFFECTLAYER = 0;
         public static readonly STEP_BEFORECAMERADRAW_LAYER = 1;
 
+        public static readonly STEP_BEFORERENDERTARGETDRAW_LAYER = 0;
+
         public static readonly STEP_BEFORERENDERINGMESH_OUTLINE = 0;
 
         public static readonly STEP_AFTERRENDERINGMESH_OUTLINE = 0;
@@ -46,6 +48,8 @@ module BABYLON {
         public static readonly STEP_BEFORECAMERAUPDATE_GAMEPAD = 1;
 
         public static readonly STEP_BEFORECLEAR_PROCEDURALTEXTURE = 0;
+
+        public static readonly STEP_AFTERRENDERTARGETDRAW_LAYER = 0;
 
         public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER = 0;
         public static readonly STEP_AFTERCAMERADRAW_LENSFLARESYSTEM = 1;
@@ -144,6 +148,11 @@ module BABYLON {
      * Strong typing of a Camera related stage step action
      */
     export type CameraStageAction = (camera: Camera) => void;
+
+    /**
+     * Strong typing of a Render Target related stage step action
+     */
+    export type RenderTargetStageAction = (renderTarget: RenderTargetTexture) => void;
 
     /**
      * Strong typing of a RenderingGroup related stage step action
