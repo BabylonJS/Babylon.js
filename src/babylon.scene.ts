@@ -1172,6 +1172,11 @@ module BABYLON {
         public _beforeCameraDrawStage = Stage.Create<CameraStageAction>();
         /**
          * @hidden
+         * Defines the actions happening just before a render target is drawing.
+         */
+        public _beforeRenderTargetDrawStage = Stage.Create<RenderTargetStageAction>();
+        /**
+         * @hidden
          * Defines the actions happening just before a rendering group is drawing.
          */
         public _beforeRenderingGroupDrawStage = Stage.Create<RenderingGroupStageAction>();
@@ -1195,6 +1200,11 @@ module BABYLON {
          * Defines the actions happening just after the active camera has been drawn.
          */
         public _afterCameraDrawStage = Stage.Create<CameraStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening just after a render target has been drawn.
+         */
+        public _afterRenderTargetDrawStage = Stage.Create<RenderTargetStageAction>();
         /**
          * @hidden
          * Defines the actions happening just after rendering all cameras and computing intersections.
@@ -4782,11 +4792,13 @@ module BABYLON {
             this._activeMeshStage.clear();
             this._cameraDrawRenderTargetStage.clear();
             this._beforeCameraDrawStage.clear();
+            this._beforeRenderTargetDrawStage.clear();
             this._beforeRenderingGroupDrawStage.clear();
             this._beforeRenderingMeshStage.clear();
             this._afterRenderingMeshStage.clear();
             this._afterRenderingGroupDrawStage.clear();
             this._afterCameraDrawStage.clear();
+            this._afterRenderTargetDrawStage.clear();
             this._afterRenderStage.clear();
             this._beforeCameraUpdateStage.clear();
             this._beforeClearStage.clear();
