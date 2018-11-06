@@ -1,16 +1,15 @@
-import { AbstractMesh, Mesh } from "babylonjs";
+import { AbstractMesh, Mesh, IExplorerExtensibilityGroup } from "babylonjs";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCube } from '@fortawesome/free-solid-svg-icons';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import { faVectorSquare } from '@fortawesome/free-solid-svg-icons';
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
-import { IExtensibilityGroup } from "../../../inspector";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
 interface IMeshTreeItemComponentProps {
     mesh: AbstractMesh,
-    extensibilityGroups?: IExtensibilityGroup[],
+    extensibilityGroups?: IExplorerExtensibilityGroup[],
     onClick: () => void
 }
 

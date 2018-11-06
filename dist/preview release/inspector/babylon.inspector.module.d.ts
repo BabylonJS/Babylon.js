@@ -7,28 +7,8 @@ declare module 'babylonjs-inspector' {
 }
 
 declare module 'babylonjs-inspector/inspector' {
-    import { Scene, Observable } from "babylonjs";
+    import { Scene, Observable, IInspectorOptions } from "babylonjs";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
-    export interface IExtensibilityOption {
-        label: string;
-        action: (entity: any) => void;
-    }
-    export interface IExtensibilityGroup {
-        predicate: (entity: any) => boolean;
-        entries: IExtensibilityOption[];
-    }
-    export interface IInspectorOptions {
-        overlay?: boolean;
-        sceneExplorerRoot?: HTMLElement;
-        actionTabsRoot?: HTMLElement;
-        embedHostRoot?: HTMLElement;
-        showExplorer?: boolean;
-        showInspector?: boolean;
-        embedMode?: boolean;
-        handleResize?: boolean;
-        enablePopup?: boolean;
-        explorerExtensibility?: IExtensibilityGroup[];
-    }
     export class Inspector {
         static OnSelectionChangeObservable: Observable<string>;
         static OnPropertyChangedObservable: Observable<PropertyChangedEvent>;
@@ -54,31 +34,11 @@ declare module 'babylonjs-inspector/components/propertyChangedEvent' {
 declare module INSPECTOR {
 }
 declare module INSPECTOR {
-    export interface IExtensibilityOption {
-        label: string;
-        action: (entity: any) => void;
-    }
-    export interface IExtensibilityGroup {
-        predicate: (entity: any) => boolean;
-        entries: IExtensibilityOption[];
-    }
-    export interface IInspectorOptions {
-        overlay?: boolean;
-        sceneExplorerRoot?: HTMLElement;
-        actionTabsRoot?: HTMLElement;
-        embedHostRoot?: HTMLElement;
-        showExplorer?: boolean;
-        showInspector?: boolean;
-        embedMode?: boolean;
-        handleResize?: boolean;
-        enablePopup?: boolean;
-        explorerExtensibility?: IExtensibilityGroup[];
-    }
     export class Inspector {
         static OnSelectionChangeObservable: BABYLON.Observable<string>;
         static OnPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         static readonly IsVisible: boolean;
-        static Show(scene: BABYLON.Scene, userOptions: Partial<IInspectorOptions>): void;
+        static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;
         static Hide(): void;
     }
 }

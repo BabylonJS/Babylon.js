@@ -1,15 +1,14 @@
-import { Light } from "babylonjs";
+import { Light, IExplorerExtensibilityGroup } from "babylonjs";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLightbulb } from '@fortawesome/free-solid-svg-icons';
 import { faLightbulb as faLightbubRegular } from '@fortawesome/free-regular-svg-icons';
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
-import { IExtensibilityGroup } from "../../../inspector";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
 interface ILightTreeItemComponentProps {
     light: Light,
-    extensibilityGroups?: IExtensibilityGroup[]
+    extensibilityGroups?: IExplorerExtensibilityGroup[]
     onClick: () => void
 }
 

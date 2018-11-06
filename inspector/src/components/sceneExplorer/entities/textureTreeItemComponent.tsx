@@ -1,13 +1,12 @@
 import { faImage } from '@fortawesome/free-solid-svg-icons';
-import { Texture } from "babylonjs";
+import { Texture, IExplorerExtensibilityGroup } from "babylonjs";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
-import { IExtensibilityGroup } from "../../../inspector";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from 'react';
 
 interface ITextureTreeItemComponentProps {
     texture: Texture,
-    extensibilityGroups?: IExtensibilityGroup[],
+    extensibilityGroups?: IExplorerExtensibilityGroup[],
     onClick: () => void
 }
 

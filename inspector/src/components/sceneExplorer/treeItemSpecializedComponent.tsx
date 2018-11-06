@@ -1,4 +1,4 @@
-import { AbstractMesh, Camera, Light, Material, Texture, TransformNode } from "babylonjs";
+import { AbstractMesh, Camera, Light, Material, Texture, TransformNode, IExplorerExtensibilityGroup } from "babylonjs";
 import { MeshTreeItemComponent } from "./entities/meshTreeItemComponent";
 import { CameraTreeItemComponent } from "./entities/cameraTreeItemComponent";
 import { LightTreeItemComponent } from "./entities/lightTreeItemComponent";
@@ -6,14 +6,13 @@ import { TreeItemLabelComponent } from "./treeItemLabelComponent";
 import { faProjectDiagram } from '@fortawesome/free-solid-svg-icons';
 import { MaterialTreeItemComponent } from "./entities/materialTreeItemComponent";
 import { TextureTreeItemComponent } from "./entities/textureTreeItemComponent";
-import { IExtensibilityGroup } from "../../inspector";
 import { TransformNodeItemComponent } from "./entities/transformNodeTreeItemComponent";
 import * as React from "react";
 
 interface ITreeItemSpecializedComponentProps {
     label: string,
     entity?: any,
-    extensibilityGroups?: IExtensibilityGroup[],
+    extensibilityGroups?: IExplorerExtensibilityGroup[],
     onClick?: () => void
 }
 

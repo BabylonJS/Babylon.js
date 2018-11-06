@@ -1,7 +1,6 @@
-import { Scene, Observable, PointerInfo, Observer, Nullable } from "babylonjs";
+import { Scene, Observable, PointerInfo, Observer, Nullable, IExplorerExtensibilityGroup } from "babylonjs";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt } from '@fortawesome/free-solid-svg-icons';
-import { IExtensibilityGroup } from "../../../inspector";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
@@ -9,7 +8,7 @@ interface ISceneTreeItemComponentProps {
     scene: Scene,
     onRefresh: () => void,
     selectedEntity?: any,
-    extensibilityGroups?: IExtensibilityGroup[],
+    extensibilityGroups?: IExplorerExtensibilityGroup[],
     onSelectionChangeObservable?: Observable<any>
 }
 

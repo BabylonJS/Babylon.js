@@ -1,12 +1,11 @@
-import { IExtensibilityGroup } from "../../inspector";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisH } from '@fortawesome/free-solid-svg-icons';
 import * as React from "react";
-import { Nullable } from "babylonjs";
+import { Nullable, IExplorerExtensibilityGroup } from "babylonjs";
 
 interface IExtensionsComponentProps {
     target: any,
-    extensibilityGroups?: IExtensibilityGroup[]
+    extensibilityGroups?: IExplorerExtensibilityGroup[]
 }
 
 export class ExtensionsComponent extends React.Component<IExtensionsComponentProps, { popupVisible: boolean }> {

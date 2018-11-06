@@ -1,17 +1,16 @@
 import { TreeItemSpecializedComponent } from "./treeItemSpecializedComponent";
-import { Observable, Nullable, Node } from "babylonjs";
+import { Observable, Nullable, Node, IExplorerExtensibilityGroup } from "babylonjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { Tools } from "../../tools";
 import * as ReactDOM from "react-dom";
-import { IExtensibilityGroup } from "../../inspector";
 import * as React from "react";
 
 export interface ITreeItemSelectableComponentProps {
     entity: any,
     selectedEntity?: any,
     offset: number,
-    extensibilityGroups?: IExtensibilityGroup[],
+    extensibilityGroups?: IExplorerExtensibilityGroup[],
     onSelectionChangeObservable?: Observable<any>,
     filter: Nullable<string>
 }

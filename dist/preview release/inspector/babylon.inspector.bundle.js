@@ -6715,7 +6715,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "#inspector-host {\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  bottom: 0px; }\n\n#actionTabs {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\";\n  overflow: hidden; }\n  #actionTabs #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #actionTabs #header #logo {\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #actionTabs #header #back {\n      grid-column: 1;\n      display: grid;\n      align-self: center;\n      justify-self: center;\n      cursor: pointer; }\n    #actionTabs #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #actionTabs #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #actionTabs #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #actionTabs #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #actionTabs .tabs {\n    display: grid;\n    grid-row: 2;\n    grid-template-rows: 40px 1fr;\n    font: 14px \"Arial\";\n    overflow: hidden; }\n    #actionTabs .tabs .labels {\n      grid-row: 1;\n      display: flex;\n      align-items: center;\n      justify-items: center;\n      border-bottom: 1px solid #ffffff;\n      margin: 0;\n      padding: 0; }\n      #actionTabs .tabs .labels .label {\n        font-size: 24px;\n        color: white;\n        width: 40px;\n        display: flex;\n        align-content: center;\n        justify-content: center;\n        border: 1px solid transparent;\n        border-bottom: none;\n        background: #333333;\n        padding: 5px;\n        height: 28px;\n        cursor: pointer; }\n        #actionTabs .tabs .labels .label.active {\n          border-color: #ffffff;\n          border-bottom: 2px solid transparent;\n          margin-bottom: -2px; }\n    #actionTabs .tabs .panes {\n      grid-row: 2;\n      margin-bottom: 3px;\n      display: grid;\n      grid-template-rows: 1fr;\n      overflow: hidden; }\n      #actionTabs .tabs .panes .infoMessage {\n        opacity: 0.5;\n        color: white;\n        margin: 15px 5px 0px 5px; }\n      #actionTabs .tabs .panes .pane {\n        color: white;\n        overflow-x: hidden;\n        overflow-y: auto;\n        -webkit-user-select: none;\n        -moz-user-select: none;\n        -ms-user-select: none;\n        user-select: none; }\n        #actionTabs .tabs .panes .pane .textureLinkLine {\n          display: grid;\n          grid-template-columns: auto 1fr; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .debug {\n            grid-column: 1;\n            margin-left: 5px;\n            display: grid;\n            align-items: center;\n            justify-items: center;\n            cursor: pointer;\n            opacity: 0.5; }\n            #actionTabs .tabs .panes .pane .textureLinkLine .debug.selected {\n              opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .textLine {\n            grid-column: 2; }\n        #actionTabs .tabs .panes .pane .textLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .textLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textLine .link-value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 200px;\n            text-decoration: underline;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .textLine .value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 200px; }\n            #actionTabs .tabs .panes .pane .textLine .value.check {\n              color: green; }\n            #actionTabs .tabs .panes .pane .textLine .value.uncheck {\n              color: red; }\n        #actionTabs .tabs .panes .pane .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #actionTabs .tabs .panes .pane .buttonLine input[type=\"file\"] {\n            display: none; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload {\n            background: transparent;\n            border: 1px solid #337ab7;\n            margin: 0px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            cursor: pointer;\n            text-align: center; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:active {\n            transform: scale(0.98);\n            transform-origin: 0.5 0.5; }\n          #actionTabs .tabs .panes .pane .buttonLine button {\n            background: #222222;\n            border: 0px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            width: 100%;\n            height: 28px; }\n          #actionTabs .tabs .panes .pane .buttonLine button:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine button:active {\n            background: #282828; }\n          #actionTabs .tabs .panes .pane .buttonLine button:focus {\n            border: 0px;\n            outline: 0px; }\n        #actionTabs .tabs .panes .pane .radioLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 30px; }\n          #actionTabs .tabs .panes .pane .radioLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .radioLine .radioContainer {\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio {\n              grid-column: 2;\n              display: none; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:before {\n                border-color: #337ab7; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:after {\n                transform: scale(1); }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio {\n              display: inline-block;\n              height: 14px;\n              position: relative;\n              padding: 0 24px;\n              margin-bottom: 0;\n              cursor: pointer;\n              vertical-align: bottom; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before, #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                position: absolute;\n                content: '';\n                border-radius: 50%;\n                transition: all .3s ease;\n                transition-property: transform, border-color; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before {\n                left: 0px;\n                top: 0;\n                width: 16px;\n                height: 16px;\n                border: 2px solid white; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                top: 6px;\n                left: 6px;\n                width: 8px;\n                height: 8px;\n                transform: scale(0);\n                background: #337ab7; }\n        #actionTabs .tabs .panes .pane .vector3Line {\n          padding-left: 5px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .vector3Line .firstLine {\n            display: grid;\n            grid-template-columns: 1fr auto 20px;\n            height: 30px; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .vector {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              text-align: right;\n              opacity: 0.8; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .expand {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .vector3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .checkBoxLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .checkBox {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl {\n              position: relative;\n              display: block;\n              height: 14px;\n              width: 34px;\n              margin-right: 10px;\n              background: #898989;\n              border-radius: 100px;\n              cursor: pointer;\n              transition: all 0.3s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:after {\n              position: absolute;\n              left: 3px;\n              top: 2px;\n              display: block;\n              width: 10px;\n              height: 10px;\n              border-radius: 100px;\n              background: #fff;\n              box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n              content: '';\n              transition: all 0.15s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:active:after {\n              transform: scale(1.15, 0.85); }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label {\n              background: #337ab7; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label:after {\n              left: 20px;\n              background: #164975; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .hidden {\n              display: none; }\n        #actionTabs .tabs .panes .pane .textureLine {\n          display: grid;\n          grid-template-rows: 30px auto; }\n          #actionTabs .tabs .panes .pane .textureLine .control {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control .red {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control .green {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control .blue {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control .alpha {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control .all {\n              grid-column: 6; }\n          #actionTabs .tabs .panes .pane .textureLine .control3D {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .px {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nx {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .py {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .ny {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .pz {\n              grid-column: 6; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nz {\n              grid-column: 7; }\n          #actionTabs .tabs .panes .pane .textureLine .command {\n            border: 0px;\n            background: transparent;\n            color: white; }\n          #actionTabs .tabs .panes .pane .textureLine .selected {\n            border: 1px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .textureLine .preview {\n            grid-row: 2;\n            display: grid;\n            align-self: center;\n            justify-self: center;\n            height: 256px;\n            width: 256px;\n            margin-top: 5px;\n            margin-bottom: 5px; }\n        #actionTabs .tabs .panes .pane .floatLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .floatLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .floatLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .floatLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .sliderLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .sliderLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .sliderLine .slider {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range {\n              -webkit-appearance: none;\n              width: 120px;\n              height: 6px;\n              background: #d3d3d3;\n              border-radius: 5px;\n              outline: none;\n              opacity: 0.7;\n              -webkit-transition: .2s;\n              transition: opacity .2s; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range:hover {\n              opacity: 1; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-webkit-slider-thumb {\n              -webkit-appearance: none;\n              appearance: none;\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-moz-range-thumb {\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n        #actionTabs .tabs .panes .pane .color3Line {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .color3Line .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .color3Line .color3 {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .color3Line .color3 input[type=\"color\"] {\n              -webkit-appearance: none;\n              border: none;\n              padding: 0;\n              width: 24px;\n              height: 24px; }\n            #actionTabs .tabs .panes .pane .color3Line .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n              padding: 0; }\n            #actionTabs .tabs .panes .pane .color3Line .color3 input[type=\"color\"]::-webkit-color-swatch {\n              border: none; }\n            #actionTabs .tabs .panes .pane .color3Line .color3 input {\n              margin-right: 5px; }\n        #actionTabs .tabs .panes .pane .listLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .listLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .listLine .options {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            margin-right: 5px; }\n        #actionTabs .tabs .panes .pane .paneContainer {\n          margin-top: 3px; }\n          #actionTabs .tabs .panes .pane .paneContainer .header {\n            display: grid;\n            grid-template-columns: 1fr auto;\n            background: #555555;\n            height: 30px;\n            padding-right: 5px; }\n            #actionTabs .tabs .panes .pane .paneContainer .header .title {\n              margin-left: 5px;\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .paneContainer .header .collapse {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer;\n              transform-origin: center; }\n              #actionTabs .tabs .panes .pane .paneContainer .header .collapse.closed {\n                transform: rotate(180deg); }\n          #actionTabs .tabs .panes .pane .paneContainer .paneList > div:not(:last-child) {\n            border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
+exports.push([module.i, "#inspector-host {\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  bottom: 0px; }\n\n#actionTabs {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\";\n  overflow: hidden; }\n  #actionTabs #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #actionTabs #header #logo {\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #actionTabs #header #back {\n      grid-column: 1;\n      display: grid;\n      align-self: center;\n      justify-self: center;\n      cursor: pointer; }\n    #actionTabs #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #actionTabs #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #actionTabs #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #actionTabs #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #actionTabs .tabs {\n    display: grid;\n    grid-row: 2;\n    grid-template-rows: 40px 1fr;\n    font: 14px \"Arial\";\n    overflow: hidden; }\n    #actionTabs .tabs .labels {\n      grid-row: 1;\n      display: flex;\n      align-items: center;\n      justify-items: center;\n      border-bottom: 1px solid #ffffff;\n      margin: 0;\n      padding: 0; }\n      #actionTabs .tabs .labels .label {\n        font-size: 24px;\n        color: white;\n        width: 40px;\n        display: flex;\n        align-content: center;\n        justify-content: center;\n        border: 1px solid transparent;\n        border-bottom: none;\n        background: #333333;\n        padding: 5px;\n        height: 28px;\n        cursor: pointer; }\n        #actionTabs .tabs .labels .label.active {\n          border-color: #ffffff;\n          border-bottom: 2px solid transparent;\n          margin-bottom: -2px; }\n    #actionTabs .tabs .panes {\n      grid-row: 2;\n      margin-bottom: 3px;\n      display: grid;\n      grid-template-rows: 1fr;\n      overflow: hidden; }\n      #actionTabs .tabs .panes .infoMessage {\n        opacity: 0.5;\n        color: white;\n        margin: 15px 5px 0px 5px; }\n      #actionTabs .tabs .panes .pane {\n        color: white;\n        overflow-x: hidden;\n        overflow-y: auto;\n        -webkit-user-select: none;\n        -moz-user-select: none;\n        -ms-user-select: none;\n        user-select: none; }\n        #actionTabs .tabs .panes .pane .textureLinkLine {\n          display: grid;\n          grid-template-columns: auto 1fr; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .debug {\n            grid-column: 1;\n            margin-left: 5px;\n            display: grid;\n            align-items: center;\n            justify-items: center;\n            cursor: pointer;\n            opacity: 0.5; }\n            #actionTabs .tabs .panes .pane .textureLinkLine .debug.selected {\n              opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .textLine {\n            grid-column: 2; }\n        #actionTabs .tabs .panes .pane .textLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .textLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textLine .link-value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 200px;\n            text-decoration: underline;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .textLine .value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 200px; }\n            #actionTabs .tabs .panes .pane .textLine .value.check {\n              color: green; }\n            #actionTabs .tabs .panes .pane .textLine .value.uncheck {\n              color: red; }\n        #actionTabs .tabs .panes .pane .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #actionTabs .tabs .panes .pane .buttonLine input[type=\"file\"] {\n            display: none; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload {\n            background: transparent;\n            border: 1px solid #337ab7;\n            margin: 0px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            cursor: pointer;\n            text-align: center; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:active {\n            transform: scale(0.98);\n            transform-origin: 0.5 0.5; }\n          #actionTabs .tabs .panes .pane .buttonLine button {\n            background: #222222;\n            border: 0px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            width: 100%;\n            height: 28px; }\n          #actionTabs .tabs .panes .pane .buttonLine button:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine button:active {\n            background: #282828; }\n          #actionTabs .tabs .panes .pane .buttonLine button:focus {\n            border: 0px;\n            outline: 0px; }\n        #actionTabs .tabs .panes .pane .radioLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 30px; }\n          #actionTabs .tabs .panes .pane .radioLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .radioLine .radioContainer {\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio {\n              grid-column: 2;\n              display: none; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:before {\n                border-color: #337ab7; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:after {\n                transform: scale(1); }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio {\n              display: inline-block;\n              height: 14px;\n              position: relative;\n              padding: 0 24px;\n              margin-bottom: 0;\n              cursor: pointer;\n              vertical-align: bottom; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before, #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                position: absolute;\n                content: '';\n                border-radius: 50%;\n                transition: all .3s ease;\n                transition-property: transform, border-color; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before {\n                left: 0px;\n                top: 0;\n                width: 16px;\n                height: 16px;\n                border: 2px solid white; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                top: 6px;\n                left: 6px;\n                width: 8px;\n                height: 8px;\n                transform: scale(0);\n                background: #337ab7; }\n        #actionTabs .tabs .panes .pane .vector3Line {\n          padding-left: 5px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .vector3Line .firstLine {\n            display: grid;\n            grid-template-columns: 1fr auto 20px;\n            height: 30px; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .vector {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              text-align: right;\n              opacity: 0.8; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .expand {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .vector3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .checkBoxLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .checkBox {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl {\n              position: relative;\n              display: block;\n              height: 14px;\n              width: 34px;\n              margin-right: 5px;\n              background: #898989;\n              border-radius: 100px;\n              cursor: pointer;\n              transition: all 0.3s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:after {\n              position: absolute;\n              left: 3px;\n              top: 2px;\n              display: block;\n              width: 10px;\n              height: 10px;\n              border-radius: 100px;\n              background: #fff;\n              box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n              content: '';\n              transition: all 0.15s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:active:after {\n              transform: scale(1.15, 0.85); }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label {\n              background: #337ab7; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label:after {\n              left: 20px;\n              background: #164975; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .hidden {\n              display: none; }\n        #actionTabs .tabs .panes .pane .textureLine {\n          display: grid;\n          grid-template-rows: 30px auto; }\n          #actionTabs .tabs .panes .pane .textureLine .control {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control .red {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control .green {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control .blue {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control .alpha {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control .all {\n              grid-column: 6; }\n          #actionTabs .tabs .panes .pane .textureLine .control3D {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .px {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nx {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .py {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .ny {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .pz {\n              grid-column: 6; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nz {\n              grid-column: 7; }\n          #actionTabs .tabs .panes .pane .textureLine .command {\n            border: 0px;\n            background: transparent;\n            color: white; }\n          #actionTabs .tabs .panes .pane .textureLine .selected {\n            border: 1px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .textureLine .preview {\n            grid-row: 2;\n            display: grid;\n            align-self: center;\n            justify-self: center;\n            height: 256px;\n            width: 256px;\n            margin-top: 5px;\n            margin-bottom: 5px; }\n        #actionTabs .tabs .panes .pane .floatLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .floatLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .floatLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .floatLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .sliderLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .sliderLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .sliderLine .slider {\n            grid-column: 2;\n            margin-right: 5px;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range {\n              -webkit-appearance: none;\n              width: 120px;\n              height: 6px;\n              background: #d3d3d3;\n              border-radius: 5px;\n              outline: none;\n              opacity: 0.7;\n              -webkit-transition: .2s;\n              transition: opacity .2s; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range:hover {\n              opacity: 1; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-webkit-slider-thumb {\n              -webkit-appearance: none;\n              appearance: none;\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-moz-range-thumb {\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n        #actionTabs .tabs .panes .pane .color3Line {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .color3Line .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .color3Line .color3 {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .color3Line .color3 input[type=\"color\"] {\n              -webkit-appearance: none;\n              border: none;\n              padding: 0;\n              width: 20px;\n              height: 20px; }\n            #actionTabs .tabs .panes .pane .color3Line .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n              padding: 0; }\n            #actionTabs .tabs .panes .pane .color3Line .color3 input[type=\"color\"]::-webkit-color-swatch {\n              border: none; }\n            #actionTabs .tabs .panes .pane .color3Line .color3 input {\n              margin-right: 5px; }\n        #actionTabs .tabs .panes .pane .listLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .listLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .listLine .options {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            margin-right: 5px; }\n        #actionTabs .tabs .panes .pane .paneContainer {\n          margin-top: 3px; }\n          #actionTabs .tabs .panes .pane .paneContainer .header {\n            display: grid;\n            grid-template-columns: 1fr auto;\n            background: #555555;\n            height: 30px;\n            padding-right: 5px; }\n            #actionTabs .tabs .panes .pane .paneContainer .header .title {\n              margin-left: 5px;\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .paneContainer .header .collapse {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer;\n              transform-origin: center; }\n              #actionTabs .tabs .panes .pane .paneContainer .header .collapse.closed {\n                transform: rotate(180deg); }\n          #actionTabs .tabs .panes .pane .paneContainer .paneList > div:not(:last-child) {\n            border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
 
 // exports
 
@@ -6753,7 +6753,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #scene-explorer-host:focus {\n    outline: none; }\n\n#sceneExplorer {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #sceneExplorer:focus {\n    outline: none; }\n  #sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #sceneExplorer #header #logo {\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: white; }\n    #sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: flex;\n    align-items: center; }\n    #sceneExplorer .groupContainer:hover {\n      background: #444444; }\n    #sceneExplorer .groupContainer .arrow {\n      margin-left: 0px;\n      color: white;\n      cursor: pointer;\n      display: inline-block;\n      margin-right: 6px;\n      opacity: 0.5; }\n  #sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #sceneExplorer .itemContainer:hover {\n      background: #444444; }\n    #sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: white;\n      opacity: 0.6; }\n    #sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #444444;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .meshTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .meshTools .gizmo {\n        grid-column: 2;\n        opacity: 0.5; }\n        #sceneExplorer .itemContainer .meshTools .gizmo.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .meshTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .meshTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .cameraTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .cameraTools .activeCamera {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .cameraTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .lightTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .lightTools .enableLight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .lightTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .materialTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .materialTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .textureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .textureTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .transformNodeTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .transformNodeTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 25px 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .title .titleIcon {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center; }\n      #sceneExplorer .itemContainer .title .titleText {\n        grid-column: 2;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
+exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #scene-explorer-host:focus {\n    outline: none; }\n\n#sceneExplorer {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #sceneExplorer:focus {\n    outline: none; }\n  #sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: white; }\n    #sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: flex;\n    align-items: center; }\n    #sceneExplorer .groupContainer:hover {\n      background: #444444; }\n    #sceneExplorer .groupContainer .arrow {\n      margin-left: 0px;\n      color: white;\n      cursor: pointer;\n      display: inline-block;\n      margin-right: 6px;\n      opacity: 0.5; }\n  #sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #sceneExplorer .itemContainer:hover {\n      background: #444444; }\n    #sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: white;\n      opacity: 0.6; }\n    #sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #444444;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 5;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 6;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 7; }\n      #sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 8; }\n    #sceneExplorer .itemContainer .meshTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .meshTools .gizmo {\n        grid-column: 2;\n        opacity: 0.5; }\n        #sceneExplorer .itemContainer .meshTools .gizmo.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .meshTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .meshTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .cameraTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .cameraTools .activeCamera {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .cameraTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .lightTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .lightTools .enableLight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .lightTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .materialTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .materialTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .textureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .textureTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .transformNodeTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .transformNodeTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 25px 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .title .titleIcon {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center; }\n      #sceneExplorer .itemContainer .title .titleText {\n        grid-column: 2;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
 
 // exports
 
@@ -33839,19 +33839,19 @@ var ActionTabsComponent = /** @class */ (function (_super) {
     }
     ActionTabsComponent.prototype.componentWillMount = function () {
         var _this = this;
-        this._onSelectionChangeObserver = this.props.onSelectionChangeObservable.add(function (entity) {
+        this._onSelectionChangeObserver = this.props.globalState.onSelectionChangeObservable.add(function (entity) {
             _this.setState({ selectedEntity: entity, selectedIndex: 0 });
         });
     };
     ActionTabsComponent.prototype.componentWillUnmount = function () {
         if (this._onSelectionChangeObserver) {
-            this.props.onSelectionChangeObservable.remove(this._onSelectionChangeObserver);
+            this.props.globalState.onSelectionChangeObservable.remove(this._onSelectionChangeObserver);
         }
     };
     ActionTabsComponent.prototype.renderContent = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_tabsComponent__WEBPACK_IMPORTED_MODULE_1__["TabsComponent"], { selectedIndex: this.state.selectedIndex, onSelectedIndexChange: function (value) { return _this.setState({ selectedIndex: value }); } },
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_tabs_propertyGridTabComponent__WEBPACK_IMPORTED_MODULE_6__["PropertyGridTabComponent"], { title: "Properties", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faFileAlt"], scene: this.props.scene, selectedEntity: this.state.selectedEntity, onSelectionChangeObservable: this.props.onSelectionChangeObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_tabs_propertyGridTabComponent__WEBPACK_IMPORTED_MODULE_6__["PropertyGridTabComponent"], { title: "Properties", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faFileAlt"], scene: this.props.scene, selectedEntity: this.state.selectedEntity, onSelectionChangeObservable: this.props.globalState.onSelectionChangeObservable, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_tabs_debugTabComponent__WEBPACK_IMPORTED_MODULE_4__["DebugTabComponent"], { title: "Debug", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faBug"], scene: this.props.scene }),
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_tabs_statisticsTabComponent__WEBPACK_IMPORTED_MODULE_3__["StatisticsTabComponent"], { title: "Statistics", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faChartBar"], scene: this.props.scene }),
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_tabs_toolsTabComponent__WEBPACK_IMPORTED_MODULE_8__["ToolsTabComponent"], { title: "Tools", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faWrench"], scene: this.props.scene })));
@@ -33873,7 +33873,7 @@ var ActionTabsComponent = /** @class */ (function (_super) {
         if (this.props.popupMode) {
             return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "actionTabs" },
                 !this.props.noHeader &&
-                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_7__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); }, onSelectionChangeObservable: this.props.onSelectionChangeObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_7__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); }, onSelectionChangeObservable: this.props.globalState.onSelectionChangeObservable }),
                 this.renderContent()));
         }
         if (this._once) {
@@ -33885,7 +33885,7 @@ var ActionTabsComponent = /** @class */ (function (_super) {
         }
         return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"](re_resizable__WEBPACK_IMPORTED_MODULE_5__["default"], { id: "actionTabs", minWidth: 300, maxWidth: 600, size: { height: "100%" }, minHeight: "100%", enable: { top: false, right: false, bottom: false, left: true, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false } },
             !this.props.noHeader &&
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_7__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, noExpand: this.props.noExpand, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); }, onSelectionChangeObservable: this.props.onSelectionChangeObservable }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_7__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, noExpand: this.props.noExpand, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); }, onSelectionChangeObservable: this.props.globalState.onSelectionChangeObservable }),
             this.renderContent()));
     };
     return ActionTabsComponent;
@@ -34621,7 +34621,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "sliderLine" },
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "slider" },
-                this.state.value.toFixed(2),
+                this.state.value ? this.state.value.toFixed(2) : "0",
                 "\u00A0",
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("input", { className: "range", type: "range", step: this.props.step, min: this.props.minimum, max: this.props.maximum, value: this.state.value, onChange: function (evt) { return _this.onChange(evt.target.value); } }))));
     };
@@ -35789,18 +35789,20 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
         }
         if (!this._gridMesh) {
             var extend = this.props.scene.getWorldExtends();
-            var width = extend.max.x - extend.min.x;
-            var depth = extend.max.z - extend.min.z;
-            this._gridMesh = BABYLON.Mesh.CreateGround("grid", width, depth, 1, scene);
+            var width = (extend.max.x - extend.min.x) * 5.0;
+            var depth = (extend.max.z - extend.min.z) * 5.0;
+            this._gridMesh = BABYLON.Mesh.CreateGround("grid", 1.0, 1.0, 1, scene);
             if (!this._gridMesh.metadata) {
                 this._gridMesh.metadata = {};
             }
+            this._gridMesh.scaling.x = width;
+            this._gridMesh.scaling.z = depth;
             this._gridMesh.metadata.isInspectorGrid = true;
             this._gridMesh.isPickable = false;
             var groundMaterial = new BABYLON.GridMaterial("GridMaterial", scene);
-            groundMaterial.majorUnitFrequency = width / 10;
+            groundMaterial.majorUnitFrequency = 10;
             groundMaterial.minorUnitVisibility = 0.3;
-            groundMaterial.gridRatio = 1;
+            groundMaterial.gridRatio = 0.01;
             groundMaterial.backFaceCulling = false;
             groundMaterial.mainColor = new BABYLON.Color3(1, 1, 1);
             groundMaterial.lineColor = new BABYLON.Color3(1.0, 1.0, 1.0);
@@ -35812,7 +35814,8 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
             return;
         }
         this.setState({ isEnabled: !this.state.isEnabled });
-        this._gridMesh.setEnabled(!this._gridMesh.isEnabled());
+        this._gridMesh.dispose(true, true);
+        this._gridMesh = null;
     };
     GridPropertyGridComponent.prototype.render = function () {
         var _this = this;
@@ -36300,19 +36303,19 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { label: "Reflectivity", target: material, propertyName: "reflectivityColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { label: "Emissive", target: material, propertyName: "emissiveColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { label: "Ambient", target: material, propertyName: "ambientColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Alpha", target: material, propertyName: "alpha", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Alpha", target: material, propertyName: "alpha", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            this.renderTextures(),
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_1__["LineContainerComponent"], { title: "LEVELS", closed: true },
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Environment intensity", target: material, propertyName: "environmentIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Metallic", target: material, propertyName: "metallic", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Micro-surface", target: material, propertyName: "microSurface", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Specular intensity", target: material, propertyName: "specularIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.bumpTexture &&
                     react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Bump strength", target: material.bumpTexture, propertyName: "level", minimum: 0, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.ambientTexture &&
                     react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Ambient strength", target: material, propertyName: "ambientTextureStrength", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.reflectionTexture &&
                     react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Reflection strength", target: material.reflectionTexture, propertyName: "level", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            this.renderTextures(),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_1__["LineContainerComponent"], { title: "LEVELS", closed: true },
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Environment intensity", target: material, propertyName: "environmentIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Metallic", target: material, propertyName: "metallic", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Micro-surface", target: material, propertyName: "microSurface", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Specular intensity", target: material, propertyName: "specularIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_1__["LineContainerComponent"], { title: "RENDERING", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Alpha from albedo", target: material, propertyName: "useAlphaFromAlbedoTexture", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Ambient in grayscale", target: material, propertyName: "useAmbientInGrayScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -36455,10 +36458,10 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
     __extends(MeshPropertyGridComponent, _super);
     function MeshPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { paintNormals: false };
+        _this.state = { displayNormals: false };
         return _this;
     }
-    MeshPropertyGridComponent.prototype.paintNormals = function () {
+    MeshPropertyGridComponent.prototype.displayNormals = function () {
         var _this = this;
         var mesh = this.props.mesh;
         var scene = mesh.getScene();
@@ -36469,13 +36472,13 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
             mesh.material.dispose();
             mesh.material = mesh.metadata.originalMaterial;
             mesh.metadata.originalMaterial = null;
-            this.setState({ paintNormals: false });
+            this.setState({ displayNormals: false });
         }
         else {
             if (!BABYLON.NormalMaterial) {
-                this.setState({ paintNormals: true });
+                this.setState({ displayNormals: true });
                 BABYLON.Tools.LoadScript("https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.js", function () {
-                    _this.paintNormals();
+                    _this.displayNormals();
                 });
                 return;
             }
@@ -36488,7 +36491,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
             normalMaterial.sideOrientation = mesh.material.sideOrientation;
             normalMaterial.metadata = { hidden: true };
             mesh.material = normalMaterial;
-            this.setState({ paintNormals: true });
+            this.setState({ displayNormals: true });
         }
     };
     MeshPropertyGridComponent.prototype.onMaterialLink = function () {
@@ -36502,7 +36505,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         var _this = this;
         var mesh = this.props.mesh;
         var scene = mesh.getScene();
-        var paintNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
+        var displayNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
         return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_1__["LineContainerComponent"], { title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { label: "ID", value: mesh.id }),
@@ -36545,7 +36548,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_1__["LineContainerComponent"], { title: "DEBUG", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Show bounding box", target: mesh, propertyName: "showBoundingBox", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 mesh.material &&
-                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Paint normals", isSelected: function () { return paintNormals; }, onSelect: function () { return _this.paintNormals(); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Display normals", isSelected: function () { return displayNormals; }, onSelect: function () { return _this.displayNormals(); } }))));
     };
     return MeshPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_0__["Component"]));
@@ -37181,22 +37184,22 @@ var EmbedHostComponent = /** @class */ (function (_super) {
         if (this.props.popupMode) {
             return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "split", className: "splitPopup" },
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "topPart" },
-                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_3__["SceneExplorerComponent"], { scene: this.props.scene, popupMode: true, onSelectionChangeObservable: this.props.onSelectionChangeObservable, noHeader: true })),
+                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_3__["SceneExplorerComponent"], { scene: this.props.scene, popupMode: true, globalState: this.props.globalState, noHeader: true })),
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "separator" }),
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "bottomPart", style: { marginTop: "4px", overflow: "hidden" } },
-                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_actionTabs_actionTabsComponent__WEBPACK_IMPORTED_MODULE_4__["ActionTabsComponent"], { scene: this.props.scene, popupMode: true, onSelectionChangeObservable: this.props.onSelectionChangeObservable, noHeader: true }))));
+                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_actionTabs_actionTabsComponent__WEBPACK_IMPORTED_MODULE_4__["ActionTabsComponent"], { scene: this.props.scene, popupMode: true, globalState: this.props.globalState, noHeader: true }))));
         }
         return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"](Split, { id: "split", className: "noPopup", direction: "vertical", gutterSize: 4, minSize: [200, 200] },
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "topPart" },
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_3__["SceneExplorerComponent"], { scene: this.props.scene, popupMode: true, onSelectionChangeObservable: this.props.onSelectionChangeObservable, noHeader: true })),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_3__["SceneExplorerComponent"], { scene: this.props.scene, globalState: this.props.globalState, popupMode: true, noHeader: true })),
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "bottomPart", style: { marginTop: "4px", overflow: "hidden" } },
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_actionTabs_actionTabsComponent__WEBPACK_IMPORTED_MODULE_4__["ActionTabsComponent"], { scene: this.props.scene, popupMode: true, onSelectionChangeObservable: this.props.onSelectionChangeObservable, noHeader: true }))));
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_actionTabs_actionTabsComponent__WEBPACK_IMPORTED_MODULE_4__["ActionTabsComponent"], { scene: this.props.scene, globalState: this.props.globalState, popupMode: true, noHeader: true }))));
     };
     EmbedHostComponent.prototype.render = function () {
         var _this = this;
         if (this.props.popupMode) {
             return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "embed" },
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_1__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, onClose: function () { return _this.props.onClose(); }, onPopup: function () { return _this.props.onPopup(); }, onSelectionChangeObservable: this.props.onSelectionChangeObservable }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_1__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, onClose: function () { return _this.props.onClose(); }, onPopup: function () { return _this.props.onPopup(); }, onSelectionChangeObservable: this.props.globalState.onSelectionChangeObservable }),
                 this.renderContent()));
         }
         if (this._once) {
@@ -37207,11 +37210,31 @@ var EmbedHostComponent = /** @class */ (function (_super) {
             }, 150);
         }
         return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"](re_resizable__WEBPACK_IMPORTED_MODULE_2__["default"], { id: "embed", minWidth: 300, maxWidth: 600, size: { height: "100%" }, minHeight: "100%", enable: { top: false, right: false, bottom: false, left: true, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false } },
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_1__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, onClose: function () { return _this.props.onClose(); }, onPopup: function () { return _this.props.onPopup(); }, onSelectionChangeObservable: this.props.onSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_1__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, onClose: function () { return _this.props.onClose(); }, onPopup: function () { return _this.props.onPopup(); }, onSelectionChangeObservable: this.props.globalState.onSelectionChangeObservable }),
             this.renderContent()));
     };
     return EmbedHostComponent;
 }(react__WEBPACK_IMPORTED_MODULE_0__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./src/components/globalState.ts":
+/*!***************************************!*\
+  !*** ./src/components/globalState.ts ***!
+  \***************************************/
+/*! exports provided: GlobalState */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
+var GlobalState = /** @class */ (function () {
+    function GlobalState() {
+    }
+    return GlobalState;
+}());
 
 
 
@@ -37601,8 +37624,8 @@ var MeshTreeItemComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_5__["createElement"]("div", { className: "meshTools" },
             react__WEBPACK_IMPORTED_MODULE_5__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemLabelComponent"], { label: mesh.name, onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faCube"], color: "dodgerblue" }),
             react__WEBPACK_IMPORTED_MODULE_5__["createElement"]("div", { className: this.state.isGizmoEnabled ? "gizmo selected icon" : "gizmo icon", onClick: function () { return _this.showGizmos(); }, title: "Show/Hide position gizmo" },
-                react__WEBPACK_IMPORTED_MODULE_5__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_0__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faArrowsAlt"] })),
-            react__WEBPACK_IMPORTED_MODULE_5__["createElement"]("div", { className: "visibility  icon", onClick: function () { return _this.switchVisibility(); }, title: "Show/Hide mesh" }, visibilityElement),
+                react__WEBPACK_IMPORTED_MODULE_5__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_0__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faVectorSquare"] })),
+            react__WEBPACK_IMPORTED_MODULE_5__["createElement"]("div", { className: "visibility icon", onClick: function () { return _this.switchVisibility(); }, title: "Show/Hide mesh" }, visibilityElement),
             react__WEBPACK_IMPORTED_MODULE_5__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_4__["ExtensionsComponent"], { target: mesh, extensibilityGroups: this.props.extensibilityGroups })));
     };
     return MeshTreeItemComponent;
@@ -37648,7 +37671,7 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
     __extends(SceneTreeItemComponent, _super);
     function SceneTreeItemComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { isSelected: false, isInPickingMode: false };
+        _this.state = { isSelected: false, isInPickingMode: false, gizmoMode: 0 };
         return _this;
     }
     SceneTreeItemComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
@@ -37695,7 +37718,8 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
         }
         this.setState({ isInPickingMode: !this.state.isInPickingMode });
     };
-    SceneTreeItemComponent.prototype.showExtensions = function () {
+    SceneTreeItemComponent.prototype.setGizmoMode = function (mode) {
+        this.setState({ gizmoMode: mode });
     };
     SceneTreeItemComponent.prototype.render = function () {
         var _this = this;
@@ -37704,6 +37728,13 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "sceneTitle", onClick: function () { return _this.onSelect(); } },
                     react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_0__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faImage"] }),
                     "\u00A0Scene"),
+                react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: this.state.gizmoMode === 1 ? "translation selected icon" : "translation icon", onClick: function () { return _this.setGizmoMode(1); }, title: "Enable/Disable position mode" },
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_0__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faArrowsAlt"] })),
+                react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: this.state.gizmoMode === 2 ? "rotation selected icon" : "rotation icon", onClick: function () { return _this.setGizmoMode(2); }, title: "Enable/Disable rotation mode" },
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_0__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faRedoAlt"] })),
+                react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: this.state.gizmoMode === 3 ? "scaling selected icon" : "scaling icon", onClick: function () { return _this.setGizmoMode(3); }, title: "Enable/Disable scaling mode" },
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_0__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faCompress"] })),
+                react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "separator" }),
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: this.state.isInPickingMode ? "pickingMode selected icon" : "pickingMode icon", onClick: function () { return _this.onPickingMode(); }, title: "Turn picking mode on/off" },
                     react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_0__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faCrosshairs"] })),
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "refresh icon", onClick: function () { return _this.props.onRefresh(); }, title: "Refresh the explorer" },
@@ -37990,7 +38021,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
     }
     SceneExplorerComponent.prototype.componentWillMount = function () {
         var _this = this;
-        this._onSelectionChangeObserver = this.props.onSelectionChangeObservable.add(function (entity) {
+        this._onSelectionChangeObserver = this.props.globalState.onSelectionChangeObservable.add(function (entity) {
             if (_this.state.selectedEntity !== entity) {
                 _this.setState({ selectedEntity: entity });
             }
@@ -37998,7 +38029,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
     };
     SceneExplorerComponent.prototype.componentWillUnmount = function () {
         if (this._onSelectionChangeObserver) {
-            this.props.onSelectionChangeObservable.remove(this._onSelectionChangeObserver);
+            this.props.globalState.onSelectionChangeObservable.remove(this._onSelectionChangeObserver);
         }
         if (this._onNewSceneAddedObserver) {
             BABYLON.Engine.LastCreatedEngine.onNewSceneAddedObservable.remove(this._onNewSceneAddedObserver);
@@ -38018,14 +38049,14 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 data.found = true;
                 if (!goNext) {
                     if (data.previousOne) {
-                        this.props.onSelectionChangeObservable.notifyObservers(data.previousOne);
+                        this.props.globalState.onSelectionChangeObservable.notifyObservers(data.previousOne);
                     }
                     return true;
                 }
             }
             else {
                 if (data.found) {
-                    this.props.onSelectionChangeObservable.notifyObservers(item);
+                    this.props.globalState.onSelectionChangeObservable.notifyObservers(item);
                     return true;
                 }
                 data.previousOne = item;
@@ -38088,10 +38119,10 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         }
         return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "tree" },
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](SceneExplorerFilterComponent, { onFilter: function (filter) { return _this.filterContent(filter); } }),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_entities_sceneTreeItemComponent__WEBPACK_IMPORTED_MODULE_4__["SceneTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, scene: scene, onRefresh: function () { return _this.forceUpdate(); }, onSelectionChangeObservable: this.props.onSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.rootNodes, label: "Nodes", offset: 1, onSelectionChangeObservable: this.props.onSelectionChangeObservable, filter: this.state.filter }),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.materials, label: "Materials", offset: 1, onSelectionChangeObservable: this.props.onSelectionChangeObservable, filter: this.state.filter }),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.textures, label: "Textures", offset: 1, onSelectionChangeObservable: this.props.onSelectionChangeObservable, filter: this.state.filter })));
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_entities_sceneTreeItemComponent__WEBPACK_IMPORTED_MODULE_4__["SceneTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, scene: scene, onRefresh: function () { return _this.forceUpdate(); }, onSelectionChangeObservable: this.props.globalState.onSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.rootNodes, label: "Nodes", offset: 1, onSelectionChangeObservable: this.props.globalState.onSelectionChangeObservable, filter: this.state.filter }),
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.materials, label: "Materials", offset: 1, onSelectionChangeObservable: this.props.globalState.onSelectionChangeObservable, filter: this.state.filter }),
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.textures, label: "Textures", offset: 1, onSelectionChangeObservable: this.props.globalState.onSelectionChangeObservable, filter: this.state.filter })));
     };
     SceneExplorerComponent.prototype.onClose = function () {
         if (!this.props.onClose) {
@@ -38611,6 +38642,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_actionTabs_actionTabsComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/actionTabs/actionTabsComponent */ "./src/components/actionTabs/actionTabsComponent.tsx");
 /* harmony import */ var _components_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/sceneExplorer/sceneExplorerComponent */ "./src/components/sceneExplorer/sceneExplorerComponent.tsx");
 /* harmony import */ var _components_embedHost_embedHostComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/embedHost/embedHostComponent */ "./src/components/embedHost/embedHostComponent.tsx");
+/* harmony import */ var _components_globalState__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/globalState */ "./src/components/globalState.ts");
 var __assign = (undefined && undefined.__assign) || function () {
     __assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -38622,6 +38654,7 @@ var __assign = (undefined && undefined.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+
 
 
 
@@ -38650,7 +38683,7 @@ var Inspector = /** @class */ (function () {
             }
         }
     };
-    Inspector._CreateSceneExplorer = function (scene, options, parentControlExplorer, onSelectionChangeObservable) {
+    Inspector._CreateSceneExplorer = function (scene, options, parentControlExplorer) {
         var _this = this;
         // Duplicating the options as they can be different for each pane
         if (options.original) {
@@ -38671,7 +38704,7 @@ var Inspector = /** @class */ (function () {
             if (parentControlExplorer) {
                 this._SceneExplorerHost = parentControlExplorer.ownerDocument.createElement("div");
                 this._SceneExplorerHost.id = "scene-explorer-host";
-                this._SceneExplorerHost.style.width = options.explorerWidth || "300px";
+                this._SceneExplorerHost.style.width = options.explorerWidth || "auto";
                 parentControlExplorer.appendChild(this._SceneExplorerHost);
                 if (!options.overlay) {
                     this._SceneExplorerHost.style.gridColumn = "1";
@@ -38689,7 +38722,7 @@ var Inspector = /** @class */ (function () {
         if (this._SceneExplorerHost) {
             Inspector._OpenedPane++;
             var sceneExplorerElement = react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_components_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_3__["SceneExplorerComponent"], {
-                scene: scene, onSelectionChangeObservable: onSelectionChangeObservable,
+                scene: scene, globalState: this._GlobalState,
                 extensibilityGroups: options.explorerExtensibility,
                 noExpand: !options.enablePopup, popupMode: options.popup, onPopup: function () {
                     react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](_this._SceneExplorerHost);
@@ -38704,28 +38737,27 @@ var Inspector = /** @class */ (function () {
                 }, onClose: function () {
                     react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](_this._SceneExplorerHost);
                     Inspector._OpenedPane--;
+                    if (_this._SceneExplorerHost && _this._SceneExplorerHost.parentElement) {
+                        _this._SceneExplorerHost.parentElement.removeChild(_this._SceneExplorerHost);
+                    }
                     _this._Cleanup();
                     if (options.popup) {
                         _this._SceneExplorerWindow.close();
-                    }
-                    else if (!options.overlay) {
-                        if (_this._SceneExplorerHost) {
-                            _this._SceneExplorerHost.style.width = "0";
-                        }
                     }
                 }
             });
             react_dom__WEBPACK_IMPORTED_MODULE_1__["render"](sceneExplorerElement, this._SceneExplorerHost);
         }
     };
-    Inspector._CreateActionTabs = function (scene, options, parentControlActions, onSelectionChangeObservable) {
+    Inspector._CreateActionTabs = function (scene, options, parentControlActions) {
         var _this = this;
+        options.original = false;
         if (!options.actionTabsRoot || options.popup) {
             // Prepare the inspector host
             if (parentControlActions) {
                 var host = parentControlActions.ownerDocument.createElement("div");
                 host.id = "inspector-host";
-                host.style.width = options.inspectorWidth || "300px";
+                host.style.width = options.inspectorWidth || "auto";
                 parentControlActions.appendChild(host);
                 this._ActionTabsHost = host;
                 if (!options.overlay) {
@@ -38743,7 +38775,7 @@ var Inspector = /** @class */ (function () {
         if (this._ActionTabsHost) {
             Inspector._OpenedPane++;
             var actionTabsElement = react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_components_actionTabs_actionTabsComponent__WEBPACK_IMPORTED_MODULE_2__["ActionTabsComponent"], {
-                onSelectionChangeObservable: onSelectionChangeObservable, scene: scene, noExpand: !options.enablePopup, popupMode: options.popup, onPopup: function () {
+                globalState: this._GlobalState, scene: scene, noExpand: !options.enablePopup, popupMode: options.popup, onPopup: function () {
                     react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](_this._ActionTabsHost);
                     if (options.popup) {
                         _this._ActionTabsWindow.close();
@@ -38757,15 +38789,13 @@ var Inspector = /** @class */ (function () {
                     react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](_this._ActionTabsHost);
                     Inspector._OpenedPane--;
                     _this._Cleanup();
+                    if (_this._ActionTabsHost && _this._ActionTabsHost.parentElement) {
+                        _this._ActionTabsHost.parentElement.removeChild(_this._ActionTabsHost);
+                    }
                     if (options.popup) {
                         _this._ActionTabsWindow.close();
                     }
-                    else if (!options.overlay) {
-                        if (_this._ActionTabsHost) {
-                            _this._ActionTabsHost.style.width = "0";
-                        }
-                    }
-                }, onPropertyChangedObservable: Inspector.OnPropertyChangedObservable
+                }
             });
             react_dom__WEBPACK_IMPORTED_MODULE_1__["render"](actionTabsElement, this._ActionTabsHost);
         }
@@ -38794,7 +38824,7 @@ var Inspector = /** @class */ (function () {
         }
         if (this._EmbedHost) {
             var embedHostElement = react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_components_embedHost_embedHostComponent__WEBPACK_IMPORTED_MODULE_4__["EmbedHostComponent"], {
-                onSelectionChangeObservable: onSelectionChangeObservable, scene: scene, popupMode: options.popup, onPopup: function () {
+                globalState: this._GlobalState, scene: scene, popupMode: options.popup, onPopup: function () {
                     react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](_this._EmbedHost);
                     if (options.popup) {
                         _this._EmbedHostWindow.close();
@@ -38809,6 +38839,9 @@ var Inspector = /** @class */ (function () {
                     react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](_this._EmbedHost);
                     _this._OpenedPane = 0;
                     _this._Cleanup();
+                    if (_this._EmbedHost && _this._EmbedHost.parentElement) {
+                        _this._EmbedHost.parentElement.removeChild(_this._EmbedHost);
+                    }
                     if (options.popup) {
                         _this._EmbedHostWindow.close();
                     }
@@ -38856,6 +38889,14 @@ var Inspector = /** @class */ (function () {
     });
     Inspector.Show = function (scene, userOptions) {
         var options = __assign({ original: true, popup: false, overlay: false, showExplorer: true, showInspector: true, embedMode: false, handleResize: true, enablePopup: true }, userOptions);
+        // Prepare state
+        if (!this._GlobalState.onPropertyChangedObservable) {
+            this._GlobalState.onPropertyChangedObservable = this.OnPropertyChangedObservable;
+        }
+        if (!this._GlobalState.onSelectionChangeObservable) {
+            this._GlobalState.onSelectionChangeObservable = this.OnSelectionChangeObservable;
+        }
+        // Make sure it is not already opened
         if (this.IsVisible && options.original) {
             this.Hide();
         }
@@ -38900,13 +38941,13 @@ var Inspector = /** @class */ (function () {
                 if (this._SceneExplorerHost) {
                     this._SceneExplorerHost.style.width = "0";
                 }
-                this._CreateSceneExplorer(scene, options, this._CreatePopup("SCENE EXPLORER", "_SceneExplorerWindow"), Inspector.OnSelectionChangeObservable);
+                this._CreateSceneExplorer(scene, options, this._CreatePopup("SCENE EXPLORER", "_SceneExplorerWindow"));
             }
             if (options.showInspector) {
                 if (this._ActionTabsHost) {
                     this._ActionTabsHost.style.width = "0";
                 }
-                this._CreateActionTabs(scene, options, this._CreatePopup("INSPECTOR", "_ActionTabsWindow"), Inspector.OnSelectionChangeObservable);
+                this._CreateActionTabs(scene, options, this._CreatePopup("INSPECTOR", "_ActionTabsWindow"));
             }
         }
         else {
@@ -38927,6 +38968,13 @@ var Inspector = /** @class */ (function () {
                 this._NewCanvasContainer.style.gridColumn = "2";
                 this._NewCanvasContainer.style.width = "100%";
                 this._NewCanvasContainer.style.height = "100%";
+            }
+            else if (!options.overlay && this._NewCanvasContainer && this._NewCanvasContainer.parentElement) {
+                // the root is now the parent of the canvas container
+                parentControl = this._NewCanvasContainer.parentElement;
+            }
+            if (this._NewCanvasContainer) {
+                // If we move things around, let's control the resize
                 if (options.handleResize && scene) {
                     this._OnBeforeRenderObserver = scene.onBeforeRenderObservable.add(function () {
                         scene.getEngine().resize();
@@ -38937,13 +38985,13 @@ var Inspector = /** @class */ (function () {
                 if (options.sceneExplorerRoot && !options.overlay) {
                     options.sceneExplorerRoot.style.width = "auto";
                 }
-                this._CreateSceneExplorer(scene, options, parentControl, Inspector.OnSelectionChangeObservable);
+                this._CreateSceneExplorer(scene, options, parentControl);
             }
             if (options.showInspector) {
                 if (options.actionTabsRoot && !options.overlay) {
                     options.actionTabsRoot.style.width = "auto";
                 }
-                this._CreateActionTabs(scene, options, parentControl, Inspector.OnSelectionChangeObservable);
+                this._CreateActionTabs(scene, options, parentControl);
             }
         }
     };
@@ -38957,14 +39005,23 @@ var Inspector = /** @class */ (function () {
     Inspector.Hide = function () {
         if (this._ActionTabsHost) {
             react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](this._ActionTabsHost);
+            if (this._ActionTabsHost.parentElement) {
+                this._ActionTabsHost.parentElement.removeChild(this._ActionTabsHost);
+            }
             this._ActionTabsHost = null;
         }
         if (this._SceneExplorerHost) {
             react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](this._SceneExplorerHost);
+            if (this._SceneExplorerHost.parentElement) {
+                this._SceneExplorerHost.parentElement.removeChild(this._SceneExplorerHost);
+            }
             this._SceneExplorerHost = null;
         }
         if (this._EmbedHost) {
             react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](this._EmbedHost);
+            if (this._EmbedHost.parentElement) {
+                this._EmbedHost.parentElement.removeChild(this._EmbedHost);
+            }
             this._EmbedHost = null;
         }
         Inspector._OpenedPane = 0;
@@ -38973,6 +39030,7 @@ var Inspector = /** @class */ (function () {
     Inspector._OpenedPane = 0;
     Inspector.OnSelectionChangeObservable = new BABYLON.Observable();
     Inspector.OnPropertyChangedObservable = new BABYLON.Observable();
+    Inspector._GlobalState = new _components_globalState__WEBPACK_IMPORTED_MODULE_5__["GlobalState"]();
     return Inspector;
 }());
 
