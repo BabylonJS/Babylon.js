@@ -44,6 +44,7 @@ import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction,
 import { Engine } from "Engine/engine";
 import { Ray } from "Culling/ray";
 import { Node } from "node";
+import { MorphTarget } from "Morph/morphTarget";
 
     /**
      * Define an interface for all classes that will hold resources

@@ -4,10 +4,6 @@ import { Engine } from "Engine/engine";
 import { Material } from "Materials/material";
 import { SerializationHelper } from "Tools/decorators";
 
-SerializationHelper._FresnelParametersParser = (sourceProperty: any) => {
-    return FresnelParameters.Parse(sourceProperty);
-};
-
     /**
      * This represents all the required information to add a fresnel effect on a material:
      * @see http://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
@@ -94,3 +90,6 @@ SerializationHelper._FresnelParametersParser = (sourceProperty: any) => {
             return fresnelParameters;
         }
     }
+
+// References the dependencies.
+SerializationHelper._FresnelParametersParser = FresnelParameters.Parse;

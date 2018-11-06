@@ -13,10 +13,6 @@ import { BaseTexture } from "Materials/Textures/baseTexture";
 // import { MirrorTexture } from "Materials/Textures/mirrorTexture";
 // import { CubeTexture } from "Materials/Textures/cubeTexture";
 
-SerializationHelper._TextureParser = (sourceProperty: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> => {
-    return Texture.Parse(sourceProperty, scene, rootUrl);
-};
-
     /**
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
      * @see http://doc.babylonjs.com/babylon101/materials#texture
@@ -724,3 +720,6 @@ SerializationHelper._TextureParser = (sourceProperty: any, scene: Scene, rootUrl
             return new Texture(name, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer, format);
         }
     }
+
+    // References the dependencies.
+    SerializationHelper._TextureParser = Texture.Parse;

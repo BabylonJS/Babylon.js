@@ -8,10 +8,6 @@ import { Effect } from "Materials/effect";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 import { ColorCurves } from "Materials/colorCurves";
 
-SerializationHelper._ImageProcessingConfigurationParser = (sourceProperty: any) => {
-    return ImageProcessingConfiguration.Parse(sourceProperty);
-};
-
     /**
      * Interface to follow in your material defines to integrate easily the
      * Image proccessing functions.
@@ -585,3 +581,6 @@ SerializationHelper._ImageProcessingConfigurationParser = (sourceProperty: any) 
             return this._VIGNETTEMODE_OPAQUE;
         }
     }
+
+    // References the dependencies.
+    SerializationHelper._ImageProcessingConfigurationParser = ImageProcessingConfiguration.Parse;
