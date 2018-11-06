@@ -48,6 +48,17 @@ module BABYLON {
          */
         public layerMask: number = 0x0FFFFFFF;
 
+        /**
+         * Define the list of render target the layer is visible into.
+         */
+        public renderTargetTextures: RenderTargetTexture[] = [];
+
+        /**
+         * Define if the layer is only used in renderTarget or if it also
+         * renders in the main frame buffer of the canvas.
+         */
+        public renderOnlyInRenderTargetTextures = false;
+
         private _scene: Scene;
         private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
         private _indexBuffer: Nullable<WebGLBuffer>;
@@ -255,6 +266,9 @@ module BABYLON {
                 this.texture.dispose();
                 this.texture = null;
             }
+
+            // Clean RTT list
+            this.renderTargetTextures = [];
 
             // Remove from scene
             var index = this._scene.layers.indexOf(this);
