@@ -12,7 +12,6 @@ import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } fr
 import { ColorCurves } from "./colorCurves";
 import { FresnelParameters } from "./fresnelParameters";
 import { EffectFallbacks, EffectCreationOptions } from "./effect";
-import { Material } from "./material";
 import { MaterialDefines } from "Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
 import { MaterialHelper } from "./materialHelper";
