@@ -2,6 +2,7 @@ import { TouchCamera } from "./touchCamera";
 import { FreeCameraGamepadInput } from "Cameras/Inputs/freeCameraGamepadInput";
 import { Scene } from "scene";
 import { Vector3 } from "Math/math";
+import { Camera } from "./camera";
     /**
      * The Universal Camera is the one to choose for first person shooter type games, and works with all the keyboard, mouse, touch and gamepads. This replaces the earlier Free Camera,
      * which still works and will still be found in many Playgrounds.
@@ -69,3 +70,7 @@ import { Vector3 } from "Math/math";
             return "UniversalCamera";
         }
     }
+
+    Camera._createDefaultParsedCamera = (name: string, scene: Scene) => {
+        return new UniversalCamera(name, Vector3.Zero(), scene);
+    };

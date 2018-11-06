@@ -3,10 +3,6 @@ import { SmartArray } from "Tools/smartArray";
 import { Tools } from "Tools/tools";
 import { Observable } from "Tools/observable";
 import { Nullable } from "types";
-import { FreeCamera } from "./freeCamera";
-import { UniversalCamera } from "./universalCamera";
-import { VRCameraMetrics } from "Cameras/VR/vrCameraMetrics";
-import { TargetCamera } from "./targetCamera";
 import { CameraInputsManager } from "./cameraInputsManager";
 import { Scene } from "scene";
 import { Matrix, Vector3, Viewport, Plane, Frustum } from "Math/math";
@@ -22,11 +18,21 @@ import { AnaglyphPostProcess } from "PostProcess/anaglyphPostProcess";
 import { StereoscopicInterlacePostProcess } from "PostProcess/stereoscopicInterlacePostProcess";
 import { VRDistortionCorrectionPostProcess } from "PostProcess/vrDistortionCorrectionPostProcess";
 import { Animation } from "Animations/animation";
+import { VRCameraMetrics } from "Cameras/VR/vrCameraMetrics";
+
+declare type FreeCamera = import("./freeCamera").FreeCamera;
+declare type TargetCamera = import("./targetCamera").TargetCamera;
+
     /**
      * This is the base class of all the camera used in the application.
      * @see http://doc.babylonjs.com/features/cameras
      */
     export class Camera extends Node {
+        /** @hidden */
+        public static _createDefaultParsedCamera = (name: string, scene: Scene): Camera => {
+            throw "UniversalCamera needs to be imported before being deserialization can create a default camera.";
+        }
+
         /**
          * This is the default projection mode used by the cameras.
          * It helps recreating a feeling of perspective and better appreciate depth.
@@ -1182,7 +1188,7 @@ import { Animation } from "Animations/animation";
             }
 
             // Default to universal camera
-            return () => new UniversalCamera(name, Vector3.Zero(), scene);
+            return () => Camera._createDefaultParsedCamera(name, scene);
         }
 
         /**
