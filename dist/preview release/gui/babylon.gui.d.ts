@@ -879,6 +879,10 @@ declare module BABYLON.GUI {
             protected _disabledColor: string;
             /** @hidden */
             _tag: any;
+            /**
+                * Gets or sets an object used to store user defined information for the node
+                */
+            metadata: any;
             /** Gets or sets a boolean indicating if the control can be hit with pointer events */
             isHitTestVisible: boolean;
             /** Gets or sets a boolean indicating if the control can block pointer events */
