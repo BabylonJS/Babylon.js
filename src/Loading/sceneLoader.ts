@@ -416,7 +416,9 @@ import { Skeleton } from "Bones/skeleton";
                 return plugin;
             }
 
-            if (fileInfo.rootUrl.indexOf("file:") === -1) {
+            const file = FilesInput.FilesToLoad[fileInfo.name.toLowerCase()];
+
+            if (fileInfo.rootUrl.indexOf("file:") === -1 || (fileInfo.rootUrl.indexOf("file:") !== -1 && !file)) {
                 let engine = scene.getEngine();
                 let canUseOfflineSupport = engine.enableOfflineSupport;
                 if (canUseOfflineSupport) {
@@ -442,7 +444,6 @@ import { Skeleton } from "Bones/skeleton";
             }
             // Loading file from disk via input file or drag'n'drop
             else {
-                const file = FilesInput.FilesToLoad[fileInfo.name.toLowerCase()];
                 if (file) {
                     request = Tools.ReadFile(file, dataCallback, onProgress, useArrayBuffer);
                 } else {

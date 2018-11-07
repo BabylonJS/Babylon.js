@@ -60,6 +60,7 @@
 - Added opacity texture support to `GridMaterial` ([Deltakosh](https://github.com/deltakosh))
 - Added support for deserializing morph target animations in animation groups
 - AssetContainer dispose method ([TrevorDev](https://github.com/TrevorDev))
+- `Layer` are now supported in `RenderTargetTexture` ([Sebavan](https://github.com/Sebavan))
 
 ### glTF Loader
 
@@ -77,12 +78,13 @@
 - Removed bones from rootNodes where they should never have been ([Deltakosh](https://github.com/deltakosh))
 - Refocusing on input gui with pointer events ([TrevorDev](https://github.com/TrevorDev))
 - Gizmo scaling not consistent when camera is parented ([TrevorDev](https://github.com/TrevorDev))
-- Context loss causing unexpected results with dynamic textures ([TrevorDev](https://github.com/TrevorDev))
+- Context loss causing unexpected results with dynamic textures, geometries with the same name and reflectionTextures ([TrevorDev](https://github.com/TrevorDev))
 - CreateScreenshotUsingRenderTarget stretches mirror textures when setting both width and height ([TrevorDev](https://github.com/TrevorDev))
 - VR helper only updating vr cameras position when entering vr, rotation was missing ([TrevorDev](https://github.com/TrevorDev))
 - Fix VR controllers after gltfLoader transformNode change ([TrevorDev](https://github.com/TrevorDev))
 - Bounding Box fixedDragMeshScreenSize stopped working and allow rotating through bounding box ([TrevorDev](https://github.com/TrevorDev))
 - VR helper would rotate non vr camera while in VR ([TrevorDev](https://github.com/TrevorDev))
+- PointerDragBahavior using Mesh as base type, causing type-checking problems with AbstractMesh ([Poolminer](https://github.com/Poolminer/))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))

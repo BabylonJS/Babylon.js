@@ -1220,6 +1220,11 @@ import { Constants } from "Engine/constants";
         public _beforeCameraDrawStage = Stage.Create<CameraStageAction>();
         /**
          * @hidden
+         * Defines the actions happening just before a render target is drawing.
+         */
+        public _beforeRenderTargetDrawStage = Stage.Create<RenderTargetStageAction>();
+        /**
+         * @hidden
          * Defines the actions happening just before a rendering group is drawing.
          */
         public _beforeRenderingGroupDrawStage = Stage.Create<RenderingGroupStageAction>();
@@ -1243,6 +1248,11 @@ import { Constants } from "Engine/constants";
          * Defines the actions happening just after the active camera has been drawn.
          */
         public _afterCameraDrawStage = Stage.Create<CameraStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening just after a render target has been drawn.
+         */
+        public _afterRenderTargetDrawStage = Stage.Create<RenderTargetStageAction>();
         /**
          * @hidden
          * Defines the actions happening just after rendering all cameras and computing intersections.
@@ -1772,14 +1782,13 @@ import { Constants } from "Engine/constants";
                         this.onPointerObservable.notifyObservers(pi, type);
                     }
                 }
-                if (pickResult.pickedMesh.actionManager) {
-                    if (clickInfo.ignore) {
-                        pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                    }
-                    if (!clickInfo.hasSwiped && !clickInfo.ignore && clickInfo.singleClick) {
+                if (pickResult.pickedMesh.actionManager && !clickInfo.ignore) {
+                    pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+
+                    if (!clickInfo.hasSwiped && clickInfo.singleClick) {
                         pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                     }
-                    if (clickInfo.doubleClick && !clickInfo.ignore && pickResult.pickedMesh.actionManager.hasSpecificTrigger(ActionManager.OnDoublePickTrigger)) {
+                    if (clickInfo.doubleClick && pickResult.pickedMesh.actionManager.hasSpecificTrigger(ActionManager.OnDoublePickTrigger)) {
                         pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnDoublePickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                     }
                 }
@@ -3661,6 +3670,16 @@ import { Constants } from "Engine/constants";
             return null;
         }
 
+        private _getGeometryByUniqueID(id: number): Nullable<Geometry> {
+            for (var index = 0; index < this.geometries.length; index++) {
+                if (this.geometries[index].uniqueId === id) {
+                    return this.geometries[index];
+                }
+            }
+
+            return null;
+        }
+
         /**
          * Add a new geometry to this scene
          * @param geometry defines the geometry to be added to the scene.
@@ -3668,7 +3687,7 @@ import { Constants } from "Engine/constants";
          * @return a boolean defining if the geometry was added or not
          */
         public pushGeometry(geometry: Geometry, force?: boolean): boolean {
-            if (!force && this.getGeometryByID(geometry.id)) {
+            if (!force && this._getGeometryByUniqueID(geometry.uniqueId)) {
                 return false;
             }
 
@@ -4830,11 +4849,13 @@ import { Constants } from "Engine/constants";
             this._activeMeshStage.clear();
             this._cameraDrawRenderTargetStage.clear();
             this._beforeCameraDrawStage.clear();
+            this._beforeRenderTargetDrawStage.clear();
             this._beforeRenderingGroupDrawStage.clear();
             this._beforeRenderingMeshStage.clear();
             this._afterRenderingMeshStage.clear();
             this._afterRenderingGroupDrawStage.clear();
             this._afterCameraDrawStage.clear();
+            this._afterRenderTargetDrawStage.clear();
             this._afterRenderStage.clear();
             this._beforeCameraUpdateStage.clear();
             this._beforeClearStage.clear();
