@@ -35,8 +35,8 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
             <div className="pane">
                 <CommonCameraPropertyGridComponent camera={camera} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="TRANSFORMS">
-                    <SliderLineComponent label="Alpha" target={camera} propertyName="alpha" minimum={0} maximum={2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="Beta" target={camera} propertyName="beta" minimum={0} maximum={2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="Alpha" target={camera} propertyName="alpha" minimum={camera.lowerAlphaLimit || 0} maximum={camera.upperAlphaLimit || 2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="Beta" target={camera} propertyName="beta" minimum={camera.lowerAlphaLimit || 0} maximum={camera.upperBetaLimit || 2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent label="Radius" target={camera} propertyName="radius" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent title="CONTROLS" closed={true}>

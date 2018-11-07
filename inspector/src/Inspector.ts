@@ -14,6 +14,9 @@ interface IInternalInspectorOptions extends IInspectorOptions {
     explorerWidth?: string;
     inspectorWidth?: string;
     embedHostWidth?: string;
+    sceneExplorerRoot?: HTMLElement;
+    actionTabsRoot?: HTMLElement;
+    embedHostRoot?: HTMLElement;
 }
 
 export class Inspector {
@@ -104,6 +107,8 @@ export class Inspector {
                 noExpand: !options.enablePopup, popupMode: options.popup, onPopup: () => {
                     ReactDOM.unmountComponentAtNode(this._SceneExplorerHost!);
 
+                    this._RemoveElementFromDOM(this._SceneExplorerHost);
+
                     if (options.popup) {
                         this._SceneExplorerWindow.close();
                     }
@@ -117,9 +122,7 @@ export class Inspector {
                     ReactDOM.unmountComponentAtNode(this._SceneExplorerHost!);
                     Inspector._OpenedPane--;
 
-                    if (this._SceneExplorerHost && this._SceneExplorerHost.parentElement) {
-                        this._SceneExplorerHost.parentElement.removeChild(this._SceneExplorerHost);
-                    }
+                    this._RemoveElementFromDOM(this._SceneExplorerHost);
 
                     this._Cleanup();
 
@@ -166,6 +169,8 @@ export class Inspector {
                 globalState: this._GlobalState, scene: scene, noExpand: !options.enablePopup, popupMode: options.popup, onPopup: () => {
                     ReactDOM.unmountComponentAtNode(this._ActionTabsHost!);
 
+                    this._RemoveElementFromDOM(this._ActionTabsHost);
+
                     if (options.popup) {
                         this._ActionTabsWindow.close();
                     }
@@ -180,9 +185,7 @@ export class Inspector {
                     Inspector._OpenedPane--;
                     this._Cleanup();
 
-                    if (this._ActionTabsHost && this._ActionTabsHost.parentElement) {
-                        this._ActionTabsHost.parentElement.removeChild(this._ActionTabsHost);
-                    }
+                    this._RemoveElementFromDOM(this._ActionTabsHost);
 
                     if (options.popup) {
                         this._ActionTabsWindow.close();
@@ -230,6 +233,8 @@ export class Inspector {
                         this._EmbedHostWindow.close();
                     }
 
+                    this._RemoveElementFromDOM(this._EmbedHost);
+
                     options.popup = !options.popup;
                     options.embedMode = true;
                     options.showExplorer = true;
@@ -242,9 +247,7 @@ export class Inspector {
                     this._OpenedPane = 0;
                     this._Cleanup();
 
-                    if (this._EmbedHost && this._EmbedHost.parentElement) {
-                        this._EmbedHost.parentElement.removeChild(this._EmbedHost);
-                    }
+                    this._RemoveElementFromDOM(this._EmbedHost);
 
                     if (options.popup) {
                         this._EmbedHostWindow.close();
@@ -339,7 +342,7 @@ export class Inspector {
                 this._CreateEmbedHost(scene, options, this._CreatePopup("INSPECTOR", "_EmbedHostWindow"), Inspector.OnSelectionChangeObservable);
             }
             else {
-                let parentControl = (options.embedHostRoot ? options.embedHostRoot.parentElement : canvas!.parentElement) as HTMLElement;
+                let parentControl = (options.globalRoot ? options.globalRoot : canvas!.parentElement) as HTMLElement;
 
                 if (!options.overlay && !this._NewCanvasContainer) {
 
@@ -387,29 +390,11 @@ export class Inspector {
                 this._CreateActionTabs(scene, options, this._CreatePopup("INSPECTOR", "_ActionTabsWindow"));
             }
         } else {
-            let parentControl = (options.actionTabsRoot ? options.actionTabsRoot.parentElement : canvas!.parentElement) as HTMLElement;
+            let parentControl = (options.globalRoot ? options.globalRoot : canvas!.parentElement) as HTMLElement;
 
             if (!options.overlay && !this._NewCanvasContainer) {
 
-                // Create a container for previous elements
-                parentControl.style.display = "grid";
-                parentControl.style.gridTemplateColumns = "auto 1fr auto";
-                parentControl.style.gridTemplateRows = "100%";
-
-                this._NewCanvasContainer = parentControl.ownerDocument!.createElement("div");
-
-                while (parentControl.childElementCount > 0) {
-                    var child = parentControl.childNodes[0];
-                    parentControl.removeChild(child);
-                    this._NewCanvasContainer.appendChild(child);
-                }
-
-                parentControl.appendChild(this._NewCanvasContainer);
-
-                this._NewCanvasContainer.style.gridRow = "1";
-                this._NewCanvasContainer.style.gridColumn = "2";
-                this._NewCanvasContainer.style.width = "100%";
-                this._NewCanvasContainer.style.height = "100%";
+                this._CreateCanvasContainer(parentControl);
 
             } else if (!options.overlay && this._NewCanvasContainer && this._NewCanvasContainer.parentElement) {
                 // the root is now the parent of the canvas container
@@ -443,6 +428,28 @@ export class Inspector {
         }
     }
 
+    private static _CreateCanvasContainer(parentControl: HTMLElement) {
+        // Create a container for previous elements
+        parentControl.style.display = "grid";
+        parentControl.style.gridTemplateColumns = "auto 1fr auto";
+        parentControl.style.gridTemplateRows = "100%";
+
+        this._NewCanvasContainer = parentControl.ownerDocument!.createElement("div");
+
+        while (parentControl.childElementCount > 0) {
+            var child = parentControl.childNodes[0];
+            parentControl.removeChild(child);
+            this._NewCanvasContainer.appendChild(child);
+        }
+
+        parentControl.appendChild(this._NewCanvasContainer);
+
+        this._NewCanvasContainer.style.gridRow = "1";
+        this._NewCanvasContainer.style.gridColumn = "2";
+        this._NewCanvasContainer.style.width = "100%";
+        this._NewCanvasContainer.style.height = "100%";
+    }
+
     private static _Cleanup() {
         if (Inspector._OpenedPane === 0 && this._OnBeforeRenderObserver && this._Scene) {
             this._Scene.onBeforeRenderObservable.remove(this._OnBeforeRenderObserver);
@@ -452,13 +459,17 @@ export class Inspector {
         }
     }
 
+    private static _RemoveElementFromDOM(element: Nullable<HTMLElement>) {
+        if (element && element.parentElement) {
+            element.parentElement.removeChild(element);
+        }
+    }
+
     public static Hide() {
         if (this._ActionTabsHost) {
             ReactDOM.unmountComponentAtNode(this._ActionTabsHost);
 
-            if (this._ActionTabsHost.parentElement) {
-                this._ActionTabsHost.parentElement.removeChild(this._ActionTabsHost);
-            }
+            this._RemoveElementFromDOM(this._ActionTabsHost);
 
             this._ActionTabsHost = null;
         }

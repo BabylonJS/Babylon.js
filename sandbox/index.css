@@ -1,4 +1,4 @@
-﻿html, body {
+﻿html, body, #root {
     width: 100%;
     height: 100%;
     padding: 0;
@@ -12,18 +12,25 @@
     display: none;
 }
 
+#canvasZone {
+    display: block;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    width: 100%;
+    height: calc(100% - 56px);   
+}
+
 #renderCanvas {
     position: relative;
     overflow: hidden;
     width: 100%;
-    height: calc(100% - 56px);
-    top: 0;
+    height: 100%;
     margin: 0;
-    right: 0;
-    left: 0;
+    padding: 0;
     touch-action: none;
-    -ms-touch-action: none;    
-    margin-bottom: -4px
+    -ms-touch-action: none;  
+    display: block;
 }
 
 a {
@@ -39,17 +46,15 @@ a {
     position: relative;
     width: 100%;
     height: 56px;
-    bottom: 0;
     margin: 0;
     padding: 0;
-    right: 0;
-    left: 0;
     background-color: #3B789A;
+    font-size: 0;
 }
 
 .footerRight {
-    display: inline;
-    position: absolute;
+    display: block;
+    float: right;
     bottom: 0;
     right: 0px;
     top: 0px;
