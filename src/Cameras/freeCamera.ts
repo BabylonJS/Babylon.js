@@ -1,21 +1,14 @@
 import { Nullable } from "types";
 import { serializeAsVector3, serialize } from "Tools/decorators";
 import { Vector3, Vector2 } from "Math/math";
-import { Node } from "node";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { Collider } from "Collisions/collider";
 import { Scene } from "scene";
 import { Engine } from "Engine/engine";
 import { TargetCamera } from "./targetCamera";
-import { UniversalCamera } from "./universalCamera";
 import { FreeCameraInputsManager } from "./freeCameraInputsManager";
 import { FreeCameraMouseInput } from "Cameras/Inputs/freeCameraMouseInput";
 import { FreeCameraKeyboardMoveInput } from "Cameras/Inputs/freeCameraKeyboardMoveInput";
-
-    Node.AddNodeConstructor("FreeCamera", (name, scene) => {
-        // Forcing to use the Universal camera
-        return () => new UniversalCamera(name, Vector3.Zero(), scene);
-    });
 
     /**
      * This represents a free type of camera. It can be usefull in First Person Shooter game for instance.
