@@ -1,12 +1,15 @@
 import { Observable } from "Tools/observable";
 import { Vector2, Vector3, Color3, Color4 } from "Math/math";
-import { Scene } from "scene";
-import { Mesh } from "Mesh/mesh";
-import { Light } from "Lights/light";
-import { Camera } from "Cameras/camera";
-import { Node } from "node";
-import { ActionManager, ActionEvent } from "./actionManager";
 import { Condition } from "./condition";
+
+declare type Scene = import("scene").Scene;
+declare type ActionManager = import("./actionManager").ActionManager;
+declare type ActionEvent = import("./actionEvent").ActionEvent;
+declare type Mesh = import("Mesh/mesh").Mesh;
+declare type Light = import("Lights/light").Light;
+declare type Camera = import("Cameras/camera").Camera;
+declare type Node = import("node").Node;
+
     /**
      * The action to be carried out following a trigger
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#available-actions
@@ -236,11 +239,11 @@ import { Condition } from "./condition";
         public static _GetTargetProperty = (target: Scene | Node) => {
             return {
                 name: "target",
-                targetType: target instanceof Mesh ? "MeshProperties"
-                            : target instanceof Light ? "LightProperties"
-                            : target instanceof Camera ? "CameraProperties"
+                targetType: (<Mesh>target)._isMesh ? "MeshProperties"
+                            : (<Light>target)._isLight ? "LightProperties"
+                            : (<Camera>target)._isCamera ? "CameraProperties"
                             : "SceneProperties",
-                value: target instanceof Scene ? "Scene" : (<Node>target).name
+                value: (<Scene>target)._isScene ? "Scene" : (<Node>target).name
             };
         }
     }

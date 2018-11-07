@@ -7,7 +7,8 @@ import { Ray } from "Culling/ray";
 import { Camera } from "Cameras/camera";
 import { PickingInfo } from "Collisions/pickingInfo";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
-import { ActionManager, ActionEvent } from "Actions/actionManager";
+import { ActionEvent } from "Actions/actionEvent";
+import { Constants } from "Engine/constants";
 
 declare module "scene" {
     export interface Scene {
@@ -145,12 +146,12 @@ declare module "scene" {
         }
 
         if (this._pointerOverSprite && this._pointerOverSprite.actionManager) {
-            this._pointerOverSprite.actionManager.processTrigger(ActionManager.OnPointerOutTrigger, ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
+            this._pointerOverSprite.actionManager.processTrigger(Constants.ACTION_OnPointerOutTrigger, ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
         }
 
         this._pointerOverSprite = sprite;
         if (this._pointerOverSprite && this._pointerOverSprite.actionManager) {
-            this._pointerOverSprite.actionManager.processTrigger(ActionManager.OnPointerOverTrigger, ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
+            this._pointerOverSprite.actionManager.processTrigger(Constants.ACTION_OnPointerOverTrigger, ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
         }
     };
 
@@ -265,17 +266,17 @@ declare module "scene" {
                         scene._pickedDownSprite = pickResult.pickedSprite;
                         switch (evt.button) {
                             case 0:
-                                pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, scene, evt));
+                                pickResult.pickedSprite.actionManager.processTrigger(Constants.ACTION_OnLeftPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, scene, evt));
                                 break;
                             case 1:
-                                pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnCenterPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, scene, evt));
+                                pickResult.pickedSprite.actionManager.processTrigger(Constants.ACTION_OnCenterPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, scene, evt));
                                 break;
                             case 2:
-                                pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, scene, evt));
+                                pickResult.pickedSprite.actionManager.processTrigger(Constants.ACTION_OnRightPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, scene, evt));
                                 break;
                         }
                         if (pickResult.pickedSprite.actionManager) {
-                            pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickDownTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, scene, evt));
+                            pickResult.pickedSprite.actionManager.processTrigger(Constants.ACTION_OnPickDownTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, scene, evt));
                         }
                     }
                 }
@@ -292,16 +293,16 @@ declare module "scene" {
                 if (spritePickResult) {
                     if (spritePickResult.hit && spritePickResult.pickedSprite) {
                         if (spritePickResult.pickedSprite.actionManager) {
-                            spritePickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, scene, evt));
+                            spritePickResult.pickedSprite.actionManager.processTrigger(Constants.ACTION_OnPickUpTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, scene, evt));
                             if (spritePickResult.pickedSprite.actionManager) {
                                 if (!this.scene._isPointerSwiping()) {
-                                    spritePickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, scene, evt));
+                                    spritePickResult.pickedSprite.actionManager.processTrigger(Constants.ACTION_OnPickTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, scene, evt));
                                 }
                             }
                         }
                     }
                     if (scene._pickedDownSprite && scene._pickedDownSprite.actionManager && scene._pickedDownSprite !== spritePickResult.pickedSprite) {
-                        scene._pickedDownSprite.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNewFromSprite(scene._pickedDownSprite, scene, evt));
+                        scene._pickedDownSprite.actionManager.processTrigger(Constants.ACTION_OnPickOutTrigger, ActionEvent.CreateNewFromSprite(scene._pickedDownSprite, scene, evt));
                     }
                 }
             }

@@ -2,7 +2,7 @@ import { Nullable } from "types";
 import { Vector2 } from "Math/math";
 import { Camera } from "Cameras/camera";
 import { Effect } from "Materials/effect";
-import { Texture } from "Materials/Textures";
+import { Texture } from "Materials/Textures/texture";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { BlurPostProcess } from "./blurPostProcess";
 import { Engine } from "Engine/engine";

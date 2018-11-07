@@ -1,9 +1,10 @@
-import { Action } from "./action";
-import { Condition } from "./condition";
-import { ActionManager, ActionEvent } from "./actionManager";
-
 import { Tools } from "Tools/tools";
 import { Vector3 } from "Math/math";
+import { Action } from "./action";
+import { Condition } from "./condition";
+import { Constants } from "Engine/constants";
+
+declare type ActionEvent = import("./actionEvent").ActionEvent;
 
     /**
      * This defines an action responsible to toggle a boolean once triggered.
@@ -374,7 +375,7 @@ import { Vector3 } from "Math/math";
          * @param triggerOptions defines the trigger options
          * @param condition defines the trigger related conditions
          */
-        constructor(triggerOptions: any = ActionManager.NothingTrigger, condition?: Condition) {
+        constructor(triggerOptions: any = Constants.ACTION_NothingTrigger, condition?: Condition) {
             super(triggerOptions, condition);
         }
 
