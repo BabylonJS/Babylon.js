@@ -5,9 +5,13 @@ module BABYLON {
     export class Geometry implements IGetSetVerticesData {
         // Members
         /**
-         * Gets or sets the unique ID of the geometry
+         * Gets or sets the ID of the geometry
          */
         public id: string;
+        /**
+         * Gets or sets the unique ID of the geometry
+         */
+        public uniqueId: number;
         /**
          * Gets the delay loading state of the geometry (none by default which means not delayed)
          */
@@ -94,6 +98,7 @@ module BABYLON {
          */
         constructor(id: string, scene: Scene, vertexData?: VertexData, updatable: boolean = false, mesh: Nullable<Mesh> = null) {
             this.id = id;
+            this.uniqueId = scene.getUniqueId();
             this._engine = scene.getEngine();
             this._meshes = [];
             this._scene = scene;

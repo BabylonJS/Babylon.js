@@ -86,6 +86,11 @@ export class Control {
     /** @hidden */
     public _tag: any;
 
+    /**
+     * Gets or sets an object used to store user defined information for the node
+     */
+    public metadata: any = null;
+
     /** Gets or sets a boolean indicating if the control can be hit with pointer events */
     public isHitTestVisible = true;
     /** Gets or sets a boolean indicating if the control can block pointer events */
