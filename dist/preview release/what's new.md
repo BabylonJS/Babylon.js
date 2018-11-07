@@ -96,6 +96,7 @@
 - Add missing effect layer to asset container ([TrevorDev](https://github.com/TrevorDev))
 - Fixed effect layer compatibility with multi materials ([Sebavan](https://github.com/Sebavan))
 - Added a `DeepImmutable<T>` type to specifiy that a referenced object should be considered recursively immutable, meaning that all its properties are `readonly` and that if a property is a reference to an object, this object is also recursively immutable. ([barroij](https://github.com/barroij))
+- Fixed `VideoTexture` poster property when autoplay is turned off.
 
 ### Viewer
 
