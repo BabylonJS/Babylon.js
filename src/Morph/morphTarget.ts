@@ -7,7 +7,7 @@ import { AbstractMesh } from "Mesh/abstractMesh";
 import { VertexBuffer } from "Mesh/buffer";
 import { Animation } from "Animations/animation";
 import { AnimationPropertiesOverride } from "Animations/animationPropertiesOverride";
-import { serialize } from "Tools/decorators";
+import { serialize, SerializationHelper } from "Tools/decorators";
     /**
      * Defines a target to use with MorphTargetManager
      * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
@@ -195,7 +195,7 @@ import { serialize } from "Tools/decorators";
             }
 
             // Animations
-            Animation.AppendSerializedAnimations(this, serializationObject);
+            SerializationHelper.AppendSerializedAnimations(this, serializationObject);
 
             return serializationObject;
         }
