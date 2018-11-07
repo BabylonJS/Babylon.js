@@ -1,6 +1,3 @@
-import { Animatable } from "Animations/animatable";
-import { AnimationPropertiesOverride } from "Animations/animationPropertiesOverride";
-import { Animation, AnimationRange } from "Animations/animation";
 import { Scene } from "scene";
 import { Nullable } from "types";
 import { Matrix } from "Math/math";
@@ -8,6 +5,11 @@ import { Engine } from "Engine/engine";
 import { IBehaviorAware, Behavior } from "Behaviors/behavior";
 import { serialize } from "Tools/decorators";
 import { Observable, Observer } from "Tools/observable";
+
+declare type Animatable = import("Animations/animatable").Animatable;
+declare type AnimationPropertiesOverride = import("Animations/animationPropertiesOverride").AnimationPropertiesOverride;
+declare type Animation = import("Animations/animation").Animation;
+declare type AnimationRange = import("Animations/animation").AnimationRange;
 
 declare type AbstractMesh = import("Mesh/abstractMesh").AbstractMesh;
 
@@ -20,6 +22,11 @@ declare type AbstractMesh = import("Mesh/abstractMesh").AbstractMesh;
      * Node is the basic class for all scene objects (Mesh, Light, Camera.)
      */
     export class Node implements IBehaviorAware<Node> {
+        /** @hidden */
+        public static _AnimationRangeFactory = (name: string, from: number, to: number): AnimationRange => {
+            throw "AnimationRange needs to be imported from animation before being created.";
+        }
+
         private static _NodeConstructors: { [key: string]: any } = {};
 
         /**
@@ -597,7 +604,7 @@ declare type AbstractMesh = import("Mesh/abstractMesh").AbstractMesh;
         public createAnimationRange(name: string, from: number, to: number): void {
             // check name not already in use
             if (!this._ranges[name]) {
-                this._ranges[name] = new AnimationRange(name, from, to);
+                this._ranges[name] = Node._AnimationRangeFactory(name, from, to);
                 for (var i = 0, nAnimations = this.animations.length; i < nAnimations; i++) {
                     if (this.animations[i]) {
                         this.animations[i].createRange(name, from, to);

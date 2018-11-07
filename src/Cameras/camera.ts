@@ -1131,7 +1131,7 @@ declare type TargetCamera = import("./targetCamera").TargetCamera;
                 this.inputs.serialize(serializationObject);
             }
             // Animations
-            Animation.AppendSerializedAnimations(this, serializationObject);
+            SerializationHelper.AppendSerializedAnimations(this, serializationObject);
             serializationObject.ranges = this.serializeAnimationRanges();
 
             return serializationObject;
