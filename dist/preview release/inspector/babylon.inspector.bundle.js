@@ -8132,6 +8132,7 @@ var endsWith = function endsWith(str, searchStr) {
 };
 
 var getStringSize = function getStringSize(n) {
+  if (n.toString() === 'auto') return n.toString();
   if (endsWith(n.toString(), 'px')) return n.toString();
   if (endsWith(n.toString(), '%')) return n.toString();
   if (endsWith(n.toString(), 'vh')) return n.toString();
@@ -33951,7 +33952,11 @@ var ActionTabsComponent = /** @class */ (function (_super) {
             this._once = false;
             // A bit hacky but no other way to force the initial width to 300px and not auto
             setTimeout(function () {
-                document.getElementById("actionTabs").style.width = "300px";
+                var element = document.getElementById("actionTabs");
+                if (!element) {
+                    return;
+                }
+                element.style.width = "300px";
             }, 150);
         }
         return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"](re_resizable__WEBPACK_IMPORTED_MODULE_5__["default"], { id: "actionTabs", minWidth: 300, maxWidth: 600, size: { height: "100%" }, minHeight: "100%", enable: { top: false, right: false, bottom: false, left: true, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false } },
@@ -36357,19 +36362,39 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
             { label: "Clockwise", value: BABYLON.Material.ClockWiseSideOrientation },
             { label: "Counterclockwise", value: BABYLON.Material.CounterClockWiseSideOrientation }
         ];
-        return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "ID", value: material.id }),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Unique ID", value: material.uniqueId.toString() }),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Class", value: material.getClassName() }),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_1__["CheckBoxLineComponent"], { label: "Backface culling", target: material, propertyName: "backFaceCulling", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Orientation", options: orientationOptions, target: material, propertyName: "sideOrientation", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_1__["CheckBoxLineComponent"], { label: "Disable lighting", target: material, propertyName: "disableLighting", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_1__["CheckBoxLineComponent"], { label: "Disable depth write", target: material, propertyName: "disableDepthWrite", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_1__["CheckBoxLineComponent"], { label: "Need depth pre-pass", target: material, propertyName: "needDepthPrePass", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_1__["CheckBoxLineComponent"], { label: "Wireframe", target: material, propertyName: "wireframe", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_1__["CheckBoxLineComponent"], { label: "Point cloud", target: material, propertyName: "pointsCloud", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { label: "Point size", target: material, propertyName: "pointSize", minimum: 0, maximum: 100, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { label: "Z-offset", target: material, propertyName: "zOffset", minimum: -10, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+        var transparencyModeOptions = [
+            { label: "Opaque", value: BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE },
+            { label: "Alpha test", value: BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST },
+            { label: "Alpha blend", value: BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND },
+            { label: "Alpha blend and test", value: BABYLON.PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND },
+        ];
+        var alphaModeOptions = [
+            { label: "Combine", value: BABYLON.Engine.ALPHA_COMBINE },
+            { label: "One one", value: BABYLON.Engine.ALPHA_ONEONE },
+            { label: "Add", value: BABYLON.Engine.ALPHA_ADD },
+            { label: "Subtract", value: BABYLON.Engine.ALPHA_SUBTRACT },
+            { label: "Multiply", value: BABYLON.Engine.ALPHA_MULTIPLY },
+            { label: "Maximized", value: BABYLON.Engine.ALPHA_MAXIMIZED },
+            { label: "Pre-multiplied", value: BABYLON.Engine.ALPHA_PREMULTIPLIED },
+        ];
+        return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "ID", value: material.id }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Unique ID", value: material.uniqueId.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Class", value: material.getClassName() }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_1__["CheckBoxLineComponent"], { label: "Backface culling", target: material, propertyName: "backFaceCulling", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Orientation", options: orientationOptions, target: material, propertyName: "sideOrientation", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_1__["CheckBoxLineComponent"], { label: "Disable lighting", target: material, propertyName: "disableLighting", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_1__["CheckBoxLineComponent"], { label: "Disable depth write", target: material, propertyName: "disableDepthWrite", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_1__["CheckBoxLineComponent"], { label: "Need depth pre-pass", target: material, propertyName: "needDepthPrePass", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_1__["CheckBoxLineComponent"], { label: "Wireframe", target: material, propertyName: "wireframe", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_1__["CheckBoxLineComponent"], { label: "Point cloud", target: material, propertyName: "pointsCloud", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { label: "Point size", target: material, propertyName: "pointSize", minimum: 0, maximum: 100, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { label: "Z-offset", target: material, propertyName: "zOffset", minimum: -10, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "TRANSPARENCY" },
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { label: "Alpha", target: material, propertyName: "alpha", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Transparency mode", options: transparencyModeOptions, target: material, propertyName: "transparencyMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ transparencyMode: value }); } }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Alpha mode", options: alphaModeOptions, target: material, propertyName: "alphaMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ alphaMode: value }); } }))));
     };
     return CommonMaterialPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_0__["Component"]));
@@ -36492,8 +36517,7 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { label: "Albedo", target: material, propertyName: "albedoColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { label: "Reflectivity", target: material, propertyName: "reflectivityColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { label: "Emissive", target: material, propertyName: "emissiveColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { label: "Ambient", target: material, propertyName: "ambientColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Alpha", target: material, propertyName: "alpha", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { label: "Ambient", target: material, propertyName: "ambientColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             this.renderTextures(),
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_1__["LineContainerComponent"], { title: "LEVELS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Environment intensity", target: material, propertyName: "environmentIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -37406,7 +37430,11 @@ var EmbedHostComponent = /** @class */ (function (_super) {
             this._once = false;
             // A bit hacky but no other way to force the initial width to 300px and not auto
             setTimeout(function () {
-                document.getElementById("embed").style.width = "300px";
+                var element = document.getElementById("embed");
+                if (!element) {
+                    return;
+                }
+                element.style.width = "300px";
             }, 150);
         }
         return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"](re_resizable__WEBPACK_IMPORTED_MODULE_2__["default"], { id: "embed", minWidth: 300, maxWidth: 600, size: { height: "100%" }, minHeight: "100%", enable: { top: false, right: false, bottom: false, left: true, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false } },
@@ -37903,11 +37931,29 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
         }
         return true;
     };
+    SceneTreeItemComponent.prototype.componentWillMount = function () {
+        if (!this.props.onSelectionChangeObservable) {
+            return;
+        }
+        var scene = this.props.scene;
+        this._onSelectionChangeObserver = this.props.onSelectionChangeObservable.add(function (entity) {
+            if (scene.metadata && scene.metadata.gizmoManager) {
+                var manager = scene.metadata.gizmoManager;
+                var className = entity.getClassName();
+                if (className === "TransformNode" || className.indexOf("Mesh") !== -1) {
+                    manager.attachToMesh(entity);
+                }
+            }
+        });
+    };
     SceneTreeItemComponent.prototype.componentWillUnmount = function () {
         var scene = this.props.scene;
         if (this._onPointerObserver) {
             scene.onPointerObservable.remove(this._onPointerObserver);
             this._onPointerObserver = null;
+        }
+        if (this._onSelectionChangeObserver && this.props.onSelectionChangeObservable) {
+            this.props.onSelectionChangeObservable.remove(this._onSelectionChangeObserver);
         }
     };
     SceneTreeItemComponent.prototype.onSelect = function () {
@@ -37949,17 +37995,21 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
         manager.scaleGizmoEnabled = false;
         if (this.state.gizmoMode === mode) {
             mode = 0;
+            manager.dispose();
+            scene.metadata.gizmoManager = null;
         }
-        switch (mode) {
-            case 1:
-                manager.positionGizmoEnabled = true;
-                break;
-            case 2:
-                manager.rotationGizmoEnabled = true;
-                break;
-            case 3:
-                manager.scaleGizmoEnabled = true;
-                break;
+        else {
+            switch (mode) {
+                case 1:
+                    manager.positionGizmoEnabled = true;
+                    break;
+                case 2:
+                    manager.rotationGizmoEnabled = true;
+                    break;
+                case 3:
+                    manager.scaleGizmoEnabled = true;
+                    break;
+            }
         }
         this.setState({ gizmoMode: mode });
     };
@@ -38390,7 +38440,11 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
             this._once = false;
             // A bit hacky but no other way to force the initial width to 300px and not auto
             setTimeout(function () {
-                document.getElementById("sceneExplorer").style.width = "300px";
+                var element = document.getElementById("sceneExplorer");
+                if (!element) {
+                    return;
+                }
+                element.style.width = "300px";
             }, 150);
         }
         return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"](re_resizable__WEBPACK_IMPORTED_MODULE_2__["default"], { tabIndex: -1, id: "sceneExplorer", ref: "sceneExplorer", size: { height: "100%" }, minWidth: 300, maxWidth: 600, minHeight: "100%", enable: { top: false, right: true, bottom: false, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }, onKeyDown: function (keyEvent) { return _this.processKeys(keyEvent); } },
@@ -38941,28 +38995,25 @@ var Inspector = /** @class */ (function () {
                 explorerExtensibility: options.explorerExtensibility
             };
         }
-        if (!options.sceneExplorerRoot || options.popup) {
-            // Prepare the scene explorer host
-            if (parentControlExplorer) {
-                this._SceneExplorerHost = parentControlExplorer.ownerDocument.createElement("div");
-                this._SceneExplorerHost.id = "scene-explorer-host";
-                this._SceneExplorerHost.style.width = options.explorerWidth || "auto";
-                parentControlExplorer.appendChild(this._SceneExplorerHost);
-                if (!options.overlay) {
-                    this._SceneExplorerHost.style.gridColumn = "1";
-                    this._SceneExplorerHost.style.position = "relative";
-                    if (!options.popup) {
-                        options.sceneExplorerRoot = this._SceneExplorerHost;
-                    }
-                }
+        // Prepare the scene explorer host
+        if (parentControlExplorer) {
+            this._SceneExplorerHost = parentControlExplorer.ownerDocument.createElement("div");
+            this._SceneExplorerHost.id = "scene-explorer-host";
+            this._SceneExplorerHost.style.width = options.explorerWidth || "auto";
+            if (!options.popup) {
+                parentControlExplorer.insertBefore(this._SceneExplorerHost, this._NewCanvasContainer);
             }
-        }
-        else {
-            this._SceneExplorerHost = options.sceneExplorerRoot;
+            else {
+                parentControlExplorer.appendChild(this._SceneExplorerHost);
+            }
+            if (!options.overlay) {
+                this._SceneExplorerHost.style.gridColumn = "1";
+                this._SceneExplorerHost.style.position = "relative";
+            }
         }
         // Scene
         if (this._SceneExplorerHost) {
-            Inspector._OpenedPane++;
+            this._OpenedPane++;
             var sceneExplorerElement = react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_components_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_3__["SceneExplorerComponent"], {
                 scene: scene, globalState: this._GlobalState,
                 extensibilityGroups: options.explorerExtensibility,
@@ -38993,28 +39044,20 @@ var Inspector = /** @class */ (function () {
     Inspector._CreateActionTabs = function (scene, options, parentControlActions) {
         var _this = this;
         options.original = false;
-        if (!options.actionTabsRoot || options.popup) {
-            // Prepare the inspector host
-            if (parentControlActions) {
-                var host = parentControlActions.ownerDocument.createElement("div");
-                host.id = "inspector-host";
-                host.style.width = options.inspectorWidth || "auto";
-                parentControlActions.appendChild(host);
-                this._ActionTabsHost = host;
-                if (!options.overlay) {
-                    this._ActionTabsHost.style.gridColumn = "3";
-                    this._ActionTabsHost.style.position = "relative";
-                    if (!options.popup) {
-                        options.actionTabsRoot = this._ActionTabsHost;
-                    }
-                }
+        // Prepare the inspector host
+        if (parentControlActions) {
+            var host = parentControlActions.ownerDocument.createElement("div");
+            host.id = "inspector-host";
+            host.style.width = options.inspectorWidth || "auto";
+            parentControlActions.appendChild(host);
+            this._ActionTabsHost = host;
+            if (!options.overlay) {
+                this._ActionTabsHost.style.gridColumn = "3";
+                this._ActionTabsHost.style.position = "relative";
             }
         }
-        else {
-            this._ActionTabsHost = options.actionTabsRoot;
-        }
         if (this._ActionTabsHost) {
-            Inspector._OpenedPane++;
+            this._OpenedPane++;
             var actionTabsElement = react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_components_actionTabs_actionTabsComponent__WEBPACK_IMPORTED_MODULE_2__["ActionTabsComponent"], {
                 globalState: this._GlobalState, scene: scene, noExpand: !options.enablePopup, popupMode: options.popup, onPopup: function () {
                     react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](_this._ActionTabsHost);
@@ -39042,27 +39085,20 @@ var Inspector = /** @class */ (function () {
     };
     Inspector._CreateEmbedHost = function (scene, options, parentControl, onSelectionChangeObservable) {
         var _this = this;
-        if (!options.embedHostRoot || options.popup) {
-            // Prepare the inspector host
-            if (parentControl) {
-                var host = parentControl.ownerDocument.createElement("div");
-                host.id = "embed-host";
-                host.style.width = options.embedHostWidth || "300px";
-                parentControl.appendChild(host);
-                this._EmbedHost = host;
-                if (!options.overlay) {
-                    this._EmbedHost.style.gridColumn = "2";
-                    this._EmbedHost.style.position = "relative";
-                    if (!options.popup) {
-                        options.embedHostRoot = this._EmbedHost;
-                    }
-                }
+        // Prepare the inspector host
+        if (parentControl) {
+            var host = parentControl.ownerDocument.createElement("div");
+            host.id = "embed-host";
+            host.style.width = options.embedHostWidth || "300px";
+            parentControl.appendChild(host);
+            this._EmbedHost = host;
+            if (!options.overlay) {
+                this._EmbedHost.style.gridColumn = "2";
+                this._EmbedHost.style.position = "relative";
             }
         }
-        else {
-            this._EmbedHost = options.embedHostRoot;
-        }
         if (this._EmbedHost) {
+            this._OpenedPane++;
             var embedHostElement = react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_components_embedHost_embedHostComponent__WEBPACK_IMPORTED_MODULE_4__["EmbedHostComponent"], {
                 globalState: this._GlobalState, scene: scene, popupMode: options.popup, onPopup: function () {
                     react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](_this._EmbedHost);
@@ -39151,21 +39187,16 @@ var Inspector = /** @class */ (function () {
             else {
                 var parentControl = (options.globalRoot ? options.globalRoot : canvas.parentElement);
                 if (!options.overlay && !this._NewCanvasContainer) {
-                    // Create a container for previous elements
-                    parentControl.style.display = "grid";
+                    this._CreateCanvasContainer(parentControl);
                     parentControl.style.gridTemplateColumns = "1fr auto";
-                    parentControl.style.gridTemplateRows = "100%";
-                    this._NewCanvasContainer = parentControl.ownerDocument.createElement("div");
-                    while (parentControl.childElementCount > 0) {
-                        var child = parentControl.childNodes[0];
-                        parentControl.removeChild(child);
-                        this._NewCanvasContainer.appendChild(child);
-                    }
-                    parentControl.appendChild(this._NewCanvasContainer);
-                    this._NewCanvasContainer.style.gridRow = "1";
                     this._NewCanvasContainer.style.gridColumn = "1";
-                    this._NewCanvasContainer.style.width = "100%";
-                    this._NewCanvasContainer.style.height = "100%";
+                }
+                else if (!options.overlay && this._NewCanvasContainer && this._NewCanvasContainer.parentElement) {
+                    // the root is now the parent of the canvas container
+                    parentControl = this._NewCanvasContainer.parentElement;
+                }
+                if (this._NewCanvasContainer) {
+                    // If we move things around, let's control the resize
                     if (options.handleResize && scene) {
                         this._OnBeforeRenderObserver = scene.onBeforeRenderObservable.add(function () {
                             scene.getEngine().resize();
@@ -39207,15 +39238,9 @@ var Inspector = /** @class */ (function () {
                 }
             }
             if (options.showExplorer) {
-                if (options.sceneExplorerRoot && !options.overlay) {
-                    options.sceneExplorerRoot.style.width = "auto";
-                }
                 this._CreateSceneExplorer(scene, options, parentControl);
             }
             if (options.showInspector) {
-                if (options.actionTabsRoot && !options.overlay) {
-                    options.actionTabsRoot.style.width = "auto";
-                }
                 this._CreateActionTabs(scene, options, parentControl);
             }
         }

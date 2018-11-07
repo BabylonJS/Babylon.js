@@ -25,7 +25,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
         var modeOptions = [
             { label: "Perspective", value: BABYLON.Camera.PERSPECTIVE_CAMERA },
             { label: "Orthographic", value: BABYLON.Camera.ORTHOGRAPHIC_CAMERA }
-        ]
+        ];
 
         return (
             <LineContainerComponent title="GENERAL">

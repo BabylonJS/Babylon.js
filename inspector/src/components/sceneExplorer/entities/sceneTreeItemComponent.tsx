@@ -1,4 +1,4 @@
-import { Scene, Observable, PointerInfo, Observer, Nullable, IExplorerExtensibilityGroup, GizmoManager } from "babylonjs";
+import { Scene, Observable, PointerInfo, Observer, Nullable, GizmoManager, IExplorerExtensibilityGroup } from "babylonjs";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt } from '@fortawesome/free-solid-svg-icons';
 import { ExtensionsComponent } from "../extensionsComponent";
@@ -14,6 +14,7 @@ interface ISceneTreeItemComponentProps {
 
 export class SceneTreeItemComponent extends React.Component<ISceneTreeItemComponentProps, { isSelected: boolean, isInPickingMode: boolean, gizmoMode: number }> {
     private _onPointerObserver: Nullable<Observer<PointerInfo>>;
+    private _onSelectionChangeObserver: Nullable<Observer<any>>;
 
     constructor(props: ISceneTreeItemComponentProps) {
         super(props);
@@ -47,12 +48,35 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         return true;
     }
 
+    componentWillMount() {
+        if (!this.props.onSelectionChangeObservable) {
+            return;
+        }
+
+        const scene = this.props.scene;
+        this._onSelectionChangeObserver = this.props.onSelectionChangeObservable.add((entity) => {
+            if (scene.metadata && scene.metadata.gizmoManager) {
+                const manager: GizmoManager = scene.metadata.gizmoManager;
+
+                const className = entity.getClassName();
+
+                if (className === "TransformNode" || className.indexOf("Mesh") !== -1) {
+                    manager.attachToMesh(entity);
+                }
+            }
+        });
+    }
+
     componentWillUnmount() {
         const scene = this.props.scene;
 
         if (this._onPointerObserver) {
             scene.onPointerObservable.remove(this._onPointerObserver);
             this._onPointerObserver = null;
+        }
+
+        if (this._onSelectionChangeObserver && this.props.onSelectionChangeObservable) {
+            this.props.onSelectionChangeObservable.remove(this._onSelectionChangeObserver);
         }
     }
 
@@ -105,18 +129,20 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
 
         if (this.state.gizmoMode === mode) {
             mode = 0;
-        }
-
-        switch (mode) {
-            case 1:
-                manager.positionGizmoEnabled = true;
-                break;
-            case 2:
-                manager.rotationGizmoEnabled = true;
-                break;
-            case 3:
-                manager.scaleGizmoEnabled = true;
-                break;
+            manager.dispose();
+            scene.metadata.gizmoManager = null;
+        } else {
+            switch (mode) {
+                case 1:
+                    manager.positionGizmoEnabled = true;
+                    break;
+                case 2:
+                    manager.rotationGizmoEnabled = true;
+                    break;
+                case 3:
+                    manager.scaleGizmoEnabled = true;
+                    break;
+            }
         }
 
         this.setState({ gizmoMode: mode });

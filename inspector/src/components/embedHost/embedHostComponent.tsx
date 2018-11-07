@@ -76,7 +76,11 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
             this._once = false;
             // A bit hacky but no other way to force the initial width to 300px and not auto
             setTimeout(() => {
-                document.getElementById("embed")!.style.width = "300px";
+                const element = document.getElementById("embed");
+                if (!element) {
+                    return;
+                }
+                element.style.width = "300px";
             }, 150);
         }
 

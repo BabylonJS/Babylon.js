@@ -90,7 +90,11 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
             this._once = false;
             // A bit hacky but no other way to force the initial width to 300px and not auto
             setTimeout(() => {
-                document.getElementById("actionTabs")!.style.width = "300px";
+                const element = document.getElementById("actionTabs");
+                if (!element) {
+                    return;
+                }
+                element.style.width = "300px";
             }, 150);
         }
 
