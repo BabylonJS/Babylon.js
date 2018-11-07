@@ -117,7 +117,7 @@ module BABYLON {
             this.video.addEventListener(this._createInternalTextureOnEvent, this._createInternalTexture);
 
             const videoHasEnoughData = (this.video.readyState >= this.video.HAVE_CURRENT_DATA);
-            if (settings.poster && 
+            if (settings.poster &&
                 (!settings.autoPlay || !videoHasEnoughData)) {
                 this._texture = this._engine.createTexture(settings.poster!, false, true, scene);
                 this._displayingPosterTexture = true;
