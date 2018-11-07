@@ -10,16 +10,19 @@ interface IFloatLineComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
-export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: number }> {
+export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
     private _localChange = false;
+    private _store: number;
 
     constructor(props: IFloatLineComponentProps) {
         super(props);
 
-        this.state = { value: this.props.target[this.props.propertyName] }
+        let currentValue = this.props.target[this.props.propertyName];
+        this.state = { value: currentValue ? currentValue.toFixed(3) : "0" }
+        this._store = currentValue;
     }
 
-    shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: { value: number }) {
+    shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: { value: string }) {
         if (this._localChange) {
             this._localChange = false;
             return true;
@@ -27,7 +30,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
 
         const newValue = nextProps.target[nextProps.propertyName];
         if (newValue !== nextState.value) {
-            nextState.value = newValue;
+            nextState.value = newValue.toFixed(3);
             return true;
         }
         return false;
@@ -46,14 +49,23 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     updateValue(valueString: string) {
-        const value = parseFloat(valueString);
+
+        if (/[^0-9\.\-]/g.test(valueString)) {
+            return;
+        }
+
+        let valueAsNumber = parseFloat(valueString);
+
         this._localChange = true;
+        this.setState({ value: valueString });
 
-        const store = this.state.value;
-        this.props.target[this.props.propertyName] = value;
-        this.setState({ value: value });
+        if (isNaN(valueAsNumber)) {
+            return;
+        }
 
-        this.raiseOnPropertyChanged(value, store);
+        this.raiseOnPropertyChanged(valueAsNumber, this._store);
+
+        this._store = valueAsNumber;
     }
 
     render() {
@@ -65,7 +77,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                     {this.props.label}
                 </div>
                 <div className="value">
-                    <input className="numeric-input" value={this.state.value ? parseFloat(this.state.value.toFixed(3)) : 0} type="number" onChange={evt => this.updateValue(evt.target.value)} step={step} />
+                    <input className="numeric-input" value={this.state.value} onChange={evt => this.updateValue(evt.target.value)} step={step} />
                 </div>
             </div>
         );

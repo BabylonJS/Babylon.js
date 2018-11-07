@@ -1,13 +1,13 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory();
+		module.exports = factory(require("babylonjs"));
 	else if(typeof define === 'function' && define.amd)
-		define("babylonjs-inspector", [], factory);
+		define("babylonjs-inspector", ["babylonjs"], factory);
 	else if(typeof exports === 'object')
-		exports["babylonjs-inspector"] = factory();
+		exports["babylonjs-inspector"] = factory(require("babylonjs"));
 	else
-		root["INSPECTOR"] = factory();
-})(window, function() {
+		root["INSPECTOR"] = factory(root["BABYLON"]);
+})(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -6715,7 +6715,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "#inspector-host {\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  bottom: 0px; }\n\n#actionTabs {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\";\n  overflow: hidden; }\n  #actionTabs #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #actionTabs #header #logo {\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #actionTabs #header #back {\n      grid-column: 1;\n      display: grid;\n      align-self: center;\n      justify-self: center;\n      cursor: pointer; }\n    #actionTabs #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #actionTabs #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #actionTabs #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #actionTabs #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #actionTabs .tabs {\n    display: grid;\n    grid-row: 2;\n    grid-template-rows: 40px 1fr;\n    font: 14px \"Arial\";\n    overflow: hidden; }\n    #actionTabs .tabs .labels {\n      grid-row: 1;\n      display: flex;\n      align-items: center;\n      justify-items: center;\n      border-bottom: 1px solid #ffffff;\n      margin: 0;\n      padding: 0; }\n      #actionTabs .tabs .labels .label {\n        font-size: 24px;\n        color: white;\n        width: 40px;\n        display: flex;\n        align-content: center;\n        justify-content: center;\n        border: 1px solid transparent;\n        border-bottom: none;\n        background: #333333;\n        padding: 5px;\n        height: 28px;\n        cursor: pointer; }\n        #actionTabs .tabs .labels .label.active {\n          border-color: #ffffff;\n          border-bottom: 2px solid transparent;\n          margin-bottom: -2px; }\n    #actionTabs .tabs .panes {\n      grid-row: 2;\n      margin-bottom: 3px;\n      display: grid;\n      grid-template-rows: 1fr;\n      overflow: hidden; }\n      #actionTabs .tabs .panes .infoMessage {\n        opacity: 0.5;\n        color: white;\n        margin: 15px 5px 0px 5px; }\n      #actionTabs .tabs .panes .pane {\n        color: white;\n        overflow-x: hidden;\n        overflow-y: auto;\n        -webkit-user-select: none;\n        -moz-user-select: none;\n        -ms-user-select: none;\n        user-select: none; }\n        #actionTabs .tabs .panes .pane .textureLinkLine {\n          display: grid;\n          grid-template-columns: auto 1fr; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .debug {\n            grid-column: 1;\n            margin-left: 5px;\n            display: grid;\n            align-items: center;\n            justify-items: center;\n            cursor: pointer;\n            opacity: 0.5; }\n            #actionTabs .tabs .panes .pane .textureLinkLine .debug.selected {\n              opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .textLine {\n            grid-column: 2; }\n        #actionTabs .tabs .panes .pane .textLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .textLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textLine .link-value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 200px;\n            text-decoration: underline;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .textLine .value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 200px; }\n            #actionTabs .tabs .panes .pane .textLine .value.check {\n              color: green; }\n            #actionTabs .tabs .panes .pane .textLine .value.uncheck {\n              color: red; }\n        #actionTabs .tabs .panes .pane .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #actionTabs .tabs .panes .pane .buttonLine input[type=\"file\"] {\n            display: none; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload {\n            background: transparent;\n            border: 1px solid #337ab7;\n            margin: 0px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            cursor: pointer;\n            text-align: center; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:active {\n            transform: scale(0.98);\n            transform-origin: 0.5 0.5; }\n          #actionTabs .tabs .panes .pane .buttonLine button {\n            background: #222222;\n            border: 0px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            width: 100%;\n            height: 28px; }\n          #actionTabs .tabs .panes .pane .buttonLine button:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine button:active {\n            background: #282828; }\n          #actionTabs .tabs .panes .pane .buttonLine button:focus {\n            border: 0px;\n            outline: 0px; }\n        #actionTabs .tabs .panes .pane .radioLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 30px; }\n          #actionTabs .tabs .panes .pane .radioLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .radioLine .radioContainer {\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio {\n              grid-column: 2;\n              display: none; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:before {\n                border-color: #337ab7; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:after {\n                transform: scale(1); }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio {\n              display: inline-block;\n              height: 14px;\n              position: relative;\n              padding: 0 24px;\n              margin-bottom: 0;\n              cursor: pointer;\n              vertical-align: bottom; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before, #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                position: absolute;\n                content: '';\n                border-radius: 50%;\n                transition: all .3s ease;\n                transition-property: transform, border-color; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before {\n                left: 0px;\n                top: 0;\n                width: 16px;\n                height: 16px;\n                border: 2px solid white; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                top: 6px;\n                left: 6px;\n                width: 8px;\n                height: 8px;\n                transform: scale(0);\n                background: #337ab7; }\n        #actionTabs .tabs .panes .pane .vector3Line {\n          padding-left: 5px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .vector3Line .firstLine {\n            display: grid;\n            grid-template-columns: 1fr auto 20px;\n            height: 30px; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .vector {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              text-align: right;\n              opacity: 0.8; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .expand {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .vector3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .checkBoxLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .checkBox {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl {\n              position: relative;\n              display: block;\n              height: 14px;\n              width: 34px;\n              margin-right: 5px;\n              background: #898989;\n              border-radius: 100px;\n              cursor: pointer;\n              transition: all 0.3s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:after {\n              position: absolute;\n              left: 3px;\n              top: 2px;\n              display: block;\n              width: 10px;\n              height: 10px;\n              border-radius: 100px;\n              background: #fff;\n              box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n              content: '';\n              transition: all 0.15s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:active:after {\n              transform: scale(1.15, 0.85); }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label {\n              background: #337ab7; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label:after {\n              left: 20px;\n              background: #164975; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .hidden {\n              display: none; }\n        #actionTabs .tabs .panes .pane .textureLine {\n          display: grid;\n          grid-template-rows: 30px auto; }\n          #actionTabs .tabs .panes .pane .textureLine .control {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control .red {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control .green {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control .blue {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control .alpha {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control .all {\n              grid-column: 6; }\n          #actionTabs .tabs .panes .pane .textureLine .control3D {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .px {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nx {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .py {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .ny {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .pz {\n              grid-column: 6; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nz {\n              grid-column: 7; }\n          #actionTabs .tabs .panes .pane .textureLine .command {\n            border: 0px;\n            background: transparent;\n            color: white; }\n          #actionTabs .tabs .panes .pane .textureLine .selected {\n            border: 1px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .textureLine .preview {\n            grid-row: 2;\n            display: grid;\n            align-self: center;\n            justify-self: center;\n            height: 256px;\n            width: 256px;\n            margin-top: 5px;\n            margin-bottom: 5px; }\n        #actionTabs .tabs .panes .pane .floatLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .floatLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .floatLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .floatLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .sliderLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .sliderLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .sliderLine .slider {\n            grid-column: 2;\n            margin-right: 5px;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range {\n              -webkit-appearance: none;\n              width: 120px;\n              height: 6px;\n              background: #d3d3d3;\n              border-radius: 5px;\n              outline: none;\n              opacity: 0.7;\n              -webkit-transition: .2s;\n              transition: opacity .2s; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range:hover {\n              opacity: 1; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-webkit-slider-thumb {\n              -webkit-appearance: none;\n              appearance: none;\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-moz-range-thumb {\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n        #actionTabs .tabs .panes .pane .color3Line {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .color3Line .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .color3Line .color3 {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .color3Line .color3 input[type=\"color\"] {\n              -webkit-appearance: none;\n              border: none;\n              padding: 0;\n              width: 20px;\n              height: 20px; }\n            #actionTabs .tabs .panes .pane .color3Line .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n              padding: 0; }\n            #actionTabs .tabs .panes .pane .color3Line .color3 input[type=\"color\"]::-webkit-color-swatch {\n              border: none; }\n            #actionTabs .tabs .panes .pane .color3Line .color3 input {\n              margin-right: 5px; }\n        #actionTabs .tabs .panes .pane .listLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .listLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .listLine .options {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            margin-right: 5px; }\n        #actionTabs .tabs .panes .pane .paneContainer {\n          margin-top: 3px; }\n          #actionTabs .tabs .panes .pane .paneContainer .header {\n            display: grid;\n            grid-template-columns: 1fr auto;\n            background: #555555;\n            height: 30px;\n            padding-right: 5px; }\n            #actionTabs .tabs .panes .pane .paneContainer .header .title {\n              margin-left: 5px;\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .paneContainer .header .collapse {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer;\n              transform-origin: center; }\n              #actionTabs .tabs .panes .pane .paneContainer .header .collapse.closed {\n                transform: rotate(180deg); }\n          #actionTabs .tabs .panes .pane .paneContainer .paneList > div:not(:last-child) {\n            border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
+exports.push([module.i, "#inspector-host {\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  bottom: 0px; }\n\n#actionTabs {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\";\n  overflow: hidden; }\n  #actionTabs #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #actionTabs #header #logo {\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #actionTabs #header #back {\n      grid-column: 1;\n      display: grid;\n      align-self: center;\n      justify-self: center;\n      cursor: pointer; }\n    #actionTabs #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #actionTabs #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #actionTabs #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #actionTabs #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #actionTabs .tabs {\n    display: grid;\n    grid-row: 2;\n    grid-template-rows: 40px 1fr;\n    font: 14px \"Arial\";\n    overflow: hidden; }\n    #actionTabs .tabs .labels {\n      grid-row: 1;\n      display: flex;\n      align-items: center;\n      justify-items: center;\n      border-bottom: 1px solid #ffffff;\n      margin: 0;\n      padding: 0; }\n      #actionTabs .tabs .labels .label {\n        font-size: 24px;\n        color: white;\n        width: 40px;\n        display: flex;\n        align-content: center;\n        justify-content: center;\n        border: 1px solid transparent;\n        border-bottom: none;\n        background: #333333;\n        padding: 5px;\n        height: 28px;\n        cursor: pointer; }\n        #actionTabs .tabs .labels .label.active {\n          border-color: #ffffff;\n          border-bottom: 2px solid transparent;\n          margin-bottom: -2px; }\n    #actionTabs .tabs .panes {\n      grid-row: 2;\n      display: grid;\n      grid-template-rows: 1fr;\n      overflow: hidden; }\n      #actionTabs .tabs .panes .infoMessage {\n        opacity: 0.5;\n        color: white;\n        margin: 15px 5px 0px 5px; }\n      #actionTabs .tabs .panes .pane {\n        color: white;\n        overflow-x: hidden;\n        overflow-y: auto;\n        -webkit-user-select: none;\n        -moz-user-select: none;\n        -ms-user-select: none;\n        user-select: none; }\n        #actionTabs .tabs .panes .pane .textureLinkLine {\n          display: grid;\n          grid-template-columns: auto 1fr; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .debug {\n            grid-column: 1;\n            margin-left: 5px;\n            display: grid;\n            align-items: center;\n            justify-items: center;\n            cursor: pointer;\n            opacity: 0.5; }\n            #actionTabs .tabs .panes .pane .textureLinkLine .debug.selected {\n              opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .textLine {\n            grid-column: 2; }\n        #actionTabs .tabs .panes .pane .textLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .textLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textLine .link-value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 200px;\n            text-decoration: underline;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .textLine .value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 200px; }\n            #actionTabs .tabs .panes .pane .textLine .value.check {\n              color: green; }\n            #actionTabs .tabs .panes .pane .textLine .value.uncheck {\n              color: red; }\n        #actionTabs .tabs .panes .pane .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #actionTabs .tabs .panes .pane .buttonLine input[type=\"file\"] {\n            display: none; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload {\n            background: transparent;\n            border: 1px solid #337ab7;\n            margin: 0px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            cursor: pointer;\n            text-align: center; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:active {\n            transform: scale(0.98);\n            transform-origin: 0.5 0.5; }\n          #actionTabs .tabs .panes .pane .buttonLine button {\n            background: #222222;\n            border: 0px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            width: 100%;\n            height: 28px; }\n          #actionTabs .tabs .panes .pane .buttonLine button:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine button:active {\n            background: #282828; }\n          #actionTabs .tabs .panes .pane .buttonLine button:focus {\n            border: 0px;\n            outline: 0px; }\n        #actionTabs .tabs .panes .pane .radioLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 30px; }\n          #actionTabs .tabs .panes .pane .radioLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .radioLine .radioContainer {\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio {\n              grid-column: 2;\n              display: none; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:before {\n                border-color: #337ab7; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:after {\n                transform: scale(1); }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio {\n              display: inline-block;\n              height: 14px;\n              position: relative;\n              padding: 0 24px;\n              margin-bottom: 0;\n              cursor: pointer;\n              vertical-align: bottom; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before, #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                position: absolute;\n                content: '';\n                border-radius: 50%;\n                transition: all .3s ease;\n                transition-property: transform, border-color; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before {\n                left: 0px;\n                top: 0;\n                width: 16px;\n                height: 16px;\n                border: 2px solid white; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                top: 6px;\n                left: 6px;\n                width: 8px;\n                height: 8px;\n                transform: scale(0);\n                background: #337ab7; }\n        #actionTabs .tabs .panes .pane .vector3Line {\n          padding-left: 5px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .vector3Line .firstLine {\n            display: grid;\n            grid-template-columns: 1fr auto 20px;\n            height: 30px; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .vector {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              text-align: right;\n              opacity: 0.8; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .expand {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .vector3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .checkBoxLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .checkBox {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl {\n              position: relative;\n              display: block;\n              height: 14px;\n              width: 34px;\n              margin-right: 5px;\n              background: #898989;\n              border-radius: 100px;\n              cursor: pointer;\n              transition: all 0.3s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:after {\n              position: absolute;\n              left: 3px;\n              top: 2px;\n              display: block;\n              width: 10px;\n              height: 10px;\n              border-radius: 100px;\n              background: #fff;\n              box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n              content: '';\n              transition: all 0.15s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:active:after {\n              transform: scale(1.15, 0.85); }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label {\n              background: #337ab7; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label:after {\n              left: 20px;\n              background: #164975; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .hidden {\n              display: none; }\n        #actionTabs .tabs .panes .pane .textureLine {\n          display: grid;\n          grid-template-rows: 30px auto; }\n          #actionTabs .tabs .panes .pane .textureLine .control {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control .red {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control .green {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control .blue {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control .alpha {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control .all {\n              grid-column: 6; }\n          #actionTabs .tabs .panes .pane .textureLine .control3D {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .px {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nx {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .py {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .ny {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .pz {\n              grid-column: 6; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nz {\n              grid-column: 7; }\n          #actionTabs .tabs .panes .pane .textureLine .command {\n            border: 0px;\n            background: transparent;\n            color: white; }\n          #actionTabs .tabs .panes .pane .textureLine .selected {\n            border: 1px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .textureLine .preview {\n            grid-row: 2;\n            display: grid;\n            align-self: center;\n            justify-self: center;\n            height: 256px;\n            width: 256px;\n            margin-top: 5px;\n            margin-bottom: 5px; }\n        #actionTabs .tabs .panes .pane .floatLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .floatLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .floatLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .floatLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .sliderLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .sliderLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .sliderLine .slider {\n            grid-column: 2;\n            margin-right: 5px;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range {\n              -webkit-appearance: none;\n              width: 120px;\n              height: 6px;\n              background: #d3d3d3;\n              border-radius: 5px;\n              outline: none;\n              opacity: 0.7;\n              -webkit-transition: .2s;\n              transition: opacity .2s; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range:hover {\n              opacity: 1; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-webkit-slider-thumb {\n              -webkit-appearance: none;\n              appearance: none;\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-moz-range-thumb {\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n        #actionTabs .tabs .panes .pane .color3Line {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .color3Line .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .color3Line .color3 {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .color3Line .color3 input[type=\"color\"] {\n              -webkit-appearance: none;\n              border: none;\n              padding: 0;\n              width: 20px;\n              height: 20px; }\n            #actionTabs .tabs .panes .pane .color3Line .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n              padding: 0; }\n            #actionTabs .tabs .panes .pane .color3Line .color3 input[type=\"color\"]::-webkit-color-swatch {\n              border: none; }\n            #actionTabs .tabs .panes .pane .color3Line .color3 input {\n              margin-right: 5px; }\n        #actionTabs .tabs .panes .pane .listLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .listLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .listLine .options {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            margin-right: 5px; }\n        #actionTabs .tabs .panes .pane .paneContainer {\n          margin-top: 3px; }\n          #actionTabs .tabs .panes .pane .paneContainer .header {\n            display: grid;\n            grid-template-columns: 1fr auto;\n            background: #555555;\n            height: 30px;\n            padding-right: 5px; }\n            #actionTabs .tabs .panes .pane .paneContainer .header .title {\n              margin-left: 5px;\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .paneContainer .header .collapse {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer;\n              transform-origin: center; }\n              #actionTabs .tabs .panes .pane .paneContainer .header .collapse.closed {\n                transform: rotate(180deg); }\n          #actionTabs .tabs .panes .pane .paneContainer .paneList > div:not(:last-child) {\n            border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
 
 // exports
 
@@ -27013,7 +27013,7 @@ if (false) {} else {
 /***/ (function(module, exports, __webpack_require__) {
 
 (function (global, factory) {
-     true ? module.exports = factory(__webpack_require__(/*! react */ "./node_modules/react-split/node_modules/react/react.js"), __webpack_require__(/*! split.js */ "./node_modules/split.js/split.js")) :
+     true ? module.exports = factory(__webpack_require__(/*! react */ "./node_modules/react-split/node_modules/react/react.js"), __webpack_require__(/*! split.js */ "./node_modules/split.js/dist/split.js")) :
     undefined;
 }(this, (function (React,Split) { 'use strict';
 
@@ -32533,14 +32533,14 @@ if (false) {} else {
 
 /***/ }),
 
-/***/ "./node_modules/split.js/split.js":
-/*!****************************************!*\
-  !*** ./node_modules/split.js/split.js ***!
-  \****************************************/
+/***/ "./node_modules/split.js/dist/split.js":
+/*!*********************************************!*\
+  !*** ./node_modules/split.js/dist/split.js ***!
+  \*********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/*! Split.js - v1.5.7 */
+/*! Split.js - v1.5.9 */
 
 (function (global, factory) {
      true ? module.exports = factory() :
@@ -32574,15 +32574,17 @@ if (false) {} else {
     //
     // Tests -webkit, -moz and -o prefixes. Modified from StackOverflow:
     // http://stackoverflow.com/questions/16625140/js-feature-detection-to-detect-the-usage-of-webkit-calc-over-calc/16625167#16625167
-    var calc = (['', '-webkit-', '-moz-', '-o-'].filter(function (prefix) {
-        var el = document.createElement('div');
-        el.style.cssText = "width:" + prefix + "calc(9px)";
+    var calc = (['', '-webkit-', '-moz-', '-o-']
+        .filter(function (prefix) {
+            var el = document.createElement('div');
+            el.style.cssText = "width:" + prefix + "calc(9px)";
 
-        return (!!el.style.length)
-    }).shift()) + "calc";
+            return !!el.style.length
+        })
+        .shift()) + "calc";
 
     // Helper function checks if its argument is a string-like type
-    var isString = function (v) { return (typeof v === 'string' || v instanceof String); };
+    var isString = function (v) { return typeof v === 'string' || v instanceof String; };
 
     // Helper function allows elements and string selectors to be used
     // interchangeably. In either case an element is returned. This allows us to
@@ -32612,13 +32614,15 @@ if (false) {} else {
         if (isFirst) {
             if (gutterAlign === 'end') {
                 return 0
-            } else if (gutterAlign === 'center') {
+            }
+            if (gutterAlign === 'center') {
                 return gutterSize / 2
             }
         } else if (isLast) {
             if (gutterAlign === 'start') {
                 return 0
-            } else if (gutterAlign === 'center') {
+            }
+            if (gutterAlign === 'center') {
                 return gutterSize / 2
             }
         }
@@ -32703,7 +32707,9 @@ if (false) {} else {
         // behavior will be whacky otherwise.
         var firstElement = elementOrSelector(ids[0]);
         var parent = firstElement.parentNode;
-        var parentFlexDirection = getComputedStyle ? getComputedStyle(parent).flexDirection : null;
+        var parentFlexDirection = getComputedStyle
+            ? getComputedStyle(parent).flexDirection
+            : null;
 
         // Set default options.sizes to equal percentages of the parent element.
         var sizes = getOption(options, 'sizes') || ids.map(function () { return 100 / ids.length; });
@@ -32720,9 +32726,17 @@ if (false) {} else {
         var snapOffset = getOption(options, 'snapOffset', 30);
         var dragInterval = getOption(options, 'dragInterval', 1);
         var direction = getOption(options, 'direction', HORIZONTAL);
-        var cursor = getOption(options, 'cursor', direction === HORIZONTAL ? 'col-resize' : 'row-resize');
+        var cursor = getOption(
+            options,
+            'cursor',
+            direction === HORIZONTAL ? 'col-resize' : 'row-resize'
+        );
         var gutter = getOption(options, 'gutter', defaultGutterFn);
-        var elementStyle = getOption(options, 'elementStyle', defaultElementStyleFn);
+        var elementStyle = getOption(
+            options,
+            'elementStyle',
+            defaultElementStyleFn
+        );
         var gutterStyle = getOption(options, 'gutterStyle', defaultGutterStyleFn);
 
         // 2. Initialize a bunch of strings based on the direction we're splitting.
@@ -32753,35 +32767,35 @@ if (false) {} else {
         // The pair object saves metadata like dragging state, position and
         // event listener references.
 
-        function setElementSize (el, size, gutSize, i) {
+        function setElementSize(el, size, gutSize, i) {
             // Split.js allows setting sizes via numbers (ideally), or if you must,
             // by string, like '300px'. This is less than ideal, because it breaks
             // the fluid layout that `calc(% - px)` provides. You're on your own if you do that,
             // make sure you calculate the gutter size by hand.
             var style = elementStyle(dimension, size, gutSize, i);
 
-            // eslint-disable-next-line no-param-reassign
             Object.keys(style).forEach(function (prop) {
+                // eslint-disable-next-line no-param-reassign
                 el.style[prop] = style[prop];
             });
         }
 
-        function setGutterSize (gutterElement, gutSize, i) {
+        function setGutterSize(gutterElement, gutSize, i) {
             var style = gutterStyle(dimension, gutSize, i);
 
-            // eslint-disable-next-line no-param-reassign
             Object.keys(style).forEach(function (prop) {
+                // eslint-disable-next-line no-param-reassign
                 gutterElement.style[prop] = style[prop];
             });
         }
 
-        function getSizes () {
+        function getSizes() {
             return elements.map(function (element) { return element.size; })
         }
 
         // Supports touch events, but not multitouch, so only the first
         // finger `touches[0]` is counted.
-        function getMousePosition (e) {
+        function getMousePosition(e) {
             if ('touches' in e) { return e.touches[0][clientAxis] }
             return e[clientAxis]
         }
@@ -32792,13 +32806,13 @@ if (false) {} else {
         // Element a's size is the same as offset. b's size is total size - a size.
         // Both sizes are calculated from the initial parent percentage,
         // then the gutter size is subtracted.
-        function adjust (offset) {
+        function adjust(offset) {
             var a = elements[this.a];
             var b = elements[this.b];
             var percentage = a.size + b.size;
 
             a.size = (offset / this.size) * percentage;
-            b.size = (percentage - ((offset / this.size) * percentage));
+            b.size = percentage - (offset / this.size) * percentage;
 
             setElementSize(a.element, a.size, this[aGutterSize], a.i);
             setElementSize(b.element, b.size, this[bGutterSize], b.i);
@@ -32818,7 +32832,7 @@ if (false) {} else {
         // |    |  |                         ||                        |  |    |
         // ---------------------------------------------------------------------
         // | <- this.start                                        this.size -> |
-        function drag (e) {
+        function drag(e) {
             var offset;
             var a = elements[this.a];
             var b = elements[this.b];
@@ -32828,7 +32842,10 @@ if (false) {} else {
             // Get the offset of the event from the first side of the
             // pair `this.start`. Then offset by the initial position of the
             // mouse compared to the gutter size.
-            offset = (getMousePosition(e) - this.start) + (this[aGutterSize] - this.dragOffset);
+            offset =
+                getMousePosition(e) -
+                this.start +
+                (this[aGutterSize] - this.dragOffset);
 
             if (dragInterval > 1) {
                 offset = Math.round(offset / dragInterval) * dragInterval;
@@ -32839,7 +32856,10 @@ if (false) {} else {
             // Include the appropriate gutter sizes to prevent overflows.
             if (offset <= a.minSize + snapOffset + this[aGutterSize]) {
                 offset = a.minSize + this[aGutterSize];
-            } else if (offset >= this.size - (b.minSize + snapOffset + this[bGutterSize])) {
+            } else if (
+                offset >=
+                this.size - (b.minSize + snapOffset + this[bGutterSize])
+            ) {
                 offset = this.size - (b.minSize + this[bGutterSize]);
             }
 
@@ -32864,7 +32884,7 @@ if (false) {} else {
         // |                     ||| <- bGutterSize       |
         // ------------------------------------------------
         // | <- start                             size -> |
-        function calculateSizes () {
+        function calculateSizes() {
             // Figure out the parent size minus padding.
             var a = elements[this.a].element;
             var b = elements[this.b].element;
@@ -32872,22 +32892,33 @@ if (false) {} else {
             var aBounds = a[getBoundingClientRect]();
             var bBounds = b[getBoundingClientRect]();
 
-            this.size = aBounds[dimension] + bBounds[dimension] + this[aGutterSize] + this[bGutterSize];
+            this.size =
+                aBounds[dimension] +
+                bBounds[dimension] +
+                this[aGutterSize] +
+                this[bGutterSize];
             this.start = aBounds[position];
             this.end = aBounds[positionEnd];
         }
 
-        function innerSize (element) {
+        function innerSize(element) {
             // Return nothing if getComputedStyle is not supported (< IE9)
+            // Or if parent element has no layout yet
             if (!getComputedStyle) { return null }
 
             var computedStyle = getComputedStyle(element);
             var size = element[clientSize];
 
+            if (size === 0) { return null }
+
             if (direction === HORIZONTAL) {
-                size -= parseFloat(computedStyle.paddingLeft) + parseFloat(computedStyle.paddingRight);
+                size -=
+                    parseFloat(computedStyle.paddingLeft) +
+                    parseFloat(computedStyle.paddingRight);
             } else {
-                size -= parseFloat(computedStyle.paddingTop) + parseFloat(computedStyle.paddingBottom);
+                size -=
+                    parseFloat(computedStyle.paddingTop) +
+                    parseFloat(computedStyle.paddingBottom);
             }
 
             return size
@@ -32897,7 +32928,7 @@ if (false) {} else {
         // size of the element minus the gutter, the lesser percentages must be increased
         // (and decreased from the other elements) to make space for the pixels
         // subtracted by the gutters.
-        function trimToMin (sizesToTrim) {
+        function trimToMin(sizesToTrim) {
             // Try to get inner size of parent element.
             // If it's no supported, return original sizes.
             var parentSize = innerSize(parent);
@@ -32924,7 +32955,7 @@ if (false) {} else {
                 // If element is too smal, increase excess pixels by the difference
                 // and mark that it has no pixels to spare
                 if (pixelSize < elementMinSize) {
-                    excessPixels += (elementMinSize - pixelSize);
+                    excessPixels += elementMinSize - pixelSize;
                     toSpare.push(0);
                     return elementMinSize
                 }
@@ -32944,8 +32975,11 @@ if (false) {} else {
 
                 // While there's still pixels to take, and there's enough pixels to spare,
                 // take as many as possible up to the total excess pixels
-                if ((excessPixels > 0) && (toSpare[i] - excessPixels) > 0) {
-                    var takenPixels = Math.min(excessPixels, (toSpare[i] - excessPixels));
+                if (excessPixels > 0 && toSpare[i] - excessPixels > 0) {
+                    var takenPixels = Math.min(
+                        excessPixels,
+                        toSpare[i] - excessPixels
+                    );
 
                     // Subtract the amount taken for the next iteration
                     excessPixels -= takenPixels;
@@ -32958,7 +32992,7 @@ if (false) {} else {
         }
 
         // stopDragging is very similar to startDragging in reverse.
-        function stopDragging () {
+        function stopDragging() {
             var self = this;
             var a = elements[self.a].element;
             var b = elements[self.b].element;
@@ -33003,7 +33037,7 @@ if (false) {} else {
         // startDragging calls `calculateSizes` to store the inital size in the pair object.
         // It also adds event listeners for mouse/touch events,
         // and prevents selection while dragging so avoid the selecting text.
-        function startDragging (e) {
+        function startDragging(e) {
             // Right-clicking can't start dragging.
             if ('button' in e && e.button !== 0) {
                 return
@@ -33110,11 +33144,24 @@ if (false) {} else {
                     parent: parent,
                 };
 
-                pair[aGutterSize] = getGutterSize(gutterSize, i - 1 === 0, false, gutterAlign);
-                pair[bGutterSize] = getGutterSize(gutterSize, false, i === ids.length - 1, gutterAlign);
+                pair[aGutterSize] = getGutterSize(
+                    gutterSize,
+                    i - 1 === 0,
+                    false,
+                    gutterAlign
+                );
+                pair[bGutterSize] = getGutterSize(
+                    gutterSize,
+                    false,
+                    i === ids.length - 1,
+                    gutterAlign
+                );
 
                 // if the parent has a reverse flex-direction, switch the pair elements.
-                if (parentFlexDirection === 'row-reverse' || parentFlexDirection === 'column-reverse') {
+                if (
+                    parentFlexDirection === 'row-reverse' ||
+                    parentFlexDirection === 'column-reverse'
+                ) {
                     var temp = pair.a;
                     pair.a = pair.b;
                     pair.b = temp;
@@ -33136,8 +33183,14 @@ if (false) {} else {
                     pair[gutterStartDragging] = startDragging.bind(pair);
 
                     // Attach bound event listener
-                    gutterElement[addEventListener]('mousedown', pair[gutterStartDragging]);
-                    gutterElement[addEventListener]('touchstart', pair[gutterStartDragging]);
+                    gutterElement[addEventListener](
+                        'mousedown',
+                        pair[gutterStartDragging]
+                    );
+                    gutterElement[addEventListener](
+                        'touchstart',
+                        pair[gutterStartDragging]
+                    );
 
                     parent.insertBefore(gutterElement, element.element);
 
@@ -33148,7 +33201,12 @@ if (false) {} else {
             setElementSize(
                 element.element,
                 element.size,
-                getGutterSize(gutterSize, i === 0, i === ids.length - 1, gutterAlign)
+                getGutterSize(
+                    gutterSize,
+                    i === 0,
+                    i === ids.length - 1,
+                    gutterAlign
+                )
             );
 
             // After the first iteration, and we have a pair object, append it to the
@@ -33160,13 +33218,15 @@ if (false) {} else {
             return element
         });
 
-        function adjustToMin (element) {
-            var isLast = (element.i === pairs.length);
+        function adjustToMin(element) {
+            var isLast = element.i === pairs.length;
             var pair = isLast ? pairs[element.i - 1] : pairs[element.i];
 
             calculateSizes.call(pair);
 
-            var size = isLast ? (pair.size - element.minSize - pair[bGutterSize]) : element.minSize + pair[aGutterSize];
+            var size = isLast
+                ? pair.size - element.minSize - pair[bGutterSize]
+                : element.minSize + pair[aGutterSize];
 
             adjust.call(pair, size);
         }
@@ -33178,12 +33238,13 @@ if (false) {} else {
                 if (expandToMin) {
                     adjustToMin(element);
                 } else {
+                    // eslint-disable-next-line no-param-reassign
                     element.minSize = computedSize;
                 }
             }
         });
 
-        function setSizes (newSizes) {
+        function setSizes(newSizes) {
             var trimmed = trimToMin(newSizes);
             trimmed.forEach(function (newSize, i) {
                 if (i > 0) {
@@ -33201,17 +33262,27 @@ if (false) {} else {
             });
         }
 
-        function destroy (preserveStyles, preserveGutter) {
+        function destroy(preserveStyles, preserveGutter) {
             pairs.forEach(function (pair) {
                 if (preserveGutter !== true) {
                     pair.parent.removeChild(pair.gutter);
                 } else {
-                    pair.gutter[removeEventListener]('mousedown', pair[gutterStartDragging]);
-                    pair.gutter[removeEventListener]('touchstart', pair[gutterStartDragging]);
+                    pair.gutter[removeEventListener](
+                        'mousedown',
+                        pair[gutterStartDragging]
+                    );
+                    pair.gutter[removeEventListener](
+                        'touchstart',
+                        pair[gutterStartDragging]
+                    );
                 }
 
                 if (preserveStyles !== true) {
-                    var style = elementStyle(dimension, pair.a.size, pair[aGutterSize]);
+                    var style = elementStyle(
+                        dimension,
+                        pair.a.size,
+                        pair[aGutterSize]
+                    );
 
                     Object.keys(style).forEach(function (prop) {
                         elements[pair.a].element.style[prop] = '';
@@ -33231,7 +33302,7 @@ if (false) {} else {
         return {
             setSizes: setSizes,
             getSizes: getSizes,
-            collapse: function collapse (i) {
+            collapse: function collapse(i) {
                 adjustToMin(elements[i]);
             },
             destroy: destroy,
@@ -34289,7 +34360,9 @@ var FloatLineComponent = /** @class */ (function (_super) {
     function FloatLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
-        _this.state = { value: _this.props.target[_this.props.propertyName] };
+        var currentValue = _this.props.target[_this.props.propertyName];
+        _this.state = { value: currentValue ? currentValue.toFixed(3) : "0" };
+        _this._store = currentValue;
         return _this;
     }
     FloatLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
@@ -34299,7 +34372,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
         }
         var newValue = nextProps.target[nextProps.propertyName];
         if (newValue !== nextState.value) {
-            nextState.value = newValue;
+            nextState.value = newValue.toFixed(3);
             return true;
         }
         return false;
@@ -34316,12 +34389,17 @@ var FloatLineComponent = /** @class */ (function (_super) {
         });
     };
     FloatLineComponent.prototype.updateValue = function (valueString) {
-        var value = parseFloat(valueString);
+        if (/[^0-9\.\-]/g.test(valueString)) {
+            return;
+        }
+        var valueAsNumber = parseFloat(valueString);
         this._localChange = true;
-        var store = this.state.value;
-        this.props.target[this.props.propertyName] = value;
-        this.setState({ value: value });
-        this.raiseOnPropertyChanged(value, store);
+        this.setState({ value: valueString });
+        if (isNaN(valueAsNumber)) {
+            return;
+        }
+        this.raiseOnPropertyChanged(valueAsNumber, this._store);
+        this._store = valueAsNumber;
     };
     FloatLineComponent.prototype.render = function () {
         var _this = this;
@@ -34329,7 +34407,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "floatLine" },
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "value" },
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("input", { className: "numeric-input", value: this.state.value ? parseFloat(this.state.value.toFixed(3)) : 0, type: "number", onChange: function (evt) { return _this.updateValue(evt.target.value); }, step: step }))));
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("input", { className: "numeric-input", value: this.state.value, onChange: function (evt) { return _this.updateValue(evt.target.value); }, step: step }))));
     };
     return FloatLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_0__["Component"]));
@@ -34369,7 +34447,7 @@ var NumericInputComponent = /** @class */ (function (_super) {
     function NumericInputComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
-        _this.state = { value: _this.props.value };
+        _this.state = { value: _this.props.value.toFixed(3) };
         return _this;
     }
     NumericInputComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
@@ -34377,19 +34455,23 @@ var NumericInputComponent = /** @class */ (function (_super) {
             this._localChange = false;
             return true;
         }
-        if (nextProps.value !== nextState.value) {
-            nextState.value = nextProps.value;
+        if (nextProps.value.toString() !== nextState.value) {
+            nextState.value = nextProps.value.toFixed(3);
             return true;
         }
         return false;
     };
     NumericInputComponent.prototype.updateValue = function (evt) {
-        var valueAsNumber = parseFloat(evt.target.value);
+        var value = evt.target.value;
+        if (/[^0-9\.\-]/g.test(value)) {
+            return;
+        }
+        var valueAsNumber = parseFloat(value);
+        this._localChange = true;
+        this.setState({ value: value });
         if (isNaN(valueAsNumber)) {
             return;
         }
-        this._localChange = true;
-        this.setState({ value: valueAsNumber });
         this.props.onChange(valueAsNumber);
     };
     NumericInputComponent.prototype.render = function () {
@@ -34397,7 +34479,7 @@ var NumericInputComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "numeric" },
             this.props.label &&
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "numeric-label" }, this.props.label + ": "),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("input", { className: "numeric-input", value: this.state.value, type: "number", onChange: function (evt) { return _this.updateValue(evt); }, step: "0.1" })));
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("input", { className: "numeric-input", value: this.state.value, onChange: function (evt) { return _this.updateValue(evt); } })));
     };
     return NumericInputComponent;
 }(react__WEBPACK_IMPORTED_MODULE_0__["Component"]));
@@ -34490,6 +34572,114 @@ var OptionsLineComponent = /** @class */ (function (_super) {
                 })))));
     };
     return OptionsLineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_0__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./src/components/actionTabs/lines/quaternionLineComponent.tsx":
+/*!*********************************************************************!*\
+  !*** ./src/components/actionTabs/lines/quaternionLineComponent.tsx ***!
+  \*********************************************************************/
+/*! exports provided: QuaternionLineComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "QuaternionLineComponent", function() { return QuaternionLineComponent; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _numericInputComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./numericInputComponent */ "./src/components/actionTabs/lines/numericInputComponent.tsx");
+/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "./node_modules/@fortawesome/react-fontawesome/index.es.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "./node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+
+var QuaternionLineComponent = /** @class */ (function (_super) {
+    __extends(QuaternionLineComponent, _super);
+    function QuaternionLineComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._localChange = false;
+        _this.state = { isExpanded: false, value: _this.props.target[_this.props.propertyName] };
+        return _this;
+    }
+    QuaternionLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        var nextPropsValue = nextProps.target[nextProps.propertyName];
+        if (!nextPropsValue.equals(nextState.value) || this._localChange) {
+            nextState.value = nextPropsValue;
+            this._localChange = false;
+            return true;
+        }
+        return false;
+    };
+    QuaternionLineComponent.prototype.switchExpandState = function () {
+        this._localChange = true;
+        this.setState({ isExpanded: !this.state.isExpanded });
+    };
+    QuaternionLineComponent.prototype.raiseOnPropertyChanged = function (currentValue, previousValue) {
+        if (!this.props.onPropertyChangedObservable) {
+            return;
+        }
+        this.props.onPropertyChangedObservable.notifyObservers({
+            object: this.props.target,
+            property: this.props.propertyName,
+            value: currentValue,
+            initialValue: previousValue
+        });
+    };
+    QuaternionLineComponent.prototype.updateQuaternion = function () {
+        var store = this.state.value.clone();
+        var quaternion = this._eulerValue.toQuaternion();
+        this.props.target[this.props.propertyName] = quaternion;
+        this.setState({ value: quaternion });
+        this.raiseOnPropertyChanged(quaternion, store);
+    };
+    QuaternionLineComponent.prototype.updateStateX = function (value) {
+        this._localChange = true;
+        this._eulerValue.x = value;
+        this.updateQuaternion();
+    };
+    QuaternionLineComponent.prototype.updateStateY = function (value) {
+        this._localChange = true;
+        this._eulerValue.y = value;
+        this.updateQuaternion();
+    };
+    QuaternionLineComponent.prototype.updateStateZ = function (value) {
+        this._localChange = true;
+        this._eulerValue.z = value;
+        this.updateQuaternion();
+    };
+    QuaternionLineComponent.prototype.render = function () {
+        var _this = this;
+        var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faPlus"] });
+        this._eulerValue = this.state.value.toEulerAngles();
+        return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "vector3Line" },
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "firstLine" },
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "label" }, this.props.label),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "vector" }, "X: " + this._eulerValue.x.toFixed(2) + ", Y: " + this._eulerValue.y.toFixed(2) + ", Z: " + this._eulerValue.z.toFixed(2)),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "expand", onClick: function () { return _this.switchExpandState(); } }, chevron)),
+            this.state.isExpanded &&
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "secondLine" },
+                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_1__["NumericInputComponent"], { label: "x", value: this._eulerValue.x, onChange: function (value) { return _this.updateStateX(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_1__["NumericInputComponent"], { label: "y", value: this._eulerValue.y, onChange: function (value) { return _this.updateStateY(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_1__["NumericInputComponent"], { label: "z", value: this._eulerValue.z, onChange: function (value) { return _this.updateStateZ(value); } }))));
+    };
+    return QuaternionLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_0__["Component"]));
 
 
@@ -35082,7 +35272,7 @@ var Vector3LineComponent = /** @class */ (function (_super) {
         this.props.onPropertyChangedObservable.notifyObservers({
             object: this.props.target,
             property: this.props.propertyName,
-            value: !this.state.value,
+            value: this.state.value,
             initialValue: previousValue
         });
     };
@@ -35485,8 +35675,8 @@ var ArcRotateCameraPropertyGridComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_commonCameraPropertyGridComponent__WEBPACK_IMPORTED_MODULE_1__["CommonCameraPropertyGridComponent"], { camera: camera, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "TRANSFORMS" },
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Alpha", target: camera, propertyName: "alpha", minimum: 0, maximum: 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Beta", target: camera, propertyName: "beta", minimum: 0, maximum: 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Alpha", target: camera, propertyName: "alpha", minimum: camera.lowerAlphaLimit || 0, maximum: camera.upperAlphaLimit || 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Beta", target: camera, propertyName: "beta", minimum: camera.lowerAlphaLimit || 0, maximum: camera.upperBetaLimit || 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { label: "Radius", target: camera, propertyName: "radius", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "CONTROLS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { label: "Angular sensitivity X", target: camera, propertyName: "angularSensibilityX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -36435,6 +36625,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./src/components/actionTabs/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./src/components/actionTabs/lines/vector3LineComponent.tsx");
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./src/components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/quaternionLineComponent */ "./src/components/actionTabs/lines/quaternionLineComponent.tsx");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -36448,6 +36639,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
 
 
 
@@ -36521,7 +36713,10 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { label: "Material", value: mesh.material.name, onLink: function () { return _this.onMaterialLink(); } })),
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_1__["LineContainerComponent"], { title: "TRANSFORMS" },
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Position", target: mesh, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Rotation", target: mesh, propertyName: "rotation", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                !mesh.rotationQuaternion &&
+                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Rotation", target: mesh, propertyName: "rotation", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                mesh.rotationQuaternion &&
+                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_6__["QuaternionLineComponent"], { label: "Rotation", target: mesh, propertyName: "rotationQuaternion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Scaling", target: mesh, propertyName: "scaling", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_1__["LineContainerComponent"], { title: "DISPLAY", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Visibility", target: mesh, propertyName: "visibility", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -36573,6 +36768,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./src/components/actionTabs/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./src/components/actionTabs/lines/vector3LineComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./src/components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/quaternionLineComponent */ "./src/components/actionTabs/lines/quaternionLineComponent.tsx");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -36586,6 +36782,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
 
 
 
@@ -36606,7 +36803,10 @@ var TransformNodePropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_2__["CheckBoxLineComponent"], { label: "IsEnabled", isSelected: function () { return transformNode.isEnabled(); }, onSelect: function (value) { return transformNode.setEnabled(value); } })),
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_1__["LineContainerComponent"], { title: "TRANSFORMATIONS" },
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector3LineComponent"], { label: "Position", target: transformNode, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector3LineComponent"], { label: "Rotation", target: transformNode, propertyName: "rotation", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                !transformNode.rotationQuaternion &&
+                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector3LineComponent"], { label: "Rotation", target: transformNode, propertyName: "rotation", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                transformNode.rotationQuaternion &&
+                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_5__["QuaternionLineComponent"], { label: "Rotation", target: transformNode, propertyName: "rotationQuaternion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector3LineComponent"], { label: "Scaling", target: transformNode, propertyName: "scaling", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return TransformNodePropertyGridComponent;
@@ -37645,11 +37845,13 @@ var MeshTreeItemComponent = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SceneTreeItemComponent", function() { return SceneTreeItemComponent; });
-/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "./node_modules/@fortawesome/react-fontawesome/index.es.js");
-/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "./node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../extensionsComponent */ "./src/components/sceneExplorer/extensionsComponent.tsx");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var babylonjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs */ "babylonjs");
+/* harmony import */ var babylonjs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "./node_modules/@fortawesome/react-fontawesome/index.es.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "./node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../extensionsComponent */ "./src/components/sceneExplorer/extensionsComponent.tsx");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_4__);
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -37667,11 +37869,26 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
+
 var SceneTreeItemComponent = /** @class */ (function (_super) {
     __extends(SceneTreeItemComponent, _super);
     function SceneTreeItemComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { isSelected: false, isInPickingMode: false, gizmoMode: 0 };
+        var scene = _this.props.scene;
+        var gizmoMode = 0;
+        if (scene.metadata && scene.metadata.gizmoManager) {
+            var manager = scene.metadata.gizmoManager;
+            if (manager.positionGizmoEnabled) {
+                gizmoMode = 1;
+            }
+            else if (manager.rotationGizmoEnabled) {
+                gizmoMode = 2;
+            }
+            else if (manager.scaleGizmoEnabled) {
+                gizmoMode = 3;
+            }
+        }
+        _this.state = { isSelected: false, isInPickingMode: false, gizmoMode: gizmoMode };
         return _this;
     }
     SceneTreeItemComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
@@ -37719,30 +37936,55 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
         this.setState({ isInPickingMode: !this.state.isInPickingMode });
     };
     SceneTreeItemComponent.prototype.setGizmoMode = function (mode) {
+        var scene = this.props.scene;
+        if (!scene.metadata) {
+            scene.metadata = {};
+        }
+        if (!scene.metadata.gizmoManager) {
+            scene.metadata.gizmoManager = new babylonjs__WEBPACK_IMPORTED_MODULE_0__["GizmoManager"](scene);
+        }
+        var manager = scene.metadata.gizmoManager;
+        manager.positionGizmoEnabled = false;
+        manager.rotationGizmoEnabled = false;
+        manager.scaleGizmoEnabled = false;
+        if (this.state.gizmoMode === mode) {
+            mode = 0;
+        }
+        switch (mode) {
+            case 1:
+                manager.positionGizmoEnabled = true;
+                break;
+            case 2:
+                manager.rotationGizmoEnabled = true;
+                break;
+            case 3:
+                manager.scaleGizmoEnabled = true;
+                break;
+        }
         this.setState({ gizmoMode: mode });
     };
     SceneTreeItemComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: this.state.isSelected ? "itemContainer selected" : "itemContainer" },
-            react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "sceneNode" },
-                react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "sceneTitle", onClick: function () { return _this.onSelect(); } },
-                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_0__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faImage"] }),
+        return (react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: this.state.isSelected ? "itemContainer selected" : "itemContainer" },
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "sceneNode" },
+                react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "sceneTitle", onClick: function () { return _this.onSelect(); } },
+                    react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faImage"] }),
                     "\u00A0Scene"),
-                react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: this.state.gizmoMode === 1 ? "translation selected icon" : "translation icon", onClick: function () { return _this.setGizmoMode(1); }, title: "Enable/Disable position mode" },
-                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_0__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faArrowsAlt"] })),
-                react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: this.state.gizmoMode === 2 ? "rotation selected icon" : "rotation icon", onClick: function () { return _this.setGizmoMode(2); }, title: "Enable/Disable rotation mode" },
-                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_0__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faRedoAlt"] })),
-                react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: this.state.gizmoMode === 3 ? "scaling selected icon" : "scaling icon", onClick: function () { return _this.setGizmoMode(3); }, title: "Enable/Disable scaling mode" },
-                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_0__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faCompress"] })),
-                react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "separator" }),
-                react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: this.state.isInPickingMode ? "pickingMode selected icon" : "pickingMode icon", onClick: function () { return _this.onPickingMode(); }, title: "Turn picking mode on/off" },
-                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_0__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faCrosshairs"] })),
-                react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "refresh icon", onClick: function () { return _this.props.onRefresh(); }, title: "Refresh the explorer" },
-                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_0__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faSyncAlt"] })),
-                react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_2__["ExtensionsComponent"], { target: this.props.scene, extensibilityGroups: this.props.extensibilityGroups }))));
+                react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: this.state.gizmoMode === 1 ? "translation selected icon" : "translation icon", onClick: function () { return _this.setGizmoMode(1); }, title: "Enable/Disable position mode" },
+                    react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faArrowsAlt"] })),
+                react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: this.state.gizmoMode === 2 ? "rotation selected icon" : "rotation icon", onClick: function () { return _this.setGizmoMode(2); }, title: "Enable/Disable rotation mode" },
+                    react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faRedoAlt"] })),
+                react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: this.state.gizmoMode === 3 ? "scaling selected icon" : "scaling icon", onClick: function () { return _this.setGizmoMode(3); }, title: "Enable/Disable scaling mode" },
+                    react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faCompress"] })),
+                react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "separator" }),
+                react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: this.state.isInPickingMode ? "pickingMode selected icon" : "pickingMode icon", onClick: function () { return _this.onPickingMode(); }, title: "Turn picking mode on/off" },
+                    react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faCrosshairs"] })),
+                react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "refresh icon", onClick: function () { return _this.props.onRefresh(); }, title: "Refresh the explorer" },
+                    react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faSyncAlt"] })),
+                react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_3__["ExtensionsComponent"], { target: this.props.scene, extensibilityGroups: this.props.extensibilityGroups }))));
     };
     return SceneTreeItemComponent;
-}(react__WEBPACK_IMPORTED_MODULE_3__["Component"]));
+}(react__WEBPACK_IMPORTED_MODULE_4__["Component"]));
 
 
 
@@ -38726,6 +38968,9 @@ var Inspector = /** @class */ (function () {
                 extensibilityGroups: options.explorerExtensibility,
                 noExpand: !options.enablePopup, popupMode: options.popup, onPopup: function () {
                     react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](_this._SceneExplorerHost);
+                    if (_this._SceneExplorerHost && _this._SceneExplorerHost.parentElement) {
+                        _this._SceneExplorerHost.parentElement.removeChild(_this._SceneExplorerHost);
+                    }
                     if (options.popup) {
                         _this._SceneExplorerWindow.close();
                     }
@@ -38777,6 +39022,9 @@ var Inspector = /** @class */ (function () {
             var actionTabsElement = react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_components_actionTabs_actionTabsComponent__WEBPACK_IMPORTED_MODULE_2__["ActionTabsComponent"], {
                 globalState: this._GlobalState, scene: scene, noExpand: !options.enablePopup, popupMode: options.popup, onPopup: function () {
                     react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](_this._ActionTabsHost);
+                    if (_this._ActionTabsHost && _this._ActionTabsHost.parentElement) {
+                        _this._ActionTabsHost.parentElement.removeChild(_this._ActionTabsHost);
+                    }
                     if (options.popup) {
                         _this._ActionTabsWindow.close();
                     }
@@ -38828,6 +39076,9 @@ var Inspector = /** @class */ (function () {
                     react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](_this._EmbedHost);
                     if (options.popup) {
                         _this._EmbedHostWindow.close();
+                    }
+                    if (_this._EmbedHost && _this._EmbedHost.parentElement) {
+                        _this._EmbedHost.parentElement.removeChild(_this._EmbedHost);
                     }
                     options.popup = !options.popup;
                     options.embedMode = true;
@@ -38910,7 +39161,7 @@ var Inspector = /** @class */ (function () {
                 this._CreateEmbedHost(scene, options, this._CreatePopup("INSPECTOR", "_EmbedHostWindow"), Inspector.OnSelectionChangeObservable);
             }
             else {
-                var parentControl = (options.embedHostRoot ? options.embedHostRoot.parentElement : canvas.parentElement);
+                var parentControl = (options.globalRoot ? options.globalRoot : canvas.parentElement);
                 if (!options.overlay && !this._NewCanvasContainer) {
                     // Create a container for previous elements
                     parentControl.style.display = "grid";
@@ -38951,23 +39202,9 @@ var Inspector = /** @class */ (function () {
             }
         }
         else {
-            var parentControl = (options.actionTabsRoot ? options.actionTabsRoot.parentElement : canvas.parentElement);
+            var parentControl = (options.globalRoot ? options.globalRoot : canvas.parentElement);
             if (!options.overlay && !this._NewCanvasContainer) {
-                // Create a container for previous elements
-                parentControl.style.display = "grid";
-                parentControl.style.gridTemplateColumns = "auto 1fr auto";
-                parentControl.style.gridTemplateRows = "100%";
-                this._NewCanvasContainer = parentControl.ownerDocument.createElement("div");
-                while (parentControl.childElementCount > 0) {
-                    var child = parentControl.childNodes[0];
-                    parentControl.removeChild(child);
-                    this._NewCanvasContainer.appendChild(child);
-                }
-                parentControl.appendChild(this._NewCanvasContainer);
-                this._NewCanvasContainer.style.gridRow = "1";
-                this._NewCanvasContainer.style.gridColumn = "2";
-                this._NewCanvasContainer.style.width = "100%";
-                this._NewCanvasContainer.style.height = "100%";
+                this._CreateCanvasContainer(parentControl);
             }
             else if (!options.overlay && this._NewCanvasContainer && this._NewCanvasContainer.parentElement) {
                 // the root is now the parent of the canvas container
@@ -38994,6 +39231,23 @@ var Inspector = /** @class */ (function () {
                 this._CreateActionTabs(scene, options, parentControl);
             }
         }
+    };
+    Inspector._CreateCanvasContainer = function (parentControl) {
+        // Create a container for previous elements
+        parentControl.style.display = "grid";
+        parentControl.style.gridTemplateColumns = "auto 1fr auto";
+        parentControl.style.gridTemplateRows = "100%";
+        this._NewCanvasContainer = parentControl.ownerDocument.createElement("div");
+        while (parentControl.childElementCount > 0) {
+            var child = parentControl.childNodes[0];
+            parentControl.removeChild(child);
+            this._NewCanvasContainer.appendChild(child);
+        }
+        parentControl.appendChild(this._NewCanvasContainer);
+        this._NewCanvasContainer.style.gridRow = "1";
+        this._NewCanvasContainer.style.gridColumn = "2";
+        this._NewCanvasContainer.style.width = "100%";
+        this._NewCanvasContainer.style.height = "100%";
     };
     Inspector._Cleanup = function () {
         if (Inspector._OpenedPane === 0 && this._OnBeforeRenderObserver && this._Scene) {
@@ -39107,6 +39361,17 @@ var Tools = /** @class */ (function () {
 }());
 
 
+
+/***/ }),
+
+/***/ "babylonjs":
+/*!****************************************************************************************************!*\
+  !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
+  \****************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs__;
 
 /***/ })
 

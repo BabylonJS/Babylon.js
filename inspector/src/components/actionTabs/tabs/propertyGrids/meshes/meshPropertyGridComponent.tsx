@@ -6,6 +6,7 @@ import { TextLineComponent } from "../../../lines/textLineComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
+import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent";
 
 interface IMeshPropertyGridComponentProps {
     mesh: Mesh,
@@ -91,7 +92,14 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                 </LineContainerComponent>
                 <LineContainerComponent title="TRANSFORMS">
                     <Vector3LineComponent label="Position" target={mesh} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Vector3LineComponent label="Rotation" target={mesh} propertyName="rotation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    {
+                        !mesh.rotationQuaternion &&
+                        <Vector3LineComponent label="Rotation" target={mesh} propertyName="rotation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
+                    {
+                        mesh.rotationQuaternion &&
+                        <QuaternionLineComponent label="Rotation" target={mesh} propertyName="rotationQuaternion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
                     <Vector3LineComponent label="Scaling" target={mesh} propertyName="scaling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent title="DISPLAY" closed={true}>

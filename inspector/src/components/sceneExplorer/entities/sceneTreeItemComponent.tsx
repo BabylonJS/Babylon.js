@@ -1,4 +1,4 @@
-import { Scene, Observable, PointerInfo, Observer, Nullable, IExplorerExtensibilityGroup } from "babylonjs";
+import { Scene, Observable, PointerInfo, Observer, Nullable, IExplorerExtensibilityGroup, GizmoManager } from "babylonjs";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt } from '@fortawesome/free-solid-svg-icons';
 import { ExtensionsComponent } from "../extensionsComponent";
@@ -18,7 +18,20 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
     constructor(props: ISceneTreeItemComponentProps) {
         super(props);
 
-        this.state = { isSelected: false, isInPickingMode: false, gizmoMode: 0 };
+        const scene = this.props.scene;
+        let gizmoMode = 0;
+        if (scene.metadata && scene.metadata.gizmoManager) {
+            const manager: GizmoManager = scene.metadata.gizmoManager;
+            if (manager.positionGizmoEnabled) {
+                gizmoMode = 1;
+            } else if (manager.rotationGizmoEnabled) {
+                gizmoMode = 2;
+            } else if (manager.scaleGizmoEnabled) {
+                gizmoMode = 3;
+            }
+        }
+
+        this.state = { isSelected: false, isInPickingMode: false, gizmoMode: gizmoMode };
     }
 
     shouldComponentUpdate(nextProps: ISceneTreeItemComponentProps, nextState: { isSelected: boolean, isInPickingMode: boolean }) {
@@ -74,6 +87,38 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
     }
 
     setGizmoMode(mode: number) {
+        const scene = this.props.scene;
+
+        if (!scene.metadata) {
+            scene.metadata = {};
+        }
+
+        if (!scene.metadata.gizmoManager) {
+            scene.metadata.gizmoManager = new GizmoManager(scene);
+        }
+
+        const manager: GizmoManager = scene.metadata.gizmoManager;
+
+        manager.positionGizmoEnabled = false;
+        manager.rotationGizmoEnabled = false;
+        manager.scaleGizmoEnabled = false;
+
+        if (this.state.gizmoMode === mode) {
+            mode = 0;
+        }
+
+        switch (mode) {
+            case 1:
+                manager.positionGizmoEnabled = true;
+                break;
+            case 2:
+                manager.rotationGizmoEnabled = true;
+                break;
+            case 3:
+                manager.scaleGizmoEnabled = true;
+                break;
+        }
+
         this.setState({ gizmoMode: mode });
     }
 

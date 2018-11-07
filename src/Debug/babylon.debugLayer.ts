@@ -16,9 +16,7 @@ module BABYLON {
 
     export interface IInspectorOptions {
         overlay?: boolean;
-        sceneExplorerRoot?: HTMLElement;
-        actionTabsRoot?: HTMLElement;
-        embedHostRoot?: HTMLElement;
+        globalRoot?: HTMLElement;
         showExplorer?: boolean;
         showInspector?: boolean;
         embedMode?: boolean;
@@ -92,7 +90,7 @@ module BABYLON {
         }
 
         /** Creates the inspector window. */
-        private _createInspector(config: Partial<IInspectorOptions>) {
+        private _createInspector(config?: Partial<IInspectorOptions>) {
             if (this.isVisible()) {
                 return;
             }
@@ -131,7 +129,7 @@ module BABYLON {
           * Launch the debugLayer.
           * @param config Define the configuration of the inspector
           */
-        public show(config: IInspectorOptions): void {
+        public show(config?: IInspectorOptions): void {
 
             if (typeof this.BJSINSPECTOR == 'undefined') {
                 // Load inspector and add it to the DOM
