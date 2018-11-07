@@ -152,7 +152,6 @@ import { SerializationHelper } from "./decorators";
             serializationObject.ambientColor = scene.ambientColor.asArray();
             serializationObject.gravity = scene.gravity.asArray();
             serializationObject.collisionsEnabled = scene.collisionsEnabled;
-            serializationObject.workerCollisions = scene.workerCollisions;
 
             // Fog
             if (scene.fogMode && scene.fogMode !== 0) {

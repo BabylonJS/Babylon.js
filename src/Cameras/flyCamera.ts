@@ -340,10 +340,6 @@ import { FlyCameraKeyboardInput } from "Cameras/Inputs/flyCameraKeyboardInput";
 
         /** @hidden */
         private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
-            // TODO Move this to the collision coordinator!
-            if (this.getScene().workerCollisions) {
-                newPosition.multiplyInPlace(this._collider._radius);
-            }
 
             var updatePosition = (newPos: Vector3) => {
                 this._newPosition.copyFrom(newPos);

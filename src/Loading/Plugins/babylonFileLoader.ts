@@ -641,7 +641,6 @@ import { CannonJSPlugin, OimoJSPlugin } from "Physics";
                 if (parsedData.collisionsEnabled !== undefined && parsedData.collisionsEnabled !== null) {
                     scene.collisionsEnabled = parsedData.collisionsEnabled;
                 }
-                scene.workerCollisions = !!parsedData.workerCollisions;
 
                 var container = loadAssetContainer(scene, data, rootUrl, onError, true);
                 if (!container) {
