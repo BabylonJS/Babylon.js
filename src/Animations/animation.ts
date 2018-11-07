@@ -10,6 +10,7 @@ import { Scene } from "scene";
 import { IAnimatable } from "Tools/tools";
 import { Node } from "node";
 import { Texture } from "Materials/Textures/texture";
+import { SerializationHelper } from "Tools/decorators";
 
     /**
      * Represents the range of an animation
@@ -1233,15 +1234,9 @@ import { Texture } from "Materials/Textures/texture";
          * @param destination Target to store the animations
          */
         public static AppendSerializedAnimations(source: IAnimatable, destination: any): void {
-            if (source.animations) {
-                destination.animations = [];
-                for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
-                    var animation = source.animations[animationIndex];
-
-                    destination.animations.push(animation.serialize());
-                }
-            }
+            SerializationHelper.AppendSerializedAnimations(source, destination);
         }
     }
 
     Texture._AnimationParser = Animation.Parse;
+    Node._AnimationRangeFactory = (name: string, from: number, to: number) => new AnimationRange(name, from, to);

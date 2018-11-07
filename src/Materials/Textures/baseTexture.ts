@@ -1,6 +1,6 @@
 import { serialize, SerializationHelper } from "Tools/decorators";
 import { Observer, Observable } from "Tools/observable";
-import { Tools } from "Tools/tools";
+import { Tools, IAnimatable } from "Tools/tools";
 import { CubeMapToSphericalPolynomialTools } from "Tools/HDR/cubemapToSphericalPolynomial";
 import { Nullable } from "types";
 import { Scene } from "scene";
@@ -8,16 +8,18 @@ import { Matrix, Size, ISize } from "Math/math";
 import { SphericalPolynomial } from "Math/sphericalPolynomial";
 import { Engine } from "Engine/engine";
 import { InternalTexture } from "Materials/Textures/internalTexture";
-import { Animation } from "Animations/animation";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { Constants } from "Engine/constants";
+
+declare type Animation = import("Animations/animation").Animation;
+
     /**
      * Base class of all the textures in babylon.
      * It groups all the common properties the materials, post process, lights... might need
      * in order to make a correct use of the texture.
      */
-    export class BaseTexture {
+    export class BaseTexture implements IAnimatable {
         /**
          * Default anisotropic filtering level for the application.
          * It is set to 4 as a good tradeoff between perf and quality.
@@ -621,7 +623,7 @@ import { Constants } from "Engine/constants";
             var serializationObject = SerializationHelper.Serialize(this);
 
             // Animations
-            Animation.AppendSerializedAnimations(this, serializationObject);
+            SerializationHelper.AppendSerializedAnimations(this, serializationObject);
 
             return serializationObject;
         }

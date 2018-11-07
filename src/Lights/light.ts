@@ -549,7 +549,7 @@ import { IShadowGenerator } from "./Shadows/shadowGenerator";
             }
 
             // Animations
-            Animation.AppendSerializedAnimations(this, serializationObject);
+            SerializationHelper.AppendSerializedAnimations(this, serializationObject);
             serializationObject.ranges = this.serializeAnimationRanges();
 
             return serializationObject;

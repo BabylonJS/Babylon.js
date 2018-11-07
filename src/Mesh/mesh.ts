@@ -23,6 +23,7 @@ import { Skeleton } from "Bones/skeleton";
 import { MorphTargetManager } from "Morph/morphTargetManager";
 import { PhysicsImpostor } from "Physics/physicsImpostor";
 import { Constants } from "Engine/constants";
+import { SerializationHelper } from "Tools/decorators";
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -2554,14 +2555,14 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
                 serializationObject.instances.push(serializationInstance);
 
                 // Animations
-                Animation.AppendSerializedAnimations(instance, serializationInstance);
+                SerializationHelper.AppendSerializedAnimations(instance, serializationInstance);
                 serializationInstance.ranges = instance.serializeAnimationRanges();
             }
 
             //
 
             // Animations
-            Animation.AppendSerializedAnimations(this, serializationObject);
+            SerializationHelper.AppendSerializedAnimations(this, serializationObject);
             serializationObject.ranges = this.serializeAnimationRanges();
 
             // Layer mask

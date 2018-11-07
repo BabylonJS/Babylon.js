@@ -1,12 +1,12 @@
 import { Geometry, BoxGeometry, SphereGeometry, CylinderGeometry, TorusGeometry, GroundGeometry, TorusKnotGeometry, _PrimitiveGeometry } from "Mesh/geometry";
 import { Mesh } from "Mesh/mesh";
 import { Plane } from "Math/math";
-import { Animation } from "Animations/animation";
 import { Constants } from "Engine/constants";
 import { MultiMaterial } from "Materials/multiMaterial";
 import { Material } from "Materials/material";
 import { Scene } from "scene";
 import { Light } from "Lights/light";
+import { SerializationHelper } from "./decorators";
 
     var serializedGeometries: Geometry[] = [];
     var serializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
@@ -216,7 +216,7 @@ import { Light } from "Lights/light";
             }
 
             // Animations
-            Animation.AppendSerializedAnimations(scene, serializationObject);
+            SerializationHelper.AppendSerializedAnimations(scene, serializationObject);
 
             // Materials
             serializationObject.materials = [];

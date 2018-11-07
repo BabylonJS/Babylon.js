@@ -9,6 +9,7 @@ declare type ImageProcessingConfiguration = import("Materials/imageProcessingCon
 declare type FresnelParameters = import("Materials/fresnelParameters").FresnelParameters;
 declare type ColorCurves = import("Materials/colorCurves").ColorCurves;
 declare type BaseTexture = import("Materials/Textures/baseTexture").BaseTexture;
+declare type IAnimatable = import("Tools/tools").IAnimatable;
 
     var __decoratorInitialStore = {};
     var __mergedStore = {};
@@ -224,6 +225,22 @@ declare type BaseTexture = import("Materials/Textures/baseTexture").BaseTexture;
         /** hidden */
         public static _TextureParser = (sourceProperty: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> => {
             throw "Texture needs to be imported before being deserialized.";
+        }
+
+        /**
+         * Appends the serialized animations from the source animations
+         * @param source Source containing the animations
+         * @param destination Target to store the animations
+         */
+        public static AppendSerializedAnimations(source: IAnimatable, destination: any): void {
+            if (source.animations) {
+                destination.animations = [];
+                for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
+                    var animation = source.animations[animationIndex];
+
+                    destination.animations.push(animation.serialize());
+                }
+            }
         }
 
         /**

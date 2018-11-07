@@ -22,6 +22,7 @@ import { BaseParticleSystem } from "./baseParticleSystem";
 import { Particle } from "./particle";
 import { SubEmitter, SubEmitterType } from "./subEmitter";
 import { Constants } from "Engine/constants";
+import { SerializationHelper } from "Tools/decorators";
 
     /**
      * This represents a particle system in Babylon.
@@ -2047,7 +2048,7 @@ import { Constants } from "Engine/constants";
             }
 
             // Animations
-            Animation.AppendSerializedAnimations(particleSystem, serializationObject);
+            SerializationHelper.AppendSerializedAnimations(particleSystem, serializationObject);
             serializationObject.beginAnimationOnStart = particleSystem.beginAnimationOnStart;
             serializationObject.beginAnimationFrom = particleSystem.beginAnimationFrom;
             serializationObject.beginAnimationTo = particleSystem.beginAnimationTo;
