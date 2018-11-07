@@ -5,6 +5,7 @@ import { AdvancedDynamicTexture } from "./advancedDynamicTexture";
  */
 export class ValueAndUnit {
     private _value = 1;
+    private _originalUnit: number;
     /**
      * Gets or sets a value indicating that this value will not scale accordingly with adaptive scaling property
      * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
@@ -23,6 +24,7 @@ export class ValueAndUnit {
         /** defines a boolean indicating if the value can be negative */
         public negativeValueAllowed = true) {
         this._value = value;
+        this._originalUnit = unit;
     }
 
     /** Gets a boolean indicating if the value is a percentage */
@@ -116,7 +118,7 @@ export class ValueAndUnit {
         }
 
         var sourceValue = parseFloat(match[1]);
-        var sourceUnit = this.unit;
+        var sourceUnit = this._originalUnit;
 
         if (!this.negativeValueAllowed) {
             if (sourceValue < 0) {
