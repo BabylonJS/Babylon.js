@@ -273,7 +273,6 @@ if (BABYLON.Engine.isSupported()) {
         filesInput.monitorElementForDragNDrop(canvas);
 
         htmlInput.addEventListener('change', function(event) {
-            var filestoLoad;
             // Handling data transfer via drag'n'drop
             if (event && event.dataTransfer && event.dataTransfer.files) {
                 filesToLoad = event.dataTransfer.files;

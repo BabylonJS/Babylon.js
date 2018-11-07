@@ -14,11 +14,50 @@ interface IMeshPropertyGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
-export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGridComponentProps, { displayNormals: boolean }> {
+export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGridComponentProps, { displayNormals: boolean, renderNormalVectors: boolean }> {
     constructor(props: IMeshPropertyGridComponentProps) {
         super(props);
+        const mesh = this.props.mesh;
 
-        this.state = { displayNormals: false }
+        this.state = { displayNormals: false, renderNormalVectors: mesh.metadata && mesh.metadata.normalLines }
+    }
+
+    renderNormalVectors() {
+        const mesh = this.props.mesh;
+        const scene = mesh.getScene();
+
+        if (mesh.metadata && mesh.metadata.normalLines) {
+            mesh.metadata.normalLines.dispose();
+            mesh.metadata.normalLines = null;
+
+            this.setState({ renderNormalVectors: false });
+            return;
+        }
+
+        var normals = mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+        var positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+
+        const color = BABYLON.Color3.White();
+        const size = mesh.getBoundingInfo().diagonalLength * 0.05;
+
+        var lines = [];
+        for (var i = 0; i < normals!.length; i += 3) {
+            var v1 = BABYLON.Vector3.FromArray(positions!, i);
+            var v2 = v1.add(BABYLON.Vector3.FromArray(normals!, i).scaleInPlace(size));
+            lines.push([v1, v2]);
+        }
+
+        var normalLines = BABYLON.MeshBuilder.CreateLineSystem("normalLines", { lines: lines }, scene);
+        normalLines.color = color;
+        normalLines.parent = mesh;
+
+        if (!mesh.metadata) {
+            mesh.metadata = {};
+        }
+
+        mesh.metadata.normalLines = normalLines;
+
+        this.setState({ renderNormalVectors: true });
     }
 
     displayNormals() {
@@ -72,6 +111,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         const scene = mesh.getScene();
 
         const displayNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
+        const renderNormalVectors = mesh.metadata && mesh.metadata.normalLines;
 
         return (
             <div className="pane">
@@ -139,6 +179,10 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     {
                         mesh.material &&
                         <CheckBoxLineComponent label="Display normals" isSelected={() => displayNormals} onSelect={() => this.displayNormals()} />
+                    }
+                    {
+                        mesh.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind) &&
+                        <CheckBoxLineComponent label="Render vertex normals" isSelected={() => renderNormalVectors} onSelect={() => this.renderNormalVectors()} />
                     }
                 </LineContainerComponent>
             </div>

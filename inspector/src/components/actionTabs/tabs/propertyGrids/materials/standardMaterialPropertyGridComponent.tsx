@@ -62,7 +62,6 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                     <SliderLineComponent label="Specular power" target={material} propertyName="specularPower" minimum={0} maximum={128} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Emissive" target={material} propertyName="emissiveColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Ambient" target={material} propertyName="ambientColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="Alpha" target={material} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 {this.renderTextures()}
             </div>

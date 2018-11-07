@@ -206,7 +206,11 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             this._once = false;
             // A bit hacky but no other way to force the initial width to 300px and not auto
             setTimeout(() => {
-                document.getElementById("sceneExplorer")!.style.width = "300px";
+                const element = document.getElementById("sceneExplorer");
+                if (!element) {
+                    return;
+                }
+                element.style.width = "300px";
             }, 150);
         }
 
