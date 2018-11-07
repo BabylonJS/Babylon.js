@@ -986,6 +986,10 @@ declare module 'babylonjs-gui/2D/controls/control' {
             protected _disabledColor: string;
             /** @hidden */
             _tag: any;
+            /**
+                * Gets or sets an object used to store user defined information for the node
+                */
+            metadata: any;
             /** Gets or sets a boolean indicating if the control can be hit with pointer events */
             isHitTestVisible: boolean;
             /** Gets or sets a boolean indicating if the control can block pointer events */
@@ -1598,9 +1602,11 @@ declare module 'babylonjs-gui/2D/controls/inputText' {
             maxWidth: string | number;
             /** Gets the maximum width allowed by the control in pixels */
             readonly maxWidthInPixels: number;
-            /** Gets and sets the text highlighter transparency; default: 0.4 */
+            /** Gets or sets the text highlighter transparency; default: 0.4 */
             highligherOpacity: number;
-            /** Gets and sets the text hightlight color */
+            /** Gets or sets a boolean indicating whether to select complete text by default on input focus */
+            onFocusSelectAll: boolean;
+            /** Gets or sets the text hightlight color */
             textHighlightColor: string;
             /** Gets or sets control margin */
             margin: string;
@@ -3864,6 +3870,10 @@ declare module BABYLON.GUI {
             protected _disabledColor: string;
             /** @hidden */
             _tag: any;
+            /**
+                * Gets or sets an object used to store user defined information for the node
+                */
+            metadata: any;
             /** Gets or sets a boolean indicating if the control can be hit with pointer events */
             isHitTestVisible: boolean;
             /** Gets or sets a boolean indicating if the control can block pointer events */
@@ -4458,9 +4468,11 @@ declare module BABYLON.GUI {
             maxWidth: string | number;
             /** Gets the maximum width allowed by the control in pixels */
             readonly maxWidthInPixels: number;
-            /** Gets and sets the text highlighter transparency; default: 0.4 */
+            /** Gets or sets the text highlighter transparency; default: 0.4 */
             highligherOpacity: number;
-            /** Gets and sets the text hightlight color */
+            /** Gets or sets a boolean indicating whether to select complete text by default on input focus */
+            onFocusSelectAll: boolean;
+            /** Gets or sets the text hightlight color */
             textHighlightColor: string;
             /** Gets or sets control margin */
             margin: string;
