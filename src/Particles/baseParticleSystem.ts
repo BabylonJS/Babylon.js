@@ -9,7 +9,7 @@ import { Scene } from "scene";
 import { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "Tools/tools";
 import { Animation } from "Animations/animation";
 import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, CylinderDirectedParticleEmitter, ConeParticleEmitter } from "Particles/EmitterTypes";
-import { ParticleSystem } from "./particleSystem";
+import { Constants } from "Engine/constants";
 
     /**
      * This represents the base class for particle system in Babylon.
@@ -191,7 +191,7 @@ import { ParticleSystem } from "./particleSystem";
         /**
          * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE or ParticleSystem.BLENDMODE_STANDARD.
          */
-        public blendMode = ParticleSystem.BLENDMODE_ONEONE;
+        public blendMode = BaseParticleSystem.BLENDMODE_ONEONE;
 
         /**
          * Forces the particle to write their depth information to the depth buffer. This can help preventing other draw calls
@@ -515,7 +515,7 @@ import { ParticleSystem } from "./particleSystem";
          * Gets or sets the billboard mode to use when isBillboardBased = true.
          * Value can be: ParticleSystem.BILLBOARDMODE_ALL, ParticleSystem.BILLBOARDMODE_Y, ParticleSystem.BILLBOARDMODE_STRETCHED
          */
-        public billboardMode = ParticleSystem.BILLBOARDMODE_ALL;
+        public billboardMode = Constants.PARTICLES_BILLBOARDMODE_ALL;
 
         protected _isBillboardBased = true;
         /**
