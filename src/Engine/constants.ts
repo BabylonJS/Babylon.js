@@ -331,4 +331,17 @@ export class Constants {
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnKeyUpTrigger = 15;
+
+    /**
+     * Billboard mode will only apply to Y axis
+     */
+    public static readonly PARTICLES_BILLBOARDMODE_Y = 2;
+    /**
+     * Billboard mode will apply to all axes
+     */
+    public static readonly PARTICLES_BILLBOARDMODE_ALL = 7;
+    /**
+     * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
+     */
+    public static readonly PARTICLES_BILLBOARDMODE_STRETCHED = 8;
 }

@@ -35,15 +35,15 @@ import { SerializationHelper } from "Tools/decorators";
         /**
          * Billboard mode will only apply to Y axis
          */
-        public static readonly BILLBOARDMODE_Y = 2;
+        public static readonly BILLBOARDMODE_Y = Constants.PARTICLES_BILLBOARDMODE_Y;
         /**
          * Billboard mode will apply to all axes
          */
-        public static readonly BILLBOARDMODE_ALL = 7;
+        public static readonly BILLBOARDMODE_ALL = Constants.PARTICLES_BILLBOARDMODE_ALL;
         /**
          * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
          */
-        public static readonly BILLBOARDMODE_STRETCHED = 8;
+        public static readonly BILLBOARDMODE_STRETCHED = Constants.PARTICLES_BILLBOARDMODE_STRETCHED;
 
         /**
          * This function can be defined to provide custom update for active particles.
