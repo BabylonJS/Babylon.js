@@ -954,10 +954,6 @@ import { ArcRotateCameraInputsManager } from "Cameras/arcRotateCameraInputsManag
 
         protected _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
 
-            if (this.getScene().workerCollisions && this.checkCollisions) {
-                newPosition.multiplyInPlace(this._collider._radius);
-            }
-
             if (!collidedMesh) {
                 this._previousPosition.copyFrom(this.position);
             } else {

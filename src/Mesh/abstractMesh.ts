@@ -1263,9 +1263,6 @@ import { Constants } from "Engine/constants";
 
         public set checkCollisions(collisionEnabled: boolean) {
             this._checkCollisions = collisionEnabled;
-            if (this.getScene().workerCollisions) {
-                this.getScene().collisionCoordinator.onMeshUpdated(this);
-            }
         }
 
         /**
@@ -1298,11 +1295,6 @@ import { Constants } from "Engine/constants";
         }
 
         private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
-            //TODO move this to the collision coordinator!
-            if (this.getScene().workerCollisions) {
-                newPosition.multiplyInPlace(this._collider._radius);
-            }
-
             newPosition.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
 
             if (this._diffPositionForCollisions.length() > Engine.CollisionsEpsilon) {

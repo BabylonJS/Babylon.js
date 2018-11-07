@@ -33,7 +33,7 @@ import { AnimationPropertiesOverride } from "Animations/animationPropertiesOverr
 import { Light } from "Lights/light";
 import { PickingInfo } from "Collisions/pickingInfo";
 import { Collider } from "Collisions/collider";
-import { ICollisionCoordinator, CollisionWorker, CollisionCoordinatorWorker, CollisionCoordinatorLegacy } from "Collisions/collisionCoordinator";
+import { ICollisionCoordinator, CollisionCoordinatorLegacy } from "Collisions/collisionCoordinator";
 import { PointerEventTypes, PointerInfoPre, PointerInfo } from "Events/pointerEvents";
 import { KeyboardInfoPre, KeyboardInfo, KeyboardEventTypes } from "Events/keyboardEvents";
 import { ActionManager, ActionEvent } from "Actions/actionManager";
@@ -919,7 +919,7 @@ import { Constants } from "Engine/constants";
         * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
         */
         public collisionsEnabled = true;
-        private _workerCollisions: boolean;
+
         /** @hidden */
         public collisionCoordinator: ICollisionCoordinator;
         /**
@@ -1369,14 +1369,11 @@ import { Constants } from "Engine/constants";
                 return;
             }
 
-            enabled = (enabled && !!Worker && !!CollisionWorker);
-
-            this._workerCollisions = enabled;
             if (this.collisionCoordinator) {
                 this.collisionCoordinator.destroy();
             }
 
-            this.collisionCoordinator = enabled ? new CollisionCoordinatorWorker() : new CollisionCoordinatorLegacy();
+            this.collisionCoordinator = new CollisionCoordinatorLegacy();
 
             this.collisionCoordinator.init(this);
         }
@@ -1386,7 +1383,9 @@ import { Constants } from "Engine/constants";
          * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#web-worker-based-collision-system-since-21
          */
         public get workerCollisions(): boolean {
-            return this._workerCollisions;
+            // Worker has been deprecated.
+            // Keep for back compat.
+            return false;
         }
 
         /**
