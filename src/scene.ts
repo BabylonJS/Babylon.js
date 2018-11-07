@@ -40,7 +40,7 @@ import { ActionManager, ActionEvent } from "Actions/actionManager";
 import { PostProcess, PostProcessManager } from "PostProcess";
 import { IOfflineProvider } from "Offline/IOfflineProvider";
 import { RenderingManager, IRenderingManagerAutoClearSetup } from "Rendering/renderingManager";
-import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction } from "sceneComponent";
+import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction } from "sceneComponent";
 import { Engine } from "Engine/engine";
 import { Ray } from "Culling/ray";
 import { Node } from "node";
