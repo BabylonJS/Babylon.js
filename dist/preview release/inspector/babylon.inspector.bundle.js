@@ -38968,9 +38968,7 @@ var Inspector = /** @class */ (function () {
                 extensibilityGroups: options.explorerExtensibility,
                 noExpand: !options.enablePopup, popupMode: options.popup, onPopup: function () {
                     react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](_this._SceneExplorerHost);
-                    if (_this._SceneExplorerHost && _this._SceneExplorerHost.parentElement) {
-                        _this._SceneExplorerHost.parentElement.removeChild(_this._SceneExplorerHost);
-                    }
+                    _this._RemoveElementFromDOM(_this._SceneExplorerHost);
                     if (options.popup) {
                         _this._SceneExplorerWindow.close();
                     }
@@ -38982,9 +38980,7 @@ var Inspector = /** @class */ (function () {
                 }, onClose: function () {
                     react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](_this._SceneExplorerHost);
                     Inspector._OpenedPane--;
-                    if (_this._SceneExplorerHost && _this._SceneExplorerHost.parentElement) {
-                        _this._SceneExplorerHost.parentElement.removeChild(_this._SceneExplorerHost);
-                    }
+                    _this._RemoveElementFromDOM(_this._SceneExplorerHost);
                     _this._Cleanup();
                     if (options.popup) {
                         _this._SceneExplorerWindow.close();
@@ -39022,9 +39018,7 @@ var Inspector = /** @class */ (function () {
             var actionTabsElement = react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_components_actionTabs_actionTabsComponent__WEBPACK_IMPORTED_MODULE_2__["ActionTabsComponent"], {
                 globalState: this._GlobalState, scene: scene, noExpand: !options.enablePopup, popupMode: options.popup, onPopup: function () {
                     react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](_this._ActionTabsHost);
-                    if (_this._ActionTabsHost && _this._ActionTabsHost.parentElement) {
-                        _this._ActionTabsHost.parentElement.removeChild(_this._ActionTabsHost);
-                    }
+                    _this._RemoveElementFromDOM(_this._ActionTabsHost);
                     if (options.popup) {
                         _this._ActionTabsWindow.close();
                     }
@@ -39037,9 +39031,7 @@ var Inspector = /** @class */ (function () {
                     react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](_this._ActionTabsHost);
                     Inspector._OpenedPane--;
                     _this._Cleanup();
-                    if (_this._ActionTabsHost && _this._ActionTabsHost.parentElement) {
-                        _this._ActionTabsHost.parentElement.removeChild(_this._ActionTabsHost);
-                    }
+                    _this._RemoveElementFromDOM(_this._ActionTabsHost);
                     if (options.popup) {
                         _this._ActionTabsWindow.close();
                     }
@@ -39077,9 +39069,7 @@ var Inspector = /** @class */ (function () {
                     if (options.popup) {
                         _this._EmbedHostWindow.close();
                     }
-                    if (_this._EmbedHost && _this._EmbedHost.parentElement) {
-                        _this._EmbedHost.parentElement.removeChild(_this._EmbedHost);
-                    }
+                    _this._RemoveElementFromDOM(_this._EmbedHost);
                     options.popup = !options.popup;
                     options.embedMode = true;
                     options.showExplorer = true;
@@ -39090,9 +39080,7 @@ var Inspector = /** @class */ (function () {
                     react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](_this._EmbedHost);
                     _this._OpenedPane = 0;
                     _this._Cleanup();
-                    if (_this._EmbedHost && _this._EmbedHost.parentElement) {
-                        _this._EmbedHost.parentElement.removeChild(_this._EmbedHost);
-                    }
+                    _this._RemoveElementFromDOM(_this._EmbedHost);
                     if (options.popup) {
                         _this._EmbedHostWindow.close();
                     }
@@ -39256,12 +39244,15 @@ var Inspector = /** @class */ (function () {
             this._Scene.getEngine().resize();
         }
     };
+    Inspector._RemoveElementFromDOM = function (element) {
+        if (element && element.parentElement) {
+            element.parentElement.removeChild(element);
+        }
+    };
     Inspector.Hide = function () {
         if (this._ActionTabsHost) {
             react_dom__WEBPACK_IMPORTED_MODULE_1__["unmountComponentAtNode"](this._ActionTabsHost);
-            if (this._ActionTabsHost.parentElement) {
-                this._ActionTabsHost.parentElement.removeChild(this._ActionTabsHost);
-            }
+            this._RemoveElementFromDOM(this._ActionTabsHost);
             this._ActionTabsHost = null;
         }
         if (this._SceneExplorerHost) {
