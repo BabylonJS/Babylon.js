@@ -12,6 +12,8 @@ import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { LayerSceneComponent } from "./layerSceneComponent";
 import { Constants } from "Engine/constants";
+import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+
     /**
      * This represents a full screen 2d layer.
      * This can be usefull to display a picture in the  background of your scene for instance.
