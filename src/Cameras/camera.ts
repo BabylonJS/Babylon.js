@@ -354,6 +354,9 @@ declare type TargetCamera = import("./targetCamera").TargetCamera;
             return "Camera";
         }
 
+        /** @hidden */
+        public readonly _isCamera = true;
+
         /**
          * Gets a string representation of the camera usefull for debug purpose.
          * @param fullDetails Defines that a more verboe level of logging is required

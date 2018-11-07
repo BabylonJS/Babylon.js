@@ -368,6 +368,9 @@ import { IShadowGenerator } from "./Shadows/shadowGenerator";
             return "Light";
         }
 
+        /** @hidden */
+        public readonly _isLight = true;
+
         /**
          * Converts the light information to a readable string for debug purpose.
          * @param fullDetails Supports for multiple levels of logging within scene loading

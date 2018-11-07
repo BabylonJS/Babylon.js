@@ -226,6 +226,9 @@ declare type AbstractMesh = import("Mesh/abstractMesh").AbstractMesh;
             return "Node";
         }
 
+        /** @hidden */
+        public readonly _isNode = true;
+
         /**
         * An event triggered when the mesh is disposed
         */

@@ -1,5 +1,6 @@
-import { ActionManager } from "./actionManager";
 import { Action } from "./action";
+
+declare type ActionManager = import("./actionManager").ActionManager;
 
     /**
      * A Condition applied to an Action

@@ -418,6 +418,9 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
             return "Mesh";
         }
 
+        /** @hidden */
+        public readonly _isMesh = true;
+
         /**
          * Returns a description of this mesh
          * @param fullDetails define if full details about this mesh must be used

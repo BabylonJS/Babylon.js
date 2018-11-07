@@ -36,8 +36,10 @@ import { Collider } from "Collisions/collider";
 import { ICollisionCoordinator, CollisionCoordinatorLegacy } from "Collisions/collisionCoordinator";
 import { PointerEventTypes, PointerInfoPre, PointerInfo } from "Events/pointerEvents";
 import { KeyboardInfoPre, KeyboardInfo, KeyboardEventTypes } from "Events/keyboardEvents";
-import { ActionManager, ActionEvent } from "Actions/actionManager";
-import { PostProcess, PostProcessManager } from "PostProcess";
+import { ActionEvent } from "Actions/actionEvent";
+import { ActionManager } from "Actions/actionManager";
+import { PostProcess } from "PostProcess/postProcess";
+import { PostProcessManager } from "PostProcess/postProcessManager";
 import { IOfflineProvider } from "Offline/IOfflineProvider";
 import { RenderingManager, IRenderingManagerAutoClearSetup } from "Rendering/renderingManager";
 import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction } from "sceneComponent";
@@ -161,6 +163,9 @@ import { Constants } from "Engine/constants";
         public static MaxDeltaTime = 1000.0;
 
         // Members
+
+        /** @hidden */
+        public readonly _isScene = true;
 
         /**
          * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
@@ -1687,24 +1692,24 @@ import { Constants } from "Engine/constants";
                 var actionManager = pickResult.pickedMesh.actionManager;
                 if (actionManager) {
                     if (actionManager.hasPickTriggers) {
-                        actionManager.processTrigger(ActionManager.OnPickDownTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                        actionManager.processTrigger(Constants.ACTION_OnPickDownTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                         switch (evt.button) {
                             case 0:
-                                actionManager.processTrigger(ActionManager.OnLeftPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                actionManager.processTrigger(Constants.ACTION_OnLeftPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 break;
                             case 1:
-                                actionManager.processTrigger(ActionManager.OnCenterPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                actionManager.processTrigger(Constants.ACTION_OnCenterPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 break;
                             case 2:
-                                actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                actionManager.processTrigger(Constants.ACTION_OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 break;
                         }
                     }
 
-                    if (actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)) {
+                    if (actionManager.hasSpecificTrigger(Constants.ACTION_OnLongPressTrigger)) {
                         window.setTimeout(() => {
                             var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY,
-                                (mesh: AbstractMesh): boolean => (<boolean>(mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger) && mesh == this._pickedDownMesh)),
+                                (mesh: AbstractMesh): boolean => (<boolean>(mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(Constants.ACTION_OnLongPressTrigger) && mesh == this._pickedDownMesh)),
                                 false, this.cameraToUseForPointers);
 
                             if (pickResult && pickResult.hit && pickResult.pickedMesh && actionManager) {
@@ -1712,7 +1717,7 @@ import { Constants } from "Engine/constants";
                                     ((Date.now() - this._startingPointerTime) > Scene.LongPressDelay) &&
                                     !this._isPointerSwiping()) {
                                     this._startingPointerTime = 0;
-                                    actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                    actionManager.processTrigger(Constants.ACTION_OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 }
                             }
                         }, Scene.LongPressDelay);
@@ -1782,13 +1787,13 @@ import { Constants } from "Engine/constants";
                     }
                 }
                 if (pickResult.pickedMesh.actionManager && !clickInfo.ignore) {
-                    pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                    pickResult.pickedMesh.actionManager.processTrigger(Constants.ACTION_OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
 
                     if (!clickInfo.hasSwiped && clickInfo.singleClick) {
-                        pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                        pickResult.pickedMesh.actionManager.processTrigger(Constants.ACTION_OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                     }
-                    if (clickInfo.doubleClick && pickResult.pickedMesh.actionManager.hasSpecificTrigger(ActionManager.OnDoublePickTrigger)) {
-                        pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnDoublePickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                    if (clickInfo.doubleClick && pickResult.pickedMesh.actionManager.hasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger)) {
+                        pickResult.pickedMesh.actionManager.processTrigger(Constants.ACTION_OnDoublePickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                     }
                 }
             }
@@ -1802,9 +1807,9 @@ import { Constants } from "Engine/constants";
 
             if (this._pickedDownMesh &&
                 this._pickedDownMesh.actionManager &&
-                this._pickedDownMesh.actionManager.hasSpecificTrigger(ActionManager.OnPickOutTrigger) &&
+                this._pickedDownMesh.actionManager.hasSpecificTrigger(Constants.ACTION_OnPickOutTrigger) &&
                 this._pickedDownMesh !== this._pickedUpMesh) {
-                this._pickedDownMesh.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
+                this._pickedDownMesh.actionManager.processTrigger(Constants.ACTION_OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
             }
 
             let type = 0;
@@ -1892,7 +1897,7 @@ import { Constants } from "Engine/constants";
                 let checkPicking = obs1.hasSpecificMask(PointerEventTypes.POINTERPICK) || obs2.hasSpecificMask(PointerEventTypes.POINTERPICK)
                     || obs1.hasSpecificMask(PointerEventTypes.POINTERTAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERTAP)
                     || obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
-                if (!checkPicking && ActionManager && ActionManager.HasPickTriggers) {
+                if (!checkPicking && ActionManager) {
                     act = this._initActionManager(act, clickInfo);
                     if (act) {
                         checkPicking = act.hasPickTriggers;
@@ -1912,10 +1917,10 @@ import { Constants } from "Engine/constants";
                             checkSingleClickImmediately = !obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) &&
                                 !obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
 
-                            if (checkSingleClickImmediately && !ActionManager.HasSpecificTrigger(ActionManager.OnDoublePickTrigger)) {
+                            if (checkSingleClickImmediately && !ActionManager.HasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger)) {
                                 act = this._initActionManager(act, clickInfo);
                                 if (act) {
-                                    checkSingleClickImmediately = !act.hasSpecificTrigger(ActionManager.OnDoublePickTrigger);
+                                    checkSingleClickImmediately = !act.hasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger);
                                 }
                             }
                         }
@@ -1938,10 +1943,10 @@ import { Constants } from "Engine/constants";
 
                         let checkDoubleClick = obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) ||
                             obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
-                        if (!checkDoubleClick && ActionManager.HasSpecificTrigger(ActionManager.OnDoublePickTrigger)) {
+                        if (!checkDoubleClick && ActionManager.HasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger)) {
                             act = this._initActionManager(act, clickInfo);
                             if (act) {
-                                checkDoubleClick = act.hasSpecificTrigger(ActionManager.OnDoublePickTrigger);
+                                checkDoubleClick = act.hasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger);
                             }
                         }
                         if (checkDoubleClick) {
@@ -2144,7 +2149,7 @@ import { Constants } from "Engine/constants";
                 }
 
                 if (this.actionManager) {
-                    this.actionManager.processTrigger(ActionManager.OnKeyDownTrigger, ActionEvent.CreateNewFromScene(this, evt));
+                    this.actionManager.processTrigger(Constants.ACTION_OnKeyDownTrigger, ActionEvent.CreateNewFromScene(this, evt));
                 }
             };
 
@@ -2164,7 +2169,7 @@ import { Constants } from "Engine/constants";
                 }
 
                 if (this.actionManager) {
-                    this.actionManager.processTrigger(ActionManager.OnKeyUpTrigger, ActionEvent.CreateNewFromScene(this, evt));
+                    this.actionManager.processTrigger(Constants.ACTION_OnKeyUpTrigger, ActionEvent.CreateNewFromScene(this, evt));
                 }
             };
 
@@ -4304,7 +4309,7 @@ import { Constants } from "Engine/constants";
                 mesh.computeWorldMatrix();
 
                 // Intersections
-                if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers2(ActionManager.OnIntersectionEnterTrigger, ActionManager.OnIntersectionExitTrigger)) {
+                if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers2(Constants.ACTION_OnIntersectionEnterTrigger, Constants.ACTION_OnIntersectionExitTrigger)) {
                     this._meshesForIntersections.pushNoDuplicate(mesh);
                 }
 
@@ -4551,7 +4556,7 @@ import { Constants } from "Engine/constants";
                 for (var actionIndex = 0; actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
                     var action = sourceMesh.actionManager.actions[actionIndex];
 
-                    if (action.trigger === ActionManager.OnIntersectionEnterTrigger || action.trigger === ActionManager.OnIntersectionExitTrigger) {
+                    if (action.trigger === Constants.ACTION_OnIntersectionEnterTrigger || action.trigger === Constants.ACTION_OnIntersectionExitTrigger) {
                         var parameters = action.getTriggerParameter();
                         var otherMesh = parameters instanceof AbstractMesh ? parameters : parameters.mesh;
 
@@ -4559,25 +4564,25 @@ import { Constants } from "Engine/constants";
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
                         if (areIntersecting && currentIntersectionInProgress === -1) {
-                            if (action.trigger === ActionManager.OnIntersectionEnterTrigger) {
+                            if (action.trigger === Constants.ACTION_OnIntersectionEnterTrigger) {
                                 action._executeCurrent(ActionEvent.CreateNew(sourceMesh, undefined, otherMesh));
                                 sourceMesh._intersectionsInProgress.push(otherMesh);
-                            } else if (action.trigger === ActionManager.OnIntersectionExitTrigger) {
+                            } else if (action.trigger === Constants.ACTION_OnIntersectionExitTrigger) {
                                 sourceMesh._intersectionsInProgress.push(otherMesh);
                             }
                         } else if (!areIntersecting && currentIntersectionInProgress > -1) {
                             //They intersected, and now they don't.
 
                             //is this trigger an exit trigger? execute an event.
-                            if (action.trigger === ActionManager.OnIntersectionExitTrigger) {
+                            if (action.trigger === Constants.ACTION_OnIntersectionExitTrigger) {
                                 action._executeCurrent(ActionEvent.CreateNew(sourceMesh, undefined, otherMesh));
                             }
 
                             //if this is an exit trigger, or no exit trigger exists, remove the id from the intersection in progress array.
-                            if (!sourceMesh.actionManager.hasSpecificTrigger(ActionManager.OnIntersectionExitTrigger, (parameter) => {
+                            if (!sourceMesh.actionManager.hasSpecificTrigger(Constants.ACTION_OnIntersectionExitTrigger, (parameter) => {
                                 var parameterMesh = parameter instanceof AbstractMesh ? parameter : parameter.mesh;
                                 return otherMesh === parameterMesh;
-                            }) || action.trigger === ActionManager.OnIntersectionExitTrigger) {
+                            }) || action.trigger === Constants.ACTION_OnIntersectionExitTrigger) {
                                 sourceMesh._intersectionsInProgress.splice(currentIntersectionInProgress, 1);
                             }
                         }
@@ -4623,7 +4628,7 @@ import { Constants } from "Engine/constants";
 
             // Actions
             if (this.actionManager) {
-                this.actionManager.processTrigger(ActionManager.OnEveryFrameTrigger);
+                this.actionManager.processTrigger(Constants.ACTION_OnEveryFrameTrigger);
             }
 
             if (this._engine.isDeterministicLockStep()) {
@@ -5364,12 +5369,12 @@ import { Constants } from "Engine/constants";
             }
 
             if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
-                this._pointerOverMesh.actionManager.processTrigger(ActionManager.OnPointerOutTrigger, ActionEvent.CreateNew(this._pointerOverMesh));
+                this._pointerOverMesh.actionManager.processTrigger(Constants.ACTION_OnPointerOutTrigger, ActionEvent.CreateNew(this._pointerOverMesh));
             }
 
             this._pointerOverMesh = mesh;
             if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
-                this._pointerOverMesh.actionManager.processTrigger(ActionManager.OnPointerOverTrigger, ActionEvent.CreateNew(this._pointerOverMesh));
+                this._pointerOverMesh.actionManager.processTrigger(Constants.ACTION_OnPointerOverTrigger, ActionEvent.CreateNew(this._pointerOverMesh));
             }
         }
 
