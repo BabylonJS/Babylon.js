@@ -12,9 +12,9 @@ import { Ray } from "Culling/ray";
     /**
      * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
      */
-    export class PointerDragBehavior implements Behavior<Mesh> {
+    export class PointerDragBehavior implements Behavior<AbstractMesh> {
         private static _AnyMouseID = -2;
-        private _attachedNode: Mesh;
+        private _attachedNode: AbstractMesh;
         private _dragPlane: Mesh;
         private _scene: Scene;
         private _pointerObserver: Nullable<Observer<PointerInfo>>;
@@ -127,7 +127,7 @@ import { Ray } from "Culling/ray";
          * Attaches the drag behavior the passed in mesh
          * @param ownerNode The mesh that will be dragged around once attached
          */
-        public attach(ownerNode: Mesh): void {
+        public attach(ownerNode: AbstractMesh): void {
             this._scene = ownerNode.getScene();
             this._attachedNode = ownerNode;
 

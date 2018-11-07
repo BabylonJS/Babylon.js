@@ -302,9 +302,9 @@ declare type BaseTexture = import("Materials/Textures/baseTexture").BaseTexture;
 
                 case InternalTexture.DATASOURCE_URL:
                     proxy = this._engine.createTexture(this.url, !this.generateMipMaps, this.invertY, null, this.samplingMode, () => {
+                        proxy._swapAndDie(this);
                         this.isReady = true;
                     }, null, this._buffer, undefined, this.format);
-                    proxy._swapAndDie(this);
                     return;
 
                 case InternalTexture.DATASOURCE_RAW:
@@ -369,9 +369,9 @@ declare type BaseTexture = import("Materials/Textures/baseTexture").BaseTexture;
 
                 case InternalTexture.DATASOURCE_CUBE:
                     proxy = this._engine.createCubeTexture(this.url, null, this._files, !this.generateMipMaps, () => {
+                        proxy._swapAndDie(this);
                         this.isReady = true;
                     }, null, this.format, this._extension);
-                    proxy._swapAndDie(this);
                     return;
 
                 case InternalTexture.DATASOURCE_CUBERAW:
@@ -383,9 +383,9 @@ declare type BaseTexture = import("Materials/Textures/baseTexture").BaseTexture;
                 case InternalTexture.DATASOURCE_CUBERAW_RGBD:
                     proxy = this._engine.createRawCubeTexture(null, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
                     InternalTexture._UpdateRGBDAsync(proxy, this._bufferViewArrayArray!, this._sphericalPolynomial, this._lodGenerationScale, this._lodGenerationOffset).then(() => {
+                        proxy._swapAndDie(this);
                         this.isReady = true;
                     });
-                    proxy._swapAndDie(this);
                     return;
 
                 case InternalTexture.DATASOURCE_CUBEPREFILTERED:
