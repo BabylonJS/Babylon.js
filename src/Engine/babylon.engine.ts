@@ -4243,7 +4243,7 @@ module BABYLON {
          * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
          * @param forcedExtension defines the extension to use to pick the right loader
-         * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (defualt: empty array)
+         * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (default: empty array)
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
         public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
