@@ -72,6 +72,9 @@ module BABYLON {
             }, false);
 
             try {
+                if (Tools.UseCustomRequestHeaders) {
+                    Tools.InjectCustomRequestHeaders(xhr);
+                }
                 xhr.send();
             }
             catch (ex) {
