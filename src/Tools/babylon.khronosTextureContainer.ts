@@ -65,6 +65,10 @@ module BABYLON {
          * Gets the load type
          */
         public loadType: number;
+        /**
+         * If the container has been made invalid (eg. constructor failed to correctly load array buffer)
+         */
+        public isInvalid = false;
 
         /**
          * Creates a new KhronosTextureContainer
@@ -82,7 +86,8 @@ module BABYLON {
             var identifier = new Uint8Array(this.arrayBuffer, 0, 12);
             if (identifier[0] !== 0xAB || identifier[1] !== 0x4B || identifier[2] !== 0x54 || identifier[3] !== 0x58 || identifier[4] !== 0x20 || identifier[5] !== 0x31 ||
                 identifier[6] !== 0x31 || identifier[7] !== 0xBB || identifier[8] !== 0x0D || identifier[9] !== 0x0A || identifier[10] !== 0x1A || identifier[11] !== 0x0A) {
-                Tools.Error("texture missing KTX identifier");
+                this.isInvalid = true;
+                    Tools.Error("texture missing KTX identifier");
                 return;
             }
 
