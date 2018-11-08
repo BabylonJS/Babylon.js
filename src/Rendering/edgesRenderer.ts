@@ -2,7 +2,7 @@ import { Nullable } from "types";
 import { VertexBuffer } from "Mesh/buffer";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { LinesMesh, InstancedLinesMesh } from "Mesh/linesMesh";
-import { Vector3 } from "Math/math";
+import { Vector3, Tmp } from "Math/math";
 import { IDisposable } from "scene";
 import { Observer } from "Tools/observable";
 import { Effect } from "Materials/effect";
@@ -11,7 +11,6 @@ import { ShaderMaterial } from "Materials/shaderMaterial";
 import { Camera } from "Cameras/camera";
 import { Constants } from "Engine/constants";
 import { Node } from "node";
-import { LineEdgesRenderer } from "./lineEdgesRenderer";
 
 declare module "Mesh/AbstractMesh" {
     export interface AbstractMesh {
@@ -498,5 +497,53 @@ declare module "Mesh/LinesMesh" {
             // Draw order
             engine.drawElementsType(Material.TriangleFillMode, 0, this._indicesCount);
             this._lineShader.unbind();
+        }
+    }
+
+    /**
+     * LineEdgesRenderer for LineMeshes to remove unnecessary triangulation
+     */
+    export class LineEdgesRenderer extends EdgesRenderer {
+
+        /**
+         * This constructor turns off auto generating edges line in Edges Renderer to make it here.
+         * @param  source LineMesh used to generate edges
+         * @param  epsilon not important (specified angle for edge detection)
+         * @param  checkVerticesInsteadOfIndices not important for LineMesh
+         */
+        constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false) {
+                super(source, epsilon, checkVerticesInsteadOfIndices, false);
+                this._generateEdgesLines();
+        }
+
+        /**
+         * Generate edges for each line in LinesMesh. Every Line should be rendered as edge.
+         */
+        _generateEdgesLines(): void {
+            var positions = this._source.getVerticesData(VertexBuffer.PositionKind);
+            var indices = this._source.getIndices();
+
+            if (!indices || !positions) {
+                return;
+            }
+
+            const p0 = Tmp.Vector3[0];
+            const p1 = Tmp.Vector3[1];
+            const len = indices.length - 1;
+            for (let i = 0, offset = 0; i < len; i += 2, offset += 4) {
+                Vector3.FromArrayToRef(positions, 3 * indices[i], p0);
+                Vector3.FromArrayToRef(positions, 3 * indices[i + 1], p1);
+                this.createLine(p0, p1, offset);
+            }
+
+            // Merge into a single mesh
+            var engine = this._source.getScene().getEngine();
+
+            this._buffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, this._linesPositions, VertexBuffer.PositionKind, false);
+            this._buffers[VertexBuffer.NormalKind] = new VertexBuffer(engine, this._linesNormals, VertexBuffer.NormalKind, false, false, 4);
+
+            this._ib = engine.createIndexBuffer(this._linesIndices);
+
+            this._indicesCount = this._linesIndices.length;
         }
     }
