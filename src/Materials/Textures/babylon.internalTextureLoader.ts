@@ -52,6 +52,6 @@ module BABYLON {
          * @param callback defines the method to call once ready to upload
          */
         loadData(data: ArrayBuffer, texture: InternalTexture,
-            callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
+            callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed?: boolean) => void): void;
     }
 }
