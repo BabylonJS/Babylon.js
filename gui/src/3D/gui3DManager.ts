@@ -53,6 +53,7 @@ export class GUI3DManager implements IDisposable {
 
         this._utilityLayer = new UtilityLayerRenderer(this._scene);
         this._utilityLayer.onlyCheckPointerDownEvents = false;
+        this._utilityLayer.pickUtilitySceneFirst = false;
         this._utilityLayer.mainSceneTrackerPredicate = (mesh: Nullable<AbstractMesh>) => {
             return mesh && mesh.metadata && mesh.metadata._node;
         };
