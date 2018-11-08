@@ -156,7 +156,7 @@ module BABYLON {
                 if (Tools.UseCustomRequestHeaders) {
                     Tools.InjectCustomRequestHeaders(xhr);
                 }
-                
+
                 xhr.send();
             }
             catch (ex) {
