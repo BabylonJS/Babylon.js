@@ -144,6 +144,9 @@ import { IOfflineProvider } from "./IOfflineProvider";
                     // It could fail when coupled with HTML5 Offline API
                     var retryManifestURL = this._currentSceneUrl + ".manifest";
                     xhr.open("GET", retryManifestURL, true);
+                    if (Tools.UseCustomRequestHeaders) {
+                        Tools.InjectCustomRequestHeaders(xhr);
+                    }
                     xhr.send();
                 }
                 else {
@@ -152,6 +155,10 @@ import { IOfflineProvider } from "./IOfflineProvider";
             }, false);
 
             try {
+                if (Tools.UseCustomRequestHeaders) {
+                    Tools.InjectCustomRequestHeaders(xhr);
+                }
+
                 xhr.send();
             }
             catch (ex) {
@@ -377,6 +384,10 @@ import { IOfflineProvider } from "./IOfflineProvider";
                         Tools.Error("Error in XHR request in BABYLON.Database.");
                         image.src = url;
                     }, false);
+
+                    if (Tools.CustomRequestHeaders) {
+                        Tools.InjectCustomRequestHeaders(xhr);
+                    }
 
                     xhr.send();
                 }
@@ -652,6 +663,10 @@ import { IOfflineProvider } from "./IOfflineProvider";
                     Tools.Error("error on XHR request.");
                     callback();
                 }, false);
+
+                if (Tools.UseCustomRequestHeaders) {
+                    Tools.InjectCustomRequestHeaders(xhr);
+                }
 
                 xhr.send();
             }

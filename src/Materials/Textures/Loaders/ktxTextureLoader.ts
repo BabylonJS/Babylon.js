@@ -89,12 +89,12 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          * @param callback defines the method to call once ready to upload
          */
         public loadData(data: ArrayBuffer, texture: InternalTexture,
-            callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void {
+            callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed: boolean) => void): void {
             var ktx = new KhronosTextureContainer(data, 1);
 
             callback(ktx.pixelWidth, ktx.pixelHeight, false, true, () => {
                 ktx.uploadLevels(texture, texture.generateMipMaps);
-            });
+            }, ktx.isInvalid);
         }
     }
 
