@@ -203,7 +203,7 @@ module BABYLON {
         public static BaseUrl = "";
 
         /**
-         * Enable/Disable Custom HTTP Request Headers globally. 
+         * Enable/Disable Custom HTTP Request Headers globally.
          * default = false
          * @see CustomRequestHeaders
          */
@@ -216,7 +216,6 @@ module BABYLON {
          */
         public static CustomRequestHeaders: { [key: string]: string } = {};
 
-        
         /**
          * Gets or sets the retry strategy to apply when an error happens while loading an asset
          */
