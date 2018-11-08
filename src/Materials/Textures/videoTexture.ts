@@ -61,7 +61,9 @@ import { Texture } from "Materials/Textures/texture";
         private _generateMipMaps: boolean;
         private _engine: Engine;
         private _stillImageCaptured = false;
-        private _poster = false;
+        private _displayingPosterTexture = false;
+        private _settings: VideoTextureSettings;
+        private _createInternalTextureOnEvent: string;
 
         /**
          * Creates a video texture.
@@ -98,6 +100,8 @@ import { Texture } from "Materials/Textures/texture";
 
             this.name = name || this._getName(src);
             this.video = this._getVideo(src);
+            this._settings = settings;
+
             if (settings.poster) {
                 this.video.poster = settings.poster;
             }
@@ -111,18 +115,20 @@ import { Texture } from "Materials/Textures/texture";
 
             this.video.setAttribute("playsinline", "");
 
-            this.video.addEventListener("canplay", this._createInternalTexture);
             this.video.addEventListener("paused", this._updateInternalTexture);
             this.video.addEventListener("seeked", this._updateInternalTexture);
             this.video.addEventListener("emptied", this.reset);
+            this._createInternalTextureOnEvent = (settings.poster && !settings.autoPlay) ? "play" : "canplay";
+            this.video.addEventListener(this._createInternalTextureOnEvent, this._createInternalTexture);
 
-            if (this.video.readyState >= this.video.HAVE_CURRENT_DATA) {
-                this._createInternalTexture();
-            }
-
-            if (settings.poster) {
+            const videoHasEnoughData = (this.video.readyState >= this.video.HAVE_CURRENT_DATA);
+            if (settings.poster &&
+                (!settings.autoPlay || !videoHasEnoughData)) {
                 this._texture = this._engine.createTexture(settings.poster!, false, true, scene);
-                this._poster = true;
+                this._displayingPosterTexture = true;
+            }
+            else if (videoHasEnoughData) {
+                this._createInternalTexture();
             }
         }
 
@@ -160,9 +166,9 @@ import { Texture } from "Materials/Textures/texture";
 
         private _createInternalTexture = (): void => {
             if (this._texture != null) {
-                if (this._poster) {
+                if (this._displayingPosterTexture) {
                     this._texture.dispose();
-                    this._poster = false;
+                    this._displayingPosterTexture = false;
                 }
                 else {
                     return;
@@ -186,7 +192,7 @@ import { Texture } from "Materials/Textures/texture";
                 this._samplingMode
             );
 
-            if (!this.video.autoplay) {
+            if (!this.video.autoplay && !this._settings.poster) {
                 let oldHandler = this.video.onplaying;
                 let error = false;
                 this.video.onplaying = () => {
@@ -236,7 +242,7 @@ import { Texture } from "Materials/Textures/texture";
                 return;
             }
 
-            if (!this._poster) {
+            if (!this._displayingPosterTexture) {
                 this._texture.dispose();
                 this._texture = null;
             }
@@ -283,6 +289,10 @@ import { Texture } from "Materials/Textures/texture";
             if (this.video.readyState < this.video.HAVE_CURRENT_DATA) {
                 return;
             }
+            if (this._displayingPosterTexture) {
+                return;
+            }
+
             this._engine.updateVideoTexture(this._texture, this.video, this._invertY);
         }
 
@@ -305,7 +315,7 @@ import { Texture } from "Materials/Textures/texture";
                 this._onUserActionRequestedObservable = null;
             }
 
-            this.video.removeEventListener("canplay", this._createInternalTexture);
+            this.video.removeEventListener(this._createInternalTextureOnEvent, this._createInternalTexture);
             this.video.removeEventListener("paused", this._updateInternalTexture);
             this.video.removeEventListener("seeked", this._updateInternalTexture);
             this.video.removeEventListener("emptied", this.reset);

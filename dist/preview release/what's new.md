@@ -60,7 +60,9 @@
 - Added opacity texture support to `GridMaterial` ([Deltakosh](https://github.com/deltakosh))
 - Added support for deserializing morph target animations in animation groups
 - AssetContainer dispose method ([TrevorDev](https://github.com/TrevorDev))
+- Loading texture with KTX will fallback to non-KTX loader if KTX loader fails ([TrevorDev](https://github.com/TrevorDev))
 - `Layer` are now supported in `RenderTargetTexture` ([Sebavan](https://github.com/Sebavan))
+- Added `Tools.CustomRequestHeaders`, `Tools.UseCustomRequestHeaders`, `Tools.InjectCustomRequestHeaders` to send Custom Request Headers alongside XMLHttpRequest's i.e. when loading files (Tools.Loadfile) from resources requiring special headers like 'Authorization' ([susares](https://github.com/susares))
 
 ### glTF Loader
 
@@ -96,6 +98,7 @@
 - Add missing effect layer to asset container ([TrevorDev](https://github.com/TrevorDev))
 - Fixed effect layer compatibility with multi materials ([Sebavan](https://github.com/Sebavan))
 - Added a `DeepImmutable<T>` type to specifiy that a referenced object should be considered recursively immutable, meaning that all its properties are `readonly` and that if a property is a reference to an object, this object is also recursively immutable. ([barroij](https://github.com/barroij))
+- Fixed `VideoTexture` poster property when autoplay is turned off.
 
 ### Viewer
 
