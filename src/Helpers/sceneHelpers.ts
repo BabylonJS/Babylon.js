@@ -15,6 +15,9 @@ import { WebXREnterExitUI } from "Cameras/XR/webXREnterExitUI";
 import { WebXRExperienceHelper } from "Cameras/XR/webXRExperienceHelper";
 import { VRExperienceHelperOptions, VRExperienceHelper } from "Cameras/VR/vrExperienceHelper";
 
+/** @hidden */
+export var _forceSceneHelpersToBundle = true;
+
 declare module "scene" {
     export interface Scene {
         /**

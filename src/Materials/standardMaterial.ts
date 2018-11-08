@@ -1,4 +1,8 @@
-import { serialize, Observer, SmartArray, SerializationHelper, serializeAsColor3, expandToProperty, IAnimatable, serializeAsTexture, serializeAsFresnelParameters } from "Tools";
+import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "tools/decorators";
+import { Observer } from "Tools/observable";
+import { SmartArray } from "Tools/smartArray";
+import { IAnimatable } from "Tools/tools";
+
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { Matrix, Color3 } from "Math/math";

@@ -2,6 +2,10 @@ import { Nullable, int } from "types";
 import { Engine } from "Engine/engine";
 import { AbstractMesh } from "Mesh/abstractMesh";
 import { _TimeToken } from "Instrumentation/timeToken";
+
+/** @hidden */
+export var _forceOcclusionQueryToBundle = true;
+
     /** @hidden */
     class _OcclusionDataStorage {
         /** @hidden */
