@@ -2,6 +2,9 @@ import { Nullable } from "types";
 import { Engine } from "Engine/engine";
 import { _TimeToken } from "Instrumentation/timeToken";
 
+/** @hidden */
+export var _forceTransformFeedbackToBundle = true;
+
 declare module "Engine/Engine" {
     export interface Engine {
         /**
