@@ -1,4 +1,3 @@
-    import { Tools, Tags } from "Tools";
     import { Nullable, FloatArray, DataArray, IndicesArray } from "types";
     import { Scene } from "scene";
     import { Vector3, Vector2, Color4 } from "Math/math";
@@ -12,6 +11,8 @@
     import { SceneLoader } from "Loading/sceneLoader";
     import { BoundingInfo } from "Culling/boundingInfo";
     import { Constants } from "Engine/constants";
+    import { Tools } from "Tools/tools";
+    import { Tags } from "Tools/tags";
     /**
      * Class used to store geometry data (vertex buffers + index buffer)
      */
