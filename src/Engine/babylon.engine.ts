@@ -4263,7 +4263,7 @@ module BABYLON {
 
             let loader: Nullable<IInternalTextureLoader> = null;
             for (let availableLoader of Engine._TextureLoaders) {
-                if (excludeLoaders.indexOf(availableLoader) == -1 && availableLoader.canLoad(extension, this._textureFormatInUse, fallback, isBase64, buffer ? true : false)) {
+                if (excludeLoaders.indexOf(availableLoader) === -1 && availableLoader.canLoad(extension, this._textureFormatInUse, fallback, isBase64, buffer ? true : false)) {
                     loader = availableLoader;
                     break;
                 }
