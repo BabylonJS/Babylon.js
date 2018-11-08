@@ -4269,12 +4269,8 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
          * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
          * @param forcedExtension defines the extension to use to pick the right loader
-<<<<<<< HEAD:src/Engine/engine.ts
-         * @returns a InternalTexture for assignment back into Texture
-=======
          * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (default: empty array)
          * @returns a InternalTexture for assignment back into BABYLON.Texture
->>>>>>> upstream/master:src/Engine/babylon.engine.ts
          */
         public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
             onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
