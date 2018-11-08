@@ -61,6 +61,7 @@
 - Added support for deserializing morph target animations in animation groups
 - AssetContainer dispose method ([TrevorDev](https://github.com/TrevorDev))
 - `Layer` are now supported in `RenderTargetTexture` ([Sebavan](https://github.com/Sebavan))
+- Make onscreen joystick's canvas public ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
