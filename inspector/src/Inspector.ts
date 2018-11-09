@@ -8,7 +8,7 @@ import { EmbedHostComponent } from "./components/embedHost/embedHostComponent";
 import { PropertyChangedEvent } from "./components/propertyChangedEvent";
 import { GlobalState } from "./components/globalState";
 import { IGLTFLoaderExtension } from "babylonjs-gltf2interface";
-import {GLTFFileLoader} from "babylonjs-loaders"
+import { GLTFFileLoader } from "babylonjs-loaders"
 
 interface IInternalInspectorOptions extends IInspectorOptions {
     popup: boolean;
@@ -307,10 +307,10 @@ export class Inspector {
             this._GlobalState.onPluginActivatedObserver = BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: GLTFFileLoader) => {
                 if (loader.name === "gltf") {
                     this._GlobalState.prepareGLTFPlugin(loader);
-    
+
                     loader.onValidatedObservable.add((results: IGLTFValidationResults) => {
                         this._GlobalState.validationResults = results;
-    
+
                         this._GlobalState.onValidationResultsUpdatedObservable.notifyObservers(results);
                     });
 
