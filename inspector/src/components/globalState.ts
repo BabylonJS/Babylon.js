@@ -11,14 +11,16 @@ export class GlobalState {
     public onValidationResultsUpdatedObservable = new Observable<IGLTFValidationResults>();
 
     public onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
-    public glTFLoaderDefaults: {[key: string]: boolean} = {};
+    public glTFLoaderDefaults: {[name: string]: {[key: string]: any}} = {};
 
     public prepareGLTFPlugin(loader: GLTFFileLoader) {
         loader.onExtensionLoadedObservable.add((extension: IGLTFLoaderExtension) => {
 
             var extensionState = this.glTFLoaderDefaults[extension.name];
             if (extensionState !== undefined) {
-                extension.enabled = extensionState;
+                for (const key in extensionState) {
+                    (extension as any)[key] = extensionState[key];
+                }
             }
         });
     }
