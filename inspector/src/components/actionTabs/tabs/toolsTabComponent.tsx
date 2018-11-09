@@ -2,8 +2,9 @@ import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
 import { LineContainerComponent } from "../lineContainerComponent";
 import { ButtonLineComponent } from "../lines/buttonLineComponent";
-import { VideoRecorder, TransformNode, PBRMaterial, StandardMaterial, BackgroundMaterial, Nullable } from "babylonjs";
-import { GLTFData } from "babylonjs-serializers";
+import { VideoRecorder, Nullable } from "babylonjs";
+import { GLTFComponent } from "./tools/gltfComponent";
+
 
 export class ToolsTabComponent extends PaneComponent {
     private _videoRecorder: Nullable<VideoRecorder>;
@@ -54,32 +55,6 @@ export class ToolsTabComponent extends PaneComponent {
         this.setState({ tag: "Stop recording" })
     }
 
-    shouldExport(transformNode: TransformNode): boolean {
-
-        // No skybox
-        if (transformNode instanceof BABYLON.Mesh) {
-            if (transformNode.material) {
-                const material = transformNode.material as PBRMaterial | StandardMaterial | BackgroundMaterial;
-                const reflectionTexture = material.reflectionTexture;
-                if (reflectionTexture && reflectionTexture.coordinatesMode === BABYLON.Texture.SKYBOX_MODE) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    exportGLTF() {
-        const scene = this.props.scene;
-
-        BABYLON.GLTF2Export.GLBAsync(scene, "scene", {
-            shouldExportTransformNode: (transformNode) => this.shouldExport(transformNode)
-        }).then((glb: GLTFData) => {
-            glb.downloadFiles();
-        });
-    }
-
     render() {
         const scene = this.props.scene;
 
@@ -92,10 +67,8 @@ export class ToolsTabComponent extends PaneComponent {
                 <LineContainerComponent title="CAPTURE">
                     <ButtonLineComponent label="Screenshot" onClick={() => this.captureScreenshot()} />
                     <ButtonLineComponent label={this.state.tag} onClick={() => this.recordVideo()} />
-                </LineContainerComponent>
-                <LineContainerComponent title="GLTF">
-                    <ButtonLineComponent label="Export" onClick={() => this.exportGLTF()} />
-                </LineContainerComponent>
+                </LineContainerComponent>   
+                <GLTFComponent scene={scene} globalState={this.props.globalState!}/> 
             </div>
         );
     }
