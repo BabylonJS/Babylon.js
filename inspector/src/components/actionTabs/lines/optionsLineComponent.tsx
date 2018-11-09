@@ -12,6 +12,7 @@ interface IOptionsLineComponentProps {
     target: any,
     propertyName: string,
     options: ListLineOption[],
+    noDirectUpdate?: boolean,
     onSelect?: (value: number) => void,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
@@ -57,7 +58,9 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         this._localChange = true;
 
         const store = this.state.value;
-        this.props.target[this.props.propertyName] = value;
+        if (!this.props.noDirectUpdate) {
+            this.props.target[this.props.propertyName] = value;
+        }
         this.setState({ value: value });
 
         this.raiseOnPropertyChanged(value, store);

@@ -52,7 +52,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     }
 
     componentWillMount() {
-        this._onSelectionChangeObserver = this.props.globalState.onSelectionChangeObservable.add((entity) => {
+        this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add((entity) => {
             if (this.state.selectedEntity !== entity) {
                 this.setState({ selectedEntity: entity });
             }
@@ -61,7 +61,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
     componentWillUnmount() {
         if (this._onSelectionChangeObserver) {
-            this.props.globalState.onSelectionChangeObservable.remove(this._onSelectionChangeObserver);
+            this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangeObserver);
         }
 
         if (this._onNewSceneAddedObserver) {
@@ -86,13 +86,13 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 data.found = true;
                 if (!goNext) {
                     if (data.previousOne) {
-                        this.props.globalState.onSelectionChangeObservable.notifyObservers(data.previousOne);
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(data.previousOne);
                     }
                     return true;
                 }
             } else {
                 if (data.found) {
-                    this.props.globalState.onSelectionChangeObservable.notifyObservers(item);
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers(item);
                     return true;
                 }
                 data.previousOne = item;
@@ -168,13 +168,13 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         return (
             <div id="tree">
                 <SceneExplorerFilterComponent onFilter={(filter) => this.filterContent(filter)} />
-                <SceneTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} scene={scene} onRefresh={() => this.forceUpdate()} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} />
-                <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.rootNodes} label="Nodes" offset={1} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} filter={this.state.filter} />
-                <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.materials} label="Materials" offset={1} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} filter={this.state.filter} />
-                <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={textures} label="Textures" offset={1} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} filter={this.state.filter} />
+                <SceneTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} scene={scene} onRefresh={() => this.forceUpdate()} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} />
+                <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.rootNodes} label="Nodes" offset={1} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} filter={this.state.filter} />
+                <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.materials} label="Materials" offset={1} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} filter={this.state.filter} />
+                <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={textures} label="Textures" offset={1} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} filter={this.state.filter} />
                 {
                     guiElements && guiElements.length > 0 &&
-                    <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} filter={this.state.filter} />
+                    <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} filter={this.state.filter} />
                 }
             </div>
         )

@@ -73,7 +73,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         const issues = validationResults.issues;
 
         return (
-            <LineContainerComponent title="GLTF VALIDATION" closed={true}>
+            <LineContainerComponent title="GLTF VALIDATION" closed={!issues.numErrors && !issues.numWarnings}>
                 <BooleanLineComponent label={this.prepareText("error", issues.numErrors)} value={issues.numErrors === 0} />
                 <BooleanLineComponent label={this.prepareText("warning", issues.numWarnings)} value={issues.numWarnings === 0} />
                 <BooleanLineComponent label={this.prepareText("info", issues.numInfos)} value={issues.numInfos === 0} />

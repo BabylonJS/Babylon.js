@@ -10,7 +10,7 @@ import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent"
 
 interface IMeshPropertyGridComponentProps {
     mesh: Mesh,
-    onSelectionChangeObservable?: Observable<any>,
+    onSelectionChangedObservable?: Observable<any>,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -98,12 +98,12 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
     }
 
     onMaterialLink() {
-        if (!this.props.onSelectionChangeObservable) {
+        if (!this.props.onSelectionChangedObservable) {
             return;
         }
 
         const mesh = this.props.mesh;
-        this.props.onSelectionChangeObservable.notifyObservers(mesh.material)
+        this.props.onSelectionChangedObservable.notifyObservers(mesh.material)
     }
 
     render() {

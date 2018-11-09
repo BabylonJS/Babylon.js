@@ -2,7 +2,7 @@ import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
 import { LineContainerComponent } from "../lineContainerComponent";
 import { ButtonLineComponent } from "../lines/buttonLineComponent";
-import { VideoRecorder, Nullable, TransformNode, PBRMaterial, StandardMaterial, BackgroundMaterial } from "babylonjs";
+import { VideoRecorder, Nullable, TransformNode, PBRMaterial, StandardMaterial, BackgroundMaterial, EnvironmentTextureTools, CubeTexture } from "babylonjs";
 import { GLTFComponent } from "./tools/gltfComponent";
 import { GLTFData } from "babylonjs-serializers";
 
@@ -82,6 +82,27 @@ export class ToolsTabComponent extends PaneComponent {
         });
     }
 
+    exportBabylon() {
+        const scene = this.props.scene;
+
+        var strScene = JSON.stringify(BABYLON.SceneSerializer.Serialize(scene));
+        var blob = new Blob([strScene], { type: "octet/stream" });
+
+        BABYLON.Tools.Download(blob, "scene.babylon")
+    }
+
+    createEnvTexture() {
+        const scene = this.props.scene;
+        EnvironmentTextureTools.CreateEnvTextureAsync(scene.environmentTexture as CubeTexture)
+            .then((buffer: ArrayBuffer) => {
+                var blob = new Blob([buffer], { type: "octet/stream" });
+                BABYLON.Tools.Download(blob, "environment.env");
+            })
+            .catch((error: any) => {
+                console.error(error);
+            });
+    }
+
     render() {
         const scene = this.props.scene;
 
@@ -94,11 +115,16 @@ export class ToolsTabComponent extends PaneComponent {
                 <LineContainerComponent title="CAPTURE">
                     <ButtonLineComponent label="Screenshot" onClick={() => this.captureScreenshot()} />
                     <ButtonLineComponent label={this.state.tag} onClick={() => this.recordVideo()} />
-                </LineContainerComponent>   
+                </LineContainerComponent>
                 <LineContainerComponent title="SCENE EXPORT">
                     <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
+                    <ButtonLineComponent label="Export to Babylon" onClick={() => this.exportBabylon()} />
+                    {
+                        !scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.activeCamera &&
+                        <ButtonLineComponent label="Generate .env texture" onClick={() => this.createEnvTexture()} />
+                    }
                 </LineContainerComponent>
-                <GLTFComponent scene={scene} globalState={this.props.globalState!}/> 
+                <GLTFComponent scene={scene} globalState={this.props.globalState!} />
             </div>
         );
     }

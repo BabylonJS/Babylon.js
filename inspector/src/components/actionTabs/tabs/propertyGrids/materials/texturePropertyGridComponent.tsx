@@ -1,13 +1,14 @@
 import * as React from "react";
 import { Texture, Observable } from "babylonjs";
-import { PropertyChangedEvent } from "../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../lineContainerComponent";
-import { SliderLineComponent } from "../../lines/sliderLineComponent";
-import { TextLineComponent } from "../../lines/textLineComponent";
-import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
-import { TextureLineComponent } from "../../lines/textureLineComponent";
-import { FloatLineComponent } from "../../lines/floatLineComponent";
+import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import { LineContainerComponent } from "../../../lineContainerComponent";
+import { SliderLineComponent } from "../../../lines/sliderLineComponent";
+import { TextLineComponent } from "../../../lines/textLineComponent";
+import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { TextureLineComponent } from "../../../lines/textureLineComponent";
+import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { AdvancedDynamicTexture } from "babylonjs-gui";
+import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 
 interface ITexturePropertyGridComponentProps {
     texture: Texture,
@@ -23,6 +24,12 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         const texture = this.props.texture;
         const adtTexture = texture instanceof AdvancedDynamicTexture ? texture as AdvancedDynamicTexture : null;
 
+        var samplingMode = [
+            { label: "Nearest", value: BABYLON.Texture.NEAREST_NEAREST },
+            { label: "Nearest & linear mip", value: BABYLON.Texture.NEAREST_LINEAR },
+            { label: "Linear", value: BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR },
+        ];
+
         return (
             <div className="pane">
                 <LineContainerComponent title="PREVIEW">
@@ -35,6 +42,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <TextLineComponent label="Is render target" value={texture.isRenderTarget ? "Yes" : "No"} />
                     <TextLineComponent label="Has mipmaps" value={!texture.noMipmap ? "Yes" : "No"} />
                     <SliderLineComponent label="UV set" target={texture} propertyName="coordinatesIndex" minimum={0} maximum={3} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <OptionsLineComponent label="Sampling" options={samplingMode} target={texture} noDirectUpdate={true} propertyName="samplingMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={value => texture.updateSamplingMode(value)} />
                 </LineContainerComponent>
                 {
                     adtTexture &&

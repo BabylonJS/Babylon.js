@@ -7,9 +7,9 @@ import { faWrench } from '@fortawesome/free-solid-svg-icons';
 export interface ITextureLinkLineComponentProps {
     label: string,
     texture: Nullable<BaseTexture>,
-    material: Material,
-    onSelectionChangeObservable?: Observable<any>,
-    onDebugSelectionChangeObservable: Observable<BaseTexture>
+    material?: Material,
+    onSelectionChangedObservable?: Observable<any>,
+    onDebugSelectionChangeObservable?: Observable<BaseTexture>
 }
 
 export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, { isDebugSelected: boolean }> {
@@ -21,11 +21,14 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         const material = this.props.material;
         const texture = this.props.texture;
 
-        this.state = { isDebugSelected: material.metadata && material.metadata.debugTexture === texture };
+        this.state = { isDebugSelected: material && material.metadata && material.metadata.debugTexture === texture };
     }
 
 
     componentWillMount() {
+        if (!this.props.onDebugSelectionChangeObservable) {
+            return;
+        }
         this._onDebugSelectionChangeObserver = this.props.onDebugSelectionChangeObservable.add((texture) => {
             if (this.props.texture !== texture) {
                 this.setState({ isDebugSelected: false });
@@ -34,7 +37,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
     }
 
     componentWillUnmount() {
-        if (this._onDebugSelectionChangeObserver) {
+        if (this.props.onDebugSelectionChangeObservable && this._onDebugSelectionChangeObserver) {
             this.props.onDebugSelectionChangeObservable.remove(this._onDebugSelectionChangeObserver);
         }
     }
@@ -42,6 +45,10 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
     debugTexture() {
         const texture = this.props.texture;
         const material = this.props.material;
+
+        if (!material) {
+            return;
+        }
         const scene = material.getScene();
 
         if (material.metadata && material.metadata.debugTexture === texture) {
@@ -87,7 +94,9 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         material.metadata.debugTexture = texture;
         material.metadata.debugMaterial = debugMaterial;
 
-        this.props.onDebugSelectionChangeObservable.notifyObservers(texture!);
+        if (this.props.onDebugSelectionChangeObservable) {
+            this.props.onDebugSelectionChangeObservable.notifyObservers(texture!);
+        }
 
         if (needToDisposeCheckMaterial) {
             checkMaterial.dispose();
@@ -97,12 +106,12 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
     }
 
     onLink() {
-        if (!this.props.onSelectionChangeObservable) {
+        if (!this.props.onSelectionChangedObservable) {
             return;
         }
 
         const texture = this.props.texture;
-        this.props.onSelectionChangeObservable.notifyObservers(texture!);
+        this.props.onSelectionChangedObservable.notifyObservers(texture!);
     }
 
     render() {
@@ -114,7 +123,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         return (
             <div className="textureLinkLine">
                 {
-                    !texture.isCube &&
+                    !texture.isCube && this.props.material &&
                     <div className={this.state.isDebugSelected ? "debug selected" : "debug"} onClick={() => this.debugTexture()} title="Render as main texture">
                         <FontAwesomeIcon icon={faWrench} />
                     </div>

@@ -10,7 +10,7 @@ export interface IHeaderComponentProps {
     noCommands?: boolean,
     onPopup: () => void,
     onClose: () => void,
-    onSelectionChangeObservable?: Observable<any>
+    onSelectionChangedObservable?: Observable<any>
 }
 
 export class HeaderComponent extends React.Component<IHeaderComponentProps, { isBackVisible: boolean }> {
@@ -23,11 +23,11 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps, { is
     }
 
     componentWillMount() {
-        if (!this.props.onSelectionChangeObservable) {
+        if (!this.props.onSelectionChangedObservable) {
             return;
         }
 
-        this._onSelectionChangeObserver = this.props.onSelectionChangeObservable.add((entity) => {
+        this._onSelectionChangeObserver = this.props.onSelectionChangedObservable.add((entity) => {
             if (this._backStack.length === 0 || entity !== this._backStack[this._backStack.length - 1]) {
                 this._backStack.push(entity);
                 this.setState({ isBackVisible: this._backStack.length > 1 });
@@ -37,7 +37,7 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps, { is
 
     componentWillUnmount() {
         if (this._onSelectionChangeObserver) {
-            this.props.onSelectionChangeObservable!.remove(this._onSelectionChangeObserver);
+            this.props.onSelectionChangedObservable!.remove(this._onSelectionChangeObserver);
         }
     }
 
@@ -45,8 +45,8 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps, { is
         this._backStack.pop(); // remove current
         var entity = this._backStack[this._backStack.length - 1];
 
-        if (this.props.onSelectionChangeObservable) {
-            this.props.onSelectionChangeObservable.notifyObservers(entity);
+        if (this.props.onSelectionChangedObservable) {
+            this.props.onSelectionChangedObservable.notifyObservers(entity);
         }
 
         this.setState({ isBackVisible: this._backStack.length > 1 });

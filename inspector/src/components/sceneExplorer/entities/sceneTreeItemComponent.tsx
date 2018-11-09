@@ -9,7 +9,7 @@ interface ISceneTreeItemComponentProps {
     onRefresh: () => void,
     selectedEntity?: any,
     extensibilityGroups?: IExplorerExtensibilityGroup[],
-    onSelectionChangeObservable?: Observable<any>
+    onSelectionChangedObservable?: Observable<any>
 }
 
 export class SceneTreeItemComponent extends React.Component<ISceneTreeItemComponentProps, { isSelected: boolean, isInPickingMode: boolean, gizmoMode: number }> {
@@ -49,12 +49,12 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
     }
 
     componentWillMount() {
-        if (!this.props.onSelectionChangeObservable) {
+        if (!this.props.onSelectionChangedObservable) {
             return;
         }
 
         const scene = this.props.scene;
-        this._onSelectionChangeObserver = this.props.onSelectionChangeObservable.add((entity) => {
+        this._onSelectionChangeObserver = this.props.onSelectionChangedObservable.add((entity) => {
             if (scene.metadata && scene.metadata.gizmoManager) {
                 const manager: GizmoManager = scene.metadata.gizmoManager;
 
@@ -75,17 +75,17 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
             this._onPointerObserver = null;
         }
 
-        if (this._onSelectionChangeObserver && this.props.onSelectionChangeObservable) {
-            this.props.onSelectionChangeObservable.remove(this._onSelectionChangeObserver);
+        if (this._onSelectionChangeObserver && this.props.onSelectionChangedObservable) {
+            this.props.onSelectionChangedObservable.remove(this._onSelectionChangeObserver);
         }
     }
 
     onSelect() {
-        if (!this.props.onSelectionChangeObservable) {
+        if (!this.props.onSelectionChangedObservable) {
             return;
         }
         const scene = this.props.scene;
-        this.props.onSelectionChangeObservable.notifyObservers(scene);
+        this.props.onSelectionChangedObservable.notifyObservers(scene);
     }
 
     onPickingMode() {
@@ -101,8 +101,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                 const pickPosition = scene.unTranslatedPointer;
                 const pickInfo = scene.pick(pickPosition.x, pickPosition.y, mesh => mesh.isEnabled() && mesh.isVisible && mesh.getTotalVertices() > 0);
 
-                if (pickInfo && pickInfo.hit && this.props.onSelectionChangeObservable) {
-                    this.props.onSelectionChangeObservable.notifyObservers(pickInfo.pickedMesh);
+                if (pickInfo && pickInfo.hit && this.props.onSelectionChangedObservable) {
+                    this.props.onSelectionChangedObservable.notifyObservers(pickInfo.pickedMesh);
                 }
             }, BABYLON.PointerEventTypes.POINTERTAP)
         }

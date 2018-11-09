@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 interface IAdvancedDynamicTextureTreeItemComponentProps {
     texture: AdvancedDynamicTexture,
     extensibilityGroups?: IExplorerExtensibilityGroup[],
-    onSelectionChangeObservable?: Observable<any>,
+    onSelectionChangedObservable?: Observable<any>,
     onClick: () => void
 }
 
@@ -41,10 +41,10 @@ export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAd
 
         if (!this.state.isInPickingMode) {
             this._onControlPickedObserver = adt.onControlPickedObservable.add((control) => {
-                if (!this.props.onSelectionChangeObservable) {
+                if (!this.props.onSelectionChangedObservable) {
                     return;
                 }
-                this.props.onSelectionChangeObservable.notifyObservers(control);
+                this.props.onSelectionChangedObservable.notifyObservers(control);
             });
         }
 
