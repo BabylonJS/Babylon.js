@@ -110,6 +110,10 @@ declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
                 */
             onClipboardObservable: Observable<ClipboardInfo>;
             /**
+                * Observable event triggered each time a pointer down is intercepted by a control
+                */
+            onControlPickedObservable: Observable<Control>;
+            /**
                 * Gets or sets a boolean defining if alpha is stored as premultiplied
                 */
             premulAlpha: boolean;
@@ -151,6 +155,11 @@ declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
                 */
             readonly rootContainer: Container;
             /**
+                * Returns an array containing the root container.
+                * This is mostly used to let the Inspector introspects the ADT
+                */
+            getChildren(): Array<Container>;
+            /**
                 * Gets or sets the current focused control
                 */
             focusedControl: Nullable<IFocusableControl>;
@@ -172,6 +181,11 @@ declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
              * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
              */
             constructor(name: string, width: number | undefined, height: number | undefined, scene: Nullable<Scene>, generateMipMaps?: boolean, samplingMode?: number);
+            /**
+                * Get the current class name of the texture useful for serialization or dynamic coding.
+                * @returns "AdvancedDynamicTexture"
+                */
+            getClassName(): string;
             /**
                 * Function used to execute a function on all controls
                 * @param func defines the function to execute
@@ -215,6 +229,8 @@ declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
             getProjectedPosition(position: Vector3, worldMatrix: Matrix): Vector2;
             /** @hidden */
             _changeCursor(cursor: string): void;
+            /** @hidden */
+            _registerLastControlDown(control: Control, pointerId: number): void;
             /** @hidden */
             _cleanControlAfterRemovalFromList(list: {
                     [pointerId: number]: Control;
@@ -987,6 +1003,10 @@ declare module 'babylonjs-gui/2D/controls/control' {
             /** @hidden */
             _tag: any;
             /**
+                * Gets or sets the unique id of the node. Please note that this number will be updated when the control is added to a container
+                */
+            uniqueId: number;
+            /**
                 * Gets or sets an object used to store user defined information for the node
                 */
             metadata: any;
@@ -1014,6 +1034,11 @@ declare module 'babylonjs-gui/2D/controls/control' {
             protected _linkOffsetY: ValueAndUnit;
             /** Gets the control type name */
             readonly typeName: string;
+            /**
+                * Get the current class name of the control.
+                * @returns current class name
+                */
+            getClassName(): string;
             /**
              * An event triggered when the pointer move over the control.
              */
@@ -1058,6 +1083,10 @@ declare module 'babylonjs-gui/2D/controls/control' {
             };
             /** Gets or sets alpha value for the control (1 means opaque and 0 means entirely transparent) */
             alpha: number;
+            /**
+                * Gets or sets a boolean indicating that we want to highlight the control (mostly for debugging purpose)
+                */
+            isHighlighted: boolean;
             /** Gets or sets a value indicating the scale factor on X axis (1 by default)
                 * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
              */
@@ -1290,6 +1319,10 @@ declare module 'babylonjs-gui/2D/controls/control' {
             /** @hidden */
             protected _transform(context: CanvasRenderingContext2D): void;
             /** @hidden */
+            _renderHighlight(context: CanvasRenderingContext2D): void;
+            /** @hidden */
+            protected _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
+            /** @hidden */
             protected _applyStates(context: CanvasRenderingContext2D): void;
             /** @hidden */
             protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
@@ -1476,7 +1509,10 @@ declare module 'babylonjs-gui/2D/controls/grid' {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
+            protected _getGridDefinitions(definitionCallback: (lefts: number[], tops: number[], widths: number[], heights: number[]) => void): void;
             protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+            _flagDescendantsAsMatrixDirty(): void;
+            protected _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
             /** Releases associated resources */
             dispose(): void;
     }
@@ -2644,8 +2680,14 @@ declare module 'babylonjs-gui/3D/controls/control3D' {
             name?: string | undefined);
             /**
                 * Gets a string representing the class name
+                * @returns current class name
                 */
             readonly typeName: string;
+            /**
+                * Get the current class name of the control.
+                * @returns current class name
+                */
+            readonly getClassName: string;
             protected _getTypeName(): string;
             /**
                 * Gets the transform node used by this control
@@ -3056,6 +3098,10 @@ declare module BABYLON.GUI {
                 */
             onClipboardObservable: BABYLON.Observable<BABYLON.ClipboardInfo>;
             /**
+                * BABYLON.Observable event triggered each time a pointer down is intercepted by a control
+                */
+            onControlPickedObservable: BABYLON.Observable<Control>;
+            /**
                 * Gets or sets a boolean defining if alpha is stored as premultiplied
                 */
             premulAlpha: boolean;
@@ -3097,6 +3143,11 @@ declare module BABYLON.GUI {
                 */
             readonly rootContainer: Container;
             /**
+                * Returns an array containing the root container.
+                * This is mostly used to let the Inspector introspects the ADT
+                */
+            getChildren(): Array<Container>;
+            /**
                 * Gets or sets the current focused control
                 */
             focusedControl: BABYLON.Nullable<IFocusableControl>;
@@ -3118,6 +3169,11 @@ declare module BABYLON.GUI {
              * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
              */
             constructor(name: string, width: number | undefined, height: number | undefined, scene: BABYLON.Nullable<BABYLON.Scene>, generateMipMaps?: boolean, samplingMode?: number);
+            /**
+                * Get the current class name of the texture useful for serialization or dynamic coding.
+                * @returns "AdvancedDynamicTexture"
+                */
+            getClassName(): string;
             /**
                 * Function used to execute a function on all controls
                 * @param func defines the function to execute
@@ -3161,6 +3217,8 @@ declare module BABYLON.GUI {
             getProjectedPosition(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector2;
             /** @hidden */
             _changeCursor(cursor: string): void;
+            /** @hidden */
+            _registerLastControlDown(control: Control, pointerId: number): void;
             /** @hidden */
             _cleanControlAfterRemovalFromList(list: {
                     [pointerId: number]: Control;
@@ -3871,6 +3929,10 @@ declare module BABYLON.GUI {
             /** @hidden */
             _tag: any;
             /**
+                * Gets or sets the unique id of the node. Please note that this number will be updated when the control is added to a container
+                */
+            uniqueId: number;
+            /**
                 * Gets or sets an object used to store user defined information for the node
                 */
             metadata: any;
@@ -3898,6 +3960,11 @@ declare module BABYLON.GUI {
             protected _linkOffsetY: ValueAndUnit;
             /** Gets the control type name */
             readonly typeName: string;
+            /**
+                * Get the current class name of the control.
+                * @returns current class name
+                */
+            getClassName(): string;
             /**
              * An event triggered when the pointer move over the control.
              */
@@ -3942,6 +4009,10 @@ declare module BABYLON.GUI {
             };
             /** Gets or sets alpha value for the control (1 means opaque and 0 means entirely transparent) */
             alpha: number;
+            /**
+                * Gets or sets a boolean indicating that we want to highlight the control (mostly for debugging purpose)
+                */
+            isHighlighted: boolean;
             /** Gets or sets a value indicating the scale factor on X axis (1 by default)
                 * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
              */
@@ -4174,6 +4245,10 @@ declare module BABYLON.GUI {
             /** @hidden */
             protected _transform(context: CanvasRenderingContext2D): void;
             /** @hidden */
+            _renderHighlight(context: CanvasRenderingContext2D): void;
+            /** @hidden */
+            protected _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
+            /** @hidden */
             protected _applyStates(context: CanvasRenderingContext2D): void;
             /** @hidden */
             protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
@@ -4352,7 +4427,10 @@ declare module BABYLON.GUI {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
+            protected _getGridDefinitions(definitionCallback: (lefts: number[], tops: number[], widths: number[], heights: number[]) => void): void;
             protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+            _flagDescendantsAsMatrixDirty(): void;
+            protected _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
             /** Releases associated resources */
             dispose(): void;
     }
@@ -5445,8 +5523,14 @@ declare module BABYLON.GUI {
             name?: string | undefined);
             /**
                 * Gets a string representing the class name
+                * @returns current class name
                 */
             readonly typeName: string;
+            /**
+                * Get the current class name of the control.
+                * @returns current class name
+                */
+            readonly getClassName: string;
             protected _getTypeName(): string;
             /**
                 * Gets the transform node used by this control

@@ -8,6 +8,9 @@ import { MaterialTreeItemComponent } from "./entities/materialTreeItemComponent"
 import { TextureTreeItemComponent } from "./entities/textureTreeItemComponent";
 import { TransformNodeItemComponent } from "./entities/transformNodeTreeItemComponent";
 import * as React from "react";
+import { ControlTreeItemComponent } from "./entities/gui/controlTreeItemComponent";
+import { Control, AdvancedDynamicTexture } from "babylonjs-gui";
+import { AdvancedDynamicTextureTreeItemComponent } from "./entities/gui/advancedDynamicTextureTreeItemComponent";
 
 interface ITreeItemSpecializedComponentProps {
     label: string,
@@ -60,8 +63,16 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
                 return (<MaterialTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} material={entity as Material} onClick={() => this.onClick()} />);
             }
 
+            if (className === "AdvancedDynamicTexture") {
+                return (<AdvancedDynamicTextureTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} texture={entity as AdvancedDynamicTexture} onClick={() => this.onClick()} />);
+            }
+
             if (className.indexOf("Texture") !== -1) {
                 return (<TextureTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} texture={entity as Texture} onClick={() => this.onClick()} />);
+            }
+
+            if (entity._host) {
+                return (<ControlTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} control={entity as Control} onClick={() => this.onClick()} />);
             }
         }
 

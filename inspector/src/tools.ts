@@ -16,6 +16,9 @@ export class Tools {
     }
 
     public static SortAndFilter(items: any[]): any[] {
+        if (!items) {
+            return [];
+        }
         return items.filter((i) => !i.metadata || !i.metadata.hidden).sort((a: any, b: any) => {
             const lowerCaseA = (a.name || "").toLowerCase();
             const lowerCaseB = (b.name || "").toLowerCase();

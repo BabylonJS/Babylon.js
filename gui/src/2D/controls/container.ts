@@ -270,6 +270,7 @@ export class Container extends Control {
             }
 
             this._localDraw(context);
+            this._renderHighlight(context);
 
             if (this.clipChildren) {
                 this._clipForChildren(context);
@@ -283,6 +284,7 @@ export class Container extends Control {
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
 
                     child._draw(this._measureForChildren, context);
+                    child._renderHighlight(context);
 
                     if (child.onAfterDrawObservable.hasObservers()) {
                         child.onAfterDrawObservable.notifyObservers(child);

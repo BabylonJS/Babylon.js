@@ -2008,7 +2008,7 @@ module BABYLON {
          * @param onSuccess is an optional Javascript function to be called just after the mesh is modified. It is passed the modified mesh and must return nothing.
          * @param uvOffset is an optional vector2 used to offset UV.
          * @param uvScale is an optional vector2 used to scale UV.
-         * @param forceUpdate defines whether or not to force an update of the generated buffers. This is usefull to apply on a deserialized model for instance.
+         * @param forceUpdate defines whether or not to force an update of the generated buffers. This is useful to apply on a deserialized model for instance.
          * @returns the Mesh.
          */
         public applyDisplacementMap(url: string, minHeight: number, maxHeight: number, onSuccess?: (mesh: Mesh) => void, uvOffset?: Vector2, uvScale?: Vector2, forceUpdate = false): Mesh {
@@ -2052,7 +2052,7 @@ module BABYLON {
          * @param onSuccess is an optional Javascript function to be called just after the mesh is modified. It is passed the modified mesh and must return nothing.
          * @param uvOffset is an optional vector2 used to offset UV.
          * @param uvScale is an optional vector2 used to scale UV.
-         * @param forceUpdate defines whether or not to force an update of the generated buffers. This is usefull to apply on a deserialized model for instance.
+         * @param forceUpdate defines whether or not to force an update of the generated buffers. This is useful to apply on a deserialized model for instance.
          * @returns the Mesh.
          */
         public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number, uvOffset?: Vector2, uvScale?: Vector2, forceUpdate = false): Mesh {

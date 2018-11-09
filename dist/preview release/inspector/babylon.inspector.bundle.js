@@ -27006,165 +27006,180 @@ if (false) {} else {
 
 /***/ }),
 
-/***/ "./node_modules/react-split/dist/react-split.js":
-/*!******************************************************!*\
-  !*** ./node_modules/react-split/dist/react-split.js ***!
-  \******************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./node_modules/react-split/dist/react-split.es.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/react-split/dist/react-split.es.js ***!
+  \*********************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-(function (global, factory) {
-     true ? module.exports = factory(__webpack_require__(/*! react */ "./node_modules/react-split/node_modules/react/react.js"), __webpack_require__(/*! split.js */ "./node_modules/split.js/dist/split.js")) :
-    undefined;
-}(this, (function (React,Split) { 'use strict';
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react-split/node_modules/react/react.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var split_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! split.js */ "./node_modules/split.js/dist/split.js");
+/* harmony import */ var split_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(split_js__WEBPACK_IMPORTED_MODULE_1__);
 
-    React = React && React.hasOwnProperty('default') ? React['default'] : React;
-    Split = Split && Split.hasOwnProperty('default') ? Split['default'] : Split;
 
-    function objectWithoutProperties (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
 
-    var SplitWrapper = (function (superclass) {
-        function SplitWrapper (props) {
-            superclass.call(this, props);
+function objectWithoutProperties (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
+
+var SplitWrapper = /*@__PURE__*/(function (superclass) {
+    function SplitWrapper () {
+        superclass.apply(this, arguments);
+    }
+
+    if ( superclass ) SplitWrapper.__proto__ = superclass;
+    SplitWrapper.prototype = Object.create( superclass && superclass.prototype );
+    SplitWrapper.prototype.constructor = SplitWrapper;
+
+    SplitWrapper.prototype.componentDidMount = function componentDidMount () {
+        var ref = this.props;
+        var children = ref.children;
+        var gutter = ref.gutter;
+        var rest = objectWithoutProperties( ref, ["children", "gutter"] );
+        var options = rest;
+
+        options.gutter = function (index, direction) {
+            var gutterElement;
+
+            if (gutter) {
+                gutterElement = gutter(index, direction);
+            } else {
+                gutterElement = document.createElement('div');
+                gutterElement.className = "gutter gutter-" + direction;
+            }
+
+            // eslint-disable-next-line no-underscore-dangle
+            gutterElement.__isSplitGutter = true;
+            return gutterElement
+        };
+
+        this.split = split_js__WEBPACK_IMPORTED_MODULE_1___default()(this.parent.children, options);
+    };
+
+    SplitWrapper.prototype.componentDidUpdate = function componentDidUpdate (prevProps) {
+        var this$1 = this;
+
+        var ref = this.props;
+        var children = ref.children;
+        var minSize = ref.minSize;
+        var sizes = ref.sizes;
+        var collapsed = ref.collapsed;
+        var rest = objectWithoutProperties( ref, ["children", "minSize", "sizes", "collapsed"] );
+        var options = rest;
+        var prevMinSize = prevProps.minSize;
+        var prevSizes = prevProps.sizes;
+        var prevCollapsed = prevProps.collapsed;
+
+        var otherProps = [
+            'expandToMin',
+            'gutterSize',
+            'gutterAlign',
+            'snapOffset',
+            'dragInterval',
+            'direction',
+            'cursor' ];
+
+        var needsRecreate = otherProps
+            // eslint-disable-next-line react/destructuring-assignment
+            .map(function (prop) { return this$1.props[prop] !== prevProps[prop]; })
+            .reduce(function (accum, same) { return accum || same; }, false);
+
+        // Compare minSize when both are arrays, when one is an array and when neither is an array
+        if (Array.isArray(minSize) && Array.isArray(prevMinSize)) {
+            var minSizeChanged = false;
+
+            minSize.forEach(function (minSizeI, i) {
+                minSizeChanged = minSizeChanged || minSizeI !== prevMinSize[i];
+            });
+
+            needsRecreate = needsRecreate || minSizeChanged;
+        } else if (Array.isArray(minSize) || Array.isArray(prevMinSize)) {
+            needsRecreate = true;
+        } else {
+            needsRecreate = needsRecreate || minSize !== prevMinSize;
         }
 
-        if ( superclass ) SplitWrapper.__proto__ = superclass;
-        SplitWrapper.prototype = Object.create( superclass && superclass.prototype );
-        SplitWrapper.prototype.constructor = SplitWrapper;
+        // Destroy and re-create split if options changed
+        if (needsRecreate) {
+            options.minSize = minSize;
+            options.sizes = this.split.getSizes();
+            this.split.destroy(true, true);
+            options.gutter = function (index, direction, pairB) { return pairB.previousSibling; };
+            this.split = split_js__WEBPACK_IMPORTED_MODULE_1___default()(
+                Array.from(this.parent.children).filter(
+                    // eslint-disable-next-line no-underscore-dangle
+                    function (element) { return !element.__isSplitGutter; }
+                ),
+                options
+            );
+        } else {
+            // If only the size has changed, set the size. No need to do this if re-created.
+            var sizeChanged = false;
 
-        SplitWrapper.prototype.componentDidMount = function componentDidMount () {
-            var ref = this.props;
-            var children = ref.children;
-            var gutter = ref.gutter;
-            var rest = objectWithoutProperties( ref, ["children", "gutter"] );
-            var options = rest;
+            sizes.forEach(function (sizeI, i) {
+                sizeChanged = sizeChanged || sizeI !== prevSizes[i];
+            });
 
-            options.gutter = function (index, direction) {
-                var gutterElement;
-
-                if (gutter) {
-                    gutterElement = gutter(index, direction);
-                } else {
-                    gutterElement = document.createElement('div');
-                    gutterElement.className = "gutter gutter-" + direction;
-                }
-
-                gutterElement.__isSplitGutter = true;
-                return gutterElement
-            };
-
-            this.split = Split(this.parent.children, options);
-        };
-
-        SplitWrapper.prototype.componentDidUpdate = function componentDidUpdate (prevProps) {
-            var this$1 = this;
-
-            var ref = this.props;
-            var children = ref.children;
-            var minSize = ref.minSize;
-            var sizes = ref.sizes;
-            var collapsed = ref.collapsed;
-            var rest = objectWithoutProperties( ref, ["children", "minSize", "sizes", "collapsed"] );
-            var options = rest;
-            var prevMinSize = prevProps.minSize;
-            var prevSizes = prevProps.sizes;
-            var prevCollapsed = prevProps.collapsed;
-
-            var otherProps = [
-                'expandToMin',
-                'gutterSize',
-                'gutterAlign',
-                'snapOffset',
-                'dragInterval',
-                'direction',
-                'cursor' ];
-
-            var needsRecreate = otherProps
-                .map(function (prop) { return this$1.props[prop] !== prevProps[prop]; })
-                .reduce(function (accum, same) { return accum || same; }, false);
-
-            // Compare minSize when both are arrays, when one is an array and when neither is an array
-            if (Array.isArray(minSize) && Array.isArray(prevMinSize)) {
-                var minSizeChanged = false;
-
-                for (var i = 0; i < minSize.length; i++) {
-                     minSizeChanged = minSizeChanged || (minSize[i] !== prevMinSize[i]);
-                }
-
-                needsRecreate = needsRecreate || minSizeChanged;
-            } else if (Array.isArray(minSize) || Array.isArray(prevMinSize)) {
-                needsRecreate = true;
-            } else {
-                needsRecreate = needsRecreate || (minSize !== prevMinSize);
+            if (sizeChanged) {
+                // eslint-disable-next-line react/destructuring-assignment
+                this.split.setSizes(this.props.sizes);
             }
+        }
 
-            // Destroy and re-create split if options changed
-            if (needsRecreate) {
-                options.minSize = minSize;
-                options.sizes = this.split.getSizes();
-                this.split.destroy(true, true);
-                options.gutter = function (index, direction, pairB) { return pairB.previousSibling; };
-                this.split = Split(Array.from(this.parent.children).filter(function (element) { return !element.__isSplitGutter; }), options);
-            } else {
-                // If only the size has changed, set the size. No need to do this if re-created.
-                var sizeChanged = false;
+        // Collapse after re-created or when collapsed changed.
+        if (
+            Number.isInteger(collapsed) &&
+            (collapsed !== prevCollapsed || needsRecreate)
+        ) {
+            this.split.collapse(collapsed);
+        }
+    };
 
-                for (var i = 0; i < prevSizes.length; i++) {
-                    sizeChanged = sizeChanged || (sizes[i] !== prevSizes[i]);
-                }
+    SplitWrapper.prototype.componentWillUnmount = function componentWillUnmount () {
+        this.split.destroy();
+        delete this.split;
+    };
 
-                if (sizeChanged) {
-                    this.split.setSizes(this.props.sizes);
-                }
-            }
+    SplitWrapper.prototype.render = function render () {
+        var this$1 = this;
 
-            // Collapse after re-created or when collapsed changed.
-            if (Number.isInteger(collapsed) && ((collapsed !== prevCollapsed) || needsRecreate)) {
-                this.split.collapse(collapsed);
-            }
-        };
+        var ref = this.props;
+        var sizes = ref.sizes;
+        var minSize = ref.minSize;
+        var expandToMin = ref.expandToMin;
+        var gutterSize = ref.gutterSize;
+        var gutterAlign = ref.gutterAlign;
+        var snapOffset = ref.snapOffset;
+        var dragInterval = ref.dragInterval;
+        var direction = ref.direction;
+        var cursor = ref.cursor;
+        var gutter = ref.gutter;
+        var elementStyle = ref.elementStyle;
+        var gutterStyle = ref.gutterStyle;
+        var onDrag = ref.onDrag;
+        var onDragStart = ref.onDragStart;
+        var onDragEnd = ref.onDragEnd;
+        var collapsed = ref.collapsed;
+        var children = ref.children;
+        var rest$1 = objectWithoutProperties( ref, ["sizes", "minSize", "expandToMin", "gutterSize", "gutterAlign", "snapOffset", "dragInterval", "direction", "cursor", "gutter", "elementStyle", "gutterStyle", "onDrag", "onDragStart", "onDragEnd", "collapsed", "children"] );
+        var rest = rest$1;
 
-        SplitWrapper.prototype.componentWillUnmount = function componentWillUnmount () {
-            this.split.destroy();
-            delete this.split;
-        };
-
-        SplitWrapper.prototype.render = function render () {
-            var this$1 = this;
-
-            var ref = this.props;
-            var sizes = ref.sizes;
-            var minSize = ref.minSize;
-            var expandToMin = ref.expandToMin;
-            var gutterSize = ref.gutterSize;
-            var gutterAlign = ref.gutterAlign;
-            var snapOffset = ref.snapOffset;
-            var dragInterval = ref.dragInterval;
-            var direction = ref.direction;
-            var cursor = ref.cursor;
-            var gutter = ref.gutter;
-            var elementStyle = ref.elementStyle;
-            var gutterStyle = ref.gutterStyle;
-            var onDrag = ref.onDrag;
-            var onDragStart = ref.onDragStart;
-            var onDragEnd = ref.onDragEnd;
-            var collapsed = ref.collapsed;
-            var rest$1 = objectWithoutProperties( ref, ["sizes", "minSize", "expandToMin", "gutterSize", "gutterAlign", "snapOffset", "dragInterval", "direction", "cursor", "gutter", "elementStyle", "gutterStyle", "onDrag", "onDragStart", "onDragEnd", "collapsed"] );
-            var rest = rest$1;
-
-            return (
-                React.createElement( 'div', Object.assign({}, { ref: function (parent) { this$1.parent = parent; } }, rest),
-                    this.props.children
-                )
+        return (
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement( 'div', Object.assign({},
+                { ref: function (parent) {
+                    this$1.parent = parent;
+                } }, rest),
+                children
             )
-        };
-
-        return SplitWrapper;
-    }(React.Component));
+        )
+    };
 
     return SplitWrapper;
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component));
 
-})));
+/* harmony default export */ __webpack_exports__["default"] = (SplitWrapper);
 
 
 /***/ }),
@@ -36393,7 +36408,8 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { label: "Z-offset", target: material, propertyName: "zOffset", minimum: -10, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "TRANSPARENCY" },
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { label: "Alpha", target: material, propertyName: "alpha", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Transparency mode", options: transparencyModeOptions, target: material, propertyName: "transparencyMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ transparencyMode: value }); } }),
+                material.transparencyMode &&
+                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Transparency mode", options: transparencyModeOptions, target: material, propertyName: "transparencyMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ transparencyMode: value }); } }),
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Alpha mode", options: alphaModeOptions, target: material, propertyName: "alphaMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ alphaMode: value }); } }))));
     };
     return CommonMaterialPropertyGridComponent;
@@ -36621,8 +36637,7 @@ var StandardMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { label: "Specular", target: material, propertyName: "specularColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Specular power", target: material, propertyName: "specularPower", minimum: 0, maximum: 128, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { label: "Emissive", target: material, propertyName: "emissiveColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { label: "Ambient", target: material, propertyName: "ambientColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Alpha", target: material, propertyName: "alpha", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { label: "Ambient", target: material, propertyName: "ambientColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             this.renderTextures()));
     };
     return StandardMaterialPropertyGridComponent;
@@ -36674,9 +36689,38 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
     __extends(MeshPropertyGridComponent, _super);
     function MeshPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { displayNormals: false };
+        var mesh = _this.props.mesh;
+        _this.state = { displayNormals: false, renderNormalVectors: mesh.metadata && mesh.metadata.normalLines };
         return _this;
     }
+    MeshPropertyGridComponent.prototype.renderNormalVectors = function () {
+        var mesh = this.props.mesh;
+        var scene = mesh.getScene();
+        if (mesh.metadata && mesh.metadata.normalLines) {
+            mesh.metadata.normalLines.dispose();
+            mesh.metadata.normalLines = null;
+            this.setState({ renderNormalVectors: false });
+            return;
+        }
+        var normals = mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+        var positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+        var color = BABYLON.Color3.White();
+        var size = mesh.getBoundingInfo().diagonalLength * 0.05;
+        var lines = [];
+        for (var i = 0; i < normals.length; i += 3) {
+            var v1 = BABYLON.Vector3.FromArray(positions, i);
+            var v2 = v1.add(BABYLON.Vector3.FromArray(normals, i).scaleInPlace(size));
+            lines.push([v1, v2]);
+        }
+        var normalLines = BABYLON.MeshBuilder.CreateLineSystem("normalLines", { lines: lines }, scene);
+        normalLines.color = color;
+        normalLines.parent = mesh;
+        if (!mesh.metadata) {
+            mesh.metadata = {};
+        }
+        mesh.metadata.normalLines = normalLines;
+        this.setState({ renderNormalVectors: true });
+    };
     MeshPropertyGridComponent.prototype.displayNormals = function () {
         var _this = this;
         var mesh = this.props.mesh;
@@ -36722,6 +36766,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         var mesh = this.props.mesh;
         var scene = mesh.getScene();
         var displayNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
+        var renderNormalVectors = mesh.metadata && mesh.metadata.normalLines;
         return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_1__["LineContainerComponent"], { title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { label: "ID", value: mesh.id }),
@@ -36767,7 +36812,9 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_1__["LineContainerComponent"], { title: "DEBUG", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Show bounding box", target: mesh, propertyName: "showBoundingBox", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 mesh.material &&
-                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Display normals", isSelected: function () { return displayNormals; }, onSelect: function () { return _this.displayNormals(); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Display normals", isSelected: function () { return displayNormals; }, onSelect: function () { return _this.displayNormals(); } }),
+                mesh.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind) &&
+                    react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Render vertex normals", isSelected: function () { return renderNormalVectors; }, onSelect: function () { return _this.renderNormalVectors(); } }))));
     };
     return MeshPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_0__["Component"]));
@@ -37395,7 +37442,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
-var Split = __webpack_require__(/*! react-split */ "./node_modules/react-split/dist/react-split.js");
+var Split = __webpack_require__(/*! react-split */ "./node_modules/react-split/dist/react-split.es.js");
 __webpack_require__(/*! ./embedHost.scss */ "./src/components/embedHost/embedHost.scss");
 var EmbedHostComponent = /** @class */ (function (_super) {
     __extends(EmbedHostComponent, _super);
@@ -38409,12 +38456,16 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
             this._onNewSceneAddedObserver = BABYLON.Engine.LastCreatedEngine.onNewSceneAddedObservable.addOnce(function (scene) { return _this.setState({ scene: scene }); });
             return null;
         }
+        var guiElements = scene.textures.filter(function (t) { return t.getClassName() === "AdvancedDynamicTexture"; });
+        var textures = scene.textures.filter(function (t) { return t.getClassName() !== "AdvancedDynamicTexture"; });
         return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "tree" },
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](SceneExplorerFilterComponent, { onFilter: function (filter) { return _this.filterContent(filter); } }),
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_entities_sceneTreeItemComponent__WEBPACK_IMPORTED_MODULE_4__["SceneTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, scene: scene, onRefresh: function () { return _this.forceUpdate(); }, onSelectionChangeObservable: this.props.globalState.onSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.rootNodes, label: "Nodes", offset: 1, onSelectionChangeObservable: this.props.globalState.onSelectionChangeObservable, filter: this.state.filter }),
             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.materials, label: "Materials", offset: 1, onSelectionChangeObservable: this.props.globalState.onSelectionChangeObservable, filter: this.state.filter }),
-            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.textures, label: "Textures", offset: 1, onSelectionChangeObservable: this.props.globalState.onSelectionChangeObservable, filter: this.state.filter })));
+            react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: textures, label: "Textures", offset: 1, onSelectionChangeObservable: this.props.globalState.onSelectionChangeObservable, filter: this.state.filter }),
+            guiElements && guiElements.length > 0 &&
+                react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: guiElements, label: "GUI", offset: 1, onSelectionChangeObservable: this.props.globalState.onSelectionChangeObservable, filter: this.state.filter })));
     };
     SceneExplorerComponent.prototype.onClose = function () {
         if (!this.props.onClose) {
