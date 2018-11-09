@@ -1,6 +1,6 @@
-import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "Tools/decorators";
+import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "Misc/decorators";
 import { Scene } from "scene";
-import { Color3 } from "Math/math";
+import { Color3 } from "Maths/math";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { BaseTexture } from "Materials/Textures/baseTexture";

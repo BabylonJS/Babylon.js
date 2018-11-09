@@ -1,6 +1,6 @@
 import { Nullable } from "types";
-import { serialize } from "Tools/decorators";
-import { EventState, Observer } from "Tools/observable";
+import { serialize } from "Misc/decorators";
+import { EventState, Observer } from "Misc/observable";
 import { ArcRotateCamera } from "Cameras/arcRotateCamera";
 import { ICameraInput, CameraInputTypes } from "Cameras/cameraInputsManager";
 import { PointerInfo, PointerEventTypes } from "Events/pointerEvents";

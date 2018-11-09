@@ -1,6 +1,6 @@
-import { TGATools } from "Tools/tga";
+import { TGATools } from "Misc/tga";
 import { Nullable } from "types";
-import { Engine } from "Engine/engine";
+import { Engine } from "Engines/engine";
 import { InternalTexture } from "Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "Materials/Textures/internalTextureLoader";
 import { _TimeToken } from "Instrumentation/timeToken";

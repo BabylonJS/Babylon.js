@@ -1,6 +1,6 @@
-import { Vector3 } from "Math/math";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { Mesh } from "Mesh/mesh";
+import { Vector3 } from "Maths/math";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { Mesh } from "Meshes/mesh";
 import { ParticleSystem } from "Particles/particleSystem";
 import { Scene } from "scene";
     /**

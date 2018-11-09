@@ -1,15 +1,15 @@
-import { Tools } from "Tools/tools";
-import { Observable } from "Tools/observable";
+import { Tools } from "Misc/tools";
+import { Observable } from "Misc/observable";
 import { Nullable } from "types";
-import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "Math/math";
-import { Engine } from "Engine/engine";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { PostProcess } from "PostProcess/postProcess";
+import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "Maths/math";
+import { Engine } from "Engines/engine";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { PostProcess } from "PostProcesses/postProcess";
 
 import { InternalTexture } from "Materials/Textures/internalTexture";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
 
     /**
      * EffectFallbacks can be used to add fallbacks (properties to disable) to certain properties when desired to improve performance.

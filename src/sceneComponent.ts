@@ -1,8 +1,8 @@
 import { Scene } from "scene";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { SubMesh, } from "Mesh/subMesh";
-import { _InstancesBatch } from "Mesh";
-import { SmartArrayNoDuplicate } from "Tools/smartArray";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { SubMesh, } from "Meshes/subMesh";
+import { _InstancesBatch } from "Meshes/mesh";
+import { SmartArrayNoDuplicate } from "Misc/smartArray";
 import { Nullable } from "types";
 import { Camera } from "Cameras/camera";
 import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";

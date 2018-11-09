@@ -1,8 +1,8 @@
 import { Nullable } from "types";
 import { RenderingGroupInfo, Scene } from "scene";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { SubMesh } from "Mesh/subMesh";
-import { SmartArray } from "Tools/smartArray";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { SubMesh } from "Meshes/subMesh";
+import { SmartArray } from "Misc/smartArray";
 import { ISpriteManager } from "Sprites/spriteManager";
 import { IParticleSystem } from "Particles/IParticleSystem";
 import { Material } from "Materials/material";

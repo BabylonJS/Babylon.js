@@ -1,9 +1,9 @@
-import { Mesh } from "Mesh/mesh";
+import { Mesh } from "Meshes/mesh";
 import { IParticleSystem } from "./IParticleSystem";
 import { GPUParticleSystem } from "./gpuParticleSystem";
 import { AbstractScene } from "abstractScene";
 import { Effect, EffectFallbacks } from "Materials/effect";
-import { Engine } from "Engine/engine";
+import { Engine } from "Engines/engine";
 import { ParticleSystem } from "./particleSystem";
 import { Scene } from "scene";
 import { SceneComponentConstants } from "sceneComponent";
@@ -36,7 +36,7 @@ import { AssetContainer } from "assetContainer";
         }
     });
 
-declare module "Engine/Engine" {
+declare module "Engines/Engine" {
     export interface Engine {
         /**
          * Create an effect to use with particle systems.
@@ -79,7 +79,7 @@ declare module "Engine/Engine" {
             samplers, defines, fallbacks, onCompiled, onError);
     };
 
-declare module "Mesh/Mesh" {
+declare module "Meshes/Mesh" {
     export interface Mesh {
         /**
          * Returns an array populated with IParticleSystem objects whose the mesh is the emitter

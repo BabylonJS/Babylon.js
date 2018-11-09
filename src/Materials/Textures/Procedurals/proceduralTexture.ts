@@ -1,10 +1,10 @@
-import { serialize } from "Tools/decorators";
-import { Observable } from "Tools/observable";
+import { serialize } from "Misc/decorators";
+import { Observable } from "Misc/observable";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Vector3, Vector2, Color3, Color4 } from "Math/math";
-import { Engine } from "Engine/engine";
-import { VertexBuffer } from "Mesh/buffer";
+import { Matrix, Vector3, Vector2, Color3, Color4 } from "Maths/math";
+import { Engine } from "Engines/engine";
+import { VertexBuffer } from "Meshes/buffer";
 import { SceneComponentConstants } from "sceneComponent";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";

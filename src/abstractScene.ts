@@ -1,8 +1,8 @@
 import { Scene } from "scene";
 import { Nullable } from "types";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { TransformNode } from "Mesh/transformNode";
-import { Geometry } from "Mesh/geometry";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { TransformNode } from "Meshes/transformNode";
+import { Geometry } from "Meshes/geometry";
 import { Skeleton } from "Bones/skeleton";
 import { MorphTargetManager } from "Morph/morphTargetManager";
 import { AssetContainer } from "assetContainer";

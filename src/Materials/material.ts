@@ -1,22 +1,22 @@
-import { serialize, SerializationHelper } from "Tools/decorators";
-import { Tools, IAnimatable } from "Tools/tools";
-import { SmartArray } from "Tools/smartArray";
-import { Observer, Observable } from "Tools/observable";
+import { serialize, SerializationHelper } from "Misc/decorators";
+import { Tools, IAnimatable } from "Misc/tools";
+import { SmartArray } from "Misc/smartArray";
+import { Observer, Observable } from "Misc/observable";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Plane, Matrix } from "Math/math";
-import { Engine } from "Engine/engine";
-import { BaseSubMesh, SubMesh } from "Mesh/subMesh";
-import { Geometry } from "Mesh/geometry";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { Mesh } from "Mesh/mesh";
+import { Plane, Matrix } from "Maths/math";
+import { Engine } from "Engines/engine";
+import { BaseSubMesh, SubMesh } from "Meshes/subMesh";
+import { Geometry } from "Meshes/geometry";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { Mesh } from "Meshes/mesh";
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect } from "./effect";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 import { Animation } from "Animations/animation";
 import { MaterialDefines } from "./materialDefines";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
 
 declare var BABYLON: any;
 

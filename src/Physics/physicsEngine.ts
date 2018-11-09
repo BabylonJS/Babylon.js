@@ -1,5 +1,5 @@
 import { Nullable } from "types";
-import { Vector3 } from "Math/math";
+import { Vector3 } from "Maths/math";
 import { IPhysicsEngine, PhysicsImpostorJoint, IPhysicsEnginePlugin } from "./IPhysicsEngine";
 import { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
 import { PhysicsJoint } from "./physicsJoint";

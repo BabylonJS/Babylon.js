@@ -2,9 +2,9 @@ import { IDisposable } from "scene";
 import { Analyser } from "./analyser";
 
 import { Nullable } from "types";
-import { Observable } from "Tools/observable";
-import { Tools } from "Tools/tools";
-import { Engine } from "Engine/engine";
+import { Observable } from "Misc/observable";
+import { Tools } from "Misc/tools";
+import { Engine } from "Engines/engine";
 
     /**
      * This represents an audio engine and it is responsible

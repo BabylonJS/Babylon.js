@@ -1,6 +1,6 @@
 import { DeepImmutable } from "types";
-import { ArrayTools } from "Tools/arrayTools";
-import { Matrix, Vector3, Plane, Epsilon } from "Math/math";
+import { ArrayTools } from "Misc/arrayTools";
+import { Matrix, Vector3, Plane, Epsilon } from "Maths/math";
 import { BoundingSphere } from "Culling/boundingSphere";
 
 import { ICullable } from "./boundingInfo";

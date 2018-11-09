@@ -1,10 +1,10 @@
-import { IFileRequest, Tools } from "Tools/tools";
-import { Observable } from "Tools/observable";
-import { FilesInput } from "Tools/filesInput";
+import { IFileRequest, Tools } from "Misc/tools";
+import { Observable } from "Misc/observable";
+import { FilesInput } from "Misc/filesInput";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Engine } from "Engine/engine";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { Engine } from "Engines/engine";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { AnimationGroup } from "Animations/animationGroup";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { IOfflineProvider } from "Offline/IOfflineProvider";

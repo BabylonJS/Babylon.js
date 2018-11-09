@@ -1,5 +1,5 @@
-import { Tools } from "Tools/tools";
-import { SerializationHelper } from "Tools/decorators";
+import { Tools } from "Misc/tools";
+import { SerializationHelper } from "Misc/decorators";
 import { Nullable } from "types";
 import { Camera } from "./camera";
     /**

@@ -1,12 +1,12 @@
-import { Tools } from "Tools";
+import { Tools } from "Misc/tools";
 import { Nullable } from "types";
 import { Camera } from "Cameras";
 import { Scene } from "scene";
-import { Vector3, Color3, Color4 } from "Math/math";
-import { Mesh } from "Mesh/mesh";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { Geometry, BoxGeometry, SphereGeometry, CylinderGeometry, TorusGeometry, GroundGeometry, PlaneGeometry, TorusKnotGeometry } from "Mesh/geometry";
-import { TransformNode } from "Mesh/transformNode";
+import { Vector3, Color3, Color4 } from "Maths/math";
+import { Mesh } from "Meshes/mesh";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { Geometry, BoxGeometry, SphereGeometry, CylinderGeometry, TorusGeometry, GroundGeometry, PlaneGeometry, TorusKnotGeometry } from "Meshes/geometry";
+import { TransformNode } from "Meshes/transformNode";
 import { Material } from "Materials/material";
 import { MultiMaterial } from "Materials/multiMaterial";
 import { CubeTexture } from "Materials/Textures/cubeTexture";

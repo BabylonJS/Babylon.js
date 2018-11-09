@@ -1,10 +1,10 @@
 import { Nullable, IndicesArray, FloatArray } from "types";
-import { Color4, Vector3, Matrix, Tmp, Quaternion, Axis } from "Math/math";
-import { VertexBuffer } from "Mesh/buffer";
-import { VertexData } from "Mesh/mesh.vertexData";
-import { Mesh } from "Mesh/mesh";
-import { MeshBuilder } from "Mesh/meshBuilder";
-import { Engine } from "Engine/engine";
+import { Color4, Vector3, Matrix, Tmp, Quaternion, Axis } from "Maths/math";
+import { VertexBuffer } from "Meshes/buffer";
+import { VertexData } from "Meshes/mesh.vertexData";
+import { Mesh } from "Meshes/mesh";
+import { MeshBuilder } from "Meshes/meshBuilder";
+import { Engine } from "Engines/engine";
 import { Scene, IDisposable } from "scene";
 import { DepthSortedParticle, SolidParticle, ModelShape } from "./solidParticle";
 import { TargetCamera } from "Cameras/targetCamera";

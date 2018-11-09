@@ -1,9 +1,9 @@
-import { serialize } from "Tools/decorators";
+import { serialize } from "Misc/decorators";
 import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Matrix, Vector3 } from "Math/math";
+import { Matrix, Vector3 } from "Maths/math";
 import { Node } from "node";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
 import { _TimeToken } from "Instrumentation/timeToken";

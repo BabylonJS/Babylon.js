@@ -1,9 +1,9 @@
-import { serialize, SerializationHelper, serializeAsColor3, expandToProperty } from "Tools/decorators";
+import { serialize, SerializationHelper, serializeAsColor3, expandToProperty } from "Misc/decorators";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Vector3, Color3 } from "Math/math";
+import { Vector3, Color3 } from "Maths/math";
 import { Node } from "node";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { Effect } from "Materials/effect";
 import { UniformBuffer } from "Materials/uniformBuffer";
 import { Animation } from "Animations/animation";

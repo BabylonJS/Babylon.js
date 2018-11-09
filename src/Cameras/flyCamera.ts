@@ -1,9 +1,9 @@
-﻿import { serialize, serializeAsVector3 } from "Tools/decorators";
+﻿import { serialize, serializeAsVector3 } from "Misc/decorators";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Vector3, Quaternion } from "Math/math";
-import { Engine } from "Engine/engine";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { Vector3, Quaternion } from "Maths/math";
+import { Engine } from "Engines/engine";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { Collider } from "Collisions/collider";
 import { TargetCamera } from "./targetCamera";
 import { FlyCameraInputsManager } from "./flyCameraInputsManager";

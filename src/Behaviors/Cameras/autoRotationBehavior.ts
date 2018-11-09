@@ -2,8 +2,8 @@ import { Behavior } from "Behaviors/behavior";
 import { Camera } from "Cameras/camera";
 import { ArcRotateCamera } from "Cameras/arcRotateCamera";
 import { Nullable } from "types";
-import { Tools } from "Tools/tools";
-import { Observer } from "Tools/observable";
+import { Tools } from "Misc/tools";
+import { Observer } from "Misc/observable";
 import { PointerInfoPre, PointerEventTypes } from "Events/pointerEvents";
 
     /**

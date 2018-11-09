@@ -1,8 +1,8 @@
-import { Observer } from "Tools/observable";
-import { PerfCounter } from "Tools/tools";
+import { Observer } from "Misc/observable";
+import { PerfCounter } from "Misc/tools";
 import { Nullable } from "types";
 import { IDisposable } from "scene";
-import { Engine } from "Engine/engine";
+import { Engine } from "Engines/engine";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**

@@ -1,8 +1,8 @@
-import { serialize, serializeAsVector3 } from "Tools/decorators";
+import { serialize, serializeAsVector3 } from "Misc/decorators";
 import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Matrix, Vector3, Axis } from "Math/math";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { Matrix, Vector3, Axis } from "Maths/math";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { Light } from "./light";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";

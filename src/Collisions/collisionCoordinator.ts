@@ -1,10 +1,10 @@
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Vector3 } from "Math/math";
-import { Engine } from "Engine/engine";
+import { Vector3 } from "Maths/math";
+import { Engine } from "Engines/engine";
 import { Collider } from "./collider";
-import { Geometry } from "Mesh/geometry";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { Geometry } from "Meshes/geometry";
+import { AbstractMesh } from "Meshes/abstractMesh";
 
     /** @hidden */
     export interface ICollisionCoordinator {

@@ -1,9 +1,9 @@
-import { SerializationHelper } from "Tools/decorators";
+import { SerializationHelper } from "Misc/decorators";
 import { Scene } from "scene";
-import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "Math/math";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { Mesh } from "Mesh/mesh";
-import { VertexBuffer } from "Mesh/buffer";
+import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "Maths/math";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { Mesh } from "Meshes/mesh";
+import { VertexBuffer } from "Meshes/buffer";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 import { Texture } from "Materials/Textures/texture";
 import { MaterialHelper } from "./materialHelper";

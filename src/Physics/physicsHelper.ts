@@ -1,9 +1,9 @@
 import { Nullable } from "types";
-import { Tools } from "Tools/tools";
-import { Vector3 } from "Math/math";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { Mesh } from "Mesh/mesh";
-import { MeshBuilder } from "Mesh/meshBuilder";
+import { Tools } from "Misc/tools";
+import { Vector3 } from "Maths/math";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { Mesh } from "Meshes/mesh";
+import { MeshBuilder } from "Meshes/meshBuilder";
 import { Ray } from "Culling/ray";
 import { Scene } from "scene";
 import { IPhysicsEngine } from "./IPhysicsEngine";

@@ -1,10 +1,10 @@
-import { VertexBuffer } from "Mesh/buffer";
-import { SubMesh } from "Mesh/subMesh";
-import { _InstancesBatch } from "Mesh/mesh";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { VertexBuffer } from "Meshes/buffer";
+import { SubMesh } from "Meshes/subMesh";
+import { _InstancesBatch } from "Meshes/mesh";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { Scene } from "scene";
-import { Engine } from "Engine/engine";
-import { Constants } from "Engine/constants";
+import { Engine } from "Engines/engine";
+import { Constants } from "Engines/constants";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
 import { Effect } from "Materials/effect";
 import { Material } from "Materials/material";
@@ -33,7 +33,7 @@ declare module "scene" {
         return this._outlineRenderer;
     };
 
-declare module "Mesh/AbstractMesh" {
+declare module "Meshes/AbstractMesh" {
     export interface AbstractMesh {
         /** @hidden (Backing field) */
         _renderOutline: boolean;

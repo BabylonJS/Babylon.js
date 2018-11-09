@@ -1,11 +1,11 @@
-import { Observer, Observable } from "Tools/observable";
+import { Observer, Observable } from "Misc/observable";
 import { Nullable } from "types";
 import { PointerInfo } from "Events/pointerEvents";
-import { Quaternion, Matrix, Vector3, Color3 } from "Math/math";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { Mesh } from "Mesh/mesh";
-import { LinesMesh } from "Mesh/linesMesh";
-import { PointerDragBehavior } from "Behaviors/Mesh/pointerDragBehavior";
+import { Quaternion, Matrix, Vector3, Color3 } from "Maths/math";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { Mesh } from "Meshes/mesh";
+import { LinesMesh } from "Meshes/linesMesh";
+import { PointerDragBehavior } from "Behaviors/Meshes/pointerDragBehavior";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { Gizmo } from "./gizmo";

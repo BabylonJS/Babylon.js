@@ -1,8 +1,8 @@
-import { serialize, SerializationHelper, serializeAsTexture, serializeAsColorCurves, serializeAsColor4 } from "Tools/decorators";
-import { Observable } from "Tools/observable";
-import { Tools } from "Tools/tools";
+import { serialize, SerializationHelper, serializeAsTexture, serializeAsColorCurves, serializeAsColor4 } from "Misc/decorators";
+import { Observable } from "Misc/observable";
+import { Tools } from "Misc/tools";
 import { Nullable } from "types";
-import { Color4 } from "Math/math";
+import { Color4 } from "Maths/math";
 import { MaterialDefines } from "Materials/materialDefines";
 import { Effect } from "Materials/effect";
 import { BaseTexture } from "Materials/Textures/baseTexture";

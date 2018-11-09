@@ -1,6 +1,6 @@
 import { Nullable } from "types";
-import { Color4, Vector3, Matrix, Tmp, Quaternion, Vector4 } from "Math/math";
-import { Mesh } from "Mesh/mesh";
+import { Color4, Vector3, Matrix, Tmp, Quaternion, Vector4 } from "Maths/math";
+import { Mesh } from "Meshes/mesh";
 import { BoundingInfo } from "Culling/boundingInfo";
 import { BoundingSphere } from "Culling/boundingSphere";
 import { SolidParticleSystem } from "./solidParticleSystem";

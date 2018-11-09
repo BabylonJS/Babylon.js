@@ -1,18 +1,18 @@
 import { Nullable } from "types";
-import { VertexBuffer } from "Mesh/buffer";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { LinesMesh, InstancedLinesMesh } from "Mesh/linesMesh";
-import { Vector3, Tmp } from "Math/math";
+import { VertexBuffer } from "Meshes/buffer";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { LinesMesh, InstancedLinesMesh } from "Meshes/linesMesh";
+import { Vector3, Tmp } from "Maths/math";
 import { IDisposable } from "scene";
-import { Observer } from "Tools/observable";
+import { Observer } from "Misc/observable";
 import { Effect } from "Materials/effect";
 import { Material } from "Materials/material";
 import { ShaderMaterial } from "Materials/shaderMaterial";
 import { Camera } from "Cameras/camera";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
 import { Node } from "node";
 
-declare module "Mesh/AbstractMesh" {
+declare module "Meshes/AbstractMesh" {
     export interface AbstractMesh {
         /**
          * Disables the mesh edge rendering mode
@@ -58,7 +58,7 @@ declare module "Mesh/AbstractMesh" {
         configurable: true
     });
 
-declare module "Mesh/LinesMesh" {
+declare module "Meshes/LinesMesh" {
     export interface LinesMesh {
         /**
          * Enables the edge rendering mode on the mesh.
@@ -77,7 +77,7 @@ declare module "Mesh/LinesMesh" {
         return this;
     };
 
-declare module "Mesh/LinesMesh" {
+declare module "Meshes/LinesMesh" {
     export interface InstancedLinesMesh {
         /**
          * Enables the edge rendering mode on the mesh.

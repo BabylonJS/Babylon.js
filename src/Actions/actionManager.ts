@@ -1,15 +1,15 @@
 import { Nullable } from "types";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { Scene } from "scene";
-import { Vector3, Vector4, Color3, Color4 } from "Math/math";
+import { Vector3, Vector4, Color3, Color4 } from "Maths/math";
 
 import { Condition, ValueCondition } from "./condition";
 import { Action } from "./action";
 import { DoNothingAction } from "./directActions";
 
-import { Engine } from "Engine/engine";
-import { Constants } from "Engine/constants";
-import { Tools } from "Tools/tools";
+import { Engine } from "Engines/engine";
+import { Constants } from "Engines/constants";
+import { Tools } from "Misc/tools";
 import { ActionEvent } from "Actions/actionEvent";
 
     /**

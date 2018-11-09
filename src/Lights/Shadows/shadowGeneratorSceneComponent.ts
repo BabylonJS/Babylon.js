@@ -1,4 +1,4 @@
-import { SmartArrayNoDuplicate } from "Tools/smartArray";
+import { SmartArrayNoDuplicate } from "Misc/smartArray";
 import { Scene } from "scene";
 import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 import { ShadowGenerator } from "./shadowGenerator";

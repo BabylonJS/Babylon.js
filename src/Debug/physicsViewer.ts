@@ -1,10 +1,14 @@
 import { Nullable } from "types";
-import { PhysicsImpostor, IPhysicsEnginePlugin, StandardMaterial, Engine, Material } from "index";
 import { Scene } from "scene";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { Mesh } from "Mesh/mesh";
-import { MeshBuilder } from "Mesh/meshBuilder";
-import { Quaternion } from "Math/math";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { Mesh } from "Meshes/mesh";
+import { MeshBuilder } from "Meshes/meshBuilder";
+import { Quaternion } from "Maths/math";
+import { Material } from "Materials/material";
+import { Engine } from "Engines/engine";
+import { StandardMaterial } from "Materials/standardMaterial";
+import { IPhysicsEnginePlugin } from "Physics/IPhysicsEngine";
+import { PhysicsImpostor } from "Physics/physicsImpostor";
 
 /**
      * Used to show the physics impostor around the specific mesh

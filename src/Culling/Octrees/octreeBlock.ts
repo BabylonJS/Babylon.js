@@ -1,5 +1,5 @@
-import { SmartArrayNoDuplicate } from "Tools/smartArray";
-import { Vector3, Plane } from "Math/math";
+import { SmartArrayNoDuplicate } from "Misc/smartArray";
+import { Vector3, Plane } from "Maths/math";
 import { Ray } from "Culling/ray";
 import { BoundingBox } from "Culling/boundingBox";
 import { Octree } from "./octree";

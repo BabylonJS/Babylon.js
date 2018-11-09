@@ -1,12 +1,12 @@
-import { Tools } from "Tools/tools";
+import { Tools } from "Misc/tools";
 import { Nullable } from "types";
 import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Tmp, Color3 } from "Math/math";
-import { Engine } from "Engine/engine";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { Mesh } from "Mesh/mesh";
-import { VertexBuffer } from "Mesh/buffer";
+import { Tmp, Color3 } from "Maths/math";
+import { Engine } from "Engines/engine";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { Mesh } from "Meshes/mesh";
+import { VertexBuffer } from "Meshes/buffer";
 import { Light } from "Lights/light";
 
 import { UniformBuffer } from "./uniformBuffer";

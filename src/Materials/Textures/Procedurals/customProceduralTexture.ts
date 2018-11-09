@@ -1,6 +1,6 @@
-import { Tools } from "Tools/tools";
+import { Tools } from "Misc/tools";
 import { Scene } from "scene";
-import { Vector3, Vector2, Color3, Color4 } from "Math/math";
+import { Vector3, Vector2, Color3, Color4 } from "Maths/math";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { Texture } from "Materials/Textures/texture";

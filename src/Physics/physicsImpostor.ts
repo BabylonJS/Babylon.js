@@ -1,9 +1,9 @@
 import { Nullable, IndicesArray } from "types";
-import { Tools } from "Tools/tools";
-import { ArrayTools } from "Tools/arrayTools";
-import { Vector3, Matrix, Quaternion, Space } from "Math/math";
-import { TransformNode } from "Mesh/transformNode";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { Tools } from "Misc/tools";
+import { ArrayTools } from "Misc/arrayTools";
+import { Vector3, Matrix, Quaternion, Space } from "Maths/math";
+import { TransformNode } from "Meshes/transformNode";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { Scene } from "scene";
 import { Bone } from "Bones/bone";
 import { BoundingInfo } from "Culling/boundingInfo";

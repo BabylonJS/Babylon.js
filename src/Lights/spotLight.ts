@@ -1,9 +1,9 @@
-import { serialize, serializeAsTexture } from "Tools/decorators";
+import { serialize, serializeAsTexture } from "Misc/decorators";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Vector3 } from "Math/math";
+import { Matrix, Vector3 } from "Maths/math";
 import { Node } from "node";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { Effect } from "Materials/effect";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 import { Light } from "./light";

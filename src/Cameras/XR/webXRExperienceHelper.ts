@@ -1,8 +1,8 @@
 import { Nullable } from "types";
-import { Observable } from "Tools/observable";
+import { Observable } from "Misc/observable";
 import { IDisposable, Scene } from "scene";
-import { Quaternion, Vector3 } from "Math/math";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { Quaternion, Vector3 } from "Maths/math";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { Ray } from "Culling/ray";
 import { Camera } from "Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";

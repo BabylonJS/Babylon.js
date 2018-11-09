@@ -1,10 +1,10 @@
 import { Scene } from "scene";
-import { VertexBuffer } from "Mesh/buffer";
-import { SubMesh } from "Mesh/subMesh";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { VertexData } from "Mesh/mesh.vertexData";
-import { Color3, Matrix } from "Math/math";
-import { SmartArray } from "Tools/smartArray";
+import { VertexBuffer } from "Meshes/buffer";
+import { SubMesh } from "Meshes/subMesh";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { VertexData } from "Meshes/mesh.vertexData";
+import { Color3, Matrix } from "Maths/math";
+import { SmartArray } from "Misc/smartArray";
 import { Nullable, FloatArray } from "types";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
 import { BoundingBox } from "Culling/boundingBox";
@@ -57,7 +57,7 @@ declare module "scene" {
         return this._boundingBoxRenderer;
     };
 
-declare module "Mesh/AbstractMesh" {
+declare module "Meshes/AbstractMesh" {
     export interface AbstractMesh {
         /** @hidden (Backing field) */
         _showBoundingBox: boolean;

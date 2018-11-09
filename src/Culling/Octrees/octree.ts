@@ -1,7 +1,7 @@
-import { SmartArray, SmartArrayNoDuplicate } from "Tools/smartArray";
-import { Vector3, Plane } from "Math/math";
-import { SubMesh } from "Mesh/subMesh";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { SmartArray, SmartArrayNoDuplicate } from "Misc/smartArray";
+import { Vector3, Plane } from "Maths/math";
+import { SubMesh } from "Meshes/subMesh";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { Ray } from "Culling/ray";
 import { OctreeBlock } from "./octreeBlock";
     /**

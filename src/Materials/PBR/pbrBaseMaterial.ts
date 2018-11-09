@@ -1,16 +1,16 @@
-import { serialize, serializeAsImageProcessingConfiguration } from "Tools/decorators";
-import { Observer } from "Tools/observable";
-import { Tools, IAnimatable } from "Tools/tools";
-import { SmartArray } from "Tools/smartArray";
-import { TextureTools } from "Tools/textureTools";
+import { serialize, serializeAsImageProcessingConfiguration } from "Misc/decorators";
+import { Observer } from "Misc/observable";
+import { Tools, IAnimatable } from "Misc/tools";
+import { SmartArray } from "Misc/smartArray";
+import { TextureTools } from "Misc/textureTools";
 import { Nullable } from "types";
 import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Matrix, Color3, Vector4, Tmp } from "Math/math";
-import { VertexBuffer } from "Mesh/buffer";
-import { SubMesh } from "Mesh/subMesh";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { Mesh } from "Mesh/mesh";
+import { Matrix, Color3, Vector4, Tmp } from "Maths/math";
+import { VertexBuffer } from "Meshes/buffer";
+import { SubMesh } from "Meshes/subMesh";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { Mesh } from "Meshes/mesh";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
@@ -30,7 +30,7 @@ import { StandardMaterial } from "Materials/standardMaterial";
 
 import "Shaders/pbr.fragment";
 import "Shaders/pbr.vertex";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
 
     /**
      * Manages the defines for the PBR Material.
