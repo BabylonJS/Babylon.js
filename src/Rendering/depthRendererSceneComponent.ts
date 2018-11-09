@@ -1,9 +1,9 @@
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { SmartArrayNoDuplicate } from "Tools/smartArray";
+import { SmartArrayNoDuplicate } from "Misc/smartArray";
 import { DepthRenderer } from "./depthRenderer";
 import { Camera } from "Cameras/camera";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
 import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 

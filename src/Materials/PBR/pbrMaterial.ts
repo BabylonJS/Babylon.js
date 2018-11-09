@@ -1,8 +1,8 @@
-import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "Tools/decorators";
-import { TextureTools } from "Tools/textureTools";
+import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "Misc/decorators";
+import { TextureTools } from "Misc/textureTools";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Color3 } from "Math/math";
+import { Color3 } from "Maths/math";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { ImageProcessingConfiguration } from "Materials/imageProcessingConfiguration";

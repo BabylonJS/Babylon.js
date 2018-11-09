@@ -1,12 +1,12 @@
-import { Tools } from "Tools";
+import { Tools } from "Misc/tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { ISize } from "Math/math";
-import { Engine } from "Engine/engine";
+import { ISize } from "Maths/math";
+import { Engine } from "Engines/engine";
 import { Texture } from "Materials/Textures/texture";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
     /**
      * A class extending Texture allowing drawing on a texture
      * @see http://doc.babylonjs.com/how_to/dynamictexture

@@ -1,11 +1,11 @@
-import { SerializationHelper } from "Tools/decorators";
-import { EnvironmentTextureTools } from "Tools/environmentTextureTools";
+import { SerializationHelper } from "Misc/decorators";
+import { EnvironmentTextureTools } from "Misc/environmentTextureTools";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { SphericalPolynomial } from "Math/sphericalPolynomial";
+import { SphericalPolynomial } from "Maths/sphericalPolynomial";
 import { InternalTexture } from "Materials/Textures/internalTexture";
 import { CubeTexture } from "Materials/Textures/cubeTexture";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
     /**
      * Raw cube texture where the raw buffers are passed in
      */

@@ -1,11 +1,11 @@
-import { Observable } from "Tools/observable";
+import { Observable } from "Misc/observable";
 import { Nullable, int } from "types";
-import { SphericalPolynomial } from "Math/sphericalPolynomial";
-import { Engine, RenderTargetCreationOptions } from "Engine/engine";
+import { SphericalPolynomial } from "Maths/sphericalPolynomial";
+import { Engine, RenderTargetCreationOptions } from "Engines/engine";
 import { IInternalTextureTracker } from "Materials/Textures/internalTextureTracker";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
 
 declare type BaseTexture = import("Materials/Textures/baseTexture").BaseTexture;
 

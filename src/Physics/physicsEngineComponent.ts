@@ -1,9 +1,9 @@
 import { Nullable } from "types";
-import { Tools } from "Tools/tools";
-import { Observable, Observer } from "Tools/observable";
-import { Vector3 } from "Math";
-import { Mesh } from "Mesh/mesh";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { Tools } from "Misc/tools";
+import { Observable, Observer } from "Misc/observable";
+import { Vector3 } from "Maths/math";
+import { Mesh } from "Meshes/mesh";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
 import { Scene } from "scene";
 import { Node } from "node";
@@ -138,7 +138,7 @@ declare module "scene" {
         }
     };
 
-declare module "Mesh/AbstractMesh" {
+declare module "Meshes/AbstractMesh" {
     export interface AbstractMesh {
         /** @hidden */
         _physicsImpostor: Nullable<PhysicsImpostor>;

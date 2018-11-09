@@ -1,8 +1,8 @@
-import { Tools } from "Tools/tools";
-import { Observable } from "Tools/observable";
+import { Tools } from "Misc/tools";
+import { Observable } from "Misc/observable";
 import { Nullable } from "types";
 import { IDisposable, Scene } from "scene";
-import { Vector3, Matrix } from "Math/math";
+import { Vector3, Matrix } from "Maths/math";
 import { InternalTexture } from "Materials/Textures/internalTexture";
 import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 import { Ray } from "Culling/ray";

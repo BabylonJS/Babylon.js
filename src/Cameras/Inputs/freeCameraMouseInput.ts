@@ -1,5 +1,5 @@
-import { Observer, EventState } from "Tools/observable";
-import { serialize } from "Tools/decorators";
+import { Observer, EventState } from "Misc/observable";
+import { serialize } from "Misc/decorators";
 import { Nullable } from "types";
 import { ICameraInput, CameraInputTypes } from "Cameras/cameraInputsManager";
 import { FreeCamera } from "Cameras/freeCamera";

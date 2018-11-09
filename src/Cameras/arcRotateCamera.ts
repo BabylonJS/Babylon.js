@@ -1,11 +1,11 @@
-import { serialize, serializeAsVector3 } from "Tools/decorators";
-import { Observable } from "Tools/observable";
+import { serialize, serializeAsVector3 } from "Misc/decorators";
+import { Observable } from "Misc/observable";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Vector3, Vector2, Epsilon } from "Math/math";
+import { Matrix, Vector3, Vector2, Epsilon } from "Maths/math";
 import { Node } from "node";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { Mesh } from "Mesh/mesh";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { Mesh } from "Meshes/mesh";
 import { AutoRotationBehavior } from "Behaviors/Cameras/autoRotationBehavior";
 import { BouncingBehavior } from "Behaviors/Cameras/bouncingBehavior";
 import { FramingBehavior } from "Behaviors/Cameras/framingBehavior";

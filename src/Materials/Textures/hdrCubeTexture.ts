@@ -1,14 +1,14 @@
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Vector3, ToGammaSpace } from "Math/math";
-import { Engine } from "Engine/engine";
+import { Matrix, Vector3, ToGammaSpace } from "Maths/math";
+import { Engine } from "Engines/engine";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 import { Texture } from "Materials/Textures/texture";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { HDRTools } from "Tools/Hdr/hdr";
-import { CubeMapToSphericalPolynomialTools } from "Tools/hdr/cubemapToSphericalPolynomial";
+import { HDRTools } from "Misc/HighDynamicRange/hdr";
+import { CubeMapToSphericalPolynomialTools } from "Misc/HighDynamicRange/cubemapToSphericalPolynomial";
     /**
      * This represents a texture coming from an HDR input.
      *

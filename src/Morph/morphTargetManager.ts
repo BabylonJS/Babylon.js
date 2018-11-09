@@ -1,10 +1,10 @@
-import { Observer } from "Tools/observable";
-import { SmartArray } from "Tools/smartArray";
-import { Tools } from "Tools/tools";
+import { Observer } from "Misc/observable";
+import { SmartArray } from "Misc/smartArray";
+import { Tools } from "Misc/tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Engine } from "Engine/engine";
-import { Mesh } from "Mesh/mesh";
+import { Engine } from "Engines/engine";
+import { Mesh } from "Meshes/mesh";
 import { MorphTarget } from "./morphTarget";
     /**
      * This class is used to deform meshes using morphing between different targets

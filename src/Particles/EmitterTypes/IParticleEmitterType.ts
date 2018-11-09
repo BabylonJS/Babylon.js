@@ -1,4 +1,4 @@
-import { Vector3, Matrix } from "Math/math";
+import { Vector3, Matrix } from "Maths/math";
 import { Effect } from "Materials/effect";
 import { Particle } from "Particles/particle";
     /**

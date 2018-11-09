@@ -1,15 +1,15 @@
 import { Nullable } from "types";
-import { IAnimatable, IFileRequest, Tools, PerfCounter } from "Tools/tools";
-import { Observable, Observer } from "Tools/observable";
-import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "Tools/smartArray";
-import { StringDictionary } from "Tools/stringDictionary";
-import { Tags } from "Tools/tags";
-import { Color4, Color3, Plane, Vector2, Vector3, Matrix, Tmp, Quaternion, Frustum } from "Math/math";
-import { Geometry } from "Mesh/geometry";
-import { TransformNode } from "Mesh/transformNode";
-import { SubMesh } from "Mesh/subMesh";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { Mesh } from "Mesh/mesh";
+import { IAnimatable, IFileRequest, Tools, PerfCounter } from "Misc/tools";
+import { Observable, Observer } from "Misc/observable";
+import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "Misc/smartArray";
+import { StringDictionary } from "Misc/stringDictionary";
+import { Tags } from "Misc/tags";
+import { Color4, Color3, Plane, Vector2, Vector3, Matrix, Tmp, Quaternion, Frustum } from "Maths/math";
+import { Geometry } from "Meshes/geometry";
+import { TransformNode } from "Meshes/transformNode";
+import { SubMesh } from "Meshes/subMesh";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { Mesh } from "Meshes/mesh";
 import { IParticleSystem } from "Particles/IParticleSystem";
 import { Bone } from "Bones/bone";
 import { Skeleton } from "Bones/skeleton";
@@ -38,16 +38,16 @@ import { PointerEventTypes, PointerInfoPre, PointerInfo } from "Events/pointerEv
 import { KeyboardInfoPre, KeyboardInfo, KeyboardEventTypes } from "Events/keyboardEvents";
 import { ActionEvent } from "Actions/actionEvent";
 import { ActionManager } from "Actions/actionManager";
-import { PostProcess } from "PostProcess/postProcess";
-import { PostProcessManager } from "PostProcess/postProcessManager";
+import { PostProcess } from "PostProcesses/postProcess";
+import { PostProcessManager } from "PostProcesses/postProcessManager";
 import { IOfflineProvider } from "Offline/IOfflineProvider";
 import { RenderingManager, IRenderingManagerAutoClearSetup } from "Rendering/renderingManager";
 import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction } from "sceneComponent";
-import { Engine } from "Engine/engine";
+import { Engine } from "Engines/engine";
 import { Ray } from "Culling/ray";
 import { Node } from "node";
 import { MorphTarget } from "Morph/morphTarget";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
 
     /**
      * Define an interface for all classes that will hold resources

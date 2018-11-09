@@ -1,6 +1,6 @@
-import { Tools } from "Tools/tools";
-import { Vector3, Matrix } from "Math/math";
-import { Scalar } from "Math/math.scalar";
+import { Tools } from "Misc/tools";
+import { Vector3, Matrix } from "Maths/math";
+import { Scalar } from "Maths/math.scalar";
 import { Effect } from "Materials/effect";
 import { Particle } from "Particles/particle";
 import { IParticleEmitterType } from "./IParticleEmitterType";

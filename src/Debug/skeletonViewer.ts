@@ -1,11 +1,11 @@
-import { Color3, Vector3, Matrix, Tmp } from "Math/math";
+import { Color3, Vector3, Matrix, Tmp } from "Maths/math";
 import { Scene } from "scene";
 import { Nullable } from "types";
 import { Bone } from "Bones/bone";
 import { Skeleton } from "Bones/skeleton";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { LinesMesh } from "Mesh/linesMesh";
-import { MeshBuilder } from "Mesh/meshBuilder";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { LinesMesh } from "Meshes/linesMesh";
+import { MeshBuilder } from "Meshes/meshBuilder";
 import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
 
 /**

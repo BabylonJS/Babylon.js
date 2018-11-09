@@ -1,15 +1,15 @@
 import { Nullable, float } from "types";
-import { IAnimatable, Tools, IValueGradient, ColorGradient, FactorGradient, Color3Gradient } from "Tools/tools";
-import { Observable } from "Tools/observable";
-import { Color4, Color3, Vector3, Matrix, Tmp } from "Math/math";
-import { Scalar } from "Math/math.scalar";
-import { VertexBuffer } from "Mesh/buffer";
-import { Buffer } from "Mesh/buffer";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { IAnimatable, Tools, IValueGradient, ColorGradient, FactorGradient, Color3Gradient } from "Misc/tools";
+import { Observable } from "Misc/observable";
+import { Color4, Color3, Vector3, Matrix, Tmp } from "Maths/math";
+import { Scalar } from "Maths/math.scalar";
+import { VertexBuffer } from "Meshes/buffer";
+import { Buffer } from "Meshes/buffer";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";
 import { ParticleSystem } from "./particleSystem";
-import { Engine } from "Engine/engine";
+import { Engine } from "Engines/engine";
 import { BoxParticleEmitter } from "Particles/EmitterTypes/boxParticleEmitter";
 import { Scene, IDisposable } from "scene";
 import { Effect, EffectCreationOptions } from "Materials/effect";
@@ -18,7 +18,7 @@ import { MaterialHelper } from "Materials/MaterialHelper";
 import { ImageProcessingConfiguration } from "Materials/imageProcessingConfiguration";
 import { Texture } from "Materials/Textures/texture";
 import { RawTexture } from "Materials/Textures/rawTexture";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
 
     /**
      * This represents a GPU particle system in Babylon

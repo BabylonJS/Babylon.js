@@ -1,5 +1,5 @@
-import { Tools } from "Tools/tools";
-import { Observable } from "Tools/observable";
+import { Tools } from "Misc/tools";
+import { Observable } from "Misc/observable";
 import { Scene } from "scene";
 
     // declare INSPECTOR namespace for compilation issue

@@ -1,8 +1,8 @@
-import { Observable } from "Tools/observable";
+import { Observable } from "Misc/observable";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { TransformNode } from "Mesh/transformNode";
-import { Mesh } from "Mesh/mesh";
+import { TransformNode } from "Meshes/transformNode";
+import { Mesh } from "Meshes/mesh";
 import { Texture } from "Materials/Textures/texture";
 import { BackgroundMaterial } from "Materials/Background/backgroundMaterial";
 import { _TimeToken } from "Instrumentation/timeToken";

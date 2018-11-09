@@ -1,11 +1,11 @@
 import { Skeleton } from "./skeleton";
 
-import { Vector3, Quaternion, Matrix, Space } from "Math/math";
-import { ArrayTools } from "Tools/arrayTools";
+import { Vector3, Quaternion, Matrix, Space } from "Maths/math";
+import { ArrayTools } from "Misc/arrayTools";
 import { Nullable } from "types";
 import { Animation } from "Animations/animation";
 import { AnimationPropertiesOverride } from "Animations/animationPropertiesOverride";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { Node } from "node";
 
     /**

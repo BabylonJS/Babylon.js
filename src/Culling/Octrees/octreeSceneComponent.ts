@@ -1,8 +1,8 @@
-import { ISmartArrayLike } from "Tools/smartArray";
+import { ISmartArrayLike } from "Misc/smartArray";
 import { Scene } from "scene";
-import { Vector3 } from "Math/math";
-import { SubMesh } from "Mesh/subMesh";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { Vector3 } from "Maths/math";
+import { SubMesh } from "Meshes/subMesh";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { Collider } from "Collisions/collider";
 import { Ray } from "Culling/ray";
 import { SceneComponentConstants } from "sceneComponent";
@@ -61,7 +61,7 @@ declare module "scene" {
         configurable: true
     });
 
-declare module "Mesh/AbstractMesh" {
+declare module "Meshes/AbstractMesh" {
     export interface AbstractMesh {
         /**
          * @hidden

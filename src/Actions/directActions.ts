@@ -1,8 +1,8 @@
-import { Tools } from "Tools/tools";
-import { Vector3 } from "Math/math";
+import { Tools } from "Misc/tools";
+import { Vector3 } from "Maths/math";
 import { Action } from "./action";
 import { Condition } from "./condition";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
 
 declare type ActionEvent = import("./actionEvent").ActionEvent;
 

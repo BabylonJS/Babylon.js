@@ -1,12 +1,12 @@
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix } from "Math/math";
-import { Engine } from "Engine/engine";
+import { Matrix } from "Maths/math";
+import { Engine } from "Engines/engine";
 import { InternalTexture } from "Materials/Textures/internalTexture";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 import { _TimeToken } from "Instrumentation";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
     /**
      * This represents a color grading texture. This acts as a lookup table LUT, useful during post process
      * It can help converting any input color in a desired output one. This can then be used to create effects

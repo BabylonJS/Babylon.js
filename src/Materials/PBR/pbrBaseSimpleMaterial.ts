@@ -1,6 +1,6 @@
-import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture } from "Tools/decorators";
+import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture } from "Misc/decorators";
 import { Scene } from "scene";
-import { Color3 } from "Math/math";
+import { Color3 } from "Maths/math";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { BaseTexture } from "Materials/Textures/baseTexture";
 

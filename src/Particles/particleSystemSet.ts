@@ -1,12 +1,12 @@
 import { Nullable } from "types";
-import { Color3 } from "Math/math";
-import { TransformNode } from "Mesh/transformNode";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { MeshBuilder } from "Mesh/meshBuilder";
+import { Color3 } from "Maths/math";
+import { TransformNode } from "Meshes/transformNode";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { MeshBuilder } from "Meshes/meshBuilder";
 import { IParticleSystem } from "./IParticleSystem";
 import { ParticleHelper } from "./particleHelper";
 import { GPUParticleSystem } from "./gpuParticleSystem";
-import { Engine } from "Engine/engine";
+import { Engine } from "Engines/engine";
 import { ParticleSystem } from "Particles/particleSystem";
 import { Scene, IDisposable } from "scene";
 import { StandardMaterial } from "Materials/standardMaterial";

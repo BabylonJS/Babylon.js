@@ -1,6 +1,6 @@
 import { Nullable, IndicesArray } from "types";
-import { Vector3, Plane } from "Math/math";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { Vector3, Plane } from "Maths/math";
+import { AbstractMesh } from "Meshes/abstractMesh";
 
     var intersectBoxAASphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean => {
         if (boxMin.x > sphereCenter.x + sphereRadius) {

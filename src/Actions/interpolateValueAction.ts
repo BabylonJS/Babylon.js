@@ -1,9 +1,9 @@
 import { Action } from "./action";
 import { Condition } from "./condition";
 
-import { Tools } from "Tools/tools";
-import { Observable } from "Tools/observable";
-import { Color3, Vector3, Matrix, Quaternion } from "Math/math";
+import { Tools } from "Misc/tools";
+import { Observable } from "Misc/observable";
+import { Color3, Vector3, Matrix, Quaternion } from "Maths/math";
 import { Animation } from "Animations/animation";
 
     /**

@@ -1,16 +1,16 @@
-import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "tools/decorators";
-import { Observer } from "Tools/observable";
-import { SmartArray } from "Tools/smartArray";
-import { IAnimatable } from "Tools/tools";
+import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "Misc/decorators";
+import { Observer } from "Misc/observable";
+import { SmartArray } from "Misc/smartArray";
+import { IAnimatable } from "Misc/tools";
 
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Color3 } from "Math/math";
-import { Engine } from "Engine/engine";
-import { VertexBuffer } from "Mesh/buffer";
-import { SubMesh } from "Mesh/subMesh";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { Mesh } from "Mesh/mesh";
+import { Matrix, Color3 } from "Maths/math";
+import { Engine } from "Engines/engine";
+import { VertexBuffer } from "Meshes/buffer";
+import { SubMesh } from "Meshes/subMesh";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { Mesh } from "Meshes/mesh";
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration";
 import { ColorCurves } from "./colorCurves";
@@ -27,7 +27,7 @@ import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 
 import "Shaders/default.fragment";
 import "Shaders/default.vertex";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
 
     /** @hidden */
     export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {

@@ -1,11 +1,11 @@
-import { serialize, SerializationHelper } from "Tools/decorators";
-import { Observable } from "Tools/observable";
-import { Tools } from "Tools/tools";
+import { serialize, SerializationHelper } from "Misc/decorators";
+import { Observable } from "Misc/observable";
+import { Tools } from "Misc/tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Vector3, Plane } from "Math/math";
+import { Matrix, Vector3, Plane } from "Maths/math";
 import { BaseTexture } from "Materials/Textures/baseTexture";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
 import { _AlphaState } from "States";
 
 declare type Animation = import("Animations/animation").Animation;

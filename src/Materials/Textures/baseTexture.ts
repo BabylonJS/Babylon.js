@@ -1,16 +1,16 @@
-import { serialize, SerializationHelper } from "Tools/decorators";
-import { Observer, Observable } from "Tools/observable";
-import { Tools, IAnimatable } from "Tools/tools";
-import { CubeMapToSphericalPolynomialTools } from "Tools/HDR/cubemapToSphericalPolynomial";
+import { serialize, SerializationHelper } from "Misc/decorators";
+import { Observer, Observable } from "Misc/observable";
+import { Tools, IAnimatable } from "Misc/tools";
+import { CubeMapToSphericalPolynomialTools } from "Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Size, ISize } from "Math/math";
-import { SphericalPolynomial } from "Math/sphericalPolynomial";
-import { Engine } from "Engine/engine";
+import { Matrix, Size, ISize } from "Maths/math";
+import { SphericalPolynomial } from "Maths/sphericalPolynomial";
+import { Engine } from "Engines/engine";
 import { InternalTexture } from "Materials/Textures/internalTexture";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
 
 declare type Animation = import("Animations/animation").Animation;
 

@@ -1,8 +1,8 @@
-import { Tools } from "Tools/tools";
+import { Tools } from "Misc/tools";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Vector3 } from "Math/math";
-import { Mesh } from "Mesh/mesh";
+import { Vector3 } from "Maths/math";
+import { Mesh } from "Meshes/mesh";
 import { StandardMaterial, Texture, BaseTexture, PBRMaterial } from "Materials";
 import { HemisphericLight } from "Lights/hemisphericLight";
 import { IEnvironmentHelperOptions, EnvironmentHelper } from "./environmentHelper";

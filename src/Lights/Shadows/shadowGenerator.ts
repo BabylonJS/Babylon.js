@@ -1,11 +1,11 @@
-import { SmartArray } from "Tools/smartArray";
+import { SmartArray } from "Misc/smartArray";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Vector3, Vector2, Color4 } from "Math/math";
-import { VertexBuffer } from "Mesh/buffer";
-import { SubMesh } from "Mesh/subMesh";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { Mesh } from "Mesh/mesh";
+import { Matrix, Vector3, Vector2, Color4 } from "Maths/math";
+import { VertexBuffer } from "Meshes/buffer";
+import { SubMesh } from "Meshes/subMesh";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { Mesh } from "Meshes/mesh";
 
 import { IShadowLight } from "Lights/shadowLight";
 import { Light } from "Lights/light";
@@ -18,12 +18,12 @@ import { Effect } from "Materials/effect";
 import { Texture } from "Materials/Textures/texture";
 import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 
-import { PostProcess } from "PostProcess/postProcess";
-import { BlurPostProcess } from "PostProcess/blurPostProcess";
+import { PostProcess } from "PostProcesses/postProcess";
+import { BlurPostProcess } from "PostProcesses/blurPostProcess";
 import { SceneComponentConstants } from "sceneComponent";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
     /**
      * Interface to implement to create a shadow generator compatible with BJS.
      */

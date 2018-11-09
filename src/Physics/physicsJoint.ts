@@ -1,4 +1,4 @@
-import { Vector3 } from "Math/math";
+import { Vector3 } from "Maths/math";
 import { IPhysicsEnginePlugin } from "./IPhysicsEngine";
     /**
      * Interface for Physics-Joint data

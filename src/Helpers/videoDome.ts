@@ -1,6 +1,6 @@
 import { Scene } from "scene";
-import { TransformNode } from "Mesh/transformNode";
-import { Mesh } from "Mesh/mesh";
+import { TransformNode } from "Meshes/transformNode";
+import { Mesh } from "Meshes/mesh";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { Texture } from "Materials/Textures/texture";

@@ -1,8 +1,8 @@
-import { Tools } from "Tools/tools";
-import { Color3 } from "Math/math";
-import { Engine } from "Engine/engine";
-import { SerializationHelper } from "Tools/decorators";
-import { Constants } from "Engine/constants";
+import { Tools } from "Misc/tools";
+import { Color3 } from "Maths/math";
+import { Engine } from "Engines/engine";
+import { SerializationHelper } from "Misc/decorators";
+import { Constants } from "Engines/constants";
 
     /**
      * This represents all the required information to add a fresnel effect on a material:

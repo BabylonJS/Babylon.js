@@ -1,5 +1,5 @@
 import { Scene } from "scene";
-import { Plane } from "Math/math";
+import { Plane } from "Maths/math";
 import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
     /**
      * Creates a refraction texture used by refraction channel of the standard material.

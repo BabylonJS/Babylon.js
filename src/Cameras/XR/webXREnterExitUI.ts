@@ -1,5 +1,5 @@
 import { Nullable } from "types";
-import { Observable } from "Tools/observable";
+import { Observable } from "Misc/observable";
 import { IDisposable, Scene } from "scene";
 import { WebXRExperienceHelper, WebXRState } from "./webXRExperienceHelper";
     /**

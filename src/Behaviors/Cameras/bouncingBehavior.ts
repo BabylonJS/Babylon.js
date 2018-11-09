@@ -3,8 +3,8 @@ import { Camera } from "Cameras/camera";
 import { ArcRotateCamera } from "Cameras/arcRotateCamera";
 import { BackEase, EasingFunction } from "Animations/easing";
 import { Nullable } from "types";
-import { Observer } from "Tools/observable";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { Observer } from "Misc/observable";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { Animatable } from "Animations/animatable";
 import { Animation } from "Animations/animation";
 

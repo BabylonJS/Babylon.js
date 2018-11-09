@@ -1,5 +1,5 @@
-import { Tools, PerfCounter } from "Tools/tools";
-import { Observer } from "Tools/observable";
+import { Tools, PerfCounter } from "Misc/tools";
+import { Observer } from "Misc/observable";
 import { Nullable } from "types";
 import { Camera } from "Cameras/camera";
 import { Scene, IDisposable } from "scene";

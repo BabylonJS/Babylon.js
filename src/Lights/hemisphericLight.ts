@@ -1,7 +1,7 @@
-import { serializeAsColor3, serializeAsVector3 } from "Tools/decorators";
+import { serializeAsColor3, serializeAsVector3 } from "Misc/decorators";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Matrix, Vector3, Color3 } from "Math/math";
+import { Matrix, Vector3, Color3 } from "Maths/math";
 import { Node } from "node";
 import { Effect } from "Materials/effect";
 import { Light } from "./light";

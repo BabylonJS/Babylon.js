@@ -1,7 +1,7 @@
 import { Camera } from "Cameras/camera";
 import { GamepadCamera } from "Cameras/gamepadCamera";
 import { Scene } from "scene";
-import { Vector3 } from "Math/math";
+import { Vector3 } from "Maths/math";
 import { Node } from "node";
 
     Node.AddNodeConstructor("AnaglyphGamepadCamera", (name, scene, options) => {

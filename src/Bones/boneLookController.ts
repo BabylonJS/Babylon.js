@@ -1,7 +1,7 @@
 import { Nullable } from "types";
-import { ArrayTools } from "Tools/arrayTools";
-import { Vector3, Quaternion, Matrix, Space, Axis } from "Math/math";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { ArrayTools } from "Misc/arrayTools";
+import { Vector3, Quaternion, Matrix, Space, Axis } from "Maths/math";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { Bone } from "./bone";
 
     /**

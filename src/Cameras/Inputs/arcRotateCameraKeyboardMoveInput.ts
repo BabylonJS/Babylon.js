@@ -1,10 +1,10 @@
 import { Nullable } from "types";
-import { serialize } from "Tools/decorators";
-import { Observer } from "Tools/observable";
+import { serialize } from "Misc/decorators";
+import { Observer } from "Misc/observable";
 import { Scene } from "scene";
 import { ArcRotateCamera } from "Cameras/arcRotateCamera";
 import { ICameraInput, CameraInputTypes } from "Cameras/cameraInputsManager";
-import { Engine } from "Engine";
+import { Engine } from "Engines/engine";
 import { KeyboardInfo, KeyboardEventTypes } from "Events/keyboardEvents";
 
     /**

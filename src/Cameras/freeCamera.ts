@@ -1,10 +1,10 @@
 import { Nullable } from "types";
-import { serializeAsVector3, serialize } from "Tools/decorators";
-import { Vector3, Vector2 } from "Math/math";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { serializeAsVector3, serialize } from "Misc/decorators";
+import { Vector3, Vector2 } from "Maths/math";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { Collider } from "Collisions/collider";
 import { Scene } from "scene";
-import { Engine } from "Engine/engine";
+import { Engine } from "Engines/engine";
 import { TargetCamera } from "./targetCamera";
 import { FreeCameraInputsManager } from "./freeCameraInputsManager";
 import { FreeCameraMouseInput } from "Cameras/Inputs/freeCameraMouseInput";

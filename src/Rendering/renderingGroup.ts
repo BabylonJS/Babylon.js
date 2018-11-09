@@ -1,12 +1,12 @@
-import { SmartArray } from "Tools/smartArray";
-import { SubMesh } from "Mesh/subMesh";
-import { AbstractMesh } from "Mesh/abstractMesh";
+import { SmartArray } from "Misc/smartArray";
+import { SubMesh } from "Meshes/subMesh";
+import { AbstractMesh } from "Meshes/abstractMesh";
 import { Nullable } from "types";
-import { Vector3 } from "Math/math";
+import { Vector3 } from "Maths/math";
 import { IParticleSystem } from "Particles/IParticleSystem";
 import { IEdgesRenderer } from "./edgesRenderer";
 import { ISpriteManager } from "Sprites/spriteManager";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
 import { Material } from "Materials/material";
 import { Scene } from "scene";
 import { Camera } from "Cameras/camera";

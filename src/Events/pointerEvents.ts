@@ -1,5 +1,5 @@
 import { Nullable } from "types";
-import { Vector2 } from "Math/math";
+import { Vector2 } from "Maths/math";
 import { PickingInfo } from "Collisions/pickingInfo";
 import { Ray } from "Culling/ray";
 import { _TimeToken } from "Instrumentation/timeToken";

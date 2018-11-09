@@ -1,9 +1,9 @@
-import { Tools } from "Tools/tools";
-import { Observable } from "Tools/observable";
+import { Tools } from "Misc/tools";
+import { Observable } from "Misc/observable";
 import { Nullable } from "types";
-import { Vector3, Color3 } from "Math/math";
-import { AbstractMesh } from "Mesh/abstractMesh";
-import { Mesh } from "Mesh/mesh";
+import { Vector3, Color3 } from "Maths/math";
+import { AbstractMesh } from "Meshes/abstractMesh";
+import { Mesh } from "Meshes/mesh";
 import { Gizmo } from "./gizmo";
 import { AxisScaleGizmo } from "./axisScaleGizmo";
 import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";

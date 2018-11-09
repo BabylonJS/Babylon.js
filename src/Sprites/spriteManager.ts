@@ -1,9 +1,9 @@
 import { IDisposable, Scene } from "scene";
 import { Nullable } from "types";
-import { Observable, Observer } from "Tools/observable";
-import { Buffer } from "Mesh/buffer";
-import { VertexBuffer } from "Mesh/buffer";
-import { Vector3 } from "Math/math";
+import { Observable, Observer } from "Misc/observable";
+import { Buffer } from "Meshes/buffer";
+import { VertexBuffer } from "Meshes/buffer";
+import { Vector3 } from "Maths/math";
 import { Sprite } from "./sprite";
 import { SpriteSceneComponent } from "./spriteSceneComponent";
 import { Ray } from "Culling/ray";
@@ -13,7 +13,7 @@ import { Texture } from "Materials/Textures/texture";
 import { Effect } from "Materials/effect";
 import { Material } from "Materials/material";
 import { SceneComponentConstants } from "sceneComponent";
-import { Constants } from "Engine/constants";
+import { Constants } from "Engines/constants";
 
     /**
      * Defines the minimum interface to fullfil in order to be a sprite manager.

@@ -1,9 +1,9 @@
-import { Matrix, Color4 } from "Math/math";
-import { VertexBuffer } from "Mesh/buffer";
-import { SubMesh } from "Mesh/subMesh";
-import { Mesh } from "Mesh/mesh";
-import { Constants } from "Engine/constants";
-import { SmartArray } from "Tools/smartArray";
+import { Matrix, Color4 } from "Maths/math";
+import { VertexBuffer } from "Meshes/buffer";
+import { SubMesh } from "Meshes/subMesh";
+import { Mesh } from "Meshes/mesh";
+import { Constants } from "Engines/constants";
+import { SmartArray } from "Misc/smartArray";
 import { Texture } from "Materials/Textures/texture";
 import { MultiRenderTarget } from "Materials/Textures/multiRenderTarget";
 import { Effect } from "Materials/effect";

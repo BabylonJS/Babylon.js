@@ -1,7 +1,7 @@
-import { Tools } from "Tools/tools";
+import { Tools } from "Misc/tools";
 import { Nullable, FloatArray } from "types";
-import { Matrix, Vector3, Color3, Vector4 } from "Math/math";
-import { Engine } from "Engine/engine";
+import { Matrix, Vector3, Color3, Vector4 } from "Maths/math";
+import { Engine } from "Engines/engine";
 import { Effect } from "./effect";
 import { BaseTexture } from "Materials/Textures/baseTexture";
     /**

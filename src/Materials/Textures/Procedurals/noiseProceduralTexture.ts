@@ -1,6 +1,6 @@
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Engine } from "Engine/engine";
+import { Engine } from "Engines/engine";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { Texture } from "Materials/Textures/texture";
