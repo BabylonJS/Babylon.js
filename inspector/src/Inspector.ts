@@ -7,6 +7,8 @@ import { Scene, Observable, Observer, Nullable, IInspectorOptions } from "babylo
 import { EmbedHostComponent } from "./components/embedHost/embedHostComponent";
 import { PropertyChangedEvent } from "./components/propertyChangedEvent";
 import { GlobalState } from "./components/globalState";
+import { IGLTFLoaderExtension } from "babylonjs-gltf2interface";
+import {GLTFFileLoader} from "babylonjs-loaders"
 
 interface IInternalInspectorOptions extends IInspectorOptions {
     popup: boolean;
@@ -301,6 +303,23 @@ export class Inspector {
         if (!this._GlobalState.onSelectionChangeObservable) {
             this._GlobalState.onSelectionChangeObservable = this.OnSelectionChangeObservable;
         }
+        if (!this._GlobalState.onPluginActivatedObserver) {
+            this._GlobalState.onPluginActivatedObserver = BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: GLTFFileLoader) => {
+                if (loader.name === "gltf") {
+                    this._GlobalState.prepareGLTFPlugin(loader);
+    
+                    loader.onValidatedObservable.add((results: IGLTFValidationResults) => {
+                        this._GlobalState.validationResults = results;
+    
+                        this._GlobalState.onValidationResultsUpdatedObservable.notifyObservers(results);
+                    });
+
+                    loader.onExtensionLoadedObservable.add((extension: IGLTFLoaderExtension) => {
+
+                    });
+                }
+            });
+        }
 
         // Make sure it is not already opened
         if (this.IsVisible && options.original) {
@@ -456,5 +475,10 @@ export class Inspector {
 
         Inspector._OpenedPane = 0;
         this._Cleanup();
+
+        if (!this._GlobalState.onPluginActivatedObserver) {
+            BABYLON.SceneLoader.OnPluginActivatedObservable.remove(this._GlobalState.onPluginActivatedObserver);
+            this._GlobalState.onPluginActivatedObserver = null;
+        }
     }
 }
