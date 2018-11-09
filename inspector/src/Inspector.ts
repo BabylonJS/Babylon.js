@@ -283,6 +283,26 @@ export class Inspector {
         return this._OpenedPane > 0;
     }
 
+    public static EarlyAttachToLoader() {
+        if (!this._GlobalState.onPluginActivatedObserver) {
+            this._GlobalState.onPluginActivatedObserver = BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: GLTFFileLoader) => {
+                if (loader.name === "gltf") {
+                    this._GlobalState.prepareGLTFPlugin(loader);
+
+                    loader.onValidatedObservable.add((results: IGLTFValidationResults) => {
+                        this._GlobalState.validationResults = results;
+
+                        this._GlobalState.onValidationResultsUpdatedObservable.notifyObservers(results);
+                    });
+
+                    loader.onExtensionLoadedObservable.add((extension: IGLTFLoaderExtension) => {
+
+                    });
+                }
+            });
+        }
+    }
+
     public static Show(scene: Scene, userOptions: Partial<IInspectorOptions>) {
         const options: IInternalInspectorOptions = {
             original: true,
@@ -302,23 +322,6 @@ export class Inspector {
         }
         if (!this._GlobalState.onSelectionChangeObservable) {
             this._GlobalState.onSelectionChangeObservable = this.OnSelectionChangeObservable;
-        }
-        if (!this._GlobalState.onPluginActivatedObserver) {
-            this._GlobalState.onPluginActivatedObserver = BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: GLTFFileLoader) => {
-                if (loader.name === "gltf") {
-                    this._GlobalState.prepareGLTFPlugin(loader);
-
-                    loader.onValidatedObservable.add((results: IGLTFValidationResults) => {
-                        this._GlobalState.validationResults = results;
-
-                        this._GlobalState.onValidationResultsUpdatedObservable.notifyObservers(results);
-                    });
-
-                    loader.onExtensionLoadedObservable.add((extension: IGLTFLoaderExtension) => {
-
-                    });
-                }
-            });
         }
 
         // Make sure it is not already opened
@@ -482,3 +485,5 @@ export class Inspector {
         }
     }
 }
+
+Inspector.EarlyAttachToLoader();

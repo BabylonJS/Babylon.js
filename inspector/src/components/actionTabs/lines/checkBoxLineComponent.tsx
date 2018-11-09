@@ -49,12 +49,14 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         if (this.props.onSelect) {
             this.props.onSelect(!this.state.isSelected);
         } else {
-            this.props.onPropertyChangedObservable!.notifyObservers({
-                object: this.props.target,
-                property: this.props.propertyName!,
-                value: !this.state.isSelected,
-                initialValue: this.state.isSelected
-            });
+            if (this.props.onPropertyChangedObservable) {
+                this.props.onPropertyChangedObservable.notifyObservers({
+                    object: this.props.target,
+                    property: this.props.propertyName!,
+                    value: !this.state.isSelected,
+                    initialValue: this.state.isSelected
+                });
+            }
 
             this.props.target[this.props.propertyName!] = !this.state.isSelected;
         }
