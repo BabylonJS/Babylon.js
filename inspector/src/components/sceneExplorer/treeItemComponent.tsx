@@ -54,7 +54,7 @@ export interface ITreeItemComponentProps {
     label: string,
     offset: number,
     filter: Nullable<string>,
-    onSelectionChangeObservable?: Observable<any>,
+    onSelectionChangedObservable?: Observable<any>,
     entity?: any,
     selectedEntity: any,
     extensibilityGroups?: IExplorerExtensibilityGroup[]
@@ -136,7 +136,7 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
                 {
                     sortedItems.map(item => {
                         return (
-                            <TreeItemSelectableComponent extensibilityGroups={this.props.extensibilityGroups} key={item.uniqueId} offset={this.props.offset + 2} selectedEntity={this.props.selectedEntity} entity={item} onSelectionChangeObservable={this.props.onSelectionChangeObservable} filter={this.props.filter} />
+                            <TreeItemSelectableComponent extensibilityGroups={this.props.extensibilityGroups} key={item.uniqueId} offset={this.props.offset + 2} selectedEntity={this.props.selectedEntity} entity={item} onSelectionChangedObservable={this.props.onSelectionChangedObservable} filter={this.props.filter} />
                         );
                     })
                 }

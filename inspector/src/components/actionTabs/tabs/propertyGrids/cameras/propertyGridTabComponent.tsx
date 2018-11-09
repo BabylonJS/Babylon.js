@@ -3,7 +3,7 @@ import { PaneComponent, IPaneComponentProps } from "../../../paneComponent";
 import { Mesh, TransformNode, Material, StandardMaterial, Texture, PBRMaterial, Scene, FreeCamera, ArcRotateCamera, HemisphericLight, PointLight } from "babylonjs";
 import { MaterialPropertyGridComponent } from "../materials/materialPropertyGridComponent";
 import { StandardMaterialPropertyGridComponent } from "../materials/standardMaterialPropertyGridComponent";
-import { TexturePropertyGridComponent } from "../texturePropertyGridComponent";
+import { TexturePropertyGridComponent } from "../materials/texturePropertyGridComponent";
 import { PBRMaterialPropertyGridComponent } from "../materials/pbrMaterialPropertyGridComponent";
 import { ScenePropertyGridComponent } from "../scenePropertyGridComponent";
 import { HemisphericLightPropertyGridComponent } from "../lights/hemisphericLightPropertyGridComponent";
@@ -32,7 +32,7 @@ export class PropertyGridTabComponent extends PaneComponent {
                 const mesh = entity as Mesh;
                 if (mesh.getTotalVertices() > 0) {
                     return (<MeshPropertyGridComponent mesh={mesh}
-                        onSelectionChangeObservable={this.props.onSelectionChangeObservable}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
                 }
             }
@@ -70,7 +70,7 @@ export class PropertyGridTabComponent extends PaneComponent {
                 const material = entity as StandardMaterial;
                 return (<StandardMaterialPropertyGridComponent
                     material={material}
-                    onSelectionChangeObservable={this.props.onSelectionChangeObservable}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
@@ -78,7 +78,7 @@ export class PropertyGridTabComponent extends PaneComponent {
                 const material = entity as PBRMaterial;
                 return (<PBRMaterialPropertyGridComponent
                     material={material}
-                    onSelectionChangeObservable={this.props.onSelectionChangeObservable}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 

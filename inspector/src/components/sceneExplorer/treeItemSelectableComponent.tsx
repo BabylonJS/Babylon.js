@@ -11,7 +11,7 @@ export interface ITreeItemSelectableComponentProps {
     selectedEntity?: any,
     offset: number,
     extensibilityGroups?: IExplorerExtensibilityGroup[],
-    onSelectionChangeObservable?: Observable<any>,
+    onSelectionChangedObservable?: Observable<any>,
     filter: Nullable<string>
 }
 
@@ -72,12 +72,12 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
     }
 
     onSelect() {
-        if (!this.props.onSelectionChangeObservable) {
+        if (!this.props.onSelectionChangedObservable) {
             return;
         }
         this._wasSelected = true;
         const entity = this.props.entity;
-        this.props.onSelectionChangeObservable.notifyObservers(entity);
+        this.props.onSelectionChangedObservable.notifyObservers(entity);
     }
 
     renderChildren() {
@@ -91,7 +91,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             children.map(item => {
 
                 return (
-                    <TreeItemSelectableComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.props.selectedEntity} key={item.uniqueId} offset={this.props.offset + 2} entity={item} onSelectionChangeObservable={this.props.onSelectionChangeObservable} filter={this.props.filter} />
+                    <TreeItemSelectableComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.props.selectedEntity} key={item.uniqueId} offset={this.props.offset + 2} entity={item} onSelectionChangedObservable={this.props.onSelectionChangedObservable} filter={this.props.filter} />
                 );
             })
         )
@@ -143,7 +143,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                             {chevron}
                         </div>
                     }
-                    <TreeItemSpecializedComponent extensibilityGroups={this.props.extensibilityGroups} label={entity.name} entity={entity} onClick={() => this.onSelect()} onSelectionChangeObservable={this.props.onSelectionChangeObservable} />
+                    <TreeItemSpecializedComponent extensibilityGroups={this.props.extensibilityGroups} label={entity.name} entity={entity} onClick={() => this.onSelect()} onSelectionChangedObservable={this.props.onSelectionChangedObservable} />
                 </div>
                 {
                     this.renderChildren()

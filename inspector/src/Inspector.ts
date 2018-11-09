@@ -7,7 +7,6 @@ import { Scene, Observable, Observer, Nullable, IInspectorOptions } from "babylo
 import { EmbedHostComponent } from "./components/embedHost/embedHostComponent";
 import { PropertyChangedEvent } from "./components/propertyChangedEvent";
 import { GlobalState } from "./components/globalState";
-import { IGLTFLoaderExtension } from "babylonjs-gltf2interface";
 import { GLTFFileLoader } from "babylonjs-loaders"
 
 interface IInternalInspectorOptions extends IInspectorOptions {
@@ -184,7 +183,7 @@ export class Inspector {
         }
     }
 
-    private static _CreateEmbedHost(scene: Scene, options: IInternalInspectorOptions, parentControl: Nullable<HTMLElement>, onSelectionChangeObservable: Observable<string>) {
+    private static _CreateEmbedHost(scene: Scene, options: IInternalInspectorOptions, parentControl: Nullable<HTMLElement>, onSelectionChangedObservable: Observable<string>) {
 
         // Prepare the inspector host
         if (parentControl) {
@@ -288,16 +287,6 @@ export class Inspector {
             this._GlobalState.onPluginActivatedObserver = BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: GLTFFileLoader) => {
                 if (loader.name === "gltf") {
                     this._GlobalState.prepareGLTFPlugin(loader);
-
-                    loader.onValidatedObservable.add((results: IGLTFValidationResults) => {
-                        this._GlobalState.validationResults = results;
-
-                        this._GlobalState.onValidationResultsUpdatedObservable.notifyObservers(results);
-                    });
-
-                    loader.onExtensionLoadedObservable.add((extension: IGLTFLoaderExtension) => {
-
-                    });
                 }
             });
         }
@@ -320,8 +309,8 @@ export class Inspector {
         if (!this._GlobalState.onPropertyChangedObservable) {
             this._GlobalState.onPropertyChangedObservable = this.OnPropertyChangedObservable;
         }
-        if (!this._GlobalState.onSelectionChangeObservable) {
-            this._GlobalState.onSelectionChangeObservable = this.OnSelectionChangeObservable;
+        if (!this._GlobalState.onSelectionChangedObservable) {
+            this._GlobalState.onSelectionChangedObservable = this.OnSelectionChangeObservable;
         }
 
         // Make sure it is not already opened

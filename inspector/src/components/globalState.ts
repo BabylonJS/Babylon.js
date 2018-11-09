@@ -1,10 +1,12 @@
 import { Observable, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Observer, Nullable } from "babylonjs";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { IGLTFLoaderExtension, GLTFFileLoader } from "babylonjs-loaders"
+import { } from "babylonjs-gltf2interface"
 
 export class GlobalState {
-    public onSelectionChangeObservable: Observable<string>;
+    public onSelectionChangedObservable: Observable<string>;
     public onPropertyChangedObservable: Observable<PropertyChangedEvent>;
+    public onTabChangedObservable = new Observable<number>();
     public onPluginActivatedObserver: Nullable<Observer<ISceneLoaderPlugin | ISceneLoaderPluginAsync>>;
 
     public validationResults: IGLTFValidationResults;
@@ -29,6 +31,15 @@ export class GlobalState {
                 for (const key in extensionState) {
                     (extension as any)[key] = extensionState[key];
                 }
+            }
+        });
+
+        loader.onValidatedObservable.add((results: IGLTFValidationResults) => {
+            this.validationResults = results;
+            this.onValidationResultsUpdatedObservable.notifyObservers(results);
+
+            if (results.issues.numErrors || results.issues.numWarnings) {
+                this.onTabChangedObservable.notifyObservers(3);
             }
         });
     }

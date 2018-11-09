@@ -30,7 +30,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
 
         const newValue = nextProps.target[nextProps.propertyName];
-        if (newValue !== nextState.value) {
+        if (newValue && newValue !== nextState.value) {
             nextState.value = newValue.toFixed(3);
             return true;
         }

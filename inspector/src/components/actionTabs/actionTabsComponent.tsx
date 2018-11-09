@@ -25,36 +25,58 @@ interface IActionTabsComponentProps {
 
 export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, { selectedEntity: any, selectedIndex: number }> {
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
+    private _onTabChangedObserver: Nullable<Observer<any>>;
     private _once = true;
 
     constructor(props: IActionTabsComponentProps) {
         super(props);
 
-        this.state = { selectedEntity: null, selectedIndex: 0 }
+        let initialIndex = 0;
+
+        const validationResutls = this.props.globalState.validationResults;
+        if (validationResutls) {
+            if (validationResutls.issues.numErrors || validationResutls.issues.numWarnings) {
+                initialIndex = 3;
+            }
+        }
+
+        this.state = { selectedEntity: null, selectedIndex: initialIndex }
     }
 
     componentWillMount() {
-        this._onSelectionChangeObserver = this.props.globalState.onSelectionChangeObservable.add((entity) => {
+        this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add((entity) => {
             this.setState({ selectedEntity: entity, selectedIndex: 0 });
+        });
+
+        this._onTabChangedObserver = this.props.globalState.onTabChangedObservable.add(index => {
+            this.setState({ selectedIndex: index });
         });
     }
 
     componentWillUnmount() {
         if (this._onSelectionChangeObserver) {
-            this.props.globalState.onSelectionChangeObservable.remove(this._onSelectionChangeObserver);
+            this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangeObserver);
         }
+
+        if (this._onTabChangedObserver) {
+            this.props.globalState.onTabChangedObservable.remove(this._onTabChangedObserver);
+        }
+    }
+
+    changeSelectedTab(index: number) {
+        this.props.globalState.onTabChangedObservable.notifyObservers(index);
     }
 
     renderContent() {
         return (
-            <TabsComponent selectedIndex={this.state.selectedIndex} onSelectedIndexChange={(value) => this.setState({ selectedIndex: value })}>
+            <TabsComponent selectedIndex={this.state.selectedIndex} onSelectedIndexChange={(value) => this.changeSelectedTab(value)}>
                 <PropertyGridTabComponent
                     title="Properties" icon={faFileAlt} scene={this.props.scene} selectedEntity={this.state.selectedEntity}
-                    onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable}
+                    onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable}
                     onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                 <DebugTabComponent title="Debug" icon={faBug} scene={this.props.scene} />
                 <StatisticsTabComponent title="Statistics" icon={faChartBar} scene={this.props.scene} />
-                <ToolsTabComponent title="Tools" icon={faWrench} scene={this.props.scene} globalState={this.props.globalState}/>
+                <ToolsTabComponent title="Tools" icon={faWrench} scene={this.props.scene} globalState={this.props.globalState} />
             </TabsComponent>
         )
     }
@@ -79,7 +101,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
                 <div id="actionTabs">
                     {
                         !this.props.noHeader &&
-                        <HeaderComponent title="INSPECTOR" handleBack={true} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} />
+                        <HeaderComponent title="INSPECTOR" handleBack={true} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} />
                     }
                     {this.renderContent()}
                 </div>
@@ -102,7 +124,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
             <Resizable id="actionTabs" minWidth={300} maxWidth={600} size={{ height: "100%" }} minHeight="100%" enable={{ top: false, right: false, bottom: false, left: true, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }}>
                 {
                     !this.props.noHeader &&
-                    <HeaderComponent title="INSPECTOR" handleBack={true} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} />
+                    <HeaderComponent title="INSPECTOR" handleBack={true} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} />
                 }
                 {this.renderContent()}
             </Resizable>

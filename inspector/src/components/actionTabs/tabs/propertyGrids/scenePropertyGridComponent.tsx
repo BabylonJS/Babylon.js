@@ -7,10 +7,12 @@ import { Color3LineComponent } from "../../lines/color3LineComponent";
 import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
 import { FogPropertyGridComponent } from "./fogPropertyGridComponent";
 import { FileButtonLineComponent } from "../../lines/fileButtonLineComponent";
+import { TextureLinkLineComponent } from "../../lines/textureLinkLineComponent";
 
 interface IScenePropertyGridComponentProps {
     scene: Scene,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
+    onSelectionChangedObservable?: Observable<any>
 }
 
 export class ScenePropertyGridComponent extends React.Component<IScenePropertyGridComponentProps> {
@@ -84,6 +86,10 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                 <LineContainerComponent title="ENVIRONMENT">
                     <Color3LineComponent label="Ambient color" target={scene} propertyName="ambientColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Environment texture (IBL)" isSelected={() => scene.environmentTexture != null} onSelect={() => this.switchIBL()} />
+                    {
+                        scene.environmentTexture &&
+                        <TextureLinkLineComponent label="Env. texture" texture={scene.environmentTexture} onSelectionChangedObservable={this.props.onSelectionChangedObservable} />
+                    }
                     <FileButtonLineComponent label="Update environment texture" onClick={(file) => this.updateEnvironmentTexture(file)} />
                     <FogPropertyGridComponent scene={scene} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>

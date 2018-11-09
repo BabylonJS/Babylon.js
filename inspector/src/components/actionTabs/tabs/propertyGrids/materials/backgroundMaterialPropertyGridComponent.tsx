@@ -10,7 +10,7 @@ import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponen
 
 interface IBackgroundMaterialPropertyGridComponentProps {
     material: BackgroundMaterial,
-    onSelectionChangeObservable?: Observable<any>,
+    onSelectionChangedObservable?: Observable<any>,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -26,8 +26,8 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
 
         return (
             <LineContainerComponent title="TEXTURES">
-                <TextureLinkLineComponent label="Diffuse" texture={material.diffuseTexture} material={material} onSelectionChangeObservable={this.props.onSelectionChangeObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
-                <TextureLinkLineComponent label="Reflection" texture={material.reflectionTexture} material={material} onSelectionChangeObservable={this.props.onSelectionChangeObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
+                <TextureLinkLineComponent label="Diffuse" texture={material.diffuseTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
+                <TextureLinkLineComponent label="Reflection" texture={material.reflectionTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 {
                     material.reflectionTexture &&
                     <SliderLineComponent label="Reflection blur" target={material} propertyName="reflectionBlur" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

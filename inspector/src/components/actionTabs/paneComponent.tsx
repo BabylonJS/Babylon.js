@@ -8,7 +8,7 @@ export interface IPaneComponentProps {
     title: string,
     icon: IconDefinition, scene: Scene,
     selectedEntity?: any,
-    onSelectionChangeObservable?: Observable<any>,
+    onSelectionChangedObservable?: Observable<any>,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
     globalState?: GlobalState
 }
