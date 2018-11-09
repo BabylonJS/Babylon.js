@@ -314,6 +314,25 @@ export class Container extends Control {
     }
 
     /** @hidden */
+    public _getDescendants(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
+        if (!this.children) {
+            return;
+        }
+
+        for (var index = 0; index < this.children.length; index++) {
+            var item = this.children[index];
+
+            if (!predicate || predicate(item)) {
+                results.push(item);
+            }
+
+            if (!directDescendantsOnly) {
+                item._getDescendants(results, false, predicate);
+            }
+        }
+    }
+
+    /** @hidden */
     public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean {
         if (!this.isVisible || this.notRenderable) {
             return false;

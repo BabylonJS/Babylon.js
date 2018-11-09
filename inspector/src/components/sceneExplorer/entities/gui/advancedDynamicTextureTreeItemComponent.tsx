@@ -22,6 +22,15 @@ export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAd
         this.state = { isInPickingMode: false };
     }
 
+    componentWillUnmount() {
+        let adt = this.props.texture;
+
+        if (this._onControlPickedObserver) {
+            adt.onControlPickedObservable.remove(this._onControlPickedObserver);
+            this._onControlPickedObserver = null;
+        }
+    }
+
     onPickingMode() {
         let adt = this.props.texture;
 
