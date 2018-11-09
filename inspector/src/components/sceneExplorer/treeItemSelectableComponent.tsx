@@ -1,5 +1,5 @@
 import { TreeItemSpecializedComponent } from "./treeItemSpecializedComponent";
-import { Observable, Nullable, Node, IExplorerExtensibilityGroup } from "babylonjs";
+import { Observable, Nullable, IExplorerExtensibilityGroup } from "babylonjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { Tools } from "../../tools";
@@ -117,15 +117,16 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         entity.metadata.isExpanded = this.state.isExpanded;
 
         if (this.props.filter) {
-
-            if (entity.name.indexOf(this.props.filter) === -1) {
+            const lowerCaseFilter = this.props.filter.toLowerCase();
+            if (!entity.name || entity.name.toLowerCase().indexOf(lowerCaseFilter) === -1) {
                 if (!hasChildren) {
                     return null;
                 }
 
                 if (entity.getDescendants) {
-                    if (entity.getDescendants(false, (n: Node) => {
-                        !this.props.filter || n.name.indexOf(this.props.filter) !== -1
+                    if (entity.getDescendants(false, (n: any) => {
+                        console.log(n.name);
+                        return n.name && n.name.toLowerCase().indexOf(lowerCaseFilter) !== -1
                     }).length === 0) {
                         return null;
                     }
