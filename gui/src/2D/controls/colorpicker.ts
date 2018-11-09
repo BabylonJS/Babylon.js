@@ -425,4 +425,8 @@ export class ColorPicker extends Control {
         delete this._host._capturingControl[pointerId];
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
     }
+
+    public static ShowPickerDialog() {
+
+    }
 }

@@ -55,14 +55,16 @@
         var engine = null;
 
         // Allow querystring to navigate easily in debug in local samples.
-        var indexjs = 'src/index';
-        var sampleSearch = /sample=([0-9]+)/i;
-        var matches = null;
-        if ((matches = sampleSearch.exec(window.location)) !== null) {
-            indexjs += '.';
-            indexjs += matches[1];
-        }
-        indexjs += '.js';
+        // var indexjs = 'src/index';
+        // var sampleSearch = /sample=([0-9]+)/i;
+        // var matches = null;
+        // if ((matches = sampleSearch.exec(window.location)) !== null) {
+        //     indexjs += '.';
+        //     indexjs += matches[1];
+        // }
+        // indexjs += '.js';
+
+        var indexjs = "http://localhost:1234/index.js"
 
         // Load the scripts + map file to allow vscode debug.
         BABYLONDEVTOOLS.Loader
