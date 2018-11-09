@@ -123,10 +123,12 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                     return null;
                 }
 
-                if (entity.getDescendants(false, (n: Node) => {
-                    !this.props.filter || n.name.indexOf(this.props.filter) !== -1
-                }).length === 0) {
-                    return null;
+                if (entity.getDescendants) {
+                    if (entity.getDescendants(false, (n: Node) => {
+                        !this.props.filter || n.name.indexOf(this.props.filter) !== -1
+                    }).length === 0) {
+                        return null;
+                    }
                 }
             }
         }
@@ -140,7 +142,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                             {chevron}
                         </div>
                     }
-                    <TreeItemSpecializedComponent extensibilityGroups={this.props.extensibilityGroups} label={entity.name} entity={entity} onClick={() => this.onSelect()} />
+                    <TreeItemSpecializedComponent extensibilityGroups={this.props.extensibilityGroups} label={entity.name} entity={entity} onClick={() => this.onSelect()} onSelectionChangeObservable={this.props.onSelectionChangeObservable} />
                 </div>
                 {
                     this.renderChildren()

@@ -4,8 +4,9 @@ export class Tools {
             return true;
         }
 
-        if (item.getChildren) {
-            for (var child of item.getChildren()) {
+        const children = item.getChildren ? item.getChildren() : item.children;
+        if (children) {
+            for (var child of children) {
                 if (Tools.LookForItem(child, selectedEntity)) {
                     return true;
                 }

@@ -1,4 +1,4 @@
-import { AbstractMesh, Camera, Light, Material, Texture, TransformNode, IExplorerExtensibilityGroup } from "babylonjs";
+import { AbstractMesh, Camera, Light, Material, Texture, TransformNode, IExplorerExtensibilityGroup, Observable } from "babylonjs";
 import { MeshTreeItemComponent } from "./entities/meshTreeItemComponent";
 import { CameraTreeItemComponent } from "./entities/cameraTreeItemComponent";
 import { LightTreeItemComponent } from "./entities/lightTreeItemComponent";
@@ -16,6 +16,7 @@ interface ITreeItemSpecializedComponentProps {
     label: string,
     entity?: any,
     extensibilityGroups?: IExplorerExtensibilityGroup[],
+    onSelectionChangeObservable?: Observable<any>,
     onClick?: () => void
 }
 
@@ -64,7 +65,7 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
             }
 
             if (className === "AdvancedDynamicTexture") {
-                return (<AdvancedDynamicTextureTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} texture={entity as AdvancedDynamicTexture} onClick={() => this.onClick()} />);
+                return (<AdvancedDynamicTextureTreeItemComponent onSelectionChangeObservable={this.props.onSelectionChangeObservable} extensibilityGroups={this.props.extensibilityGroups} texture={entity as AdvancedDynamicTexture} onClick={() => this.onClick()} />);
             }
 
             if (className.indexOf("Texture") !== -1) {

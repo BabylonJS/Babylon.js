@@ -1,18 +1,21 @@
 import { faImage, faCrosshairs } from '@fortawesome/free-solid-svg-icons';
-import { IExplorerExtensibilityGroup } from "babylonjs";
+import { IExplorerExtensibilityGroup, Nullable, Observer, Observable } from "babylonjs";
 import { TreeItemLabelComponent } from "../../treeItemLabelComponent";
 import { ExtensionsComponent } from "../../extensionsComponent";
 import * as React from 'react';
-import { AdvancedDynamicTexture } from 'babylonjs-gui';
+import { AdvancedDynamicTexture, Control } from 'babylonjs-gui';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface IAdvancedDynamicTextureTreeItemComponentProps {
     texture: AdvancedDynamicTexture,
     extensibilityGroups?: IExplorerExtensibilityGroup[],
+    onSelectionChangeObservable?: Observable<any>,
     onClick: () => void
 }
 
 export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAdvancedDynamicTextureTreeItemComponentProps, { isInPickingMode: boolean }> {
+    private _onControlPickedObserver: Nullable<Observer<Control>>;
+
     constructor(props: IAdvancedDynamicTextureTreeItemComponentProps) {
         super(props);
 
@@ -22,8 +25,18 @@ export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAd
     onPickingMode() {
         let adt = this.props.texture;
 
+        if (this._onControlPickedObserver) {
+            adt.onControlPickedObservable.remove(this._onControlPickedObserver);
+            this._onControlPickedObserver = null;
+        }
 
         if (!this.state.isInPickingMode) {
+            this._onControlPickedObserver = adt.onControlPickedObservable.add((control) => {
+                if (!this.props.onSelectionChangeObservable) {
+                    return;
+                }
+                this.props.onSelectionChangeObservable.notifyObservers(control);
+            });
         }
 
         this.setState({ isInPickingMode: !this.state.isInPickingMode });
