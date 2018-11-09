@@ -426,6 +426,9 @@ export class ColorPicker extends Control {
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
     }
 
+    /**
+     * This is so cool!
+     */
     public static ShowPickerDialog() {
 
     }
