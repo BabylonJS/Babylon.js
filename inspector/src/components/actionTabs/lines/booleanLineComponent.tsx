@@ -1,6 +1,6 @@
 import * as React from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 
 export interface IBooleanLineComponentProps {
     label: string,
@@ -14,7 +14,7 @@ export class BooleanLineComponent extends React.Component<IBooleanLineComponentP
 
     render() {
 
-        const check = this.props.value ? <FontAwesomeIcon icon={faCheck} /> : <FontAwesomeIcon icon={faTimes} />
+        const check = this.props.value ? <FontAwesomeIcon icon={faCheck} /> : <FontAwesomeIcon icon={faTimesCircle} />
         const className = this.props.value ? "value check" : "value uncheck";
 
         return (

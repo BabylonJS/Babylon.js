@@ -7,7 +7,8 @@ interface IFloatLineComponentProps {
     target: any,
     propertyName: string,
     step?: number,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
+    additionalClass?: string
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
@@ -73,7 +74,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
 
         const step = this.props.step !== undefined ? this.props.step : 0.1;
         return (
-            <div className="floatLine">
+            <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
                 <div className="label">
                     {this.props.label}
                 </div>
