@@ -162,13 +162,20 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             return null;
         }
 
+        var guiElements = scene.textures.filter(t => t.getClassName() === "AdvancedDynamicTexture");
+        var textures = scene.textures.filter(t => t.getClassName() !== "AdvancedDynamicTexture");
+
         return (
             <div id="tree">
                 <SceneExplorerFilterComponent onFilter={(filter) => this.filterContent(filter)} />
                 <SceneTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} scene={scene} onRefresh={() => this.forceUpdate()} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} />
                 <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.rootNodes} label="Nodes" offset={1} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} filter={this.state.filter} />
                 <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.materials} label="Materials" offset={1} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} filter={this.state.filter} />
-                <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.textures} label="Textures" offset={1} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} filter={this.state.filter} />
+                <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={textures} label="Textures" offset={1} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} filter={this.state.filter} />
+                {
+                    guiElements && guiElements.length > 0 &&
+                    <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} onSelectionChangeObservable={this.props.globalState.onSelectionChangeObservable} filter={this.state.filter} />
+                }
             </div>
         )
     }

@@ -13,6 +13,14 @@ import { ArcRotateCameraPropertyGridComponent } from "./propertyGrids/cameras/ar
 import { MeshPropertyGridComponent } from "./propertyGrids/meshes/meshPropertyGridComponent";
 import { TransformNodePropertyGridComponent } from "./propertyGrids/meshes/transformNodePropertyGridComponent";
 import { BackgroundMaterialPropertyGridComponent } from "./propertyGrids/materials/backgroundMaterialPropertyGridComponent";
+import { Control } from "babylonjs-gui/2D/controls/control";
+import { ControlPropertyGridComponent } from "./propertyGrids/gui/controlPropertyGridComponent";
+import { TextBlockPropertyGridComponent } from "./propertyGrids/gui/textBlockPropertyGridComponent";
+import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
+import { InputText } from "babylonjs-gui/2D/controls/inputText";
+import { InputTextPropertyGridComponent } from "./propertyGrids/gui/inputTextPropertyGridComponent";
+import { ColorPicker } from "babylonjs-gui";
+import { ColorPickerPropertyGridComponent } from "./propertyGrids/gui/colorPickerPropertyGridComponent";
 
 export class PropertyGridTabComponent extends PaneComponent {
     constructor(props: IPaneComponentProps) {
@@ -103,6 +111,26 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className.indexOf("Texture") !== -1) {
                 const texture = entity as Texture;
                 return (<TexturePropertyGridComponent texture={texture} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "TextBlock") {
+                const textBlock = entity as TextBlock;
+                return (<TextBlockPropertyGridComponent textBlock={textBlock} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "InputText") {
+                const inputText = entity as InputText;
+                return (<InputTextPropertyGridComponent inputText={inputText} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "ColorPicker") {
+                const colorPicker = entity as ColorPicker;
+                return (<ColorPickerPropertyGridComponent colorPicker={colorPicker} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (entity._host) {
+                const control = entity as Control;
+                return (<ControlPropertyGridComponent control={control} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
         } else if (entity.transformNodes) {
             const scene = entity as Scene;

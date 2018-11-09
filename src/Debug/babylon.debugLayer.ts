@@ -4,24 +4,69 @@ module BABYLON {
     declare var INSPECTOR: any;
     // load the inspector using require, if not present in the global namespace.
 
+    /**
+     * Interface used to define scene explorer extensibility option
+     */
     export interface IExplorerExtensibilityOption {
+        /**
+         * Define the option label
+         */
         label: string;
+        /**
+         * Defines the action to execute on click
+         */
         action: (entity: any) => void;
     }
 
+    /**
+     * Defines a group of actions associated with a predicate to use when extending the Inspector scene explorer
+     */
     export interface IExplorerExtensibilityGroup {
+        /**
+         * Defines a predicate to test if a given type mut be extended
+         */
         predicate: (entity: any) => boolean;
+        /**
+         * Gets the list of options added to a type
+         */
         entries: IExplorerExtensibilityOption[];
     }
 
+    /**
+     * Interface used to define the options to use to create the Inspector
+     */
     export interface IInspectorOptions {
+        /**
+         * Display in overlay mode (default: false)
+         */
         overlay?: boolean;
+        /**
+         * HTML element to use as root (the parent of the rendering canvas will be used as default value)
+         */
         globalRoot?: HTMLElement;
+        /**
+         * Display the Scene explorer
+         */
         showExplorer?: boolean;
+        /**
+         * Display the property inspector
+         */
         showInspector?: boolean;
+        /**
+         * Display in embed mode (both panes on the right)
+         */
         embedMode?: boolean;
+        /**
+         * let the Inspector handles resize of the canvas when panes are resized (default to true)
+         */
         handleResize?: boolean;
+        /**
+         * Allow the panes to popup (default: true)
+         */
         enablePopup?: boolean;
+        /**
+         * Optional list of extensibility entries
+         */
         explorerExtensibility?: IExplorerExtensibilityGroup[];
     }
 

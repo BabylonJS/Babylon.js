@@ -365,6 +365,47 @@
                 grid-column: 2;
             }
         }      
+
+        .adtextureTools {
+            grid-column: 2;
+            display: grid;
+            grid-template-columns: 1fr 20px auto 5px;
+            align-items: center;
+            
+            .pickingMode {
+                grid-column: 2;
+                opacity: 0.6;
+
+                &.selected {
+                    opacity: 1;
+                }
+            }
+
+            .extensions {
+                width: 20px;
+                grid-column: 3;
+            }
+        }         
+
+        .controlTools {
+            grid-column: 2;
+            display: grid;
+            grid-template-columns: 1fr 20px 20px auto 5px;
+            align-items: center;
+
+            .highlight {
+                grid-column: 2;
+            }
+
+            .visibility {
+                grid-column: 3;
+            }
+
+            .extensions {
+                width: 20px;
+                grid-column: 4;
+            }
+        }   
         
         .transformNodeTools {
             grid-column: 2;

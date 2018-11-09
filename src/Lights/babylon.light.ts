@@ -110,7 +110,7 @@ module BABYLON {
          * falling off base on range or angle.
          * This can be set to any values in Light.FALLOFF_x.
          *
-         * Note: This is only usefull for PBR Materials at the moment. This could be extended if required to
+         * Note: This is only useful for PBR Materials at the moment. This could be extended if required to
          * other types of materials.
          */
         @serialize()

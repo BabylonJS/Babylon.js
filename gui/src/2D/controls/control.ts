@@ -73,6 +73,7 @@ export class Control {
     private _cachedOffsetX: number;
     private _cachedOffsetY: number;
     private _isVisible = true;
+    private _isHighlighted = false;
     /** @hidden */
     public _linkedMesh: Nullable<AbstractMesh>;
     private _fontSet = false;
@@ -85,6 +86,11 @@ export class Control {
     protected _disabledColor = "#9a9a9a";
     /** @hidden */
     public _tag: any;
+
+    /**
+     * Gets or sets the unique id of the node. Please note that this number will be updated when the control is added to a container
+     */
+    public uniqueId: number;
 
     /**
      * Gets or sets an object used to store user defined information for the node
@@ -122,6 +128,14 @@ export class Control {
 
     /** Gets the control type name */
     public get typeName(): string {
+        return this._getTypeName();
+    }
+
+    /**
+     * Get the current class name of the control.
+     * @returns current class name
+     */
+    public getClassName(): string {
         return this._getTypeName();
     }
 
@@ -190,6 +204,22 @@ export class Control {
         }
         this._alphaSet = true;
         this._alpha = value;
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets a boolean indicating that we want to highlight the control (mostly for debugging purpose)
+     */
+    public get isHighlighted(): boolean {
+        return this._isHighlighted;
+    }
+
+    public set isHighlighted(value: boolean) {
+        if (this._isHighlighted === value) {
+            return;
+        }
+
+        this._isHighlighted = value;
         this._markAsDirty();
     }
 
@@ -946,6 +976,9 @@ export class Control {
     public _link(root: Nullable<Container>, host: AdvancedDynamicTexture): void {
         this._root = root;
         this._host = host;
+        if (this._host) {
+            this.uniqueId = this._host.getScene()!.getUniqueId();
+        }
     }
 
     /** @hidden */
@@ -979,6 +1012,23 @@ export class Control {
 
             this._transformMatrix.invertToRef(this._invertTransformMatrix);
         }
+    }
+
+    /** @hidden */
+    public _renderHighlight(context: CanvasRenderingContext2D): void {
+        if (!this.isHighlighted) {
+            return;
+        }
+
+        context.strokeStyle = "#4affff";
+        context.lineWidth = 2;
+
+        this._renderHighlightSpecific(context);
+    }
+
+    /** @hidden */
+    protected _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
+        context.strokeRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
     }
 
     /** @hidden */
@@ -1378,7 +1428,7 @@ export class Control {
 
         if (type === PointerEventTypes.POINTERDOWN) {
             this._onPointerDown(this, this._dummyVector2, pointerId, buttonIndex);
-            this._host._lastControlDown[pointerId] = this;
+            this._host._registerLastControlDown(this, pointerId);
             this._host._lastPickedControl = this;
             return true;
         }

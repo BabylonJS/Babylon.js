@@ -560,7 +560,7 @@ module BABYLON {
         }
 
         /**
-         * Get the current class name of the texture usefull for serialization or dynamic coding.
+         * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "Texture"
          */
         public getClassName(): string {
