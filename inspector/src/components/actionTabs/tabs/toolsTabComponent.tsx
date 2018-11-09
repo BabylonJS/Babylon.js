@@ -2,8 +2,10 @@ import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
 import { LineContainerComponent } from "../lineContainerComponent";
 import { ButtonLineComponent } from "../lines/buttonLineComponent";
-import { VideoRecorder, TransformNode, PBRMaterial, StandardMaterial, BackgroundMaterial, Nullable } from "babylonjs";
+import { VideoRecorder, Nullable, TransformNode, PBRMaterial, StandardMaterial, BackgroundMaterial } from "babylonjs";
+import { GLTFComponent } from "./tools/gltfComponent";
 import { GLTFData } from "babylonjs-serializers";
+
 
 export class ToolsTabComponent extends PaneComponent {
     private _videoRecorder: Nullable<VideoRecorder>;
@@ -92,10 +94,11 @@ export class ToolsTabComponent extends PaneComponent {
                 <LineContainerComponent title="CAPTURE">
                     <ButtonLineComponent label="Screenshot" onClick={() => this.captureScreenshot()} />
                     <ButtonLineComponent label={this.state.tag} onClick={() => this.recordVideo()} />
+                </LineContainerComponent>   
+                <LineContainerComponent title="SCENE EXPORT">
+                    <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
                 </LineContainerComponent>
-                <LineContainerComponent title="GLTF">
-                    <ButtonLineComponent label="Export" onClick={() => this.exportGLTF()} />
-                </LineContainerComponent>
+                <GLTFComponent scene={scene} globalState={this.props.globalState!}/> 
             </div>
         );
     }

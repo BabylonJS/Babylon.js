@@ -54,7 +54,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
                     onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                 <DebugTabComponent title="Debug" icon={faBug} scene={this.props.scene} />
                 <StatisticsTabComponent title="Statistics" icon={faChartBar} scene={this.props.scene} />
-                <ToolsTabComponent title="Tools" icon={faWrench} scene={this.props.scene} />
+                <ToolsTabComponent title="Tools" icon={faWrench} scene={this.props.scene} globalState={this.props.globalState}/>
             </TabsComponent>
         )
     }
