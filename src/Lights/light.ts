@@ -334,7 +334,7 @@ import { IShadowGenerator } from "./Shadows/shadowGenerator";
 
         /**
          * Creates a Light object in the scene.
-         * Documentation : http://doc.babylonjs.com/tutorials/lights
+         * Documentation : https://doc.babylonjs.com/babylon101/lights
          * @param name The firendly name of the light
          * @param scene The scene the light belongs too
          */

@@ -474,6 +474,37 @@ import { Bone } from "Bones/bone";
                 this.rotation.y = yaw + yawCor;
                 this.rotation.z = rollCor;
             }
+
+            // Correct for parent's rotation offset
+            if (space === Space.WORLD && this.parent) {
+                if (this.rotationQuaternion) {
+                    // Get local rotation matrix of the looking object
+                    var rotationMatrix = Tmp.Matrix[0];
+                    this.rotationQuaternion.toRotationMatrix(rotationMatrix);
+
+                    // Offset rotation by parent's inverted rotation matrix to correct in world space
+                    var parentRotationMatrix = Tmp.Matrix[1];
+                    this.parent.getWorldMatrix().getRotationMatrixToRef(parentRotationMatrix);
+                    parentRotationMatrix.invert();
+                    rotationMatrix.multiplyToRef(parentRotationMatrix, rotationMatrix);
+                    this.rotationQuaternion.fromRotationMatrix(rotationMatrix);
+                }else {
+                    // Get local rotation matrix of the looking object
+                    var quaternionRotation = Tmp.Quaternion[0];
+                    Quaternion.FromEulerVectorToRef(this.rotation, quaternionRotation);
+                    var rotationMatrix = Tmp.Matrix[0];
+                    quaternionRotation.toRotationMatrix(rotationMatrix);
+
+                    // Offset rotation by parent's inverted rotation matrix to correct in world space
+                    var parentRotationMatrix = Tmp.Matrix[1];
+                    this.parent.getWorldMatrix().getRotationMatrixToRef(parentRotationMatrix);
+                    parentRotationMatrix.invert();
+                    rotationMatrix.multiplyToRef(parentRotationMatrix, rotationMatrix);
+                    quaternionRotation.fromRotationMatrix(rotationMatrix);
+                    quaternionRotation.toEulerAnglesToRef(this.rotation);
+                }
+            }
+
             return this;
         }
 
