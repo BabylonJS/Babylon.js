@@ -88,6 +88,7 @@
 - Bounding Box fixedDragMeshScreenSize stopped working and allow rotating through bounding box ([TrevorDev](https://github.com/TrevorDev))
 - VR helper would rotate non vr camera while in VR ([TrevorDev](https://github.com/TrevorDev))
 - PointerDragBahavior using Mesh as base type, causing type-checking problems with AbstractMesh ([Poolminer](https://github.com/Poolminer/))
+- TransformNode lookAt not working in world space when node's parent has rotation ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
