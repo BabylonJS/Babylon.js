@@ -37,7 +37,7 @@
         "gulp": "~4.0.0",
         "gulp-webserver": "~0.9.1",
         "mini-css-extract-plugin": "~0.4.4",
-        "node-sass": "~4.9.4",
+        "node-sass": "~4.10.0",
         "re-resizable": "~4.9.1",
         "react": "~16.5.2",
         "react-dom": "~16.5.2",

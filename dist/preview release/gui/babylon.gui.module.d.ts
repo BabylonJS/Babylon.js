@@ -157,8 +157,16 @@ declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
             /**
                 * Returns an array containing the root container.
                 * This is mostly used to let the Inspector introspects the ADT
+                * @returns an array containing the rootContainer
                 */
             getChildren(): Array<Container>;
+            /**
+                * Will return all controls that are inside this texture
+                * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+                * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+                * @return all child controls
+                */
+            getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[];
             /**
                 * Gets or sets the current focused control
                 */
@@ -933,6 +941,8 @@ declare module 'babylonjs-gui/2D/controls/container' {
             /** @hidden */
             _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /** @hidden */
+            _getDescendants(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
+            /** @hidden */
             _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
             /** @hidden */
             protected _clipForChildren(context: CanvasRenderingContext2D): void;
@@ -1298,6 +1308,15 @@ declare module 'babylonjs-gui/2D/controls/control' {
                 * @param scene defines the hosting scene
                 */
             moveToVector3(position: Vector3, scene: Scene): void;
+            /** @hidden */
+            _getDescendants(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
+            /**
+                * Will return all controls that have this control as ascendant
+                * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+                * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+                * @return all child controls
+                */
+            getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[];
             /**
                 * Link current control with a target mesh
                 * @param mesh defines the mesh to link with
@@ -2680,14 +2699,13 @@ declare module 'babylonjs-gui/3D/controls/control3D' {
             name?: string | undefined);
             /**
                 * Gets a string representing the class name
-                * @returns current class name
                 */
             readonly typeName: string;
             /**
                 * Get the current class name of the control.
                 * @returns current class name
                 */
-            readonly getClassName: string;
+            getClassName(): string;
             protected _getTypeName(): string;
             /**
                 * Gets the transform node used by this control
@@ -3145,8 +3163,16 @@ declare module BABYLON.GUI {
             /**
                 * Returns an array containing the root container.
                 * This is mostly used to let the Inspector introspects the ADT
+                * @returns an array containing the rootContainer
                 */
             getChildren(): Array<Container>;
+            /**
+                * Will return all controls that are inside this texture
+                * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+                * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+                * @return all child controls
+                */
+            getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[];
             /**
                 * Gets or sets the current focused control
                 */
@@ -3867,6 +3893,8 @@ declare module BABYLON.GUI {
             /** @hidden */
             _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /** @hidden */
+            _getDescendants(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
+            /** @hidden */
             _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
             /** @hidden */
             protected _clipForChildren(context: CanvasRenderingContext2D): void;
@@ -4224,6 +4252,15 @@ declare module BABYLON.GUI {
                 * @param scene defines the hosting scene
                 */
             moveToVector3(position: BABYLON.Vector3, scene: BABYLON.Scene): void;
+            /** @hidden */
+            _getDescendants(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
+            /**
+                * Will return all controls that have this control as ascendant
+                * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+                * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+                * @return all child controls
+                */
+            getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[];
             /**
                 * Link current control with a target mesh
                 * @param mesh defines the mesh to link with
@@ -5523,14 +5560,13 @@ declare module BABYLON.GUI {
             name?: string | undefined);
             /**
                 * Gets a string representing the class name
-                * @returns current class name
                 */
             readonly typeName: string;
             /**
                 * Get the current class name of the control.
                 * @returns current class name
                 */
-            readonly getClassName: string;
+            getClassName(): string;
             protected _getTypeName(): string;
             /**
                 * Gets the transform node used by this control

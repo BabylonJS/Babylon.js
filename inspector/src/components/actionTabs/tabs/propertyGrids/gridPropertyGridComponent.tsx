@@ -26,9 +26,6 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         }
     }
 
-    componentWillUnmount() {
-    }
-
     addOrRemoveGrid() {
         const scene = BABYLON.UtilityLayerRenderer.DefaultKeepDepthUtilityLayer.utilityLayerScene;
 
@@ -49,8 +46,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
             if (!this._gridMesh.metadata) {
                 this._gridMesh.metadata = {};
             }
-            this._gridMesh.scaling.x = width;
-            this._gridMesh.scaling.z = depth;
+            this._gridMesh.scaling.x = Math.max(width, depth);
+            this._gridMesh.scaling.z = this._gridMesh.scaling.x;
             this._gridMesh.metadata.isInspectorGrid = true;
             this._gridMesh.isPickable = false;
 

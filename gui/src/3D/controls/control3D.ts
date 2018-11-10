@@ -196,7 +196,6 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
 
     /**
      * Gets a string representing the class name
-     * @returns current class name
      */
     public get typeName(): string {
         return this._getTypeName();
@@ -206,7 +205,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
      * Get the current class name of the control.
      * @returns current class name
      */
-    public get getClassName(): string {
+    public getClassName(): string {
         return this._getTypeName();
     }
 
