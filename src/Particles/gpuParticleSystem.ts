@@ -14,7 +14,7 @@ import { BoxParticleEmitter } from "Particles/EmitterTypes/boxParticleEmitter";
 import { Scene, IDisposable } from "scene";
 import { Effect, EffectCreationOptions } from "Materials/effect";
 import { Material } from "Materials/material";
-import { MaterialHelper } from "Materials/MaterialHelper";
+import { MaterialHelper } from "Materials/materialHelper";
 import { ImageProcessingConfiguration } from "Materials/imageProcessingConfiguration";
 import { Texture } from "Materials/Textures/texture";
 import { RawTexture } from "Materials/Textures/rawTexture";

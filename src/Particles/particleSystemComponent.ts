@@ -79,7 +79,7 @@ declare module "Engines/Engine" {
             samplers, defines, fallbacks, onCompiled, onError);
     };
 
-declare module "Meshes/Mesh" {
+declare module "Meshes/mesh" {
     export interface Mesh {
         /**
          * Returns an array populated with IParticleSystem objects whose the mesh is the emitter
