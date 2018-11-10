@@ -1,6 +1,6 @@
 import { Logger } from "Misc/logger";
 import { Nullable } from "types";
-import { Camera } from "Cameras";
+import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
 import { Vector3, Color3, Color4 } from "Maths/math";
 import { Mesh } from "Meshes/mesh";
@@ -24,7 +24,8 @@ import { ActionManager } from "Actions/actionManager";
 import { IParticleSystem } from "Particles/IParticleSystem";
 import { Skeleton } from "Bones/skeleton";
 import { MorphTargetManager } from "Morph/morphTargetManager";
-import { CannonJSPlugin, OimoJSPlugin } from "Physics";
+import { CannonJSPlugin } from "Physics/Plugins/cannonJSPlugin";
+import { OimoJSPlugin } from "Physics/Plugins/oimoJSPlugin";
     var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
         for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
             var parsedMaterial = parsedData.materials[index];

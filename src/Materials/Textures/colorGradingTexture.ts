@@ -4,7 +4,7 @@ import { Matrix } from "Maths/math";
 import { Engine } from "Engines/engine";
 import { InternalTexture } from "Materials/Textures/internalTexture";
 import { BaseTexture } from "Materials/Textures/baseTexture";
-import { _TimeToken } from "Instrumentation";
+import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { Constants } from "Engines/constants";
     /**

@@ -6,7 +6,10 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
 import { GamepadManager } from "./gamepadManager";
 
-import { FreeCameraGamepadInput, FreeCameraInputsManager, ArcRotateCameraInputsManager, ArcRotateCameraGamepadInput } from "Cameras";
+import { FreeCameraInputsManager } from "Cameras/freeCameraInputsManager";
+import { FreeCameraGamepadInput } from "Cameras/Inputs/freeCameraGamepadInput";
+import { ArcRotateCameraInputsManager } from "Cameras/arcRotateCameraInputsManager";
+import { ArcRotateCameraGamepadInput } from "Cameras/Inputs/arcRotateCameraGamepadInput";
 
 declare module "scene" {
     export interface Scene {

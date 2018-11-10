@@ -12,9 +12,15 @@ import { Engine } from "Engines/engine";
 import { Gamepad } from "Gamepads/gamepad";
 import { ExtendedGamepadButton } from "./poseEnabledController";
 
-import { OculusTouchController, WindowsMotionController, ViveController, GearVRController, DaydreamController, GenericController } from "Gamepads/Controllers/";
+import { OculusTouchController } from "Gamepads/Controllers/oculusTouchController";
+import { WindowsMotionController } from "Gamepads/Controllers/windowsMotionController";
+import { ViveController } from "Gamepads/Controllers/viveController";
+import { GearVRController } from "Gamepads/Controllers/gearVRController";
+import { DaydreamController } from "Gamepads/Controllers/daydreamController";
+import { GenericController } from "Gamepads/Controllers/genericController";
 
-import { WebVRFreeCamera, TargetCamera, PoseControlled, DevicePose } from "Cameras";
+import { WebVRFreeCamera, PoseControlled, DevicePose } from "Cameras/VR/webVRCamera";
+import { TargetCamera } from "Cameras/targetCamera";
     /**
     * Defines the types of pose enabled controllers that are supported
     */
