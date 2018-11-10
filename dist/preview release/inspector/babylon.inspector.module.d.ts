@@ -74,10 +74,15 @@ declare module 'babylonjs-inspector/tabs' {
 }
 
 declare module 'babylonjs-inspector/tools' {
-    export class Tools {
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        static SortAndFilter(items: any[]): any[];
-    }
+    export * from 'babylonjs-inspector/tools/AbstractTool';
+    export * from 'babylonjs-inspector/tools/DisposeTool';
+    export * from 'babylonjs-inspector/tools/FullscreenTool';
+    export * from 'babylonjs-inspector/tools/LabelTool';
+    export * from 'babylonjs-inspector/tools/PauseScheduleTool';
+    export * from 'babylonjs-inspector/tools/PickTool';
+    export * from 'babylonjs-inspector/tools/PopupTool';
+    export * from 'babylonjs-inspector/tools/RefreshTool';
+    export * from 'babylonjs-inspector/tools/Toolbar';
 }
 
 declare module 'babylonjs-inspector/tree' {
@@ -94,48 +99,50 @@ declare module 'babylonjs-inspector/treetools' {
     export * from 'babylonjs-inspector/treetools/SoundInteractions';
 }
 
-import { AbstractMesh, Nullable, Scene, Observable } from "babylonjs";
-
-export declare class Inspector {
-        /** The HTML document relative to this inspector (the window or the popup depending on its mode) */
-        static DOCUMENT: HTMLDocument;
-        /** The HTML window. In popup mode, it's the popup itself. Otherwise, it's the current tab */
-        static WINDOW: Window;
-        onGUILoaded: Observable<any>;
-        static GUIObject: any;
-        /** The inspector is created with the given engine.
-            * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
-            * If the parameter 'popup' is true, the inspector is created in another popup.
-            */
-        constructor(scene: Scene, popup?: boolean, initialTab?: number | string, parentElement?: Nullable<HTMLElement>, newColors?: {
-                backgroundColor?: string;
-                backgroundColorLighter?: string;
-                backgroundColorLighter2?: string;
-                backgroundColorLighter3?: string;
-                color?: string;
-                colorTop?: string;
-                colorBot?: string;
-        });
-        readonly scene: Scene;
-        readonly popupMode: boolean;
-        /**
-            * Filter the list of item present in the tree.
-            * All item returned should have the given filter contained in the item id.
-         */
-        filterItem(filter: string): void;
-        /** Display the mesh tab on the given object */
-        displayObjectDetails(mesh: AbstractMesh): void;
-        /** Clean the whole tree of item and rebuilds it */
-        refresh(): void;
-        /** Remove the inspector panel when it's built as a right panel:
-            * remove the right panel and remove the wrapper
-            */
-        dispose(): void;
-        /** Open the inspector in a new popup
-            * Set 'firstTime' to true if there is no inspector created beforehands
-            */
-        openPopup(firstTime?: boolean): void;
-        getActiveTabIndex(): number;
+declare module 'babylonjs-inspector/Inspector' {
+    import { AbstractMesh, Nullable, Scene, Observable } from "babylonjs";
+    
+    export class Inspector {
+            /** The HTML document relative to this inspector (the window or the popup depending on its mode) */
+            static DOCUMENT: HTMLDocument;
+            /** The HTML window. In popup mode, it's the popup itself. Otherwise, it's the current tab */
+            static WINDOW: Window;
+            onGUILoaded: Observable<any>;
+            static GUIObject: any;
+            /** The inspector is created with the given engine.
+                * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
+                * If the parameter 'popup' is true, the inspector is created in another popup.
+                */
+            constructor(scene: Scene, popup?: boolean, initialTab?: number | string, parentElement?: Nullable<HTMLElement>, newColors?: {
+                    backgroundColor?: string;
+                    backgroundColorLighter?: string;
+                    backgroundColorLighter2?: string;
+                    backgroundColorLighter3?: string;
+                    color?: string;
+                    colorTop?: string;
+                    colorBot?: string;
+            });
+            readonly scene: Scene;
+            readonly popupMode: boolean;
+            /**
+                * Filter the list of item present in the tree.
+                * All item returned should have the given filter contained in the item id.
+             */
+            filterItem(filter: string): void;
+            /** Display the mesh tab on the given object */
+            displayObjectDetails(mesh: AbstractMesh): void;
+            /** Clean the whole tree of item and rebuilds it */
+            refresh(): void;
+            /** Remove the inspector panel when it's built as a right panel:
+                * remove the right panel and remove the wrapper
+                */
+            dispose(): void;
+            /** Open the inspector in a new popup
+                * Set 'firstTime' to true if there is no inspector created beforehands
+                */
+            openPopup(firstTime?: boolean): void;
+            getActiveTabIndex(): number;
+    }
 }
 
 declare module 'babylonjs-inspector/properties' {
@@ -1075,6 +1082,106 @@ declare module 'babylonjs-inspector/tabs/ToolsTab' {
     }
 }
 
+declare module 'babylonjs-inspector/tools/AbstractTool' {
+    import { Inspector } from "babylonjs-inspector/Inspector";
+    export abstract class AbstractTool {
+            protected _inspector: Inspector;
+            constructor(iconSet: string, icon: string, parent: HTMLElement, inspector: Inspector, tooltip: string);
+            toHtml(): HTMLElement;
+            /**
+                * Returns the total width in pixel of this tool, 0 by default
+             */
+            getPixelWidth(): number;
+            /**
+                * Updates the icon of this tool with the given string
+                */
+            protected _updateIcon(icon: string): void;
+            abstract action(): void;
+    }
+}
+
+declare module 'babylonjs-inspector/tools/DisposeTool' {
+    import { AbstractTool } from "babylonjs-inspector/tools/AbstractTool";
+    import { Inspector } from "babylonjs-inspector/Inspector";
+    /**
+      * Removes the inspector panel
+      */
+    export class DisposeTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        action(): void;
+    }
+}
+
+declare module 'babylonjs-inspector/tools/FullscreenTool' {
+    import { AbstractTool } from "babylonjs-inspector/tools/AbstractTool";
+    import { Inspector } from "babylonjs-inspector/Inspector";
+    export class FullscreenTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        action(): void;
+    }
+}
+
+declare module 'babylonjs-inspector/tools/LabelTool' {
+    import { Inspector } from "babylonjs-inspector/Inspector";
+    import { AbstractTool } from "babylonjs-inspector/tools/AbstractTool";
+    export class LabelTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        dispose(): void;
+        action(): void;
+    }
+}
+
+declare module 'babylonjs-inspector/tools/PauseScheduleTool' {
+    import { Inspector } from "babylonjs-inspector/Inspector";
+    import { AbstractTool } from "babylonjs-inspector/tools/AbstractTool";
+    export class PauseScheduleTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        action(): void;
+    }
+}
+
+declare module 'babylonjs-inspector/tools/PickTool' {
+    import { Inspector } from "babylonjs-inspector/Inspector";
+    import { AbstractTool } from "babylonjs-inspector/tools/AbstractTool";
+    export class PickTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        action(): void;
+    }
+}
+
+declare module 'babylonjs-inspector/tools/PopupTool' {
+    import { Inspector } from "babylonjs-inspector/Inspector";
+    import { AbstractTool } from "babylonjs-inspector/tools/AbstractTool";
+    export class PopupTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        action(): void;
+    }
+}
+
+declare module 'babylonjs-inspector/tools/RefreshTool' {
+    import { Inspector } from "babylonjs-inspector/Inspector";
+    import { AbstractTool } from "babylonjs-inspector/tools/AbstractTool";
+    export class RefreshTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        action(): void;
+    }
+}
+
+declare module 'babylonjs-inspector/tools/Toolbar' {
+    import { BasicElement } from "babylonjs-inspector/gui/BasicElement";
+    import { Inspector } from "babylonjs-inspector/Inspector";
+    export class Toolbar extends BasicElement {
+        constructor(inspector: Inspector);
+        update(): void;
+        protected _build(): void;
+        /**
+          * Returns the total width in pixel of the tabbar,
+          * that corresponds to the sum of the width of each tab + toolbar width
+         */
+        getPixelWidth(): number;
+    }
+}
+
 declare module 'babylonjs-inspector/tree/TreeItem' {
     import { BasicElement } from "babylonjs-inspector/gui/BasicElement";
     import { Tab } from "babylonjs-inspector/tabs/Tab";
@@ -1252,55 +1359,53 @@ declare module INSPECTOR {
 declare module INSPECTOR {
 }
 declare module INSPECTOR {
-    export class Tools {
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        static SortAndFilter(items: any[]): any[];
+}
+declare module INSPECTOR {
+}
+declare module INSPECTOR {
+}
+declare module INSPECTOR {
+    export class Inspector {
+            /** The HTML document relative to this inspector (the window or the popup depending on its mode) */
+            static DOCUMENT: HTMLDocument;
+            /** The HTML window. In popup mode, it's the popup itself. Otherwise, it's the current tab */
+            static WINDOW: Window;
+            onGUILoaded: BABYLON.Observable<any>;
+            static GUIObject: any;
+            /** The inspector is created with the given engine.
+                * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
+                * If the parameter 'popup' is true, the inspector is created in another popup.
+                */
+            constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number | string, parentElement?: BABYLON.Nullable<HTMLElement>, newColors?: {
+                    backgroundColor?: string;
+                    backgroundColorLighter?: string;
+                    backgroundColorLighter2?: string;
+                    backgroundColorLighter3?: string;
+                    color?: string;
+                    colorTop?: string;
+                    colorBot?: string;
+            });
+            readonly scene: BABYLON.Scene;
+            readonly popupMode: boolean;
+            /**
+                * Filter the list of item present in the tree.
+                * All item returned should have the given filter contained in the item id.
+             */
+            filterItem(filter: string): void;
+            /** Display the mesh tab on the given object */
+            displayObjectDetails(mesh: BABYLON.AbstractMesh): void;
+            /** Clean the whole tree of item and rebuilds it */
+            refresh(): void;
+            /** Remove the inspector panel when it's built as a right panel:
+                * remove the right panel and remove the wrapper
+                */
+            dispose(): void;
+            /** Open the inspector in a new popup
+                * Set 'firstTime' to true if there is no inspector created beforehands
+                */
+            openPopup(firstTime?: boolean): void;
+            getActiveTabIndex(): number;
     }
-}
-declare module INSPECTOR {
-}
-declare module INSPECTOR {
-}
-export declare class Inspector {
-        /** The HTML document relative to this inspector (the window or the popup depending on its mode) */
-        static DOCUMENT: HTMLDocument;
-        /** The HTML window. In popup mode, it's the popup itself. Otherwise, it's the current tab */
-        static WINDOW: Window;
-        onGUILoaded: BABYLON.Observable<any>;
-        static GUIObject: any;
-        /** The inspector is created with the given engine.
-            * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
-            * If the parameter 'popup' is true, the inspector is created in another popup.
-            */
-        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number | string, parentElement?: BABYLON.Nullable<HTMLElement>, newColors?: {
-                backgroundColor?: string;
-                backgroundColorLighter?: string;
-                backgroundColorLighter2?: string;
-                backgroundColorLighter3?: string;
-                color?: string;
-                colorTop?: string;
-                colorBot?: string;
-        });
-        readonly scene: BABYLON.Scene;
-        readonly popupMode: boolean;
-        /**
-            * Filter the list of item present in the tree.
-            * All item returned should have the given filter contained in the item id.
-         */
-        filterItem(filter: string): void;
-        /** Display the mesh tab on the given object */
-        displayObjectDetails(mesh: BABYLON.AbstractMesh): void;
-        /** Clean the whole tree of item and rebuilds it */
-        refresh(): void;
-        /** Remove the inspector panel when it's built as a right panel:
-            * remove the right panel and remove the wrapper
-            */
-        dispose(): void;
-        /** Open the inspector in a new popup
-            * Set 'firstTime' to true if there is no inspector created beforehands
-            */
-        openPopup(firstTime?: boolean): void;
-        getActiveTabIndex(): number;
 }
 declare module INSPECTOR {
     export const PROPERTIES: {
@@ -2070,6 +2175,80 @@ declare module INSPECTOR {
     export class ToolsTab extends Tab {
         constructor(tabbar: TabBar, insp: Inspector);
         dispose(): void;
+    }
+}
+declare module INSPECTOR {
+    export abstract class AbstractTool {
+            protected _inspector: Inspector;
+            constructor(iconSet: string, icon: string, parent: HTMLElement, inspector: Inspector, tooltip: string);
+            toHtml(): HTMLElement;
+            /**
+                * Returns the total width in pixel of this tool, 0 by default
+             */
+            getPixelWidth(): number;
+            /**
+                * Updates the icon of this tool with the given string
+                */
+            protected _updateIcon(icon: string): void;
+            abstract action(): void;
+    }
+}
+declare module INSPECTOR {
+    /**
+      * Removes the inspector panel
+      */
+    export class DisposeTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        action(): void;
+    }
+}
+declare module INSPECTOR {
+    export class FullscreenTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        action(): void;
+    }
+}
+declare module INSPECTOR {
+    export class LabelTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        dispose(): void;
+        action(): void;
+    }
+}
+declare module INSPECTOR {
+    export class PauseScheduleTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        action(): void;
+    }
+}
+declare module INSPECTOR {
+    export class PickTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        action(): void;
+    }
+}
+declare module INSPECTOR {
+    export class PopupTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        action(): void;
+    }
+}
+declare module INSPECTOR {
+    export class RefreshTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        action(): void;
+    }
+}
+declare module INSPECTOR {
+    export class Toolbar extends BasicElement {
+        constructor(inspector: Inspector);
+        update(): void;
+        protected _build(): void;
+        /**
+          * Returns the total width in pixel of the tabbar,
+          * that corresponds to the sum of the width of each tab + toolbar width
+         */
+        getPixelWidth(): number;
     }
 }
 declare module INSPECTOR {

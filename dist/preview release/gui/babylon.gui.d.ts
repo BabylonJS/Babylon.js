@@ -737,6 +737,10 @@ declare module BABYLON.GUI {
             _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
             _onPointerMove(target: Control, coordinates: BABYLON.Vector2): void;
             _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+            /**
+                * This is so cool!
+                */
+            static ShowPickerDialog(advancedTexture: AdvancedDynamicTexture, pickerWidth: string, pickerHeight: string, lastColor: string, swatchLimit: number, swatchSize: number, numSwatchesPerLine: number, savedColors: Array<string>): string;
     }
 }
 declare module BABYLON.GUI {

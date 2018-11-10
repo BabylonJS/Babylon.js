@@ -805,6 +805,7 @@ declare module 'babylonjs-gui/2D/controls/colorpicker' {
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Color3, Observable, Vector2 } from "babylonjs";
     import { Measure } from "babylonjs-gui/2D/measure";
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /** Class used to create color pickers */
     export class ColorPicker extends Control {
             name?: string | undefined;
@@ -831,6 +832,10 @@ declare module 'babylonjs-gui/2D/controls/colorpicker' {
             _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
             _onPointerMove(target: Control, coordinates: Vector2): void;
             _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+            /**
+                * This is so cool!
+                */
+            static ShowPickerDialog(advancedTexture: AdvancedDynamicTexture, pickerWidth: string, pickerHeight: string, lastColor: string, swatchLimit: number, swatchSize: number, numSwatchesPerLine: number, savedColors: Array<string>): string;
     }
 }
 
@@ -3728,6 +3733,10 @@ declare module BABYLON.GUI {
             _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
             _onPointerMove(target: Control, coordinates: BABYLON.Vector2): void;
             _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+            /**
+                * This is so cool!
+                */
+            static ShowPickerDialog(advancedTexture: AdvancedDynamicTexture, pickerWidth: string, pickerHeight: string, lastColor: string, swatchLimit: number, swatchSize: number, numSwatchesPerLine: number, savedColors: Array<string>): string;
     }
 }
 declare module BABYLON.GUI {
